@@ -80,7 +80,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
 
   const [formData, setFormData] = useState({
     party_id: '',
-    payment_date: '',
+    payment_date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
     payment_method: 'bank_transfer',
     reference_number: '',
     notes: '',
@@ -184,6 +184,33 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   const updateLine = (idx: number, patch: Partial<{ account_id: string; amount: string; description: string }>) =>
     setLines((ls) => ls.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
 
+  const overAllocated = invoices.filter((i) => (Number(alloc[i.id]) || 0) > i.balance_due + 0.01);
+  const bankName = cashBankAccounts.find((a) => a.id === Number(formData.bank_account_id));
+  const accName = (id: string) => {
+    const a = contraAccounts.find((c) => c.id === Number(id));
+    return a ? `${a.code} - ${a.name}` : '(akun belum dipilih)';
+  };
+  const isReceiptKind = mode === 'ar' || (mode === 'kas' && cashDirection === 'in');
+  const bankLabel = bankName ? `${bankName.code} - ${bankName.name}` : '(Kas/Bank belum dipilih)';
+  const journalPreview: { account: string; debit: number; credit: number }[] = [];
+  if (totalAmount > 0) {
+    const bankLine = { account: bankLabel, debit: isReceiptKind ? totalAmount : 0, credit: isReceiptKind ? 0 : totalAmount };
+    const detail = isStandalone
+      ? lines.filter((l) => Number(l.amount) > 0).map((l) => ({
+          account: accName(l.account_id),
+          debit: isReceiptKind ? 0 : Number(l.amount),
+          credit: isReceiptKind ? Number(l.amount) : 0,
+        }))
+      : invoices.filter((i) => Number(alloc[i.id]) > 0).map((i) => ({
+          account: `${mode === 'ar' ? 'Piutang Usaha' : 'Hutang Usaha'} — ${i.invoice_number}`,
+          debit: mode === 'ap' ? Number(alloc[i.id]) : 0,
+          credit: mode === 'ar' ? Number(alloc[i.id]) : 0,
+        }));
+    if (isReceiptKind) journalPreview.push(bankLine, ...detail);
+    else journalPreview.push(...detail, bankLine);
+  }
+  const canSubmit = totalAmount > 0 && overAllocated.length === 0 && !!formData.bank_account_id && !!formData.payment_date;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null);
@@ -210,7 +237,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
 
     setSubmitting(true);
     try {
-      await axiosInstance.post('/api/finance/payments', {
+      const res = await axiosInstance.post('/api/finance/payments', {
         payment_date: formData.payment_date,
         payment_type: paymentType === 'supplier' ? 'payment' : 'receipt',
         allocations: isStandalone ? undefined : allocations,
@@ -223,11 +250,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
         notes: formData.notes || undefined,
         bank_account_id: Number(formData.bank_account_id),
       });
-      navigate(
-        isStandalone
-          ? (paymentType === 'supplier' ? '/app/finance/pembayaran' : '/app/finance/penerimaan')
-          : (paymentType === 'supplier' ? '/app/accounting/payable' : '/app/accounting/receivable')
-      );
+      navigate(res.data?.payment_id ? `/app/finance/payments/${res.data.payment_id}` : '/app/finance/pembayaran');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Gagal menyimpan pembayaran. Silakan coba lagi.');
     } finally {
@@ -347,6 +370,9 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                                   value={alloc[inv.id] ?? ''}
                                   onChange={(e) => setAlloc((a) => ({ ...a, [inv.id]: e.target.value }))}
                                 />
+                                {(Number(alloc[inv.id]) || 0) > inv.balance_due + 0.01 && (
+                                  <p className="text-xs text-red-600 mt-1">Melebihi sisa faktur</p>
+                                )}
                               </td>
                               <td className="p-2 text-right">
                                 Rp{(inv.balance_due - (Number(alloc[inv.id]) || 0)).toLocaleString('id-ID')}
@@ -506,6 +532,30 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
             />
           </div>
 
+          {journalPreview.length > 0 && (
+            <div className="border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 dark:bg-gray-700 px-4 py-2 text-sm font-semibold">Pratinjau Jurnal</div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs uppercase text-gray-500">
+                    <th className="px-4 py-1">Akun</th>
+                    <th className="px-4 py-1 text-right">Debit</th>
+                    <th className="px-4 py-1 text-right">Kredit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {journalPreview.map((j, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="px-4 py-1">{j.account}</td>
+                      <td className="px-4 py-1 text-right">{j.debit ? `Rp${j.debit.toLocaleString('id-ID')}` : ''}</td>
+                      <td className="px-4 py-1 text-right">{j.credit ? `Rp${j.credit.toLocaleString('id-ID')}` : ''}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
           {/* Form Actions */}
           <div className="flex justify-end gap-4 pt-6 border-t">
             <button 
@@ -515,11 +565,11 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
             >{t('common.cancel')}</button>
             <button 
               type="submit"
-              disabled={submitting}
+              disabled={submitting || !canSubmit}
               className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
             >
               <CreditCardIcon className="h-5 w-5" />
-              {submitting ? 'Menyimpan...' : 'Record Payment'}
+              {submitting ? 'Menyimpan...' : 'Simpan'}
             </button>
           </div>
         </form>
