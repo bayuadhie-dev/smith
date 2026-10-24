@@ -890,6 +890,10 @@ function App() {
                 <Route path="finance/consolidation" element={<Consolidation />} />
                 <Route path="finance/payments/new" element={<PaymentForm />} />
                 <Route path="finance/penerimaan" element={<PaymentList type="receipt" />} />
+                <Route path="finance/penerimaan/new" element={<PaymentForm key="kas_in" kind="kas_in" />} />
+                <Route path="finance/pembayaran/new" element={<PaymentForm key="kas_out" kind="kas_out" />} />
+                <Route path="finance/penerimaan-penjualan/new" element={<PaymentForm key="ar" kind="ar" />} />
+                <Route path="finance/pembayaran-pembelian/new" element={<PaymentForm key="ap" kind="ap" />} />
                 <Route path="finance/pembayaran" element={<PaymentList type="payment" />} />
                 {/* Employee Expense Claims */}
                 <Route path="finance/expenses" element={<ExpenseList />} />

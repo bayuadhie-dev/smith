@@ -47,7 +47,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type }) => {
 
   const isReceipt = type === 'receipt';
   const title = isReceipt ? 'Penerimaan Kas/Bank' : 'Pembayaran Kas/Bank';
-  const newHref = isReceipt ? '/app/finance/payments/new?type=customer' : '/app/finance/payments/new?type=supplier';
+  const newHref = isReceipt ? '/app/finance/penerimaan/new' : '/app/finance/pembayaran/new';
   const partyLabel = isReceipt ? 'Pelanggan' : 'Pemasok';
 
   const fetchRows = useCallback(async () => {

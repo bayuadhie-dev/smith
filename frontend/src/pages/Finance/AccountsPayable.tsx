@@ -148,7 +148,7 @@ const [payables, setPayables] = useState<AccountPayable[]>([])
           <p className="text-gray-600 dark:text-gray-300 mt-1">Manage supplier outstanding balances and payment schedules</p>
         </div>
         <div className="flex gap-3">
-          <Link to="/app/finance/payments/new" className="btn-primary inline-flex items-center gap-2">
+          <Link to="/app/finance/pembayaran-pembelian/new" className="btn-primary inline-flex items-center gap-2">
             <CreditCardIcon className="h-5 w-5" />
             Record Payment
           </Link>
@@ -351,7 +351,7 @@ const [payables, setPayables] = useState<AccountPayable[]>([])
                       >
                         <PencilIcon className="h-4 w-4" />{t('common.edit')}</Link>
                       <Link
-                        to="/app/finance/payments/new"
+                        to="/app/finance/pembayaran-pembelian/new"
                         className="text-green-600 hover:text-green-900 flex items-center gap-1"
                         title="Make Payment"
                       >

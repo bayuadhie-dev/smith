@@ -34,7 +34,11 @@ interface ContraAccount {
   name: string;
 }
 
-const PaymentForm = () => {
+const FORM_TITLES: Record<string, [string, string]> = {"kas_in": ["Penerimaan Kas/Bank", "Uang masuk non-faktur: bunga bank, setoran modal, pendapatan lain"], "kas_out": ["Pembayaran Kas/Bank", "Uang keluar non-faktur: biaya admin bank, biaya operasional, dll"], "ar": ["Penerimaan Penjualan (Piutang)", "Terima pembayaran customer untuk melunasi satu atau lebih faktur penjualan"], "ap": ["Pembayaran Pembelian (Hutang)", "Bayar supplier untuk melunasi satu atau lebih faktur pembelian"]};
+
+type FormKind = 'kas_in' | 'kas_out' | 'ar' | 'ap';
+
+const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   const { t } = useLanguage();
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -46,12 +50,18 @@ const PaymentForm = () => {
   // beberapa faktur sekaligus (centang + nilai per faktur); Kas/Bank bisa
   // dibagi ke beberapa akun biaya/pendapatan.
   type Mode = 'kas' | 'ar' | 'ap';
+  // Tiga form terpisah (route masing-masing); route lama /payments/new
+  // memilih bentuk dari ?type= supaya tautan lama tetap jalan.
+  const queryType = searchParams.get('type');
+  const effectiveKind: FormKind = kind ?? (
+    queryType === 'kas' ? (searchParams.get('direction') === 'in' ? 'kas_in' : 'kas_out')
+    : queryType === 'supplier' ? 'ap'
+    : (queryType === 'customer' || prefillInvoiceId) ? 'ar' : 'ap'
+  );
   const [mode, setMode] = useState<Mode>(
-    searchParams.get('type') === 'supplier' ? 'ap' : (searchParams.get('type') === 'kas' ? 'kas' : (prefillInvoiceId || searchParams.get('type') === 'customer' ? 'ar' : 'ap'))
+    effectiveKind === 'ar' ? 'ar' : effectiveKind === 'ap' ? 'ap' : 'kas'
   );
-  const [cashDirection, setCashDirection] = useState<'in' | 'out'>(
-    searchParams.get('direction') === 'in' ? 'in' : 'out'
-  );
+  const cashDirection: 'in' | 'out' = effectiveKind === 'kas_in' ? 'in' : 'out';
   const isStandalone = mode === 'kas';
   const paymentType: 'supplier' | 'customer' = mode === 'ar' ? 'customer' : mode === 'ap' ? 'supplier' : (cashDirection === 'in' ? 'customer' : 'supplier');
 
@@ -156,6 +166,21 @@ const PaymentForm = () => {
     });
   };
 
+  const [distributeAmount, setDistributeAmount] = useState('');
+  // Seperti "Distribusi Nilai Pembayaran" di Accurate: isi dari faktur
+  // paling lama (jatuh tempo terdekat) sampai nilai habis.
+  const distribute = () => {
+    let remaining = Number(distributeAmount) || 0;
+    const next: Record<number, string> = {};
+    for (const inv of invoices) {
+      if (remaining <= 0) break;
+      const pay = Math.min(remaining, inv.balance_due);
+      next[inv.id] = String(pay);
+      remaining -= pay;
+    }
+    setAlloc(next);
+  };
+
   const updateLine = (idx: number, patch: Partial<{ account_id: string; amount: string; description: string }>) =>
     setLines((ls) => ls.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
 
@@ -211,7 +236,7 @@ const PaymentForm = () => {
   }
 
   const handleCancel = () => {
-    navigate('/app/accounting/payable')
+    navigate(isStandalone ? (cashDirection === 'in' ? '/app/finance/penerimaan' : '/app/finance/pembayaran') : (mode === 'ap' ? '/app/accounting/payable' : '/app/accounting/receivable'))
   }
 
 
@@ -220,8 +245,8 @@ const PaymentForm = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Record Payment</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Record supplier payment or customer receipt</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{FORM_TITLES[effectiveKind][0]}</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">{FORM_TITLES[effectiveKind][1]}</p>
         </div>
         <button 
           onClick={handleCancel}
@@ -239,42 +264,7 @@ const PaymentForm = () => {
       {/* Payment Form */}
       <div className="card p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
-            {([
-              ['kas', 'Penerimaan / Pembayaran Kas/Bank'],
-              ['ar', 'Penerimaan Penjualan (Piutang)'],
-              ['ap', 'Pembayaran Pembelian (Hutang)'],
-            ] as [Mode, string][]).map(([m, label]) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMode(m)}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition ${
-                  mode === m ? 'bg-white dark:bg-gray-900 shadow text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {isStandalone && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Jenis Transaksi
-                </label>
-                <select
-                  className="input w-full"
-                  value={cashDirection}
-                  onChange={(e) => setCashDirection(e.target.value as 'in' | 'out')}
-                >
-                  <option value="out">Pembayaran (uang keluar)</option>
-                  <option value="in">Penerimaan (uang masuk)</option>
-                </select>
-              </div>
-            )}
-
             {!isStandalone && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
@@ -299,6 +289,25 @@ const PaymentForm = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Faktur yang dilunasi (centang satu atau lebih)
                 </label>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="number"
+                    className="input w-56"
+                    placeholder="Nilai pembayaran (opsional)"
+                    value={distributeAmount}
+                    onChange={(e) => setDistributeAmount(e.target.value)}
+                  />
+                  <button type="button" className="btn-secondary text-sm" onClick={distribute}>
+                    Distribusikan ke faktur terlama
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary text-sm"
+                    onClick={() => setAlloc(Object.fromEntries(invoices.map((i) => [i.id, String(i.balance_due)])))}
+                  >
+                    Lunasi semua
+                  </button>
+                </div>
                 {loadingInvoices && <p className="text-sm text-gray-500">Memuat...</p>}
                 {!loadingInvoices && invoices.length === 0 && (
                   <p className="text-sm text-gray-500">Tidak ada faktur belum lunas untuk pihak ini.</p>
@@ -314,6 +323,7 @@ const PaymentForm = () => {
                           <th className="p-2 text-right">Total</th>
                           <th className="p-2 text-right">Sisa</th>
                           <th className="p-2 text-right w-44">Dibayar</th>
+                          <th className="p-2 text-right">Sisa Setelah</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -337,6 +347,9 @@ const PaymentForm = () => {
                                   value={alloc[inv.id] ?? ''}
                                   onChange={(e) => setAlloc((a) => ({ ...a, [inv.id]: e.target.value }))}
                                 />
+                              </td>
+                              <td className="p-2 text-right">
+                                Rp{(inv.balance_due - (Number(alloc[inv.id]) || 0)).toLocaleString('id-ID')}
                               </td>
                             </tr>
                           );
