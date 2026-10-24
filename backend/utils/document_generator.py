@@ -16,127 +16,8 @@ from models.production import WorkOrder
 from datetime import datetime
 from utils import generate_number
 from utils.company_context import get_company_context
-from utils.template_render_engine import render_template_version_to_html
-
-
-def _get_default_template(document_type):
-    """Only a template with a PUBLISHED version counts as usable - a family
-    row that exists but never got a version (e.g. leftover from before the
-    Print Template Designer schema rebuild) is treated as if it doesn't
-    exist, so the caller falls through to create a fresh working default."""
-    return DocumentTemplate.query.filter_by(
-        document_type=document_type, is_default=True, is_active=True
-    ).filter(DocumentTemplate.current_version_id.isnot(None)).first()
-
-
-def _create_default_template(user_id, template_name, template_code, document_type, canvas_objects):
-    """Create a template FAMILY + its first (and immediately published) TemplateVersion,
-    OR - if a family with this template_code already exists (e.g. an older
-    default that was deactivated via is_default=False rather than deleted,
-    since existing Document rows FK-reference its TemplateVersion and can't
-    have it removed) - publish a NEW version onto that existing family and
-    reactivate it instead. template_code has a DB-level unique constraint,
-    so a plain INSERT here would raise IntegrityError the moment this
-    function's own canvas_objects ever changes after the family was already
-    created once (found live: fix_report_3.md Fase 20, invoice template
-    density fix). Used as the fallback proof-of-concept layout whenever no
-    admin-designed default exists yet for a document_type - real usage is
-    expected to replace these via the Template Designer UI (Fase 1 editor,
-    not built in this step), but auto-generation must never be blocked
-    waiting for that."""
-    template = DocumentTemplate.query.filter_by(template_code=template_code).first()
-    if template:
-        template.is_default = True
-        template.is_active = True
-        next_version_number = (
-            db.session.query(db.func.max(TemplateVersion.version_number))
-            .filter_by(document_template_id=template.id).scalar() or 0
-        ) + 1
-    else:
-        template = DocumentTemplate(
-            template_name=template_name,
-            template_code=template_code,
-            document_type=document_type,
-            is_default=True,
-            is_active=True,
-            created_by=user_id,
-        )
-        db.session.add(template)
-        db.session.flush()
-        next_version_number = 1
-
-    version = TemplateVersion(
-        document_template_id=template.id,
-        version_number=next_version_number,
-        status='published',
-        canvas_data={'version': 'fabric-6', 'objects': canvas_objects},
-        paper_size='A4',
-        orientation='portrait',
-        change_note='Auto-generated proof-of-concept layout (Print Template Designer Fase 1)',
-        published_at=datetime.utcnow(),
-        published_by=user_id,
-        created_by=user_id,
-    )
-    db.session.add(version)
-    db.session.flush()
-
-    template.current_version_id = version.id
-    db.session.commit()
-    return template
-
-
-def _pt_to_mm(font_size_pt):
-    # Render engine reads fontSize as mm (editor convention) and converts to pt;
-    # default layouts are authored in pt, so convert here.
-    return round(float(font_size_pt) / 2.83465, 3)
-
-
-def _label(text, left, top, width, height=6, font_size=10, font_weight='normal', text_align='left'):
-    font_size = _pt_to_mm(font_size)
-    return {'type': 'Textbox', 'elementType': 'label', 'left': left, 'top': top, 'width': width, 'height': height,
-            'scaleX': 1, 'scaleY': 1, 'text': text, 'fontSize': font_size, 'fontWeight': font_weight,
-            'fontFamily': 'Arial', 'textAlign': text_align, 'fill': '#000000'}
-
-
-def _field(field_path, left, top, width, height=6, font_size=10, font_weight='normal', text_align='left'):
-    font_size = _pt_to_mm(font_size)
-    # text = the field's placeholder label (shown while editing) - fieldPath is
-    # what the render engine actually uses; see utils/template_render_engine.py.
-    return {'type': 'Textbox', 'elementType': 'field', 'left': left, 'top': top, 'width': width, 'height': height,
-            'scaleX': 1, 'scaleY': 1, 'text': field_path, 'fieldPath': field_path, 'fontSize': font_size,
-            'fontWeight': font_weight, 'fontFamily': 'Arial', 'textAlign': text_align, 'fill': '#000000'}
-
-
-def _placeholder_box(element_type, left, top, width, height, **extra_props):
-    """A plain Fabric Rect used as the visual stand-in for image/barcode/qrcode/
-    repeating_table in the auto-generated proof-of-concept layouts. Deliberately
-    NOT a Fabric Group - hand-authoring valid nested-children JSON for Group
-    (child coordinates are relative to the group's own center) is fragile to
-    get right without going through the actual editor; a flat Rect carries the
-    same custom props (elementType, fieldPath, dataSource, columns, ...) just
-    as well, since the render engine only ever reads those, never Fabric's own
-    `type`. Once someone edits these in the real editor, Fabric will
-    re-serialize them as whatever visual representation is used there."""
-    return {'type': 'Rect', 'elementType': element_type, 'left': left, 'top': top, 'width': width, 'height': height,
-            'scaleX': 1, 'scaleY': 1, 'fill': '#f3f4f6', 'stroke': '#9ca3af', 'strokeWidth': 1, **extra_props}
-
-
-def _hline(left, top, width, stroke='#333333', stroke_width=1):
-    return {'type': 'Line', 'elementType': 'line', 'left': left, 'top': top, 'width': width, 'height': 0,
-            'scaleX': 1, 'scaleY': 1, 'x1': 0, 'y1': 0, 'x2': width, 'y2': 0, 'stroke': stroke, 'strokeWidth': stroke_width}
-
-
-def _company_header_objects():
-    """Reusable header block: company name/address + logo, top of the page.
-    Every default template includes this - company.* fields are always
-    available and always shown, per the explicit requirement."""
-    return [
-        _placeholder_box('image', 10, 8, 25, 15, fieldPath='company.logo_url'),
-        _field('company.name', 40, 8, 120, 6, font_size=13, font_weight='bold'),
-        _field('company.address', 40, 15, 120, 5, font_size=8),
-        _field('company.phone', 40, 20, 120, 5, font_size=8),
-        _hline(10, 27, 190),
-    ]
+from utils.template_render_engine import render_template_version_to_html, _format_value
+from utils.default_templates import ensure_default_template
 
 
 def generate_surat_jalan_from_sales_order(sales_order_id, user_id, items_to_ship=None):
@@ -178,6 +59,8 @@ def generate_surat_jalan_from_sales_order(sales_order_id, user_id, items_to_ship
         if not to_ship_by_item:
             raise ValueError('Tidak ada quantity yang perlu dikirim untuk Sales Order ini (sudah terkirim semua)')
 
+        template = ensure_default_template(user_id, 'surat_jalan')
+
         doc_number = generate_number('SJ', Document, 'document_number')
 
         items_data = []
@@ -211,6 +94,8 @@ def generate_surat_jalan_from_sales_order(sales_order_id, user_id, items_to_ship
             total_qty += qty_to_ship
 
             items_data.append({
+                'no': len(items_data) + 1,
+                'batch_text': ', '.join(f"{m['batch_number']} ({_format_value(m['quantity_deducted'], 'num')})" for m in result['movements']),
                 'code': item.product.code if item.product else '',
                 'pack': item.product.packaging.packs_per_karton if item.product and item.product.packaging else None,
                 'product_name': item.product.name if item.product else item.description,
@@ -238,6 +123,9 @@ def generate_surat_jalan_from_sales_order(sales_order_id, user_id, items_to_ship
             'customer_name': sales_order.customer.company_name if sales_order.customer else '',
             'customer_address': sales_order.delivery_address or (sales_order.customer.billing_address if sales_order.customer else ''),
             'customer_phone': sales_order.customer.phone if sales_order.customer else '',
+            'hdr_no': f'No. {doc_number}',
+            'hdr_date': f"Tanggal: {datetime.utcnow().strftime('%d-%m-%Y')}",
+            'hdr_extra': f'Ref. SO: {sales_order.order_number}',
             'items': items_data,
             'total_quantity': total_qty,
             'notes': sales_order.notes or '',
@@ -252,7 +140,7 @@ def generate_surat_jalan_from_sales_order(sales_order_id, user_id, items_to_ship
             document_number=doc_number,
             document_title=f'Surat Jalan - {sales_order.customer.company_name if sales_order.customer else ""}',
             document_type='surat_jalan',
-            template_version_id=None,
+            template_version_id=template.current_version_id,
             document_data=document_data,
             reference_type='sales_order',
             reference_id=sales_order.id,
@@ -260,7 +148,7 @@ def generate_surat_jalan_from_sales_order(sales_order_id, user_id, items_to_ship
             status='generated',
             created_by=user_id
         )
-        document.html_content = _render_sj_html(document_data)
+        document.html_content = render_template_version_to_html(template.current_version, document_data)
 
         db.session.add(document)
         db.session.flush()
@@ -291,10 +179,17 @@ def generate_spk_from_work_order(work_order_id, user_id):
         if not work_order:
             raise ValueError('Work Order not found')
 
+        template = ensure_default_template(user_id, 'spk')
+
         doc_number = generate_number('SPK', Document, 'document_number')
 
         document_data = {
             'document_number': doc_number,
+            'hdr_no': f'No. {doc_number}',
+            'hdr_date': f"Tanggal: {datetime.utcnow().strftime('%d-%m-%Y')}",
+            'hdr_extra': f'Ref. WO: {work_order.wo_number}',
+            'product_code_line': f"Kode: {work_order.product.code if work_order.product else '-'}",
+            'priority_label': {'low': 'Rendah', 'normal': 'Normal', 'high': 'Tinggi', 'urgent': 'Mendesak'}.get(str(work_order.priority or 'normal').lower(), work_order.priority or '-'),
             'document_date': datetime.utcnow().strftime('%d-%m-%Y'),
             'work_order_number': work_order.wo_number,
             'product_name': work_order.product.name if work_order.product else '',
@@ -316,7 +211,7 @@ def generate_spk_from_work_order(work_order_id, user_id):
             document_number=doc_number,
             document_title=f'SPK - {work_order.product.name if work_order.product else work_order.wo_number}',
             document_type='spk',
-            template_version_id=None,
+            template_version_id=template.current_version_id,
             document_data=document_data,
             reference_type='work_order',
             reference_id=work_order.id,
@@ -324,7 +219,7 @@ def generate_spk_from_work_order(work_order_id, user_id):
             status='generated',
             created_by=user_id
         )
-        document.html_content = _render_spk_html(document_data)
+        document.html_content = render_template_version_to_html(template.current_version, document_data)
 
         db.session.add(document)
         db.session.flush()
@@ -409,11 +304,18 @@ def generate_spk_from_batch(batch_id, user_id):
     if not batch:
         raise ValueError('Batch not found')
 
+    template = ensure_default_template(user_id, 'spk_batch')
+
     doc_number = generate_number('SPK', Document, 'document_number')
 
     recipe = batch.recipe
     document_data = {
         'document_number': doc_number,
+        'hdr_no': f'No. {doc_number}',
+        'hdr_date': f"Tanggal: {datetime.utcnow().strftime('%d-%m-%Y')}",
+        'hdr_extra': f'Batch: {batch.batch_number}',
+        'product_code_line': f"Kode: {recipe.product.code if recipe and recipe.product else '-'}",
+        'wo_line': f"Ref. WO: {batch.work_order.wo_number if batch.work_order else '-'}",
         'document_date': datetime.utcnow().strftime('%d-%m-%Y'),
         'batch_number': batch.batch_number,
         'work_order_number': batch.work_order.wo_number if batch.work_order else '',
@@ -429,14 +331,14 @@ def generate_spk_from_batch(batch_id, user_id):
         'supervisor': '',
         'approved_by': '',
         'company': get_company_context(),
-        'bom_items': _build_spk_bom_rows(recipe.product_id, batch.planned_qty) if recipe else [],
+        'bom_items': [dict(r, no=i, realisasi='') for i, r in enumerate(_build_spk_bom_rows(recipe.product_id, batch.planned_qty) if recipe else [], 1)],
     }
 
     document = Document(
         document_number=doc_number,
         document_title=f'SPK Batch - {batch.batch_number}',
         document_type='spk_batch',
-        template_version_id=None,
+        template_version_id=template.current_version_id,
         document_data=document_data,
         reference_type='production_batch',
         reference_id=batch.id,
@@ -444,7 +346,7 @@ def generate_spk_from_batch(batch_id, user_id):
         status='generated',
         created_by=user_id
     )
-    document.html_content = _render_spk_batch_html(document_data)
+    document.html_content = render_template_version_to_html(template.current_version, document_data)
 
     db.session.add(document)
     db.session.flush()
@@ -476,6 +378,8 @@ def generate_invoice_document(invoice_id, user_id):
     if not invoice:
         raise ValueError('Invoice not found')
 
+    template = ensure_default_template(user_id, 'invoice')
+
     doc_number = generate_number('DOC-INV', Document, 'document_number')
 
     customer = invoice.customer
@@ -490,6 +394,8 @@ def generate_invoice_document(invoice_id, user_id):
         gross += line_gross
         pct = float(item.discount_percent or 0) or (round(discount / line_gross * 100, 2) if line_gross and discount else 0)
         line_items.append({
+            'no': len(line_items) + 1,
+            'discount_text': ((_format_value(discount, 'num') + (f' ({_format_value(pct, "num")}%)' if pct else '')) if discount else '-'),
             'code': item.product.code if item.product else '',
             'pack': item.product.packaging.packs_per_karton if item.product and item.product.packaging else None,
             'item_name': item.description or (item.product.name if item.product else ''),
@@ -509,6 +415,9 @@ def generate_invoice_document(invoice_id, user_id):
     total = float(invoice.total_amount or 0)
     document_data = {
         'document_number': invoice.invoice_number,
+        'hdr_no': f'No. {invoice.invoice_number}',
+        'hdr_date': f"Tanggal: {invoice.invoice_date.strftime('%d-%m-%Y') if invoice.invoice_date else ''}",
+        'hdr_extra': f'Status: {status_label}',
         'document_date': invoice.invoice_date.strftime('%d-%m-%Y') if invoice.invoice_date else '',
         'due_date': invoice.due_date.strftime('%d-%m-%Y') if invoice.due_date else '',
         'po_number': sales_order.customer_po_number if sales_order and sales_order.customer_po_number else '',
@@ -534,7 +443,7 @@ def generate_invoice_document(invoice_id, user_id):
         document_number=doc_number,
         document_title=f'Invoice {invoice.invoice_number} - {customer.company_name if customer else ""}',
         document_type='invoice',
-        template_version_id=None,
+        template_version_id=template.current_version_id,
         document_data=document_data,
         reference_type='invoice',
         reference_id=invoice.id,
@@ -542,7 +451,7 @@ def generate_invoice_document(invoice_id, user_id):
         status='generated',
         created_by=user_id
     )
-    document.html_content = _render_invoice_html(document_data)
+    document.html_content = render_template_version_to_html(template.current_version, document_data)
 
     db.session.add(document)
     db.session.flush()
@@ -559,154 +468,6 @@ def generate_invoice_document(invoice_id, user_id):
     return document
 
 
-def create_default_surat_jalan_template(user_id):
-    """Create default Surat Jalan template (Fase 1 proof-of-concept layout)."""
-    objects = _company_header_objects() + [
-        _label('SURAT JALAN', 10, 32, 100, 8, font_size=14, font_weight='bold'),
-        _field('document_number', 10, 42, 90, font_size=9),
-        _field('document_date', 110, 42, 90, font_size=9),
-        _field('sales_order_number', 10, 48, 90, font_size=9),
-        _label('Kepada:', 10, 58, 40, font_size=9, font_weight='bold'),
-        _field('customer_name', 10, 64, 120, font_size=9),
-        _field('customer_address', 10, 69, 120, height=10, font_size=9),
-        _placeholder_box('repeating_table', 10, 85, 190, 100, dataSource='items', showHeader=True, columns=[
-            {'fieldPath': 'product_name', 'label': 'Nama Produk', 'width': 90, 'textAlign': 'left'},
-            {'fieldPath': 'quantity', 'label': 'Qty', 'width': 30, 'textAlign': 'right'},
-            {'fieldPath': 'uom', 'label': 'Satuan', 'width': 30, 'textAlign': 'left'},
-            {'fieldPath': 'description', 'label': 'Keterangan', 'width': 40, 'textAlign': 'left'},
-        ]),
-        _label('Disiapkan Oleh', 10, 250, 50, font_size=9),
-        _field('prepared_by', 10, 260, 50, font_size=9),
-        _label('Sopir', 80, 250, 50, font_size=9),
-        _field('driver_name', 80, 260, 50, font_size=9),
-        _label('Diterima Oleh', 150, 250, 50, font_size=9),
-        _field('received_by', 150, 260, 50, font_size=9),
-    ]
-    return _create_default_template(user_id, 'Surat Jalan Default', 'SJ_DEFAULT', 'surat_jalan', objects)
-
-
-def create_default_spk_template(user_id):
-    """Create default SPK template (Fase 1 proof-of-concept layout)."""
-    objects = _company_header_objects() + [
-        _label('SURAT PERINTAH KERJA', 10, 32, 140, 8, font_size=14, font_weight='bold'),
-        _field('document_number', 10, 42, 90, font_size=9),
-        _field('document_date', 110, 42, 90, font_size=9),
-        _field('work_order_number', 10, 48, 90, font_size=9),
-        _label('Produk', 10, 58, 40, font_size=9, font_weight='bold'),
-        _field('product_name', 10, 64, 120, font_size=10),
-        _field('product_code', 10, 70, 60, font_size=9),
-        _field('quantity', 10, 76, 40, font_size=9),
-        _field('uom', 55, 76, 40, font_size=9),
-        _label('Jadwal', 10, 86, 40, font_size=9, font_weight='bold'),
-        _field('start_date', 10, 92, 60, font_size=9),
-        _field('due_date', 75, 92, 60, font_size=9),
-        _field('priority', 140, 92, 40, font_size=9),
-        _field('machine', 10, 100, 90, font_size=9),
-        _field('notes', 10, 108, 190, height=15, font_size=9),
-        _label('Operator', 10, 250, 50, font_size=9),
-        _field('operator', 10, 260, 50, font_size=9),
-        _label('Supervisor', 80, 250, 50, font_size=9),
-        _field('supervisor', 80, 260, 50, font_size=9),
-        _label('Disetujui Oleh', 150, 250, 50, font_size=9),
-        _field('approved_by', 150, 260, 50, font_size=9),
-    ]
-    return _create_default_template(user_id, 'SPK Default', 'SPK_DEFAULT', 'spk', objects)
-
-
-def create_default_spk_batch_template(user_id):
-    """Create default SPK-per-Batch template (Batch Scheduling §7, Fase 1 proof-of-concept layout)."""
-    objects = _company_header_objects() + [
-        _label('SURAT PERINTAH KERJA (PER BATCH)', 10, 32, 160, 8, font_size=13, font_weight='bold'),
-        _field('document_number', 10, 42, 90, font_size=9),
-        _field('document_date', 110, 42, 90, font_size=9),
-        _field('batch_number', 10, 48, 90, font_size=11, font_weight='bold'),
-        _field('work_order_number', 110, 48, 90, font_size=9),
-        _label('Produk', 10, 58, 40, font_size=9, font_weight='bold'),
-        _field('product_name', 10, 64, 120, font_size=10),
-        _field('product_code', 10, 70, 60, font_size=9),
-        _field('quantity', 10, 76, 40, font_size=9),
-        _field('uom', 55, 76, 40, font_size=9),
-        _label('Jadwal', 10, 86, 40, font_size=9, font_weight='bold'),
-        _field('machine', 10, 92, 60, font_size=9),
-        _field('scheduled_date', 75, 92, 60, font_size=9),
-        _field('shift_number', 140, 92, 20, font_size=9),
-        _field('sequence_in_shift', 165, 92, 20, font_size=9),
-        _placeholder_box('qrcode', 165, 32, 20, 20, fieldPath='batch_number'),
-        _label('Rincian Kebutuhan Material (BOM Berlapis)', 10, 112, 190, font_size=9, font_weight='bold'),
-        _placeholder_box('repeating_table', 10, 118, 190, 110, dataSource='bom_items', showHeader=True, columns=[
-            {'fieldPath': 'name', 'label': 'Nama Bahan / Sub-Rakitan', 'width': 120, 'textAlign': 'left'},
-            {'fieldPath': 'quantity', 'label': 'Kebutuhan', 'width': 40, 'textAlign': 'right'},
-            {'fieldPath': 'uom', 'label': 'Satuan', 'width': 30, 'textAlign': 'left'},
-        ]),
-        _label('Operator', 10, 260, 50, font_size=9),
-        _field('operator', 10, 270, 50, font_size=9),
-        _label('Supervisor', 80, 260, 50, font_size=9),
-        _field('supervisor', 80, 270, 50, font_size=9),
-        _label('Disetujui Oleh', 150, 260, 50, font_size=9),
-        _field('approved_by', 150, 270, 50, font_size=9),
-    ]
-    return _create_default_template(user_id, 'SPK Batch Default', 'SPK_BATCH_DEFAULT', 'spk_batch', objects)
-
-
-def create_default_invoice_template(user_id):
-    """Create default Invoice template (Fase 1 proof-of-concept layout - Invoice
-    never had a print mechanism before this).
-
-    fix_report_3.md Fase 20 (2026-10-03): original layout reserved 100mm for
-    the line-items table before placing totals, which read as a mostly-empty
-    page for any invoice with only a handful of lines (the common case) -
-    real estimate/invoice documents fill the page with actual business
-    content, not whitespace. Tightened the table's reserved height (still
-    room for ~15-20 rows before WeasyPrint's native pagination kicks in) and
-    used the reclaimed space for fields that were already being computed in
-    document_data but never actually placed on the canvas (payment_terms),
-    plus a standard signature block - no invented data, every field here
-    traces to a real document_data key or a static label."""
-    objects = _company_header_objects() + [
-        _label('INVOICE', 10, 32, 100, 10, font_size=16, font_weight='bold'),
-        _field('document_number', 150, 32, 50, font_size=9, text_align='right'),
-        _label('Tanggal', 10, 44, 30, font_size=8),
-        _field('document_date', 40, 44, 60, font_size=9),
-        _label('Jatuh Tempo', 110, 44, 30, font_size=8),
-        _field('due_date', 140, 44, 60, font_size=9),
-        _label('No. PO Customer', 10, 50, 30, font_size=8),
-        _field('po_number', 40, 50, 60, font_size=9),
-        _label('Status', 110, 50, 30, font_size=8),
-        _field('status', 140, 50, 60, font_size=9, font_weight='bold'),
-        _label('Syarat Pembayaran', 10, 56, 30, font_size=8),
-        _field('payment_terms', 40, 56, 100, font_size=9),
-        _label('Ditagihkan Kepada:', 10, 66, 60, font_size=9, font_weight='bold'),
-        _field('customer_name', 10, 72, 90, font_size=10),
-        _field('customer_address', 10, 77, 90, height=10, font_size=9),
-        _label('Kirim Ke:', 110, 66, 60, font_size=9, font_weight='bold'),
-        _field('ship_to', 110, 72, 90, height=15, font_size=9),
-        _placeholder_box('repeating_table', 10, 96, 190, 65, dataSource='line_items', showHeader=True, columns=[
-            {'fieldPath': 'item_name', 'label': 'Item', 'width': 80, 'textAlign': 'left'},
-            {'fieldPath': 'quantity', 'label': 'Qty', 'width': 25, 'textAlign': 'right'},
-            {'fieldPath': 'uom', 'label': 'Satuan', 'width': 25, 'textAlign': 'left'},
-            {'fieldPath': 'unit_price', 'label': 'Harga Satuan', 'width': 30, 'textAlign': 'right'},
-            {'fieldPath': 'subtotal', 'label': 'Subtotal', 'width': 30, 'textAlign': 'right'},
-        ]),
-        _label('Subtotal', 140, 168, 30, font_size=9),
-        _field('subtotal', 170, 168, 30, font_size=9, text_align='right'),
-        _label('Diskon', 140, 174, 30, font_size=9),
-        _field('discount_amount', 170, 174, 30, font_size=9, text_align='right'),
-        _label('PPN', 140, 180, 30, font_size=9),
-        _field('tax_amount', 170, 180, 30, font_size=9, text_align='right'),
-        _label('TOTAL', 140, 188, 30, font_size=11, font_weight='bold'),
-        _field('total_amount', 170, 188, 30, font_size=11, font_weight='bold', text_align='right'),
-        _label('Sisa Tagihan', 140, 196, 30, font_size=9),
-        _field('balance_due', 170, 196, 30, font_size=9, text_align='right'),
-        _label('Catatan', 10, 168, 30, font_size=8, font_weight='bold'),
-        _field('notes', 10, 174, 115, height=20, font_size=8),
-        _hline(10, 220, 190),
-        _label('Hormat kami,', 140, 228, 60, font_size=9),
-        _field('company.name', 140, 234, 60, font_size=9, font_weight='bold'),
-        _label('(_____________________)', 140, 258, 60, font_size=9),
-    ]
-    return _create_default_template(user_id, 'Invoice Default', 'INVOICE_DEFAULT', 'invoice', objects)
-
-
 def generate_purchase_order_document(po_id, user_id):
     """
     Generate a printable Purchase Order document (Print Template Designer Fase 2).
@@ -719,12 +480,15 @@ def generate_purchase_order_document(po_id, user_id):
     if not po:
         raise ValueError('Purchase Order not found')
 
+    template = ensure_default_template(user_id, 'purchase_order')
+
     doc_number = generate_number('DOC-PO', Document, 'document_number')
 
     supplier = po.supplier
     line_items = []
     for item in po.items:
         line_items.append({
+            'no': len(line_items) + 1,
             'code': (item.product.code if item.product else (getattr(item.material, 'code', '') if item.material else '')),
             'item_name': item.description or (item.product.name if item.product else (item.material.name if item.material else '')),
             'quantity': float(item.quantity),
@@ -735,6 +499,8 @@ def generate_purchase_order_document(po_id, user_id):
 
     document_data = {
         'document_number': po.po_number,
+        'hdr_no': f'No. {po.po_number}',
+        'hdr_date': f"Tanggal: {po.order_date.strftime('%d-%m-%Y') if po.order_date else ''}",
         'document_date': po.order_date.strftime('%d-%m-%Y') if po.order_date else '',
         'required_date': po.required_date.strftime('%d-%m-%Y') if po.required_date else '',
         'supplier_name': supplier.company_name if supplier else '',
@@ -755,7 +521,7 @@ def generate_purchase_order_document(po_id, user_id):
         document_number=doc_number,
         document_title=f'PO {po.po_number} - {supplier.company_name if supplier else ""}',
         document_type='purchase_order',
-        template_version_id=None,
+        template_version_id=template.current_version_id,
         document_data=document_data,
         reference_type='purchase_order',
         reference_id=po.id,
@@ -763,7 +529,7 @@ def generate_purchase_order_document(po_id, user_id):
         status='generated',
         created_by=user_id
     )
-    document.html_content = _render_po_html(document_data)
+    document.html_content = render_template_version_to_html(template.current_version, document_data)
 
     db.session.add(document)
     db.session.flush()
@@ -780,208 +546,6 @@ def generate_purchase_order_document(po_id, user_id):
     return document
 
 
-def _num(v):
-    v = float(v or 0)
-    return f"{v:,.2f}".rstrip('0').rstrip('.').replace(',', '_').replace('.', ',').replace('_', '.') if v != int(v) else f"{int(v):,}".replace(',', '.')
-
-
-def _doc_header_html(company, title, lines):
-    """Logo + company block on the left, title/number block on the right."""
-    from html import escape as e
-    logo = company.get('logo_url') or ''
-    logo_html = f'<img src="{logo}" style="height:14mm;margin-right:3mm;">' if logo else ''
-    address = ', '.join(x for x in [company.get('address'), company.get('city')] if x)
-    contact = ' | '.join(x for x in [company.get('phone'), company.get('email')] if x)
-    right = ''.join(f'<div>{e(l)}</div>' for l in lines)
-    return f"""<table style="border-collapse:collapse;width:100%"><tr>
-<td style="vertical-align:top;width:62%"><table style="border-collapse:collapse"><tr>
-<td style="vertical-align:middle">{logo_html}</td>
-<td style="vertical-align:middle"><div style="font-size:13pt;font-weight:bold">{e(company.get('name') or company.get('legal_name') or '')}</div>
-<div style="font-size:8pt;color:#444">{e(address)}</div><div style="font-size:8pt;color:#444">{e(contact)}</div></td></tr></table></td>
-<td style="text-align:right;vertical-align:top"><div style="font-size:14pt;font-weight:bold;letter-spacing:1px;white-space:nowrap">{title}</div>{right}</td>
-</tr></table><div style="border-top:2px solid #111;margin:6px 0 8px"></div>"""
-
-
-def _render_invoice_html(d):
-    from html import escape as e
-    rows = ''.join(
-        f"""<tr><td class="c">{i}</td><td>{e(it.get('code') or '')}</td><td>{e(it['item_name'])}</td><td class="r">{_num(it['pack']) if it.get('pack') else ''}</td>
-<td class="r">{_num(it['quantity'])}</td><td>{e(it['uom'])}</td><td class="r">{_num(it['unit_price'])}</td>
-<td class="r">{(_num(it['discount']) + (' (' + _num(it['discount_percent']) + '%)' if it['discount_percent'] else '')) if it['discount'] else '-'}</td>
-<td class="r">{_num(it['subtotal'])}</td></tr>"""
-        for i, it in enumerate(d['line_items'], 1)) + _filler_rows(len(d['line_items']), 10, 9)
-    def tot(label, val, cls=''):
-        return f'<tr class="{cls}"><td>{label}</td><td class="r">{_rp(val)}</td></tr>'
-    totals = tot('Subtotal', d['gross'])
-    if d['discount_total']:
-        totals += tot('Diskon', -d['discount_total'])
-        totals += tot('Setelah Diskon', d['subtotal'])
-    if d['tax_amount']:
-        totals += tot('PPN', d['tax_amount'])
-    totals += tot('TOTAL', d['total_amount'], 'grand')
-    if d['paid_amount']:
-        totals += tot('Sudah Dibayar', d['paid_amount'])
-        totals += tot('Sisa Tagihan', d['balance_due'], 'grand')
-    meta = _meta_rows([('No. PO Customer', d['po_number']), ('Syarat Pembayaran', d['payment_terms']), ('Jatuh Tempo', d['due_date'])])
-    body = f"""{_doc_header_html(d['company'], 'INVOICE', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}", f"Status: {d['status']}"])}
-<table><tr>
-<td class="box" style="width:50%"><div class="h">Ditagihkan Kepada</div><div style="font-weight:bold;font-size:10.5pt">{e(d['customer_name'] or '-')}</div><div>{e(d['customer_address'] or '')}</div></td>
-<td class="box m"><table class="meta">{meta}</table>{f'<div style="padding:4px 8px"><div class="h">Kirim Ke</div><div>{e(d["ship_to"])}</div></div>' if d['ship_to'] else ''}</td>
-</tr></table>
-<table class="items"><thead><tr><th>No.</th><th>Kode</th><th>Deskripsi</th><th class="r">Isi/Krt</th><th class="r">Qty</th><th>Satuan</th><th class="r">Harga</th><th class="r">Diskon</th><th class="r">Jumlah</th></tr></thead><tbody>{rows}</tbody></table>
-<table class="sum">{totals}</table>
-<div class="words"><b>Terbilang:</b> {e(d['terbilang'])}</div>
-{f'<div style="margin-top:8px;font-size:9pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}"""
-    return _page(body, _sig_row(['Diterima oleh,', f"Hormat kami,<br><span style='font-size:8pt;color:#5b6b72'>{e(d['company'].get('name') or '')}</span>"]), flow=len(d['line_items']) > 12)
-
-
-
-
-_PRINT_CSS = """
-@page { size: __SIZE__; margin: __MARGIN__; }
-body { font-family: Arial, sans-serif; font-size: 9.5pt; color: #1b2a30; margin: 0; }
-table { border-collapse: collapse; width: 100%; }
-.wrap { position: relative; height: __MINH__; box-sizing: border-box; }
-.sigbox { position: absolute; bottom: 0; left: 0; right: 0; }
-.box { border: 1px solid #8fa3aa; padding: 6px 8px; vertical-align: top; }
-.box.m { padding: 0; }
-.box .h { font-size: 8pt; color: #5b6b72; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
-.meta { width: 100%; } .meta td { padding: 3px 6px; font-size: 9pt; border: 1px solid #8fa3aa; } .meta td.k { width: 36mm; color: #1b2a30; background: #e8eff1; white-space: nowrap; }
-.info td { padding: 3px 6px; border: 1px solid #8fa3aa; } .info td.k { width: 38mm; color: #1b2a30; background: #e8eff1; white-space: nowrap; }
-.items { margin-top: 10px; }
-.items th { background: #1f4e5a; color: #fff; border: 1px solid #1f4e5a; padding: 5px 6px; font-size: 8.5pt; text-align: left; }
-.items td { border: 1px solid #8fa3aa; padding: 4px 6px; vertical-align: top; height: 5.2mm; }
-.items tbody tr:nth-child(even) td { background: #f5f8f9; }
-.items .tot td { font-weight: bold; background: #e3edf0 !important; }
-.r { text-align: right; } .c { text-align: center; width: 8mm; }
-.sum { width: 80mm; margin-left: auto; margin-top: 6px; }
-.sum td { padding: 3px 6px; border: 1px solid #8fa3aa; }
-.sum tr.grand td { font-weight: bold; color: #fff; background: #1f4e5a; border: 1px solid #1f4e5a; }
-.words { border: 1px solid #8fa3aa; border-left: 3px solid #1f4e5a; padding: 5px 8px; margin-top: 8px; font-style: italic; background: #f5f8f9; }
-.sig td { text-align: center; font-size: 9pt; }
-.sig .line { border-bottom: 1px solid #1b2a30; margin: 18mm 14mm 2px; }
-.sig .cap { font-size: 8pt; color: #5b6b72; }
-
-"""
-
-
-def _sig_row(labels):
-    cells = ''.join(f'<td style="width:{100 // len(labels)}%">{l}<div class="line"></div><div class="cap">Nama jelas &amp; tanda tangan</div></td>' for l in labels)
-    return f'<table class="sig"><tr>{cells}</tr></table>'
-
-
-def _filler_rows(count, min_rows, ncols):
-    """Blank ruled rows so short documents still show a full-looking table."""
-    return ''.join('<tr>' + '<td>&nbsp;</td>' * ncols + '</tr>' for _ in range(max(0, min_rows - count)))
-
-
-def _page(body, sig_html='', size='A4', margin='14mm', min_h='265mm', flow=False):
-    """flow=True (long documents): no fixed page height, signatures follow the
-    content instead of being pinned to the bottom of a single page."""
-    css = _PRINT_CSS.replace('__SIZE__', size).replace('__MARGIN__', margin).replace('__MINH__', min_h)
-    if flow:
-        css += '.wrap{height:auto !important}.sigbox{position:static !important;margin-top:10mm}'
-    return (f'<!DOCTYPE html><html><head><meta charset="UTF-8"><style>{css}</style></head><body>'
-            f'<div class="wrap">{body}<div class="sigbox">{sig_html}</div></div></body></html>')
-
-
-def _meta_rows(pairs):
-    from html import escape as e
-    return ''.join(f'<tr><td class="k">{k}</td><td>: {e(str(v) if v not in (None, "") else "-")}</td></tr>' for k, v in pairs)
-
-
-def _render_po_html(d):
-    from html import escape as e
-    rows = ''.join(
-        f"""<tr><td class="c">{i}</td><td>{e(it.get('code') or '')}</td><td>{e(it['item_name'])}</td><td class="r">{_num(it['quantity'])}</td>
-<td>{e(it['uom'])}</td><td class="r">{_num(it['unit_price'])}</td><td class="r">{_num(it['subtotal'])}</td></tr>"""
-        for i, it in enumerate(d['line_items'], 1)) + _filler_rows(len(d['line_items']), 10, 7)
-    def tot(label, val, cls=''):
-        return f'<tr class="{cls}"><td>{label}</td><td class="r">{_rp(val)}</td></tr>'
-    totals = tot('Subtotal', d['subtotal'])
-    if d['discount_amount']:
-        totals += tot('Diskon', -d['discount_amount'])
-    if d['tax_amount']:
-        totals += tot('PPN', d['tax_amount'])
-    totals += tot('TOTAL', d['total_amount'], 'grand')
-    body = f"""{_doc_header_html(d['company'], 'PURCHASE ORDER', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}"])}
-<table><tr>
-<td class="box" style="width:50%"><div class="h">Kepada Supplier</div><div style="font-weight:bold;font-size:10.5pt">{e(d['supplier_name'] or '-')}</div><div>{e(d['supplier_address'] or '')}</div></td>
-<td class="box m"><table class="meta">{_meta_rows([('Dibutuhkan', d['required_date']), ('Syarat Pembayaran', d['payment_terms']), ('Kirim Ke', d['delivery_address'])])}</table></td>
-</tr></table>
-<table class="items"><thead><tr><th>No.</th><th>Kode</th><th>Deskripsi</th><th class="r">Qty</th><th>Satuan</th><th class="r">Harga</th><th class="r">Jumlah</th></tr></thead><tbody>{rows}</tbody></table>
-<table class="sum">{totals}</table>
-<div class="words"><b>Terbilang:</b> {e(d['terbilang'])}</div>
-{f'<div style="margin-top:8px;font-size:9pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}"""
-    return _page(body, _sig_row(['Dibuat oleh,', 'Disetujui oleh,']), flow=len(d['line_items']) > 12)
-
-
-def _render_sj_html(d):
-    from html import escape as e
-    rows = ''
-    for i, it in enumerate(d['items'], 1):
-        batches = ', '.join(f"{b['batch_number']} ({_num(b['quantity'])})" for b in it.get('batches', []))
-        rows += f"""<tr><td class="c">{i}</td><td>{e(it.get('code') or '')}</td><td>{e(it['product_name'] or '')}</td><td class="r">{_num(it['pack']) if it.get('pack') else ''}</td>
-<td class="r">{_num(it['quantity'])}</td><td>{e(it['uom'] or '')}</td><td>{e(batches)}</td><td>{e(it.get('description') or '')}</td></tr>"""
-    rows += _filler_rows(len(d['items']), 10, 8)
-    total_row = f'<tr class="tot"><td colspan="4" class="r">TOTAL QTY</td><td class="r">{_num(d["total_quantity"])}</td><td colspan="3"></td></tr>'
-    body = f"""{_doc_header_html(d['company'], 'SURAT JALAN', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}", f"Ref. SO: {d['sales_order_number']}"])}
-<table><tr>
-<td class="box" style="width:50%"><div class="h">Kepada</div><div style="font-weight:bold;font-size:10.5pt">{e(d['customer_name'] or '-')}</div><div>{e(d['customer_address'] or '')}</div><div>{e(d['customer_phone'] or '')}</div></td>
-<td class="box m"><table class="meta">{_meta_rows([('Sopir', d['driver_name']), ('No. Kendaraan', d['vehicle_number'])])}</table></td>
-</tr></table>
-<table class="items"><thead><tr><th>No.</th><th>Kode</th><th>Nama Produk</th><th class="r">Isi/Krt</th><th class="r">Qty</th><th>Satuan</th><th>Batch</th><th>Keterangan</th></tr></thead><tbody>{rows}{total_row}</tbody></table>
-{f'<div style="margin-top:8px;font-size:9pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}
-<div style="margin-top:6px;font-size:8pt;color:#5b6b72">Barang diterima dalam keadaan baik dan jumlah sesuai.</div>"""
-    return _page(body, _sig_row(['Disiapkan oleh,', 'Sopir,', 'Diterima oleh,']), flow=len(d['items']) > 12)
-
-
-def _render_spk_batch_html(d):
-    from html import escape as e
-    from utils.template_render_engine import _qrcode_data_uri
-    prio_rows = ''
-    rows = ''
-    for i, it in enumerate(d.get('bom_items') or [], 1):
-        raw = it.get('name') or ''
-        import re
-        depth = len(re.match(r'^(?:&nbsp;)*', raw).group(0)) // 6 // 4
-        text = raw.replace('&nbsp;', '')
-        is_wip = text.endswith('(WIP)')
-        rows += (f'<tr><td class="c">{i}</td><td style="padding-left:{2 + depth * 5}mm;{"font-weight:bold;" if is_wip else ""}">{e(text)}</td>'
-                 f'<td class="r">{_num(it.get("quantity"))}</td><td>{e(it.get("uom") or "")}</td><td></td></tr>')
-    rows += _filler_rows(len(d.get('bom_items') or []), 12, 5)
-    try:
-        qr = f'<img src="{_qrcode_data_uri(d["batch_number"])}" style="height:24mm;">' if d.get('batch_number') else ''
-    except Exception:
-        qr = ''
-    body = f"""{_doc_header_html(d['company'], 'SPK PER BATCH', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}", f"Batch: {d['batch_number']}", f"Ref. WO: {d['work_order_number']}"])}
-<table><tr>
-<td class="box" style="width:36%"><div class="h">Produk yang Dikerjakan</div>
-<div style="font-weight:bold;font-size:11pt">{e(d['product_name'] or '-')}</div><div>Kode: {e(d['product_code'] or '-')}</div>
-<div style="margin-top:6px;font-size:13pt"><b>{_num(d['quantity'])}</b> {e(d['uom'] or '')}</div></td>
-<td class="box m"><table class="meta">{_meta_rows([('Mesin', d['machine']), ('Tanggal Jadwal', d['scheduled_date']), ('Shift', d['shift_number']), ('Urutan di Shift', d['sequence_in_shift'])])}</table></td>
-<td class="box" style="width:30mm;text-align:center">{qr}</td>
-</tr></table>
-<div style="margin-top:10px;font-weight:bold;font-size:9.5pt">Rincian Kebutuhan Material (BOM Berlapis)</div>
-<table class="items" style="margin-top:3px"><thead><tr><th>No.</th><th>Nama Bahan / Sub-Rakitan</th><th class="r">Kebutuhan</th><th>Satuan</th><th>Realisasi</th></tr></thead><tbody>{rows}</tbody></table>"""
-    return _page(body, _sig_row(['Operator,', 'Supervisor,', 'Disetujui oleh,']), flow=len(d.get('bom_items') or []) > 14)
-
-
-def _render_spk_html(d):
-    from html import escape as e
-    notes_row = f'<tr><td style="height:16mm">{e(d["notes"])}</td></tr>' if d.get('notes') else ''
-    ruled_rows = ''.join('<tr><td style="height:8mm">&nbsp;</td></tr>' for _ in range(8 if d.get('notes') else 10))
-    prio = {'low': 'Rendah', 'normal': 'Normal', 'high': 'Tinggi', 'urgent': 'Mendesak'}.get(str(d.get('priority') or '').lower(), d.get('priority') or '-')
-    body = f"""{_doc_header_html(d['company'], 'SURAT PERINTAH KERJA', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}", f"Ref. WO: {d['work_order_number']}"])}
-<table><tr>
-<td class="box" style="width:50%"><div class="h">Produk yang Dikerjakan</div>
-<div style="font-weight:bold;font-size:11pt">{e(d['product_name'] or '-')}</div><div>Kode: {e(d['product_code'] or '-')}</div>
-<div style="margin-top:6px;font-size:13pt"><b>{_num(d['quantity'])}</b> {e(d['uom'] or '')}</div></td>
-<td class="box m"><table class="meta">{_meta_rows([('Mesin', d['machine']), ('Mulai', d['start_date']), ('Target Selesai', d['due_date']), ('Prioritas', prio)])}</table></td>
-</tr></table>
-<table class="items"><thead><tr><th>Instruksi / Catatan Produksi</th></tr></thead>
-<tbody>{notes_row}{ruled_rows}</tbody></table>"""
-    return _page(body, _sig_row(['Operator,', 'Supervisor,', 'Disetujui oleh,']))
 
 
 _SATUAN = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas']
@@ -1014,40 +578,6 @@ def _rp(v):
     return 'Rp ' + f"{int(round(v)):,}".replace(',', '.')
 
 
-def _render_kwitansi_html(d):
-    from html import escape as e
-    company = d['company']
-    is_receipt = d['is_receipt']
-    title = 'BUKTI PENERIMAAN' if is_receipt else 'BUKTI PEMBAYARAN'
-    party_label = 'Diterima dari' if is_receipt else 'Dibayarkan kepada'
-
-    if d['allocations']:
-        head = '<tr><th>No.</th><th>No. Faktur</th><th class="r">Dibayar</th></tr>'
-        rows = ''.join(
-            f'<tr><td class="c">{i}</td><td>{e(a["invoice_number"])}</td><td class="r">{_rp(a["amount"])}</td></tr>'
-            for i, a in enumerate(d['allocations'], 1)) + _filler_rows(len(d['allocations']), 4, 3)
-        cols = 3
-    else:
-        head = '<tr><th>No.</th><th>Akun</th><th>Keterangan</th><th class="r">Nilai</th></tr>'
-        rows = ''.join(
-            f'<tr><td class="c">{i}</td><td>{e(l["account"])}</td><td>{e(l["description"] or "")}</td><td class="r">{_rp(l["amount"])}</td></tr>'
-            for i, l in enumerate(d['lines'], 1)) + _filler_rows(len(d['lines']), 4, 4)
-        cols = 4
-    total_row = f'<tr class="tot"><td colspan="{cols - 1}" class="r">TOTAL</td><td class="r">{_rp(d["amount"])}</td></tr>'
-    signs = ['Penerima,', 'Pemberi,', 'Mengetahui,'] if is_receipt else ['Penerima,', 'Kasir / Keuangan,', 'Mengetahui,']
-
-    body = f"""{_doc_header_html(company, title, [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}"])}
-<table class="info">
-<tr><td class="k">{party_label}</td><td>: <b>{e(d['party_name'] or '-')}</b></td><td class="k">Kas/Bank</td><td>: {e(d['bank_account'] or '-')}</td></tr>
-<tr><td class="k">Metode</td><td>: {e(d['payment_method'] or '-')}</td><td class="k">No. Referensi</td><td>: {e(d['reference_number'] or '-')}</td></tr>
-</table>
-<div class="words"><b>Terbilang:</b> {e(d['terbilang'])}</div>
-<table class="items"><thead>{head}</thead><tbody>{rows}{total_row}</tbody></table>
-{f'<div style="margin-top:6px;font-size:8.5pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}"""
-    n = len(d['allocations']) or len(d['lines'])
-    return _page(body, _sig_row(signs), size='A5 landscape', margin='10mm 12mm', min_h='124mm', flow=n > 4)
-
-
 def generate_kwitansi_document(payment_id, user_id):
     """
     Generate a printable Kwitansi (payment receipt) document (Print Template
@@ -1062,6 +592,8 @@ def generate_kwitansi_document(payment_id, user_id):
         raise ValueError('Payment not found')
 
     from models.finance import Account
+
+    template = ensure_default_template(user_id, 'kwitansi')
 
     doc_number = generate_number('DOC-KWT', Document, 'document_number')
 
@@ -1082,7 +614,21 @@ def generate_kwitansi_document(payment_id, user_id):
                       'description': payment.notes, 'amount': float(payment.amount or 0)})
 
     amount = float(payment.amount or 0)
+    is_receipt = payment.payment_type in ('receipt', 'received') or payment.customer_id is not None
+    detail_rows = []
+    for a in allocations:
+        detail_rows.append({'no': len(detail_rows) + 1, 'uraian': f"Pelunasan {a['invoice_number']}", 'keterangan': '', 'nilai': a['amount']})
+    for l in lines:
+        detail_rows.append({'no': len(detail_rows) + 1, 'uraian': l['account'], 'keterangan': l['description'] or '', 'nilai': l['amount']})
     document_data = {
+        'title': 'BUKTI PENERIMAAN' if is_receipt else 'BUKTI PEMBAYARAN',
+        'party_label': 'Diterima dari' if is_receipt else 'Dibayarkan kepada',
+        'hdr_no': f'No. {payment.payment_number}',
+        'hdr_date': f"Tanggal: {payment.payment_date.strftime('%d-%m-%Y') if payment.payment_date else ''}",
+        'detail_rows': detail_rows,
+        'sign_1': 'Penerima,',
+        'sign_2': 'Pemberi,' if is_receipt else 'Kasir / Keuangan,',
+        'sign_3': 'Mengetahui,',
         'document_number': payment.payment_number,
         'document_date': payment.payment_date.strftime('%d-%m-%Y') if payment.payment_date else '',
         'is_receipt': payment.payment_type in ('receipt', 'received') or payment.customer_id is not None,
@@ -1102,7 +648,7 @@ def generate_kwitansi_document(payment_id, user_id):
         document_number=doc_number,
         document_title=f'Kwitansi {payment.payment_number}',
         document_type='kwitansi',
-        template_version_id=None,
+        template_version_id=template.current_version_id,
         document_data=document_data,
         reference_type='payment',
         reference_id=payment.id,
@@ -1110,7 +656,7 @@ def generate_kwitansi_document(payment_id, user_id):
         status='generated',
         created_by=user_id
     )
-    document.html_content = _render_kwitansi_html(document_data)
+    document.html_content = render_template_version_to_html(template.current_version, document_data)
 
     db.session.add(document)
     db.session.flush()
@@ -1127,61 +673,3 @@ def generate_kwitansi_document(payment_id, user_id):
     return document
 
 
-def create_default_purchase_order_template(user_id):
-    """Create default Purchase Order template (Fase 2 proof-of-concept layout)."""
-    objects = _company_header_objects() + [
-        _label('PURCHASE ORDER', 10, 32, 100, 10, font_size=16, font_weight='bold'),
-        _field('document_number', 150, 32, 50, font_size=9, text_align='right'),
-        _label('Tanggal', 10, 44, 30, font_size=8),
-        _field('document_date', 40, 44, 60, font_size=9),
-        _label('Dibutuhkan', 110, 44, 30, font_size=8),
-        _field('required_date', 140, 44, 60, font_size=9),
-        _label('Kepada Supplier:', 10, 56, 60, font_size=9, font_weight='bold'),
-        _field('supplier_name', 10, 62, 90, font_size=10),
-        _field('supplier_address', 10, 67, 90, height=10, font_size=9),
-        _label('Kirim Ke:', 110, 56, 60, font_size=9, font_weight='bold'),
-        _field('delivery_address', 110, 62, 90, height=15, font_size=9),
-        _placeholder_box('repeating_table', 10, 85, 190, 100, dataSource='line_items', showHeader=True, columns=[
-            {'fieldPath': 'item_name', 'label': 'Item', 'width': 80, 'textAlign': 'left'},
-            {'fieldPath': 'quantity', 'label': 'Qty', 'width': 25, 'textAlign': 'right'},
-            {'fieldPath': 'uom', 'label': 'Satuan', 'width': 25, 'textAlign': 'left'},
-            {'fieldPath': 'unit_price', 'label': 'Harga Satuan', 'width': 30, 'textAlign': 'right'},
-            {'fieldPath': 'subtotal', 'label': 'Subtotal', 'width': 30, 'textAlign': 'right'},
-        ]),
-        _label('Subtotal', 140, 195, 30, font_size=9),
-        _field('subtotal', 170, 195, 30, font_size=9, text_align='right'),
-        _label('Diskon', 140, 201, 30, font_size=9),
-        _field('discount_amount', 170, 201, 30, font_size=9, text_align='right'),
-        _label('PPN', 140, 207, 30, font_size=9),
-        _field('tax_amount', 170, 207, 30, font_size=9, text_align='right'),
-        _label('TOTAL', 140, 215, 30, font_size=11, font_weight='bold'),
-        _field('total_amount', 170, 215, 30, font_size=11, font_weight='bold', text_align='right'),
-        _field('payment_terms', 10, 225, 90, font_size=8),
-        _field('notes', 10, 235, 190, height=15, font_size=8),
-    ]
-    return _create_default_template(user_id, 'Purchase Order Default', 'PO_DEFAULT', 'purchase_order', objects)
-
-
-def create_default_kwitansi_template(user_id):
-    """Create default Kwitansi template (Fase 2 proof-of-concept layout)."""
-    objects = _company_header_objects() + [
-        _label('KWITANSI', 10, 35, 100, 10, font_size=18, font_weight='bold'),
-        _field('document_number', 150, 35, 50, font_size=9, text_align='right'),
-        _label('Tanggal', 10, 50, 30, font_size=8),
-        _field('document_date', 40, 50, 60, font_size=9),
-        _field('payment_type_label', 110, 50, 90, font_size=9, font_weight='bold'),
-        _label('Sudah terima dari / dibayarkan kepada:', 10, 62, 100, font_size=9),
-        _field('party_name', 10, 68, 150, font_size=12, font_weight='bold'),
-        _label('Jumlah:', 10, 82, 30, font_size=9),
-        _field('amount', 40, 82, 100, font_size=14, font_weight='bold'),
-        _label('Untuk pembayaran:', 10, 96, 40, font_size=8),
-        _field('invoice_number', 55, 96, 60, font_size=9),
-        _label('Metode', 10, 106, 30, font_size=8),
-        _field('payment_method', 40, 106, 60, font_size=9),
-        _label('No. Referensi', 110, 106, 30, font_size=8),
-        _field('reference_number', 145, 106, 55, font_size=9),
-        _field('notes', 10, 120, 190, height=15, font_size=8),
-        _label('Diterima Oleh', 140, 250, 50, font_size=9),
-        _hline(140, 270, 50),
-    ]
-    return _create_default_template(user_id, 'Kwitansi Default', 'KWITANSI_DEFAULT', 'kwitansi', objects)

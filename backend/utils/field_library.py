@@ -26,11 +26,18 @@ COMPANY_FIELDS = [
     {'path': 'company.email', 'label': 'Email', 'type': 'scalar'},
     {'path': 'company.website', 'label': 'Website', 'type': 'scalar'},
     {'path': 'company.tax_id', 'label': 'NPWP', 'type': 'scalar'},
+    {'path': 'company.address_line', 'label': 'Alamat Lengkap (alamat, kota)', 'type': 'scalar'},
+    {'path': 'company.contact_line', 'label': 'Kontak (telepon | email)', 'type': 'scalar'},
     {'path': 'company.logo_url', 'label': 'Logo Perusahaan', 'type': 'image'},
 ]
 
 _DOCUMENT_TYPE_FIELDS = {
     'spk': [
+        {'path': 'hdr_no', 'label': 'Header: Nomor Dokumen', 'type': 'scalar'},
+        {'path': 'hdr_date', 'label': 'Header: Tanggal', 'type': 'scalar'},
+        {'path': 'hdr_extra', 'label': 'Header: Referensi WO', 'type': 'scalar'},
+        {'path': 'product_code_line', 'label': 'Kode Produk (berlabel)', 'type': 'scalar'},
+        {'path': 'priority_label', 'label': 'Prioritas (teks)', 'type': 'scalar'},
         {'path': 'document_number', 'label': 'Nomor Dokumen', 'type': 'scalar'},
         {'path': 'document_date', 'label': 'Tanggal Dokumen', 'type': 'scalar'},
         {'path': 'work_order_number', 'label': 'Nomor WO', 'type': 'scalar'},
@@ -48,6 +55,16 @@ _DOCUMENT_TYPE_FIELDS = {
         {'path': 'approved_by', 'label': 'Disetujui Oleh', 'type': 'scalar'},
     ],
     'spk_batch': [
+        {'path': 'hdr_no', 'label': 'Header: Nomor Dokumen', 'type': 'scalar'},
+        {'path': 'hdr_date', 'label': 'Header: Tanggal', 'type': 'scalar'},
+        {'path': 'hdr_extra', 'label': 'Header: Nomor Batch', 'type': 'scalar'},
+        {'path': 'product_code_line', 'label': 'Kode Produk (berlabel)', 'type': 'scalar'},
+        {'path': 'wo_line', 'label': 'Ref. WO (berlabel)', 'type': 'scalar'},
+        {'path': 'bom_items', 'label': 'Rincian BOM Berlapis', 'type': 'list', 'columns': [
+            {'path': 'no', 'label': 'No.'}, {'path': 'name', 'label': 'Nama Bahan / Sub-Rakitan'},
+            {'path': 'quantity', 'label': 'Kebutuhan'}, {'path': 'uom', 'label': 'Satuan'},
+            {'path': 'realisasi', 'label': 'Realisasi'},
+        ]},
         {'path': 'document_number', 'label': 'Nomor Dokumen', 'type': 'scalar'},
         {'path': 'document_date', 'label': 'Tanggal Dokumen', 'type': 'scalar'},
         {'path': 'batch_number', 'label': 'Nomor Batch', 'type': 'scalar'},
@@ -65,6 +82,16 @@ _DOCUMENT_TYPE_FIELDS = {
         {'path': 'approved_by', 'label': 'Disetujui Oleh', 'type': 'scalar'},
     ],
     'surat_jalan': [
+        {'path': 'hdr_no', 'label': 'Header: Nomor Dokumen', 'type': 'scalar'},
+        {'path': 'hdr_date', 'label': 'Header: Tanggal', 'type': 'scalar'},
+        {'path': 'hdr_extra', 'label': 'Header: Ref. SO', 'type': 'scalar'},
+        {'path': 'driver_name', 'label': 'Nama Sopir', 'type': 'scalar'},
+        {'path': 'vehicle_number', 'label': 'No. Kendaraan', 'type': 'scalar'},
+        {'path': 'items', 'label': 'Daftar Barang', 'type': 'list', 'columns': [
+            {'path': 'no', 'label': 'No.'}, {'path': 'code', 'label': 'Kode'}, {'path': 'product_name', 'label': 'Nama Produk'},
+            {'path': 'pack', 'label': 'Isi/Krt'}, {'path': 'quantity', 'label': 'Qty'}, {'path': 'uom', 'label': 'Satuan'},
+            {'path': 'batch_text', 'label': 'Batch'}, {'path': 'description', 'label': 'Keterangan'},
+        ]},
         {'path': 'document_number', 'label': 'Nomor Dokumen', 'type': 'scalar'},
         {'path': 'document_date', 'label': 'Tanggal Dokumen', 'type': 'scalar'},
         {'path': 'sales_order_number', 'label': 'Nomor SO', 'type': 'scalar'},
@@ -89,6 +116,17 @@ _DOCUMENT_TYPE_FIELDS = {
     # Invoice/InvoiceItem, bukan cuma daftar konsep. tax_invoice_number/date TIDAK
     # ada kolomnya di model saat ini - sengaja tidak didaftarkan (bukan field mati).
     'invoice': [
+        {'path': 'hdr_no', 'label': 'Header: Nomor Dokumen', 'type': 'scalar'},
+        {'path': 'hdr_date', 'label': 'Header: Tanggal', 'type': 'scalar'},
+        {'path': 'hdr_extra', 'label': 'Header: Status', 'type': 'scalar'},
+        {'path': 'gross', 'label': 'Subtotal (sebelum diskon)', 'type': 'scalar'},
+        {'path': 'discount_total', 'label': 'Total Diskon', 'type': 'scalar'},
+        {'path': 'paid_amount', 'label': 'Sudah Dibayar', 'type': 'scalar'},
+        {'path': 'terbilang', 'label': 'Terbilang', 'type': 'scalar'},
+        {'path': 'po_number', 'label': 'No. PO Customer', 'type': 'scalar'},
+        {'path': 'due_date', 'label': 'Jatuh Tempo', 'type': 'scalar'},
+        {'path': 'customer_name', 'label': 'Nama Customer', 'type': 'scalar'},
+        {'path': 'customer_address', 'label': 'Alamat Customer', 'type': 'scalar'},
         {'path': 'document_number', 'label': 'Nomor Invoice', 'type': 'scalar'},
         {'path': 'document_date', 'label': 'Tanggal Invoice', 'type': 'scalar'},
         {'path': 'due_date', 'label': 'Jatuh Tempo', 'type': 'scalar'},
@@ -105,14 +143,15 @@ _DOCUMENT_TYPE_FIELDS = {
         {'path': 'total_amount', 'label': 'Total', 'type': 'scalar'},
         {'path': 'balance_due', 'label': 'Sisa Tagihan', 'type': 'scalar'},
         {'path': 'line_items', 'label': 'Daftar Item', 'type': 'list', 'columns': [
-            {'path': 'item_name', 'label': 'Nama Item'},
-            {'path': 'quantity', 'label': 'Qty'},
-            {'path': 'uom', 'label': 'Satuan'},
-            {'path': 'unit_price', 'label': 'Harga Satuan'},
-            {'path': 'subtotal', 'label': 'Subtotal'},
+            {'path': 'no', 'label': 'No.'}, {'path': 'code', 'label': 'Kode'}, {'path': 'item_name', 'label': 'Deskripsi'},
+            {'path': 'pack', 'label': 'Isi/Krt'}, {'path': 'quantity', 'label': 'Qty'}, {'path': 'uom', 'label': 'Satuan'},
+            {'path': 'unit_price', 'label': 'Harga'}, {'path': 'discount_text', 'label': 'Diskon'}, {'path': 'subtotal', 'label': 'Jumlah'},
         ]},
     ],
     'purchase_order': [
+        {'path': 'hdr_no', 'label': 'Header: Nomor Dokumen', 'type': 'scalar'},
+        {'path': 'hdr_date', 'label': 'Header: Tanggal', 'type': 'scalar'},
+        {'path': 'terbilang', 'label': 'Terbilang', 'type': 'scalar'},
         {'path': 'document_number', 'label': 'Nomor PO', 'type': 'scalar'},
         {'path': 'document_date', 'label': 'Tanggal PO', 'type': 'scalar'},
         {'path': 'required_date', 'label': 'Tanggal Dibutuhkan', 'type': 'scalar'},
@@ -126,16 +165,27 @@ _DOCUMENT_TYPE_FIELDS = {
         {'path': 'discount_amount', 'label': 'Diskon', 'type': 'scalar'},
         {'path': 'total_amount', 'label': 'Total', 'type': 'scalar'},
         {'path': 'line_items', 'label': 'Daftar Item', 'type': 'list', 'columns': [
-            {'path': 'item_name', 'label': 'Nama Item'},
-            {'path': 'quantity', 'label': 'Qty'},
-            {'path': 'uom', 'label': 'Satuan'},
-            {'path': 'unit_price', 'label': 'Harga Satuan'},
-            {'path': 'subtotal', 'label': 'Subtotal'},
+            {'path': 'no', 'label': 'No.'}, {'path': 'code', 'label': 'Kode'}, {'path': 'item_name', 'label': 'Deskripsi'},
+            {'path': 'quantity', 'label': 'Qty'}, {'path': 'uom', 'label': 'Satuan'}, {'path': 'unit_price', 'label': 'Harga'},
+            {'path': 'subtotal', 'label': 'Jumlah'},
         ]},
     ],
     # Kwitansi = bukti pembayaran (Payment model, payment_type receipt/payment) -
     # bukan model terpisah, reuse Payment yang sudah ada.
     'kwitansi': [
+        {'path': 'hdr_no', 'label': 'Header: Nomor Dokumen', 'type': 'scalar'},
+        {'path': 'hdr_date', 'label': 'Header: Tanggal', 'type': 'scalar'},
+        {'path': 'title', 'label': 'Judul (Bukti Penerimaan/Pembayaran)', 'type': 'scalar'},
+        {'path': 'party_label', 'label': 'Label (Diterima dari/Dibayarkan kepada)', 'type': 'scalar'},
+        {'path': 'bank_account', 'label': 'Kas/Bank', 'type': 'scalar'},
+        {'path': 'terbilang', 'label': 'Terbilang', 'type': 'scalar'},
+        {'path': 'sign_1', 'label': 'Label Tanda Tangan 1', 'type': 'scalar'},
+        {'path': 'sign_2', 'label': 'Label Tanda Tangan 2', 'type': 'scalar'},
+        {'path': 'sign_3', 'label': 'Label Tanda Tangan 3', 'type': 'scalar'},
+        {'path': 'detail_rows', 'label': 'Rincian (faktur / akun)', 'type': 'list', 'columns': [
+            {'path': 'no', 'label': 'No.'}, {'path': 'uraian', 'label': 'Uraian'},
+            {'path': 'keterangan', 'label': 'Keterangan'}, {'path': 'nilai', 'label': 'Nilai'},
+        ]},
         {'path': 'document_number', 'label': 'Nomor Kwitansi', 'type': 'scalar'},
         {'path': 'document_date', 'label': 'Tanggal', 'type': 'scalar'},
         {'path': 'payment_type_label', 'label': 'Jenis (Terima/Bayar)', 'type': 'scalar'},
@@ -147,6 +197,12 @@ _DOCUMENT_TYPE_FIELDS = {
         {'path': 'notes', 'label': 'Catatan', 'type': 'scalar'},
     ],
 }
+
+
+# Keep the first definition of each path (new richer entries are listed first).
+for _t, _fields in list(_DOCUMENT_TYPE_FIELDS.items()):
+    _seen = set()
+    _DOCUMENT_TYPE_FIELDS[_t] = [f for f in _fields if not (f['path'] in _seen or _seen.add(f['path']))]
 
 
 def get_field_library(document_type):

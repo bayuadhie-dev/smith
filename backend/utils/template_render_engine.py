@@ -53,6 +53,7 @@ anchor point, so WeasyPrint's native CSS pagination (<thead> repeats per
 page) handles overflow - not something this engine reimplements.
 """
 import base64
+import html as _html
 import io
 
 PAPER_SIZES_MM = {
@@ -79,6 +80,29 @@ def _resolve_field(field_path, data):
         else:
             return ''
     return value if value is not None else ''
+
+
+def _esc(value):
+    """HTML-escape user data, but keep &nbsp; (used for BOM indentation)."""
+    return _html.escape(str(value)).replace('&amp;nbsp;', '&nbsp;')
+
+
+def _format_value(value, fmt):
+    """Optional per-element display format: 'rp' (Rp 1.234.567) or 'num'
+    (Indonesian thousands separator). Non-numeric values pass through."""
+    if value is None or value == '':
+        return ''
+    if fmt in ('rp', 'num'):
+        try:
+            n = float(value)
+        except (TypeError, ValueError):
+            return value
+        if fmt == 'rp':
+            return 'Rp ' + f"{int(round(n)):,}".replace(',', '.')
+        if n == int(n):
+            return f"{int(n):,}".replace(',', '.')
+        return f"{n:,.2f}".rstrip('0').rstrip('.').replace(',', '_').replace('.', ',').replace('_', '.')
+    return value
 
 
 def _qrcode_data_uri(value):
@@ -128,9 +152,10 @@ def _render_text_like(obj, document_data):
     element_type = obj.get('elementType', 'label')
 
     if element_type == 'field':
-        content = _resolve_field(obj.get('fieldPath'), document_data)
+        content = _format_value(_resolve_field(obj.get('fieldPath'), document_data), obj.get('format'))
     else:
         content = obj.get('text', '')
+    content = _esc(content)
 
     # fontSize is a Fabric object property, so per the "1 Fabric unit = 1mm,
     # always" convention (TemplateVersionEditor.tsx) it's stored in mm just
@@ -208,13 +233,20 @@ def _render_line_or_box(obj, kind):
         style += f'border-bottom: {stroke_width}px solid {stroke}; height:0;'
     else:
         style += f'border: {stroke_width}px solid {stroke};'
+        if obj.get('cellFill'):
+            style += f'background-color:{obj["cellFill"]};'
     return f'<div style="{style}"></div>'
 
 
 def _render_repeating_table(obj, document_data):
     """The one exception to absolute positioning - a real <table> flowing
     from the element's anchor, so WeasyPrint's native pagination (<thead>
-    repeats per page) handles rows that overflow onto later pages."""
+    repeats per page) handles rows that overflow onto later pages.
+
+    Optional styling props (all default to the original minimal look):
+    gridColor (full cell borders), headerBg/headerColor, zebra (row stripe
+    color), minRows (blank filler rows), rowHeight (mm), tableFontSize (mm).
+    Column props: textAlign, width, format ('rp'|'num'), bold."""
     left, top, width, _height, _angle = _object_box(obj)
     columns = obj.get('columns') or []
     rows = _resolve_field(obj.get('dataSource'), document_data)
@@ -222,38 +254,63 @@ def _render_repeating_table(obj, document_data):
         rows = []
     show_header = obj.get('showHeader', True)
 
+    grid = obj.get('gridColor')
+    header_bg = obj.get('headerBg')
+    header_color = obj.get('headerColor') or ('#ffffff' if header_bg else '#000000')
+    zebra = obj.get('zebra')
+    min_rows = int(obj.get('minRows') or 0)
+    row_h = float(obj.get('rowHeight') or 0)
+    fs_mm = float(obj.get('tableFontSize') or 0)
+    font_pt = round(fs_mm * 2.83465, 2) if fs_mm else 9
+
+    def th_style(c):
+        st = f'text-align:{c.get("textAlign", "left")}; padding:1mm;'
+        if grid:
+            st += f' border:0.25mm solid {header_bg or grid};'
+            if header_bg:
+                st += f' background:{header_bg}; color:{header_color}; font-weight:bold;'
+        else:
+            st += ' border-bottom:0.3mm solid #333;'
+        return st
+
+    def td_style(c, idx):
+        st = f'text-align:{c.get("textAlign", "left")}; padding:1mm; vertical-align:top;'
+        if c.get('bold'):
+            st += ' font-weight:bold;'
+        if grid:
+            st += f' border:0.25mm solid {grid};'
+            if zebra and idx % 2 == 1:
+                st += f' background:{zebra};'
+        else:
+            st += ' border-bottom:0.2mm solid #ccc;'
+        if row_h:
+            st += f' height:{max(row_h - 2, 1)}mm;'
+        return st
+
     header_html = ''
     if show_header:
-        header_cells = ''.join(
-            f'<th style="text-align:{c.get("textAlign", "left")}; padding:1mm; border-bottom:0.3mm solid #333;">{c.get("label", "")}</th>'
-            for c in columns
-        )
+        header_cells = ''.join(f'<th style="{th_style(c)}">{_esc(c.get("label", ""))}</th>' for c in columns)
         header_html = f'<thead><tr>{header_cells}</tr></thead>'
 
     body_rows = []
-    for row in rows:
+    for i, row in enumerate(rows):
         cells = ''.join(
-            f'<td style="text-align:{c.get("textAlign", "left")}; padding:1mm; border-bottom:0.2mm solid #ccc;">'
-            f'{_resolve_field(c.get("fieldPath"), row) if isinstance(row, dict) else ""}</td>'
+            f'<td style="{td_style(c, i)}">'
+            f'{_esc(_format_value(_resolve_field(c.get("fieldPath"), row), c.get("format"))) if isinstance(row, dict) else ""}</td>'
             for c in columns
         )
         body_rows.append(f'<tr>{cells}</tr>')
+    for i in range(len(rows), min_rows):
+        body_rows.append('<tr>' + ''.join(f'<td style="{td_style(c, i)}">&nbsp;</td>' for c in columns) + '</tr>')
 
     col_widths = ''.join(f'<col style="width:{c.get("width", 0)}mm;">' for c in columns)
+    layout = 'table-layout:fixed;' if grid else ''
 
     return (
-        # position:absolute (not position:relative + margin-top) - every other
-        # element type on this canvas uses absolute top/left, and margin-top
-        # here used to collapse away to nothing (classic CSS margin-collapse:
-        # this div was the first in-flow box in its container, with no
-        # border/padding separating it from the container's own edge) instead
-        # of offsetting the table, rendering it at y=0 on top of the header
-        # (fix_report_3.md Fase 20, found via a direct screenshot comparison
-        # of the raw generated HTML). Absolute positioning doesn't affect
-        # WeasyPrint's <thead> repeat-per-page behavior below - that's driven
-        # by the <table>'s own layout, not its positioned ancestor.
+        # position:absolute (not position:relative + margin-top) - see
+        # fix_report_3.md Fase 20 (margin-collapse put the table at y=0).
         f'<div style="position:absolute; left:{left}mm; top:{top}mm; width:{width}mm;">'
-        f'<table style="width:100%; border-collapse:collapse; font-size:9pt;">'
+        f'<table style="width:100%; border-collapse:collapse; font-size:{font_pt}pt; {layout}">'
         f'<colgroup>{col_widths}</colgroup>'
         f'{header_html}<tbody>{"".join(body_rows)}</tbody>'
         f'</table></div>'

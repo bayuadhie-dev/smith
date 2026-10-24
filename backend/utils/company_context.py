@@ -46,6 +46,7 @@ def get_company_context():
         return {
             'name': '', 'legal_name': '', 'address': '', 'city': '', 'country': '',
             'phone': '', 'email': '', 'website': '', 'tax_id': '', 'logo_url': '',
+            'address_line': '', 'contact_line': '',
         }
 
     return {
@@ -59,4 +60,6 @@ def get_company_context():
         'website': profile.website or '',
         'tax_id': profile.tax_id or '',
         'logo_url': _resolve_logo_url(profile.logo_path),
+        'address_line': ', '.join(x for x in [profile.address, profile.city] if x),
+        'contact_line': ' | '.join(x for x in [profile.phone, profile.email] if x),
     }
