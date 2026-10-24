@@ -211,6 +211,8 @@ def generate_surat_jalan_from_sales_order(sales_order_id, user_id, items_to_ship
             total_qty += qty_to_ship
 
             items_data.append({
+                'code': item.product.code if item.product else '',
+                'pack': item.product.packaging.packs_per_karton if item.product and item.product.packaging else None,
                 'product_name': item.product.name if item.product else item.description,
                 'quantity': qty_to_ship,
                 'uom': item.uom,
@@ -492,6 +494,8 @@ def generate_invoice_document(invoice_id, user_id):
         gross += line_gross
         pct = float(item.discount_percent or 0) or (round(discount / line_gross * 100, 2) if line_gross and discount else 0)
         line_items.append({
+            'code': item.product.code if item.product else '',
+            'pack': item.product.packaging.packs_per_karton if item.product and item.product.packaging else None,
             'item_name': item.description or (item.product.name if item.product else ''),
             'quantity': float(item.quantity),
             'uom': item.uom or '',
@@ -725,6 +729,7 @@ def generate_purchase_order_document(po_id, user_id):
     line_items = []
     for item in po.items:
         line_items.append({
+            'code': (item.product.code if item.product else (getattr(item.material, 'code', '') if item.material else '')),
             'item_name': item.description or (item.product.name if item.product else (item.material.name if item.material else '')),
             'quantity': float(item.quantity),
             'uom': item.uom or '',
@@ -804,11 +809,11 @@ def _doc_header_html(company, title, lines):
 def _render_invoice_html(d):
     from html import escape as e
     rows = ''.join(
-        f"""<tr><td class="c">{i}</td><td>{e(it['item_name'])}</td><td class="r">{_num(it['quantity'])}</td>
-<td>{e(it['uom'])}</td><td class="r">{_num(it['unit_price'])}</td>
+        f"""<tr><td class="c">{i}</td><td>{e(it.get('code') or '')}</td><td>{e(it['item_name'])}</td><td class="r">{_num(it['pack']) if it.get('pack') else ''}</td>
+<td class="r">{_num(it['quantity'])}</td><td>{e(it['uom'])}</td><td class="r">{_num(it['unit_price'])}</td>
 <td class="r">{(_num(it['discount']) + (' (' + _num(it['discount_percent']) + '%)' if it['discount_percent'] else '')) if it['discount'] else '-'}</td>
 <td class="r">{_num(it['subtotal'])}</td></tr>"""
-        for i, it in enumerate(d['line_items'], 1))
+        for i, it in enumerate(d['line_items'], 1)) + _filler_rows(len(d['line_items']), 10, 9)
     def tot(label, val, cls=''):
         return f'<tr class="{cls}"><td>{label}</td><td class="r">{_rp(val)}</td></tr>'
     totals = tot('Subtotal', d['gross'])
@@ -821,68 +826,65 @@ def _render_invoice_html(d):
     if d['paid_amount']:
         totals += tot('Sudah Dibayar', d['paid_amount'])
         totals += tot('Sisa Tagihan', d['balance_due'], 'grand')
-    meta = [('No. PO Customer', d['po_number']), ('Syarat Pembayaran', d['payment_terms']), ('Jatuh Tempo', d['due_date'])]
-    meta_html = ''.join(f'<tr><td class="k">{k}</td><td>: {e(v or "-")}</td></tr>' for k, v in meta)
-    return f"""<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
-@page {{ size: A4; margin: 14mm 14mm; }}
-body {{ font-family: Arial, sans-serif; font-size: 9.5pt; color: #111; margin: 0; }}
-table {{ border-collapse: collapse; width: 100%; }}
-.box {{ border: 1px solid #999; padding: 6px 8px; vertical-align: top; }}
-.box .h {{ font-size: 8pt; color: #555; text-transform: uppercase; margin-bottom: 2px; }}
-.meta td {{ padding: 1px 0; font-size: 9pt; }} .meta td.k {{ width: 36mm; color: #444; white-space: nowrap; }}
-.items {{ margin-top: 10px; }}
-.items th {{ background: #e8e8e8; border: 1px solid #999; padding: 5px 6px; font-size: 8.5pt; text-align: left; }}
-.items td {{ border: 1px solid #999; padding: 4px 6px; vertical-align: top; }}
-.r {{ text-align: right; }} .c {{ text-align: center; width: 8mm; }}
-.sum {{ width: 78mm; margin-left: auto; margin-top: 8px; }}
-.sum td {{ padding: 3px 6px; border-bottom: 1px solid #ddd; }}
-.sum tr.grand td {{ font-weight: bold; border-top: 1.5px solid #111; border-bottom: 1.5px solid #111; background: #f0f0f0; }}
-.words {{ border: 1px solid #999; padding: 5px 8px; margin-top: 8px; font-style: italic; background: #f6f6f6; }}
-.sig td {{ width: 50%; text-align: center; font-size: 9pt; }}
-.sig .line {{ border-bottom: 1px solid #111; margin: 20mm 22mm 2px; }}
-</style></head><body>
-{_doc_header_html(d['company'], 'INVOICE', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}", f"Status: {d['status']}"])}
+    meta = _meta_rows([('No. PO Customer', d['po_number']), ('Syarat Pembayaran', d['payment_terms']), ('Jatuh Tempo', d['due_date'])])
+    body = f"""{_doc_header_html(d['company'], 'INVOICE', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}", f"Status: {d['status']}"])}
 <table><tr>
 <td class="box" style="width:50%"><div class="h">Ditagihkan Kepada</div><div style="font-weight:bold;font-size:10.5pt">{e(d['customer_name'] or '-')}</div><div>{e(d['customer_address'] or '')}</div></td>
-<td class="box"><table class="meta">{meta_html}</table>{f'<div class="h" style="margin-top:4px">Kirim Ke</div><div>{e(d["ship_to"])}</div>' if d['ship_to'] else ''}</td>
+<td class="box"><table class="meta">{meta}</table>{f'<div class="h" style="margin-top:4px">Kirim Ke</div><div>{e(d["ship_to"])}</div>' if d['ship_to'] else ''}</td>
 </tr></table>
-<table class="items"><thead><tr><th>No.</th><th>Deskripsi</th><th class="r">Qty</th><th>Satuan</th><th class="r">Harga</th><th class="r">Diskon</th><th class="r">Jumlah</th></tr></thead><tbody>{rows}</tbody></table>
+<table class="items"><thead><tr><th>No.</th><th>Kode</th><th>Deskripsi</th><th class="r">Isi/Krt</th><th class="r">Qty</th><th>Satuan</th><th class="r">Harga</th><th class="r">Diskon</th><th class="r">Jumlah</th></tr></thead><tbody>{rows}</tbody></table>
 <table class="sum">{totals}</table>
 <div class="words"><b>Terbilang:</b> {e(d['terbilang'])}</div>
-{f'<div style="margin-top:8px;font-size:9pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}
-<table class="sig" style="margin-top:14px"><tr><td>Diterima oleh,<div class="line"></div><div style="font-size:8pt;color:#555">Nama jelas &amp; tanda tangan</div></td><td>Hormat kami,<div class="line"></div><div style="font-size:8pt;color:#555">{e(d['company'].get('name') or '')}</div></td></tr></table>
-</body></html>"""
+{f'<div style="margin-top:8px;font-size:9pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}"""
+    return _page(body, _sig_row(['Diterima oleh,', f"Hormat kami,<br><span style='font-size:8pt;color:#5b6b72'>{e(d['company'].get('name') or '')}</span>"]), flow=len(d['line_items']) > 12)
+
+
 
 
 _PRINT_CSS = """
-@page { size: A4; margin: 14mm 14mm; }
-body { font-family: Arial, sans-serif; font-size: 9.5pt; color: #111; margin: 0; }
+@page { size: __SIZE__; margin: __MARGIN__; }
+body { font-family: Arial, sans-serif; font-size: 9.5pt; color: #1b2a30; margin: 0; }
 table { border-collapse: collapse; width: 100%; }
-.box { border: 1px solid #999; padding: 6px 8px; vertical-align: top; }
-.box .h { font-size: 8pt; color: #555; text-transform: uppercase; margin-bottom: 2px; }
-.meta td { padding: 1px 0; font-size: 9pt; } .meta td.k { width: 36mm; color: #444; white-space: nowrap; }
+.wrap { position: relative; height: __MINH__; box-sizing: border-box; }
+.sigbox { position: absolute; bottom: 0; left: 0; right: 0; }
+.box { border: 1px solid #c5d0d4; padding: 6px 8px; vertical-align: top; }
+.box .h { font-size: 8pt; color: #5b6b72; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+.meta td { padding: 1px 0; font-size: 9pt; } .meta td.k { width: 36mm; color: #5b6b72; white-space: nowrap; }
+.info td { padding: 2px 0; } .info td.k { width: 38mm; color: #5b6b72; white-space: nowrap; }
 .items { margin-top: 10px; }
-.items th { background: #e8e8e8; border: 1px solid #999; padding: 5px 6px; font-size: 8.5pt; text-align: left; }
-.items td { border: 1px solid #999; padding: 4px 6px; vertical-align: top; }
-.items .tot td { font-weight: bold; background: #f0f0f0; }
+.items th { background: #1f4e5a; color: #fff; border: 1px solid #1f4e5a; padding: 5px 6px; font-size: 8.5pt; text-align: left; }
+.items td { border: 1px solid #c5d0d4; padding: 4px 6px; vertical-align: top; height: 5.2mm; }
+.items tbody tr:nth-child(even) td { background: #f5f8f9; }
+.items .tot td { font-weight: bold; background: #e3edf0 !important; }
 .r { text-align: right; } .c { text-align: center; width: 8mm; }
-.sum { width: 78mm; margin-left: auto; margin-top: 8px; }
-.sum td { padding: 3px 6px; border-bottom: 1px solid #ddd; }
-.sum tr.grand td { font-weight: bold; border-top: 1.5px solid #111; border-bottom: 1.5px solid #111; background: #f0f0f0; }
-.words { border: 1px solid #999; padding: 5px 8px; margin-top: 8px; font-style: italic; background: #f6f6f6; }
+.sum { width: 80mm; margin-left: auto; margin-top: 6px; }
+.sum td { padding: 3px 6px; border-bottom: 1px solid #dde5e8; }
+.sum tr.grand td { font-weight: bold; color: #fff; background: #1f4e5a; border: 1px solid #1f4e5a; }
+.words { border: 1px solid #c5d0d4; border-left: 3px solid #1f4e5a; padding: 5px 8px; margin-top: 8px; font-style: italic; background: #f5f8f9; }
 .sig td { text-align: center; font-size: 9pt; }
-.sig .line { border-bottom: 1px solid #111; margin: 20mm 14mm 2px; }
-.sig .cap { font-size: 8pt; color: #555; }
+.sig .line { border-bottom: 1px solid #1b2a30; margin: 18mm 14mm 2px; }
+.sig .cap { font-size: 8pt; color: #5b6b72; }
 """
 
 
 def _sig_row(labels):
     cells = ''.join(f'<td style="width:{100 // len(labels)}%">{l}<div class="line"></div><div class="cap">Nama jelas &amp; tanda tangan</div></td>' for l in labels)
-    return f'<table class="sig" style="margin-top:14px"><tr>{cells}</tr></table>'
+    return f'<table class="sig"><tr>{cells}</tr></table>'
 
 
-def _page(body):
-    return f'<!DOCTYPE html><html><head><meta charset="UTF-8"><style>{_PRINT_CSS}</style></head><body>{body}</body></html>'
+def _filler_rows(count, min_rows, ncols):
+    """Blank ruled rows so short documents still show a full-looking table."""
+    return ''.join('<tr>' + '<td>&nbsp;</td>' * ncols + '</tr>' for _ in range(max(0, min_rows - count)))
+
+
+def _page(body, sig_html='', size='A4', margin='14mm', min_h='265mm', flow=False):
+    """flow=True (long documents): no fixed page height, signatures follow the
+    content instead of being pinned to the bottom of a single page."""
+    css = _PRINT_CSS.replace('__SIZE__', size).replace('__MARGIN__', margin).replace('__MINH__', min_h)
+    if flow:
+        css += '.wrap{height:auto !important}.sigbox{position:static !important;margin-top:10mm}'
+    return (f'<!DOCTYPE html><html><head><meta charset="UTF-8"><style>{css}</style></head><body>'
+            f'<div class="wrap">{body}<div class="sigbox">{sig_html}</div></div></body></html>')
 
 
 def _meta_rows(pairs):
@@ -893,9 +895,9 @@ def _meta_rows(pairs):
 def _render_po_html(d):
     from html import escape as e
     rows = ''.join(
-        f"""<tr><td class="c">{i}</td><td>{e(it['item_name'])}</td><td class="r">{_num(it['quantity'])}</td>
+        f"""<tr><td class="c">{i}</td><td>{e(it.get('code') or '')}</td><td>{e(it['item_name'])}</td><td class="r">{_num(it['quantity'])}</td>
 <td>{e(it['uom'])}</td><td class="r">{_num(it['unit_price'])}</td><td class="r">{_num(it['subtotal'])}</td></tr>"""
-        for i, it in enumerate(d['line_items'], 1))
+        for i, it in enumerate(d['line_items'], 1)) + _filler_rows(len(d['line_items']), 10, 7)
     def tot(label, val, cls=''):
         return f'<tr class="{cls}"><td>{label}</td><td class="r">{_rp(val)}</td></tr>'
     totals = tot('Subtotal', d['subtotal'])
@@ -909,12 +911,11 @@ def _render_po_html(d):
 <td class="box" style="width:50%"><div class="h">Kepada Supplier</div><div style="font-weight:bold;font-size:10.5pt">{e(d['supplier_name'] or '-')}</div><div>{e(d['supplier_address'] or '')}</div></td>
 <td class="box"><table class="meta">{_meta_rows([('Dibutuhkan', d['required_date']), ('Syarat Pembayaran', d['payment_terms']), ('Kirim Ke', d['delivery_address'])])}</table></td>
 </tr></table>
-<table class="items"><thead><tr><th>No.</th><th>Deskripsi</th><th class="r">Qty</th><th>Satuan</th><th class="r">Harga</th><th class="r">Jumlah</th></tr></thead><tbody>{rows}</tbody></table>
+<table class="items"><thead><tr><th>No.</th><th>Kode</th><th>Deskripsi</th><th class="r">Qty</th><th>Satuan</th><th class="r">Harga</th><th class="r">Jumlah</th></tr></thead><tbody>{rows}</tbody></table>
 <table class="sum">{totals}</table>
 <div class="words"><b>Terbilang:</b> {e(d['terbilang'])}</div>
-{f'<div style="margin-top:8px;font-size:9pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}
-{_sig_row(['Dibuat oleh,', 'Disetujui oleh,'])}"""
-    return _page(body)
+{f'<div style="margin-top:8px;font-size:9pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}"""
+    return _page(body, _sig_row(['Dibuat oleh,', 'Disetujui oleh,']), flow=len(d['line_items']) > 12)
 
 
 def _render_sj_html(d):
@@ -922,19 +923,19 @@ def _render_sj_html(d):
     rows = ''
     for i, it in enumerate(d['items'], 1):
         batches = ', '.join(f"{b['batch_number']} ({_num(b['quantity'])})" for b in it.get('batches', []))
-        rows += f"""<tr><td class="c">{i}</td><td>{e(it['product_name'] or '')}</td><td class="r">{_num(it['quantity'])}</td>
-<td>{e(it['uom'] or '')}</td><td>{e(batches)}</td><td>{e(it.get('description') or '')}</td></tr>"""
-    total_row = f'<tr class="tot"><td colspan="2" class="r">TOTAL QTY</td><td class="r">{_num(d["total_quantity"])}</td><td colspan="3"></td></tr>'
+        rows += f"""<tr><td class="c">{i}</td><td>{e(it.get('code') or '')}</td><td>{e(it['product_name'] or '')}</td><td class="r">{_num(it['pack']) if it.get('pack') else ''}</td>
+<td class="r">{_num(it['quantity'])}</td><td>{e(it['uom'] or '')}</td><td>{e(batches)}</td><td>{e(it.get('description') or '')}</td></tr>"""
+    rows += _filler_rows(len(d['items']), 10, 8)
+    total_row = f'<tr class="tot"><td colspan="4" class="r">TOTAL QTY</td><td class="r">{_num(d["total_quantity"])}</td><td colspan="3"></td></tr>'
     body = f"""{_doc_header_html(d['company'], 'SURAT JALAN', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}", f"Ref. SO: {d['sales_order_number']}"])}
 <table><tr>
 <td class="box" style="width:50%"><div class="h">Kepada</div><div style="font-weight:bold;font-size:10.5pt">{e(d['customer_name'] or '-')}</div><div>{e(d['customer_address'] or '')}</div><div>{e(d['customer_phone'] or '')}</div></td>
 <td class="box"><table class="meta">{_meta_rows([('Sopir', d['driver_name']), ('No. Kendaraan', d['vehicle_number'])])}</table></td>
 </tr></table>
-<table class="items"><thead><tr><th>No.</th><th>Nama Produk</th><th class="r">Qty</th><th>Satuan</th><th>Batch</th><th>Keterangan</th></tr></thead><tbody>{rows}{total_row}</tbody></table>
+<table class="items"><thead><tr><th>No.</th><th>Kode</th><th>Nama Produk</th><th class="r">Isi/Krt</th><th class="r">Qty</th><th>Satuan</th><th>Batch</th><th>Keterangan</th></tr></thead><tbody>{rows}{total_row}</tbody></table>
 {f'<div style="margin-top:8px;font-size:9pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}
-<div style="margin-top:6px;font-size:8pt;color:#555">Barang diterima dalam keadaan baik dan jumlah sesuai.</div>
-{_sig_row(['Disiapkan oleh,', 'Sopir,', 'Diterima oleh,'])}"""
-    return _page(body)
+<div style="margin-top:6px;font-size:8pt;color:#5b6b72">Barang diterima dalam keadaan baik dan jumlah sesuai.</div>"""
+    return _page(body, _sig_row(['Disiapkan oleh,', 'Sopir,', 'Diterima oleh,']), flow=len(d['items']) > 12)
 
 
 def _render_spk_html(d):
@@ -948,9 +949,8 @@ def _render_spk_html(d):
 <td class="box"><table class="meta">{_meta_rows([('Mesin', d['machine']), ('Mulai', d['start_date']), ('Target Selesai', d['due_date']), ('Prioritas', prio)])}</table></td>
 </tr></table>
 <table class="items"><thead><tr><th>Instruksi / Catatan Produksi</th></tr></thead>
-<tbody><tr><td style="height:45mm">{e(d['notes'] or '')}</td></tr></tbody></table>
-{_sig_row(['Operator,', 'Supervisor,', 'Disetujui oleh,'])}"""
-    return _page(body)
+<tbody><tr><td style="height:90mm">{e(d['notes'] or '')}</td></tr></tbody></table>"""
+    return _page(body, _sig_row(['Operator,', 'Supervisor,', 'Disetujui oleh,']))
 
 
 _SATUAN = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas']
@@ -989,59 +989,32 @@ def _render_kwitansi_html(d):
     is_receipt = d['is_receipt']
     title = 'BUKTI PENERIMAAN' if is_receipt else 'BUKTI PEMBAYARAN'
     party_label = 'Diterima dari' if is_receipt else 'Dibayarkan kepada'
-    contact = ' | '.join(x for x in [company.get('phone'), company.get('email')] if x)
-    address = ', '.join(x for x in [company.get('address'), company.get('city')] if x)
 
     if d['allocations']:
         head = '<tr><th>No.</th><th>No. Faktur</th><th class="r">Dibayar</th></tr>'
         rows = ''.join(
             f'<tr><td class="c">{i}</td><td>{e(a["invoice_number"])}</td><td class="r">{_rp(a["amount"])}</td></tr>'
-            for i, a in enumerate(d['allocations'], 1))
+            for i, a in enumerate(d['allocations'], 1)) + _filler_rows(len(d['allocations']), 4, 3)
+        cols = 3
     else:
         head = '<tr><th>No.</th><th>Akun</th><th>Keterangan</th><th class="r">Nilai</th></tr>'
         rows = ''.join(
             f'<tr><td class="c">{i}</td><td>{e(l["account"])}</td><td>{e(l["description"] or "")}</td><td class="r">{_rp(l["amount"])}</td></tr>'
-            for i, l in enumerate(d['lines'], 1))
-    cols = 3 if d['allocations'] else 4
+            for i, l in enumerate(d['lines'], 1)) + _filler_rows(len(d['lines']), 4, 4)
+        cols = 4
     total_row = f'<tr class="tot"><td colspan="{cols - 1}" class="r">TOTAL</td><td class="r">{_rp(d["amount"])}</td></tr>'
+    signs = ['Penerima,', 'Pemberi,', 'Mengetahui,'] if is_receipt else ['Penerima,', 'Kasir / Keuangan,', 'Mengetahui,']
 
-    def sign(label):
-        return f'<td class="sig"><div>{label}</div><div class="line"></div></td>'
-
-    signs = (sign('Penerima') + sign('Pemberi') + sign('Mengetahui')) if is_receipt else (sign('Penerima') + sign('Kasir / Keuangan') + sign('Mengetahui'))
-
-    return f"""<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
-@page {{ size: A5 landscape; margin: 10mm 12mm; }}
-body {{ font-family: Arial, sans-serif; font-size: 9.5pt; color: #111; margin: 0; }}
-table {{ border-collapse: collapse; width: 100%; }}
-.hdr td {{ vertical-align: top; }}
-.co {{ font-size: 13pt; font-weight: bold; }}
-.sub {{ font-size: 8pt; color: #444; }}
-.ttl {{ text-align: right; }}
-.ttl .t {{ font-size: 14pt; font-weight: bold; letter-spacing: 1px; }}
-.rule {{ border-top: 2px solid #111; margin: 6px 0 8px; }}
-.info td {{ padding: 2px 0; }}
-.info td.k {{ width: 38mm; color: #444; white-space: nowrap; }}
-.words {{ border: 1px solid #999; padding: 5px 8px; margin: 8px 0; font-style: italic; background: #f6f6f6; }}
-.items th {{ background: #e8e8e8; border: 1px solid #999; padding: 4px 6px; font-size: 8.5pt; text-align: left; }}
-.items td {{ border: 1px solid #999; padding: 4px 6px; }}
-.items .tot td {{ font-weight: bold; background: #f0f0f0; }}
-.r {{ text-align: right; }} .c {{ text-align: center; width: 8mm; }}
-.notes {{ margin-top: 6px; font-size: 8.5pt; }}
-.sigs {{ margin-top: 14px; }}
-.sig {{ width: 33%; text-align: center; font-size: 8.5pt; }}
-.sig .line {{ border-bottom: 1px solid #111; margin: 16mm 14mm 2px; }}
-</style></head><body>
-{_doc_header_html(company, title, [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}"])}
+    body = f"""{_doc_header_html(company, title, [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}"])}
 <table class="info">
 <tr><td class="k">{party_label}</td><td>: <b>{e(d['party_name'] or '-')}</b></td><td class="k">Kas/Bank</td><td>: {e(d['bank_account'] or '-')}</td></tr>
 <tr><td class="k">Metode</td><td>: {e(d['payment_method'] or '-')}</td><td class="k">No. Referensi</td><td>: {e(d['reference_number'] or '-')}</td></tr>
 </table>
 <div class="words"><b>Terbilang:</b> {e(d['terbilang'])}</div>
 <table class="items"><thead>{head}</thead><tbody>{rows}{total_row}</tbody></table>
-{f'<div class="notes"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}
-<table class="sigs"><tr>{signs}</tr></table>
-</body></html>"""
+{f'<div style="margin-top:6px;font-size:8.5pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}"""
+    n = len(d['allocations']) or len(d['lines'])
+    return _page(body, _sig_row(signs), size='A5 landscape', margin='10mm 12mm', min_h='124mm', flow=n > 4)
 
 
 def generate_kwitansi_document(payment_id, user_id):
