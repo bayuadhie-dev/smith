@@ -600,8 +600,40 @@ def create_invoice():
 @jwt_required()
 @require_permission('finance.view')
 def get_payments():
+    """List Payment rows (2026-10-22: extended for the separate Penerimaan/
+    Pembayaran list pages) - supports ?type=receipt|payment and
+    ?date_from/date_to, and returns the Kas/Bank account + party name +
+    notes needed for those pages' No Transaksi/Tanggal/Kas-Bank/
+    Keterangan/Nilai columns, not just the bare fields the old shape had."""
     try:
-        payments = Payment.query.order_by(Payment.payment_date.desc()).all()
+        query = Payment.query
+        payment_type = request.args.get('type')
+        if payment_type in ('receipt', 'payment'):
+            query = query.filter(Payment.payment_type == payment_type)
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        if date_from:
+            query = query.filter(Payment.payment_date >= date_from)
+        if date_to:
+            query = query.filter(Payment.payment_date <= date_to)
+
+        payments = query.order_by(Payment.payment_date.desc(), Payment.id.desc()).all()
+
+        def party_name(p):
+            if p.customer_id and p.customer:
+                return p.customer.company_name
+            if p.supplier_id and p.supplier:
+                return p.supplier.name
+            return None
+
+        # Payment has no `bank_account` relationship on the model - look
+        # the referenced Account rows up in one batch instead of adding one
+        # (avoids a migration/model change for a read-only list page).
+        bank_account_ids = {p.bank_account_id for p in payments if p.bank_account_id}
+        bank_accounts_by_id = {
+            a.id: a for a in Account.query.filter(Account.id.in_(bank_account_ids)).all()
+        } if bank_account_ids else {}
+
         return jsonify({
             'payments': [{
                 'id': p.id,
@@ -610,7 +642,14 @@ def get_payments():
                 'payment_date': p.payment_date.isoformat(),
                 'amount': float(p.amount),
                 'payment_method': p.payment_method,
-                'status': p.status
+                'bank_account': {
+                    'code': bank_accounts_by_id[p.bank_account_id].account_code,
+                    'name': bank_accounts_by_id[p.bank_account_id].account_name,
+                } if p.bank_account_id in bank_accounts_by_id else None,
+                'party_name': party_name(p),
+                'notes': p.notes,
+                'reference_number': p.reference_number,
+                'status': p.status,
             } for p in payments]
         }), 200
     except Exception as e:
@@ -624,8 +663,14 @@ def create_payment():
         data = request.get_json()
         user_id = get_jwt_identity()
         
-        payment_number = generate_number('PAY', Payment, 'payment_number')
-        
+        # Separate number series per type (2026-10-22, per user request):
+        # RCP- for Penerimaan (customer receipts), PAY- for Pembayaran
+        # (supplier payments) - previously both shared one 'PAY' counter,
+        # so a Penerimaan could show e.g. PAY-202610-00003 with no visual
+        # way to tell it apart from a real Pembayaran.
+        number_prefix = 'RCP' if data.get('payment_type') == 'receipt' else 'PAY'
+        payment_number = generate_number(number_prefix, Payment, 'payment_number')
+
         if not data.get('invoice_id'):
             return jsonify({'error': 'invoice_id is required'}), 400
         if not data.get('bank_account_id'):

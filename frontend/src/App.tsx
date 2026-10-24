@@ -209,6 +209,7 @@ import TaxManagement from './pages/Finance/TaxManagement'
 import CostingControlling from './pages/Finance/CostingControlling'
 import Consolidation from './pages/Finance/Consolidation'
 import PaymentForm from './pages/Finance/PaymentForm'
+import PaymentList from './pages/Finance/PaymentList'
 import PaymentDetail from './pages/Finance/PaymentDetail'
 import ExpenseList from './pages/Finance/ExpenseList'
 import EmployeeExpenseForm from './pages/Finance/EmployeeExpenseForm'
@@ -888,6 +889,8 @@ function App() {
                 <Route path="finance/costing" element={<CostingControlling />} />
                 <Route path="finance/consolidation" element={<Consolidation />} />
                 <Route path="finance/payments/new" element={<PaymentForm />} />
+                <Route path="finance/penerimaan" element={<PaymentList type="receipt" />} />
+                <Route path="finance/pembayaran" element={<PaymentList type="payment" />} />
                 {/* Employee Expense Claims */}
                 <Route path="finance/expenses" element={<ExpenseList />} />
                 <Route path="finance/expenses/new" element={<EmployeeExpenseForm />} />
