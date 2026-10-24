@@ -2013,6 +2013,21 @@ def get_sales_report():
             diskon_percent = round((diskon / penjualan) * 100, 2) if penjualan else 0.0
 
             shipping_order_ids = [so.id for so in ShippingOrder.query.filter_by(invoice_id=inv.id).all()]
+            if not shipping_order_ids and inv.sales_order_id:
+                # Fallback (2026-10-22): a shipment created before
+                # create_invoice() was ever passed shipping_order_ids (or
+                # whose link was otherwise never set) still has its
+                # sales_order_id - pick up any shipment for the SAME sales
+                # order that no OTHER invoice has already claimed, so its
+                # real HPP isn't silently excluded from this invoice's BPP.
+                # Caught live: a Rp97.183.346 HPP posting never showed up
+                # anywhere in this report because its ShippingOrder.invoice_id
+                # was NULL even though the invoice for that sale existed.
+                shipping_order_ids = [
+                    so.id for so in ShippingOrder.query.filter_by(
+                        sales_order_id=inv.sales_order_id, invoice_id=None
+                    ).all()
+                ]
             bpp = 0.0
             if shipping_order_ids:
                 bpp = db.session.query(func.sum(AccountingEntry.debit_amount)).filter(
