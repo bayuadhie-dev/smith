@@ -40,6 +40,25 @@ def _make_expense_account(db_session, code='5-1100', name='Bahan Baku', amount=1
     return account
 
 
+def _make_revenue_entry(db_session, amount=5_000_000, code='4-1000'):
+    """Revenue as the dashboard now reads it: a posted credit on a revenue account."""
+    from models.finance import Account, AccountingEntry
+
+    account = Account(
+        account_code=code, account_name='Pendapatan Penjualan', account_type='revenue',
+        normal_balance='credit', is_active=True,
+    )
+    db_session.add(account)
+    db_session.commit()
+    db_session.add(AccountingEntry(
+        entry_number=f'JE-TEST-REV-{code}', entry_date=date.today(), entry_type='sales',
+        account_id=account.id, account_code=code, account_name=account.account_name,
+        debit_amount=0, credit_amount=amount, status='posted',
+    ))
+    db_session.commit()
+    return account
+
+
 def _make_sales_invoice(db_session, amount=5_000_000):
     from models.finance import Invoice
 
@@ -57,7 +76,7 @@ def test_kpis_total_expenses_is_not_fixed_ratio_of_revenue(client, auth_headers,
     """The old bug made total_expenses *always* equal exactly 76% of
     total_revenue. With a real expense account posting a DIFFERENT amount,
     the endpoint must reflect that real figure, not the ratio."""
-    _make_sales_invoice(db_session, amount=5_000_000)
+    _make_revenue_entry(db_session, amount=5_000_000)
     _make_expense_account(db_session, amount=1_000_000)  # real expenses = 1,000,000, NOT 3,800,000 (76% of 5M)
 
     resp = client.get('/api/finance/dashboard/kpis', headers=auth_headers)
@@ -92,7 +111,7 @@ def test_dashboard_revenue_uses_real_current_month_not_fixed_jul_dec(client, aut
     real date, and fabricated a growth curve. Now the most recent month in
     the response must be the actual current month, with the real revenue
     amount."""
-    inv = _make_sales_invoice(db_session, amount=2_000_000)
+    _make_revenue_entry(db_session, amount=2_000_000)
 
     resp = client.get('/api/finance/dashboard/revenue', headers=auth_headers)
     assert resp.status_code == 200
@@ -102,3 +121,15 @@ def test_dashboard_revenue_uses_real_current_month_not_fixed_jul_dec(client, aut
     current_month_name = date.today().strftime('%b')
     assert revenue[-1]['month'] == current_month_name
     assert revenue[-1]['revenue'] == 2_000_000
+
+
+def test_kpi_revenue_excludes_ppn_and_matches_gl_not_invoice_totals(client, auth_headers, db_session):
+    """Regression: KPI revenue was SUM(invoice.total_amount) (incl. PPN). It
+    must equal GL revenue, so KPI profit == Laba Rugi net income."""
+    _make_revenue_entry(db_session, amount=1_000_000)
+    inv = _make_sales_invoice(db_session, amount=1_110_000)  # 1,000,000 + 11% PPN
+    inv.status = 'sent'
+    db_session.commit()
+
+    kpis = client.get('/api/finance/dashboard/kpis', headers=auth_headers).get_json()['kpis']
+    assert kpis['total_revenue'] == 1_000_000

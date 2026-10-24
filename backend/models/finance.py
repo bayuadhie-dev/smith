@@ -37,6 +37,9 @@ class Invoice(db.Model):
     total_amount = db.Column(db.Numeric(15, 2), default=0)
     paid_amount = db.Column(db.Numeric(15, 2), default=0)
     balance_due = db.Column(db.Numeric(15, 2), default=0)
+    # Kredit yang sudah diterapkan ke faktur tanpa pembayaran kas (retur penjualan,
+    # pemakaian deposit pelanggan): balance_due = total - paid_amount - credit_applied.
+    credit_applied = db.Column(db.Numeric(15, 2), default=0, nullable=False, server_default='0')
     payment_terms = db.Column(db.String(100), nullable=True)
     payment_method = db.Column(db.String(50), nullable=True)
     supplier_invoice_number = db.Column(db.String(100), nullable=True)  # vendor's own faktur number, distinct from our invoice_number

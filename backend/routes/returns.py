@@ -484,6 +484,13 @@ def _post_disposition_gl(disposition, return_item, customer_return, user_id):
         pending.id, posted_by_user_id=user_id,
         reference_type='sales_return', reference_id=customer_return.id,
     )
+    # Keep the invoice subledger in step with the AR credit just posted.
+    if customer_return.sales_order_id:
+        from utils.finance_helpers import apply_credit_to_invoice
+        related_invoice = Invoice.query.filter_by(
+            sales_order_id=customer_return.sales_order_id, invoice_type='sales'
+        ).order_by(Invoice.id.desc()).first()
+        apply_credit_to_invoice(related_invoice, total_ar)
     disposition.pending_journal_entry_id = pending.id
     if not customer_return.pending_journal_entry_id:
         customer_return.pending_journal_entry_id = pending.id

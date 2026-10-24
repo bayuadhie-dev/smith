@@ -649,8 +649,26 @@ def apply_customer_deposit(invoice):
 
     if total_applied > 0:
         invoice.balance_due = float(invoice.balance_due or invoice.total_amount or 0) - total_applied
+        invoice.credit_applied = float(invoice.credit_applied or 0) + total_applied
 
     return total_applied
+
+
+def apply_credit_to_invoice(invoice, amount):
+    """Apply a non-cash credit (e.g. a sales return) to an invoice so the
+    invoice subledger follows the GL: balance_due = total - paid - credit.
+    Credit beyond what is still owed is NOT tracked on the invoice (it is a
+    customer credit; the GL AR account carries it as a credit balance)."""
+    amount = float(amount or 0)
+    if amount <= 0 or invoice is None or invoice.status == 'cancelled':
+        return 0.0
+    invoice.credit_applied = float(invoice.credit_applied or 0) + amount
+    invoice.balance_due = max(0.0, float(invoice.total_amount or 0) - float(invoice.paid_amount or 0) - float(invoice.credit_applied or 0))
+    if invoice.balance_due <= 0.005:
+        invoice.status = 'paid'
+    elif invoice.status in ('draft', 'sent'):
+        invoice.status = 'partial'
+    return amount
 
 
 def get_negative_stock_items():

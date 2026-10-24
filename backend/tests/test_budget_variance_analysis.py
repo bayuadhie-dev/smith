@@ -1,17 +1,17 @@
 """
-Tests for GET /api/finance/budget/variance-analysis (2026-10-06) - was a
-stale TODO always returning an empty analysis list, even though the
-Budget/BudgetLine models it claimed were "not yet created" already existed
-and were used by the endpoint right above it (/budget/budgets). Now
-computes real variance grouped by BudgetLine.category, live from
-budget_amount/actual_amount (not the dead variance_amount/variance_percent
-columns, which are never written anywhere in the codebase).
+Tests for GET /api/finance/budget/variance-analysis (2026-10-06) - computes
+real variance grouped by BudgetLine.category. Realisasi (actual) is derived
+live from posted GL entries on each line's account within the budget period
+(2026-10-24): BudgetLine.actual_amount / variance_* are dead columns that no
+transaction ever writes, so they are deliberately ignored.
 """
 from datetime import date, timedelta
 
 
 def _make_budget_line(db_session, category, budget_amount, actual_amount, account_code):
-    from models.finance import Account, Budget, BudgetLine
+    """actual_amount is posted to the GL as a real expense entry inside the
+    budget period; the stored actual_amount column is poisoned on purpose."""
+    from models.finance import Account, AccountingEntry, Budget, BudgetLine
 
     account = Account(
         account_code=account_code, account_name=f'Test {account_code}', account_type='expense',
@@ -29,9 +29,16 @@ def _make_budget_line(db_session, category, budget_amount, actual_amount, accoun
     db_session.add(budget)
     db_session.commit()
 
+    db_session.add(AccountingEntry(
+        entry_number=f'JE-TEST-{account_code}-01', entry_date=today, entry_type='general',
+        account_id=account.id, account_code=account_code, account_name=account.account_name,
+        debit_amount=actual_amount, credit_amount=0, status='posted',
+    ))
+    db_session.commit()
+
     line = BudgetLine(
         budget_id=budget.id, account_id=account.id, category=category,
-        budget_amount=budget_amount, actual_amount=actual_amount,
+        budget_amount=budget_amount, actual_amount=7_777_777,
         # Dead columns - never written by any code path, set to a wrong
         # value on purpose to prove the endpoint doesn't read them.
         variance_amount=99999, variance_percent=99999,
@@ -41,7 +48,7 @@ def _make_budget_line(db_session, category, budget_amount, actual_amount, accoun
     return budget, line
 
 
-def test_variance_analysis_computes_live_not_from_dead_columns(client, auth_headers, db_session):
+def test_variance_analysis_actual_comes_from_gl_not_stored_column(client, auth_headers, db_session):
     _make_budget_line(db_session, 'Operasional', 1_000_000, 1_200_000, 'TEST-VAR-01')
 
     resp = client.get('/api/finance/budget/variance-analysis', headers=auth_headers)
@@ -107,3 +114,14 @@ def test_variance_analysis_excludes_inactive_budgets(client, auth_headers, db_se
     assert resp.status_code == 200
     data = resp.get_json()
     assert all(r['category'] != 'Nonaktif' for r in data['analysis'])
+
+
+def test_budget_list_endpoint_returns_budgets_with_gl_actual(client, auth_headers, db_session):
+    """Regression: the list endpoint used a broken relative import and always
+    returned an empty list; total_actual must also come from the GL."""
+    _make_budget_line(db_session, 'Operasional', 1_000_000, 600_000, 'TEST-VAR-04')
+    resp = client.get('/api/finance/budget/budgets', headers=auth_headers)
+    assert resp.status_code == 200
+    budgets = resp.get_json()['budgets']
+    assert len(budgets) == 1
+    assert budgets[0]['total_actual'] == 600_000

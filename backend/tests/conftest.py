@@ -86,6 +86,10 @@ def test_user(app, db_session):
         full_name='Test User',
         password_hash=password_hash,
         is_admin=True,
+        # is_admin no longer bypasses RBAC (2026-10-13); the test user must be
+        # a real super admin or every permission-gated endpoint returns 403
+        # before the logic under test is ever reached.
+        is_super_admin=True,
         is_active=True
     )
     db_session.add(user)

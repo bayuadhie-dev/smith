@@ -37,6 +37,7 @@ interface TaxTransaction {
   tax_rate: number
   tax_amount: number
   status: string
+  source?: string
 }
 
 const TaxManagement = () => {
@@ -188,7 +189,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
   }
 
   const handleSubmitTransaction = async (transaction: TaxTransaction) => {
-    if (transaction.status.toLowerCase() === 'submitted') {
+    if ((transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice')) {
       showWarning('This transaction has already been submitted.')
       return
     }
@@ -206,7 +207,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
   }
 
   const handleDeleteTransaction = async (transaction: TaxTransaction) => {
-    if (transaction.status.toLowerCase() === 'submitted') {
+    if ((transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice')) {
       showWarning('Cannot delete a submitted transaction. Please contact your tax administrator.')
       return
     }
@@ -452,27 +453,27 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                         onClick={() => handleEditTransaction(transaction)}
                         className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
                         title="Edit Transaction"
-                        disabled={transaction.status.toLowerCase() === 'submitted'}
+                        disabled={(transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice')}
                       >
                         <PencilIcon className="h-4 w-4 mr-1" />{t('common.edit')}</button>
                       <button 
                         onClick={() => handleSubmitTransaction(transaction)}
                         className={`hover:text-green-900 inline-flex items-center ${
-                          transaction.status.toLowerCase() === 'submitted' ? 'text-gray-400 cursor-not-allowed' : 'text-green-600'
+                          (transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice') ? 'text-gray-400 cursor-not-allowed' : 'text-green-600'
                         }`}
                         title="Submit Transaction"
-                        disabled={transaction.status.toLowerCase() === 'submitted'}
+                        disabled={(transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice')}
                       >
                         <CheckCircleIcon className="h-4 w-4 mr-1" />
-                        {transaction.status.toLowerCase() === 'submitted' ? 'Submitted' : 'Submit'}
+                        {(transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice') ? 'Submitted' : 'Submit'}
                       </button>
                       <button 
                         onClick={() => handleDeleteTransaction(transaction)}
                         className={`hover:text-red-900 inline-flex items-center ${
-                          transaction.status.toLowerCase() === 'submitted' ? 'text-gray-400 cursor-not-allowed' : 'text-red-600'
+                          (transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice') ? 'text-gray-400 cursor-not-allowed' : 'text-red-600'
                         }`}
                         title="Delete Transaction"
-                        disabled={transaction.status.toLowerCase() === 'submitted'}
+                        disabled={(transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice')}
                       >
                         <TrashIcon className="h-4 w-4 mr-1" />{t('common.delete')}</button>
                     </div>

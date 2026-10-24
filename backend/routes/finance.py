@@ -713,9 +713,10 @@ def _void_payment_core(payment, user_id, reason):
         invoice = db.session.get(Invoice, inv_id)
         if invoice:
             invoice.paid_amount = max(0, float(invoice.paid_amount or 0) - amt)
-            invoice.balance_due = float(invoice.total_amount or 0) - invoice.paid_amount
+            credit = float(getattr(invoice, 'credit_applied', 0) or 0)
+            invoice.balance_due = max(0.0, float(invoice.total_amount or 0) - invoice.paid_amount - credit)
             if invoice.status != 'cancelled':
-                if invoice.paid_amount <= 0:
+                if invoice.paid_amount <= 0 and credit <= 0:
                     invoice.status = 'sent' if invoice.invoice_type == 'sales' else 'draft'
                 elif invoice.balance_due > 0:
                     invoice.status = 'partial'
@@ -1660,6 +1661,40 @@ def delete_tax_transaction(id):
         return jsonify({'error': str(e)}), 500
 
 
+def _invoice_vat_rows(period):
+    """PPN yang berasal dari faktur pada periode 'YYYY-MM' (keluaran dari faktur
+    penjualan, masukan dari faktur pembelian), supaya halaman Pajak sama dengan
+    buku besar tanpa harus mengetik ulang. Faktur yang sudah dicatat manual di
+    TaxTransaction (reference_type='invoice') tidak dihitung dua kali."""
+    from models.finance import TaxTransaction
+    y, m = int(period[:4]), int(period[5:7])
+    start = date(y, m, 1)
+    end = date(y + (m == 12), (m % 12) + 1, 1) - timedelta(days=1)
+    linked = {r[0] for r in db.session.query(TaxTransaction.reference_id).filter(TaxTransaction.reference_type == 'invoice').all()}
+    rows = []
+    invs = Invoice.query.filter(
+        Invoice.invoice_type.in_(['sales', 'purchase']),
+        Invoice.status != 'cancelled',
+        Invoice.tax_amount > 0,
+        Invoice.invoice_date >= start, Invoice.invoice_date <= end,
+    ).order_by(Invoice.invoice_date.desc()).all()
+    for inv in invs:
+        if inv.id in linked:
+            continue
+        rows.append({
+            'id': -inv.id,
+            'transaction_number': inv.invoice_number,
+            'transaction_date': inv.invoice_date.isoformat() if inv.invoice_date else None,
+            'transaction_type': 'vat_out' if inv.invoice_type == 'sales' else 'vat_in',
+            'tax_type': 'PPN',
+            'base_amount': float((inv.subtotal or 0) - (inv.discount_amount or 0)),
+            'tax_amount': float(inv.tax_amount or 0),
+            'status': 'auto',
+            'source': 'invoice',
+        })
+    return rows
+
+
 @finance_bp.route('/tax-management', methods=['GET'])
 @jwt_required()
 @require_permission('finance.view')
@@ -1677,8 +1712,11 @@ def get_tax_management():
         ).order_by(TaxTransaction.transaction_date.desc()).all()
         
         # Calculate tax summary
-        vat_out = sum(float(t.tax_amount) for t in tax_transactions if t.transaction_type == 'vat_out')
-        vat_in = sum(float(t.tax_amount) for t in tax_transactions if t.transaction_type == 'vat_in')
+        auto_rows = _invoice_vat_rows(reporting_period)
+        vat_out = sum(float(t.tax_amount) for t in tax_transactions if t.transaction_type == 'vat_out') + \
+            sum(r['tax_amount'] for r in auto_rows if r['transaction_type'] == 'vat_out')
+        vat_in = sum(float(t.tax_amount) for t in tax_transactions if t.transaction_type == 'vat_in') + \
+            sum(r['tax_amount'] for r in auto_rows if r['transaction_type'] == 'vat_in')
         income_tax = sum(float(t.tax_amount) for t in tax_transactions if t.transaction_type == 'income_tax')
         
         tax_summary = {
@@ -1700,8 +1738,9 @@ def get_tax_management():
                 'tax_type': t.tax_type,
                 'base_amount': float(t.base_amount),
                 'tax_amount': float(t.tax_amount),
-                'status': t.status
-            } for t in tax_transactions],
+                'status': t.status,
+                'source': 'manual'
+            } for t in tax_transactions] + auto_rows,
             'period': f"{current_month}/{current_year}"
         }), 200
     except Exception as e:
@@ -1727,8 +1766,11 @@ def export_tax_report():
             reporting_period=period
         ).order_by(TaxTransaction.transaction_date.asc()).all()
 
-        vat_out = sum(float(t.tax_amount) for t in tax_transactions if t.transaction_type == 'vat_out')
-        vat_in = sum(float(t.tax_amount) for t in tax_transactions if t.transaction_type == 'vat_in')
+        auto_rows = _invoice_vat_rows(period)
+        vat_out = sum(float(t.tax_amount) for t in tax_transactions if t.transaction_type == 'vat_out') + \
+            sum(r['tax_amount'] for r in auto_rows if r['transaction_type'] == 'vat_out')
+        vat_in = sum(float(t.tax_amount) for t in tax_transactions if t.transaction_type == 'vat_in') + \
+            sum(r['tax_amount'] for r in auto_rows if r['transaction_type'] == 'vat_in')
         income_tax = sum(float(t.tax_amount) for t in tax_transactions if t.transaction_type == 'income_tax')
         withholding_tax = sum(float(t.tax_amount) for t in tax_transactions if 'PPh' in (t.tax_type or ''))
 
@@ -1758,6 +1800,9 @@ def export_tax_report():
                 float(t.tax_amount or 0),
                 t.status,
             ])
+        for r in auto_rows:
+            ws_tx.append([r['transaction_number'], r['transaction_date'] or '', r['transaction_type'], r['tax_type'],
+                          r['base_amount'], r['tax_amount'], 'dari faktur'])
         for col, w in zip('ABCDEFG', (18, 14, 16, 16, 16, 14, 12)):
             ws_tx.column_dimensions[col].width = w
 
@@ -2061,7 +2106,7 @@ def get_income_statement():
             # Fallback calculation
             total_revenue = db.session.query(func.sum(Invoice.total_amount)).filter(
                 Invoice.invoice_type == 'sales',
-                Invoice.status.notin_(['draft', 'cancelled'])
+                Invoice.status != 'cancelled'
             ).scalar() or 0
             
             from utils.helpers import get_setting_value
@@ -2705,13 +2750,13 @@ def get_dashboard_kpis():
         accounts_receivable = float(db.session.query(func.sum(Invoice.balance_due)).filter(
             Invoice.invoice_type == 'sales',
             Invoice.balance_due > 0,
-            Invoice.status.notin_(['draft', 'cancelled'])
+            Invoice.status != 'cancelled'
         ).scalar() or 0)
 
         accounts_payable = float(db.session.query(func.sum(Invoice.balance_due)).filter(
             Invoice.invoice_type == 'purchase',
             Invoice.balance_due > 0,
-            Invoice.status.notin_(['draft', 'cancelled'])
+            Invoice.status != 'cancelled'
         ).scalar() or 0)
 
         net_profit = total_revenue - total_expenses
@@ -2843,25 +2888,25 @@ def get_dashboard_revenue():
         from datetime import timedelta
 
         revenue = []
-        current_date = get_local_now()
+        today = get_local_now().date()
 
-        for i in range(6):
-            month_start = (current_date.replace(day=1) - timedelta(days=i * 30)).replace(day=1)
-            next_month = (month_start + timedelta(days=32)).replace(day=1)
-            month_end = next_month - timedelta(days=1)
+        for i in range(5, -1, -1):
+            # Aritmetika bulan yang benar (sebelumnya mundur i*30 hari, yang
+            # bisa melewati Februari dari awal Maret).
+            m_index = today.year * 12 + (today.month - 1) - i
+            month_start = date(m_index // 12, m_index % 12 + 1, 1)
+            n_index = m_index + 1
+            month_end = date(n_index // 12, n_index % 12 + 1, 1) - timedelta(days=1)
             month_name = month_start.strftime('%b')
 
-            monthly_revenue = float(db.session.query(func.sum(Invoice.total_amount)).filter(
-                Invoice.invoice_type == 'sales',
-                Invoice.status.notin_(['draft', 'cancelled']),
-                Invoice.invoice_date >= month_start.date(),
-                Invoice.invoice_date <= month_end.date(),
-            ).scalar() or 0)
-
-            monthly_expenses = _classified_balance_in_range('expense', date_from=month_start.date(), date_to=month_end.date())
+            # Pendapatan & beban sama-sama dari buku besar (klasifikasi yang
+            # sama dengan Laba Rugi) - bukan total faktur yang ikut menghitung
+            # PPN dan membuang faktur draft yang sudah terjurnal.
+            monthly_revenue = _classified_balance_in_range('revenue', date_from=month_start, date_to=month_end)
+            monthly_expenses = _classified_balance_in_range('expense', date_from=month_start, date_to=month_end)
             monthly_profit = monthly_revenue - monthly_expenses
 
-            revenue.insert(0, {
+            revenue.append({
                 'month': month_name,
                 'revenue': monthly_revenue,
                 'profit': monthly_profit,
@@ -3279,11 +3324,11 @@ def get_cash_flow_analysis():
         # Real DSO: average receivables / (annual revenue / 365)
         avg_receivables = db.session.query(func.sum(Invoice.balance_due)).filter(
             Invoice.invoice_type == 'sales', Invoice.balance_due > 0,
-            Invoice.status.notin_(['draft', 'cancelled'])
+            Invoice.status != 'cancelled'
         ).scalar() or 0
         annual_revenue = db.session.query(func.sum(Invoice.total_amount)).filter(
             Invoice.invoice_type == 'sales', Invoice.invoice_date >= year_start,
-            Invoice.status.notin_(['draft', 'cancelled'])
+            Invoice.status != 'cancelled'
         ).scalar() or 0
         dso = round(float(avg_receivables) / (float(annual_revenue) / 365), 1) if annual_revenue else None
 
