@@ -39,6 +39,8 @@ interface PaymentDetailData {
   voided_by: number | null;
   voided_at: string | null;
   void_reason: string | null;
+  allocations: { invoice_id: number; invoice_number: string | null; invoice_total_amount: number | null; amount: number }[];
+  lines: { account_code: string | null; account_name: string | null; amount: number; description: string | null }[];
   gl_entries: GLEntry[];
 }
 
@@ -148,16 +150,53 @@ export default function PaymentDetail() {
           </div>
         </div>
 
-        {payment.invoice_number && (
+        {payment.allocations?.length > 0 && (
           <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-            <p className="text-sm text-blue-800 dark:text-blue-200">
-              <strong>Pelunasan Invoice:</strong>{' '}
-              <a href={`/app/finance/invoices/${payment.invoice_id}`} className="underline hover:text-blue-600">
-                {payment.invoice_number}
-              </a>{' '}
-              — Total {formatRupiah(payment.invoice_total_amount)}, status invoice saat ini:{' '}
-              <strong className="uppercase">{payment.invoice_status}</strong>
-            </p>
+            <p className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">Pelunasan Invoice</p>
+            <table className="w-full text-sm text-blue-900 dark:text-blue-100">
+              <thead>
+                <tr className="text-left text-xs uppercase opacity-70">
+                  <th className="py-1">No. Invoice</th>
+                  <th className="py-1 text-right">Total Invoice</th>
+                  <th className="py-1 text-right">Dibayar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payment.allocations.map((a) => (
+                  <tr key={a.invoice_id}>
+                    <td className="py-1">
+                      <a href={`/app/finance/invoices/${a.invoice_id}`} className="underline hover:text-blue-600">{a.invoice_number}</a>
+                    </td>
+                    <td className="py-1 text-right">{formatRupiah(a.invoice_total_amount)}</td>
+                    <td className="py-1 text-right font-medium">{formatRupiah(a.amount)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {payment.lines?.length > 0 && (
+          <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700/40 rounded-lg">
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Rincian Akun</p>
+            <table className="w-full text-sm text-gray-900 dark:text-gray-100">
+              <thead>
+                <tr className="text-left text-xs uppercase opacity-70">
+                  <th className="py-1">Akun</th>
+                  <th className="py-1">Keterangan</th>
+                  <th className="py-1 text-right">Nilai</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payment.lines.map((l, i) => (
+                  <tr key={i}>
+                    <td className="py-1">{l.account_code} - {l.account_name}</td>
+                    <td className="py-1">{l.description || '-'}</td>
+                    <td className="py-1 text-right font-medium">{formatRupiah(l.amount)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 

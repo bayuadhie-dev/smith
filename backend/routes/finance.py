@@ -659,167 +659,161 @@ def get_payments():
 @jwt_required()
 @require_permission('finance.create')
 def create_payment():
+    """Record a payment. Three shapes (2026-10-24):
+    - allocations=[{invoice_id, amount}, ...]: one Penerimaan Piutang /
+      Pembayaran Hutang settling several invoices (legacy single
+      invoice_id + amount is normalized into one allocation).
+    - lines=[{account_id, amount, description}, ...]: standalone Kas/Bank
+      transaction split over several accounts (legacy contra_account_id +
+      amount is normalized into one line).
+    Total amount is always derived server-side from the allocations/lines."""
     try:
         data = request.get_json()
         user_id = get_jwt_identity()
-        
-        # Separate number series per type (2026-10-22, per user request):
-        # RCP- for Penerimaan (customer receipts), PAY- for Pembayaran
-        # (supplier payments) - previously both shared one 'PAY' counter,
-        # so a Penerimaan could show e.g. PAY-202610-00003 with no visual
-        # way to tell it apart from a real Pembayaran.
-        number_prefix = 'RCP' if data.get('payment_type') == 'receipt' else 'PAY'
-        payment_number = generate_number(number_prefix, Payment, 'payment_number')
+        from decimal import Decimal
 
-        # Standalone transaction support (2026-10-22, per user request:
-        # "transaksi kas bebas tanpa invoice") - every payment used to
-        # require an invoice_id, so e.g. a bank admin fee or interest
-        # income had nowhere to be recorded at all. Now either invoice_id
-        # (existing AR/AP settlement flow, unchanged below) OR
-        # contra_account_id (the other side of the journal, chosen
-        # directly) must be given.
-        if not data.get('invoice_id') and not data.get('contra_account_id'):
-            return jsonify({'error': 'invoice_id atau contra_account_id wajib diisi'}), 400
+        allocations_in = data.get('allocations') or (
+            [{'invoice_id': data['invoice_id'], 'amount': data['amount']}] if data.get('invoice_id') else []
+        )
+        lines_in = data.get('lines') or (
+            [{'account_id': data['contra_account_id'], 'amount': data['amount'], 'description': data.get('notes')}]
+            if data.get('contra_account_id') and not allocations_in else []
+        )
+        if allocations_in and lines_in:
+            return jsonify({'error': 'Pilih salah satu: alokasi ke invoice ATAU akun lawan, tidak boleh keduanya'}), 400
+        if not allocations_in and not lines_in:
+            return jsonify({'error': 'Minimal satu invoice atau satu akun lawan wajib diisi'}), 400
         if not data.get('bank_account_id'):
             return jsonify({'error': 'bank_account_id is required'}), 400
+
+        items = allocations_in or lines_in
+        if any(Decimal(str(i.get('amount') or 0)) <= 0 for i in items):
+            return jsonify({'error': 'Setiap baris harus bernilai lebih dari 0'}), 400
+        total_amount = sum((Decimal(str(i['amount'])) for i in items), Decimal('0'))
+        if data.get('amount') is not None and abs(Decimal(str(data['amount'])) - total_amount) > Decimal('0.01'):
+            return jsonify({'error': f'Nilai total (Rp{float(data["amount"]):,.2f}) tidak sama dengan jumlah rincian (Rp{float(total_amount):,.2f})'}), 400
 
         bank_account = db.session.get(Account, data['bank_account_id'])
         if not bank_account or not bank_account.is_cash_bank:
             return jsonify({'error': 'bank_account_id must reference a Kas/Bank account'}), 400
 
+        # Resolve invoices; all must share direction and party.
+        invoices = []
+        if allocations_in:
+            invoice_ids = [a['invoice_id'] for a in allocations_in]
+            if len(set(invoice_ids)) != len(invoice_ids):
+                return jsonify({'error': 'Invoice yang sama tidak boleh dipilih dua kali'}), 400
+            for a in allocations_in:
+                inv = db.session.query(Invoice).filter_by(id=a['invoice_id']).with_for_update().first()
+                if not inv:
+                    return jsonify({'error': f'Invoice id {a["invoice_id"]} tidak ditemukan'}), 404
+                if inv.status == 'cancelled':
+                    return jsonify({'error': f'Invoice {inv.invoice_number} sudah dibatalkan'}), 400
+                balance = Decimal(str(inv.balance_due or 0))
+                if Decimal(str(a['amount'])) > balance + Decimal('0.01'):
+                    return jsonify({
+                        'error': f'Jumlah untuk {inv.invoice_number} (Rp{float(a["amount"]):,.2f}) melebihi sisa tagihan (Rp{float(balance):,.2f})'
+                    }), 400
+                invoices.append(inv)
+            if len({i.invoice_type for i in invoices}) > 1:
+                return jsonify({'error': 'Invoice penjualan dan pembelian tidak boleh dicampur dalam satu pembayaran'}), 400
+            if len({(i.customer_id, i.supplier_id) for i in invoices}) > 1:
+                return jsonify({'error': 'Semua invoice dalam satu pembayaran harus milik customer/supplier yang sama'}), 400
+
+        customer_id = data.get('customer_id') or (invoices[0].customer_id if invoices else None)
+        supplier_id = data.get('supplier_id') or (invoices[0].supplier_id if invoices else None)
+        if invoices:
+            payment_type = 'receipt' if invoices[0].invoice_type == 'sales' else 'payment'
+        else:
+            payment_type = data.get('payment_type') or 'payment'
+
         from utils.finance_helpers import is_period_locked
         payment_date_parsed = datetime.fromisoformat(data['payment_date'])
-        payment_bucket = 'D' if data.get('customer_id') is not None else ('K' if data.get('supplier_id') is not None else None)
+        payment_bucket = 'D' if customer_id is not None else ('K' if supplier_id is not None else None)
         if is_period_locked(payment_date_parsed.date() if hasattr(payment_date_parsed, 'date') else payment_date_parsed,
                              transaction_type='payment', sap_bucket=payment_bucket):
             return jsonify({'error': f'Periode {payment_date_parsed.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa mencatat pembayaran di periode ini.'}), 400
 
+        # RCP- for Penerimaan, PAY- for Pembayaran (separate number series)
+        payment_number = generate_number('RCP' if payment_type == 'receipt' else 'PAY', Payment, 'payment_number')
+
         payment = Payment(
             payment_number=payment_number,
-            payment_date=datetime.fromisoformat(data['payment_date']),
-            payment_type=data['payment_type'],
-            invoice_id=data.get('invoice_id'),
-            customer_id=data.get('customer_id'),
-            supplier_id=data.get('supplier_id'),
+            payment_date=payment_date_parsed,
+            payment_type=payment_type,
+            invoice_id=invoices[0].id if len(invoices) == 1 else None,
+            customer_id=customer_id,
+            supplier_id=supplier_id,
             payment_method=data['payment_method'],
-            amount=data['amount'],
+            amount=total_amount,
             reference_number=data.get('reference_number'),
             bank_account_id=data['bank_account_id'],
-            contra_account_id=data.get('contra_account_id'),
+            contra_account_id=lines_in[0]['account_id'] if len(lines_in) == 1 else None,
             notes=data.get('notes'),
             received_by=user_id
         )
-        
         db.session.add(payment)
         db.session.flush()
 
-        # Update invoice if provided
-        invoice = None
-        if data.get('invoice_id'):
-            invoice = db.session.get(Invoice, data['invoice_id'])
-            # Reject overpayment - previously unvalidated, letting a typo'd
-            # amount push balance_due permanently negative while forcing
-            # status='paid' (the balance_due<=0 check below), silently
-            # losing track of the excess instead of surfacing it as a
-            # mistake or routing it through the existing customer-deposit
-            # mechanism (apply_customer_deposit, used on the invoice side).
-            current_balance = float(invoice.balance_due or 0)
-            if float(data['amount']) > current_balance + 0.01:
-                return jsonify({
-                    'error': f'Jumlah pembayaran (Rp{float(data["amount"]):,.2f}) melebihi sisa tagihan (Rp{current_balance:,.2f})'
-                }), 400
-            invoice.paid_amount = float(invoice.paid_amount or 0) + float(data['amount'])
-            invoice.balance_due = current_balance - float(data['amount'])
-            if invoice.balance_due <= 0:
-                invoice.status = 'paid'
-            elif invoice.paid_amount > 0:
-                invoice.status = 'partial'
+        from utils.finance_helpers import (
+            resolve_accounts_receivable, resolve_accounts_payable, post_pending_journal
+        )
+        from models.approval_workflow import PendingJournalEntry
+        from models.finance import PaymentAllocation, PaymentLine
 
-        # Post to GL - previously this only updated Invoice.paid_amount/status
-        # with no journal entry at all, so real money moving in or out of the
-        # bank was never recorded in the books (both AR receipts and AP
-        # disbursements shared this same gap).
-        if invoice:
-            from utils.finance_helpers import (
-                resolve_accounts_receivable, resolve_accounts_payable, post_pending_journal
-            )
-            from models.approval_workflow import PendingJournalEntry
+        total = float(total_amount)
+        is_receipt = payment_type == 'receipt'
+        lines = []
+        if invoices:
+            for inv, a in zip(invoices, allocations_in):
+                amt = float(Decimal(str(a['amount'])))
+                db.session.add(PaymentAllocation(payment_id=payment.id, invoice_id=inv.id, amount=amt))
+                inv.paid_amount = float(inv.paid_amount or 0) + amt
+                inv.balance_due = float(inv.balance_due or 0) - amt
+                if inv.balance_due <= 0.005:
+                    inv.balance_due = 0
+                    inv.status = 'paid'
+                elif inv.paid_amount > 0:
+                    inv.status = 'partial'
+                if inv.invoice_type == 'sales':
+                    lines.append({'account_id': resolve_accounts_receivable(inv.customer_id), 'debit': 0, 'credit': amt,
+                                  'description': f'Pelunasan piutang - {inv.invoice_number}'})
+                else:
+                    lines.append({'account_id': resolve_accounts_payable(inv.supplier_id), 'debit': amt, 'credit': 0,
+                                  'description': f'Pelunasan hutang - {inv.invoice_number}'})
+            memo = f'Payment {payment.payment_number} - ' + ', '.join(i.invoice_number for i in invoices)
+        else:
+            for l in lines_in:
+                amt = float(Decimal(str(l['amount'])))
+                desc = l.get('description') or payment.notes or f'{"Penerimaan" if is_receipt else "Pembayaran"} - {payment.payment_number}'
+                db.session.add(PaymentLine(payment_id=payment.id, account_id=l['account_id'], amount=amt, description=l.get('description')))
+                lines.append({'account_id': l['account_id'], 'debit': 0 if is_receipt else amt, 'credit': amt if is_receipt else 0,
+                              'description': desc})
+            memo = payment.notes or f'Payment {payment.payment_number}'
 
-            amount = float(data['amount'])
-            if invoice.invoice_type == 'sales':
-                # Customer payment received: Dr Kas/Bank, Cr Piutang Usaha
-                ar_account_id = resolve_accounts_receivable(invoice.customer_id)
-                lines = [
-                    {'account_id': data['bank_account_id'], 'debit': amount, 'credit': 0,
-                     'description': f'Penerimaan pembayaran - {payment.payment_number}'},
-                    {'account_id': ar_account_id, 'debit': 0, 'credit': amount,
-                     'description': f'Pelunasan piutang - {invoice.invoice_number}'},
-                ]
-            else:
-                # Payment to supplier: Dr Hutang Usaha, Cr Kas/Bank
-                ap_account_id = resolve_accounts_payable(invoice.supplier_id)
-                lines = [
-                    {'account_id': ap_account_id, 'debit': amount, 'credit': 0,
-                     'description': f'Pelunasan hutang - {invoice.invoice_number}'},
-                    {'account_id': data['bank_account_id'], 'debit': 0, 'credit': amount,
-                     'description': f'Pembayaran ke supplier - {payment.payment_number}'},
-                ]
+        lines.append({
+            'account_id': data['bank_account_id'],
+            'debit': total if is_receipt else 0,
+            'credit': 0 if is_receipt else total,
+            'description': f'{"Penerimaan" if is_receipt else "Pembayaran"} - {payment.payment_number}',
+        })
 
-            pending = PendingJournalEntry(
-                workflow_id=None,
-                entry_date=payment.payment_date,
-                description=f'Payment {payment.payment_number} - {invoice.invoice_number}',
-                reference=payment.payment_number,
-                lines=lines,
-                total_debit=amount,
-                total_credit=amount,
-                created_by=user_id,
-            )
-            db.session.add(pending)
-            db.session.flush()
-            post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='payment', reference_id=payment.id)
-        elif data.get('contra_account_id'):
-            # Standalone transaction, no invoice (2026-10-22) - counterpart
-            # account chosen directly by the user instead of being derived
-            # from Piutang/Hutang Usaha. E.g. receipt: Dr Kas/Bank, Cr
-            # [Pendapatan Lain-lain / Uang Muka, whatever was picked];
-            # payment: Dr [Beban Operasional / whatever was picked], Cr
-            # Kas/Bank.
-            from utils.finance_helpers import post_pending_journal
-            from models.approval_workflow import PendingJournalEntry
-
-            amount = float(data['amount'])
-            if data['payment_type'] == 'receipt':
-                lines = [
-                    {'account_id': data['bank_account_id'], 'debit': amount, 'credit': 0,
-                     'description': f'Penerimaan - {payment.payment_number}'},
-                    {'account_id': data['contra_account_id'], 'debit': 0, 'credit': amount,
-                     'description': payment.notes or f'Penerimaan - {payment.payment_number}'},
-                ]
-            else:
-                lines = [
-                    {'account_id': data['contra_account_id'], 'debit': amount, 'credit': 0,
-                     'description': payment.notes or f'Pembayaran - {payment.payment_number}'},
-                    {'account_id': data['bank_account_id'], 'debit': 0, 'credit': amount,
-                     'description': f'Pembayaran - {payment.payment_number}'},
-                ]
-
-            pending = PendingJournalEntry(
-                workflow_id=None,
-                entry_date=payment.payment_date,
-                description=payment.notes or f'Payment {payment.payment_number}',
-                reference=payment.payment_number,
-                lines=lines,
-                total_debit=amount,
-                total_credit=amount,
-                created_by=user_id,
-            )
-            db.session.add(pending)
-            db.session.flush()
-            post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='payment', reference_id=payment.id)
+        pending = PendingJournalEntry(
+            workflow_id=None,
+            entry_date=payment.payment_date,
+            description=memo,
+            reference=payment.payment_number,
+            lines=lines,
+            total_debit=total,
+            total_credit=total,
+            created_by=user_id,
+        )
+        db.session.add(pending)
+        db.session.flush()
+        post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='payment', reference_id=payment.id)
 
         db.session.commit()
-        return jsonify({'message': 'Payment recorded', 'payment_id': payment.id}), 201
+        return jsonify({'message': 'Payment recorded', 'payment_id': payment.id, 'payment_number': payment.payment_number}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -947,6 +941,19 @@ def get_payment_detail(id):
             'voided_by': payment.voided_by,
             'voided_at': payment.voided_at.isoformat() if payment.voided_at else None,
             'void_reason': payment.void_reason,
+            'allocations': [{
+                'invoice_id': a.invoice_id,
+                'invoice_number': a.invoice.invoice_number if a.invoice else None,
+                'invoice_total_amount': float(a.invoice.total_amount) if a.invoice and a.invoice.total_amount is not None else None,
+                'amount': float(a.amount),
+            } for a in payment.allocations],
+            'lines': [{
+                'account_id': l.account_id,
+                'account_code': (db.session.get(Account, l.account_id).account_code if db.session.get(Account, l.account_id) else None),
+                'account_name': (db.session.get(Account, l.account_id).account_name if db.session.get(Account, l.account_id) else None),
+                'amount': float(l.amount),
+                'description': l.description,
+            } for l in payment.lines],
             'gl_entries': [{
                 'id': e.id,
                 'entry_number': e.entry_number,
@@ -1023,10 +1030,13 @@ def void_payment(id):
             description=f'Void payment {payment.payment_number}' + (f' - {reason}' if reason else ''),
         )
 
-        if payment.invoice_id:
-            invoice = db.session.get(Invoice, payment.invoice_id)
+        allocs = [(a.invoice_id, float(a.amount)) for a in payment.allocations]
+        if not allocs and payment.invoice_id:
+            allocs = [(payment.invoice_id, float(payment.amount or 0))]
+        for inv_id, amt in allocs:
+            invoice = db.session.get(Invoice, inv_id)
             if invoice:
-                invoice.paid_amount = max(0, float(invoice.paid_amount or 0) - float(payment.amount or 0))
+                invoice.paid_amount = max(0, float(invoice.paid_amount or 0) - amt)
                 invoice.balance_due = float(invoice.total_amount or 0) - invoice.paid_amount
                 if invoice.status != 'cancelled':
                     if invoice.paid_amount <= 0:

@@ -145,10 +145,41 @@ class Payment(db.Model):
     customer = db.relationship('Customer')
     supplier = db.relationship('Supplier')
     received_by_user = db.relationship('User', foreign_keys=[received_by])
+    allocations = db.relationship('PaymentAllocation', back_populates='payment', cascade='all, delete-orphan')
+    lines = db.relationship('PaymentLine', back_populates='payment', cascade='all, delete-orphan')
+
+class PaymentAllocation(db.Model):
+    """One Payment settling several invoices (Penerimaan Piutang / Pembayaran
+    Hutang with multiple faktur). Payment.invoice_id stays set only when a
+    payment has exactly one allocation (legacy rows have none)."""
+    __tablename__ = 'payment_allocations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payments.id'), nullable=False, index=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoices.id'), nullable=False, index=True)
+    amount = db.Column(db.Numeric(15, 2), nullable=False)
+
+    payment = db.relationship('Payment', back_populates='allocations')
+    invoice = db.relationship('Invoice')
+
+
+class PaymentLine(db.Model):
+    """One value of a standalone Kas/Bank transaction split over several
+    expense/revenue accounts (Penerimaan/Pembayaran Kas/Bank)."""
+    __tablename__ = 'payment_lines'
+
+    id = db.Column(db.Integer, primary_key=True)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payments.id'), nullable=False, index=True)
+    account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=False)
+    amount = db.Column(db.Numeric(15, 2), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+
+    payment = db.relationship('Payment', back_populates='lines')
+
 
 class Account(db.Model):
     __tablename__ = 'accounts'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     account_code = db.Column(db.String(50), unique=True, nullable=False, index=True)
     account_name = db.Column(db.String(200), nullable=False)
