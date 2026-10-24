@@ -9,6 +9,9 @@ What it fixes (only rows that match the exact legacy symptom):
  1. Active payments that have NO GL journal at all (inserted directly during
     early testing, e.g. PAY-TEST-001): marked 'cancelled' with a void reason
     (nothing to reverse - there was never a journal).
+ 3. Payroll records already marked 'paid' with no payment journal (paying salary
+    used to post nothing): post Dr Hutang Gaji / Cr Kas (global 'cash') dated at
+    the record's payment_date; skipped (with a warning) when that period is locked.
  2. Purchase invoices whose header total is <= 0 although their items are not
     (created before the header-total fix; items/journal are fine): header
     subtotal/total recomputed from the items minus completed purchase returns,
@@ -64,6 +67,22 @@ def run(apply):
                 inv.subtotal = items_total
                 inv.total_amount = new_total
                 inv.balance_due = new_balance
+
+        # 3. paid payroll records without a payment journal
+        from models.hr_extended import PayrollRecord
+        from utils.finance_helpers import post_payroll_payment_journal, PayrollPaymentError
+        for rec in PayrollRecord.query.filter_by(status='paid').all():
+            if AccountingEntry.query.filter_by(reference_type='payroll_payment', reference_id=rec.id).first():
+                continue
+            when = rec.payment_date
+            print(f'[3] gaji dibayar tanpa jurnal: record #{rec.id} (Rp{float(rec.net_salary or 0):,.0f}, tgl {when}) -> Dr Hutang Gaji / Cr Kas')
+            changes += 1
+            if apply:
+                try:
+                    post_payroll_payment_journal(rec, payment_date=when, posted_by_user_id=None)
+                except PayrollPaymentError as e:
+                    changes -= 1
+                    print(f'    DILEWATI: {e}')
 
         if apply:
             db.session.commit()

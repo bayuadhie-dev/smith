@@ -295,3 +295,36 @@ def test_create_account_validates_required_fields(client, auth_headers, db_sessi
                        json={'code': '9-7777', 'name': 'X', 'type': 'bogus'}).status_code == 400
     ok = client.post('/api/finance/chart-of-accounts', headers=auth_headers, json={'code': '9-7777', 'name': 'X', 'type': 'expense'})
     assert ok.status_code == 201
+
+
+# ------------------------------------------------------------------- payroll
+
+def test_paying_payroll_posts_hutang_gaji_to_kas_and_is_idempotent(db_session):
+    """Regression: marking a payroll record 'paid' posted nothing, so Hutang Gaji
+    was never relieved and the bank balance ignored salaries paid out."""
+    from datetime import date
+    from types import SimpleNamespace
+    import pytest
+    from models.finance import AccountingEntry, GlobalAccountDefault
+    from utils.finance_helpers import post_payroll_payment_journal, PayrollPaymentError
+
+    ACCOUNTS['2-1110'] = ('Hutang Gaji', 'liability', 'credit', False)
+    bank = _acc(db_session, '1-1010')
+    hg = _acc(db_session, '2-1110')
+    db_session.add_all([GlobalAccountDefault(transaction_key='cash', account_id=bank.id),
+                        GlobalAccountDefault(transaction_key='payroll_net_payable', account_id=hg.id)])
+    db_session.commit()
+
+    rec = SimpleNamespace(id=777, net_salary=2_424_999)
+    entries = post_payroll_payment_journal(rec, payment_date=date.today())
+    assert len(entries) == 2
+    debit = next(e for e in entries if float(e.debit_amount) > 0)
+    credit = next(e for e in entries if float(e.credit_amount) > 0)
+    assert debit.account_code == '2-1110' and float(debit.debit_amount) == 2_424_999
+    assert credit.account_code == '1-1010' and float(credit.credit_amount) == 2_424_999
+
+    assert post_payroll_payment_journal(rec, payment_date=date.today()) == []          # idempotent
+    assert AccountingEntry.query.filter_by(reference_type='payroll_payment', reference_id=777).count() == 2
+
+    with pytest.raises(PayrollPaymentError):                                           # not a Kas/Bank account
+        post_payroll_payment_journal(SimpleNamespace(id=778, net_salary=1000), date.today(), bank_account_id=hg.id)

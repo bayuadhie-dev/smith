@@ -386,6 +386,58 @@ def resolve_payroll_account(transaction_key):
     )
 
 
+class PayrollPaymentError(ValueError):
+    pass
+
+
+def post_payroll_payment_journal(record, payment_date, bank_account_id=None, posted_by_user_id=None):
+    """Journal for actually paying one payroll record's net salary:
+        Dr Hutang Gaji (payroll_net_payable)   net_salary
+            Cr Kas/Bank                         net_salary
+    Idempotent per record (reference_type='payroll_payment'). Kas/Bank comes from
+    bank_account_id, else the global 'cash' default. Returns the posted entries
+    (empty list when already posted or nothing to pay)."""
+    from models import db
+    from models.finance import AccountingEntry, Account, GlobalAccountDefault
+    from models.approval_workflow import PendingJournalEntry
+
+    amount = float(record.net_salary or 0)
+    if amount <= 0:
+        return []
+    if AccountingEntry.query.filter_by(reference_type='payroll_payment', reference_id=record.id, status='posted').first():
+        return []
+
+    if is_period_locked(payment_date, transaction_type='payroll'):
+        raise PayrollPaymentError(f'Periode {payment_date.strftime("%Y-%m")} sudah ditutup (period-close), pembayaran gaji tidak bisa dicatat.')
+
+    if bank_account_id:
+        bank = db.session.get(Account, int(bank_account_id))
+        if not bank or not bank.is_cash_bank:
+            raise PayrollPaymentError('bank_account_id harus akun Kas/Bank')
+        bank_id = bank.id
+    else:
+        default = GlobalAccountDefault.query.filter_by(transaction_key='cash').first()
+        if not default:
+            raise PayrollPaymentError('Pilih akun Kas/Bank untuk pembayaran gaji (bank_account_id), atau atur akun "cash" di Preferensi Akun.')
+        bank_id = default.account_id
+
+    lines = [
+        {'account_id': resolve_payroll_account('payroll_net_payable'), 'debit': amount, 'credit': 0,
+         'description': f'Pembayaran gaji - record #{record.id}'},
+        {'account_id': bank_id, 'debit': 0, 'credit': amount,
+         'description': f'Pembayaran gaji - record #{record.id}'},
+    ]
+    pending = PendingJournalEntry(
+        workflow_id=None, entry_date=payment_date,
+        description=f'Pembayaran gaji record #{record.id}', reference=f'PAYROLL-PAY-{record.id}',
+        lines=lines, total_debit=amount, total_credit=amount, created_by=posted_by_user_id,
+    )
+    db.session.add(pending)
+    db.session.flush()
+    return post_pending_journal(pending.id, posted_by_user_id=posted_by_user_id,
+                                reference_type='payroll_payment', reference_id=record.id)
+
+
 def post_payroll_journal(period, records, posted_by_user_id=None):
     """
     Post one combined journal entry for an entire PayrollPeriod, summing

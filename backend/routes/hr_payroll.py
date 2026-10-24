@@ -1036,6 +1036,21 @@ def mark_payroll_paid(record_id):
         if record.status != 'approved':
             return jsonify({'error': f'Payroll record harus berstatus approved dulu sebelum bisa ditandai paid (status saat ini: {record.status})'}), 400
 
+        # Pembayaran gaji harus masuk buku besar: jurnal persetujuan periode
+        # mengkredit Hutang Gaji (net); saat gaji benar-benar dibayarkan,
+        # Hutang Gaji harus didebit dan Kas/Bank dikredit. Sebelumnya status
+        # 'paid' hanya mengubah kolom, jadi Hutang Gaji tidak pernah berkurang
+        # dan saldo kas tidak mencatat gaji yang keluar.
+        from utils.finance_helpers import post_payroll_payment_journal, PayrollPaymentError
+        try:
+            post_payroll_payment_journal(
+                record, payment_date=get_local_today(),
+                bank_account_id=data.get('bank_account_id'), posted_by_user_id=get_jwt_identity(),
+            )
+        except PayrollPaymentError as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 400
+
         record.status = 'paid'
         record.payment_date = get_local_today()
         record.payment_method = data.get('payment_method', 'bank_transfer')
