@@ -478,23 +478,27 @@ def generate_invoice_document(invoice_id, user_id):
     if not invoice:
         raise ValueError('Invoice not found')
 
-    template = _get_default_template('invoice')
-    if not template:
-        template = create_default_invoice_template(user_id)
-
     doc_number = generate_number('DOC-INV', Document, 'document_number')
 
     customer = invoice.customer
     sales_order = invoice.sales_order
 
     line_items = []
+    gross = 0.0
     for item in invoice.items:
+        line_gross = float(item.quantity or 0) * float(item.unit_price or 0)
+        net = float(item.total_amount or 0)
+        discount = max(0.0, line_gross - net)
+        gross += line_gross
+        pct = float(item.discount_percent or 0) or (round(discount / line_gross * 100, 2) if line_gross and discount else 0)
         line_items.append({
             'item_name': item.description or (item.product.name if item.product else ''),
             'quantity': float(item.quantity),
             'uom': item.uom or '',
             'unit_price': float(item.unit_price),
-            'subtotal': float(item.total_amount),
+            'discount': discount,
+            'discount_percent': pct,
+            'subtotal': line_gross,
         })
 
     status_label = {
@@ -502,10 +506,11 @@ def generate_invoice_document(invoice_id, user_id):
         'paid': 'Lunas', 'overdue': 'Jatuh Tempo', 'cancelled': 'Dibatalkan',
     }.get(invoice.status, invoice.status)
 
+    total = float(invoice.total_amount or 0)
     document_data = {
         'document_number': invoice.invoice_number,
-        'document_date': invoice.invoice_date.strftime('%d %B %Y') if invoice.invoice_date else '',
-        'due_date': invoice.due_date.strftime('%d %B %Y') if invoice.due_date else '',
+        'document_date': invoice.invoice_date.strftime('%d-%m-%Y') if invoice.invoice_date else '',
+        'due_date': invoice.due_date.strftime('%d-%m-%Y') if invoice.due_date else '',
         'po_number': sales_order.customer_po_number if sales_order and sales_order.customer_po_number else '',
         'ship_to': sales_order.delivery_address if sales_order else '',
         'status': status_label,
@@ -513,11 +518,14 @@ def generate_invoice_document(invoice_id, user_id):
         'customer_address': customer.billing_address if customer else '',
         'payment_terms': invoice.payment_terms or '',
         'notes': invoice.notes or '',
+        'gross': gross,
+        'discount_total': sum(i['discount'] for i in line_items),
         'subtotal': float(invoice.subtotal or 0),
         'tax_amount': float(invoice.tax_amount or 0),
-        'discount_amount': float(invoice.discount_amount or 0),
-        'total_amount': float(invoice.total_amount or 0),
+        'total_amount': total,
+        'paid_amount': float(invoice.paid_amount or 0),
         'balance_due': float(invoice.balance_due or 0),
+        'terbilang': (_terbilang(total).strip().capitalize() + ' rupiah') if total >= 1 else 'Nol rupiah',
         'line_items': line_items,
         'company': get_company_context(),
     }
@@ -526,7 +534,7 @@ def generate_invoice_document(invoice_id, user_id):
         document_number=doc_number,
         document_title=f'Invoice {invoice.invoice_number} - {customer.company_name if customer else ""}',
         document_type='invoice',
-        template_version_id=template.current_version_id,
+        template_version_id=None,
         document_data=document_data,
         reference_type='invoice',
         reference_id=invoice.id,
@@ -534,7 +542,7 @@ def generate_invoice_document(invoice_id, user_id):
         status='generated',
         created_by=user_id
     )
-    document.html_content = render_template_version_to_html(template.current_version, document_data)
+    document.html_content = _render_invoice_html(document_data)
 
     db.session.add(document)
     db.session.flush()
@@ -774,6 +782,81 @@ def generate_purchase_order_document(po_id, user_id):
     return document
 
 
+def _num(v):
+    v = float(v or 0)
+    return f"{v:,.2f}".rstrip('0').rstrip('.').replace(',', '_').replace('.', ',').replace('_', '.') if v != int(v) else f"{int(v):,}".replace(',', '.')
+
+
+def _doc_header_html(company, title, lines):
+    """Logo + company block on the left, title/number block on the right."""
+    from html import escape as e
+    logo = company.get('logo_url') or ''
+    logo_html = f'<img src="{logo}" style="height:14mm;margin-right:3mm;">' if logo else ''
+    address = ', '.join(x for x in [company.get('address'), company.get('city')] if x)
+    contact = ' | '.join(x for x in [company.get('phone'), company.get('email')] if x)
+    right = ''.join(f'<div>{e(l)}</div>' for l in lines)
+    return f"""<table style="border-collapse:collapse;width:100%"><tr>
+<td style="vertical-align:top;width:62%"><table style="border-collapse:collapse"><tr>
+<td style="vertical-align:middle">{logo_html}</td>
+<td style="vertical-align:middle"><div style="font-size:13pt;font-weight:bold">{e(company.get('name') or company.get('legal_name') or '')}</div>
+<div style="font-size:8pt;color:#444">{e(address)}</div><div style="font-size:8pt;color:#444">{e(contact)}</div></td></tr></table></td>
+<td style="text-align:right;vertical-align:top"><div style="font-size:14pt;font-weight:bold;letter-spacing:1px;white-space:nowrap">{title}</div>{right}</td>
+</tr></table><div style="border-top:2px solid #111;margin:6px 0 8px"></div>"""
+
+
+def _render_invoice_html(d):
+    from html import escape as e
+    rows = ''.join(
+        f"""<tr><td class="c">{i}</td><td>{e(it['item_name'])}</td><td class="r">{_num(it['quantity'])}</td>
+<td>{e(it['uom'])}</td><td class="r">{_num(it['unit_price'])}</td>
+<td class="r">{(_num(it['discount']) + (' (' + _num(it['discount_percent']) + '%)' if it['discount_percent'] else '')) if it['discount'] else '-'}</td>
+<td class="r">{_num(it['subtotal'])}</td></tr>"""
+        for i, it in enumerate(d['line_items'], 1))
+    def tot(label, val, cls=''):
+        return f'<tr class="{cls}"><td>{label}</td><td class="r">{_rp(val)}</td></tr>'
+    totals = tot('Subtotal', d['gross'])
+    if d['discount_total']:
+        totals += tot('Diskon', -d['discount_total'])
+        totals += tot('Setelah Diskon', d['subtotal'])
+    if d['tax_amount']:
+        totals += tot('PPN', d['tax_amount'])
+    totals += tot('TOTAL', d['total_amount'], 'grand')
+    if d['paid_amount']:
+        totals += tot('Sudah Dibayar', d['paid_amount'])
+        totals += tot('Sisa Tagihan', d['balance_due'], 'grand')
+    meta = [('No. PO Customer', d['po_number']), ('Syarat Pembayaran', d['payment_terms']), ('Jatuh Tempo', d['due_date'])]
+    meta_html = ''.join(f'<tr><td class="k">{k}</td><td>: {e(v or "-")}</td></tr>' for k, v in meta)
+    return f"""<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+@page {{ size: A4; margin: 14mm 14mm; }}
+body {{ font-family: Arial, sans-serif; font-size: 9.5pt; color: #111; margin: 0; }}
+table {{ border-collapse: collapse; width: 100%; }}
+.box {{ border: 1px solid #999; padding: 6px 8px; vertical-align: top; }}
+.box .h {{ font-size: 8pt; color: #555; text-transform: uppercase; margin-bottom: 2px; }}
+.meta td {{ padding: 1px 0; font-size: 9pt; }} .meta td.k {{ width: 36mm; color: #444; white-space: nowrap; }}
+.items {{ margin-top: 10px; }}
+.items th {{ background: #e8e8e8; border: 1px solid #999; padding: 5px 6px; font-size: 8.5pt; text-align: left; }}
+.items td {{ border: 1px solid #999; padding: 4px 6px; vertical-align: top; }}
+.r {{ text-align: right; }} .c {{ text-align: center; width: 8mm; }}
+.sum {{ width: 78mm; margin-left: auto; margin-top: 8px; }}
+.sum td {{ padding: 3px 6px; border-bottom: 1px solid #ddd; }}
+.sum tr.grand td {{ font-weight: bold; border-top: 1.5px solid #111; border-bottom: 1.5px solid #111; background: #f0f0f0; }}
+.words {{ border: 1px solid #999; padding: 5px 8px; margin-top: 8px; font-style: italic; background: #f6f6f6; }}
+.sig td {{ width: 50%; text-align: center; font-size: 9pt; }}
+.sig .line {{ border-bottom: 1px solid #111; margin: 20mm 22mm 2px; }}
+</style></head><body>
+{_doc_header_html(d['company'], 'INVOICE', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}", f"Status: {d['status']}"])}
+<table><tr>
+<td class="box" style="width:50%"><div class="h">Ditagihkan Kepada</div><div style="font-weight:bold;font-size:10.5pt">{e(d['customer_name'] or '-')}</div><div>{e(d['customer_address'] or '')}</div></td>
+<td class="box"><table class="meta">{meta_html}</table>{f'<div class="h" style="margin-top:4px">Kirim Ke</div><div>{e(d["ship_to"])}</div>' if d['ship_to'] else ''}</td>
+</tr></table>
+<table class="items"><thead><tr><th>No.</th><th>Deskripsi</th><th class="r">Qty</th><th>Satuan</th><th class="r">Harga</th><th class="r">Diskon</th><th class="r">Jumlah</th></tr></thead><tbody>{rows}</tbody></table>
+<table class="sum">{totals}</table>
+<div class="words"><b>Terbilang:</b> {e(d['terbilang'])}</div>
+{f'<div style="margin-top:8px;font-size:9pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}
+<table class="sig" style="margin-top:14px"><tr><td>Diterima oleh,<div class="line"></div><div style="font-size:8pt;color:#555">Nama jelas &amp; tanda tangan</div></td><td>Hormat kami,<div class="line"></div><div style="font-size:8pt;color:#555">{e(d['company'].get('name') or '')}</div></td></tr></table>
+</body></html>"""
+
+
 _SATUAN = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas']
 
 
@@ -853,12 +936,7 @@ table {{ border-collapse: collapse; width: 100%; }}
 .sig {{ width: 33%; text-align: center; font-size: 8.5pt; }}
 .sig .line {{ border-bottom: 1px solid #111; margin: 16mm 14mm 2px; }}
 </style></head><body>
-<table class="hdr"><tr>
-<td><div class="co">{e(company.get('name') or company.get('legal_name') or '')}</div>
-<div class="sub">{e(address)}</div><div class="sub">{e(contact)}</div></td>
-<td class="ttl"><div class="t">{title}</div><div>No. {e(d['document_number'])}</div><div>Tanggal: {e(d['document_date'])}</div></td>
-</tr></table>
-<div class="rule"></div>
+{_doc_header_html(company, title, [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}"])}
 <table class="info">
 <tr><td class="k">{party_label}</td><td>: <b>{e(d['party_name'] or '-')}</b></td><td class="k">Kas/Bank</td><td>: {e(d['bank_account'] or '-')}</td></tr>
 <tr><td class="k">Metode</td><td>: {e(d['payment_method'] or '-')}</td><td class="k">No. Referensi</td><td>: {e(d['reference_number'] or '-')}</td></tr>
