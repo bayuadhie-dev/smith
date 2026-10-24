@@ -1117,10 +1117,15 @@ def record_payment(id):
         if amount > balance + 0.01:
             return jsonify({'error': f'Jumlah melebihi sisa tagihan Rp {balance:,.2f}'}), 400
 
+        pay_date = datetime.strptime(data['payment_date'], '%Y-%m-%d').date() if data.get('payment_date') else get_local_today()
+        from utils.finance_helpers import is_period_locked
+        if is_period_locked(pay_date, transaction_type='payment', sap_bucket='K'):
+            return jsonify({'error': f'Periode {pay_date.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa mencatat pembayaran di periode ini.'}), 400
+
         payment_number = generate_number('PAY', Payment, 'payment_number')
         payment = Payment(
             payment_number=payment_number,
-            payment_date=datetime.strptime(data['payment_date'], '%Y-%m-%d').date() if data.get('payment_date') else get_local_today(),
+            payment_date=pay_date,
             payment_type='payment',
             invoice_id=invoice.id,
             supplier_id=invoice.supplier_id,
