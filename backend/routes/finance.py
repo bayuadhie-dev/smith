@@ -647,6 +647,9 @@ def get_payments():
                     'name': bank_accounts_by_id[p.bank_account_id].account_name,
                 } if p.bank_account_id in bank_accounts_by_id else None,
                 'party_name': party_name(p),
+                'invoice_numbers': [a.invoice.invoice_number for a in p.allocations if a.invoice]
+                                   or ([p.invoice.invoice_number] if p.invoice else []),
+                'account_lines': len(p.lines),
                 'notes': p.notes,
                 'reference_number': p.reference_number,
                 'status': p.status,

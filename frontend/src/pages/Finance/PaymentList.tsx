@@ -14,6 +14,8 @@ interface PaymentRow {
   bank_account: { code: string; name: string } | null;
   party_name: string | null;
   notes: string | null;
+  invoice_numbers?: string[];
+  account_lines?: number;
   reference_number: string | null;
   status: string;
 }
@@ -150,7 +152,15 @@ const PaymentList: React.FC<PaymentListProps> = ({ type }) => {
                     {r.bank_account ? `${r.bank_account.code} - ${r.bank_account.name}` : '-'}
                   </td>
                   <td className="px-4 py-2">{r.party_name || '-'}</td>
-                  <td className="px-4 py-2">{r.notes || r.reference_number || '-'}</td>
+                  <td className="px-4 py-2">
+                    {r.invoice_numbers && r.invoice_numbers.length > 0 && (
+                      <div className="text-xs text-blue-700">Pelunasan: {r.invoice_numbers.join(', ')}</div>
+                    )}
+                    {(r.account_lines ?? 0) > 1 && (
+                      <div className="text-xs text-gray-500">{r.account_lines} akun</div>
+                    )}
+                    {r.notes || r.reference_number || (r.invoice_numbers?.length ? '' : '-')}
+                  </td>
                   <td className="px-4 py-2 text-right">{formatRupiah(r.amount)}</td>
                   <td className="px-4 py-2 text-center">
                     <span
