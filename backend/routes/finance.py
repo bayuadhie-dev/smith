@@ -610,6 +610,11 @@ def get_payments():
         payment_type = request.args.get('type')
         if payment_type in ('receipt', 'payment'):
             query = query.filter(Payment.payment_type == payment_type)
+        source = request.args.get('source')
+        if source == 'invoice':
+            query = query.filter(db.or_(Payment.invoice_id.isnot(None), Payment.allocations.any()))
+        elif source == 'kas':
+            query = query.filter(Payment.invoice_id.is_(None), ~Payment.allocations.any())
         date_from = request.args.get('date_from')
         date_to = request.args.get('date_to')
         if date_from:
@@ -658,6 +663,70 @@ def get_payments():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@finance_bp.route('/payments/next-number', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def payment_next_number():
+    from utils.helpers import peek_number
+    prefix = 'RCP' if request.args.get('type') == 'receipt' else 'PAY'
+    return jsonify({'next_number': peek_number(prefix, Payment, 'payment_number')}), 200
+
+
+def _void_payment_core(payment, user_id, reason):
+    """Shared by void_payment() and the edit ("Ubah") flow. Returns
+    (error_response, status) when it refuses, else None. Does not commit."""
+    if payment.status == 'cancelled':
+        return jsonify({'error': 'Payment sudah dalam status cancelled'}), 400
+
+    from models.finance import BankStatementLine
+    matched_entry_ids = [e.id for e in AccountingEntry.query.filter_by(
+        reference_type='payment', reference_id=payment.id, status='posted',
+    ).with_entities(AccountingEntry.id).all()]
+    if matched_entry_ids and BankStatementLine.query.filter(
+        BankStatementLine.matched_accounting_entry_id.in_(matched_entry_ids)
+    ).first():
+        return jsonify({
+            'error': 'Payment ini sudah dicocokkan (matched) di Rekonsiliasi '
+                     'Bank. Batalkan pencocokannya dulu di halaman Bank '
+                     'Reconciliation sebelum bisa void payment ini.'
+        }), 400
+
+    from utils.finance_helpers import is_period_locked, reverse_accounting_entries, resolve_payment_sap_bucket
+    if is_period_locked(payment.payment_date, transaction_type='payment', sap_bucket=resolve_payment_sap_bucket(payment)):
+        return jsonify({
+            'error': f'Periode {payment.payment_date.strftime("%Y-%m")} sudah '
+                     'ditutup (period-close). Tidak bisa void payment di periode ini.'
+        }), 400
+
+    reverse_accounting_entries(
+        reference_type='payment',
+        reference_id=payment.id,
+        entry_date=get_local_now().date(),
+        user_id=user_id,
+        description=f'Void payment {payment.payment_number}' + (f' - {reason}' if reason else ''),
+    )
+
+    allocs = [(a.invoice_id, float(a.amount)) for a in payment.allocations]
+    if not allocs and payment.invoice_id:
+        allocs = [(payment.invoice_id, float(payment.amount or 0))]
+    for inv_id, amt in allocs:
+        invoice = db.session.get(Invoice, inv_id)
+        if invoice:
+            invoice.paid_amount = max(0, float(invoice.paid_amount or 0) - amt)
+            invoice.balance_due = float(invoice.total_amount or 0) - invoice.paid_amount
+            if invoice.status != 'cancelled':
+                if invoice.paid_amount <= 0:
+                    invoice.status = 'sent' if invoice.invoice_type == 'sales' else 'draft'
+                elif invoice.balance_due > 0:
+                    invoice.status = 'partial'
+
+    payment.status = 'cancelled'
+    payment.voided_by = user_id
+    payment.voided_at = get_local_now()
+    payment.void_reason = reason
+    return None
+
+
 @finance_bp.route('/payments', methods=['POST'])
 @jwt_required()
 @require_permission('finance.create')
@@ -700,6 +769,21 @@ def create_payment():
         if not bank_account or not bank_account.is_cash_bank:
             return jsonify({'error': 'bank_account_id must reference a Kas/Bank account'}), 400
 
+        # Edit ("Ubah") = void the old payment and create a replacement in one
+        # transaction; amounts the old one holds count as available balance.
+        replace_id = data.get('replace_payment_id')
+        old_payment = db.session.get(Payment, replace_id) if replace_id else None
+        if replace_id and not old_payment:
+            return jsonify({'error': 'Payment yang akan diubah tidak ditemukan'}), 404
+        released = {}
+        if old_payment:
+            for a in old_payment.allocations:
+                released[a.invoice_id] = released.get(a.invoice_id, Decimal('0')) + Decimal(str(a.amount))
+
+        manual_number = (data.get('payment_number') or '').strip()
+        if manual_number and Payment.query.filter_by(payment_number=manual_number).first():
+            return jsonify({'error': f'Nomor bukti {manual_number} sudah dipakai'}), 400
+
         # Resolve invoices; all must share direction and party.
         invoices = []
         if allocations_in:
@@ -712,7 +796,7 @@ def create_payment():
                     return jsonify({'error': f'Invoice id {a["invoice_id"]} tidak ditemukan'}), 404
                 if inv.status == 'cancelled':
                     return jsonify({'error': f'Invoice {inv.invoice_number} sudah dibatalkan'}), 400
-                balance = Decimal(str(inv.balance_due or 0))
+                balance = Decimal(str(inv.balance_due or 0)) + released.get(inv.id, Decimal('0'))
                 if Decimal(str(a['amount'])) > balance + Decimal('0.01'):
                     return jsonify({
                         'error': f'Jumlah untuk {inv.invoice_number} (Rp{float(a["amount"]):,.2f}) melebihi sisa tagihan (Rp{float(balance):,.2f})'
@@ -737,8 +821,16 @@ def create_payment():
                              transaction_type='payment', sap_bucket=payment_bucket):
             return jsonify({'error': f'Periode {payment_date_parsed.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa mencatat pembayaran di periode ini.'}), 400
 
+        if old_payment:
+            err = _void_payment_core(old_payment, user_id, f'Diubah menjadi transaksi baru')
+            if err:
+                return err
+            db.session.flush()
+            for inv in invoices:
+                db.session.refresh(inv)
+
         # RCP- for Penerimaan, PAY- for Pembayaran (separate number series)
-        payment_number = generate_number('RCP' if payment_type == 'receipt' else 'PAY', Payment, 'payment_number')
+        payment_number = manual_number or generate_number('RCP' if payment_type == 'receipt' else 'PAY', Payment, 'payment_number')
 
         payment = Payment(
             payment_number=payment_number,
@@ -993,65 +1085,10 @@ def void_payment(id):
         payment = db.session.get(Payment, id)
         if not payment:
             return jsonify({'error': 'Payment tidak ditemukan'}), 404
-
-        if payment.status == 'cancelled':
-            return jsonify({'error': 'Payment sudah dalam status cancelled'}), 400
-
-        from models.finance import BankStatementLine
-
-        matched_original_entries = AccountingEntry.query.filter_by(
-            reference_type='payment', reference_id=payment.id, status='posted',
-        ).with_entities(AccountingEntry.id).all()
-        matched_entry_ids = [e.id for e in matched_original_entries]
-        if matched_entry_ids:
-            already_matched = BankStatementLine.query.filter(
-                BankStatementLine.matched_accounting_entry_id.in_(matched_entry_ids)
-            ).first()
-            if already_matched:
-                return jsonify({
-                    'error': 'Payment ini sudah dicocokkan (matched) di Rekonsiliasi '
-                             'Bank. Batalkan pencocokannya dulu di halaman Bank '
-                             'Reconciliation sebelum bisa void payment ini.'
-                }), 400
-
-        from utils.finance_helpers import is_period_locked, reverse_accounting_entries, resolve_payment_sap_bucket
-
-        if is_period_locked(payment.payment_date, transaction_type='payment', sap_bucket=resolve_payment_sap_bucket(payment)):
-            return jsonify({
-                'error': f'Periode {payment.payment_date.strftime("%Y-%m")} sudah '
-                         'ditutup (period-close). Tidak bisa void payment di periode ini.'
-            }), 400
-
         data = request.get_json(silent=True) or {}
-        reason = data.get('reason')
-
-        reverse_accounting_entries(
-            reference_type='payment',
-            reference_id=payment.id,
-            entry_date=get_local_now().date(),
-            user_id=user_id,
-            description=f'Void payment {payment.payment_number}' + (f' - {reason}' if reason else ''),
-        )
-
-        allocs = [(a.invoice_id, float(a.amount)) for a in payment.allocations]
-        if not allocs and payment.invoice_id:
-            allocs = [(payment.invoice_id, float(payment.amount or 0))]
-        for inv_id, amt in allocs:
-            invoice = db.session.get(Invoice, inv_id)
-            if invoice:
-                invoice.paid_amount = max(0, float(invoice.paid_amount or 0) - amt)
-                invoice.balance_due = float(invoice.total_amount or 0) - invoice.paid_amount
-                if invoice.status != 'cancelled':
-                    if invoice.paid_amount <= 0:
-                        invoice.status = 'sent' if invoice.invoice_type == 'sales' else 'draft'
-                    elif invoice.balance_due > 0:
-                        invoice.status = 'partial'
-
-        payment.status = 'cancelled'
-        payment.voided_by = user_id
-        payment.voided_at = get_local_now()
-        payment.void_reason = reason
-
+        err = _void_payment_core(payment, user_id, data.get('reason'))
+        if err:
+            return err
         db.session.commit()
         return jsonify({'message': f'Payment {payment.payment_number} berhasil di-void'}), 200
     except Exception as e:

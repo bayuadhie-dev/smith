@@ -74,6 +74,24 @@ def generate_number(prefix, model=None, field_name='number'):
     return f"{prefix}-{period}-{new_seq:05d}"
 
 
+def peek_number(prefix, model, field_name):
+    """Next number generate_number() WOULD return, without consuming it
+    (for form previews; the real number is only assigned on save)."""
+    from models import db
+    from models.finance import NumberSequenceCounter
+    period = datetime.now().strftime('%Y%m')
+    counter = NumberSequenceCounter.query.filter_by(prefix=prefix, period=period).first()
+    last = counter.last_seq if counter else 0
+    if last == 0:
+        field = getattr(model, field_name)
+        for (value,) in db.session.query(field).filter(field.like(f"{prefix}-{period}-%")).all():
+            try:
+                last = max(last, int(value.split('-')[-1]))
+            except (ValueError, AttributeError):
+                continue
+    return f"{prefix}-{period}-{last + 1:05d}"
+
+
 def generate_number_v2(sequence_key, default_prefix, model=None, field_name='number'):
     """
     Same numbering scheme as generate_number() ({prefix}-{year}{month}-{seq}),

@@ -73,6 +73,10 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const editId = searchParams.get('edit');
+  const editAllocRef = useRef<{ invoice_id: number; invoice_number: string | null; invoice_total_amount: number | null; amount: number }[] | null>(null);
+  const [paymentNumber, setPaymentNumber] = useState('');
+  const [nextNumber, setNextNumber] = useState('');
   const [alloc, setAlloc] = useState<Record<number, string>>({});
   const [lines, setLines] = useState<{ account_id: string; amount: string; description: string }[]>([
     { account_id: '', amount: '', description: '' },
@@ -92,9 +96,11 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     : Object.values(alloc).reduce((s, v) => s + (Number(v) || 0), 0);
 
   useEffect(() => {
-    setFormData(f => ({ ...f, party_id: '' }));
-    setInvoices([]);
-    setAlloc({});
+    if (!editId) {
+      setFormData(f => ({ ...f, party_id: '' }));
+      setInvoices([]);
+      setAlloc({});
+    }
     if (mode === 'kas') { setParties([]); return; }
 
     const partyEndpoint = mode === 'ap'
@@ -130,11 +136,56 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     setLoadingInvoices(true);
     const param = mode === 'ap' ? 'supplier_id' : 'customer_id';
     axiosInstance.get(`/api/finance/invoices/unpaid?${param}=${formData.party_id}`)
-      .then((res) => setInvoices(res.data.invoices || []))
+      .then((res) => {
+        let list: UnpaidInvoice[] = res.data.invoices || [];
+        const old = editAllocRef.current;
+        if (old) {
+          // Ubah: saldo yang dipegang transaksi lama dianggap tersedia lagi.
+          list = list.map((i) => {
+            const o = old.find((x) => x.invoice_id === i.id);
+            return o ? { ...i, balance_due: i.balance_due + o.amount } : i;
+          });
+          old.forEach((o) => {
+            if (!list.some((i) => i.id === o.invoice_id)) {
+              list.push({ id: o.invoice_id, invoice_number: o.invoice_number || `#${o.invoice_id}`, due_date: null, total_amount: o.invoice_total_amount || o.amount, balance_due: o.amount });
+            }
+          });
+          setAlloc(Object.fromEntries(old.map((o) => [o.invoice_id, String(o.amount)])));
+          editAllocRef.current = null;
+        }
+        setInvoices(list);
+      })
       .catch(() => setInvoices([]))
       .finally(() => setLoadingInvoices(false));
-    setAlloc({});
+    if (!editAllocRef.current) setAlloc({});
   }, [formData.party_id, mode]);
+
+  useEffect(() => {
+    if (editId) return;
+    const t = mode === 'ar' || (mode === 'kas' && cashDirection === 'in') ? 'receipt' : 'payment';
+    axiosInstance.get(`/api/finance/payments/next-number?type=${t}`)
+      .then((res) => setNextNumber(res.data.next_number || ''))
+      .catch(() => setNextNumber(''));
+  }, [mode, cashDirection, editId]);
+
+  useEffect(() => {
+    if (!editId) return;
+    axiosInstance.get(`/api/finance/payments/${editId}`).then((res) => {
+      const d = res.data;
+      if (d.allocations?.length) editAllocRef.current = d.allocations;
+      setFormData({
+        party_id: String(d.customer_id || d.supplier_id || ''),
+        payment_date: (d.payment_date || '').slice(0, 10),
+        payment_method: d.payment_method || 'bank_transfer',
+        reference_number: d.reference_number || '',
+        notes: d.notes || '',
+        bank_account_id: d.bank_account_id ? String(d.bank_account_id) : '',
+      });
+      if (d.lines?.length) {
+        setLines(d.lines.map((l: any) => ({ account_id: String(l.account_id), amount: String(l.amount), description: l.description || '' })));
+      }
+    }).catch(() => setError('Gagal memuat transaksi yang akan diubah.'));
+  }, [editId]);
 
   // Prefill from ?invoice_id= ("Catat Pembayaran" row action on InvoiceList.tsx).
   useEffect(() => {
@@ -238,6 +289,8 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     setSubmitting(true);
     try {
       const res = await axiosInstance.post('/api/finance/payments', {
+        payment_number: paymentNumber.trim() || undefined,
+        replace_payment_id: editId ? Number(editId) : undefined,
         payment_date: formData.payment_date,
         payment_type: paymentType === 'supplier' ? 'payment' : 'receipt',
         allocations: isStandalone ? undefined : allocations,
@@ -268,7 +321,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{FORM_TITLES[effectiveKind][0]}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{editId ? 'Ubah ' : ''}{FORM_TITLES[effectiveKind][0]}</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">{FORM_TITLES[effectiveKind][1]}</p>
         </div>
         <button 
@@ -288,6 +341,18 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
       <div className="card p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Bukti</label>
+              <input
+                type="text"
+                className="input w-full"
+                placeholder={editId ? 'Nomor baru otomatis (transaksi lama di-void)' : (nextNumber ? `${nextNumber} (otomatis)` : 'Otomatis')}
+                value={paymentNumber}
+                onChange={(e) => setPaymentNumber(e.target.value)}
+              />
+              <p className="text-xs text-gray-500 mt-1">Kosongkan untuk nomor otomatis, atau isi nomor sendiri.</p>
+            </div>
+            <div className="hidden md:block" />
             {!isStandalone && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">

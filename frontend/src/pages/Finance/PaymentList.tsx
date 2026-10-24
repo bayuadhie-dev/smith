@@ -22,15 +22,19 @@ interface PaymentRow {
 
 interface PaymentListProps {
   type: 'receipt' | 'payment';
+  source: 'kas' | 'invoice';
 }
+
+const localISO = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 function firstDayOfMonth(): string {
   const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
+  return localISO(new Date(d.getFullYear(), d.getMonth(), 1));
 }
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10);
+  return localISO(new Date());
 }
 
 const statusLabel: Record<string, string> = {
@@ -40,7 +44,7 @@ const statusLabel: Record<string, string> = {
   cancelled: 'Dibatalkan',
 };
 
-const PaymentList: React.FC<PaymentListProps> = ({ type }) => {
+const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
   const [dateFrom, setDateFrom] = useState(firstDayOfMonth());
   const [dateTo, setDateTo] = useState(today());
   const [rows, setRows] = useState<PaymentRow[]>([]);
@@ -48,8 +52,12 @@ const PaymentList: React.FC<PaymentListProps> = ({ type }) => {
   const [error, setError] = useState<string | null>(null);
 
   const isReceipt = type === 'receipt';
-  const title = isReceipt ? 'Penerimaan Kas/Bank' : 'Pembayaran Kas/Bank';
-  const newHref = isReceipt ? '/app/finance/penerimaan/new' : '/app/finance/pembayaran/new';
+  const title = source === 'kas'
+    ? (isReceipt ? 'Penerimaan Kas/Bank' : 'Pembayaran Kas/Bank')
+    : (isReceipt ? 'Penerimaan Penjualan (Piutang)' : 'Pembayaran Pembelian (Hutang)');
+  const newHref = source === 'kas'
+    ? (isReceipt ? '/app/finance/penerimaan/new' : '/app/finance/pembayaran/new')
+    : (isReceipt ? '/app/finance/penerimaan-penjualan/new' : '/app/finance/pembayaran-pembelian/new');
   const partyLabel = isReceipt ? 'Pelanggan' : 'Pemasok';
 
   const fetchRows = useCallback(async () => {
@@ -57,7 +65,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type }) => {
     setError(null);
     try {
       const res = await axiosInstance.get(
-        `/api/finance/payments?type=${type}&date_from=${dateFrom}&date_to=${dateTo}`
+        `/api/finance/payments?type=${type}&source=${source}&date_from=${dateFrom}&date_to=${dateTo}`
       );
       setRows(res.data.payments || []);
     } catch (e: any) {
@@ -65,7 +73,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type }) => {
     } finally {
       setLoading(false);
     }
-  }, [type, dateFrom, dateTo]);
+  }, [type, source, dateFrom, dateTo]);
 
   useEffect(() => {
     fetchRows();

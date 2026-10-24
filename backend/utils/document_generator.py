@@ -802,7 +802,7 @@ def generate_kwitansi_document(payment_id, user_id):
         'amount': float(payment.amount or 0),
         'payment_method': payment.payment_method or '',
         'reference_number': payment.reference_number or '',
-        'invoice_number': payment.invoice.invoice_number if payment.invoice else '',
+        'invoice_number': ', '.join(a.invoice.invoice_number for a in payment.allocations if a.invoice) or (payment.invoice.invoice_number if payment.invoice else ''),
         'notes': payment.notes or '',
         'company': get_company_context(),
     }

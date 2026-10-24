@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
+import DocumentGenerateButton from '../../components/DocumentGenerateButton';
+import { confirmDialog } from '../../components/ui/ConfirmDialog';
+import { showSuccess, showError } from '../../components/ui/Toast';
 
 interface GLEntry {
   id: number;
@@ -40,7 +43,7 @@ interface PaymentDetailData {
   voided_at: string | null;
   void_reason: string | null;
   allocations: { invoice_id: number; invoice_number: string | null; invoice_total_amount: number | null; amount: number }[];
-  lines: { account_code: string | null; account_name: string | null; amount: number; description: string | null }[];
+  lines: { account_id?: number; account_code: string | null; account_name: string | null; amount: number; description: string | null }[];
   gl_entries: GLEntry[];
 }
 
@@ -66,6 +69,7 @@ export default function PaymentDetail() {
   const [payment, setPayment] = useState<PaymentDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [voidReason, setVoidReason] = useState('');
 
   useEffect(() => {
     const fetchPayment = async () => {
@@ -81,6 +85,19 @@ export default function PaymentDetail() {
     };
     fetchPayment();
   }, [id]);
+
+  const handleVoid = async () => {
+    if (!payment) return;
+    if (!(await confirmDialog(`Void ${payment.payment_number}? Jurnal akan dibalik dan saldo faktur dikembalikan.`, { title: 'Void Transaksi', confirmText: 'Ya, Void' }))) return;
+    try {
+      await axiosInstance.post(`/api/finance/payments/${payment.id}/void`, { reason: voidReason || undefined });
+      showSuccess('Transaksi berhasil di-void');
+      const res = await axiosInstance.get(`/api/finance/payments/${payment.id}`);
+      setPayment(res.data);
+    } catch (err: any) {
+      showError(err.response?.data?.error || 'Gagal void transaksi');
+    }
+  };
 
   if (loading) {
     return (
@@ -105,7 +122,9 @@ export default function PaymentDetail() {
   // vs 'received' both exist for the same AR concept) - customer_id vs
   // supplier_id is the reliable signal for which side of the transaction
   // this is, same as the backend's own create_payment() logic.
-  const isReceipt = payment.customer_id != null;
+  const isReceipt = payment.customer_id != null || (payment.supplier_id == null && payment.payment_type === 'receipt');
+  const isInvoiceBased = (payment.allocations?.length ?? 0) > 0 || !!payment.invoice_id;
+  const editHref = `${isInvoiceBased ? (isReceipt ? '/app/finance/penerimaan-penjualan/new' : '/app/finance/pembayaran-pembelian/new') : (isReceipt ? '/app/finance/penerimaan/new' : '/app/finance/pembayaran/new')}?edit=${payment.id}`;
   const totalDebit = payment.gl_entries.reduce((sum, e) => sum + (e.debit_amount || 0), 0);
   const totalCredit = payment.gl_entries.reduce((sum, e) => sum + (e.credit_amount || 0), 0);
 
@@ -127,6 +146,32 @@ export default function PaymentDetail() {
           </button>
         </div>
       </div>
+
+      {payment.status !== 'cancelled' && (
+        <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <DocumentGenerateButton
+            transactionType="payment"
+            transactionId={payment.id}
+            transactionNumber={payment.payment_number}
+            label="Cetak Bukti"
+          />
+          <button
+            onClick={() => navigate(editHref)}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            Ubah
+          </button>
+          <input
+            className="input w-64"
+            placeholder="Alasan void (opsional)"
+            value={voidReason}
+            onChange={(e) => setVoidReason(e.target.value)}
+          />
+          <button onClick={handleVoid} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+            Void
+          </button>
+        </div>
+      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -372,8 +372,10 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           children: [
             { name: 'Dashboard', href: '/app/finance', icon: PresentationChartLineIcon },
             { name: 'Laporan Penjualan', href: '/app/finance/sales-report', icon: DocumentTextIcon },
-            { name: 'Penerimaan', href: '/app/finance/penerimaan', icon: BanknotesIcon },
-            { name: 'Pembayaran', href: '/app/finance/pembayaran', icon: BanknotesIcon },
+            { name: 'Penerimaan Penjualan', href: '/app/finance/penerimaan-penjualan', icon: BanknotesIcon },
+            { name: 'Pembayaran Pembelian', href: '/app/finance/pembayaran-pembelian', icon: BanknotesIcon },
+            { name: 'Penerimaan Kas/Bank', href: '/app/finance/penerimaan', icon: BanknotesIcon },
+            { name: 'Pembayaran Kas/Bank', href: '/app/finance/pembayaran', icon: BanknotesIcon },
             { name: 'Budget', href: '/app/finance/budget', icon: CurrencyDollarIcon },
             { name: 'Cash Flow', href: '/app/finance/cash-flow', icon: ArrowsRightLeftIcon },
             { name: 'Expenses', href: '/app/finance/expenses', icon: DocumentTextIcon, permission: 'expense' },
