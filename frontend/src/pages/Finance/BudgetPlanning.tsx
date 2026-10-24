@@ -276,7 +276,7 @@ const BudgetPlanning: React.FC = () => {
             <BarChart data={varianceAnalysis}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="category" angle={-45} textAnchor="end" height={80} />
-              <YAxis tickFormatter={(value) => `${(value / 1000000000).toFixed(0)}B`} />
+              <YAxis tickFormatter={(value) => Math.abs(value) >= 1000000000 ? `${(value / 1000000000).toFixed(1)} M` : `${(value / 1000000).toFixed(0)} jt`} />
               <Tooltip formatter={(value, name) => [
                 formatRupiah(value as number),
                 name === 'budget' ? 'Budget' : 'Actual'
