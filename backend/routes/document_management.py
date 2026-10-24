@@ -647,6 +647,9 @@ def update_spk_data(id):
         elif document.document_type == 'spk':
             from utils.document_generator import _render_spk_html
             document.html_content = _render_spk_html(new_data)
+        elif document.document_type == 'spk_batch':
+            from utils.document_generator import _render_spk_batch_html
+            document.html_content = _render_spk_batch_html(new_data)
 
         log = DocumentLog(
             document_id=document.id,

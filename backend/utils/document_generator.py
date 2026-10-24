@@ -409,10 +409,6 @@ def generate_spk_from_batch(batch_id, user_id):
     if not batch:
         raise ValueError('Batch not found')
 
-    template = _get_default_template('spk_batch')
-    if not template:
-        template = create_default_spk_batch_template(user_id)
-
     doc_number = generate_number('SPK', Document, 'document_number')
 
     recipe = batch.recipe
@@ -440,7 +436,7 @@ def generate_spk_from_batch(batch_id, user_id):
         document_number=doc_number,
         document_title=f'SPK Batch - {batch.batch_number}',
         document_type='spk_batch',
-        template_version_id=template.current_version_id,
+        template_version_id=None,
         document_data=document_data,
         reference_type='production_batch',
         reference_id=batch.id,
@@ -448,7 +444,7 @@ def generate_spk_from_batch(batch_id, user_id):
         status='generated',
         created_by=user_id
     )
-    document.html_content = render_template_version_to_html(template.current_version, document_data)
+    document.html_content = _render_spk_batch_html(document_data)
 
     db.session.add(document)
     db.session.flush()
@@ -830,7 +826,7 @@ def _render_invoice_html(d):
     body = f"""{_doc_header_html(d['company'], 'INVOICE', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}", f"Status: {d['status']}"])}
 <table><tr>
 <td class="box" style="width:50%"><div class="h">Ditagihkan Kepada</div><div style="font-weight:bold;font-size:10.5pt">{e(d['customer_name'] or '-')}</div><div>{e(d['customer_address'] or '')}</div></td>
-<td class="box"><table class="meta">{meta}</table>{f'<div class="h" style="margin-top:4px">Kirim Ke</div><div>{e(d["ship_to"])}</div>' if d['ship_to'] else ''}</td>
+<td class="box m"><table class="meta">{meta}</table>{f'<div style="padding:4px 8px"><div class="h">Kirim Ke</div><div>{e(d["ship_to"])}</div></div>' if d['ship_to'] else ''}</td>
 </tr></table>
 <table class="items"><thead><tr><th>No.</th><th>Kode</th><th>Deskripsi</th><th class="r">Isi/Krt</th><th class="r">Qty</th><th>Satuan</th><th class="r">Harga</th><th class="r">Diskon</th><th class="r">Jumlah</th></tr></thead><tbody>{rows}</tbody></table>
 <table class="sum">{totals}</table>
@@ -847,23 +843,25 @@ body { font-family: Arial, sans-serif; font-size: 9.5pt; color: #1b2a30; margin:
 table { border-collapse: collapse; width: 100%; }
 .wrap { position: relative; height: __MINH__; box-sizing: border-box; }
 .sigbox { position: absolute; bottom: 0; left: 0; right: 0; }
-.box { border: 1px solid #c5d0d4; padding: 6px 8px; vertical-align: top; }
+.box { border: 1px solid #8fa3aa; padding: 6px 8px; vertical-align: top; }
+.box.m { padding: 0; }
 .box .h { font-size: 8pt; color: #5b6b72; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
-.meta td { padding: 1px 0; font-size: 9pt; } .meta td.k { width: 36mm; color: #5b6b72; white-space: nowrap; }
-.info td { padding: 2px 0; } .info td.k { width: 38mm; color: #5b6b72; white-space: nowrap; }
+.meta { width: 100%; } .meta td { padding: 3px 6px; font-size: 9pt; border: 1px solid #8fa3aa; } .meta td.k { width: 36mm; color: #1b2a30; background: #e8eff1; white-space: nowrap; }
+.info td { padding: 3px 6px; border: 1px solid #8fa3aa; } .info td.k { width: 38mm; color: #1b2a30; background: #e8eff1; white-space: nowrap; }
 .items { margin-top: 10px; }
 .items th { background: #1f4e5a; color: #fff; border: 1px solid #1f4e5a; padding: 5px 6px; font-size: 8.5pt; text-align: left; }
-.items td { border: 1px solid #c5d0d4; padding: 4px 6px; vertical-align: top; height: 5.2mm; }
+.items td { border: 1px solid #8fa3aa; padding: 4px 6px; vertical-align: top; height: 5.2mm; }
 .items tbody tr:nth-child(even) td { background: #f5f8f9; }
 .items .tot td { font-weight: bold; background: #e3edf0 !important; }
 .r { text-align: right; } .c { text-align: center; width: 8mm; }
 .sum { width: 80mm; margin-left: auto; margin-top: 6px; }
-.sum td { padding: 3px 6px; border-bottom: 1px solid #dde5e8; }
+.sum td { padding: 3px 6px; border: 1px solid #8fa3aa; }
 .sum tr.grand td { font-weight: bold; color: #fff; background: #1f4e5a; border: 1px solid #1f4e5a; }
-.words { border: 1px solid #c5d0d4; border-left: 3px solid #1f4e5a; padding: 5px 8px; margin-top: 8px; font-style: italic; background: #f5f8f9; }
+.words { border: 1px solid #8fa3aa; border-left: 3px solid #1f4e5a; padding: 5px 8px; margin-top: 8px; font-style: italic; background: #f5f8f9; }
 .sig td { text-align: center; font-size: 9pt; }
 .sig .line { border-bottom: 1px solid #1b2a30; margin: 18mm 14mm 2px; }
 .sig .cap { font-size: 8pt; color: #5b6b72; }
+
 """
 
 
@@ -909,7 +907,7 @@ def _render_po_html(d):
     body = f"""{_doc_header_html(d['company'], 'PURCHASE ORDER', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}"])}
 <table><tr>
 <td class="box" style="width:50%"><div class="h">Kepada Supplier</div><div style="font-weight:bold;font-size:10.5pt">{e(d['supplier_name'] or '-')}</div><div>{e(d['supplier_address'] or '')}</div></td>
-<td class="box"><table class="meta">{_meta_rows([('Dibutuhkan', d['required_date']), ('Syarat Pembayaran', d['payment_terms']), ('Kirim Ke', d['delivery_address'])])}</table></td>
+<td class="box m"><table class="meta">{_meta_rows([('Dibutuhkan', d['required_date']), ('Syarat Pembayaran', d['payment_terms']), ('Kirim Ke', d['delivery_address'])])}</table></td>
 </tr></table>
 <table class="items"><thead><tr><th>No.</th><th>Kode</th><th>Deskripsi</th><th class="r">Qty</th><th>Satuan</th><th class="r">Harga</th><th class="r">Jumlah</th></tr></thead><tbody>{rows}</tbody></table>
 <table class="sum">{totals}</table>
@@ -930,7 +928,7 @@ def _render_sj_html(d):
     body = f"""{_doc_header_html(d['company'], 'SURAT JALAN', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}", f"Ref. SO: {d['sales_order_number']}"])}
 <table><tr>
 <td class="box" style="width:50%"><div class="h">Kepada</div><div style="font-weight:bold;font-size:10.5pt">{e(d['customer_name'] or '-')}</div><div>{e(d['customer_address'] or '')}</div><div>{e(d['customer_phone'] or '')}</div></td>
-<td class="box"><table class="meta">{_meta_rows([('Sopir', d['driver_name']), ('No. Kendaraan', d['vehicle_number'])])}</table></td>
+<td class="box m"><table class="meta">{_meta_rows([('Sopir', d['driver_name']), ('No. Kendaraan', d['vehicle_number'])])}</table></td>
 </tr></table>
 <table class="items"><thead><tr><th>No.</th><th>Kode</th><th>Nama Produk</th><th class="r">Isi/Krt</th><th class="r">Qty</th><th>Satuan</th><th>Batch</th><th>Keterangan</th></tr></thead><tbody>{rows}{total_row}</tbody></table>
 {f'<div style="margin-top:8px;font-size:9pt"><b>Catatan:</b> {e(d["notes"])}</div>' if d['notes'] else ''}
@@ -938,18 +936,51 @@ def _render_sj_html(d):
     return _page(body, _sig_row(['Disiapkan oleh,', 'Sopir,', 'Diterima oleh,']), flow=len(d['items']) > 12)
 
 
+def _render_spk_batch_html(d):
+    from html import escape as e
+    from utils.template_render_engine import _qrcode_data_uri
+    prio_rows = ''
+    rows = ''
+    for i, it in enumerate(d.get('bom_items') or [], 1):
+        raw = it.get('name') or ''
+        import re
+        depth = len(re.match(r'^(?:&nbsp;)*', raw).group(0)) // 6 // 4
+        text = raw.replace('&nbsp;', '')
+        is_wip = text.endswith('(WIP)')
+        rows += (f'<tr><td class="c">{i}</td><td style="padding-left:{2 + depth * 5}mm;{"font-weight:bold;" if is_wip else ""}">{e(text)}</td>'
+                 f'<td class="r">{_num(it.get("quantity"))}</td><td>{e(it.get("uom") or "")}</td><td></td></tr>')
+    rows += _filler_rows(len(d.get('bom_items') or []), 12, 5)
+    try:
+        qr = f'<img src="{_qrcode_data_uri(d["batch_number"])}" style="height:24mm;">' if d.get('batch_number') else ''
+    except Exception:
+        qr = ''
+    body = f"""{_doc_header_html(d['company'], 'SPK PER BATCH', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}", f"Batch: {d['batch_number']}", f"Ref. WO: {d['work_order_number']}"])}
+<table><tr>
+<td class="box" style="width:36%"><div class="h">Produk yang Dikerjakan</div>
+<div style="font-weight:bold;font-size:11pt">{e(d['product_name'] or '-')}</div><div>Kode: {e(d['product_code'] or '-')}</div>
+<div style="margin-top:6px;font-size:13pt"><b>{_num(d['quantity'])}</b> {e(d['uom'] or '')}</div></td>
+<td class="box m"><table class="meta">{_meta_rows([('Mesin', d['machine']), ('Tanggal Jadwal', d['scheduled_date']), ('Shift', d['shift_number']), ('Urutan di Shift', d['sequence_in_shift'])])}</table></td>
+<td class="box" style="width:30mm;text-align:center">{qr}</td>
+</tr></table>
+<div style="margin-top:10px;font-weight:bold;font-size:9.5pt">Rincian Kebutuhan Material (BOM Berlapis)</div>
+<table class="items" style="margin-top:3px"><thead><tr><th>No.</th><th>Nama Bahan / Sub-Rakitan</th><th class="r">Kebutuhan</th><th>Satuan</th><th>Realisasi</th></tr></thead><tbody>{rows}</tbody></table>"""
+    return _page(body, _sig_row(['Operator,', 'Supervisor,', 'Disetujui oleh,']), flow=len(d.get('bom_items') or []) > 14)
+
+
 def _render_spk_html(d):
     from html import escape as e
+    notes_row = f'<tr><td style="height:16mm">{e(d["notes"])}</td></tr>' if d.get('notes') else ''
+    ruled_rows = ''.join('<tr><td style="height:8mm">&nbsp;</td></tr>' for _ in range(8 if d.get('notes') else 10))
     prio = {'low': 'Rendah', 'normal': 'Normal', 'high': 'Tinggi', 'urgent': 'Mendesak'}.get(str(d.get('priority') or '').lower(), d.get('priority') or '-')
     body = f"""{_doc_header_html(d['company'], 'SURAT PERINTAH KERJA', [f"No. {d['document_number']}", f"Tanggal: {d['document_date']}", f"Ref. WO: {d['work_order_number']}"])}
 <table><tr>
 <td class="box" style="width:50%"><div class="h">Produk yang Dikerjakan</div>
 <div style="font-weight:bold;font-size:11pt">{e(d['product_name'] or '-')}</div><div>Kode: {e(d['product_code'] or '-')}</div>
 <div style="margin-top:6px;font-size:13pt"><b>{_num(d['quantity'])}</b> {e(d['uom'] or '')}</div></td>
-<td class="box"><table class="meta">{_meta_rows([('Mesin', d['machine']), ('Mulai', d['start_date']), ('Target Selesai', d['due_date']), ('Prioritas', prio)])}</table></td>
+<td class="box m"><table class="meta">{_meta_rows([('Mesin', d['machine']), ('Mulai', d['start_date']), ('Target Selesai', d['due_date']), ('Prioritas', prio)])}</table></td>
 </tr></table>
 <table class="items"><thead><tr><th>Instruksi / Catatan Produksi</th></tr></thead>
-<tbody><tr><td style="height:90mm">{e(d['notes'] or '')}</td></tr></tbody></table>"""
+<tbody>{notes_row}{ruled_rows}</tbody></table>"""
     return _page(body, _sig_row(['Operator,', 'Supervisor,', 'Disetujui oleh,']))
 
 
