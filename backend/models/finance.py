@@ -166,6 +166,55 @@ class PaymentAllocation(db.Model):
     invoice = db.relationship('Invoice')
 
 
+class CreditMemo(db.Model):
+    """Nota Kredit Customer: customer credit that already sits in the AR control account (credited
+    by a sales return) but could not be applied to an invoice. It can later be applied to an open
+    invoice (no new journal - AR was already credited) or refunded in cash (Dr AR / Cr Kas)."""
+    __tablename__ = 'credit_memos'
+
+    id = db.Column(db.Integer, primary_key=True)
+    memo_number = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False, index=True)
+    memo_date = db.Column(db.Date, nullable=False)
+    amount = db.Column(db.Numeric(15, 2), nullable=False)
+    amount_applied = db.Column(db.Numeric(15, 2), nullable=False, default=0)
+    amount_refunded = db.Column(db.Numeric(15, 2), nullable=False, default=0)
+    source_type = db.Column(db.String(50), nullable=True)   # sales_return
+    source_id = db.Column(db.Integer, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    customer = db.relationship('Customer')
+    applications = db.relationship('CreditMemoApplication', back_populates='memo', order_by='CreditMemoApplication.id')
+
+    @property
+    def balance(self):
+        return float(self.amount or 0) - float(self.amount_applied or 0) - float(self.amount_refunded or 0)
+
+    @property
+    def status(self):
+        return 'open' if self.balance > 0.005 else 'closed'
+
+
+class CreditMemoApplication(db.Model):
+    """One use of a credit memo: applied to an invoice, or refunded in cash."""
+    __tablename__ = 'credit_memo_applications'
+
+    id = db.Column(db.Integer, primary_key=True)
+    memo_id = db.Column(db.Integer, db.ForeignKey('credit_memos.id'), nullable=False, index=True)
+    kind = db.Column(db.String(20), nullable=False)  # invoice | refund
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoices.id'), nullable=True)
+    bank_account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    amount = db.Column(db.Numeric(15, 2), nullable=False)
+    applied_date = db.Column(db.Date, nullable=False)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    memo = db.relationship('CreditMemo', back_populates='applications')
+    invoice = db.relationship('Invoice')
+
+
 class PaymentLine(db.Model):
     """One value of a standalone Kas/Bank transaction split over several
     expense/revenue accounts (Penerimaan/Pembayaran Kas/Bank)."""

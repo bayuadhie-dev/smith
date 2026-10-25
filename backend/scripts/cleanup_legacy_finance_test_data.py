@@ -16,6 +16,8 @@ What it fixes (only rows that match the exact legacy symptom):
     (created before the header-total fix; items/journal are fine): header
     subtotal/total recomputed from the items minus completed purchase returns,
     balance = total - paid - credit.
+4. Sales-return credit already posted to AR that no invoice absorbed: a Nota Kredit
+    (credit memo) is created so it can be applied to an invoice or refunded.
 Anything else the audit flagged (e.g. an invoice paid before a return, which is
 a legitimate supplier credit) is deliberately left alone.
 """
@@ -83,6 +85,28 @@ def run(apply):
                 except PayrollPaymentError as e:
                     changes -= 1
                     print(f'    DILEWATI: {e}')
+
+        # 4. sales-return credit sitting in AR with no invoice absorbing it and no credit memo
+        from models.finance import CreditMemo
+        from models.returns import CustomerReturn
+        from datetime import date
+        from utils.helpers import generate_number
+        returns_credit = {}
+        for e in AccountingEntry.query.filter_by(reference_type='sales_return', account_code='1-1100', status='posted').all():
+            returns_credit[e.reference_id] = returns_credit.get(e.reference_id, 0.0) + float(e.credit_amount or 0) - float(e.debit_amount or 0)
+        for ret_id, credit in returns_credit.items():
+            ret = db.session.get(CustomerReturn, ret_id)
+            if not ret or credit <= 0.005 or CreditMemo.query.filter_by(source_type='sales_return', source_id=ret_id).first():
+                continue
+            invoice = Invoice.query.filter_by(sales_order_id=ret.sales_order_id, invoice_type='sales').order_by(Invoice.id.desc()).first() if ret.sales_order_id else None
+            if invoice is not None and float(invoice.credit_applied or 0) + 0.005 >= credit:
+                continue  # invoice already absorbed it
+            print(f'[4] retur {ret.return_number}: kredit Rp{credit:,.0f} belum terserap faktur -> buat Nota Kredit customer #{ret.customer_id}')
+            changes += 1
+            if apply:
+                db.session.add(CreditMemo(memo_number=generate_number('NK', CreditMemo, 'memo_number'), customer_id=ret.customer_id,
+                                          memo_date=ret.return_date or date.today(), amount=credit, source_type='sales_return',
+                                          source_id=ret_id, notes='Dibuat dari data lama (retur sebelum fitur nota kredit)'))
 
         if apply:
             db.session.commit()

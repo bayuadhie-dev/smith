@@ -30,7 +30,8 @@ interface AgingData {
   totals: Record<string, number>;
   gl_control_balance: number;
   difference: number;
-  unlinked_return_credit?: number;
+  unexplained_difference?: number;
+  credit_memo_balance?: number;
 }
 
 const AgingReport: React.FC = () => {
@@ -97,12 +98,16 @@ const AgingReport: React.FC = () => {
 
       {data && !loading && (
         <>
-          {Math.abs(data.difference) > 1 && (
+          {!!data.credit_memo_balance && (
+            <div className="bg-blue-50 text-blue-800 rounded p-3 text-sm">
+              Ada Nota Kredit customer yang belum dipakai sebesar {formatRupiah(data.credit_memo_balance)}; ini mengurangi saldo piutang di buku besar
+              tetapi tidak muncul di daftar faktur di bawah. Pakai ke faktur atau kembalikan lewat menu Nota Kredit Customer.
+            </div>
+          )}
+          {Math.abs(data.unexplained_difference ?? data.difference) > 1 && (
             <div className="bg-yellow-50 text-yellow-800 rounded p-3 text-sm">
-              Total daftar {label.toLowerCase()} ({formatRupiah(data.totals.total)}) berbeda {formatRupiah(data.difference)} dari saldo
-              buku besar ({formatRupiah(data.gl_control_balance)}). Biasanya karena jurnal manual ke akun kontrol, kredit customer/supplier
-              yang belum dialokasikan, atau data lama.
-              {!!data.unlinked_return_credit && ` Di antaranya ${formatRupiah(data.unlinked_return_credit)} adalah retur penjualan yang tidak terhubung ke faktur mana pun (kredit customer mengambang).`}
+              Total daftar {label.toLowerCase()} ({formatRupiah(data.totals.total)}) berbeda {formatRupiah(data.unexplained_difference ?? data.difference)} dari saldo
+              buku besar ({formatRupiah(data.gl_control_balance)}) di luar nota kredit. Biasanya karena jurnal manual ke akun kontrol atau data lama.
             </div>
           )}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">

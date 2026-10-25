@@ -2250,6 +2250,106 @@ def get_income_statement():
         return jsonify({'error': str(e)}), 500
 
 
+def _credit_memo_dict(memo, detail=False):
+    data = {
+        'id': memo.id, 'memo_number': memo.memo_number, 'customer_id': memo.customer_id,
+        'customer_name': memo.customer.company_name if memo.customer else None,
+        'memo_date': memo.memo_date.isoformat() if memo.memo_date else None,
+        'amount': float(memo.amount or 0), 'amount_applied': float(memo.amount_applied or 0),
+        'amount_refunded': float(memo.amount_refunded or 0), 'balance': round(memo.balance, 2), 'status': memo.status,
+        'source_type': memo.source_type, 'source_id': memo.source_id, 'notes': memo.notes,
+    }
+    if detail:
+        data['applications'] = [{
+            'id': a.id, 'kind': a.kind, 'amount': float(a.amount or 0),
+            'applied_date': a.applied_date.isoformat() if a.applied_date else None,
+            'invoice_number': a.invoice.invoice_number if a.invoice else None,
+        } for a in memo.applications]
+        open_invoices = Invoice.query.filter(
+            Invoice.invoice_type == 'sales', Invoice.customer_id == memo.customer_id,
+            Invoice.status.notin_(['cancelled', 'paid']), Invoice.balance_due > 0,
+        ).order_by(Invoice.invoice_date).all()
+        data['open_invoices'] = [{'id': i.id, 'invoice_number': i.invoice_number, 'balance_due': float(i.balance_due or 0)} for i in open_invoices]
+    return data
+
+
+@finance_bp.route('/credit-memos', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def list_credit_memos():
+    from models.finance import CreditMemo
+    query = CreditMemo.query
+    if request.args.get('customer_id'):
+        query = query.filter(CreditMemo.customer_id == int(request.args['customer_id']))
+    memos = query.order_by(CreditMemo.id.desc()).all()
+    status = request.args.get('status')
+    if status:
+        memos = [m for m in memos if m.status == status]
+    return jsonify({'credit_memos': [_credit_memo_dict(m) for m in memos],
+                    'open_balance': round(sum(m.balance for m in memos if m.status == 'open'), 2)}), 200
+
+
+@finance_bp.route('/credit-memos/<int:memo_id>', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def get_credit_memo(memo_id):
+    from models.finance import CreditMemo
+    memo = db.session.get(CreditMemo, memo_id)
+    if not memo:
+        return jsonify({'error': 'Nota kredit tidak ditemukan'}), 404
+    return jsonify(_credit_memo_dict(memo, detail=True)), 200
+
+
+@finance_bp.route('/credit-memos/<int:memo_id>/apply', methods=['POST'])
+@jwt_required()
+@require_permission('finance.edit')
+def apply_credit_memo(memo_id):
+    """Pakai nota kredit untuk mengurangi sisa tagihan satu faktur penjualan."""
+    from models.finance import CreditMemo
+    from utils.finance_helpers import apply_credit_memo_to_invoice
+    try:
+        memo = db.session.query(CreditMemo).filter_by(id=memo_id).with_for_update().first()
+        if not memo:
+            return jsonify({'error': 'Nota kredit tidak ditemukan'}), 404
+        data = request.get_json() or {}
+        invoice = db.session.query(Invoice).filter_by(id=data.get('invoice_id')).with_for_update().first()
+        if not invoice:
+            return jsonify({'error': 'Faktur tidak ditemukan'}), 404
+        apply_credit_memo_to_invoice(memo, invoice, data.get('amount'), get_jwt_identity(), date.today())
+        db.session.commit()
+        return jsonify({'message': 'Nota kredit diterapkan ke faktur', 'credit_memo': _credit_memo_dict(memo, detail=True)}), 200
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@finance_bp.route('/credit-memos/<int:memo_id>/refund', methods=['POST'])
+@jwt_required()
+@require_permission('finance.edit')
+def refund_credit_memo_route(memo_id):
+    """Kembalikan nota kredit ke customer secara tunai/transfer (Dr Piutang / Cr Kas-Bank)."""
+    from models.finance import CreditMemo
+    from utils.finance_helpers import refund_credit_memo
+    try:
+        memo = db.session.query(CreditMemo).filter_by(id=memo_id).with_for_update().first()
+        if not memo:
+            return jsonify({'error': 'Nota kredit tidak ditemukan'}), 404
+        data = request.get_json() or {}
+        refund_date = datetime.fromisoformat(data['refund_date']).date() if data.get('refund_date') else date.today()
+        refund_credit_memo(memo, data.get('bank_account_id'), data.get('amount'), get_jwt_identity(), refund_date)
+        db.session.commit()
+        return jsonify({'message': 'Pengembalian dana dicatat', 'credit_memo': _credit_memo_dict(memo, detail=True)}), 200
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 AGING_BUCKETS = [('current', 'Belum jatuh tempo'), ('d1_30', '1-30 hari'), ('d31_60', '31-60 hari'),
                  ('d61_90', '61-90 hari'), ('d90_plus', '> 90 hari')]
 
@@ -2308,24 +2408,18 @@ def get_aging_report():
         gl = sum(float(e.debit_amount or 0) - float(e.credit_amount or 0) for e in entries)
         if kind == 'payable':
             gl = -gl
-        unlinked_return_credit = 0.0
+        credit_memo_balance = 0.0
         if kind == 'receivable':
-            from models.returns import CustomerReturn
-            for e in AccountingEntry.query.filter(AccountingEntry.account_code == control, AccountingEntry.status == 'posted',
-                                                  AccountingEntry.reference_type == 'sales_return',
-                                                  AccountingEntry.entry_date <= as_of).all():
-                ret = db.session.get(CustomerReturn, e.reference_id) if e.reference_id else None
-                linked = bool(ret and ret.sales_order_id and Invoice.query.filter_by(
-                    sales_order_id=ret.sales_order_id, invoice_type='sales').first())
-                if not linked:
-                    unlinked_return_credit += float(e.credit_amount or 0) - float(e.debit_amount or 0)
+            from models.finance import CreditMemo
+            credit_memo_balance = sum(m.balance for m in CreditMemo.query.filter(CreditMemo.memo_date <= as_of).all())
         return jsonify({
-            'unlinked_return_credit': round(unlinked_return_credit, 2),
+            'credit_memo_balance': round(credit_memo_balance, 2),
             'type': kind, 'as_of': as_of.isoformat(),
             'buckets': [{'key': k, 'label': l} for k, l in AGING_BUCKETS],
             'parties': sorted(parties.values(), key=lambda r: -r['total']),
             'totals': {**{k: round(v, 2) for k, v in totals.items()}, 'total': total},
             'gl_control_balance': round(gl, 2), 'difference': round(total - gl, 2),
+            'unexplained_difference': round(total - gl - credit_memo_balance, 2),
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500

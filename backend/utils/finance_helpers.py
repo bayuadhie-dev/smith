@@ -1279,3 +1279,84 @@ def split_wip_vs_raw_material_credit(work_order_id, material_cost_total):
     """), {'code': wip_code, 'wo': work_order_id}).scalar() or 0
     wip_part = round(max(0.0, min(material_cost_total, float(issued) - float(already))), 2)
     return wip_part, round(material_cost_total - wip_part, 2)
+
+
+def credit_customer_for_return(invoice, customer_id, amount, return_id, memo_date, user_id):
+    """Sales-return credit has just been posted to AR. Apply what the linked invoice still owes;
+    anything beyond that (or the whole amount when no invoice is linked) becomes a Nota Kredit
+    (CreditMemo) so it is tracked and can be applied to another invoice or refunded.
+    Returns (applied_to_invoice, memo_or_None). Does not commit."""
+    from models.finance import CreditMemo
+    amount = round(float(amount or 0), 2)
+    applied = 0.0
+    if invoice is not None and invoice.status != 'cancelled':
+        owed = max(0.0, float(invoice.total_amount or 0) - float(invoice.paid_amount or 0) - float(invoice.credit_applied or 0))
+        applied = round(min(amount, owed), 2)
+        if applied > 0:
+            apply_credit_to_invoice(invoice, applied)
+    excess = round(amount - applied, 2)
+    memo = None
+    if excess > 0.005 and customer_id:
+        memo = CreditMemo(
+            memo_number=generate_number('NK', CreditMemo, 'memo_number'), customer_id=customer_id, memo_date=memo_date,
+            amount=excess, source_type='sales_return', source_id=return_id, created_by=user_id,
+            notes='Kredit dari retur penjualan' + ('' if invoice is None else f' (melebihi sisa faktur {invoice.invoice_number})'),
+        )
+        db.session.add(memo)
+        db.session.flush()
+    return applied, memo
+
+
+def apply_credit_memo_to_invoice(memo, invoice, amount, user_id, applied_date):
+    """Use part of a credit memo against an open sales invoice. AR was already credited when the
+    return was posted, so no new journal. Raises ValueError with a user-facing message."""
+    from models.finance import CreditMemoApplication
+    amount = round(float(amount or 0), 2)
+    if amount <= 0:
+        raise ValueError('Jumlah harus lebih dari 0')
+    if invoice.invoice_type != 'sales' or invoice.customer_id != memo.customer_id:
+        raise ValueError('Faktur harus faktur penjualan milik customer yang sama dengan nota kredit')
+    if invoice.status in ('cancelled', 'paid'):
+        raise ValueError(f'Faktur {invoice.invoice_number} sudah {"dibatalkan" if invoice.status == "cancelled" else "lunas"}')
+    if amount > memo.balance + 0.005:
+        raise ValueError(f'Jumlah melebihi sisa nota kredit (Rp{memo.balance:,.2f})')
+    owed = float(invoice.balance_due or 0)
+    if amount > owed + 0.005:
+        raise ValueError(f'Jumlah melebihi sisa tagihan faktur (Rp{owed:,.2f})')
+    apply_credit_to_invoice(invoice, amount)
+    memo.amount_applied = float(memo.amount_applied or 0) + amount
+    db.session.add(CreditMemoApplication(memo_id=memo.id, kind='invoice', invoice_id=invoice.id, amount=amount,
+                                         applied_date=applied_date, created_by=user_id))
+    db.session.flush()
+
+
+def refund_credit_memo(memo, bank_account_id, amount, user_id, refund_date):
+    """Pay a credit memo back to the customer: Dr Piutang Usaha / Cr Kas-Bank."""
+    from models.finance import CreditMemoApplication
+    amount = round(float(amount or 0), 2)
+    if amount <= 0:
+        raise ValueError('Jumlah harus lebih dari 0')
+    if amount > memo.balance + 0.005:
+        raise ValueError(f'Jumlah melebihi sisa nota kredit (Rp{memo.balance:,.2f})')
+    bank = db.session.get(Account, bank_account_id) if bank_account_id else None
+    if not bank or not bank.is_cash_bank:
+        raise ValueError('Pilih akun Kas/Bank untuk pengembalian dana')
+    if is_period_locked(refund_date, transaction_type='payment', sap_bucket='D'):
+        raise ValueError(f'Periode {refund_date.strftime("%Y-%m")} sudah ditutup (period-close)')
+    memo.amount_refunded = float(memo.amount_refunded or 0) + amount
+    application = CreditMemoApplication(memo_id=memo.id, kind='refund', bank_account_id=bank.id, amount=amount,
+                                        applied_date=refund_date, created_by=user_id)
+    db.session.add(application)
+    pending = PendingJournalEntry(
+        workflow_id=None, entry_date=refund_date, description=f'Pengembalian dana nota kredit {memo.memo_number}',
+        reference=memo.memo_number,
+        lines=[
+            {'account_id': resolve_accounts_receivable(memo.customer_id), 'debit': amount, 'credit': 0,
+             'description': f'Pengembalian dana nota kredit {memo.memo_number}'},
+            {'account_id': bank.id, 'debit': 0, 'credit': amount, 'description': f'Pengembalian dana ke customer - {memo.memo_number}'},
+        ],
+        total_debit=amount, total_credit=amount, created_by=user_id,
+    )
+    db.session.add(pending)
+    db.session.flush()
+    post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='credit_memo_refund', reference_id=memo.id)

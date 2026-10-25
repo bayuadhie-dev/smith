@@ -191,6 +191,7 @@ import CashFlowManagement from './pages/Finance/CashFlowManagement'
 import FinancialReports from './pages/Finance/FinancialReports'
 import SalesReport from './pages/Finance/SalesReport'
 import AgingReport from './pages/Finance/AgingReport'
+import CreditMemoList from './pages/Finance/CreditMemoList'
 import InvoiceList from './pages/Finance/InvoiceList'
 import FinanceInvoiceForm from './pages/Finance/InvoiceForm'
 import AccountsReceivable from './pages/Finance/AccountsReceivable'
@@ -924,6 +925,7 @@ function App() {
                 <Route path="accounting/reports" element={<FinancialReports />} />
                 <Route path="finance/sales-report" element={<SalesReport />} />
                 <Route path="finance/aging" element={<AgingReport />} />
+                <Route path="finance/credit-memos" element={<CreditMemoList />} />
 
                 {/* Approval Workflow */}
                 <Route path="approval" element={<ApprovalDashboard />} />

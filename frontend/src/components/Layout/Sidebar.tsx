@@ -373,6 +373,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Dashboard', href: '/app/finance', icon: PresentationChartLineIcon },
             { name: 'Laporan Penjualan', href: '/app/finance/sales-report', icon: DocumentTextIcon },
             { name: 'Umur Piutang & Hutang', href: '/app/finance/aging', icon: DocumentTextIcon },
+            { name: 'Nota Kredit Customer', href: '/app/finance/credit-memos', icon: DocumentTextIcon },
             { name: 'Penerimaan Penjualan', href: '/app/finance/penerimaan-penjualan', icon: BanknotesIcon },
             { name: 'Pembayaran Pembelian', href: '/app/finance/pembayaran-pembelian', icon: BanknotesIcon },
             { name: 'Penerimaan Kas/Bank', href: '/app/finance/penerimaan', icon: BanknotesIcon },

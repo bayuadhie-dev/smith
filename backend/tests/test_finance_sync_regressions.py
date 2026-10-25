@@ -586,3 +586,62 @@ def test_wip_gl_balance_by_work_order_and_receipt_credit_split(client, auth_head
     assert split_wip_vs_raw_material_credit(wo.id, 1500) == (1000.0, 500.0)     # rest from raw material
     _post(db_session, '1-1300', credit=400, ref_type='work_order', ref_id=wo.id)  # earlier receipt took 400
     assert split_wip_vs_raw_material_credit(wo.id, 1000) == (600.0, 400.0)
+
+
+def _customer_and_ar(db_session, name='PT Kredit'):
+    from models.finance import GlobalAccountDefault
+    from models.sales import Customer
+    cust = Customer(code=f'C-CM-{_seq["n"]}', company_name=name)
+    _seq['n'] += 1
+    db_session.add(cust)
+    ar = _acc(db_session, '1-1100')
+    if not GlobalAccountDefault.query.filter_by(transaction_key='accounts_receivable').first():
+        db_session.add(GlobalAccountDefault(transaction_key='accounts_receivable', account_id=ar.id))
+    db_session.commit()
+    return cust
+
+
+def test_return_credit_beyond_invoice_becomes_credit_memo_then_apply_and_refund(client, auth_headers, db_session):
+    from models.finance import CreditMemo, Invoice
+    from utils.finance_helpers import credit_customer_for_return
+    cust = _customer_and_ar(db_session)
+    bank = _acc(db_session, '1-1010')
+    inv = Invoice(invoice_number='INV-CM-1', invoice_type='sales', invoice_date=date.today(), customer_id=cust.id,
+                  total_amount=1000, balance_due=300, paid_amount=700, status='partial')
+    other = Invoice(invoice_number='INV-CM-2', invoice_type='sales', invoice_date=date.today(), customer_id=cust.id,
+                    total_amount=500, balance_due=500, status='sent')
+    db_session.add_all([inv, other])
+    db_session.commit()
+    _post(db_session, '1-1100', credit=800)          # the return's AR credit (already posted)
+
+    applied, memo = credit_customer_for_return(inv, cust.id, 800, 99, date.today(), None)
+    db_session.commit()
+    assert applied == 300 and memo is not None and float(memo.amount) == 500        # invoice absorbs only what it owes
+    db_session.refresh(inv)
+    assert float(inv.balance_due) == 0 and inv.status == 'paid'
+
+    # no linked invoice -> whole amount becomes a memo
+    _, memo2 = credit_customer_for_return(None, cust.id, 100, 98, date.today(), None)
+    db_session.commit()
+    assert float(memo2.amount) == 100
+
+    # apply 200 of memo 1 to the other invoice; over-application and wrong customer are refused
+    url = f'/api/finance/credit-memos/{memo.id}'
+    assert client.post(f'{url}/apply', headers=auth_headers, json={'invoice_id': other.id, 'amount': 600}).status_code == 400
+    assert client.post(f'{url}/apply', headers=auth_headers, json={'invoice_id': other.id, 'amount': 200}).status_code == 200
+    db_session.refresh(other)
+    assert float(other.balance_due) == 300 and float(other.credit_applied) == 200
+
+    # refund the remaining 300: Dr AR / Cr Kas posted, memo closed
+    before = _gl(db_session, '1-1010')
+    resp = client.post(f'{url}/refund', headers=auth_headers, json={'bank_account_id': bank.id, 'amount': 300})
+    assert resp.status_code == 200, resp.get_json()
+    assert round(_gl(db_session, '1-1010') - before, 2) == 300   # _gl = credit - debit: Kas credited 300
+    db_session.refresh(memo)
+    assert memo.status == 'closed' and memo.balance == 0
+    assert client.post(f'{url}/refund', headers=auth_headers, json={'bank_account_id': bank.id, 'amount': 1}).status_code == 400
+
+    listing = client.get('/api/finance/credit-memos?status=open', headers=auth_headers).get_json()
+    assert [m['memo_number'] for m in listing['credit_memos']] == [memo2.memo_number] and listing['open_balance'] == 100
+    aging = client.get('/api/finance/reports/aging?type=receivable', headers=auth_headers).get_json()
+    assert aging['credit_memo_balance'] == 100
