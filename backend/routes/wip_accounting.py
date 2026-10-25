@@ -570,6 +570,50 @@ def auto_close_wip_ledger(work_order_id):
         return jsonify({'error': str(e)}), 500
 
 
+@wip_accounting_bp.route('/gl-balance', methods=['GET'])
+@jwt_required()
+@require_permission('accounting.view')
+def get_wip_gl_balance():
+    """Saldo akun WIP di buku besar dipecah per SPK (bahan baku masuk + biaya diserap - transfer ke
+    barang jadi). Ini sumber kebenaran nilai WIP; tabel WIPLedger lama hanya terisi kalau dibuat manual."""
+    try:
+        from sqlalchemy import text
+        from models.finance import GlobalAccountDefault, Account
+        wip_default = GlobalAccountDefault.query.filter_by(transaction_key='wip_persediaan').first()
+        if not wip_default:
+            return jsonify({'configured': False, 'rows': [], 'gl_balance': 0, 'allocated': 0, 'unallocated': 0}), 200
+        code = db.session.get(Account, wip_default.account_id).account_code
+        rows = db.session.execute(text("""
+            SELECT wo_id, SUM(issued) issued, SUM(absorbed) absorbed, SUM(transferred) transferred FROM (
+              SELECT mi.work_order_id wo_id, e.debit_amount - e.credit_amount issued, 0 absorbed, 0 transferred
+                FROM accounting_entries e JOIN material_issues mi ON mi.id = e.reference_id
+               WHERE e.reference_type = 'material_issue' AND e.status = 'posted' AND e.account_code = :c
+              UNION ALL
+              SELECT e.reference_id, 0, e.debit_amount - e.credit_amount, 0 FROM accounting_entries e
+               WHERE e.reference_type = 'wip_cost_absorption' AND e.status = 'posted' AND e.account_code = :c
+              UNION ALL
+              SELECT e.reference_id, 0, 0, e.credit_amount - e.debit_amount FROM accounting_entries e
+               WHERE e.reference_type IN ('work_order', 'wip_conversion_to_fg') AND e.status = 'posted' AND e.account_code = :c
+            ) x WHERE wo_id IS NOT NULL GROUP BY wo_id
+        """), {'c': code}).fetchall()
+        result = []
+        for wo_id, issued, absorbed, transferred in rows:
+            wo = db.session.get(WorkOrder, wo_id)
+            balance = float(issued) + float(absorbed) - float(transferred)
+            if abs(balance) < 0.005 and not float(issued) and not float(absorbed):
+                continue
+            result.append({'work_order_id': wo_id, 'wo_number': wo.wo_number if wo else f'#{wo_id}',
+                           'wo_status': wo.status if wo else None, 'material_issued': float(issued),
+                           'cost_absorbed': float(absorbed), 'transferred_to_fg': float(transferred), 'balance': round(balance, 2)})
+        gl = db.session.execute(text("SELECT COALESCE(SUM(debit_amount - credit_amount), 0) FROM accounting_entries WHERE status = 'posted' AND account_code = :c"),
+                                {'c': code}).scalar()
+        allocated = round(sum(r['balance'] for r in result), 2)
+        return jsonify({'configured': True, 'account_code': code, 'rows': sorted(result, key=lambda r: -r['balance']),
+                        'gl_balance': float(gl), 'allocated': allocated, 'unallocated': round(float(gl) - allocated, 2)}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @wip_accounting_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
 @require_permission('accounting.view')

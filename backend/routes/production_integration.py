@@ -430,12 +430,20 @@ def auto_receive_finished_goods(work_order_id, quantity_produced, user_id=None):
                 fg_account_id = resolve_account('akun_persediaan_id', product_id=product_id, category_id=None)
                 rm_account_id = resolve_account('akun_persediaan_id', product_id=None, category_id=None)
 
+                from utils.finance_helpers import split_wip_vs_raw_material_credit
+                from models.finance import GlobalAccountDefault as _GAD
+                wip_part, rm_part = split_wip_vs_raw_material_credit(work_order_id, material_cost_total)
                 journal_lines = [
                     {'account_id': fg_account_id, 'debit': material_cost_total, 'credit': 0,
                      'description': f'Penerimaan Barang Jadi WO {wo_number}'},
-                    {'account_id': rm_account_id, 'debit': 0, 'credit': material_cost_total,
-                     'description': f'Pemakaian bahan baku WO {wo_number}'},
                 ]
+                if wip_part > 0:
+                    journal_lines.append({'account_id': _GAD.query.filter_by(transaction_key='wip_persediaan').first().account_id,
+                                          'debit': 0, 'credit': wip_part,
+                                          'description': f'Bahan baku WIP jadi barang jadi WO {wo_number}'})
+                if rm_part > 0:
+                    journal_lines.append({'account_id': rm_account_id, 'debit': 0, 'credit': rm_part,
+                                          'description': f'Pemakaian bahan baku WO {wo_number}'})
 
                 pending = PendingJournalEntry(
                     workflow_id=None,

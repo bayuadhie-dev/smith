@@ -190,6 +190,7 @@ import BankReconciliation from './pages/Finance/BankReconciliation'
 import CashFlowManagement from './pages/Finance/CashFlowManagement'
 import FinancialReports from './pages/Finance/FinancialReports'
 import SalesReport from './pages/Finance/SalesReport'
+import AgingReport from './pages/Finance/AgingReport'
 import InvoiceList from './pages/Finance/InvoiceList'
 import FinanceInvoiceForm from './pages/Finance/InvoiceForm'
 import AccountsReceivable from './pages/Finance/AccountsReceivable'
@@ -922,6 +923,7 @@ function App() {
                 <Route path="accounting/tax" element={<TaxManagement />} />
                 <Route path="accounting/reports" element={<FinancialReports />} />
                 <Route path="finance/sales-report" element={<SalesReport />} />
+                <Route path="finance/aging" element={<AgingReport />} />
 
                 {/* Approval Workflow */}
                 <Route path="approval" element={<ApprovalDashboard />} />

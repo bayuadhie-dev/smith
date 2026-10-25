@@ -2250,6 +2250,87 @@ def get_income_statement():
         return jsonify({'error': str(e)}), 500
 
 
+AGING_BUCKETS = [('current', 'Belum jatuh tempo'), ('d1_30', '1-30 hari'), ('d31_60', '31-60 hari'),
+                 ('d61_90', '61-90 hari'), ('d90_plus', '> 90 hari')]
+
+
+@finance_bp.route('/reports/aging', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def get_aging_report():
+    """Umur piutang (type=receivable) / hutang (type=payable) per pihak, dalam Rupiah, sampai
+    tanggal as_of. Total dibandingkan dengan saldo akun kontrol di buku besar."""
+    try:
+        kind = request.args.get('type', 'receivable')
+        if kind not in ('receivable', 'payable'):
+            return jsonify({'error': "type harus 'receivable' atau 'payable'"}), 400
+        as_of = datetime.fromisoformat(request.args['as_of']).date() if request.args.get('as_of') else date.today()
+        inv_type = 'sales' if kind == 'receivable' else 'purchase'
+
+        invoices = Invoice.query.filter(
+            Invoice.invoice_type == inv_type,
+            Invoice.status.notin_(['cancelled', 'paid']),
+            Invoice.invoice_date <= as_of,
+        ).order_by(Invoice.invoice_date).all()
+
+        parties = {}
+        totals = {k: 0.0 for k, _ in AGING_BUCKETS}
+        for inv in invoices:
+            balance = float(inv.balance_due or 0)
+            if balance <= 0.005:
+                continue
+            rate = float(inv.exchange_rate or 1) if (inv.currency or 'IDR') != 'IDR' else 1.0
+            balance_idr = round(balance * rate, 2)
+            due = inv.due_date.date() if hasattr(inv.due_date, 'date') else inv.due_date
+            ref = due or (inv.invoice_date.date() if hasattr(inv.invoice_date, 'date') else inv.invoice_date)
+            days = (as_of - ref).days
+            bucket = 'current' if days <= 0 else 'd1_30' if days <= 30 else 'd31_60' if days <= 60 else 'd61_90' if days <= 90 else 'd90_plus'
+            if kind == 'receivable':
+                party = db.session.get(Customer, inv.customer_id) if inv.customer_id else None
+                party_id, party_name = inv.customer_id, party.company_name if party else '(tanpa customer)'
+            else:
+                from models.purchasing import Supplier
+                party = db.session.get(Supplier, inv.supplier_id) if inv.supplier_id else None
+                party_id, party_name = inv.supplier_id, party.company_name if party else '(tanpa supplier)'
+            row = parties.setdefault(party_id, {'party_id': party_id, 'party_name': party_name, 'total': 0.0,
+                                                'buckets': {k: 0.0 for k, _ in AGING_BUCKETS}, 'invoices': []})
+            row['buckets'][bucket] += balance_idr
+            row['total'] += balance_idr
+            totals[bucket] += balance_idr
+            row['invoices'].append({'invoice_id': inv.id, 'invoice_number': inv.invoice_number, 'due_date': ref.isoformat(),
+                                    'days_overdue': max(days, 0), 'bucket': bucket, 'currency': inv.currency or 'IDR',
+                                    'balance': balance, 'balance_idr': balance_idr})
+
+        total = round(sum(totals.values()), 2)
+        control = '1-1100' if kind == 'receivable' else '2-1000'
+        entries = AccountingEntry.query.filter(AccountingEntry.account_code == control, AccountingEntry.status == 'posted',
+                                               AccountingEntry.entry_date <= as_of).all()
+        gl = sum(float(e.debit_amount or 0) - float(e.credit_amount or 0) for e in entries)
+        if kind == 'payable':
+            gl = -gl
+        unlinked_return_credit = 0.0
+        if kind == 'receivable':
+            from models.returns import CustomerReturn
+            for e in AccountingEntry.query.filter(AccountingEntry.account_code == control, AccountingEntry.status == 'posted',
+                                                  AccountingEntry.reference_type == 'sales_return',
+                                                  AccountingEntry.entry_date <= as_of).all():
+                ret = db.session.get(CustomerReturn, e.reference_id) if e.reference_id else None
+                linked = bool(ret and ret.sales_order_id and Invoice.query.filter_by(
+                    sales_order_id=ret.sales_order_id, invoice_type='sales').first())
+                if not linked:
+                    unlinked_return_credit += float(e.credit_amount or 0) - float(e.debit_amount or 0)
+        return jsonify({
+            'unlinked_return_credit': round(unlinked_return_credit, 2),
+            'type': kind, 'as_of': as_of.isoformat(),
+            'buckets': [{'key': k, 'label': l} for k, l in AGING_BUCKETS],
+            'parties': sorted(parties.values(), key=lambda r: -r['total']),
+            'totals': {**{k: round(v, 2) for k, v in totals.items()}, 'total': total},
+            'gl_control_balance': round(gl, 2), 'difference': round(total - gl, 2),
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @finance_bp.route('/reports/sales-report', methods=['GET'])
 @jwt_required()
 @require_permission('finance.view')

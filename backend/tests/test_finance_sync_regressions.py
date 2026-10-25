@@ -520,3 +520,69 @@ def test_group_chat_owner_can_update_and_delete_own_server(client, auth_headers,
     server_id = (created.get_json().get('server') or created.get_json())['id']
     assert client.put(f'/api/chat/servers/{server_id}', json={'name': 'Tim Baru'}, headers=auth_headers).status_code == 200
     assert client.delete(f'/api/chat/servers/{server_id}', headers=auth_headers).status_code == 200
+
+
+def test_aging_report_buckets_and_matches_gl(client, auth_headers, db_session):
+    from models.finance import Invoice
+    from models.sales import Customer
+    cust = Customer(code='C-AGE', company_name='PT Umur')
+    db_session.add(cust)
+    db_session.commit()
+    today = date.today()
+    for n, (days_late, amount) in enumerate(((-5, 100), (10, 200), (45, 300), (120, 400))):
+        db_session.add(Invoice(invoice_number=f'INV-AGE-{n}', invoice_type='sales', invoice_date=today - timedelta(days=days_late + 30),
+                               due_date=today - timedelta(days=days_late), customer_id=cust.id, total_amount=amount, balance_due=amount, status='sent'))
+    db_session.add(Invoice(invoice_number='INV-AGE-PAID', invoice_type='sales', invoice_date=today, customer_id=cust.id,
+                           total_amount=999, balance_due=0, status='paid'))
+    db_session.commit()
+    _post(db_session, '1-1100', debit=1000)
+    data = client.get('/api/finance/reports/aging?type=receivable', headers=auth_headers).get_json()
+    assert data['totals'] == {'current': 100, 'd1_30': 200, 'd31_60': 300, 'd61_90': 0, 'd90_plus': 400, 'total': 1000}
+    assert data['gl_control_balance'] == 1000 and data['difference'] == 0
+    assert data['parties'][0]['party_name'] == 'PT Umur'
+    assert client.get('/api/finance/reports/aging?type=bogus', headers=auth_headers).status_code == 400
+
+
+def test_bank_match_marks_payment_cleared_and_unmatch_restores(client, auth_headers, db_session):
+    from models.finance import Payment, AccountingEntry
+    bank = _bank(db_session)
+    pay = Payment(payment_number='PAY-CLR-1', payment_date=date.today(), payment_type='receipt', payment_method='transfer',
+                  amount=500_000, bank_account_id=bank.id, status='pending')
+    db_session.add(pay)
+    db_session.commit()
+    _post(db_session, '1-1010', debit=500_000, ref_type='payment', ref_id=pay.id)
+    entry = AccountingEntry.query.filter_by(reference_type='payment', reference_id=pay.id).first()
+    line = _statement_line(db_session, bank, 500_000)
+    base = '/api/finance/bank-reconciliation/lines'
+    assert client.post(f'{base}/{line.id}/match', headers=auth_headers, json={'accounting_entry_id': entry.id}).status_code == 200
+    db_session.refresh(pay)
+    assert pay.status == 'cleared'
+    assert client.post(f'{base}/{line.id}/unmatch', headers=auth_headers, json={}).status_code == 200
+    db_session.refresh(pay)
+    assert pay.status == 'pending'
+
+
+def test_wip_gl_balance_by_work_order_and_receipt_credit_split(client, auth_headers, db_session, test_product, test_user):
+    from models.finance import Account, GlobalAccountDefault
+    from models.production import WorkOrder
+    from models.material_issue import MaterialIssue
+    from utils.finance_helpers import split_wip_vs_raw_material_credit
+    wip = Account(account_code='1-1300', account_name='Persediaan WIP', account_type='asset', normal_balance='debit', is_active=True)
+    db_session.add(wip)
+    db_session.commit()
+    db_session.add(GlobalAccountDefault(transaction_key='wip_persediaan', account_id=wip.id))
+    wo = WorkOrder(wo_number='WO-WIP-1', product_id=test_product.id, quantity=10, uom='PCS', status='in_progress')
+    db_session.add(wo)
+    db_session.commit()
+    mi = MaterialIssue(issue_number='MI-WIP-1', work_order_id=wo.id, status='issued', requested_by=test_user.id)
+    db_session.add(mi)
+    db_session.commit()
+    _post(db_session, '1-1300', debit=1000, ref_type='material_issue', ref_id=mi.id)
+
+    rows = client.get('/api/wip-accounting/gl-balance', headers=auth_headers).get_json()
+    assert rows['gl_balance'] == 1000 and rows['rows'][0]['wo_number'] == 'WO-WIP-1' and rows['rows'][0]['balance'] == 1000
+
+    assert split_wip_vs_raw_material_credit(wo.id, 1000) == (1000.0, 0.0)       # all via WIP
+    assert split_wip_vs_raw_material_credit(wo.id, 1500) == (1000.0, 500.0)     # rest from raw material
+    _post(db_session, '1-1300', credit=400, ref_type='work_order', ref_id=wo.id)  # earlier receipt took 400
+    assert split_wip_vs_raw_material_credit(wo.id, 1000) == (600.0, 400.0)

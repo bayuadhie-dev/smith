@@ -278,6 +278,22 @@ def get_statement_lines(statement_id):
     }), 200
 
 
+def _sync_payment_cleared(entry):
+    """Payment berstatus 'cleared' selama salah satu jurnalnya sudah dicocokkan dengan mutasi bank;
+    kembali 'pending' kalau semua kecocokannya dibatalkan."""
+    if not entry or entry.reference_type != 'payment' or not entry.reference_id:
+        return
+    from models.finance import Payment
+    payment = db.session.get(Payment, entry.reference_id)
+    if not payment or payment.status not in ('pending', 'cleared'):
+        return
+    entry_ids = [e.id for e in AccountingEntry.query.filter_by(reference_type='payment', reference_id=payment.id).all()]
+    matched = BankStatementLine.query.filter(
+        BankStatementLine.matched_accounting_entry_id.in_(entry_ids), BankStatementLine.is_matched == True,
+    ).first() if entry_ids else None
+    payment.status = 'cleared' if matched else 'pending'
+
+
 @bank_reconciliation_bp.route('/lines/<int:line_id>/match', methods=['POST'])
 @jwt_required()
 @require_permission('finance.edit')
@@ -321,6 +337,8 @@ def match_line(line_id):
     line.matched_accounting_entry_id = entry.id
     line.matched_by = get_jwt_identity()
     line.matched_at = get_local_now()
+    db.session.flush()
+    _sync_payment_cleared(entry)
     db.session.commit()
 
     return jsonify({'message': 'Baris berhasil dicocokkan', 'line_id': line.id}), 200
@@ -334,10 +352,13 @@ def unmatch_line(line_id):
     if not line:
         return jsonify({'error': 'Line not found'}), 404
 
+    entry = db.session.get(AccountingEntry, line.matched_accounting_entry_id) if line.matched_accounting_entry_id else None
     line.is_matched = False
     line.matched_accounting_entry_id = None
     line.matched_by = None
     line.matched_at = None
+    db.session.flush()
+    _sync_payment_cleared(entry)
     db.session.commit()
 
     return jsonify({'message': 'Kecocokan dibatalkan', 'line_id': line.id}), 200

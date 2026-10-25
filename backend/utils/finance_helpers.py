@@ -1252,3 +1252,30 @@ def resolve_ppn_masukan_account_id():
     settings.akun_ppn_masukan_id = acc.id
     db.session.flush()
     return acc.id
+
+
+def split_wip_vs_raw_material_credit(work_order_id, material_cost_total):
+    """Saat barang jadi diterima, bagian bahan baku yang sudah dipindah ke WIP lewat jurnal
+    pengeluaran material (Dr WIP / Cr Bahan Baku) harus dikreditkan ke WIP, bukan ke Bahan Baku
+    lagi (kalau tidak, Bahan Baku terkredit dua kali dan WIP tidak pernah berkurang).
+    Mengembalikan (wip_part, raw_material_part); sisa tanpa jurnal WIP tetap ke Bahan Baku."""
+    from models.finance import GlobalAccountDefault
+    from sqlalchemy import text
+    material_cost_total = round(float(material_cost_total or 0), 2)
+    wip_default = GlobalAccountDefault.query.filter_by(transaction_key='wip_persediaan').first()
+    if not wip_default or material_cost_total <= 0:
+        return 0.0, material_cost_total
+    wip_code = db.session.get(Account, wip_default.account_id).account_code
+    issued = db.session.execute(text("""
+        SELECT COALESCE(SUM(e.debit_amount - e.credit_amount), 0)
+        FROM accounting_entries e
+        JOIN material_issues mi ON mi.id = e.reference_id
+        WHERE e.reference_type = 'material_issue' AND e.status = 'posted'
+          AND e.account_code = :code AND mi.work_order_id = :wo
+    """), {'code': wip_code, 'wo': work_order_id}).scalar() or 0
+    already = db.session.execute(text("""
+        SELECT COALESCE(SUM(credit_amount - debit_amount), 0) FROM accounting_entries
+        WHERE reference_type = 'work_order' AND reference_id = :wo AND status = 'posted' AND account_code = :code
+    """), {'code': wip_code, 'wo': work_order_id}).scalar() or 0
+    wip_part = round(max(0.0, min(material_cost_total, float(issued) - float(already))), 2)
+    return wip_part, round(material_cost_total - wip_part, 2)

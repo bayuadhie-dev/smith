@@ -44,6 +44,7 @@ export default function WIPLedger() {
   });
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [glWip, setGlWip] = useState<any>(null);
 
   useEffect(() => {
     loadData();
@@ -65,6 +66,9 @@ export default function WIPLedger() {
       
       const ledgersRes = await axiosInstance.get('/api/wip-accounting/ledger', { params });
       setLedgers(ledgersRes.data.ledgers);
+
+      const glRes = await axiosInstance.get('/api/wip-accounting/gl-balance');
+      setGlWip(glRes.data);
       
     } catch (error) {
       console.error('Error loading WIP data:', error);
@@ -109,6 +113,47 @@ export default function WIPLedger() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">WIP Ledger</h1>
         <p className="text-gray-600 dark:text-gray-300">Work in Progress cost tracking and variance analysis</p>
       </div>
+
+      {/* Saldo WIP dari buku besar, per SPK */}
+      {glWip?.configured && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Saldo WIP di Buku Besar (akun {glWip.account_code})</h2>
+            <span className="text-xl font-bold">{formatCurrency(glWip.gl_balance)}</span>
+          </div>
+          <p className="text-sm text-gray-500 mb-3">
+            Bahan baku yang dikeluarkan ke SPK + biaya yang diserap - yang sudah dipindah ke barang jadi. Ini nilai WIP sebenarnya di pembukuan.
+            {Math.abs(glWip.unallocated) > 1 && ` Sebesar ${formatCurrency(glWip.unallocated)} belum bisa dikaitkan ke SPK tertentu.`}
+          </p>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="text-left px-3 py-2">SPK</th>
+                  <th className="text-right px-3 py-2">Bahan Baku Masuk</th>
+                  <th className="text-right px-3 py-2">Biaya Diserap</th>
+                  <th className="text-right px-3 py-2">Pindah ke Barang Jadi</th>
+                  <th className="text-right px-3 py-2">Saldo WIP</th>
+                </tr>
+              </thead>
+              <tbody>
+                {glWip.rows.length === 0 && (
+                  <tr><td colSpan={5} className="text-center text-gray-500 py-4">Tidak ada WIP</td></tr>
+                )}
+                {glWip.rows.map((r: any) => (
+                  <tr key={r.work_order_id} className="border-t">
+                    <td className="px-3 py-2">{r.wo_number}{r.wo_status ? ` (${r.wo_status})` : ''}</td>
+                    <td className="text-right px-3 py-2">{formatCurrency(r.material_issued)}</td>
+                    <td className="text-right px-3 py-2">{formatCurrency(r.cost_absorbed)}</td>
+                    <td className="text-right px-3 py-2">{formatCurrency(r.transferred_to_fg)}</td>
+                    <td className="text-right px-3 py-2 font-semibold">{formatCurrency(r.balance)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
