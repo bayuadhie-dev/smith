@@ -2393,13 +2393,6 @@ class TestUpdateWorkOrderStatus:
 
         db.session.expire_all()
         updated_wo = db.session.get(WorkOrder, wo.id)
-        # KNOWN BUG: wo.status does not persist as 'completed' here. The
-        # work_order_completed event listener (utils/production_events.py)
-        # runs an additional db.session.commit() inside the WorkOrder
-        # 'after_update' SQLAlchemy event, which appears to interfere with
-        # the outer transaction and silently roll back the status change.
-        # Tracked for a dedicated fix; not addressed here to avoid touching
-        # WIP accounting behavior without focused review.
         assert updated_wo.status == 'completed'
         assert updated_wo.actual_end_date is not None
 

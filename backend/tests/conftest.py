@@ -180,3 +180,21 @@ def _never_rewrite_source_files(monkeypatch):
     for name in ('sync_helpers_py', 'sync_oee_py', 'sync_frontend_file'):
         if hasattr(km, name):
             monkeypatch.setattr(km, name, lambda *a, **k: (True, 'skipped in tests'))
+
+
+@pytest.fixture(autouse=True)
+def _no_wo_notification_thread(monkeypatch):
+    """The WO-completion WhatsApp notification (utils/production_events.py) runs in a background
+    thread whose session cleanup rolls back on the SAME connection: the test DB is one shared
+    in-memory SQLite connection, so it silently undid the request's uncommitted work (status
+    reverted, StaleDataError on number_sequence_counters) and made production tests flaky.
+    Production uses separate PostgreSQL connections per thread, so it is not affected there."""
+    import threading
+    real_start = threading.Thread.start
+
+    def start(self):
+        if getattr(getattr(self, '_target', None), '__name__', '') == 'send_async':
+            return
+        real_start(self)
+
+    monkeypatch.setattr(threading.Thread, 'start', start)
