@@ -875,6 +875,14 @@ def approve_purchase_return(id):
                 hutang_account_id = None
             persediaan_default = GlobalAccountDefault.query.filter_by(transaction_key='persediaan').first()
             if hutang_account_id and persediaan_default:
+                from utils.finance_helpers import resolve_ppn_masukan_account_id
+                return_tax = min(float(return_obj.tax_amount or 0), return_total)
+                ppn_masukan_id = resolve_ppn_masukan_account_id() if return_tax > 0 else None
+                credit_lines = [{'account_id': persediaan_default.account_id, 'debit': 0, 'credit': return_total - return_tax,
+                                 'description': f'Retur pembelian - kurangi persediaan {return_obj.return_number}'}]
+                if return_tax > 0:
+                    credit_lines.append({'account_id': ppn_masukan_id, 'debit': 0, 'credit': return_tax,
+                                         'description': f'Retur pembelian - koreksi PPN Masukan {return_obj.return_number}'})
                 pending = PendingJournalEntry(
                     workflow_id=None,
                     entry_date=get_local_now().date(),
@@ -883,9 +891,7 @@ def approve_purchase_return(id):
                     lines=[
                         {'account_id': hutang_account_id, 'debit': return_total, 'credit': 0,
                          'description': f'Retur pembelian - kurangi hutang {return_obj.return_number}'},
-                        {'account_id': persediaan_default.account_id, 'debit': 0, 'credit': return_total,
-                         'description': f'Retur pembelian - kurangi persediaan {return_obj.return_number}'},
-                    ],
+                    ] + credit_lines,
                     total_debit=return_total,
                     total_credit=return_total,
                     created_by=user_id,

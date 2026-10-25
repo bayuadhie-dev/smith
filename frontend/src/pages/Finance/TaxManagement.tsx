@@ -101,7 +101,45 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
         showWarning(`Beberapa invoice dilewati karena customer belum punya NPWP: ${skipped}`)
       }
     } catch (err: any) {
-      showError(err?.response?.data?.error || 'Gagal export e-Faktur')
+      showError(await blobErrorMessage(err, 'Gagal export e-Faktur'))
+    } finally {
+      setEfakturExporting(false)
+    }
+  }
+
+  const blobErrorMessage = async (err: any, fallback: string) => {
+    const data = err?.response?.data
+    if (data instanceof Blob) {
+      try {
+        return JSON.parse(await data.text()).error || fallback
+      } catch {
+        return fallback
+      }
+    }
+    return data?.error || fallback
+  }
+
+  const handleExportNotaRetur = async () => {
+    if (!efakturStart || !efakturEnd) {
+      showWarning('Pilih tanggal mulai dan akhir dulu')
+      return
+    }
+    setEfakturExporting(true)
+    try {
+      const response = await axiosInstance.get('/api/finance/invoices/efaktur-retur-export', {
+        params: { start_date: efakturStart, end_date: efakturEnd },
+        responseType: 'blob',
+      })
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `nota_retur_${efakturStart}_${efakturEnd}.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (err: any) {
+      showError(await blobErrorMessage(err, 'Gagal export Nota Retur'))
     } finally {
       setEfakturExporting(false)
     }
@@ -287,6 +325,15 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
           >
             <ArrowDownTrayIcon className="h-5 w-5" />
             {efakturExporting ? 'Mengunduh...' : 'Unduh Excel'}
+          </button>
+          <button
+            onClick={handleExportNotaRetur}
+            disabled={efakturExporting}
+            className="btn-secondary inline-flex items-center gap-2 disabled:opacity-50"
+            title="Daftar retur penjualan (DPP dan PPN) sebagai acuan input Nota Retur di Coretax"
+          >
+            <ArrowDownTrayIcon className="h-5 w-5" />
+            Unduh Nota Retur
           </button>
         </div>
       </div>

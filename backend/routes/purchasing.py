@@ -740,8 +740,14 @@ def create_grn():
         grn_po = db.session.get(PurchaseOrder, data['po_id'])
         if not grn_po:
             return jsonify({'error': 'Purchase Order tidak ditemukan'}), 404
-        if grn_po.currency != 'IDR' and grn_po.status == 'draft':
-            return jsonify({'error': f'PO {grn_po.currency} masih draft, kurs belum dikunci. Submit PO terlebih dahulu.'}), 400
+        if grn_po.status in ('draft', 'pending_approval', 'rejected', 'cancelled'):
+            reason = {
+                'draft': 'masih draft (belum di-submit untuk approval)',
+                'pending_approval': 'masih menunggu approval',
+                'rejected': 'ditolak',
+                'cancelled': 'dibatalkan',
+            }[grn_po.status]
+            return jsonify({'error': f'PO {grn_po.po_number} {reason}. Barang baru bisa diterima setelah PO disetujui.'}), 400
         po_rate = float(grn_po.exchange_rate or 1)
         
         grn = GoodsReceivedNote(

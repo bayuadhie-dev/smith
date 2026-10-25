@@ -1233,3 +1233,22 @@ def fx_difference_line(cash_idr, ap_idr, description):
     acc = get_fx_gain_loss_account()
     return {'account_id': acc.id, 'debit': diff if diff > 0 else 0, 'credit': -diff if diff < 0 else 0,
             'description': description}
+
+
+def resolve_ppn_masukan_account_id():
+    """Akun PPN Masukan: pengaturan pajak -> akun bernama 'PPN Masukan' -> buat 1-1700.
+    Hasilnya disimpan ke pengaturan pajak supaya konsisten."""
+    from models.finance import TaxAccountSettings
+    from sqlalchemy import func
+    settings = get_or_create_singleton(TaxAccountSettings)
+    if settings.akun_ppn_masukan_id:
+        return settings.akun_ppn_masukan_id
+    acc = Account.query.filter(func.lower(Account.account_name) == 'ppn masukan', Account.is_active.is_(True)).first()
+    if not acc:
+        acc = Account(account_code='1-1700', account_name='PPN Masukan', account_type='asset',
+                      normal_balance='debit', is_active=True, is_header=False)
+        db.session.add(acc)
+        db.session.flush()
+    settings.akun_ppn_masukan_id = acc.id
+    db.session.flush()
+    return acc.id

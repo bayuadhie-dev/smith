@@ -431,3 +431,57 @@ def test_paying_foreign_currency_invoice_clears_ap_in_idr_and_books_fx_differenc
         'payment_type': 'receipt', 'payment_date': date.today().isoformat(), 'bank_account_id': bank.id,
         'payment_method': 'transfer', 'amount_idr': 5, 'lines': [{'account_id': _acc(db_session, '4-1000').id, 'amount': 5}]})
     assert bad.status_code == 400
+
+
+def test_grn_requires_approved_po(client, auth_headers, db_session):
+    from models.purchasing import PurchaseOrder, Supplier
+    sup = Supplier(code='SUP-GRN', company_name='PT GRN', is_active=True)
+    db_session.add(sup)
+    db_session.commit()
+    for i, status in enumerate(('draft', 'pending_approval', 'rejected', 'cancelled')):
+        po = PurchaseOrder(po_number=f'PO-GRN-{i}', supplier_id=sup.id, order_date=date.today(), status=status)
+        db_session.add(po)
+        db_session.commit()
+        resp = client.post('/api/purchasing/grn', headers=auth_headers, json={'po_id': po.id, 'supplier_id': sup.id, 'items': []})
+        assert resp.status_code == 400 and 'setelah PO disetujui' in resp.get_json()['error'], status
+
+
+def test_workflow_approval_refused_in_closed_period(client, auth_headers, db_session):
+    from models.finance import AccountingEntry, PeriodClose
+    kas, modal = _acc(db_session, '1-1010'), _acc(db_session, '3-1000')
+    db_session.add(PeriodClose(period_year=2026, period_month=1))
+    db_session.commit()
+    line = lambda a, d, c: {'account_id': a.id, 'debit': d, 'credit': c, 'description': 'x'}
+    created = client.post('/api/approval/workflows', headers=auth_headers, json={
+        'transaction_type': 'stock_opname', 'transaction_id': 990002, 'journal_entry': {
+            'entry_date': '2026-01-15', 'description': 'x', 'reference': 'x', 'lines': [line(kas, 900, 0), line(modal, 0, 900)]}})
+    wf = created.get_json()['workflow_id']
+    assert client.post(f'/api/approval/workflows/{wf}/submit', json={}, headers=auth_headers).status_code == 200
+    assert client.post(f'/api/approval/workflows/{wf}/review', json={'notes': 'ok'}, headers=auth_headers).status_code == 200
+    resp = client.post(f'/api/approval/workflows/{wf}/approve', json={'notes': 'ok'}, headers=auth_headers)
+    assert resp.status_code == 400 and 'ditutup' in resp.get_json()['error']
+    assert AccountingEntry.query.filter_by(entry_date=date(2026, 1, 15)).count() == 0
+
+
+def test_nota_retur_export_lists_return_dpp_and_ppn(client, auth_headers, db_session):
+    import io
+    import openpyxl
+    from models.finance import AccountingEntry
+    from models.returns import CustomerReturn
+    from models.sales import Customer
+    cust = Customer(code='C-RET', company_name='PT Retur', tax_id='0987654321098765')
+    db_session.add(cust)
+    db_session.commit()
+    ret = CustomerReturn(return_number='RET-1', customer_id=cust.id, return_date=date.today(), reason='damaged')
+    db_session.add(ret)
+    db_session.commit()
+    acc = _acc(db_session, '4-1000')
+    for n, desc, amt in ((1, 'Retur Penjualan - RET-1 (warehouse)', 1_000_000), (2, 'Koreksi PPN Keluaran - RET-1', 110_000)):
+        db_session.add(AccountingEntry(entry_number=f'JE-RET-{n}-01', entry_date=date.today(), entry_type='general',
+                                       reference_type='sales_return', reference_id=ret.id, account_id=acc.id, account_code='4-1000',
+                                       account_name=acc.account_name, description=desc, debit_amount=amt, credit_amount=0, status='posted'))
+    db_session.commit()
+    resp = client.get(f'/api/finance/invoices/efaktur-retur-export?start_date={date.today()}&end_date={date.today()}', headers=auth_headers)
+    assert resp.status_code == 200
+    rows = list(openpyxl.load_workbook(io.BytesIO(resp.data)).active.iter_rows(min_row=2, values_only=True))
+    assert rows[0][0] == 'RET-1' and rows[0][3] == '0987654321098765' and rows[0][5] == 1_000_000 and rows[0][6] == 110_000

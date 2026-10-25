@@ -329,6 +329,59 @@ def export_efaktur_keluaran():
         return jsonify({'error': str(e)}), 500
 
 
+@finance_bp.route('/invoices/efaktur-retur-export', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def export_efaktur_retur():
+    """Daftar Nota Retur (retur penjualan) untuk periode tertentu, diambil dari jurnal retur
+    di buku besar. Format DJP untuk Nota Retur berbeda dari Faktur Keluaran dan tidak kami
+    punyai, jadi ini lembar acuan untuk input Nota Retur di Coretax (DPP dan PPN retur per
+    faktur asal)."""
+    try:
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        if not start_date or not end_date:
+            return jsonify({'error': 'start_date dan end_date wajib diisi (format YYYY-MM-DD)'}), 400
+
+        from models.returns import CustomerReturn
+        entries = AccountingEntry.query.filter(
+            AccountingEntry.reference_type == 'sales_return',
+            AccountingEntry.status == 'posted',
+            AccountingEntry.entry_date >= start_date,
+            AccountingEntry.entry_date <= end_date,
+        ).all()
+        per_return = {}
+        for e in entries:
+            row = per_return.setdefault(e.reference_id, {'dpp': 0.0, 'ppn': 0.0})
+            desc = e.description or ''
+            if desc.startswith('Retur Penjualan'):
+                row['dpp'] += float(e.debit_amount or 0)
+            elif desc.startswith('Koreksi PPN Keluaran'):
+                row['ppn'] += float(e.debit_amount or 0)
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = 'Nota Retur'
+        ws.append(['Nomor Retur', 'Tanggal Retur', 'Faktur Asal', 'NPWP Pembeli', 'Nama Pembeli', 'DPP Retur', 'PPN Retur'])
+        for ret_id, amounts in sorted(per_return.items()):
+            ret = db.session.get(CustomerReturn, ret_id)
+            if not ret:
+                continue
+            customer = db.session.get(Customer, ret.customer_id) if ret.customer_id else None
+            invoice = Invoice.query.filter_by(sales_order_id=ret.sales_order_id, invoice_type='sales').order_by(Invoice.id.desc()).first() if ret.sales_order_id else None
+            ws.append([ret.return_number, ret.return_date, invoice.invoice_number if invoice else '',
+                       (customer.tax_id if customer else '') or '', customer.company_name if customer else '',
+                       round(amounts['dpp'], 2), round(amounts['ppn'], 2)])
+
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        return send_file(buf, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                         as_attachment=True, download_name=f'nota_retur_{start_date}_{end_date}.xlsx')
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @finance_bp.route('/invoices', methods=['POST'])
 @jwt_required()
 @require_permission('finance.create')

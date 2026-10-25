@@ -452,6 +452,10 @@ def create_purchase_invoice():
         journal_lines = []
         total_items_amount = 0.0
         total_debit_amount = 0.0
+        ppn_masukan_total = 0.0
+        from utils.finance_helpers import resolve_ppn_masukan_account_id
+        ppn_masukan_account_id = resolve_ppn_masukan_account_id() if any(
+            float(i.get('tax_amount') or 0) > 0 for i in items_data) else None
 
         for idx, item_data in enumerate(items_data, 1):
             # Item identity (material/product/description/uom) comes from the PO
@@ -551,9 +555,15 @@ def create_purchase_invoice():
                 slot = 'akun_persediaan_id' if is_inventory_item else 'akun_beban_id'
                 debit_account_id = resolve_account(slot, product_id=product_id, category_id=None)
 
+            # PPN Masukan dipisah dari nilai barang (kalau akunnya sudah diatur) supaya persediaan/GR-IR
+            # hanya berisi nilai barang dan PPN bisa dikreditkan.
+            line_tax_idr = 0.0
+            if ppn_masukan_account_id:
+                line_tax_idr = min(round(float(item_data.get('tax_amount') or 0) * inv_rate, 2), line_amount_idr)
+            ppn_masukan_total += line_tax_idr
             journal_lines.append({
                 'account_id': debit_account_id,
-                'debit': line_amount_idr,
+                'debit': line_amount_idr - line_tax_idr,
                 'credit': 0,
                 'description': item_data.get('description') or f'Purchase invoice {invoice_number} line {idx}',
             })
@@ -630,6 +640,14 @@ def create_purchase_invoice():
             # this is a normal case (e.g. invoice created before any goods
             # receipt), not an error condition for invoice creation itself.
             pass
+
+        if ppn_masukan_total > 0:
+            journal_lines.append({
+                'account_id': ppn_masukan_account_id,
+                'debit': round(ppn_masukan_total, 2),
+                'credit': 0,
+                'description': f'PPN Masukan - {invoice_number}',
+            })
 
         # Credit: accounts payable (resolved per-supplier per Accurate's pattern)
         payable_account_id = resolve_accounts_payable(invoice.supplier_id)
