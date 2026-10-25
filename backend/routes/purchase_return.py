@@ -876,9 +876,13 @@ def approve_purchase_return(id):
             persediaan_default = GlobalAccountDefault.query.filter_by(transaction_key='persediaan').first()
             if hutang_account_id and persediaan_default:
                 from utils.finance_helpers import resolve_ppn_masukan_account_id
-                return_tax = min(float(return_obj.tax_amount or 0), return_total)
+                # Faktur valas: nilai retur dalam mata uang faktur, dijurnal dalam Rupiah dengan kurs faktur
+                # (sama dengan kurs saat hutang/persediaan dibukukan, jadi tidak ada selisih kurs).
+                fx_rate = float(invoice.exchange_rate or 1) if (invoice.currency or 'IDR') != 'IDR' else 1.0
+                return_total_idr = round(return_total * fx_rate, 2)
+                return_tax = min(round(float(return_obj.tax_amount or 0) * fx_rate, 2), return_total_idr)
                 ppn_masukan_id = resolve_ppn_masukan_account_id() if return_tax > 0 else None
-                credit_lines = [{'account_id': persediaan_default.account_id, 'debit': 0, 'credit': return_total - return_tax,
+                credit_lines = [{'account_id': persediaan_default.account_id, 'debit': 0, 'credit': round(return_total_idr - return_tax, 2),
                                  'description': f'Retur pembelian - kurangi persediaan {return_obj.return_number}'}]
                 if return_tax > 0:
                     credit_lines.append({'account_id': ppn_masukan_id, 'debit': 0, 'credit': return_tax,
@@ -889,11 +893,11 @@ def approve_purchase_return(id):
                     description=f'Retur Pembelian {return_obj.return_number}',
                     reference=return_obj.return_number,
                     lines=[
-                        {'account_id': hutang_account_id, 'debit': return_total, 'credit': 0,
+                        {'account_id': hutang_account_id, 'debit': return_total_idr, 'credit': 0,
                          'description': f'Retur pembelian - kurangi hutang {return_obj.return_number}'},
                     ] + credit_lines,
-                    total_debit=return_total,
-                    total_credit=return_total,
+                    total_debit=return_total_idr,
+                    total_credit=return_total_idr,
                     created_by=user_id,
                 )
                 db.session.add(pending)

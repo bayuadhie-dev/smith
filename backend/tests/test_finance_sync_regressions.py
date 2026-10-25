@@ -485,3 +485,38 @@ def test_nota_retur_export_lists_return_dpp_and_ppn(client, auth_headers, db_ses
     assert resp.status_code == 200
     rows = list(openpyxl.load_workbook(io.BytesIO(resp.data)).active.iter_rows(min_row=2, values_only=True))
     assert rows[0][0] == 'RET-1' and rows[0][3] == '0987654321098765' and rows[0][5] == 1_000_000 and rows[0][6] == 110_000
+
+
+def test_efaktur_export_keeps_invoices_with_bad_npwp_but_warns(client, auth_headers, db_session):
+    import io
+    import openpyxl
+    from models.finance import Invoice
+    from models.sales import Customer
+    from models.settings import CompanyProfile
+    profile = CompanyProfile.query.first() or CompanyProfile(company_name='PT Uji')
+    profile.tax_id = '0012345678901234'
+    good = Customer(code='C-N1', company_name='Baik', tax_id='09.876.543.2-109.8765')
+    short = Customer(code='C-N2', company_name='Pendek', tax_id='12345')
+    empty = Customer(code='C-N3', company_name='Kosong', tax_id='')
+    db_session.add_all([profile, good, short, empty])
+    db_session.commit()
+    for n, c in enumerate((good, short, empty)):
+        db_session.add(Invoice(invoice_number=f'INV-NP-{n}', invoice_type='sales', invoice_date=date.today(), customer_id=c.id,
+                               subtotal=1000, tax_amount=110, total_amount=1110, status='sent'))
+    db_session.commit()
+    resp = client.get(f'/api/finance/invoices/efaktur-export?start_date={date.today()}&end_date={date.today()}', headers=auth_headers)
+    assert resp.status_code == 200
+    rows = {r[4]: r for r in openpyxl.load_workbook(io.BytesIO(resp.data))['DATA'].iter_rows(min_row=4, values_only=True) if r[4]}
+    assert set(rows) == {'INV-NP-0', 'INV-NP-1', 'INV-NP-2'}
+    assert rows['INV-NP-0'][7] == '0987654321098765'
+    assert resp.headers['X-Npwp-Warnings'] == 'INV-NP-1:format-salah,INV-NP-2:kosong'
+    assert resp.headers['X-Npwp-Warning-Count'] == '2'
+
+
+def test_group_chat_owner_can_update_and_delete_own_server(client, auth_headers, db_session):
+    """Regression: owner checks compared int owner_id with the str JWT identity, so owners were always refused."""
+    created = client.post('/api/chat/servers', json={'name': 'Tim Uji'}, headers=auth_headers)
+    assert created.status_code in (200, 201), created.get_json()
+    server_id = (created.get_json().get('server') or created.get_json())['id']
+    assert client.put(f'/api/chat/servers/{server_id}', json={'name': 'Tim Baru'}, headers=auth_headers).status_code == 200
+    assert client.delete(f'/api/chat/servers/{server_id}', headers=auth_headers).status_code == 200

@@ -230,6 +230,8 @@ def create_app(config_class=Config):
 
          methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
 
+         expose_headers=['X-Npwp-Warnings', 'X-Npwp-Warning-Count', 'Content-Disposition'],
+
          supports_credentials=True)
 
     

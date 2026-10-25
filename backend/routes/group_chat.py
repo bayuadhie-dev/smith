@@ -164,7 +164,7 @@ def auto_join_company_server(user):
 @jwt_required()
 def get_servers():
     """Get the company server - all eligible users share one server"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     user = db.session.get(User, current_user_id)
     
     if not user:
@@ -197,7 +197,7 @@ def get_servers():
 @jwt_required()
 def create_server():
     """Create a new chat server"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     data = request.get_json()
     
     if not data.get('name'):
@@ -259,7 +259,7 @@ def create_server():
 @jwt_required()
 def get_server(server_id):
     """Get server details with channels"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     server = db.session.get(ChatServer, server_id) or abort(404)
     
     # Check if user is member
@@ -276,7 +276,7 @@ def get_server(server_id):
 @jwt_required()
 def update_server(server_id):
     """Update server settings"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     server = db.session.get(ChatServer, server_id) or abort(404)
     
     # Check if user is owner or has permission
@@ -308,7 +308,7 @@ def update_server(server_id):
 @jwt_required()
 def delete_server(server_id):
     """Delete a server"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     server = db.session.get(ChatServer, server_id) or abort(404)
     
     if server.owner_id != current_user_id:
@@ -324,7 +324,7 @@ def delete_server(server_id):
 @jwt_required()
 def get_available_users(server_id):
     """Get users that can be invited to the server"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     server = db.session.get(ChatServer, server_id) or abort(404)
     
     # Get current member IDs
@@ -354,7 +354,7 @@ def get_available_users(server_id):
 @jwt_required()
 def invite_user_to_server(server_id):
     """Invite a user to the server"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     server = db.session.get(ChatServer, server_id) or abort(404)
     data = request.get_json()
     
@@ -403,7 +403,7 @@ def invite_user_to_server(server_id):
 @jwt_required()
 def join_server(server_id):
     """Join a server"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     server = db.session.get(ChatServer, server_id) or abort(404)
     user = db.session.get(User, current_user_id)
     
@@ -439,7 +439,7 @@ def join_server(server_id):
 @jwt_required()
 def leave_server(server_id):
     """Leave a server"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     server = db.session.get(ChatServer, server_id) or abort(404)
     user = db.session.get(User, current_user_id)
     
@@ -465,7 +465,7 @@ def leave_server(server_id):
 @jwt_required()
 def join_by_invite(invite_code):
     """Join server by invite code"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     server = ChatServer.query.filter_by(invite_code=invite_code).first()
     
     if not server:
@@ -491,7 +491,7 @@ def join_by_invite(invite_code):
 @jwt_required()
 def create_category(server_id):
     """Create a channel category"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     server = db.session.get(ChatServer, server_id) or abort(404)
     
     # Check permission
@@ -530,7 +530,7 @@ def create_category(server_id):
 @jwt_required()
 def update_category(category_id):
     """Update a category"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     category = db.session.get(ChatCategory, category_id) or abort(404)
     server = category.server
     
@@ -558,7 +558,7 @@ def update_category(category_id):
 @jwt_required()
 def delete_category(category_id):
     """Delete a category"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     category = db.session.get(ChatCategory, category_id) or abort(404)
     server = category.server
     
@@ -581,7 +581,7 @@ def delete_category(category_id):
 @jwt_required()
 def create_channel(server_id):
     """Create a new channel"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     server = db.session.get(ChatServer, server_id) or abort(404)
     
     # Check permission
@@ -644,7 +644,7 @@ def create_channel(server_id):
 @jwt_required()
 def check_channel_access(channel_id):
     """Check if user has access to private channel"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     channel = db.session.get(ChatChannel, channel_id) or abort(404)
     user = db.session.get(User, current_user_id)
     
@@ -667,7 +667,7 @@ def check_channel_access(channel_id):
 @jwt_required()
 def unlock_channel(channel_id):
     """Unlock private channel with password"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     channel = db.session.get(ChatChannel, channel_id) or abort(404)
     user = db.session.get(User, current_user_id)
     
@@ -751,7 +751,7 @@ def get_channel(channel_id):
 @jwt_required()
 def update_channel(channel_id):
     """Update channel settings"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     channel = db.session.get(ChatChannel, channel_id) or abort(404)
     server = channel.server
     
@@ -793,7 +793,7 @@ def update_channel(channel_id):
 @jwt_required()
 def delete_channel(channel_id):
     """Delete a channel"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     channel = db.session.get(ChatChannel, channel_id) or abort(404)
     server = channel.server
     
@@ -810,7 +810,7 @@ def delete_channel(channel_id):
 @jwt_required()
 def add_channel_member(channel_id):
     """Add member to private channel"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     channel = db.session.get(ChatChannel, channel_id) or abort(404)
     
     if not channel.is_private:
@@ -840,7 +840,7 @@ def add_channel_member(channel_id):
 @jwt_required()
 def remove_channel_member(channel_id, user_id):
     """Remove member from private channel"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     channel = db.session.get(ChatChannel, channel_id) or abort(404)
     
     if channel.server.owner_id != current_user_id:
@@ -863,7 +863,7 @@ def remove_channel_member(channel_id, user_id):
 @jwt_required()
 def send_message(channel_id):
     """Send a message to a channel"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     channel = db.session.get(ChatChannel, channel_id) or abort(404)
     user = db.session.get(User, current_user_id)
     
@@ -946,7 +946,7 @@ def upload_file_message():
     import os
     from werkzeug.utils import secure_filename
     
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided'}), 400
@@ -1059,7 +1059,7 @@ def upload_file_message():
 @jwt_required()
 def edit_message(message_id):
     """Edit a message"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     message = db.session.get(ChatMessage, message_id) or abort(404)
     
     if message.user_id != current_user_id:
@@ -1089,7 +1089,7 @@ def edit_message(message_id):
 @jwt_required()
 def delete_message(message_id):
     """Delete a message"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     message = db.session.get(ChatMessage, message_id) or abort(404)
     channel = message.channel
     
@@ -1110,7 +1110,7 @@ def delete_message(message_id):
 @jwt_required()
 def add_reaction(message_id):
     """Add reaction to a message"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     message = db.session.get(ChatMessage, message_id) or abort(404)
     
     data = request.get_json()
@@ -1147,7 +1147,7 @@ def add_reaction(message_id):
 @jwt_required()
 def remove_reaction(message_id):
     """Remove reaction from a message"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     
     emoji = request.args.get('emoji')
     if not emoji:
@@ -1177,7 +1177,7 @@ def remove_reaction(message_id):
 @jwt_required()
 def pin_message(message_id):
     """Pin a message"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     message = db.session.get(ChatMessage, message_id) or abort(404)
     channel = message.channel
     
@@ -1209,7 +1209,7 @@ def pin_message(message_id):
 @jwt_required()
 def unpin_message(message_id):
     """Unpin a message"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     message = db.session.get(ChatMessage, message_id) or abort(404)
     channel = message.channel
     
@@ -1271,7 +1271,7 @@ def get_roles(server_id):
 @jwt_required()
 def create_role(server_id):
     """Create a new role"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     server = db.session.get(ChatServer, server_id) or abort(404)
     
     if server.owner_id != current_user_id:
@@ -1316,7 +1316,7 @@ def create_role(server_id):
 @jwt_required()
 def update_role(role_id):
     """Update a role"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     role = db.session.get(ChatServerRole, role_id) or abort(404)
     
     if role.server.owner_id != current_user_id:
@@ -1346,7 +1346,7 @@ def update_role(role_id):
 @jwt_required()
 def delete_role(role_id):
     """Delete a role"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     role = db.session.get(ChatServerRole, role_id) or abort(404)
     
     if role.server.owner_id != current_user_id:
@@ -1365,7 +1365,7 @@ def delete_role(role_id):
 @jwt_required()
 def assign_role(role_id):
     """Assign role to a user"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     role = db.session.get(ChatServerRole, role_id) or abort(404)
     
     if role.server.owner_id != current_user_id:
@@ -1401,7 +1401,7 @@ def assign_role(role_id):
 @jwt_required()
 def remove_role(role_id, user_id):
     """Remove role from a user"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     role = db.session.get(ChatServerRole, role_id) or abort(404)
     
     if role.server.owner_id != current_user_id:
@@ -1427,7 +1427,7 @@ def remove_role(role_id, user_id):
 @jwt_required()
 def get_my_status():
     """Get current user's status"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     
     status = ChatUserStatus.query.filter_by(user_id=current_user_id).first()
     
@@ -1446,7 +1446,7 @@ def get_my_status():
 @jwt_required()
 def update_status():
     """Update user status"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     data = request.get_json()
     
     status = ChatUserStatus.query.filter_by(user_id=current_user_id).first()
@@ -1496,7 +1496,7 @@ def get_members_status(server_id):
 @jwt_required()
 def get_unread_counts():
     """Get unread message counts for all channels"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     
     unreads = ChatUnreadMessage.query.filter(
         ChatUnreadMessage.user_id == current_user_id,
@@ -1516,7 +1516,7 @@ def get_unread_counts():
 @jwt_required()
 def mark_as_read(channel_id):
     """Mark channel as read"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     
     unread = ChatUnreadMessage.query.filter_by(
         user_id=current_user_id,
@@ -1594,7 +1594,7 @@ def search_server_messages(server_id):
 @jwt_required()
 def heartbeat():
     """Update user's last activity (heartbeat for online status)"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     
     status = ChatUserStatus.query.filter_by(user_id=current_user_id).first()
     

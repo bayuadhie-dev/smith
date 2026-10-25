@@ -290,13 +290,17 @@ def export_efaktur_keluaran():
         ws.cell(row=1, column=2, value=company_npwp)
 
         row_idx = 4
-        skipped_no_npwp = []
+        npwp_warnings = []
         for inv in invoices:
             customer = db.session.get(Customer, inv.customer_id) if inv.customer_id else None
-            buyer_npwp = (customer.tax_id if customer else None) or ''
-            if not buyer_npwp:
-                skipped_no_npwp.append(inv.invoice_number)
-                continue
+            raw_npwp = ((customer.tax_id if customer else None) or '').strip()
+            cleaned = raw_npwp.replace('.', '').replace('-', '').replace(' ', '')
+            valid = cleaned.isdigit() and len(cleaned) in (15, 16)
+            if not raw_npwp:
+                npwp_warnings.append(f'{inv.invoice_number}:kosong')
+            elif not valid:
+                npwp_warnings.append(f'{inv.invoice_number}:format-salah')
+            buyer_npwp = cleaned if valid else raw_npwp
             ws.cell(row=row_idx, column=1, value='01')   # TransactionType: domestic delivery
             ws.cell(row=row_idx, column=2, value='01')   # TransactionDetail: to non-VAT-collector
             ws.cell(row=row_idx, column=5, value=inv.invoice_number)
@@ -321,8 +325,9 @@ def export_efaktur_keluaran():
             as_attachment=True,
             download_name=filename,
         )
-        if skipped_no_npwp:
-            response.headers['X-Skipped-No-NPWP'] = ','.join(skipped_no_npwp[:20])
+        if npwp_warnings:
+            response.headers['X-Npwp-Warnings'] = ','.join(npwp_warnings[:20])
+            response.headers['X-Npwp-Warning-Count'] = str(len(npwp_warnings))
         return response
 
     except Exception as e:

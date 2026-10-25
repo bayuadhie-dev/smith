@@ -454,8 +454,8 @@ def create_purchase_invoice():
         total_debit_amount = 0.0
         ppn_masukan_total = 0.0
         from utils.finance_helpers import resolve_ppn_masukan_account_id
-        ppn_masukan_account_id = resolve_ppn_masukan_account_id() if any(
-            float(i.get('tax_amount') or 0) > 0 for i in items_data) else None
+        from utils.tax_helpers import ppn_rate_for_code, resolve_item_tax_percent
+        ppn_masukan_account_id = None
 
         for idx, item_data in enumerate(items_data, 1):
             # Item identity (material/product/description/uom) comes from the PO
@@ -475,6 +475,21 @@ def create_purchase_invoice():
             # same fallback already used in purchase_return.py. Found via
             # real production testing 2026-10-01 (500 NotNullViolation).
             total_price = item_data.get('total_price')
+            if total_price is None and not float(item_data.get('tax_amount') or 0):
+                # PPN per baris: kode PPN yang dipilih di baris (ppn_code: Y/A/B/L, kosong = tanpa PPN),
+                # atau persen eksplisit, atau default dari master barang.
+                if item_data.get('tax_percent'):
+                    pct = float(item_data['tax_percent'])
+                elif 'ppn_code' in item_data:
+                    pct = ppn_rate_for_code(item_data.get('ppn_code')) or 0
+                else:
+                    pct = resolve_item_tax_percent(0, product_id=item_data.get('product_id'),
+                                                   material_id=item_data.get('material_id')) or 0
+                if pct:
+                    base = (float(item_data.get('quantity') or 0) * float(item_data.get('unit_price') or 0)
+                            - float(item_data.get('discount_amount') or 0))
+                    item_data['tax_percent'] = pct
+                    item_data['tax_amount'] = round(base * pct / 100, 2)
             if total_price is None:
                 quantity = float(item_data.get('quantity') or 0)
                 unit_price = float(item_data.get('unit_price') or 0)
@@ -558,7 +573,8 @@ def create_purchase_invoice():
             # PPN Masukan dipisah dari nilai barang (kalau akunnya sudah diatur) supaya persediaan/GR-IR
             # hanya berisi nilai barang dan PPN bisa dikreditkan.
             line_tax_idr = 0.0
-            if ppn_masukan_account_id:
+            if float(item_data.get('tax_amount') or 0) > 0:
+                ppn_masukan_account_id = ppn_masukan_account_id or resolve_ppn_masukan_account_id()
                 line_tax_idr = min(round(float(item_data.get('tax_amount') or 0) * inv_rate, 2), line_amount_idr)
             ppn_masukan_total += line_tax_idr
             journal_lines.append({
@@ -641,6 +657,17 @@ def create_purchase_invoice():
             # receipt), not an error condition for invoice creation itself.
             pass
 
+        header_tax = float(data.get('tax_amount') or 0)
+        if ppn_masukan_total <= 0 and header_tax > 0 and items_data:
+            # PPN hanya diisi di header (item tanpa PPN): bukukan sebagai PPN Masukan di atas nilai barang
+            # dan tambahkan ke hutang.
+            ppn_masukan_account_id = ppn_masukan_account_id or resolve_ppn_masukan_account_id()
+            header_tax_idr = round(header_tax * inv_rate, 2)
+            ppn_masukan_total = header_tax_idr
+            total_debit_amount += header_tax_idr
+            if data.get('total_amount') is None:
+                invoice.total_amount = float(invoice.total_amount or 0) + header_tax
+                invoice.balance_due = float(invoice.total_amount) - float(invoice.paid_amount or 0)
         if ppn_masukan_total > 0:
             journal_lines.append({
                 'account_id': ppn_masukan_account_id,

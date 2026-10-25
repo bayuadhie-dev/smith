@@ -96,9 +96,9 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
       link.click()
       link.remove()
       window.URL.revokeObjectURL(url)
-      const skipped = response.headers['x-skipped-no-npwp']
-      if (skipped) {
-        showWarning(`Beberapa invoice dilewati karena customer belum punya NPWP: ${skipped}`)
+      const npwpWarnings = response.headers['x-npwp-warnings']
+      if (npwpWarnings) {
+        showWarning(`${response.headers['x-npwp-warning-count']} invoice tetap diekspor tapi NPWP customer kosong / formatnya salah (harus 15 atau 16 digit), perbaiki sebelum unggah ke Coretax: ${npwpWarnings}`)
       }
     } catch (err: any) {
       showError(await blobErrorMessage(err, 'Gagal export e-Faktur'))
