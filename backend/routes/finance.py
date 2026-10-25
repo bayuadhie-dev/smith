@@ -281,7 +281,9 @@ def export_efaktur_keluaran():
         invoices = query.all()
 
         company = CompanyProfile.query.first()
-        company_npwp = (company.tax_id if company else None) or ''
+        company_npwp = ((company.tax_id if company else None) or '').strip()
+        if not company_npwp.replace('.', '').replace('-', '').isdigit():
+            return jsonify({'error': 'NPWP perusahaan belum diisi / tidak valid. Isi di Pengaturan > Profil Perusahaan sebelum ekspor e-Faktur.'}), 400
 
         wb = openpyxl.load_workbook(EFAKTUR_TEMPLATE_PATH)
         ws = wb['DATA']
@@ -302,7 +304,8 @@ def export_efaktur_keluaran():
             ws.cell(row=row_idx, column=8, value=buyer_npwp)
             ws.cell(row=row_idx, column=9, value=customer.company_name if customer else '')
             ws.cell(row=row_idx, column=10, value=(customer.billing_address if customer else '') or '')
-            ws.cell(row=row_idx, column=11, value=float(inv.subtotal or 0))
+            # DPP = subtotal setelah diskon (PPN dihitung dari nilai ini).
+            ws.cell(row=row_idx, column=11, value=float((inv.subtotal or 0) - (inv.discount_amount or 0)))
             ws.cell(row=row_idx, column=12, value=float(inv.tax_amount or 0))
             ws.cell(row=row_idx, column=13, value=0)
             row_idx += 1
@@ -820,6 +823,9 @@ def create_payment():
                 return jsonify({'error': 'Invoice penjualan dan pembelian tidak boleh dicampur dalam satu pembayaran'}), 400
             if len({(i.customer_id, i.supplier_id) for i in invoices}) > 1:
                 return jsonify({'error': 'Semua invoice dalam satu pembayaran harus milik customer/supplier yang sama'}), 400
+            foreign_currencies = {(i.currency or 'IDR') for i in invoices if (i.currency or 'IDR') != 'IDR'}
+            if foreign_currencies and (len(foreign_currencies) > 1 or any((i.currency or 'IDR') == 'IDR' for i in invoices)):
+                return jsonify({'error': 'Invoice valas hanya boleh dibayar bersama invoice bermata uang yang sama (tidak boleh dicampur dengan Rupiah atau valas lain)'}), 400
 
         customer_id = data.get('customer_id') or (invoices[0].customer_id if invoices else None)
         supplier_id = data.get('supplier_id') or (invoices[0].supplier_id if invoices else None)
@@ -861,11 +867,13 @@ def create_payment():
             notes=data.get('notes'),
             received_by=user_id
         )
+        if invoices and (invoices[0].currency or 'IDR') != 'IDR':
+            payment.currency = invoices[0].currency
         db.session.add(payment)
         db.session.flush()
 
         from utils.finance_helpers import (
-            resolve_accounts_receivable, resolve_accounts_payable, post_pending_journal
+            resolve_accounts_receivable, resolve_accounts_payable, post_pending_journal, fx_difference_line
         )
         from models.approval_workflow import PendingJournalEntry
         from models.finance import PaymentAllocation, PaymentLine
@@ -873,6 +881,7 @@ def create_payment():
         total = float(total_amount)
         is_receipt = payment_type == 'receipt'
         lines = []
+        ap_idr_total = 0.0
         if invoices:
             for inv, a in zip(invoices, allocations_in):
                 amt = float(Decimal(str(a['amount'])))
@@ -888,7 +897,10 @@ def create_payment():
                     lines.append({'account_id': resolve_accounts_receivable(inv.customer_id), 'debit': 0, 'credit': amt,
                                   'description': f'Pelunasan piutang - {inv.invoice_number}'})
                 else:
-                    lines.append({'account_id': resolve_accounts_payable(inv.supplier_id), 'debit': amt, 'credit': 0,
+                    # Hutang valas dibukukan dalam Rupiah dengan kurs saat faktur; amt ada dalam mata uang faktur.
+                    ap_idr = round(amt * float(inv.exchange_rate or 1), 2) if (inv.currency or 'IDR') != 'IDR' else amt
+                    ap_idr_total += ap_idr
+                    lines.append({'account_id': resolve_accounts_payable(inv.supplier_id), 'debit': ap_idr, 'credit': 0,
                                   'description': f'Pelunasan hutang - {inv.invoice_number}'})
             memo = f'Payment {payment.payment_number} - ' + ', '.join(i.invoice_number for i in invoices)
         else:
@@ -900,6 +912,24 @@ def create_payment():
                               'description': desc})
             memo = payment.notes or f'Payment {payment.payment_number}'
 
+        if invoices and payment.currency != 'IDR':
+            # Valas: kas keluar = Rupiah yang benar-benar dibayar (amount_idr); default = nilai hutang
+            # (tanpa selisih). Beda keduanya masuk Laba/Rugi Selisih Kurs.
+            ap_idr_total = round(ap_idr_total, 2)
+            if data.get('amount_idr') is not None:
+                if float(data['amount_idr']) <= 0:
+                    db.session.rollback()
+                    return jsonify({'error': 'amount_idr harus lebih dari 0'}), 400
+                total = round(float(data['amount_idr']), 2)
+            else:
+                total = ap_idr_total
+            fx_line = fx_difference_line(total, ap_idr_total, f'Selisih kurs pelunasan - {payment.payment_number}')
+            if fx_line:
+                lines.append(fx_line)
+        elif data.get('amount_idr') is not None:
+            db.session.rollback()
+            return jsonify({'error': 'amount_idr hanya untuk pembayaran invoice valas'}), 400
+
         lines.append({
             'account_id': data['bank_account_id'],
             'debit': total if is_receipt else 0,
@@ -907,14 +937,15 @@ def create_payment():
             'description': f'{"Penerimaan" if is_receipt else "Pembayaran"} - {payment.payment_number}',
         })
 
+        journal_total = round(sum(l['debit'] for l in lines), 2)
         pending = PendingJournalEntry(
             workflow_id=None,
             entry_date=payment.payment_date,
             description=memo,
             reference=payment.payment_number,
             lines=lines,
-            total_debit=total,
-            total_credit=total,
+            total_debit=journal_total,
+            total_credit=journal_total,
             created_by=user_id,
         )
         db.session.add(pending)

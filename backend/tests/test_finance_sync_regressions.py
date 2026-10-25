@@ -334,3 +334,100 @@ def test_paying_payroll_posts_hutang_gaji_to_kas_and_is_idempotent(db_session):
 
     with pytest.raises(PayrollPaymentError):                                           # not a Kas/Bank account
         post_payroll_payment_journal(SimpleNamespace(id=778, net_salary=1000), date.today(), bank_account_id=hg.id)
+
+
+# ------------------------------------------- e-Faktur / approval / foreign currency
+def test_efaktur_export_uses_dpp_after_discount_and_requires_company_npwp(client, auth_headers, db_session):
+    import io
+    import openpyxl
+    from models.finance import Invoice
+    from models.sales import Customer
+    from models.settings import CompanyProfile
+    cust = Customer(code='C-EF-1', company_name='PT Berpajak', tax_id='0987654321098765', billing_address='Jl. Pajak 1')
+    profile = CompanyProfile.query.first() or CompanyProfile(company_name='PT Uji')
+    profile.tax_id = '-'
+    db_session.add_all([cust, profile])
+    db_session.commit()
+    db_session.add(Invoice(invoice_number='INV-EF-1', invoice_type='sales', invoice_date=date.today(), customer_id=cust.id,
+                           subtotal=2_000_000, discount_amount=50_000, tax_amount=214_500, total_amount=2_164_500, status='sent'))
+    db_session.commit()
+
+    url = f'/api/finance/invoices/efaktur-export?start_date={date.today()}&end_date={date.today()}'
+    assert client.get(url, headers=auth_headers).status_code == 400   # NPWP perusahaan belum valid
+
+    profile.tax_id = '0012345678901234'
+    db_session.commit()
+    resp = client.get(url, headers=auth_headers)
+    assert resp.status_code == 200
+    ws = openpyxl.load_workbook(io.BytesIO(resp.data))['DATA']
+    row = next(r for r in ws.iter_rows(min_row=4, values_only=True) if r[4] == 'INV-EF-1')
+    assert row[10] == 1_950_000 and row[11] == 214_500   # DPP = subtotal - diskon
+
+
+def test_workflow_journal_must_balance_and_submit_works_with_string_identity(client, auth_headers, db_session):
+    kas, modal = _acc(db_session, '1-1010'), _acc(db_session, '3-1000')
+    line = lambda a, d, c: {'account_id': a.id, 'debit': d, 'credit': c, 'description': 'x'}
+    body = lambda lines: {'transaction_type': 'stock_opname', 'transaction_id': 990001, 'journal_entry': {
+        'entry_date': date.today().isoformat(), 'description': 'x', 'reference': 'x', 'lines': lines}}
+    bad = client.post('/api/approval/workflows', json=body([line(kas, 5000, 0), line(modal, 0, 3000)]), headers=auth_headers)
+    assert bad.status_code == 400 and 'seimbang' in bad.get_json()['error']
+    ok = client.post('/api/approval/workflows', json=body([line(kas, 1000, 0), line(modal, 0, 1000)]), headers=auth_headers)
+    assert ok.status_code == 201
+    wf = ok.get_json()['workflow_id']
+    assert client.post(f'/api/approval/workflows/{wf}/submit', json={}, headers=auth_headers).status_code == 200
+
+
+def _foreign_ap(db_session, currency='USD', rate=16000, amount=1000):
+    """A posted USD purchase invoice: AP carried in IDR at the invoice rate."""
+    from models.finance import Invoice
+    from models.purchasing import Supplier
+    sup = Supplier(code=f'SUP-FX-{_seq["n"]}', company_name='PT Valas', is_active=True)
+    db_session.add(sup)
+    db_session.commit()
+    inv = Invoice(invoice_number=f'PI-FX-{_seq["n"]}', invoice_type='purchase', invoice_date=date.today(), supplier_id=sup.id,
+                  currency=currency, exchange_rate=rate, total_amount=amount, balance_due=amount, status='sent')
+    _seq['n'] += 1
+    db_session.add(inv)
+    db_session.commit()
+    ap = _post(db_session, '2-1000', credit=amount * rate)
+    _post(db_session, '1-1010', debit=amount * rate)
+    from models.finance import GlobalAccountDefault
+    if not GlobalAccountDefault.query.filter_by(transaction_key='accounts_payable').first():
+        db_session.add(GlobalAccountDefault(transaction_key='accounts_payable', account_id=ap.id))
+        db_session.commit()
+    return sup, inv
+
+
+def _gl(db_session, code):
+    from models.finance import AccountingEntry
+    rows = AccountingEntry.query.filter_by(account_code=code, status='posted').all()
+    return sum(float(r.credit_amount or 0) - float(r.debit_amount or 0) for r in rows)
+
+
+def test_paying_foreign_currency_invoice_clears_ap_in_idr_and_books_fx_difference(client, auth_headers, db_session):
+    """Regression: a USD 1,000 invoice carried at 16,000 was 'paid' by debiting AP only Rp1,000."""
+    sup, inv = _foreign_ap(db_session)
+    bank = _acc(db_session, '1-1010')
+    ap_before = _gl(db_session, '2-1000')
+    resp = client.post('/api/finance/payments', headers=auth_headers, json={
+        'payment_type': 'payment', 'payment_date': date.today().isoformat(), 'supplier_id': sup.id, 'bank_account_id': bank.id,
+        'payment_method': 'transfer', 'amount_idr': 16_100_000, 'allocations': [{'invoice_id': inv.id, 'amount': 1000}]})
+    assert resp.status_code == 201, resp.get_json()
+    assert round(_gl(db_session, '2-1000') - (ap_before - 16_000_000), 2) == 0     # AP relieved by Rp16.000.000
+    assert round(_gl(db_session, '9-8000'), 2) == -100_000                          # rugi selisih kurs
+    db_session.refresh(inv)
+    assert inv.status == 'paid' and float(inv.balance_due) == 0
+
+    # without amount_idr: no FX difference
+    sup2, inv2 = _foreign_ap(db_session)
+    resp = client.post('/api/finance/payments', headers=auth_headers, json={
+        'payment_type': 'payment', 'payment_date': date.today().isoformat(), 'supplier_id': sup2.id, 'bank_account_id': bank.id,
+        'payment_method': 'transfer', 'allocations': [{'invoice_id': inv2.id, 'amount': 1000}]})
+    assert resp.status_code == 201
+    assert round(_gl(db_session, '9-8000'), 2) == -100_000
+
+    # IDR invoices must not accept amount_idr
+    bad = client.post('/api/finance/payments', headers=auth_headers, json={
+        'payment_type': 'receipt', 'payment_date': date.today().isoformat(), 'bank_account_id': bank.id,
+        'payment_method': 'transfer', 'amount_idr': 5, 'lines': [{'account_id': _acc(db_session, '4-1000').id, 'amount': 5}]})
+    assert bad.status_code == 400

@@ -104,6 +104,17 @@ def apply_workflow_side_effect(workflow, action, user_id):
                 adj.status = 'rejected'
 
 
+def _journal_lines_unbalanced(lines):
+    """Pesan error kalau baris jurnal tidak seimbang / kosong, else None."""
+    if not lines:
+        return 'Jurnal minimal berisi satu baris'
+    debit = round(sum(float(l.get('debit') or 0) for l in lines), 2)
+    credit = round(sum(float(l.get('credit') or 0) for l in lines), 2)
+    if abs(debit - credit) > 0.01:
+        return f'Jurnal tidak seimbang: debit {debit:,.2f} vs kredit {credit:,.2f}'
+    return None
+
+
 def get_user_roles(user):
     """Return a set of lowercase role names for the user from the RBAC relationship.
 
@@ -346,6 +357,9 @@ def create_workflow():
         # Create pending journal entry if provided
         if 'journal_entry' in data:
             je_data = data['journal_entry']
+            je_error = _journal_lines_unbalanced(je_data.get('lines'))
+            if je_error:
+                return jsonify({'error': je_error}), 400
             pending_journal = PendingJournalEntry(
                 workflow_id=workflow.id,
                 entry_date=datetime.strptime(je_data['entry_date'], '%Y-%m-%d').date(),
@@ -380,7 +394,7 @@ def submit_for_review(workflow_id):
         workflow = db.session.get(ApprovalWorkflow, workflow_id) or abort(404)
         
         # Check if user is the submitter
-        if workflow.submitted_by != current_user_id:
+        if str(workflow.submitted_by) != str(current_user_id):
             return jsonify({'error': 'Unauthorized'}), 403
         
         # Update workflow
@@ -464,6 +478,10 @@ def review_workflow(workflow_id):
             if pending_journal:
                 je_changes = data['journal_changes']
                 if 'lines' in je_changes:
+                    je_error = _journal_lines_unbalanced(je_changes['lines'])
+                    if je_error:
+                        db.session.rollback()
+                        return jsonify({'error': je_error}), 400
                     pending_journal.lines = je_changes['lines']
                     pending_journal.total_debit = sum(line.get('debit', 0) for line in je_changes['lines'])
                     pending_journal.total_credit = sum(line.get('credit', 0) for line in je_changes['lines'])

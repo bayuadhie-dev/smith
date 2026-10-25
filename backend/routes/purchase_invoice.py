@@ -1169,20 +1169,39 @@ def record_payment(id):
         from models.approval_workflow import PendingJournalEntry
 
         ap_account_id = resolve_accounts_payable(invoice.supplier_id)
+        # Faktur valas: amount dalam mata uang faktur; hutang dibukukan dalam Rupiah dengan kurs faktur,
+        # kas keluar = amount_idr (default sama dengan nilai hutang), selisihnya ke Laba/Rugi Selisih Kurs.
+        ap_idr = amount
+        cash_idr = amount
+        if (invoice.currency or 'IDR') != 'IDR':
+            ap_idr = round(amount * float(invoice.exchange_rate or 1), 2)
+            cash_idr = round(float(data['amount_idr']), 2) if data.get('amount_idr') is not None else ap_idr
+            if cash_idr <= 0:
+                db.session.rollback()
+                return jsonify({'error': 'amount_idr harus lebih dari 0'}), 400
+            payment.currency = invoice.currency
+        elif data.get('amount_idr') is not None:
+            db.session.rollback()
+            return jsonify({'error': 'amount_idr hanya untuk invoice valas'}), 400
         lines = [
-            {'account_id': ap_account_id, 'debit': amount, 'credit': 0,
+            {'account_id': ap_account_id, 'debit': ap_idr, 'credit': 0,
              'description': f'Pelunasan hutang - {invoice.invoice_number}'},
-            {'account_id': data['bank_account_id'], 'debit': 0, 'credit': amount,
-             'description': f'Pembayaran ke supplier - {payment.payment_number}'},
         ]
+        from utils.finance_helpers import fx_difference_line
+        fx_line = fx_difference_line(cash_idr, ap_idr, f'Selisih kurs pelunasan - {payment.payment_number}')
+        if fx_line:
+            lines.append(fx_line)
+        lines.append({'account_id': data['bank_account_id'], 'debit': 0, 'credit': cash_idr,
+                      'description': f'Pembayaran ke supplier - {payment.payment_number}'})
+        journal_total = round(sum(l['debit'] for l in lines), 2)
         pending = PendingJournalEntry(
             workflow_id=None,
             entry_date=payment.payment_date,
             description=f'Payment {payment.payment_number} - {invoice.invoice_number}',
             reference=payment.payment_number,
             lines=lines,
-            total_debit=amount,
-            total_credit=amount,
+            total_debit=journal_total,
+            total_credit=journal_total,
             created_by=user_id,
         )
         db.session.add(pending)

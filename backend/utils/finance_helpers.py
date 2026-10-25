@@ -1206,3 +1206,30 @@ def release_po_budget_commitment(po, items=None):
         total_released += release_amount
 
     return total_released
+
+
+FX_ACCOUNT_CODE = '9-8000'
+
+
+def get_fx_gain_loss_account():
+    """Akun Laba/Rugi Selisih Kurs (dibuat otomatis kalau belum ada)."""
+    from models.finance import Account
+    acc = Account.query.filter_by(account_code=FX_ACCOUNT_CODE).first()
+    if acc:
+        return acc
+    acc = Account(account_code=FX_ACCOUNT_CODE, account_name='Laba/Rugi Selisih Kurs', account_type='expense',
+                  normal_balance='debit', is_active=True, is_header=False)
+    db.session.add(acc)
+    db.session.flush()
+    return acc
+
+
+def fx_difference_line(cash_idr, ap_idr, description):
+    """Jurnal selisih kurs saat melunasi hutang valas: kas keluar lebih besar dari
+    nilai hutang = rugi (debit), lebih kecil = laba (kredit). None kalau nol."""
+    diff = round(float(cash_idr) - float(ap_idr), 2)
+    if abs(diff) < 0.005:
+        return None
+    acc = get_fx_gain_loss_account()
+    return {'account_id': acc.id, 'debit': diff if diff > 0 else 0, 'credit': -diff if diff < 0 else 0,
+            'description': description}
