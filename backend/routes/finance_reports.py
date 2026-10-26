@@ -698,6 +698,8 @@ def vat_summary():
     for inv in Invoice.query.filter(Invoice.status != 'cancelled', Invoice.invoice_type.in_(('sales', 'purchase')),
                                     Invoice.invoice_date >= date(year, 1, 1), Invoice.invoice_date <= date(year, 12, 31)).all():
         rate = _f(inv.exchange_rate) if (inv.currency or 'IDR') != 'IDR' else 1.0
+        if _f(inv.tax_amount) == 0:
+            continue
         base = (_f(inv.subtotal) - _f(inv.discount_amount)) * rate
         m = months[inv.invoice_date.month]
         if inv.invoice_type == 'sales':
