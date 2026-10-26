@@ -192,6 +192,18 @@ import CashFlowManagement from './pages/Finance/CashFlowManagement'
 import FinancialReports from './pages/Finance/FinancialReports'
 import SalesReport from './pages/Finance/SalesReport'
 import AgingReport from './pages/Finance/AgingReport'
+import ReportsHub from './pages/Finance/Reports/ReportsHub'
+import TrialBalance from './pages/Finance/Reports/TrialBalance'
+import AccountLedger from './pages/Finance/Reports/AccountLedger'
+import CashDaily from './pages/Finance/Reports/CashDaily'
+import CashDailyDetail from './pages/Finance/Reports/CashDailyDetail'
+import CashPosition from './pages/Finance/Reports/CashPosition'
+import PartyStatements from './pages/Finance/Reports/PartyStatements'
+import PartyStatementDetail from './pages/Finance/Reports/PartyStatementDetail'
+import PurchaseReport from './pages/Finance/Reports/PurchaseReport'
+import VatReport from './pages/Finance/Reports/VatReport'
+import VatDetail from './pages/Finance/Reports/VatDetail'
+import EquityChanges from './pages/Finance/Reports/EquityChanges'
 import CreditMemoList from './pages/Finance/CreditMemoList'
 import InvoiceList from './pages/Finance/InvoiceList'
 import FinanceInvoiceForm from './pages/Finance/InvoiceForm'
@@ -749,6 +761,20 @@ function AppChildRoutes() {
                 <Route path="accounting/reports" element={<FinancialReports />} />
                 <Route path="finance/sales-report" element={<SalesReport />} />
                 <Route path="finance/aging" element={<AgingReport />} />
+                <Route path="finance/reports" element={<ReportsHub />} />
+                <Route path="finance/reports/trial-balance" element={<TrialBalance />} />
+                <Route path="finance/reports/bank-mutation" element={<AccountLedger mode="bank" />} />
+                <Route path="finance/reports/ledger/:accountId" element={<AccountLedger mode="ledger" />} />
+                <Route path="finance/reports/cash-daily" element={<CashDaily />} />
+                <Route path="finance/reports/cash-daily/:date" element={<CashDailyDetail />} />
+                <Route path="finance/reports/cash-position" element={<CashPosition />} />
+                <Route path="finance/reports/customer-statements" element={<PartyStatements kind="customer" />} />
+                <Route path="finance/reports/supplier-statements" element={<PartyStatements kind="supplier" />} />
+                <Route path="finance/reports/statement/:type/:id" element={<PartyStatementDetail />} />
+                <Route path="finance/reports/purchase" element={<PurchaseReport />} />
+                <Route path="finance/reports/vat" element={<VatReport />} />
+                <Route path="finance/reports/vat/:month" element={<VatDetail />} />
+                <Route path="finance/reports/equity" element={<EquityChanges />} />
                 <Route path="finance/credit-memos" element={<CreditMemoList />} />
 
                 {/* Approval Workflow */}
