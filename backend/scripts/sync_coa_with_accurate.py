@@ -123,7 +123,7 @@ def main(apply):
         created = updated = 0
         for code, r in A.items():
             typ, normal = TYPE_MAP.get(r['account_type'], ('asset', 'debit'))
-            header = len(code) == 4 or code in children
+            header = code in children        # 4-digit accounts without children (5200/5300/5400...) are postable
             cash = r['account_type'] == 'CASH_BANK' and not header
             row = q("select id, account_type, normal_balance from accounts where account_code=:c", c=code).fetchone()
             if row:
@@ -158,7 +158,7 @@ def main(apply):
             q("delete from accounts where id=:i", i=acc_id)
 
         # phase 3: hierarchy
-        header_codes = sorted((c for c in A if len(c) == 4 or c in children), key=len)
+        header_codes = sorted((c for c in A if c in children), key=len)
         for code in A:
             parent = None
             for hc in sorted((h for h in header_codes if code.startswith(h) and len(h) < len(code)), key=len, reverse=True):
