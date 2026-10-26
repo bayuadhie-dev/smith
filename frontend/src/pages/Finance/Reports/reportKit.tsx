@@ -7,7 +7,9 @@ import axiosInstance from '../../../utils/axiosConfig'
 import { showError } from '../../../components/ui'
 
 // ---------------------------------------------------------------- formatting
-const nf = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+const nf0 = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+const nf2 = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const nf = { format: (v: number) => (Math.abs(v - Math.round(v)) < 0.005 ? nf0.format(Math.round(v)) : nf2.format(v)) }
 export const num = (v: number | null | undefined) => (v === null || v === undefined || isNaN(v) ? '0' : nf.format(v))
 export const idr = (v: number | null | undefined) => `${(v ?? 0) < 0 ? '-' : ''}Rp ${nf.format(Math.abs(v ?? 0))}`
 export const fmtDate = (iso?: string | null) => {
@@ -38,18 +40,21 @@ export function useReport<T = any>(path: string, params: Record<string, any>, en
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const key = JSON.stringify(params)
+  const seq = React.useRef(0)
   const load = React.useCallback(async () => {
     if (!enabled) return
+    const mine = ++seq.current
     setLoading(true)
     setError(null)
     try {
       const res = await axiosInstance.get(`/api/finance/reports/${path}`, { params })
-      setData(res.data)
+      if (mine === seq.current) setData(res.data)
     } catch (e: any) {
+      if (mine !== seq.current) return
       setError(e?.response?.data?.error || 'Gagal memuat laporan')
       setData(null)
     } finally {
-      setLoading(false)
+      if (mine === seq.current) setLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path, key, enabled])

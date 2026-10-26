@@ -25,6 +25,8 @@ function firstCellText(row: Element): string {
 export function titleFromElement(el: Element): string {
   const link = el.closest('a,button,[role="button"],[role="menuitem"],[role="link"]')
   const row = el.closest('tr,[role="row"]')
+  const explicit = clean(el.closest('[data-tab-title]')?.getAttribute('data-tab-title'))
+  if (explicit) return explicit.length > 60 ? explicit.slice(0, 57) + '…' : explicit
   let text = link ? clean(link.textContent) : ''
   if (row && (!text || text.length > 60 || GENERIC_ACTION.test(text) || link?.getAttribute('title'))) {
     const cell = firstCellText(row)

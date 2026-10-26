@@ -51,7 +51,7 @@ export default function ReportsHub() {
           <div className="mb-2 flex items-baseline gap-2"><h2 className="text-base font-bold text-gray-900 dark:text-white">{g.title}</h2><span className="text-xs text-gray-400">{g.hint}</span></div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {g.items.map((it) => (
-              <Link key={it.title} to={it.to} className="group flex gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+              <Link key={it.title} to={it.to} data-tab-title={it.title} className="group flex gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white dark:bg-emerald-900/30"><it.icon className="h-5 w-5" /></div>
                 <div className="min-w-0">
                   <p className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white">{it.title}{it.isNew && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-700">Baru</span>}</p>
