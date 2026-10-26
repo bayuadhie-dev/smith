@@ -645,3 +645,40 @@ def test_return_credit_beyond_invoice_becomes_credit_memo_then_apply_and_refund(
     assert [m['memo_number'] for m in listing['credit_memos']] == [memo2.memo_number] and listing['open_balance'] == 100
     aging = client.get('/api/finance/reports/aging?type=receivable', headers=auth_headers).get_json()
     assert aging['credit_memo_balance'] == 100
+
+
+def test_credit_memo_applications_can_be_undone(client, auth_headers, db_session):
+    from models.finance import CreditMemo, Invoice
+    from utils.finance_helpers import credit_customer_for_return
+    cust = _customer_and_ar(db_session, 'PT Batal')
+    bank = _acc(db_session, '1-1010')
+    inv = Invoice(invoice_number='INV-UN-1', invoice_type='sales', invoice_date=date.today(), customer_id=cust.id,
+                  total_amount=500, balance_due=500, status='sent')
+    db_session.add(inv)
+    db_session.commit()
+    _post(db_session, '1-1100', credit=400)
+    _, memo = credit_customer_for_return(None, cust.id, 400, 77, date.today(), None)
+    db_session.commit()
+    url = f'/api/finance/credit-memos/{memo.id}'
+
+    assert client.post(f'{url}/apply', headers=auth_headers, json={'invoice_id': inv.id, 'amount': 150}).status_code == 200
+    assert client.post(f'{url}/refund', headers=auth_headers, json={'bank_account_id': bank.id, 'amount': 250}).status_code == 200
+    detail = client.get(url, headers=auth_headers).get_json()
+    apply_id, refund_id = [a['id'] for a in detail['applications']]
+    assert detail['balance'] == 0
+    cash_before = _gl(db_session, '1-1010')
+
+    # undo refund: cash comes back, memo balance restored, second undo refused
+    assert client.post(f'/api/finance/credit-memos/applications/{refund_id}/undo', headers=auth_headers).status_code == 200
+    assert round(_gl(db_session, '1-1010') - cash_before, 2) == -250       # reversing journal debits Kas back
+    assert client.post(f'/api/finance/credit-memos/applications/{refund_id}/undo', headers=auth_headers).status_code == 400
+    db_session.refresh(memo)
+    assert memo.balance == 250
+
+    # undo invoice use: invoice owes it again
+    assert client.post(f'/api/finance/credit-memos/applications/{apply_id}/undo', headers=auth_headers).status_code == 200
+    db_session.refresh(inv)
+    db_session.refresh(memo)
+    assert float(inv.balance_due) == 500 and float(inv.credit_applied) == 0 and inv.status == 'sent'
+    assert memo.balance == 400 and memo.status == 'open'
+    assert [a['reversed'] for a in client.get(url, headers=auth_headers).get_json()['applications']] == [True, True]

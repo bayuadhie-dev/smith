@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
-import { showSuccess, showError } from '../../components/ui';
+import { showSuccess, showError, confirmDialog } from '../../components/ui';
 import { ReceiptRefundIcon } from '@heroicons/react/24/outline';
 
 interface Memo {
@@ -16,7 +16,7 @@ interface Memo {
   balance: number;
   status: 'open' | 'closed';
   notes: string | null;
-  applications?: { id: number; kind: string; amount: number; applied_date: string; invoice_number: string | null }[];
+  applications?: { id: number; kind: string; amount: number; applied_date: string; invoice_number: string | null; reversed?: boolean }[];
   open_invoices?: { id: number; invoice_number: string; balance_due: number }[];
 }
 
@@ -84,6 +84,21 @@ const CreditMemoList: React.FC = () => {
       load();
     } catch (e: any) {
       showError(e?.response?.data?.error || 'Gagal menyimpan');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const undo = async (applicationId: number) => {
+    if (!active || !(await confirmDialog('Batalkan transaksi ini? Faktur atau jurnal akan dikembalikan seperti semula.'))) return;
+    setSaving(true);
+    try {
+      const res = await axiosInstance.post(`/api/finance/credit-memos/applications/${applicationId}/undo`);
+      showSuccess('Transaksi dibatalkan');
+      setActive(res.data.credit_memo);
+      load();
+    } catch (e: any) {
+      showError(e?.response?.data?.error || 'Gagal membatalkan');
     } finally {
       setSaving(false);
     }
@@ -192,8 +207,18 @@ const CreditMemoList: React.FC = () => {
               <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="border rounded px-3 py-2 w-full" />
             </div>
             {(active.applications || []).length > 0 && (
-              <div className="text-xs text-gray-500">
-                Riwayat: {active.applications!.map((a) => `${a.kind === 'refund' ? 'dikembalikan' : `dipakai ${a.invoice_number}`} ${formatRupiah(a.amount)}`).join(' · ')}
+              <div className="text-xs space-y-1">
+                <div className="font-medium text-gray-600">Riwayat</div>
+                {active.applications!.map((a) => (
+                  <div key={a.id} className={`flex items-center justify-between gap-2 ${a.reversed ? 'line-through text-gray-400' : 'text-gray-600'}`}>
+                    <span>
+                      {a.applied_date} · {a.kind === 'refund' ? 'dikembalikan' : `dipakai ke ${a.invoice_number}`} {formatRupiah(a.amount)}
+                    </span>
+                    {a.reversed ? <span className="no-underline">(dibatalkan)</span> : (
+                      <button onClick={() => undo(a.id)} disabled={saving} className="text-red-600 hover:underline">Batalkan</button>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
             <div className="flex justify-end gap-2">

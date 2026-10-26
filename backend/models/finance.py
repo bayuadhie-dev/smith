@@ -210,6 +210,8 @@ class CreditMemoApplication(db.Model):
     applied_date = db.Column(db.Date, nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    reversed_at = db.Column(db.DateTime, nullable=True)
+    reversed_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
     memo = db.relationship('CreditMemo', back_populates='applications')
     invoice = db.relationship('Invoice')

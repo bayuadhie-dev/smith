@@ -2264,6 +2264,7 @@ def _credit_memo_dict(memo, detail=False):
             'id': a.id, 'kind': a.kind, 'amount': float(a.amount or 0),
             'applied_date': a.applied_date.isoformat() if a.applied_date else None,
             'invoice_number': a.invoice.invoice_number if a.invoice else None,
+            'reversed': a.reversed_at is not None,
         } for a in memo.applications]
         open_invoices = Invoice.query.filter(
             Invoice.invoice_type == 'sales', Invoice.customer_id == memo.customer_id,
@@ -2318,6 +2319,29 @@ def apply_credit_memo(memo_id):
         apply_credit_memo_to_invoice(memo, invoice, data.get('amount'), get_jwt_identity(), date.today())
         db.session.commit()
         return jsonify({'message': 'Nota kredit diterapkan ke faktur', 'credit_memo': _credit_memo_dict(memo, detail=True)}), 200
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@finance_bp.route('/credit-memos/applications/<int:application_id>/undo', methods=['POST'])
+@jwt_required()
+@require_permission('finance.edit')
+def undo_credit_memo_application_route(application_id):
+    """Batalkan satu pemakaian (ke faktur) atau pengembalian dana nota kredit."""
+    from models.finance import CreditMemo, CreditMemoApplication
+    from utils.finance_helpers import undo_credit_memo_application
+    try:
+        application = db.session.get(CreditMemoApplication, application_id)
+        if not application:
+            return jsonify({'error': 'Transaksi nota kredit tidak ditemukan'}), 404
+        db.session.query(CreditMemo).filter_by(id=application.memo_id).with_for_update().first()
+        undo_credit_memo_application(application, get_jwt_identity())
+        db.session.commit()
+        return jsonify({'message': 'Dibatalkan', 'credit_memo': _credit_memo_dict(application.memo, detail=True)}), 200
     except ValueError as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 400

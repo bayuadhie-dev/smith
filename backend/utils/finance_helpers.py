@@ -1347,6 +1347,7 @@ def refund_credit_memo(memo, bank_account_id, amount, user_id, refund_date):
     application = CreditMemoApplication(memo_id=memo.id, kind='refund', bank_account_id=bank.id, amount=amount,
                                         applied_date=refund_date, created_by=user_id)
     db.session.add(application)
+    db.session.flush()
     pending = PendingJournalEntry(
         workflow_id=None, entry_date=refund_date, description=f'Pengembalian dana nota kredit {memo.memo_number}',
         reference=memo.memo_number,
@@ -1359,4 +1360,40 @@ def refund_credit_memo(memo, bank_account_id, amount, user_id, refund_date):
     )
     db.session.add(pending)
     db.session.flush()
-    post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='credit_memo_refund', reference_id=memo.id)
+    post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='credit_memo_refund', reference_id=application.id)
+
+
+def undo_credit_memo_application(application, user_id):
+    """Cancel one use of a credit memo. Invoice use: the invoice owes that amount again.
+    Refund: a reversing journal (Dr Kas / Cr Piutang) is posted. The row is kept, marked reversed.
+    Raises ValueError with a user-facing message."""
+    from models.finance import BankStatementLine, Invoice
+    from utils.timezone import get_local_now
+    if application.reversed_at:
+        raise ValueError('Transaksi ini sudah dibatalkan')
+    memo = application.memo
+    amount = float(application.amount or 0)
+    today = get_local_now().date()
+    if application.kind == 'invoice':
+        invoice = db.session.query(Invoice).filter_by(id=application.invoice_id).with_for_update().first()
+        if invoice is None or invoice.status == 'cancelled':
+            raise ValueError('Faktur terkait sudah dibatalkan; pembatalan pemakaian tidak bisa dilakukan')
+        invoice.credit_applied = max(0.0, float(invoice.credit_applied or 0) - amount)
+        invoice.balance_due = max(0.0, float(invoice.total_amount or 0) - float(invoice.paid_amount or 0) - float(invoice.credit_applied or 0))
+        if invoice.balance_due > 0.005:
+            invoice.status = 'partial' if (float(invoice.paid_amount or 0) > 0 or float(invoice.credit_applied or 0) > 0) else 'sent'
+        memo.amount_applied = max(0.0, float(memo.amount_applied or 0) - amount)
+    else:
+        entry_ids = [e.id for e in AccountingEntry.query.filter_by(
+            reference_type='credit_memo_refund', reference_id=application.id, status='posted').all()]
+        if entry_ids and BankStatementLine.query.filter(BankStatementLine.matched_accounting_entry_id.in_(entry_ids),
+                                                        BankStatementLine.is_matched == True).first():
+            raise ValueError('Pengembalian dana ini sudah dicocokkan di Rekonsiliasi Bank. Batalkan pencocokannya dulu.')
+        if is_period_locked(today, transaction_type='payment', sap_bucket='D'):
+            raise ValueError(f'Periode {today.strftime("%Y-%m")} sudah ditutup (period-close)')
+        reverse_accounting_entries(reference_type='credit_memo_refund', reference_id=application.id, entry_date=today,
+                                   user_id=user_id, description=f'Batal pengembalian dana nota kredit {memo.memo_number}')
+        memo.amount_refunded = max(0.0, float(memo.amount_refunded or 0) - amount)
+    application.reversed_at = get_local_now()
+    application.reversed_by = user_id
+    db.session.flush()
