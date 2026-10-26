@@ -62,25 +62,54 @@ export function useReport<T = any>(path: string, params: Record<string, any>, en
   return { data, loading, error, reload: load }
 }
 
-export async function downloadExcel(path: string, params: Record<string, any>) {
+async function fetchReportFile(path: string, params: Record<string, any>, format: 'xlsx' | 'pdf') {
   try {
-    const res = await axiosInstance.get(`/api/finance/reports/${path}`, { params: { ...params, format: 'xlsx' }, responseType: 'blob' })
+    const res = await axiosInstance.get(`/api/finance/reports/${path}`, { params: { ...params, format }, responseType: 'blob' })
     const disposition = res.headers['content-disposition'] || ''
     const match = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(disposition)
-    const url = window.URL.createObjectURL(new Blob([res.data]))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = match ? decodeURIComponent(match[1]) : `${path}.xlsx`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    window.URL.revokeObjectURL(url)
+    return { blob: new Blob([res.data], { type: format === 'pdf' ? 'application/pdf' : undefined }), name: match ? decodeURIComponent(match[1]) : `${path.replace(/\//g, '_')}.${format}` }
   } catch (e: any) {
-    let msg = 'Gagal mengunduh Excel'
+    let msg = format === 'pdf' ? 'Gagal membuat PDF' : 'Gagal mengunduh Excel'
     const data = e?.response?.data
     if (data instanceof Blob) { try { msg = JSON.parse(await data.text()).error || msg } catch { /* keep default */ } }
     showError(msg)
+    return null
   }
+}
+
+function saveBlob(blob: Blob, name: string) {
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = name
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  window.URL.revokeObjectURL(url)
+}
+
+export async function downloadExcel(path: string, params: Record<string, any>) {
+  const f = await fetchReportFile(path, params, 'xlsx')
+  if (f) saveBlob(f.blob, f.name)
+}
+
+export async function downloadPdf(path: string, params: Record<string, any>) {
+  const f = await fetchReportFile(path, params, 'pdf')
+  if (f) saveBlob(f.blob, f.name)
+}
+
+export async function printPdf(path: string, params: Record<string, any>) {
+  const f = await fetchReportFile(path, params, 'pdf')
+  if (!f) return
+  const url = window.URL.createObjectURL(f.blob)
+  const frame = document.createElement('iframe')
+  frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0'
+  frame.src = url
+  frame.onload = () => {
+    try { frame.contentWindow?.focus(); frame.contentWindow?.print() } catch { window.open(url, '_blank') }
+    setTimeout(() => { frame.remove(); window.URL.revokeObjectURL(url) }, 60000)
+  }
+  document.body.appendChild(frame)
 }
 
 // ---------------------------------------------------------------- layout pieces
@@ -114,16 +143,22 @@ export function ReportShell({ title, subtitle, icon, backTo, backLabel, actions,
   )
 }
 
-export function ExportButtons({ onExcel }: { onExcel?: () => void }) {
+export function ExportButtons({ report }: { report?: [string, Record<string, any>] }) {
+  const [busy, setBusy] = React.useState<string | null>(null)
+  const run = async (key: string, fn: () => Promise<void>) => { setBusy(key); try { await fn() } finally { setBusy(null) } }
+  if (!report) return null
+  const [path, params] = report
+  const base = 'inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium disabled:opacity-60'
   return (
     <>
-      {onExcel && (
-        <button type="button" onClick={onExcel} className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-600 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20">
-          <ArrowDownTrayIcon className="h-4 w-4" /> Excel
-        </button>
-      )}
-      <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-        <PrinterIcon className="h-4 w-4" /> Cetak
+      <button type="button" disabled={!!busy} onClick={() => run('xlsx', () => downloadExcel(path, params))} className={`${base} border-emerald-600 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20`}>
+        <ArrowDownTrayIcon className="h-4 w-4" /> {busy === 'xlsx' ? 'Menyiapkan…' : 'Excel'}
+      </button>
+      <button type="button" disabled={!!busy} onClick={() => run('pdf', () => downloadPdf(path, params))} className={`${base} border-rose-500 text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/20`}>
+        <ArrowDownTrayIcon className="h-4 w-4" /> {busy === 'pdf' ? 'Menyiapkan…' : 'PDF'}
+      </button>
+      <button type="button" disabled={!!busy} onClick={() => run('print', () => printPdf(path, params))} className={`${base} border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700`}>
+        <PrinterIcon className="h-4 w-4" /> {busy === 'print' ? 'Menyiapkan…' : 'Cetak'}
       </button>
     </>
   )

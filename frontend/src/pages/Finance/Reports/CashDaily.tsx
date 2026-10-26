@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { CalendarDaysIcon } from '@heroicons/react/24/outline'
 import axiosInstance from '../../../utils/axiosConfig'
 import SearchableSelect from '../../../components/SearchableSelect'
-import { DataTable, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, StatCards, Td, Th, downloadExcel, fmtDate, idr, periodLabel, useReport, usePeriod } from './reportKit'
+import { DataTable, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, StatCards, Td, Th, fmtDate, idr, periodLabel, useReport, usePeriod } from './reportKit'
 
 export default function CashDaily() {
   const navigate = useNavigate()
@@ -16,7 +16,7 @@ export default function CashDaily() {
   const t = data?.totals
   return (
     <ReportShell title="Rekap Kas Harian" subtitle={`Penerimaan dan pengeluaran kas/bank per hari · ${periodLabel(p.from, p.to)}`}
-      icon={<CalendarDaysIcon className="h-7 w-7 text-emerald-600" />} actions={<ExportButtons onExcel={() => downloadExcel('cash-daily', params)} />}>
+      icon={<CalendarDaysIcon className="h-7 w-7 text-emerald-600" />} actions={<ExportButtons report={['cash-daily', params]} />}>
       <PeriodFilter from={p.from} to={p.to} onChange={p.setRange} onReload={reload} loading={loading} extra={
         <div className="min-w-[260px]">
           <label className="mb-1 block text-xs font-medium text-gray-500">Rekening</label>

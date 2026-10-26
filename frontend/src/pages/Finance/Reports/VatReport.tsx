@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ReceiptPercentIcon } from '@heroicons/react/24/outline'
-import { DataTable, ExportButtons, LoadState, Money, ReportShell, StatCards, Td, Th, downloadExcel, idr, useReport } from './reportKit'
+import { DataTable, ExportButtons, LoadState, Money, ReportShell, StatCards, Td, Th, idr, useReport } from './reportKit'
 
 const MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
 
@@ -13,7 +13,7 @@ export default function VatReport() {
   const t = data?.totals
   return (
     <ReportShell title="Rekap PPN" subtitle={`PPN Keluaran (penjualan) dan PPN Masukan (pembelian) per bulan · ${year}`}
-      icon={<ReceiptPercentIcon className="h-7 w-7 text-emerald-600" />} actions={<ExportButtons onExcel={() => downloadExcel('vat-summary', params)} />}>
+      icon={<ReceiptPercentIcon className="h-7 w-7 text-emerald-600" />} actions={<ExportButtons report={['vat-summary', params]} />}>
       <div className="print-hide flex items-center gap-2">
         <button type="button" className="rounded-lg border px-3 py-1.5 text-sm" onClick={() => setYear(year - 1)}>‹</button>
         <span className="min-w-[4rem] text-center font-semibold">{year}</span>

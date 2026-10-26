@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { BookOpenIcon, BuildingLibraryIcon } from '@heroicons/react/24/outline'
 import axiosInstance from '../../../utils/axiosConfig'
 import SearchableSelect from '../../../components/SearchableSelect'
-import { DataTable, DocLink, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, StatCards, Td, Th, downloadExcel, fmtDate, idr, periodLabel, useReport, usePeriod } from './reportKit'
+import { DataTable, DocLink, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, StatCards, Td, Th, fmtDate, idr, periodLabel, useReport, usePeriod } from './reportKit'
 
 /** One component, two entrances: /reports/bank-mutation (pick a cash/bank account) and /reports/ledger/:accountId (any account). */
 export default function AccountLedger({ mode }: { mode: 'bank' | 'ledger' }) {
@@ -39,7 +39,7 @@ export default function AccountLedger({ mode }: { mode: 'bank' | 'ledger' }) {
       subtitle={acc ? `${acc.code} - ${acc.name} · ${periodLabel(p.from, p.to)}${acc.is_header ? ' · gabungan semua akun di bawahnya' : ''}` : 'Pilih rekening untuk melihat mutasinya'}
       icon={mode === 'bank' ? <BuildingLibraryIcon className="h-7 w-7 text-emerald-600" /> : <BookOpenIcon className="h-7 w-7 text-emerald-600" />}
       backTo={mode === 'ledger' ? '/app/finance/reports/trial-balance' : undefined} backLabel="Neraca Saldo"
-      actions={<ExportButtons onExcel={accountId ? () => downloadExcel('account-ledger', params) : undefined} />}>
+      actions={<ExportButtons report={accountId ? ['account-ledger', params] : undefined} />}>
       <PeriodFilter from={p.from} to={p.to} onChange={p.setRange} onReload={reload} loading={loading} extra={
         mode === 'bank' ? (
           <div className="min-w-[280px]">

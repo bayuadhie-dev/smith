@@ -5,6 +5,7 @@ Every endpoint takes date_from/date_to (YYYY-MM-DD) and `format=xlsx` to downloa
 All figures come from POSTED journal lines (accounting_entries) or the invoice/payment sub-ledgers, in IDR.
 """
 import io
+import re
 from datetime import date, datetime, timedelta
 
 from flask import Blueprint, jsonify, request, send_file
@@ -55,41 +56,204 @@ def _f(v):
     return float(v or 0)
 
 
-def _xlsx(title, headers, rows, filename, subtitle=None, number_cols=()):
+_DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+
+
+def _is_total_row(r):
+    return any(isinstance(c, str) and c.strip().upper().startswith(('TOTAL', 'SALDO AWAL')) for c in r)
+
+
+def _col_kinds(headers, rows):
+    """'num' / 'int' / 'date' / 'text' per column, from the data itself."""
+    kinds = []
+    for i in range(len(headers)):
+        vals = [r[i] for r in rows if i < len(r) and r[i] not in ('', None)]
+        if vals and all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in vals):
+            kinds.append('int' if all(float(v).is_integer() for v in vals) and not any(isinstance(v, float) for v in vals) else 'num')
+        elif vals and all(isinstance(v, str) and _DATE_RE.match(v) for v in vals):
+            kinds.append('date')
+        else:
+            kinds.append('text')
+    return kinds
+
+
+def _idn(v, decimals=2):
+    s = f'{abs(v):,.{decimals}f}'.replace(',', '#').replace('.', ',').replace('#', '.')
+    return ('-' if v < 0 and round(abs(v), decimals) != 0 else '') + s
+
+
+def _date_idn(v):
+    return f'{v[8:10]}/{v[5:7]}/{v[0:4]}'
+
+
+def _company_name():
+    try:
+        from company_config.company import COMPANY_NAME
+        return COMPANY_NAME
+    except Exception:
+        return 'SMITH ERP'
+
+
+def _xlsx_file(title, headers, rows, filename, subtitle, kinds):
+    import datetime as _dt
     import openpyxl
-    from openpyxl.styles import Alignment, Font, PatternFill
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+    from openpyxl.utils import get_column_letter
+    n = len(headers)
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = title[:30]
-    ws.append([title])
-    ws['A1'].font = Font(bold=True, size=14)
-    ws.append([subtitle or ''])
-    ws.append([])
-    ws.append(headers)
-    for c in ws[4]:
+    ws.title = re.sub(r'[\\/*?:\[\]]', '-', title)[:30]
+    thin = Side(style='thin', color='D1D5DB')
+    meta = [(_company_name(), Font(bold=True, size=12, color='065F46')), (title, Font(bold=True, size=15)),
+            (subtitle or '', Font(size=10, color='4B5563')), ('Dicetak: ' + _dt.datetime.now().strftime('%d/%m/%Y %H:%M'), Font(size=9, italic=True, color='6B7280'))]
+    for i, (text, font) in enumerate(meta, start=1):
+        ws.cell(row=i, column=1, value=text).font = font
+        ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=max(n, 2))
+    hr = 6
+    for j, h in enumerate(headers, start=1):
+        c = ws.cell(row=hr, column=j, value=h)
         c.font = Font(bold=True, color='FFFFFF')
-        c.fill = PatternFill('solid', fgColor='059669')
-        c.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
-    for r in rows:
-        ws.append(r)
-    for i, h in enumerate(headers, start=1):
-        letter = openpyxl.utils.get_column_letter(i)
-        width = max([len(str(h))] + [len(str(r[i - 1])) for r in rows[:200] if i - 1 < len(r)]) + 2
-        ws.column_dimensions[letter].width = min(max(width, 10), 50)
-    for row in ws.iter_rows(min_row=5):
-        for cell in row:
-            if isinstance(cell.value, float):
-                cell.number_format = '#,##0.00;[Red]-#,##0.00'
-    ws.freeze_panes = 'A5'
+        c.fill = PatternFill('solid', fgColor='047857')
+        c.alignment = Alignment(horizontal='right' if kinds[j - 1] in ('num', 'int') else ('center' if kinds[j - 1] == 'date' else 'left'), vertical='center', wrap_text=True)
+        c.border = Border(top=thin, bottom=thin, left=thin, right=thin)
+    ws.row_dimensions[hr].height = 30
+    widths = [len(str(h)) * 0.9 for h in headers]
+    for ri, r in enumerate(rows):
+        row_no = hr + 1 + ri
+        total = _is_total_row(r)
+        for j in range(n):
+            v = r[j] if j < len(r) else ''
+            k = kinds[j]
+            if k == 'date' and isinstance(v, str) and _DATE_RE.match(v):
+                v = _dt.date.fromisoformat(v)
+            c = ws.cell(row=row_no, column=j + 1, value=None if v == '' else v)
+            c.border = Border(top=thin, bottom=thin, left=thin, right=thin)
+            if k == 'num':
+                c.number_format = '#,##0.00;[Red]-#,##0.00'
+                c.alignment = Alignment(horizontal='right', vertical='top')
+            elif k == 'int':
+                c.number_format = '#,##0;[Red]-#,##0'
+                c.alignment = Alignment(horizontal='right', vertical='top')
+            elif k == 'date':
+                c.number_format = 'DD/MM/YYYY'
+                c.alignment = Alignment(horizontal='center', vertical='top')
+            else:
+                c.alignment = Alignment(horizontal='left', vertical='top', wrap_text=True)
+            if total:
+                c.font = Font(bold=True)
+                c.fill = PatternFill('solid', fgColor='D1FAE5')
+            elif ri % 2 == 1:
+                c.fill = PatternFill('solid', fgColor='F9FAFB')
+            ln = len(_idn(v)) if isinstance(v, (int, float)) else (10 if k == 'date' else len(str(v)))
+            widths[j] = max(widths[j], min(ln, 48))
+    for j in range(n):
+        ws.column_dimensions[get_column_letter(j + 1)].width = min(max(widths[j] + 3, 11), 50)
+    ws.freeze_panes = ws.cell(row=hr + 1, column=1)
+    ws.page_setup.orientation = 'landscape' if n > 6 else 'portrait'
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.print_title_rows = f'{hr}:{hr}'
+    ws.oddFooter.center.text = 'Halaman &P dari &N'
+    ws.sheet_view.showGridLines = False
     buf = io.BytesIO()
     wb.save(buf)
     buf.seek(0)
-    return send_file(buf, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                     as_attachment=True, download_name=filename)
+    return send_file(buf, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True, download_name=filename)
+
+
+def _pdf_file(title, headers, rows, filename, subtitle, kinds):
+    import datetime as _dt
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from xml.sax.saxutils import escape
+    n = len(headers)
+    page = landscape(A4) if (n > 5 or sum(1 for k in kinds if k == 'text') > 2) else A4
+    margin = 12 * mm
+    avail = page[0] - 2 * margin
+    cell = ParagraphStyle('c', fontName='Helvetica', fontSize=8, leading=10)
+    cell_b = ParagraphStyle('cb', parent=cell, fontName='Helvetica-Bold')
+    right = ParagraphStyle('r', parent=cell, alignment=2)
+    right_b = ParagraphStyle('rb', parent=right, fontName='Helvetica-Bold')
+    center = ParagraphStyle('ce', parent=cell, alignment=1)
+    head = ParagraphStyle('h', parent=cell, fontName='Helvetica-Bold', textColor=colors.white)
+    head_r = ParagraphStyle('hr', parent=head, alignment=2)
+    head_c = ParagraphStyle('hc', parent=head, alignment=1)
+
+    def fmt(v, k):
+        if v in ('', None):
+            return ''
+        if isinstance(v, (int, float)) and not isinstance(v, bool):
+            return _idn(v, 0 if k == 'int' else 2)
+        if k == 'date' and isinstance(v, str) and _DATE_RE.match(v):
+            return _date_idn(v)
+        return str(v)
+
+    data = [[Paragraph(escape(str(h)), head_r if kinds[j] in ('num', 'int') else head_c if kinds[j] == 'date' else head) for j, h in enumerate(headers)]]
+    total_rows = []
+    for ri, r in enumerate(rows):
+        total = _is_total_row(r)
+        if total:
+            total_rows.append(ri + 1)
+        line = []
+        for j in range(n):
+            v = r[j] if j < len(r) else ''
+            k = kinds[j]
+            st = (right_b if total else right) if k in ('num', 'int') else center if k == 'date' else (cell_b if total else cell)
+            line.append(Paragraph(escape(fmt(v, k)), st))
+        data.append(line)
+    # column widths proportional to content, with floors
+    weight = []
+    for j in range(n):
+        longest = max([len(str(headers[j])) * 0.75] + [len(fmt(r[j], kinds[j])) if j < len(r) else 0 for r in rows[:300]])
+        weight.append(min(max(longest, 6), 40 if kinds[j] == 'text' else 20))
+    scale = avail / sum(weight)
+    col_w = [w * scale for w in weight]
+    table = Table(data, colWidths=col_w, repeatRows=1)
+    style = [('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#047857')), ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+             ('GRID', (0, 0), (-1, -1), 0.25, colors.HexColor('#D1D5DB')), ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F9FAFB')]),
+             ('LEFTPADDING', (0, 0), (-1, -1), 3), ('RIGHTPADDING', (0, 0), (-1, -1), 3), ('TOPPADDING', (0, 0), (-1, -1), 2.5), ('BOTTOMPADDING', (0, 0), (-1, -1), 2.5)]
+    for ri in total_rows:
+        style.append(('BACKGROUND', (0, ri), (-1, ri), colors.HexColor('#D1FAE5')))
+    table.setStyle(TableStyle(style))
+    printed = _dt.datetime.now().strftime('%d/%m/%Y %H:%M')
+    company = _company_name()
+
+    def footer(canvas, doc):
+        canvas.saveState()
+        canvas.setFont('Helvetica', 7.5)
+        canvas.setFillColor(colors.HexColor('#6B7280'))
+        canvas.drawString(margin, 8 * mm, f'{company} - {title}')
+        canvas.drawRightString(page[0] - margin, 8 * mm, f'Dicetak {printed}  |  Halaman {doc.page}')
+        canvas.restoreState()
+
+    story = [Paragraph(escape(company), ParagraphStyle('co', fontName='Helvetica-Bold', fontSize=10, textColor=colors.HexColor('#065F46'))),
+             Paragraph(escape(title), ParagraphStyle('ti', fontName='Helvetica-Bold', fontSize=15, leading=19)),
+             Paragraph(escape(subtitle or ''), ParagraphStyle('su', fontName='Helvetica', fontSize=9, textColor=colors.HexColor('#4B5563'))),
+             Spacer(1, 5 * mm), table]
+    buf = io.BytesIO()
+    SimpleDocTemplate(buf, pagesize=page, leftMargin=margin, rightMargin=margin, topMargin=margin, bottomMargin=14 * mm, title=title, author=company).build(story, onFirstPage=footer, onLaterPages=footer)
+    buf.seek(0)
+    return send_file(buf, mimetype='application/pdf', as_attachment=True, download_name=filename)
+
+
+def _xlsx(title, headers, rows, filename, subtitle=None, number_cols=()):
+    """Single export entry point: `format=pdf` returns a real PDF, anything else the formatted Excel workbook."""
+    kinds = _col_kinds(headers, [r for r in rows if not _is_total_row(r)] or rows)
+    if subtitle:
+        subtitle = re.sub(r'(\d{4})-(\d{2})-(\d{2})', r'\3/\2/\1', str(subtitle))
+    base = filename.rsplit('.', 1)[0]
+    if (request.args.get('format') or '').lower() == 'pdf':
+        return _pdf_file(title, headers, rows, base + '.pdf', subtitle, kinds)
+    return _xlsx_file(title, headers, rows, base + '.xlsx', subtitle, kinds)
 
 
 def _wants_xlsx():
-    return (request.args.get('format') or '').lower() == 'xlsx'
+    return (request.args.get('format') or '').lower() in ('xlsx', 'pdf')
 
 
 def _err(e, code=400):

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { UsersIcon, TruckIcon } from '@heroicons/react/24/outline'
-import { DataTable, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, SearchBox, StatCards, Td, Th, downloadExcel, fmtDate, idr, periodLabel, useReport, usePeriod } from './reportKit'
+import { DataTable, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, SearchBox, StatCards, Td, Th, fmtDate, idr, periodLabel, useReport, usePeriod } from './reportKit'
 
 export default function PartyStatements({ kind }: { kind: 'customer' | 'supplier' }) {
   const navigate = useNavigate()
@@ -18,7 +18,7 @@ export default function PartyStatements({ kind }: { kind: 'customer' | 'supplier
     <ReportShell title={isCustomer ? 'Kartu Piutang per Customer' : 'Kartu Hutang per Supplier'}
       subtitle={`${isCustomer ? 'Saldo piutang, faktur, retur, dan pembayaran' : 'Saldo hutang, faktur, dan pembayaran'} tiap ${label.toLowerCase()} · ${periodLabel(p.from, p.to)}`}
       icon={isCustomer ? <UsersIcon className="h-7 w-7 text-emerald-600" /> : <TruckIcon className="h-7 w-7 text-emerald-600" />}
-      actions={<ExportButtons onExcel={() => downloadExcel('party-statements', params)} />}>
+      actions={<ExportButtons report={['party-statements', params]} />}>
       <PeriodFilter from={p.from} to={p.to} onChange={p.setRange} onReload={reload} loading={loading} extra={<SearchBox value={q} onChange={setQ} placeholder={`Cari ${label.toLowerCase()}`} />} />
       {t && <StatCards items={[
         { label: 'Saldo Awal', value: idr(t.opening) }, { label: isCustomer ? 'Faktur Penjualan' : 'Faktur Pembelian', value: idr(t.invoiced) },

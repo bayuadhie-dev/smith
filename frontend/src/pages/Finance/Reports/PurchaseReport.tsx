@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { ShoppingBagIcon } from '@heroicons/react/24/outline'
-import { DataTable, DocLink, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, SearchBox, StatCards, Td, Th, downloadExcel, fmtDate, idr, periodLabel, useReport, usePeriod } from './reportKit'
+import { DataTable, DocLink, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, SearchBox, StatCards, Td, Th, fmtDate, idr, periodLabel, useReport, usePeriod } from './reportKit'
 
 const STATUS: Record<string, string> = { paid: 'bg-emerald-50 text-emerald-700', partial: 'bg-amber-50 text-amber-700', draft: 'bg-gray-100 text-gray-600', sent: 'bg-blue-50 text-blue-700' }
 
@@ -17,7 +17,7 @@ export default function PurchaseReport() {
   return (
     <ReportShell title="Laporan Pembelian" subtitle={`Faktur pembelian per faktur dan per supplier · ${periodLabel(p.from, p.to)}`}
       icon={<ShoppingBagIcon className="h-7 w-7 text-emerald-600" />}
-      actions={<ExportButtons onExcel={() => downloadExcel('purchase-report', { ...params, group: view })} />}>
+      actions={<ExportButtons report={['purchase-report', { ...params, group: view }]} />}>
       <PeriodFilter from={p.from} to={p.to} onChange={p.setRange} onReload={reload} loading={loading} extra={<SearchBox value={q} onChange={setQ} placeholder="Cari faktur / supplier / PO" />} />
       {t && <StatCards items={[
         { label: 'DPP', value: idr(t.subtotal) }, { label: 'PPN Masukan', value: idr(t.tax) },

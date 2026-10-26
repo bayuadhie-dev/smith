@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ScaleIcon } from '@heroicons/react/24/outline'
-import { DataTable, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, SearchBox, StatCards, Td, Th, downloadExcel, idr, periodLabel, useReport, usePeriod } from './reportKit'
+import { DataTable, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, SearchBox, StatCards, Td, Th, idr, periodLabel, useReport, usePeriod } from './reportKit'
 
 const GROUPS: [string, string][] = [['asset', 'Aset'], ['liability', 'Liabilitas'], ['equity', 'Ekuitas'], ['revenue', 'Pendapatan'], ['expense', 'Beban']]
 
@@ -19,7 +19,7 @@ export default function TrialBalance() {
 
   return (
     <ReportShell title="Neraca Saldo" subtitle={`Saldo awal, mutasi, dan saldo akhir seluruh akun · ${periodLabel(p.from, p.to)}`}
-      icon={<ScaleIcon className="h-7 w-7 text-emerald-600" />} actions={<ExportButtons onExcel={() => downloadExcel('trial-balance', params)} />}>
+      icon={<ScaleIcon className="h-7 w-7 text-emerald-600" />} actions={<ExportButtons report={['trial-balance', params]} />}>
       <PeriodFilter from={p.from} to={p.to} onChange={p.setRange} onReload={reload} loading={loading} extra={
         <>
           <label className="flex items-center gap-2 pb-2 text-sm text-gray-600 dark:text-gray-300">

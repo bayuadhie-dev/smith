@@ -1,7 +1,7 @@
 import React from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { DocumentTextIcon } from '@heroicons/react/24/outline'
-import { DataTable, DocLink, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, StatCards, Td, Th, downloadExcel, fmtDate, idr, periodLabel, useReport, usePeriod } from './reportKit'
+import { DataTable, DocLink, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, StatCards, Td, Th, fmtDate, idr, periodLabel, useReport, usePeriod } from './reportKit'
 
 const TYPE_LABEL: Record<string, string> = { invoice: 'Faktur', payment: 'Pembayaran', return: 'Retur', refund: 'Pengembalian dana' }
 const TYPE_STYLE: Record<string, string> = {
@@ -20,7 +20,7 @@ export default function PartyStatementDetail() {
   return (
     <ReportShell title={isCustomer ? 'Kartu Piutang' : 'Kartu Hutang'} subtitle={party ? `${party.name} · ${periodLabel(p.from, p.to)}` : undefined}
       icon={<DocumentTextIcon className="h-7 w-7 text-emerald-600" />} backTo={`/app/finance/reports/${isCustomer ? 'customer' : 'supplier'}-statements`} backLabel={isCustomer ? 'Kartu Piutang' : 'Kartu Hutang'}
-      actions={<ExportButtons onExcel={() => downloadExcel(`party-statement/${type}/${id}`, params)} />}>
+      actions={<ExportButtons report={[`party-statement/${type}/${id}`, params]} />}>
       {party && (
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <p className="text-lg font-bold text-gray-900 dark:text-white">{party.name}</p>

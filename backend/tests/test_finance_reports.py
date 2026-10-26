@@ -92,7 +92,9 @@ def test_reports_export_to_excel(client, auth_headers, db_session):
     resp = _q(client, auth_headers, f'/api/finance/reports/trial-balance?date_from=2000-01-01&date_to={w["d3"]}&format=xlsx')
     assert resp.status_code == 200 and 'spreadsheetml' in resp.mimetype
     ws = openpyxl.load_workbook(io.BytesIO(resp.data)).active
-    assert ws['A1'].value == 'Neraca Saldo' and ws['A4'].value == 'Kode'
+    assert ws['A2'].value == 'Neraca Saldo' and ws['A6'].value == 'Kode' and ws.freeze_panes == 'A7'
+    last = [c.value for c in ws[ws.max_row]]
+    assert last[1] == 'TOTAL' and ws.cell(row=ws.max_row, column=4).number_format.startswith('#,##0')
     assert _q(client, auth_headers, f'/api/finance/reports/account-ledger?account_id={w["bca"].id}&format=xlsx').status_code == 200
     assert _q(client, auth_headers, '/api/finance/reports/trial-balance?date_from=2026-02-01&date_to=2026-01-01').status_code == 400
 
@@ -187,3 +189,19 @@ def test_cash_daily_detail_lists_lines_with_counter_accounts(client, auth_header
     assert data['totals'] == {'receipts': 50.0, 'disbursements': 100.0}
     assert {r['account_code'] for r in data['rows']} == {'100101', '100106'}
     assert _q(client, auth_headers, '/api/finance/reports/cash-daily-detail').status_code == 400
+
+
+def test_every_report_exports_to_excel_and_real_pdf(client, auth_headers, db_session):
+    w = _world()
+    cust = _customer_world()
+    rng = f'date_from=2000-01-01&date_to={w["d3"]}'
+    month = w['d3'].strftime('%Y-%m')
+    urls = [f'trial-balance?{rng}', f'account-ledger?account_id={w["bca"].id}&{rng}', f'cash-daily?{rng}', f'cash-daily-detail?date={w["d3"]}',
+            f'cash-position?date_to={w["d3"]}', f'party-statements?type=customer&{rng}', f'party-statement/customer/{cust.id}?{rng}',
+            f'purchase-report?{rng}', f'purchase-report?{rng}&group=supplier', f'vat-summary?year={w["d3"].year}',
+            f'vat-detail?month={month}&kind=output', f'equity-changes?{rng}']
+    for u in urls:
+        for fmt, marker in (('xlsx', b'PK'), ('pdf', b'%PDF')):
+            resp = _q(client, auth_headers, f'/api/finance/reports/{u}&format={fmt}')
+            assert resp.status_code == 200, (u, fmt, resp.data[:200])
+            assert resp.data[:4].startswith(marker), (u, fmt)

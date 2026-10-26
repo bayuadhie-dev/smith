@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BanknotesIcon } from '@heroicons/react/24/outline'
-import { DataTable, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, StatCards, Td, Th, downloadExcel, fmtDate, idr, iso, useReport } from './reportKit'
+import { DataTable, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, StatCards, Td, Th, fmtDate, idr, iso, useReport } from './reportKit'
 
 export default function CashPosition() {
   const navigate = useNavigate()
@@ -11,7 +11,7 @@ export default function CashPosition() {
   const max = Math.max(1, ...(data?.rows || []).map((r: any) => Math.abs(r.balance)))
   return (
     <ReportShell title="Posisi Kas & Bank" subtitle={`Saldo seluruh rekening kas dan bank per ${fmtDate(asOf)}`}
-      icon={<BanknotesIcon className="h-7 w-7 text-emerald-600" />} actions={<ExportButtons onExcel={() => downloadExcel('cash-position', params)} />}>
+      icon={<BanknotesIcon className="h-7 w-7 text-emerald-600" />} actions={<ExportButtons report={['cash-position', params]} />}>
       <PeriodFilter single from={asOf} to={asOf} onChange={(_, to) => setAsOf(to)} onReload={reload} loading={loading} />
       {data && <StatCards items={[
         { label: 'Total Kas & Bank', value: idr(data.total), tone: 'blue' }, { label: 'Jumlah Rekening', value: String(data.rows.length) },

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { CalendarDaysIcon } from '@heroicons/react/24/outline'
-import { DataTable, DocLink, ExportButtons, LoadState, Money, ReportShell, StatCards, Td, Th, downloadExcel, fmtDate, idr, useReport } from './reportKit'
+import { DataTable, DocLink, ExportButtons, LoadState, Money, ReportShell, StatCards, Td, Th, fmtDate, idr, useReport } from './reportKit'
 
 export default function CashDailyDetail() {
   const { date } = useParams()
@@ -11,7 +11,7 @@ export default function CashDailyDetail() {
   return (
     <ReportShell title={`Kas & Bank — ${fmtDate(date)}`} subtitle="Semua transaksi kas/bank pada hari ini beserta akun lawannya"
       icon={<CalendarDaysIcon className="h-7 w-7 text-emerald-600" />} backTo="/app/finance/reports/cash-daily" backLabel="Rekap Kas Harian"
-      actions={<ExportButtons onExcel={() => downloadExcel('cash-daily-detail', params)} />}>
+      actions={<ExportButtons report={['cash-daily-detail', params]} />}>
       {data && <StatCards items={[
         { label: 'Penerimaan', value: idr(data.totals.receipts), tone: 'green' }, { label: 'Pengeluaran', value: idr(data.totals.disbursements), tone: 'red' },
         { label: 'Mutasi Bersih', value: idr(data.totals.receipts - data.totals.disbursements), tone: 'blue' }, { label: 'Jumlah Baris', value: String(data.rows.length) },

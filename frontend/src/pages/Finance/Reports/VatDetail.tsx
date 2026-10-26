@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ReceiptPercentIcon } from '@heroicons/react/24/outline'
-import { DataTable, DocLink, ExportButtons, LoadState, Money, ReportShell, StatCards, Td, Th, downloadExcel, fmtDate, idr, useReport } from './reportKit'
+import { DataTable, DocLink, ExportButtons, LoadState, Money, ReportShell, StatCards, Td, Th, fmtDate, idr, useReport } from './reportKit'
 
 export default function VatDetail() {
   const { month } = useParams()
@@ -13,7 +13,7 @@ export default function VatDetail() {
   return (
     <ReportShell title={`PPN ${kind === 'output' ? 'Keluaran' : 'Masukan'} — ${month}`} subtitle={kind === 'output' ? 'Faktur penjualan yang dikenai PPN' : 'Faktur pembelian yang dikenai PPN'}
       icon={<ReceiptPercentIcon className="h-7 w-7 text-emerald-600" />} backTo="/app/finance/reports/vat" backLabel="Rekap PPN"
-      actions={<><button type="button" className="rounded-lg border px-3 py-2 text-sm" onClick={() => navigate(`/app/finance/reports/vat/${month}?kind=${kind === 'output' ? 'input' : 'output'}`)}>Lihat PPN {kind === 'output' ? 'Masukan' : 'Keluaran'}</button><ExportButtons onExcel={() => downloadExcel('vat-detail', params)} /></>}>
+      actions={<><button type="button" className="rounded-lg border px-3 py-2 text-sm" onClick={() => navigate(`/app/finance/reports/vat/${month}?kind=${kind === 'output' ? 'input' : 'output'}`)}>Lihat PPN {kind === 'output' ? 'Masukan' : 'Keluaran'}</button><ExportButtons report={['vat-detail', params]} /></>}>
       {data && <StatCards items={[{ label: 'DPP', value: idr(data.totals.base) }, { label: 'PPN', value: idr(data.totals.vat), tone: 'blue' }, { label: 'Jumlah Faktur', value: String(data.rows.length) }]} />}
       <LoadState loading={loading} error={error} empty={!!data && !data.rows.length} emptyText="Tidak ada faktur ber-PPN pada bulan ini.">
         {data && (

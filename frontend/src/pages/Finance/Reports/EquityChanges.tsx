@@ -1,6 +1,6 @@
 import React from 'react'
 import { ChartBarSquareIcon } from '@heroicons/react/24/outline'
-import { DataTable, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, StatCards, Td, Th, downloadExcel, idr, periodLabel, useReport, usePeriod } from './reportKit'
+import { DataTable, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, StatCards, Td, Th, idr, periodLabel, useReport, usePeriod } from './reportKit'
 
 export default function EquityChanges() {
   const p = usePeriod('Tahun ini')
@@ -8,7 +8,7 @@ export default function EquityChanges() {
   const { data, loading, error, reload } = useReport<any>('equity-changes', params)
   return (
     <ReportShell title="Laporan Perubahan Ekuitas" subtitle={`Modal, saldo awal, laba ditahan, dan laba periode berjalan · ${periodLabel(p.from, p.to)}`}
-      icon={<ChartBarSquareIcon className="h-7 w-7 text-emerald-600" />} actions={<ExportButtons onExcel={() => downloadExcel('equity-changes', params)} />}>
+      icon={<ChartBarSquareIcon className="h-7 w-7 text-emerald-600" />} actions={<ExportButtons report={['equity-changes', params]} />}>
       <PeriodFilter from={p.from} to={p.to} onChange={p.setRange} onReload={reload} loading={loading} />
       {data && <StatCards items={[
         { label: 'Ekuitas Awal', value: idr(data.total_opening) }, { label: 'Laba (Rugi) Periode', value: idr(data.period_profit), tone: data.period_profit >= 0 ? 'green' : 'red' },
