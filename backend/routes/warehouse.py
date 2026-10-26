@@ -573,6 +573,10 @@ def add_to_inventory():
         inventory.updated_at = get_local_now()
         
         # Create movement record
+        from utils.finance_helpers import (manual_stock_unit_cost, post_manual_stock_inflow_journal,
+                                           MANUAL_STOCK_REF_TYPES)
+        _is_manual_stock = data.get('reference_type', 'manual_input') in MANUAL_STOCK_REF_TYPES
+        _manual_cost = (manual_stock_unit_cost(product_id, material_id) or None) if _is_manual_stock else None
         movement = record_inventory_transaction(
             transaction_type='stock_in',
             direction='in',
@@ -586,8 +590,11 @@ def add_to_inventory():
             batch_number=data.get('batch_number'),
             lot_number=data.get('lot_number'),
             notes=data.get('notes'),
+            unit_cost=_manual_cost,
             created_by=user_id
         )
+        if _is_manual_stock:
+            post_manual_stock_inflow_journal(movement, user_id, product_id=product_id, material_id=material_id)
         
         # Update location occupied
         location = db.session.get(WarehouseLocation, location_id)

@@ -11,6 +11,7 @@ from utils.inventory_helpers import record_inventory_transaction
 from datetime import datetime, date
 from sqlalchemy import func
 from utils.timezone import get_local_now, get_local_today
+from utils.finance_helpers import manual_stock_unit_cost, post_manual_stock_inflow_journal
 
 stock_input_bp = Blueprint('stock_input', __name__)
 
@@ -105,8 +106,8 @@ def create_stock_input():
             
             # Update inventory quantities
             quantity = float(item_data['quantity'])
-            inventory.quantity_on_hand += quantity
-            inventory.quantity_available += quantity
+            inventory.quantity_on_hand = float(inventory.quantity_on_hand or 0) + quantity
+            inventory.quantity_available = float(inventory.quantity_available or 0) + quantity
             inventory.updated_at = get_local_now()
             
             # Create inventory movement record
@@ -121,8 +122,10 @@ def create_stock_input():
                 reference_type='manual_input',
                 batch_number=item_data.get('batch_number', ''),
                 notes=item_data.get('notes', ''),
+                unit_cost=manual_stock_unit_cost(product_id, material_id) or None,
                 created_by=user_id
             )
+            post_manual_stock_inflow_journal(movement, user_id, product_id=product_id, material_id=material_id)
 
             created_movements.append(movement)
 
@@ -325,8 +328,8 @@ def quick_stock_add():
         
         # Update inventory
         quantity = float(data['quantity'])
-        inventory.quantity_on_hand += quantity
-        inventory.quantity_available += quantity
+        inventory.quantity_on_hand = float(inventory.quantity_on_hand or 0) + quantity
+        inventory.quantity_available = float(inventory.quantity_available or 0) + quantity
         inventory.updated_at = get_local_now()
         
         # Create movement record
@@ -341,8 +344,10 @@ def quick_stock_add():
             reference_type='quick_add',
             batch_number=data.get('batch_number', ''),
             notes=data.get('notes', 'Quick add via API'),
+            unit_cost=manual_stock_unit_cost(product_id, material_id) or None,
             created_by=user_id
         )
+        post_manual_stock_inflow_journal(movement, user_id, product_id=product_id, material_id=material_id)
 
         db.session.commit()
         

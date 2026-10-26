@@ -1397,3 +1397,72 @@ def undo_credit_memo_application(application, user_id):
     application.reversed_at = get_local_now()
     application.reversed_by = user_id
     db.session.flush()
+
+
+OPENING_STOCK_ACCOUNT_CODE = '3-4000'
+MANUAL_STOCK_REF_TYPES = ('manual_input', 'quick_add')
+
+
+def manual_stock_unit_cost(product_id=None, material_id=None):
+    """Master cost of an item (materials.cost_per_unit / products.cost), 0 when unknown."""
+    from models.product import Product, Material
+    if material_id:
+        m = db.session.get(Material, material_id)
+        return float(getattr(m, 'cost_per_unit', 0) or 0) if m else 0.0
+    if product_id:
+        p = db.session.get(Product, product_id)
+        return float(getattr(p, 'cost', 0) or 0) if p else 0.0
+    return 0.0
+
+
+def get_opening_stock_account():
+    """Equity account that offsets stock entered by hand (opening/initial stock)."""
+    acc = Account.query.filter_by(account_code=OPENING_STOCK_ACCOUNT_CODE).first()
+    if acc:
+        return acc
+    acc = Account(account_code=OPENING_STOCK_ACCOUNT_CODE, account_name='Saldo Awal Persediaan', account_type='equity',
+                  normal_balance='credit', is_active=True, is_header=False)
+    db.session.add(acc)
+    db.session.flush()
+    return acc
+
+
+def post_manual_stock_inflow_journal(movement, user_id, product_id=None, material_id=None, entry_date=None):
+    """Stock entered by hand (Input Stok / Quick Add / Tambah Stok) brings value into the warehouse
+    without a purchase, so the GL needs Dr Persediaan / Cr Saldo Awal Persediaan - otherwise later
+    shipments credit inventory for goods that never debited it. Skipped (never an error) when the
+    item has no master cost, the inventory account cannot be resolved, or the period is closed.
+    Idempotent per movement. Returns the posted entries or []."""
+    from utils.timezone import get_local_now
+    qty = float(getattr(movement, 'quantity', 0) or 0)
+    unit_cost = float(getattr(movement, 'unit_cost', 0) or 0) or manual_stock_unit_cost(product_id, material_id)
+    value = round(qty * unit_cost, 2)
+    if value <= 0:
+        return []
+    db.session.flush()
+    if AccountingEntry.query.filter_by(reference_type='manual_stock_in', reference_id=movement.id, status='posted').first():
+        return []
+    entry_date = entry_date or get_local_now().date()
+    if is_period_locked(entry_date, transaction_type='journal_entry'):
+        return []
+    try:
+        inventory_account_id = resolve_account('akun_persediaan_id', product_id=product_id, category_id=None)
+    except ValueError:
+        return []
+    offset = get_opening_stock_account()
+    ref = getattr(movement, 'reference_number', None) or f'STK-{movement.id}'
+    pending = PendingJournalEntry(
+        workflow_id=None, entry_date=entry_date, description=f'Stok masuk manual {ref}', reference=ref,
+        lines=[
+            {'account_id': inventory_account_id, 'debit': value, 'credit': 0, 'description': f'Persediaan masuk manual - {ref}'},
+            {'account_id': offset.id, 'debit': 0, 'credit': value, 'description': f'Saldo awal persediaan - {ref}'},
+        ],
+        total_debit=value, total_credit=value, created_by=user_id,
+    )
+    db.session.add(pending)
+    db.session.flush()
+    entries = post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='manual_stock_in', reference_id=movement.id)
+    if entries:
+        movement.accounting_entry_number = entries[0].entry_number.rsplit('-', 1)[0]
+        movement.accounting_entry_status = 'posted'
+    return entries

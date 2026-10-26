@@ -682,3 +682,48 @@ def test_credit_memo_applications_can_be_undone(client, auth_headers, db_session
     assert float(inv.balance_due) == 500 and float(inv.credit_applied) == 0 and inv.status == 'sent'
     assert memo.balance == 400 and memo.status == 'open'
     assert [a['reversed'] for a in client.get(url, headers=auth_headers).get_json()['applications']] == [True, True]
+
+
+def test_manual_stock_in_posts_inventory_and_opening_balance_journal(client, auth_headers, db_session, test_material, test_product):
+    """Regression: stock entered by hand never touched the GL, so shipping it later credited inventory for goods
+    that were never debited (inventory went negative)."""
+    from models.finance import AccountingEntry, GlobalAccountDefault
+    from models.warehouse import WarehouseZone, WarehouseLocation
+    from models.finance import Account
+    inv_acc = Account(account_code='1-1200', account_name='Persediaan Bahan Baku', account_type='asset', normal_balance='debit', is_active=True)
+    db_session.add(inv_acc)
+    db_session.commit()
+    db_session.add(GlobalAccountDefault(transaction_key='akun_persediaan_id', account_id=inv_acc.id))
+    test_material.cost_per_unit = 2000
+    zone = WarehouseZone(code='ZONE-MS', name='Zone MS', material_type='raw_materials', zone_type='storage')
+    db_session.add(zone)
+    db_session.commit()
+    loc = WarehouseLocation(zone_id=zone.id, location_code='ZONE-MS-R1-L1-P1', rack='R1', level='L1', position='P1', capacity_uom='PCS')
+    db_session.add(loc)
+    db_session.commit()
+
+    def balance(code):
+        rows = AccountingEntry.query.filter_by(account_code=code, status='posted').all()
+        return sum(float(r.debit_amount or 0) - float(r.credit_amount or 0) for r in rows)
+
+    r = client.post('/api/warehouse/inventory/add', headers=auth_headers,
+                    json={'material_id': test_material.id, 'location_id': loc.id, 'quantity': 10, 'uom': 'PCS'})
+    assert r.status_code in (200, 201), r.get_json()
+    assert balance('1-1200') == 20_000 and balance('3-4000') == -20_000
+
+    r = client.post('/api/warehouse/stock-input/quick-add', headers=auth_headers,
+                    json={'material_id': test_material.id, 'location_id': loc.id, 'quantity': 5})
+    assert r.status_code in (200, 201), r.get_json()
+    assert balance('1-1200') == 30_000
+
+    # purchase-linked stock-in (GRN already journals it) must NOT be journaled again
+    client.post('/api/warehouse/inventory/add', headers=auth_headers,
+                json={'material_id': test_material.id, 'location_id': loc.id, 'quantity': 1, 'uom': 'PCS', 'reference_type': 'grn'})
+    assert balance('1-1200') == 30_000
+
+    # item without master cost -> no journal, no failure
+    test_material.cost_per_unit = 0
+    db_session.commit()
+    r = client.post('/api/warehouse/stock-input/quick-add', headers=auth_headers,
+                    json={'material_id': test_material.id, 'location_id': loc.id, 'quantity': 3})
+    assert r.status_code in (200, 201) and balance('1-1200') == 30_000
