@@ -18,6 +18,7 @@ import {
   UserIcon,
   ChartBarIcon,
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface ProductionProcess {
   id: number;
@@ -572,8 +573,7 @@ export default function InProcessQC() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Jumlah Sampel
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     min="1"
                     value={formData.sample_qty}
                     onChange={(e) => setFormData(prev => ({ ...prev, sample_qty: parseInt(e.target.value) || 0 }))}
@@ -584,8 +584,7 @@ export default function InProcessQC() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Defect Ditemukan
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     min="0"
                     value={formData.defect_qty}
                     onChange={(e) => setFormData(prev => ({ ...prev, defect_qty: parseInt(e.target.value) || 0 }))}

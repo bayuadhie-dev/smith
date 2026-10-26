@@ -9,6 +9,7 @@ import {
   ClockIcon,
   CogIcon
 } from '@heroicons/react/24/outline'
+import NumberInput from '../../components/ui/NumberInput'
 
 /* ═══════════ Types ═══════════ */
 interface Machine { id: number; code: string; name: string; machine_type: string; default_speed?: number; target_efficiency?: number }
@@ -435,8 +436,7 @@ export default function ConvertingInput() {
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1 uppercase">Kapasitas Speed (pcs/mnt)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={calcSpeed || ''}
                     onChange={e => setCalcSpeed(N(e.target.value))}
                     className="w-full px-2 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 dark:text-white"
@@ -445,8 +445,7 @@ export default function ConvertingInput() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1 uppercase">Target Efisiensi (%)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={calcEfficiency || ''}
                     onChange={e => setCalcEfficiency(N(e.target.value))}
                     className="w-full px-2 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 dark:text-white"
@@ -455,8 +454,7 @@ export default function ConvertingInput() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1 uppercase">Durasi Rencana (menit)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={calcRuntime || ''}
                     onChange={e => setCalcRuntime(N(e.target.value))}
                     className="w-full px-2 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 dark:text-white"
@@ -465,8 +463,7 @@ export default function ConvertingInput() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1 uppercase">Simulasi Target (pcs)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={calcTargetQty || ''}
                     onChange={e => setCalcTargetQty(N(e.target.value))}
                     className="w-full px-2 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 dark:text-white"
@@ -534,18 +531,18 @@ export default function ConvertingInput() {
                   <tr key={idx} className="hover:bg-slate-50">
                     <td className={`${tdc} text-center text-xs text-slate-400`}>{idx + 1}</td>
                     <td className={tdc}><input value={row.no_roll} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, no_roll: e.target.value } : r))} className={`${ic} w-20`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.width || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, width: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.weight || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, weight: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.length || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, length: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.thick || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, thick: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.width || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, width: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.weight || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, weight: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.length || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, length: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.thick || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, thick: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
                     {row.slitting.map((sv, si) => (
                       <td key={si} className={tdc}>
-                        <input type="number" step="0.01" value={sv || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => { if (i !== idx) return r; const s = [...r.slitting]; s[si] = N(e.target.value); return { ...r, slitting: s } }))} className={`${ic} w-14`} />
+                        <NumberInput step="0.01" value={sv || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => { if (i !== idx) return r; const s = [...r.slitting]; s[si] = N(e.target.value); return { ...r, slitting: s } }))} className={`${ic} w-14`} />
                       </td>
                     ))}
-                    <td className={tdc}><input type="number" step="0.01" value={row.loss || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, loss: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.total_length || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, total_length: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.total_weight || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, total_weight: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.loss || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, loss: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.total_length || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, total_length: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.total_weight || ''} onChange={e => setSlitRows(rs => rs.map((r, i) => i === idx ? { ...r, total_weight: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
                     <td className={tdc}>
                       {slitRows.length > 1 && <button onClick={() => setSlitRows(rs => rs.filter((_, i) => i !== idx))} className="p-1 text-red-400 hover:text-red-600"><TrashIcon className="h-4 w-4" /></button>}
                     </td>
@@ -581,11 +578,11 @@ export default function ConvertingInput() {
                   <tr key={idx} className="hover:bg-slate-50">
                     <td className={`${tdc} text-center text-xs text-slate-400`}>{idx + 1}</td>
                     <td className={tdc}><input value={row.no_roll} onChange={e => setPerfRows(rs => rs.map((r, i) => i === idx ? { ...r, no_roll: e.target.value } : r))} className={`${ic} w-24`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.width || ''} onChange={e => setPerfRows(rs => rs.map((r, i) => i === idx ? { ...r, width: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.weight || ''} onChange={e => setPerfRows(rs => rs.map((r, i) => i === idx ? { ...r, weight: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.length || ''} onChange={e => setPerfRows(rs => rs.map((r, i) => i === idx ? { ...r, length: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
-                    <td className={`${tdc} bg-amber-50/30`}><input type="number" step="0.01" value={row.repeat_length || ''} onChange={e => setPerfRows(rs => rs.map((r, i) => i === idx ? { ...r, repeat_length: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
-                    <td className={`${tdc} bg-amber-50/30`}><input type="number" step="0.01" value={row.repeat_width || ''} onChange={e => setPerfRows(rs => rs.map((r, i) => i === idx ? { ...r, repeat_width: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.width || ''} onChange={e => setPerfRows(rs => rs.map((r, i) => i === idx ? { ...r, width: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.weight || ''} onChange={e => setPerfRows(rs => rs.map((r, i) => i === idx ? { ...r, weight: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.length || ''} onChange={e => setPerfRows(rs => rs.map((r, i) => i === idx ? { ...r, length: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
+                    <td className={`${tdc} bg-amber-50/30`}><NumberInput step="0.01" value={row.repeat_length || ''} onChange={e => setPerfRows(rs => rs.map((r, i) => i === idx ? { ...r, repeat_length: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
+                    <td className={`${tdc} bg-amber-50/30`}><NumberInput step="0.01" value={row.repeat_width || ''} onChange={e => setPerfRows(rs => rs.map((r, i) => i === idx ? { ...r, repeat_width: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
                     <td className={tdc}>{perfRows.length > 1 && <button onClick={() => setPerfRows(rs => rs.filter((_, i) => i !== idx))} className="p-1 text-red-400 hover:text-red-600"><TrashIcon className="h-4 w-4" /></button>}</td>
                   </tr>
                 ))}
@@ -596,9 +593,9 @@ export default function ConvertingInput() {
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4">Production Result</h3>
           <div className="grid grid-cols-3 gap-4">
-            <div><label className={lc}>Grade A (kg)</label><input type="number" step="0.01" value={gradeA || ''} onChange={e => setGradeA(N(e.target.value))} className={ic} /></div>
-            <div><label className={lc}>Grade B (kg)</label><input type="number" step="0.01" value={gradeB || ''} onChange={e => setGradeB(N(e.target.value))} className={ic} /></div>
-            <div><label className={lc}>Loss (kg)</label><input type="number" step="0.01" value={lossKg || ''} onChange={e => setLossKg(N(e.target.value))} className={ic} /></div>
+            <div><label className={lc}>Grade A (kg)</label><NumberInput step="0.01" value={gradeA || ''} onChange={e => setGradeA(N(e.target.value))} className={ic} /></div>
+            <div><label className={lc}>Grade B (kg)</label><NumberInput step="0.01" value={gradeB || ''} onChange={e => setGradeB(N(e.target.value))} className={ic} /></div>
+            <div><label className={lc}>Loss (kg)</label><NumberInput step="0.01" value={lossKg || ''} onChange={e => setLossKg(N(e.target.value))} className={ic} /></div>
           </div>
         </div>
       </>)}
@@ -626,8 +623,8 @@ export default function ConvertingInput() {
                     <td className={`${tdc} text-center text-xs text-slate-400`}>{idx + 1}</td>
                     <td className={tdc}><input value={row.no_roll} onChange={e => setFoldRows(rs => rs.map((r, i) => i === idx ? { ...r, no_roll: e.target.value } : r))} className={`${ic} w-24`} /></td>
                     <td className={tdc}><input value={row.no_slitting} onChange={e => setFoldRows(rs => rs.map((r, i) => i === idx ? { ...r, no_slitting: e.target.value } : r))} className={`${ic} w-24`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.weight || ''} onChange={e => setFoldRows(rs => rs.map((r, i) => i === idx ? { ...r, weight: N(e.target.value) } : r))} className={`${ic} w-24`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.length || ''} onChange={e => setFoldRows(rs => rs.map((r, i) => i === idx ? { ...r, length: N(e.target.value) } : r))} className={`${ic} w-24`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.weight || ''} onChange={e => setFoldRows(rs => rs.map((r, i) => i === idx ? { ...r, weight: N(e.target.value) } : r))} className={`${ic} w-24`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.length || ''} onChange={e => setFoldRows(rs => rs.map((r, i) => i === idx ? { ...r, length: N(e.target.value) } : r))} className={`${ic} w-24`} /></td>
                     <td className={tdc}>{foldRows.length > 1 && <button onClick={() => setFoldRows(rs => rs.filter((_, i) => i !== idx))} className="p-1 text-red-400 hover:text-red-600"><TrashIcon className="h-4 w-4" /></button>}</td>
                   </tr>
                 ))}
@@ -638,9 +635,9 @@ export default function ConvertingInput() {
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4">Production Result (pcs)</h3>
           <div className="grid grid-cols-3 gap-4">
-            <div><label className={lc}>Grade A (pcs)</label><input type="number" step="1" value={gradeA || ''} onChange={e => setGradeA(N(e.target.value))} className={ic} /></div>
-            <div><label className={lc}>Grade B (pcs)</label><input type="number" step="1" value={gradeB || ''} onChange={e => setGradeB(N(e.target.value))} className={ic} /></div>
-            <div><label className={lc}>Loss (kg)</label><input type="number" step="0.01" value={lossKg || ''} onChange={e => setLossKg(N(e.target.value))} className={ic} /></div>
+            <div><label className={lc}>Grade A (pcs)</label><NumberInput step="1" value={gradeA || ''} onChange={e => setGradeA(N(e.target.value))} className={ic} /></div>
+            <div><label className={lc}>Grade B (pcs)</label><NumberInput step="1" value={gradeB || ''} onChange={e => setGradeB(N(e.target.value))} className={ic} /></div>
+            <div><label className={lc}>Loss (kg)</label><NumberInput step="0.01" value={lossKg || ''} onChange={e => setLossKg(N(e.target.value))} className={ic} /></div>
           </div>
         </div>
       </>)}
@@ -669,11 +666,11 @@ export default function ConvertingInput() {
                   <tr key={idx} className="hover:bg-slate-50">
                     <td className={`${tdc} text-center text-xs text-slate-400`}>{idx + 1}</td>
                     <td className={tdc}><input value={row.no_roll} onChange={e => setCutRows(rs => rs.map((r, i) => i === idx ? { ...r, no_roll: e.target.value } : r))} className={`${ic} w-24`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.width || ''} onChange={e => setCutRows(rs => rs.map((r, i) => i === idx ? { ...r, width: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.weight || ''} onChange={e => setCutRows(rs => rs.map((r, i) => i === idx ? { ...r, weight: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.length || ''} onChange={e => setCutRows(rs => rs.map((r, i) => i === idx ? { ...r, length: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
-                    <td className={`${tdc} bg-amber-50/30`}><input type="number" step="0.01" value={row.repeat_length || ''} onChange={e => setCutRows(rs => rs.map((r, i) => i === idx ? { ...r, repeat_length: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
-                    <td className={`${tdc} bg-amber-50/30`}><input type="number" step="0.01" value={row.repeat_width || ''} onChange={e => setCutRows(rs => rs.map((r, i) => i === idx ? { ...r, repeat_width: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.width || ''} onChange={e => setCutRows(rs => rs.map((r, i) => i === idx ? { ...r, width: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.weight || ''} onChange={e => setCutRows(rs => rs.map((r, i) => i === idx ? { ...r, weight: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.length || ''} onChange={e => setCutRows(rs => rs.map((r, i) => i === idx ? { ...r, length: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
+                    <td className={`${tdc} bg-amber-50/30`}><NumberInput step="0.01" value={row.repeat_length || ''} onChange={e => setCutRows(rs => rs.map((r, i) => i === idx ? { ...r, repeat_length: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
+                    <td className={`${tdc} bg-amber-50/30`}><NumberInput step="0.01" value={row.repeat_width || ''} onChange={e => setCutRows(rs => rs.map((r, i) => i === idx ? { ...r, repeat_width: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
                     <td className={tdc}>{cutRows.length > 1 && <button onClick={() => setCutRows(rs => rs.filter((_, i) => i !== idx))} className="p-1 text-red-400 hover:text-red-600"><TrashIcon className="h-4 w-4" /></button>}</td>
                   </tr>
                 ))}
@@ -684,9 +681,9 @@ export default function ConvertingInput() {
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4">Production Result</h3>
           <div className="grid grid-cols-3 gap-4">
-            <div><label className={lc}>Grade A (kg)</label><input type="number" step="0.01" value={gradeA || ''} onChange={e => setGradeA(N(e.target.value))} className={ic} /></div>
-            <div><label className={lc}>Grade B (kg)</label><input type="number" step="0.01" value={gradeB || ''} onChange={e => setGradeB(N(e.target.value))} className={ic} /></div>
-            <div><label className={lc}>Loss (kg)</label><input type="number" step="0.01" value={lossKg || ''} onChange={e => setLossKg(N(e.target.value))} className={ic} /></div>
+            <div><label className={lc}>Grade A (kg)</label><NumberInput step="0.01" value={gradeA || ''} onChange={e => setGradeA(N(e.target.value))} className={ic} /></div>
+            <div><label className={lc}>Grade B (kg)</label><NumberInput step="0.01" value={gradeB || ''} onChange={e => setGradeB(N(e.target.value))} className={ic} /></div>
+            <div><label className={lc}>Loss (kg)</label><NumberInput step="0.01" value={lossKg || ''} onChange={e => setLossKg(N(e.target.value))} className={ic} /></div>
           </div>
         </div>
       </>)}
@@ -695,34 +692,34 @@ export default function ConvertingInput() {
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4">Target &amp; Actual Speed</h3>
           <div className="grid grid-cols-2 gap-4">
-            <div><label className={lc}>Target Speed</label><input type="number" value={targetSpeed || ''} onChange={e => setTargetSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
-            <div><label className={lc}>Actual Speed</label><input type="number" value={actualSpeed || ''} onChange={e => setActualSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
+            <div><label className={lc}>Target Speed</label><NumberInput value={targetSpeed || ''} onChange={e => setTargetSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
+            <div><label className={lc}>Actual Speed</label><NumberInput value={actualSpeed || ''} onChange={e => setActualSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
           </div>
         </div>
         {/* Film Axis Settings */}
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4">Film Axis</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-            <div><label className={lc}>Initial Torque (%)</label><input type="number" step="0.1" value={filmAxis.initial_torque || ''} onChange={e => setFilmAxis(a => ({ ...a, initial_torque: N(e.target.value) }))} className={ic} /></div>
-            <div><label className={lc}>Setting Tension (kg)</label><input type="number" step="0.1" value={filmAxis.setting_tension || ''} onChange={e => setFilmAxis(a => ({ ...a, setting_tension: N(e.target.value) }))} className={ic} /></div>
-            <div><label className={lc}>Actual Tension (kg)</label><input type="number" step="0.1" value={filmAxis.actual_tension || ''} onChange={e => setFilmAxis(a => ({ ...a, actual_tension: N(e.target.value) }))} className={ic} /></div>
-            <div><label className={lc}>Actual Torque (%)</label><input type="number" step="0.1" value={filmAxis.actual_torque || ''} onChange={e => setFilmAxis(a => ({ ...a, actual_torque: N(e.target.value) }))} className={ic} /></div>
-            <div><label className={lc}>Actual Diameter (mm)</label><input type="number" step="0.1" value={filmAxis.actual_diameter || ''} onChange={e => setFilmAxis(a => ({ ...a, actual_diameter: N(e.target.value) }))} className={ic} /></div>
-            <div><label className={lc}>Initial Diameter (mm)</label><input type="number" step="0.1" value={filmAxis.initial_diameter || ''} onChange={e => setFilmAxis(a => ({ ...a, initial_diameter: N(e.target.value) }))} className={ic} /></div>
-            <div><label className={lc}>Rate Coating (%)</label><input type="number" step="0.1" value={filmAxis.rate_coating || ''} onChange={e => setFilmAxis(a => ({ ...a, rate_coating: N(e.target.value) }))} className={ic} /></div>
+            <div><label className={lc}>Initial Torque (%)</label><NumberInput step="0.1" value={filmAxis.initial_torque || ''} onChange={e => setFilmAxis(a => ({ ...a, initial_torque: N(e.target.value) }))} className={ic} /></div>
+            <div><label className={lc}>Setting Tension (kg)</label><NumberInput step="0.1" value={filmAxis.setting_tension || ''} onChange={e => setFilmAxis(a => ({ ...a, setting_tension: N(e.target.value) }))} className={ic} /></div>
+            <div><label className={lc}>Actual Tension (kg)</label><NumberInput step="0.1" value={filmAxis.actual_tension || ''} onChange={e => setFilmAxis(a => ({ ...a, actual_tension: N(e.target.value) }))} className={ic} /></div>
+            <div><label className={lc}>Actual Torque (%)</label><NumberInput step="0.1" value={filmAxis.actual_torque || ''} onChange={e => setFilmAxis(a => ({ ...a, actual_torque: N(e.target.value) }))} className={ic} /></div>
+            <div><label className={lc}>Actual Diameter (mm)</label><NumberInput step="0.1" value={filmAxis.actual_diameter || ''} onChange={e => setFilmAxis(a => ({ ...a, actual_diameter: N(e.target.value) }))} className={ic} /></div>
+            <div><label className={lc}>Initial Diameter (mm)</label><NumberInput step="0.1" value={filmAxis.initial_diameter || ''} onChange={e => setFilmAxis(a => ({ ...a, initial_diameter: N(e.target.value) }))} className={ic} /></div>
+            <div><label className={lc}>Rate Coating (%)</label><NumberInput step="0.1" value={filmAxis.rate_coating || ''} onChange={e => setFilmAxis(a => ({ ...a, rate_coating: N(e.target.value) }))} className={ic} /></div>
           </div>
         </div>
         {/* Non Woven Axis Settings */}
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4">Non Woven Axis</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-            <div><label className={lc}>Initial Torque (%)</label><input type="number" step="0.1" value={nwAxis.initial_torque || ''} onChange={e => setNwAxis(a => ({ ...a, initial_torque: N(e.target.value) }))} className={ic} /></div>
-            <div><label className={lc}>Setting Tension (kg)</label><input type="number" step="0.1" value={nwAxis.setting_tension || ''} onChange={e => setNwAxis(a => ({ ...a, setting_tension: N(e.target.value) }))} className={ic} /></div>
-            <div><label className={lc}>Actual Tension (kg)</label><input type="number" step="0.1" value={nwAxis.actual_tension || ''} onChange={e => setNwAxis(a => ({ ...a, actual_tension: N(e.target.value) }))} className={ic} /></div>
-            <div><label className={lc}>Actual Torque (%)</label><input type="number" step="0.1" value={nwAxis.actual_torque || ''} onChange={e => setNwAxis(a => ({ ...a, actual_torque: N(e.target.value) }))} className={ic} /></div>
-            <div><label className={lc}>Actual Diameter (mm)</label><input type="number" step="0.1" value={nwAxis.actual_diameter || ''} onChange={e => setNwAxis(a => ({ ...a, actual_diameter: N(e.target.value) }))} className={ic} /></div>
-            <div><label className={lc}>Initial Diameter (mm)</label><input type="number" step="0.1" value={nwAxis.initial_diameter || ''} onChange={e => setNwAxis(a => ({ ...a, initial_diameter: N(e.target.value) }))} className={ic} /></div>
-            <div><label className={lc}>Rewind Angle (%)</label><input type="number" step="0.1" value={nwAxis.rewind_angle || ''} onChange={e => setNwAxis(a => ({ ...a, rewind_angle: N(e.target.value) }))} className={ic} /></div>
+            <div><label className={lc}>Initial Torque (%)</label><NumberInput step="0.1" value={nwAxis.initial_torque || ''} onChange={e => setNwAxis(a => ({ ...a, initial_torque: N(e.target.value) }))} className={ic} /></div>
+            <div><label className={lc}>Setting Tension (kg)</label><NumberInput step="0.1" value={nwAxis.setting_tension || ''} onChange={e => setNwAxis(a => ({ ...a, setting_tension: N(e.target.value) }))} className={ic} /></div>
+            <div><label className={lc}>Actual Tension (kg)</label><NumberInput step="0.1" value={nwAxis.actual_tension || ''} onChange={e => setNwAxis(a => ({ ...a, actual_tension: N(e.target.value) }))} className={ic} /></div>
+            <div><label className={lc}>Actual Torque (%)</label><NumberInput step="0.1" value={nwAxis.actual_torque || ''} onChange={e => setNwAxis(a => ({ ...a, actual_torque: N(e.target.value) }))} className={ic} /></div>
+            <div><label className={lc}>Actual Diameter (mm)</label><NumberInput step="0.1" value={nwAxis.actual_diameter || ''} onChange={e => setNwAxis(a => ({ ...a, actual_diameter: N(e.target.value) }))} className={ic} /></div>
+            <div><label className={lc}>Initial Diameter (mm)</label><NumberInput step="0.1" value={nwAxis.initial_diameter || ''} onChange={e => setNwAxis(a => ({ ...a, initial_diameter: N(e.target.value) }))} className={ic} /></div>
+            <div><label className={lc}>Rewind Angle (%)</label><NumberInput step="0.1" value={nwAxis.rewind_angle || ''} onChange={e => setNwAxis(a => ({ ...a, rewind_angle: N(e.target.value) }))} className={ic} /></div>
           </div>
         </div>
         {/* Laminasi Rows */}
@@ -764,14 +761,14 @@ export default function ConvertingInput() {
                     <td className={`${tdc} text-center text-xs text-slate-400`}>{row.no}</td>
                     <td className={`${tdc} bg-blue-50/20`}><input type="time" value={row.time_start} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, time_start: e.target.value } : r))} className={`${ic} w-24`} /></td>
                     <td className={`${tdc} bg-blue-50/20`}><input type="time" value={row.time_end} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, time_end: e.target.value } : r))} className={`${ic} w-24`} /></td>
-                    <td className={`${tdc} bg-blue-50/20`}><input type="number" value={row.total_minutes || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, total_minutes: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={`${tdc} bg-green-50/20`}><input type="number" step="0.1" value={row.film_gsm || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, film_gsm: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={`${tdc} bg-purple-50/20`}><input type="number" step="0.1" value={row.nonwoven_gsm || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, nonwoven_gsm: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={`${tdc} bg-amber-50/20`}><input type="number" step="0.1" value={row.winding_width || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, winding_width: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={`${tdc} bg-amber-50/20`}><input type="number" step="0.1" value={row.winding_length || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, winding_length: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={`${tdc} bg-amber-50/20`}><input type="number" step="0.1" value={row.gsm_total || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, gsm_total: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={`${tdc} bg-amber-50/20`}><input type="number" step="0.1" value={row.speed || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, speed: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
-                    <td className={`${tdc} bg-pink-50/20`}><input type="number" step="0.01" value={row.lem_usage || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, lem_usage: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={`${tdc} bg-blue-50/20`}><NumberInput value={row.total_minutes || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, total_minutes: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={`${tdc} bg-green-50/20`}><NumberInput step="0.1" value={row.film_gsm || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, film_gsm: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={`${tdc} bg-purple-50/20`}><NumberInput step="0.1" value={row.nonwoven_gsm || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, nonwoven_gsm: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={`${tdc} bg-amber-50/20`}><NumberInput step="0.1" value={row.winding_width || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, winding_width: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={`${tdc} bg-amber-50/20`}><NumberInput step="0.1" value={row.winding_length || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, winding_length: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={`${tdc} bg-amber-50/20`}><NumberInput step="0.1" value={row.gsm_total || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, gsm_total: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={`${tdc} bg-amber-50/20`}><NumberInput step="0.1" value={row.speed || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, speed: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={`${tdc} bg-pink-50/20`}><NumberInput step="0.01" value={row.lem_usage || ''} onChange={e => setLamRows(rs => rs.map((r, i) => i === idx ? { ...r, lem_usage: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
                     <td className={tdc}>{lamRows.length > 1 && <button onClick={() => setLamRows(rs => rs.filter((_, i) => i !== idx).map((r, i) => ({ ...r, no: i + 1 })))} className="p-1 text-red-400 hover:text-red-600"><TrashIcon className="h-4 w-4" /></button>}</td>
                   </tr>
                 ))}
@@ -796,11 +793,11 @@ export default function ConvertingInput() {
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4">Info Bagmaker</h3>
           <div className="grid grid-cols-3 gap-4">
-            <div><label className={lc}>Production Hour (menit)</label><input type="number" value={prodHourMin || ''} onChange={e => setProdHourMin(N(e.target.value))} className={ic} placeholder="0" /></div>
-            <div><label className={lc}>Downtime (menit)</label><input type="number" value={downtimeMin || ''} onChange={e => setDowntimeMin(N(e.target.value))} className={ic} placeholder="0" /></div>
-            <div><label className={lc}>Speed Mesin (Actual)</label><input type="number" value={machineSpeed || ''} onChange={e => setMachineSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
-            <div><label className={lc}>Target Speed</label><input type="number" value={targetSpeed || ''} onChange={e => setTargetSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
-            <div><label className={lc}>Actual Speed</label><input type="number" value={actualSpeed || ''} onChange={e => setActualSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
+            <div><label className={lc}>Production Hour (menit)</label><NumberInput value={prodHourMin || ''} onChange={e => setProdHourMin(N(e.target.value))} className={ic} placeholder="0" /></div>
+            <div><label className={lc}>Downtime (menit)</label><NumberInput value={downtimeMin || ''} onChange={e => setDowntimeMin(N(e.target.value))} className={ic} placeholder="0" /></div>
+            <div><label className={lc}>Speed Mesin (Actual)</label><NumberInput value={machineSpeed || ''} onChange={e => setMachineSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
+            <div><label className={lc}>Target Speed</label><NumberInput value={targetSpeed || ''} onChange={e => setTargetSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
+            <div><label className={lc}>Actual Speed</label><NumberInput value={actualSpeed || ''} onChange={e => setActualSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
           </div>
         </div>
         {/* Bagmaker Rows */}
@@ -831,12 +828,12 @@ export default function ConvertingInput() {
                     <td className={`${tdc} text-center text-xs text-slate-400`}>{row.no}</td>
                     <td className={`${tdc} bg-yellow-50/20`}><input value={row.plan_downtime} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, plan_downtime: e.target.value } : r))} className={`${ic} w-28 ${getDowntimeBgClass(row.plan_downtime, true)}`} placeholder="Keterangan" /></td>
                     <td className={`${tdc} bg-red-50/20`}><input value={row.unplan_downtime} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, unplan_downtime: e.target.value } : r))} className={`${ic} w-28 ${getDowntimeBgClass(row.unplan_downtime, false)}`} placeholder="Keterangan" /></td>
-                    <td className={tdc}><input type="number" value={row.total_minutes || ''} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, total_minutes: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
+                    <td className={tdc}><NumberInput value={row.total_minutes || ''} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, total_minutes: N(e.target.value) } : r))} className={`${ic} w-16`} /></td>
                     <td className={tdc}><input value={row.no_roll} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, no_roll: e.target.value } : r))} className={`${ic} w-24`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.roll_weight || ''} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, roll_weight: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
-                    <td className={tdc}><input type="number" step="0.01" value={row.roll_length || ''} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, roll_length: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
-                    <td className={`${tdc} bg-green-50/20`}><input type="number" step="1" value={row.output_grade_a || ''} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, output_grade_a: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
-                    <td className={`${tdc} bg-orange-50/20`}><input type="number" step="1" value={row.output_grade_c || ''} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, output_grade_c: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.roll_weight || ''} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, roll_weight: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
+                    <td className={tdc}><NumberInput step="0.01" value={row.roll_length || ''} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, roll_length: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
+                    <td className={`${tdc} bg-green-50/20`}><NumberInput step="1" value={row.output_grade_a || ''} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, output_grade_a: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
+                    <td className={`${tdc} bg-orange-50/20`}><NumberInput step="1" value={row.output_grade_c || ''} onChange={e => setBagRows(rs => rs.map((r, i) => i === idx ? { ...r, output_grade_c: N(e.target.value) } : r))} className={`${ic} w-20`} /></td>
                     <td className={tdc}>{bagRows.length > 1 && <button onClick={() => setBagRows(rs => rs.filter((_, i) => i !== idx).map((r, i) => ({ ...r, no: i + 1 })))} className="p-1 text-red-400 hover:text-red-600"><TrashIcon className="h-4 w-4" /></button>}</td>
                   </tr>
                 ))}
@@ -901,8 +898,7 @@ export default function ConvertingInput() {
 
                       <div className="w-28">
                         <label className="block text-xs font-medium text-slate-500 mb-1">Durasi (menit)</label>
-                        <input
-                          type="number"
+                        <NumberInput
                           value={entry.duration_minutes || ''}
                           onChange={(e) => updateDowntimeEntry(entry.id, 'duration_minutes', N(e.target.value))}
                           className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-center"
@@ -914,8 +910,7 @@ export default function ConvertingInput() {
 
                       <div className="w-24">
                         <label className="block text-xs font-medium text-slate-500 mb-1">Frekuensi</label>
-                        <input
-                          type="number"
+                        <NumberInput
                           value={entry.frequency || ''}
                           onChange={(e) => updateDowntimeEntry(entry.id, 'frequency', N(e.target.value))}
                           className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-center"

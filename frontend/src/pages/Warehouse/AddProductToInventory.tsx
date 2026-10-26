@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
 import { showWarning, showSuccess, showError } from '../../components/ui'
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Product {
   id: number
@@ -235,8 +236,7 @@ export default function AddProductToInventory() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Kuantitas <span className="text-red-500">*</span>
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                 placeholder="0"

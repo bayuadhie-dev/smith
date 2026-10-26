@@ -15,6 +15,7 @@ import {
   XMarkIcon as X
 
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface Machine {
   id: number;
   name: string;
@@ -412,8 +413,7 @@ const MaintenanceRequestForm: React.FC = () => {
                   <ClockIcon className="inline h-4 w-4 mr-1" />
                   Estimated Duration (hours)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="estimated_duration_hours"
                   value={formData.estimated_duration_hours}
                   onChange={handleInputChange}
@@ -468,8 +468,7 @@ const MaintenanceRequestForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Labor Cost Estimate
                 </label>
-                <input
-                  type="number"
+                <NumberInput currency
                   name="cost_estimate"
                   value={formData.cost_estimate}
                   onChange={handleInputChange}

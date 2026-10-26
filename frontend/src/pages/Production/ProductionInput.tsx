@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Machine {
   id: number;
@@ -600,9 +601,8 @@ const ProductionInput: React.FC = () => {
             <div className="p-6 space-y-4">
               <div>
                 <label htmlFor="target_quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('production.target_quantity')}</label>
-                <input
+                <NumberInput
                   id="target_quantity"
-                  type="number"
                   step="0.01"
                   value={formData.target_quantity}
                   onChange={(e) => handleInputChange('target_quantity', e.target.value)}
@@ -617,9 +617,8 @@ const ProductionInput: React.FC = () => {
 
               <div>
                 <label htmlFor="actual_quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('production.actual_quantity')}</label>
-                <input
+                <NumberInput
                   id="actual_quantity"
-                  type="number"
                   step="0.01"
                   value={formData.actual_quantity}
                   onChange={(e) => handleInputChange('actual_quantity', e.target.value)}
@@ -631,9 +630,8 @@ const ProductionInput: React.FC = () => {
 
               <div>
                 <label htmlFor="good_quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('production.good_quantity')}</label>
-                <input
+                <NumberInput
                   id="good_quantity"
-                  type="number"
                   step="0.01"
                   value={formData.good_quantity}
                   onChange={(e) => handleInputChange('good_quantity', e.target.value)}
@@ -646,9 +644,8 @@ const ProductionInput: React.FC = () => {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label htmlFor="reject_quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Reject</label>
-                  <input
+                  <NumberInput
                     id="reject_quantity"
-                    type="number"
                     step="0.01"
                     value={formData.reject_quantity}
                     onChange={(e) => handleInputChange('reject_quantity', e.target.value)}
@@ -658,9 +655,8 @@ const ProductionInput: React.FC = () => {
                 </div>
                 <div>
                   <label htmlFor="rework_quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Rework</label>
-                  <input
+                  <NumberInput
                     id="rework_quantity"
-                    type="number"
                     step="0.01"
                     value={formData.rework_quantity}
                     onChange={(e) => handleInputChange('rework_quantity', e.target.value)}
@@ -683,9 +679,8 @@ const ProductionInput: React.FC = () => {
             <div className="p-6 space-y-4">
               <div>
                 <label htmlFor="planned_runtime" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Planned Runtime (menit)</label>
-                <input
+                <NumberInput
                   id="planned_runtime"
-                  type="number"
                   value={formData.planned_runtime}
                   onChange={(e) => handleInputChange('planned_runtime', e.target.value)}
                   placeholder="480"
@@ -695,9 +690,8 @@ const ProductionInput: React.FC = () => {
 
               <div>
                 <label htmlFor="actual_runtime" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Actual Runtime (menit)</label>
-                <input
+                <NumberInput
                   id="actual_runtime"
-                  type="number"
                   value={formData.actual_runtime}
                   onChange={(e) => handleInputChange('actual_runtime', e.target.value)}
                   placeholder="Actual runtime"
@@ -708,9 +702,8 @@ const ProductionInput: React.FC = () => {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label htmlFor="downtime_minutes" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Total Downtime (menit)</label>
-                  <input
+                  <NumberInput
                     id="downtime_minutes"
-                    type="number"
                     value={
                       parseInt(formData.downtime_mesin || '0') +
                       parseInt(formData.downtime_operator || '0') +
@@ -724,9 +717,8 @@ const ProductionInput: React.FC = () => {
                 </div>
                 <div>
                   <label htmlFor="setup_time" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Setup Time (menit)</label>
-                  <input
+                  <NumberInput
                     id="setup_time"
-                    type="number"
                     value={formData.setup_time}
                     onChange={(e) => handleInputChange('setup_time', e.target.value)}
                     placeholder="0"
@@ -747,8 +739,7 @@ const ProductionInput: React.FC = () => {
                     <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                       Mesin <span className="text-red-500">(max 15%)</span>
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       value={formData.downtime_mesin}
                       onChange={(e) => handleInputChange('downtime_mesin', e.target.value)}
                       placeholder="0"
@@ -761,8 +752,7 @@ const ProductionInput: React.FC = () => {
                     <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                       Operator <span className="text-orange-500">(max 7%)</span>
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       value={formData.downtime_operator}
                       onChange={(e) => handleInputChange('downtime_operator', e.target.value)}
                       placeholder="0"
@@ -775,8 +765,7 @@ const ProductionInput: React.FC = () => {
                     <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                       Raw Material <span className="text-yellow-600">(0%)</span>
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       value={formData.downtime_material}
                       onChange={(e) => handleInputChange('downtime_material', e.target.value)}
                       placeholder="0"
@@ -789,8 +778,7 @@ const ProductionInput: React.FC = () => {
                     <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                       Design Change <span className="text-blue-500">(max 8%)</span>
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       value={formData.downtime_design}
                       onChange={(e) => handleInputChange('downtime_design', e.target.value)}
                       placeholder="0"
@@ -803,8 +791,7 @@ const ProductionInput: React.FC = () => {
                     <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                       Others <span className="text-gray-500 dark:text-gray-400">(max 10%)</span>
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       value={formData.downtime_others}
                       onChange={(e) => handleInputChange('downtime_others', e.target.value)}
                       placeholder="0"
@@ -817,8 +804,7 @@ const ProductionInput: React.FC = () => {
                     <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                       Idle Time
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       value={formData.idle_time}
                       onChange={(e) => handleInputChange('idle_time', e.target.value)}
                       placeholder="0"

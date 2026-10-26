@@ -14,6 +14,7 @@ import {
 ,
   XCircleIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 export default function ReturnDetails() {
     const { t } = useLanguage();
 
@@ -440,8 +441,7 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Quantity Approved</label>
-                <input
-                  type="number"
+                <NumberInput
                   value={formData.quantity_approved}
                   onChange={(e) => setFormData({ ...formData, quantity_approved: parseInt(e.target.value) || 0 })}
                   className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
@@ -451,8 +451,7 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Quantity Rejected</label>
-                <input
-                  type="number"
+                <NumberInput
                   value={formData.quantity_rejected}
                   onChange={(e) => setFormData({ ...formData, quantity_rejected: parseInt(e.target.value) || 0 })}
                   className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
@@ -547,8 +546,7 @@ function DispositionModal({ item, onSubmit, onClose }: any) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.quantity')}</label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 0 })}
                 className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"

@@ -16,6 +16,7 @@ import {
   UserIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Machine {
   id: number;
@@ -357,8 +358,7 @@ const MaintenanceForm: React.FC = () => {
               </label>
               <div className="relative">
                 <ClockIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="number"
+                <NumberInput
                   name="estimated_duration_hours"
                   value={formData.estimated_duration_hours}
                   onChange={handleNumberChange}
@@ -416,8 +416,7 @@ const MaintenanceForm: React.FC = () => {
               </label>
               <div className="relative">
                 <CurrencyDollarIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="number"
+                <NumberInput currency
                   name="cost_estimate"
                   value={formData.cost_estimate}
                   onChange={handleNumberChange}
@@ -512,8 +511,7 @@ const MaintenanceForm: React.FC = () => {
                       onChange={(e) => updateTask(index, 'description', e.target.value)}
                       className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
                     />
-                    <input
-                      type="number"
+                    <NumberInput
                       placeholder="Est. Hours"
                       value={task.estimated_time_hours}
                       onChange={(e) => updateTask(index, 'estimated_time_hours', parseFloat(e.target.value) || 0)}
@@ -571,16 +569,14 @@ const MaintenanceForm: React.FC = () => {
                       onChange={(e) => updatePart(index, 'part_name', e.target.value)}
                       className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
                     />
-                    <input
-                      type="number"
+                    <NumberInput
                       placeholder="Quantity"
                       value={part.quantity}
                       onChange={(e) => updatePart(index, 'quantity', parseInt(e.target.value) || 0)}
                       min="1"
                       className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
                     />
-                    <input
-                      type="number"
+                    <NumberInput currency
                       placeholder="Unit Cost"
                       value={part.unit_cost}
                       onChange={(e) => updatePart(index, 'unit_cost', parseFloat(e.target.value) || 0)}

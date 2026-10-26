@@ -18,6 +18,7 @@ import {
   XCircleIcon as XCircle,
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface PurchaseOrder {
   id: number;
   po_number: string;
@@ -454,8 +455,7 @@ const GRNForm: React.FC = () => {
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Quantity Received *
                           </label>
-                          <input
-                            type="number"
+                          <NumberInput
                             value={item.quantity_received}
                             onChange={(e) => handleItemChange(index, 'quantity_received', e.target.value)}
                             required
@@ -470,8 +470,7 @@ const GRNForm: React.FC = () => {
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Quantity Accepted
                           </label>
-                          <input
-                            type="number"
+                          <NumberInput
                             value={item.quantity_accepted}
                             onChange={(e) => handleItemChange(index, 'quantity_accepted', e.target.value)}
                             min="0"
@@ -485,8 +484,7 @@ const GRNForm: React.FC = () => {
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Quantity Rejected
                           </label>
-                          <input
-                            type="number"
+                          <NumberInput
                             value={item.quantity_rejected}
                             onChange={(e) => handleItemChange(index, 'quantity_rejected', e.target.value)}
                             min="0"

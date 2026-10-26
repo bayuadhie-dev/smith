@@ -13,6 +13,7 @@ import {
   InformationCircleIcon,
   UserIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface CustomerFormData {
   code: string
@@ -361,8 +362,7 @@ const CustomerForm = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Credit Limit (Rp)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 step="0.01"
                 min="0"
                 {...register('credit_limit')}

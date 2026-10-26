@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useGetCustomersQuery } from '../../services/api'
 import { useCreateShippingOrderMutation, useGetLogisticsProvidersQuery } from '../../services/shippingApi'
+import NumberInput from '../../components/ui/NumberInput'
 
 interface ShippingItem {
   product_name: string
@@ -373,8 +374,7 @@ export default function ShippingOrderForm() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       min="1"
                       value={item.quantity}
                       onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value))}
@@ -387,8 +387,7 @@ export default function ShippingOrderForm() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Berat (kg)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       step="0.1"
                       min="0"
                       value={item.weight}
@@ -402,8 +401,7 @@ export default function ShippingOrderForm() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Panjang (cm)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       min="0"
                       value={item.length}
                       onChange={(e) => handleItemChange(index, 'length', parseFloat(e.target.value))}
@@ -416,8 +414,7 @@ export default function ShippingOrderForm() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Lebar (cm)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       min="0"
                       value={item.width}
                       onChange={(e) => handleItemChange(index, 'width', parseFloat(e.target.value))}
@@ -430,8 +427,7 @@ export default function ShippingOrderForm() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Tinggi (cm)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       min="0"
                       value={item.height}
                       onChange={(e) => handleItemChange(index, 'height', parseFloat(e.target.value))}
@@ -444,8 +440,7 @@ export default function ShippingOrderForm() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Nilai (Rp)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       min="0"
                       value={item.value}
                       onChange={(e) => handleItemChange(index, 'value', parseFloat(e.target.value))}
@@ -467,8 +462,7 @@ export default function ShippingOrderForm() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Nilai Asuransi (Rp)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 name="insurance_value"
                 value={formData.insurance_value}
                 onChange={handleInputChange}
@@ -481,8 +475,7 @@ export default function ShippingOrderForm() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 COD Amount (Rp)
               </label>
-              <input
-                type="number"
+              <NumberInput currency
                 name="cod_amount"
                 value={formData.cod_amount}
                 onChange={handleInputChange}

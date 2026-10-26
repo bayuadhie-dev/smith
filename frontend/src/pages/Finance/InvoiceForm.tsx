@@ -18,6 +18,7 @@ import {
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface InvoiceFormData {
   invoice_type: 'sales' | 'purchase'
   customer_id?: number
@@ -608,8 +609,7 @@ const navigate = useNavigate()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Quantity *
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       step="0.01"
                       min="0"
                       {...register(`items.${index}.quantity` as const, {
@@ -624,8 +624,7 @@ const navigate = useNavigate()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Unit Price *
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput currency
                       step="0.01"
                       min="0"
                       {...register(`items.${index}.unit_price` as const, {
@@ -641,8 +640,7 @@ const navigate = useNavigate()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Discount %
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       step="0.01"
                       min="0"
                       max="100"
@@ -685,8 +683,7 @@ const navigate = useNavigate()
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Tax Rate (%)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.01"
                   min="0"
                   max="100"
@@ -700,8 +697,7 @@ const navigate = useNavigate()
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Discount Amount (Rp)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.01"
                   min="0"
                   {...register('discount_amount')}

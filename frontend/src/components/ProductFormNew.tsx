@@ -9,6 +9,7 @@ import {
   X
 } from 'lucide-react';
 import AccountSlotSelector from './Finance/AccountSlotSelector';
+import NumberInput from './ui/NumberInput'
 
 interface Machine {
   id: number;
@@ -316,8 +317,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Gramasi (GSM)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.gramasi || ''}
                   onChange={(e) => handleInputChange('gramasi', parseFloat(e.target.value) || undefined)}
@@ -330,8 +330,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   CD (Lebar Kain - mm)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.cd || ''}
                   onChange={(e) => handleInputChange('cd', parseFloat(e.target.value) || undefined)}
@@ -344,8 +343,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   MD (Panjang Kain - mm)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.md || ''}
                   onChange={(e) => handleInputChange('md', parseFloat(e.target.value) || undefined)}
@@ -358,8 +356,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Berat Kering (g/pack)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.01"
                   value={formData.berat_kering || ''}
                   onChange={(e) => handleInputChange('berat_kering', parseFloat(e.target.value) || undefined)}
@@ -378,8 +375,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Sheet per Pack
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   value={formData.sheet_per_pack || ''}
                   onChange={(e) => handleInputChange('sheet_per_pack', parseInt(e.target.value) || undefined)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -391,8 +387,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Pack per Karton
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   value={formData.pack_per_karton || ''}
                   onChange={(e) => handleInputChange('pack_per_karton', parseInt(e.target.value) || undefined)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -404,8 +399,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Volume per Batch
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.ukuran_batch_vol || ''}
                   onChange={(e) => handleInputChange('ukuran_batch_vol', parseFloat(e.target.value) || undefined)}
@@ -418,8 +412,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Karton per Batch
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.ukuran_batch_ctn || ''}
                   onChange={(e) => handleInputChange('ukuran_batch_ctn', parseFloat(e.target.value) || undefined)}
@@ -455,8 +448,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Rayon (%)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.rayon || ''}
                   onChange={(e) => handleInputChange('rayon', parseFloat(e.target.value) || undefined)}
@@ -469,8 +461,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Polyester (%)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.polyester || ''}
                   onChange={(e) => handleInputChange('polyester', parseFloat(e.target.value) || undefined)}
@@ -483,8 +474,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   ES (%)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.es || ''}
                   onChange={(e) => handleInputChange('es', parseFloat(e.target.value) || undefined)}
@@ -508,8 +498,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Slitting (cm)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.slitting_cm || ''}
                   onChange={(e) => handleInputChange('slitting_cm', parseFloat(e.target.value) || undefined)}
@@ -522,8 +511,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Lebar MR Nett (cm)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.lebar_mr_net_cm || ''}
                   onChange={(e) => handleInputChange('lebar_mr_net_cm', parseFloat(e.target.value) || undefined)}
@@ -536,8 +524,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Lebar MR Gross (cm)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.lebar_mr_gross_cm || ''}
                   onChange={(e) => handleInputChange('lebar_mr_gross_cm', parseFloat(e.target.value) || undefined)}
@@ -588,8 +575,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Speed EPD (pack/menit)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.speed_epd_pack_menit || ''}
                   onChange={(e) => handleInputChange('speed_epd_pack_menit', parseFloat(e.target.value) || undefined)}
@@ -625,8 +611,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Meter Kain
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.meter_kain || ''}
                   onChange={(e) => handleInputChange('meter_kain', parseFloat(e.target.value) || undefined)}
@@ -639,8 +624,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   KG Kain
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.001"
                   value={formData.kg_kain || ''}
                   onChange={(e) => handleInputChange('kg_kain', parseFloat(e.target.value) || undefined)}
@@ -653,8 +637,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Kebutuhan Rayon (kg)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.001"
                   value={formData.kebutuhan_rayon_kg || ''}
                   onChange={(e) => handleInputChange('kebutuhan_rayon_kg', parseFloat(e.target.value) || undefined)}
@@ -667,8 +650,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Kebutuhan Polyester (kg)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.001"
                   value={formData.kebutuhan_polyester_kg || ''}
                   onChange={(e) => handleInputChange('kebutuhan_polyester_kg', parseFloat(e.target.value) || undefined)}
@@ -681,8 +663,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Kebutuhan ES (kg)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.001"
                   value={formData.kebutuhan_es_kg || ''}
                   onChange={(e) => handleInputChange('kebutuhan_es_kg', parseFloat(e.target.value) || undefined)}
@@ -695,8 +676,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Ratio (mm)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.01"
                   value={formData.ratio || ''}
                   onChange={(e) => handleInputChange('ratio', parseFloat(e.target.value) || undefined)}
@@ -709,8 +689,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Ingredient (mm)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.01"
                   value={formData.ingredient || ''}
                   onChange={(e) => handleInputChange('ingredient', parseFloat(e.target.value) || undefined)}
@@ -789,8 +768,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Kapasitas Mixing (kg)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.kapasitas_mixing_kg || ''}
                   onChange={(e) => handleInputChange('kapasitas_mixing_kg', parseFloat(e.target.value) || undefined)}
@@ -803,8 +781,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Actual Mixing (kg)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.actual_mixing_kg || ''}
                   onChange={(e) => handleInputChange('actual_mixing_kg', parseFloat(e.target.value) || undefined)}
@@ -817,8 +794,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Dosing (kg)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={formData.dosing_kg || ''}
                   onChange={(e) => handleInputChange('dosing_kg', parseFloat(e.target.value) || undefined)}

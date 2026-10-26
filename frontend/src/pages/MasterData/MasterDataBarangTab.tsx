@@ -26,6 +26,7 @@ import {
   useDeleteApprovedVendorMutation,
 } from '../../services/api';
 import { TrashIcon } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 type Source = 'product' | 'material';
 
@@ -406,8 +407,7 @@ export default function MasterDataBarangTab() {
                   </div>
                   <div>
                     <label className="block text-sm mb-1">Lead Time (hari)</label>
-                    <input
-                      type="number"
+                    <NumberInput
                       className="input-field"
                       value={form.lead_time_days ?? ''}
                       onChange={(e) => setForm({ ...form, lead_time_days: Number(e.target.value) })}
@@ -417,8 +417,7 @@ export default function MasterDataBarangTab() {
                   {editingRow.source === 'product' && !isWip && (
                     <div>
                       <label className="block text-sm mb-1">Self Life (hari)</label>
-                      <input
-                        type="number"
+                      <NumberInput
                         className="input-field"
                         value={form.self_life_days ?? ''}
                         onChange={(e) => setForm({ ...form, self_life_days: Number(e.target.value) })}
@@ -428,8 +427,7 @@ export default function MasterDataBarangTab() {
                   {editingRow.source === 'product' && isWip && (
                     <div>
                       <label className="block text-sm mb-1">Retest Period (hari)</label>
-                      <input
-                        type="number"
+                      <NumberInput
                         className="input-field"
                         value={form.retest_period_days ?? ''}
                         onChange={(e) => setForm({ ...form, retest_period_days: Number(e.target.value) })}
@@ -439,8 +437,7 @@ export default function MasterDataBarangTab() {
                   {editingRow.source === 'material' && (
                     <div>
                       <label className="block text-sm mb-1">Self Life / Expiry (hari)</label>
-                      <input
-                        type="number"
+                      <NumberInput
                         className="input-field"
                         value={form.expiry_days ?? ''}
                         onChange={(e) => setForm({ ...form, expiry_days: Number(e.target.value) })}
@@ -466,8 +463,7 @@ export default function MasterDataBarangTab() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm mb-1">Minimum Order Qty (MOQ)</label>
-                      <input
-                        type="number"
+                      <NumberInput
                         className="input-field"
                         value={form.min_order_qty ?? ''}
                         onChange={(e) => setForm({ ...form, min_order_qty: e.target.value === '' ? null : Number(e.target.value) })}
@@ -496,8 +492,7 @@ export default function MasterDataBarangTab() {
                     {editingRow.source === 'material' && form.lot_sizing_procedure === 'FX' && (
                       <div>
                         <label className="block text-sm mb-1">Ukuran Lot Tetap</label>
-                        <input
-                          type="number"
+                        <NumberInput
                           className="input-field"
                           value={form.fixed_lot_size ?? ''}
                           onChange={(e) => setForm({ ...form, fixed_lot_size: e.target.value === '' ? null : Number(e.target.value) })}
@@ -508,8 +503,7 @@ export default function MasterDataBarangTab() {
                     )}
                     <div>
                       <label className="block text-sm mb-1">Reorder Point</label>
-                      <input
-                        type="number"
+                      <NumberInput
                         className="input-field"
                         value={form.reorder_point ?? ''}
                         onChange={(e) => setForm({ ...form, reorder_point: e.target.value === '' ? null : Number(e.target.value) })}
@@ -518,8 +512,7 @@ export default function MasterDataBarangTab() {
                     {editingRow.source === 'material' && (
                       <div>
                         <label className="block text-sm mb-1">Safety Stock Qty</label>
-                        <input
-                          type="number"
+                        <NumberInput
                           className="input-field"
                           value={form.safety_stock_qty ?? ''}
                           onChange={(e) => setForm({ ...form, safety_stock_qty: e.target.value === '' ? null : Number(e.target.value) })}
@@ -531,8 +524,7 @@ export default function MasterDataBarangTab() {
                     {editingRow.source === 'material' && (
                       <div>
                         <label className="block text-sm mb-1">Safety Stock Horizon (hari)</label>
-                        <input
-                          type="number"
+                        <NumberInput
                           className="input-field"
                           value={form.safety_stock_days ?? ''}
                           onChange={(e) => setForm({ ...form, safety_stock_days: e.target.value === '' ? null : Number(e.target.value) })}
@@ -749,8 +741,7 @@ function ItemUomConversions({ materialId, productId, baseUom }: { materialId?: n
           onChange={(e) => setFromUnitCode(e.target.value)}
         />
         <span>=</span>
-        <input
-          type="number"
+        <NumberInput
           step="any"
           placeholder="4"
           className="input-field w-24"

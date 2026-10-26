@@ -7,6 +7,7 @@ import {
   Save, UploadCloud, Eye, Undo2, Redo2, Trash2, Type, Tag, Image as ImageIcon,
   QrCode, Barcode, Minus, Square, Table2, ArrowLeft, History, ZoomIn, ZoomOut,
 } from 'lucide-react';
+import NumberInput from '../../components/ui/NumberInput'
 
 // 1 Fabric unit = 1mm, always (design decision - see Print Template Designer
 // Fase 1 plan). PX_PER_MM is ONLY the on-screen zoom factor so mm-sized
@@ -600,11 +601,11 @@ const TemplateVersionEditor: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2">
                 <label className="text-[11px] text-gray-500">X (mm)
-                  <input type="number" value={Math.round((selected.left || 0))} onChange={(e) => updateSelected({ left: parseFloat(e.target.value) || 0 })}
+                  <NumberInput value={Math.round((selected.left || 0))} onChange={(e) => updateSelected({ left: parseFloat(e.target.value) || 0 })}
                     className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800" />
                 </label>
                 <label className="text-[11px] text-gray-500">Y (mm)
-                  <input type="number" value={Math.round((selected.top || 0))} onChange={(e) => updateSelected({ top: parseFloat(e.target.value) || 0 })}
+                  <NumberInput value={Math.round((selected.top || 0))} onChange={(e) => updateSelected({ top: parseFloat(e.target.value) || 0 })}
                     className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800" />
                 </label>
               </div>
@@ -618,7 +619,7 @@ const TemplateVersionEditor: React.FC = () => {
                     </label>
                   )}
                   <label className="text-[11px] text-gray-500 block">Ukuran Font (pt)
-                    <input type="number" value={Math.round(((selected as any).fontSize || 10 * MM_PER_PT) / MM_PER_PT)}
+                    <NumberInput value={Math.round(((selected as any).fontSize || 10 * MM_PER_PT) / MM_PER_PT)}
                       onChange={(e) => updateSelected({ fontSize: (parseInt(e.target.value) || 10) * MM_PER_PT })}
                       className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800" />
                   </label>
@@ -647,7 +648,7 @@ const TemplateVersionEditor: React.FC = () => {
                       className="w-full h-7 border border-gray-300 dark:border-gray-600 rounded" />
                   </label>
                   <label className="text-[11px] text-gray-500 block">Ketebalan
-                    <input type="number" value={(selected as any).strokeWidth || 1} onChange={(e) => updateSelected({ strokeWidth: parseInt(e.target.value) || 1 })}
+                    <NumberInput value={(selected as any).strokeWidth || 1} onChange={(e) => updateSelected({ strokeWidth: parseInt(e.target.value) || 1 })}
                       className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800" />
                   </label>
                 </>

@@ -14,6 +14,7 @@ import {
   UserIcon,
   ClipboardDocumentCheckIcon,
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface WorkOrderData {
   id: number;
@@ -636,8 +637,7 @@ export default function WorkOrderQCForm() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Jumlah Sample
               </label>
-              <input
-                type="number"
+              <NumberInput
                 min="1"
                 {...register('sample_qty', { required: true, min: 1 })}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
@@ -647,8 +647,7 @@ export default function WorkOrderQCForm() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Jumlah Defect Ditemukan
               </label>
-              <input
-                type="number"
+              <NumberInput
                 min="0"
                 {...register('defect_qty', { min: 0 })}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
@@ -712,8 +711,7 @@ export default function WorkOrderQCForm() {
                         <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                           Jumlah ({workOrder.uom})
                         </label>
-                        <input
-                          type="number"
+                        <NumberInput
                           min="0"
                           max={workOrder.quantity_scrap}
                           value={entry.quantity || ''}

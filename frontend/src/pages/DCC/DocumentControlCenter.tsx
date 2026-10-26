@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FileText, AlertTriangle, Mail, Trash2, BarChart3, Plus, Search, Eye, Upload, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight, RefreshCw, Filter, Download, Edit, MessageSquare, Send, ClipboardList, BookOpen, Archive } from 'lucide-react';
 import { confirmDialog, showError, showSuccess, showWarning } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 // ============================================================
 // TypeScript Interfaces
@@ -361,7 +362,7 @@ const DocumentListTab = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Masa Retensi (tahun)</label>
-                  <input type="number" value={formData.retention_period_years} onChange={e => setFormData({ ...formData, retention_period_years: Number(e.target.value) })}
+                  <NumberInput value={formData.retention_period_years} onChange={e => setFormData({ ...formData, retention_period_years: Number(e.target.value) })}
                     className="w-full border rounded-lg px-3 py-2 text-sm" />
                 </div>
                 <div>

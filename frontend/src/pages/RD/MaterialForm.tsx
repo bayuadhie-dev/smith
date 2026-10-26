@@ -10,6 +10,7 @@ import {
   CurrencyDollarIcon,
   BuildingStorefrontIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Project {
   id: number;
@@ -303,8 +304,7 @@ const MaterialForm: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Quantity <span className="text-red-500">*</span>
               </label>
-              <input
-                type="number"
+              <NumberInput
                 name="quantity"
                 value={formData.quantity}
                 onChange={handleNumberChange}
@@ -339,8 +339,7 @@ const MaterialForm: React.FC = () => {
               </label>
               <div className="relative">
                 <CurrencyDollarIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="number"
+                <NumberInput currency
                   name="unit_cost"
                   value={formData.unit_cost}
                   onChange={handleNumberChange}

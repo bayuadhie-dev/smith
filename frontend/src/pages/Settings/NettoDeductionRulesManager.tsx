@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface NettoRule {
   index: number;
@@ -398,8 +399,7 @@ export default function NettoDeductionRulesManager() {
                   Potongan Berat Netto (kg) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <input
-                    type="number"
+                  <NumberInput
                     step="0.001"
                     min="0.001"
                     required

@@ -9,6 +9,7 @@ import {
   useCreateContractMutation,
   useUpdateContractMutation,
 } from '../../services/api'
+import NumberInput from '../../components/ui/NumberInput'
 
 interface ContractItemRow {
   product_id?: number | ''
@@ -199,7 +200,7 @@ export default function ContractForm() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Nilai Kontrak</label>
-              <input type="number" value={totalValue} onChange={e => setTotalValue(e.target.value === '' ? '' : Number(e.target.value))} disabled={locked}
+              <NumberInput currency value={totalValue} onChange={e => setTotalValue(e.target.value === '' ? '' : Number(e.target.value))} disabled={locked}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white" />
             </div>
             <div>
@@ -229,7 +230,7 @@ export default function ContractForm() {
             {autoRenewal && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Periode Perpanjangan (bulan)</label>
-                <input type="number" value={renewalMonths} onChange={e => setRenewalMonths(e.target.value === '' ? '' : Number(e.target.value))} disabled={locked}
+                <NumberInput value={renewalMonths} onChange={e => setRenewalMonths(e.target.value === '' ? '' : Number(e.target.value))} disabled={locked}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white" />
               </div>
             )}
@@ -263,7 +264,7 @@ export default function ContractForm() {
                 </div>
                 <div className="col-span-1">
                   <label className="block text-xs text-gray-500 mb-1">Qty</label>
-                  <input type="number" value={it.quantity ?? ''} onChange={e => updateItem(idx, { quantity: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
+                  <NumberInput value={it.quantity ?? ''} onChange={e => updateItem(idx, { quantity: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
                     className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
                 </div>
                 <div className="col-span-1">
@@ -273,12 +274,12 @@ export default function ContractForm() {
                 </div>
                 <div className="col-span-2">
                   <label className="block text-xs text-gray-500 mb-1">Harga Satuan *</label>
-                  <input type="number" value={it.unit_price} onChange={e => updateItem(idx, { unit_price: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
+                  <NumberInput currency value={it.unit_price} onChange={e => updateItem(idx, { unit_price: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
                     className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
                 </div>
                 <div className="col-span-1">
                   <label className="block text-xs text-gray-500 mb-1">Lead Time (hari)</label>
-                  <input type="number" value={it.lead_time_days ?? ''} onChange={e => updateItem(idx, { lead_time_days: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
+                  <NumberInput value={it.lead_time_days ?? ''} onChange={e => updateItem(idx, { lead_time_days: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
                     className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
                 </div>
                 <div className="col-span-1 flex justify-end">

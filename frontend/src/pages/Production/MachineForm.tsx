@@ -10,6 +10,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig'
 import { showError, showSuccess } from '../../components/ui'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import NumberInput from '../../components/ui/NumberInput'
 interface MachineFormData {
   name: string
   code: string
@@ -279,8 +280,7 @@ const navigate = useNavigate()
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
-              <input
-                type="number"
+              <NumberInput
                 {...register('capacity', { min: 0 })}
                 className="input"
                 placeholder="Production capacity"
@@ -306,8 +306,7 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Default Speed (pcs/menit)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 {...register('default_speed', { min: 0 })}
                 className="input"
                 placeholder="Speed mesin untuk perhitungan efisiensi"
@@ -319,8 +318,7 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Target Efisiensi (%)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 {...register('target_efficiency', { min: 0, max: 100 })}
                 className="input"
                 placeholder="60"

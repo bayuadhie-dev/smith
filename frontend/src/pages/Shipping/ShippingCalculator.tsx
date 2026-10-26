@@ -10,6 +10,7 @@ import {
   TruckIcon
 
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface CalculatorResult {
   provider: string
@@ -212,8 +213,7 @@ export default function ShippingCalculator() {
                 <CubeIcon className="h-4 w-4 inline mr-1" />
                 Berat (kg)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 name="weight"
                 value={formData.weight}
                 onChange={handleInputChange}
@@ -229,8 +229,7 @@ export default function ShippingCalculator() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Panjang (cm)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="length"
                   value={formData.length}
                   onChange={handleInputChange}
@@ -243,8 +242,7 @@ export default function ShippingCalculator() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Lebar (cm)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="width"
                   value={formData.width}
                   onChange={handleInputChange}
@@ -257,8 +255,7 @@ export default function ShippingCalculator() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Tinggi (cm)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="height"
                   value={formData.height}
                   onChange={handleInputChange}
@@ -274,8 +271,7 @@ export default function ShippingCalculator() {
                 <BanknotesIcon className="h-4 w-4 inline mr-1" />
                 Nilai Barang (Rp)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 name="value"
                 value={formData.value}
                 onChange={handleInputChange}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../../lib/axios';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface RecurringPaymentMaster {
   id: number;
@@ -255,8 +256,7 @@ const RecurringPayment: React.FC = () => {
                       onChange={(e) => setNewTx((prev) => ({ ...prev, payment_date: e.target.value }))}
                       className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
                     />
-                    <input
-                      type="number"
+                    <NumberInput currency
                       min="0.01"
                       step="0.01"
                       placeholder="Jumlah"

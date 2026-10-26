@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface MachineStat {
   machine_id: number;
@@ -443,8 +444,7 @@ const QualityObjectiveProduction: React.FC = () => {
                         <p className="font-medium text-slate-700">{machine.machine_name}</p>
                       </td>
                       <td className="px-4 py-3">
-                        <input
-                          type="number"
+                        <NumberInput
                           value={editTargets[machine.machine_id] || 0}
                           onChange={(e) => setEditTargets(prev => ({
                             ...prev,

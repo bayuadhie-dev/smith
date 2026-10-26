@@ -13,6 +13,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog, showError, showSuccess } from '../../components/ui';
 import { usePermissions } from '../../contexts/PermissionContext';
+import NumberInput from '../../components/ui/NumberInput'
 
 const DatabaseSwitchCard: React.FC = () => {
   const { isSuperAdmin } = usePermissions();
@@ -237,8 +238,7 @@ const AdvancedSystemConfig: React.FC = () => {
       
       case 'number':
         return (
-          <input
-            type="number"
+          <NumberInput
             value={currentValue}
             onChange={(e) => handleConfigChange(config.id, e.target.value)}
             className={`w-full border rounded-md px-3 py-2 ${hasChanges ? 'border-yellow-400 bg-yellow-50' : 'border-gray-300'}`}

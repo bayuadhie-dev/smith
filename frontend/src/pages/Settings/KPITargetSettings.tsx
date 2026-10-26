@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface KPITarget {
   id: number;
@@ -194,8 +195,7 @@ const KPITargetSettings: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       {editingId === target.id ? (
-                        <input
-                          type="number"
+                        <NumberInput
                           value={editForm.target_value || ''}
                           onChange={(e) => setEditForm({ ...editForm, target_value: parseFloat(e.target.value) })}
                           className="w-32 px-2 py-1 border rounded text-sm"
@@ -208,8 +208,7 @@ const KPITargetSettings: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       {editingId === target.id ? (
-                        <input
-                          type="number"
+                        <NumberInput
                           value={editForm.warning_threshold || ''}
                           onChange={(e) => setEditForm({ ...editForm, warning_threshold: parseFloat(e.target.value) })}
                           className="w-20 px-2 py-1 border rounded text-sm"
@@ -223,8 +222,7 @@ const KPITargetSettings: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       {editingId === target.id ? (
-                        <input
-                          type="number"
+                        <NumberInput
                           value={editForm.critical_threshold || ''}
                           onChange={(e) => setEditForm({ ...editForm, critical_threshold: parseFloat(e.target.value) })}
                           className="w-20 px-2 py-1 border rounded text-sm"

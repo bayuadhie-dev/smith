@@ -29,6 +29,7 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, L
 import axios from 'axios';
 import { format } from 'date-fns';
 import { usePermissions } from '../../contexts/PermissionContext';
+import NumberInput from '../../components/ui/NumberInput'
 
 // Types
 interface MBFReport {
@@ -931,11 +932,11 @@ const MBFReportPage: React.FC = () => {
                                   <div className="flex gap-4">
                                     <div className="flex flex-col items-end">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Target Pcs</span>
-                                      <input type="number" value={detail.target_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'target_octenic', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-blue-200 rounded text-[10px] font-black text-center text-blue-900 focus:ring-1 focus:ring-blue-600 outline-none transition-all" disabled={!canEdit} />
+                                      <NumberInput value={detail.target_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'target_octenic', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-blue-200 rounded text-[10px] font-black text-center text-blue-900 focus:ring-1 focus:ring-blue-600 outline-none transition-all" disabled={!canEdit} />
                                     </div>
                                     <div className="flex flex-col items-end">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Actual Pcs</span>
-                                      <input type="number" value={detail.actual_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_octenic', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-green-200 rounded text-[10px] font-black text-center text-green-700 focus:ring-1 focus:ring-green-600 outline-none transition-all" disabled={!canEdit} />
+                                      <NumberInput value={detail.actual_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_octenic', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-green-200 rounded text-[10px] font-black text-center text-green-700 focus:ring-1 focus:ring-green-600 outline-none transition-all" disabled={!canEdit} />
                                     </div>
                                     <div className="flex flex-col items-end bg-gray-50 dark:bg-gray-900 px-2 rounded-lg border border-gray-100">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Cartons</span>
@@ -951,15 +952,15 @@ const MBFReportPage: React.FC = () => {
                                   </div>
                                   <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-blue-100/50">
                                     <span className="text-[6px] font-black text-blue-400 uppercase block mb-1">ISOLASI ROLL</span>
-                                    <input type="number" step="0.01" value={typeof detail.actual_isolation_roll === 'number' ? detail.actual_isolation_roll.toFixed(2) : detail.actual_isolation_roll || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_isolation_roll', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none" disabled={!canEdit} />
+                                    <NumberInput step="0.01" value={typeof detail.actual_isolation_roll === 'number' ? detail.actual_isolation_roll.toFixed(2) : detail.actual_isolation_roll || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_isolation_roll', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none" disabled={!canEdit} />
                                   </div>
                                   <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-blue-100/50">
                                     <span className="text-[6px] font-black text-blue-400 uppercase block mb-1">PACKAGING ROLL</span>
-                                    <input type="number" step="0.01" value={typeof detail.actual_roll_packaging_octenic === 'number' ? detail.actual_roll_packaging_octenic.toFixed(2) : detail.actual_roll_packaging_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_packaging_octenic', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none" disabled={!canEdit} />
+                                    <NumberInput step="0.01" value={typeof detail.actual_roll_packaging_octenic === 'number' ? detail.actual_roll_packaging_octenic.toFixed(2) : detail.actual_roll_packaging_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_packaging_octenic', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none" disabled={!canEdit} />
                                   </div>
                                   <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-blue-100/50">
                                     <span className="text-[6px] font-black text-blue-400 uppercase block mb-1">STICKER ROLL</span>
-                                    <input type="number" step="0.01" value={typeof detail.actual_roll_sticker_octenic === 'number' ? detail.actual_roll_sticker_octenic.toFixed(2) : detail.actual_roll_sticker_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_sticker_octenic', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none" disabled={!canEdit} />
+                                    <NumberInput step="0.01" value={typeof detail.actual_roll_sticker_octenic === 'number' ? detail.actual_roll_sticker_octenic.toFixed(2) : detail.actual_roll_sticker_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_sticker_octenic', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none" disabled={!canEdit} />
                                   </div>
                                 </div>
 
@@ -979,7 +980,7 @@ const MBFReportPage: React.FC = () => {
                                     {['octn_setting_packaging', 'octn_setting_sticker', 'octn_grade_b', 'octn_grade_c'].map(f => (
                                       <div key={f} className="bg-white dark:bg-gray-800/80 p-0.5 rounded border border-yellow-100 flex flex-col items-center">
                                         <span className="text-[5px] font-bold text-gray-400 uppercase">{f.split('_').slice(1).join(' ')}</span>
-                                        <input type="number" value={(detail as any)[f] || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, f, parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[9px] font-black text-center text-yellow-900 focus:ring-0 outline-none" disabled={!canEdit} />
+                                        <NumberInput value={(detail as any)[f] || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, f, parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[9px] font-black text-center text-yellow-900 focus:ring-0 outline-none" disabled={!canEdit} />
                                       </div>
                                     ))}
                                   </div>
@@ -993,11 +994,11 @@ const MBFReportPage: React.FC = () => {
                                   <div className="flex gap-4">
                                     <div className="flex flex-col items-end">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Target Pcs</span>
-                                      <input type="number" value={detail.target_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'target_gloveclean', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-purple-200 rounded text-[10px] font-black text-center text-purple-900 focus:ring-1 focus:ring-purple-600 outline-none transition-all" disabled={!canEdit} />
+                                      <NumberInput value={detail.target_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'target_gloveclean', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-purple-200 rounded text-[10px] font-black text-center text-purple-900 focus:ring-1 focus:ring-purple-600 outline-none transition-all" disabled={!canEdit} />
                                     </div>
                                     <div className="flex flex-col items-end">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Actual Pcs</span>
-                                      <input type="number" value={detail.actual_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_gloveclean', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-green-200 rounded text-[10px] font-black text-center text-green-700 focus:ring-1 focus:ring-green-600 outline-none transition-all" disabled={!canEdit} />
+                                      <NumberInput value={detail.actual_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_gloveclean', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-green-200 rounded text-[10px] font-black text-center text-green-700 focus:ring-1 focus:ring-green-600 outline-none transition-all" disabled={!canEdit} />
                                     </div>
                                     <div className="flex flex-col items-end bg-gray-50 dark:bg-gray-900 px-2 rounded-lg border border-gray-100">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Cartons</span>
@@ -1013,7 +1014,7 @@ const MBFReportPage: React.FC = () => {
                                   </div>
                                   <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-purple-100/50">
                                     <span className="text-[6px] font-black text-purple-400 uppercase block mb-1">PACKAGING ROLL</span>
-                                    <input type="number" step="0.01" value={typeof detail.actual_roll_packaging_gloveclean === 'number' ? detail.actual_roll_packaging_gloveclean.toFixed(2) : detail.actual_roll_packaging_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_packaging_gloveclean', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-purple-900 focus:ring-0 outline-none" disabled={!canEdit} />
+                                    <NumberInput step="0.01" value={typeof detail.actual_roll_packaging_gloveclean === 'number' ? detail.actual_roll_packaging_gloveclean.toFixed(2) : detail.actual_roll_packaging_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_packaging_gloveclean', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-purple-900 focus:ring-0 outline-none" disabled={!canEdit} />
                                   </div>
                                 </div>
 
@@ -1032,7 +1033,7 @@ const MBFReportPage: React.FC = () => {
                                     {['glvcn_setting_packaging', 'glvcn_grade_b', 'glvcn_grade_c'].map(f => (
                                       <div key={f} className="bg-white dark:bg-gray-800/80 p-0.5 rounded border border-emerald-100 flex flex-col items-center">
                                         <span className="text-[5px] font-bold text-gray-400 uppercase">{f.split('_').slice(1).join(' ')}</span>
-                                        <input type="number" value={(detail as any)[f] || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, f, parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[9px] font-black text-center text-emerald-900 focus:ring-0 outline-none" disabled={!canEdit} />
+                                        <NumberInput value={(detail as any)[f] || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, f, parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[9px] font-black text-center text-emerald-900 focus:ring-0 outline-none" disabled={!canEdit} />
                                       </div>
                                     ))}
                                   </div>

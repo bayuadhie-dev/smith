@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import ChartOfAccounts from './ChartOfAccounts';
 import { confirmDialog, showSuccess, showError, showWarning } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Account {
   id: number;
@@ -656,8 +657,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Debit (IDR)
                           </label>
-                          <input 
-                            type="number" 
+                          <NumberInput 
                             className="input w-full text-sm"
                             value={line.debit || ''}
                             onChange={(e) => updateJournalLine(index, 'debit', parseFloat(e.target.value) || 0)}
@@ -670,8 +670,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Credit (IDR)
                           </label>
-                          <input 
-                            type="number" 
+                          <NumberInput 
                             className="input w-full text-sm"
                             value={line.credit || ''}
                             onChange={(e) => updateJournalLine(index, 'credit', parseFloat(e.target.value) || 0)}

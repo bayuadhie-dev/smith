@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../../lib/axios';
 import { confirmDialog } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface PeriodCloseRecord {
   id: number;
@@ -320,8 +321,7 @@ const PeriodClose: React.FC = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tahun</label>
-            <input
-              type="number"
+            <NumberInput
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md"

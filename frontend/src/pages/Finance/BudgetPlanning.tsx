@@ -15,6 +15,7 @@ import {
   PlusIcon
 } from '@heroicons/react/24/outline';
 import { showSuccess, showError, showWarning, showInfo } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Budget {
   id: number;
@@ -461,8 +462,7 @@ const BudgetPlanning: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Fiscal Year *
                   </label>
-                  <input 
-                    type="number" 
+                  <NumberInput 
                     className="input w-full"
                     value={formData.fiscal_year}
                     onChange={(e) => setFormData({...formData, fiscal_year: parseInt(e.target.value)})}
@@ -609,8 +609,7 @@ const BudgetPlanning: React.FC = () => {
                           </option>
                         ))}
                       </select>
-                      <input
-                        type="number"
+                      <NumberInput currency
                         className="input w-40"
                         placeholder="Nominal"
                         value={line.budget_amount || ''}

@@ -12,6 +12,7 @@ import {
   PlayIcon
 
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Scenario {
   name: string
@@ -171,8 +172,7 @@ export default function WhatIfSimulation() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Days Ahead
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={daysAhead}
                 onChange={(e) => setDaysAhead(Number(e.target.value))}
                 min="1"
@@ -273,8 +273,7 @@ export default function WhatIfSimulation() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Demand Multiplier
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="0.1"
                   value={customScenario.demand_multiplier}
                   onChange={(e) => setCustomScenario({...customScenario, demand_multiplier: Number(e.target.value)})}

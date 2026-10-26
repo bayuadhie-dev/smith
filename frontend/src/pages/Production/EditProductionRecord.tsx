@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeftIcon, CheckCircleIcon, ClockIcon, PlusIcon, TrashIcon, CogIcon, UserIcon, CubeIcon, PaintBrushIcon, EllipsisHorizontalCircleIcon } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import NumberInput from '../../components/ui/NumberInput'
 
 // Helper to disable scroll on number inputs
 const disableScrollOnNumberInput = (e: React.WheelEvent<HTMLInputElement>) => {
@@ -753,8 +754,7 @@ export default function EditProductionRecord() {
               Waktu Kerja Shift (menit)
               <span className="text-xs text-gray-500 dark:text-gray-400 font-normal block">Kurangi jika shift berhenti lebih awal</span>
             </label>
-            <input
-              type="number"
+            <NumberInput
               value={formData.average_time}
               onChange={(e) => handleChange('average_time', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -767,8 +767,7 @@ export default function EditProductionRecord() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Speed Mesin (pcs/menit)
             </label>
-            <input
-              type="number"
+            <NumberInput
               value={formData.machine_speed}
               onChange={(e) => handleChange('machine_speed', e.target.value)}
               className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50"
@@ -827,8 +826,7 @@ export default function EditProductionRecord() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Grade A <span className="text-green-600">(Good)</span> *
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.quantity_good}
                 onChange={(e) => handleChange('quantity_good', e.target.value)}
                 className="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
@@ -841,8 +839,7 @@ export default function EditProductionRecord() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Grade B <span className="text-yellow-600">(Rework)</span>
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.quantity_rework}
                 onChange={(e) => handleChange('quantity_rework', e.target.value)}
                 className="w-full px-3 py-2 border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
@@ -854,8 +851,7 @@ export default function EditProductionRecord() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Grade C <span className="text-red-500">(Reject)</span>
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.quantity_reject}
                 onChange={(e) => handleChange('quantity_reject', e.target.value)}
                 className="w-full px-3 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
@@ -867,8 +863,7 @@ export default function EditProductionRecord() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Setting Sticker <span className="text-purple-500">(pack)</span>
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.setting_sticker}
                 onChange={(e) => handleChange('setting_sticker', e.target.value)}
                 className="w-full px-3 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
@@ -880,8 +875,7 @@ export default function EditProductionRecord() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Setting Packaging <span className="text-indigo-500">(pack)</span>
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.setting_packaging}
                 onChange={(e) => handleChange('setting_packaging', e.target.value)}
                 className="w-full px-3 py-2 border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -1048,8 +1042,7 @@ export default function EditProductionRecord() {
                           <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Durasi (menit)
                           </label>
-                          <input
-                            type="number"
+                          <NumberInput
                             value={entry.duration_minutes}
                             onChange={(e) => updateDowntimeEntry(entry.id, 'duration_minutes', e.target.value)}
                             onWheel={disableScrollOnNumberInput}
@@ -1064,8 +1057,7 @@ export default function EditProductionRecord() {
                           <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Frekuensi
                           </label>
-                          <input
-                            type="number"
+                          <NumberInput
                             value={entry.frequency}
                             onChange={(e) => updateDowntimeEntry(entry.id, 'frequency', e.target.value)}
                             onWheel={disableScrollOnNumberInput}

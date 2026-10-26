@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosConfig';
 import { CalculatorIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface PlannedOrder {
   entity_kind: 'material' | 'product';
@@ -171,8 +172,7 @@ export default function MRPRun() {
 
       <div className="card p-4 flex flex-wrap gap-4 items-center">
         <label className="text-sm text-gray-600 dark:text-gray-300">Horizon (minggu):</label>
-        <input
-          type="number"
+        <NumberInput
           min={1}
           max={52}
           className="input-field w-24"

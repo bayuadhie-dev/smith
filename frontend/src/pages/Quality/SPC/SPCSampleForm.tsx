@@ -7,6 +7,7 @@ import {
 import { useGetWorkOrdersQuery, useGetMachinesQuery } from '../../../services/api';
 import { XMarkIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { showError, showWarning } from '../../../components/ui';
+import NumberInput from '../../../components/ui/NumberInput'
 
 interface Props {
   onClose: () => void;
@@ -368,8 +369,7 @@ export default function SPCSampleForm({ onClose, onSuccess }: Props) {
                   {m.readings.map((r, i) => (
                     <div key={i} className="flex flex-col items-center gap-1">
                       <label className="text-xs text-gray-400">#{i + 1}</label>
-                      <input
-                        type="number"
+                      <NumberInput
                         step="any"
                         value={r}
                         onChange={(e) => updateReading(m.parameter_id, i, e.target.value)}

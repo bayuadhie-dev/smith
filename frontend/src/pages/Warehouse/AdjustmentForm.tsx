@@ -14,6 +14,7 @@ import {
   MapPinIcon,
   XMarkIcon as X,
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface InventoryRow {
   id: number;
@@ -278,8 +279,7 @@ const AdjustmentForm: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Physical Quantity *</label>
-                <input
-                  type="number"
+                <NumberInput
                   value={physicalQuantity}
                   onChange={(e) => setPhysicalQuantity(e.target.value)}
                   step="0.01"
@@ -299,8 +299,7 @@ const AdjustmentForm: React.FC = () => {
                   <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
                   Unit Cost (opsional, untuk hitung jurnal)
                 </label>
-                <input
-                  type="number"
+                <NumberInput currency
                   value={unitCost}
                   onChange={(e) => setUnitCost(e.target.value)}
                   step="0.01"
@@ -318,8 +317,7 @@ const AdjustmentForm: React.FC = () => {
                 <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
                 Total Cost Impact (IDR) *
               </label>
-              <input
-                type="number"
+              <NumberInput currency
                 value={totalCostImpact}
                 onChange={(e) => setTotalCostImpact(e.target.value)}
                 step="0.01"

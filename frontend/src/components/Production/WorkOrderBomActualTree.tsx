@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import NumberInput from '../ui/NumberInput'
 
 export interface BomTreeItem {
   id: number;
@@ -101,8 +102,7 @@ function TreeNode({
           <span className="text-sm text-gray-500 w-28 text-right">
             {item.quantity_planned.toLocaleString()} {item.uom}
           </span>
-          <input
-            type="number"
+          <NumberInput
             step="any"
             className="input-field w-28"
             placeholder={isSubAssembly ? 'opsional' : 'wajib'}

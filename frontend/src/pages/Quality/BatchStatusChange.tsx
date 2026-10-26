@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosConfig';
 import ActivityLogModal from '../../components/ActivityLogModal';
 import { ArrowPathIcon, ClockIcon } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Batch {
   id: number;
@@ -225,8 +226,7 @@ export default function BatchStatusChange() {
                       <option key={st} value={st}>{st}</option>
                     ))}
                   </select>
-                  <input
-                    type="number"
+                  <NumberInput
                     step="any"
                     min="0"
                     className="input-field w-32"

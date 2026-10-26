@@ -7,6 +7,7 @@ import { confirmDialog } from '../../components/ui';
 import { Save, Plus, Trash2, ChevronDown, ChevronRight, ChevronLeft, Layers, CalendarRange, Factory, PackageCheck, AlertTriangle, Search, ArrowUpDown, ClipboardPaste, Pencil, Lock, TrendingUp } from 'lucide-react';
 import PeriodSelectModal from './PeriodSelectModal';
 import { periodLabel, shiftPeriod } from './forecastPeriod';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface ForecastLine {
   id: number;
@@ -794,8 +795,7 @@ export default function SalesForecastGrid() {
                             </div>
                           ) : (
                             <div className="flex items-center gap-1">
-                              <input
-                                type="number"
+                              <NumberInput
                                 min={0}
                                 value={qty}
                                 disabled={!isEditMode}
@@ -1004,8 +1004,7 @@ export default function SalesForecastGrid() {
                     <tr key={l.id}>
                       <td className="px-2 py-2">{l.product_code} - {l.product_name}</td>
                       <td className="px-2 py-2">
-                        <input
-                          type="number"
+                        <NumberInput
                           value={bulkRows[l.id]?.quantity ?? ''}
                           onChange={(e) => setBulkRows({ ...bulkRows, [l.id]: { quantity: e.target.value } })}
                           onFocus={(e) => e.target.select()}

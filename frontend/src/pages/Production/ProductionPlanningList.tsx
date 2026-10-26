@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { Calendar, Package, TrendingUp, AlertCircle, CheckCircle, Clock, Play, FileText } from 'lucide-react';
 import { confirmDialog, showError, showSuccess } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface ProductionPlan {
   id: number;
@@ -370,8 +371,7 @@ const ProductionPlanningList: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Batch Size
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   value={woGenerateOptions.batch_size}
                   onChange={(e) => setWoGenerateOptions({ ...woGenerateOptions, batch_size: Number(e.target.value) })}
                   min="1"

@@ -29,6 +29,7 @@ import {
   XMarkIcon,
   TrashIcon as Trash2
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface HandlingUnit {
   id: number;
@@ -656,8 +657,7 @@ const ShippingOrderDetails: React.FC = () => {
                             <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
                               Quantity ({item.uom})
                             </label>
-                            <input
-                              type="number"
+                            <NumberInput
                               min="0"
                               step="any"
                               value={newHuQty[item.id] || ''}

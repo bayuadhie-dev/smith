@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { confirmDialog } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface MachineOption {
   id: number;
@@ -190,7 +191,7 @@ const FactoryLayoutAdmin: React.FC = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: 8 }}>
               <input style={input} placeholder="Nama (mis. Sayap Alkes)" value={newWing.name} onChange={(e) => setNewWing({ ...newWing, name: e.target.value })} />
               <input style={input} placeholder="Subjudul" value={newWing.subtitle} onChange={(e) => setNewWing({ ...newWing, subtitle: e.target.value })} />
-              <input style={input} type="number" placeholder="Urutan" value={newWing.display_order} onChange={(e) => setNewWing({ ...newWing, display_order: Number(e.target.value) })} />
+              <NumberInput style={input} placeholder="Urutan" value={newWing.display_order} onChange={(e) => setNewWing({ ...newWing, display_order: Number(e.target.value) })} />
               <button style={btn} onClick={createWing}>+ Tambah</button>
             </div>
           </div>
@@ -241,7 +242,7 @@ const FactoryLayoutAdmin: React.FC = () => {
               <select style={input} value={newNode.icon_type} onChange={(e) => setNewNode({ ...newNode, icon_type: e.target.value })}>
                 {ICON_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
-              <input style={input} type="number" placeholder="Variant (opsional)" value={newNode.icon_variant} onChange={(e) => setNewNode({ ...newNode, icon_variant: e.target.value })} />
+              <NumberInput style={input} placeholder="Variant (opsional)" value={newNode.icon_variant} onChange={(e) => setNewNode({ ...newNode, icon_variant: e.target.value })} />
               <button style={btn} onClick={createNode}>+ Tambah</button>
             </div>
             <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>

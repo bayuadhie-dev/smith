@@ -24,6 +24,7 @@ import {
   PencilIcon,
   ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface ScheduleItem {
   id: number;
@@ -1024,8 +1025,7 @@ const WeeklyProductionPlan: React.FC = () => {
                 
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1.5">Order (CTN)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={formData.order_ctn}
                     onChange={(e) => setFormData({ ...formData, order_ctn: e.target.value })}
                     className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors"
@@ -1035,8 +1035,7 @@ const WeeklyProductionPlan: React.FC = () => {
                 
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1.5">Q/CTN (dari Produk)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={formData.qty_per_ctn}
                     onChange={(e) => setFormData({ ...formData, qty_per_ctn: e.target.value })}
                     className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors bg-gray-50 dark:bg-gray-900"
@@ -1242,8 +1241,7 @@ const WeeklyProductionPlan: React.FC = () => {
                           Jumlah CTN untuk minggu ini <span className="text-red-500">*</span>
                         </label>
                         <div className="flex items-center gap-2">
-                          <input
-                            type="number"
+                          <NumberInput
                             value={monthlyOrderCtn}
                             onChange={(e) => setMonthlyOrderCtn(e.target.value)}
                             className="flex-1 px-4 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-purple-400 focus:outline-none"

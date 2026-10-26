@@ -11,6 +11,7 @@ import {
   SquaresPlusIcon as Layers,
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface Zone {
   id: number;
   name: string;
@@ -293,8 +294,7 @@ const LocationForm: React.FC = () => {
                 <CubeIcon className="inline h-4 w-4 mr-1" />
                 Capacity *
               </label>
-              <input
-                type="number"
+              <NumberInput
                 name="capacity"
                 value={formData.capacity}
                 onChange={handleInputChange}

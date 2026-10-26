@@ -4,6 +4,7 @@ import { ArrowLeftIcon, CheckCircleIcon, ClockIcon, CogIcon, UserIcon, CubeIcon,
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 // Helper to disable scroll on number inputs
 const disableScrollOnNumberInput = (e: React.WheelEvent<HTMLInputElement>) => {
@@ -1655,8 +1656,7 @@ export default function WorkOrderProductionInput() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Average Time (menit)
             </label>
-            <input
-              type="number"
+            <NumberInput
               value={formData.average_time}
               onChange={(e) => handleChange('average_time', e.target.value)}
               onWheel={disableScrollOnNumberInput}
@@ -1669,8 +1669,7 @@ export default function WorkOrderProductionInput() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Speed Mesin (pcs/menit)
             </label>
-            <input
-              type="number"
+            <NumberInput
               value={formData.machine_speed}
               onChange={(e) => handleChange('machine_speed', e.target.value)}
               onWheel={disableScrollOnNumberInput}
@@ -1683,8 +1682,7 @@ export default function WorkOrderProductionInput() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Pack/Karton *
             </label>
-            <input
-              type="number"
+            <NumberInput
               value={formData.pack_per_carton}
               onChange={(e) => handleChange('pack_per_carton', e.target.value)}
               onWheel={disableScrollOnNumberInput}
@@ -1750,8 +1748,7 @@ export default function WorkOrderProductionInput() {
                   🧮
                 </button>
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.quantity_good}
                 onChange={(e) => handleChange('quantity_good', e.target.value)}
                 onWheel={disableScrollOnNumberInput}
@@ -1804,8 +1801,7 @@ export default function WorkOrderProductionInput() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Grade B <span className="text-yellow-600">(Rework)</span>
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.quantity_rework}
                 onChange={(e) => handleChange('quantity_rework', e.target.value)}
                 onWheel={disableScrollOnNumberInput}
@@ -1818,8 +1814,7 @@ export default function WorkOrderProductionInput() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Grade C <span className="text-red-500">(Reject)</span>
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.quantity_reject}
                 onChange={(e) => handleChange('quantity_reject', e.target.value)}
                 onWheel={disableScrollOnNumberInput}
@@ -1832,8 +1827,7 @@ export default function WorkOrderProductionInput() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Setting Sticker <span className="text-purple-500">(pack)</span>
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.setting_sticker}
                 onChange={(e) => handleChange('setting_sticker', e.target.value)}
                 onWheel={disableScrollOnNumberInput}
@@ -1846,8 +1840,7 @@ export default function WorkOrderProductionInput() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Setting Packaging <span className="text-indigo-500">(pack)</span>
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.setting_packaging}
                 onChange={(e) => handleChange('setting_packaging', e.target.value)}
                 onWheel={disableScrollOnNumberInput}
@@ -2178,8 +2171,7 @@ export default function WorkOrderProductionInput() {
                           <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Durasi (menit)
                           </label>
-                          <input
-                            type="number"
+                          <NumberInput
                             value={entry.duration_minutes}
                             onChange={(e) => updateDowntimeEntry(entry.id, 'duration_minutes', e.target.value)}
                             onWheel={disableScrollOnNumberInput}
@@ -2194,8 +2186,7 @@ export default function WorkOrderProductionInput() {
                           <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Frekuensi
                           </label>
-                          <input
-                            type="number"
+                          <NumberInput
                             value={entry.frequency}
                             onChange={(e) => updateDowntimeEntry(entry.id, 'frequency', e.target.value)}
                             onWheel={disableScrollOnNumberInput}
@@ -2440,8 +2431,7 @@ export default function WorkOrderProductionInput() {
                     {/* Actual input */}
                     <div className="col-span-3">
                       <div className="flex items-center gap-1">
-                        <input
-                          type="number"
+                        <NumberInput
                           placeholder="Aktual..."
                           value={item.actual_input || ''}
                           onChange={(e) => {

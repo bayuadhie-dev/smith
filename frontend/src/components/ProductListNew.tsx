@@ -14,6 +14,7 @@ import {
   Square3Stack3DIcon as Grid,
   TrashIcon as Trash2
 } from '@heroicons/react/24/outline';
+import NumberInput from './ui/NumberInput'
 interface ProductNew {
   id: number;
   kode_produk: string;
@@ -333,8 +334,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">GSM Min</label>
-                <input
-                  type="number"
+                <NumberInput
                   value={filters.gsm_min}
                   onChange={(e) => handleFilterChange('gsm_min', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -344,8 +344,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">GSM Max</label>
-                <input
-                  type="number"
+                <NumberInput
                   value={filters.gsm_max}
                   onChange={(e) => handleFilterChange('gsm_max', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

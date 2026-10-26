@@ -4,6 +4,7 @@ import { ArrowLeftIcon, PlusIcon, TrashIcon, PencilIcon, ArrowPathIcon, CheckCir
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface BOMItem {
   id: number;
@@ -519,8 +520,7 @@ export default function WorkOrderBOMEdit() {
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Qty per Unit *</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={newItem.quantity_per_unit}
                     onChange={(e) => setNewItem(prev => ({ ...prev, quantity_per_unit: e.target.value }))}
                     className="w-full px-3 py-2 border rounded-lg"

@@ -19,6 +19,7 @@ import {
   PlusIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 export default function PurchaseOrderList() {
     const { t } = useLanguage();
 
@@ -406,8 +407,7 @@ const [search, setSearch] = useState('')
             <label className="block font-medium text-gray-700 dark:text-gray-200 mb-1">
               Kurs 1 {manualRateModal.currency} ke IDR *
             </label>
-            <input
-              type="number"
+            <NumberInput
               step="0.01"
               min="1"
               value={manualRateModal.rate}

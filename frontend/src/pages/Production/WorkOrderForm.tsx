@@ -16,6 +16,7 @@ import {
   ChevronUpIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface WorkOrderFormData {
   product_id: number
   quantity: number
@@ -838,8 +839,7 @@ const navigate = useNavigate()
                       <label className="block text-xs font-medium text-green-700 mb-1">
                         Speed Mesin (pack/menit)
                       </label>
-                      <input
-                        type="number"
+                      <NumberInput
                         value={targetCalc.machine_speed}
                         onChange={(e) => setTargetCalc(prev => ({ ...prev, machine_speed: e.target.value }))}
                         className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800"
@@ -852,8 +852,7 @@ const navigate = useNavigate()
                       <label className="block text-xs font-medium text-green-700 mb-1">
                         Menit/Jam
                       </label>
-                      <input
-                        type="number"
+                      <NumberInput
                         value={targetCalc.minutes_per_hour}
                         onChange={(e) => setTargetCalc(prev => ({ ...prev, minutes_per_hour: e.target.value }))}
                         className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800"
@@ -866,8 +865,7 @@ const navigate = useNavigate()
                       <label className="block text-xs font-medium text-green-700 mb-1">
                         Jam Kerja
                       </label>
-                      <input
-                        type="number"
+                      <NumberInput
                         value={targetCalc.work_hours}
                         onChange={(e) => setTargetCalc(prev => ({ ...prev, work_hours: e.target.value }))}
                         className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800"
@@ -880,8 +878,7 @@ const navigate = useNavigate()
                       <label className="block text-xs font-medium text-green-700 mb-1">
                         Efisiensi (%)
                       </label>
-                      <input
-                        type="number"
+                      <NumberInput
                         value={targetCalc.efficiency}
                         onChange={(e) => setTargetCalc(prev => ({ ...prev, efficiency: e.target.value }))}
                         className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800"
@@ -894,8 +891,7 @@ const navigate = useNavigate()
                       <label className="block text-xs font-medium text-green-700 mb-1">
                         Pack/Karton
                       </label>
-                      <input
-                        type="number"
+                      <NumberInput
                         value={targetCalc.pack_per_karton}
                         onChange={(e) => setTargetCalc(prev => ({ ...prev, pack_per_karton: e.target.value }))}
                         className="w-full px-2 py-1.5 text-sm border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800"
@@ -949,8 +945,7 @@ const navigate = useNavigate()
               
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <input
-                    type="number"
+                  <NumberInput
                     step="0.01"
                     min="0"
                     {...register('quantity', { 
@@ -973,8 +968,7 @@ const navigate = useNavigate()
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                     Pack/Karton
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     min="1"
                     value={packPerKarton}
                     onChange={(e) => {

@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import SearchableSelect from '../../components/SearchableSelect';
 import { showSuccess } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Product {
   id: number;
@@ -537,8 +538,7 @@ const StockInput: React.FC = () => {
                         </td>
                         <td className="px-4 py-3">
                           <div>
-                            <input
-                              type="number"
+                            <NumberInput
                               value={item.quantity}
                               onChange={(e) => updateStockItem(item.id, 'quantity', Number(e.target.value))}
                               min="0.01"

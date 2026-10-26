@@ -8,6 +8,7 @@ import {
   ExclamationTriangleIcon,
   FunnelIcon,
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Consumption {
   id: number;
@@ -84,8 +85,7 @@ const MaterialConsumptionPage: React.FC = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
         <div className="flex flex-wrap items-center gap-3">
           <form onSubmit={handleSearch} className="flex items-center gap-2">
-            <input
-              type="number"
+            <NumberInput
               placeholder="SPK ID"
               value={woId}
               onChange={(e) => setWoId(e.target.value)}

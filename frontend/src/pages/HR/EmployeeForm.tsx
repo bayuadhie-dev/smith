@@ -18,6 +18,7 @@ import {
 } from '../../services/api'
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import NumberInput from '../../components/ui/NumberInput'
 
 interface EmployeeFormData {
   employee_number: string
@@ -396,11 +397,11 @@ export default function EmployeeForm() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className={labelClass}>Tunjangan Jabatan (Rp)</label>
-                    <input type="number" {...register('position_allowance_amount')} className={inputClass} placeholder="0" />
+                    <NumberInput currency {...register('position_allowance_amount')} className={inputClass} placeholder="0" />
                   </div>
                   <div>
                     <label className={labelClass}>Tunjangan Transportasi (Rp)</label>
-                    <input type="number" {...register('transport_allowance_amount')} className={inputClass} placeholder="0" />
+                    <NumberInput currency {...register('transport_allowance_amount')} className={inputClass} placeholder="0" />
                   </div>
                 </div>
               )}
@@ -441,28 +442,28 @@ export default function EmployeeForm() {
             {(watchPayType === 'fixed' || watchPayType === 'monthly' || watchPayType === 'outsourcing') && (
               <div>
                 <label className={labelClass}>Gaji Pokok / Bulan (Rp)</label>
-                <input type="number" {...register('salary')} className={inputClass} placeholder="0" />
+                <NumberInput currency {...register('salary')} className={inputClass} placeholder="0" />
               </div>
             )}
 
             {(watchPayType === 'weekly') && (
               <div>
                 <label className={labelClass}>Tarif per Minggu (Rp)</label>
-                <input type="number" {...register('pay_rate')} className={inputClass} placeholder="0" />
+                <NumberInput {...register('pay_rate')} className={inputClass} placeholder="0" />
               </div>
             )}
 
             {(watchPayType === 'daily') && (
               <div>
                 <label className={labelClass}>Tarif per Hari (Rp)</label>
-                <input type="number" {...register('pay_rate')} className={inputClass} placeholder="0" />
+                <NumberInput {...register('pay_rate')} className={inputClass} placeholder="0" />
               </div>
             )}
 
             {(watchPayType === 'piecework') && (
               <div>
                 <label className={labelClass}>Tarif Default per Unit (Rp)</label>
-                <input type="number" {...register('pay_rate')} className={inputClass} placeholder="0" />
+                <NumberInput {...register('pay_rate')} className={inputClass} placeholder="0" />
                 <p className="mt-1 text-xs text-gray-400">Tarif bisa di-override per log borongan</p>
               </div>
             )}

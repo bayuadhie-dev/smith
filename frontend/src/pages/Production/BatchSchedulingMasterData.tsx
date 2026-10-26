@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { Save, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { showSuccess, showError } from '../../components/ui/Toast';
+import NumberInput from '../../components/ui/NumberInput'
 
 const DAY_NAMES = ['Senin', 'Selasa', 'Rabu', 'Kamis', "Jum'at", 'Sabtu', 'Minggu'];
 
@@ -245,8 +246,7 @@ const OverrideGridTab: React.FC = () => {
                           />
                           Kerja
                         </label>
-                        <input
-                          type="number"
+                        <NumberInput
                           min={0}
                           className="w-16 px-1 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-center"
                           value={cell.shift_count}
@@ -254,8 +254,7 @@ const OverrideGridTab: React.FC = () => {
                           title="Jumlah shift"
                           placeholder="Shift"
                         />
-                        <input
-                          type="number"
+                        <NumberInput
                           min={0}
                           step={0.5}
                           className="w-16 px-1 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-center"

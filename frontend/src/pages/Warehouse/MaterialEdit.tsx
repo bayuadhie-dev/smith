@@ -8,6 +8,7 @@ import {
   BookmarkIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface Material {
   id: number;
   code: string;
@@ -320,8 +321,7 @@ const MaterialEdit: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Cost per Unit (Rp) *
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput currency
                     name="cost_per_unit"
                     value={material.cost_per_unit}
                     onChange={handleInputChange}
@@ -339,8 +339,7 @@ const MaterialEdit: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Lead Time (days)
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="lead_time_days"
                     value={material.lead_time_days}
                     onChange={handleInputChange}
@@ -359,8 +358,7 @@ const MaterialEdit: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Minimum Stock Level
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="min_stock_level"
                     value={material.min_stock_level}
                     onChange={handleInputChange}
@@ -373,8 +371,7 @@ const MaterialEdit: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Maximum Stock Level
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="max_stock_level"
                     value={material.max_stock_level}
                     onChange={handleInputChange}
@@ -387,8 +384,7 @@ const MaterialEdit: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Reorder Point
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="reorder_point"
                     value={material.reorder_point}
                     onChange={handleInputChange}
@@ -411,8 +407,7 @@ const MaterialEdit: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Safety Stock Qty
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="safety_stock_qty"
                     value={material.safety_stock_qty ?? ''}
                     onChange={handleNullableNumberChange}
@@ -426,8 +421,7 @@ const MaterialEdit: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Safety Stock Horizon (hari)
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="safety_stock_days"
                     value={material.safety_stock_days ?? ''}
                     onChange={handleNullableNumberChange}
@@ -506,8 +500,7 @@ const MaterialEdit: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Shelf Life (days)
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="expiry_days"
                     value={material.expiry_days || ''}
                     onChange={handleInputChange}

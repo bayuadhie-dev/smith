@@ -9,6 +9,7 @@ import {
   ClockIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface WorkflowDetail {
   id: number;
@@ -308,8 +309,7 @@ export default function ApprovalDetail() {
                         </td>
                         <td className="px-4 py-2 text-sm text-right">
                           {isEditing ? (
-                            <input
-                              type="number"
+                            <NumberInput
                               value={line.debit}
                               onChange={(e) => updateJournalLine(index, 'debit', parseFloat(e.target.value) || 0)}
                               className="w-full px-2 py-1 border rounded text-right"
@@ -320,8 +320,7 @@ export default function ApprovalDetail() {
                         </td>
                         <td className="px-4 py-2 text-sm text-right">
                           {isEditing ? (
-                            <input
-                              type="number"
+                            <NumberInput
                               value={line.credit}
                               onChange={(e) => updateJournalLine(index, 'credit', parseFloat(e.target.value) || 0)}
                               className="w-full px-2 py-1 border rounded text-right"

@@ -12,6 +12,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import SearchableSelect from '../../components/SearchableSelect';
 import { toast } from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface RemainingStockItem {
   id: number;
@@ -427,8 +428,7 @@ export default function RemainingStock() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Qty Karton <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   min="0.01"
                   step="0.01"
                   value={formData.qty_karton}

@@ -11,6 +11,7 @@ import {
   MagnifyingGlassIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface StockOpnameOrder {
   id: number;
@@ -491,8 +492,7 @@ export default function StockOpnameDetail() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Qty Hasil Hitung *
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   value={countedQty}
                   onChange={(e) => setCountedQty(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"

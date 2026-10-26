@@ -10,6 +10,7 @@ import {
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface LedgerEntry {
   id: number
@@ -631,8 +632,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
                           <option key={a.id} value={a.id}>{a.code} - {a.name}</option>
                         ))}
                       </select>
-                      <input
-                        type="number"
+                      <NumberInput
                         value={line.debit}
                         onChange={(e) => updateNewEntryLine(idx, 'debit', e.target.value)}
                         className="input col-span-3"
@@ -640,8 +640,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
                         min="0"
                         step="0.01"
                       />
-                      <input
-                        type="number"
+                      <NumberInput
                         value={line.credit}
                         onChange={(e) => updateNewEntryLine(idx, 'credit', e.target.value)}
                         className="input col-span-3"

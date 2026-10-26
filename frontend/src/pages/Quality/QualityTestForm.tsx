@@ -14,6 +14,7 @@ import {
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface QualityTestFormData {
   test_type: string
   product_id: number
@@ -301,8 +302,7 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Sample Size
               </label>
-              <input
-                type="number"
+              <NumberInput
                 min="1"
                 {...register('sample_size')}
                 className="input-field"
@@ -372,8 +372,7 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Temperature (°C)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 step="0.1"
                 {...register('temperature')}
                 className="input-field"
@@ -385,8 +384,7 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Humidity (%)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 step="0.1"
                 min="0"
                 max="100"

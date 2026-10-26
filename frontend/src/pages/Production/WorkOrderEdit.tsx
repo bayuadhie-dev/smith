@@ -4,6 +4,7 @@ import { ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 import SearchableSelect from '../../components/SearchableSelect';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Product {
   id: number;
@@ -225,8 +226,7 @@ export default function WorkOrderEdit() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Quantity *
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.quantity}
                 onChange={(e) => handleChange('quantity', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

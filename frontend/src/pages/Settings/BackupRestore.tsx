@@ -17,6 +17,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface BackupRecord {
   id: number;
@@ -457,8 +458,7 @@ const BackupRestore: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Retention (days)</label>
-                <input
-                  type="number"
+                <NumberInput
                   value={settings.retention_days}
                   onChange={(e) => setSettings({...settings, retention_days: parseInt(e.target.value)})}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"

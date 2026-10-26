@@ -12,6 +12,7 @@ import {
   Image as ImageIcon,
   File,
 } from 'lucide-react';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Employee {
   id: number;
@@ -351,8 +352,7 @@ const EmployeeExpenseForm: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Amount *
               </label>
-              <input
-                type="number"
+              <NumberInput currency
                 required
                 step="0.01"
                 min="0.01"
@@ -382,8 +382,7 @@ const EmployeeExpenseForm: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Exchange Rate {formData.currency !== 'IDR' && loadingRate && <span className="text-gray-400 text-xs">(memuat kurs...)</span>}
             </label>
-            <input
-              type="number"
+            <NumberInput
               step="0.000001"
               min="0"
               value={formData.exchange_rate}

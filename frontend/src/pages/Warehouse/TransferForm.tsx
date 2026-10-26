@@ -16,6 +16,7 @@ import {
   CheckIcon as Save,
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface Product {
   id: number;
   name: string;
@@ -381,8 +382,7 @@ const TransferForm: React.FC = () => {
                 Quantity *
               </label>
               <div className="relative">
-                <input
-                  type="number"
+                <NumberInput
                   name="quantity"
                   value={formData.quantity}
                   onChange={handleInputChange}

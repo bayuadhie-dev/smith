@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
 import toast from 'react-hot-toast'
+import NumberInput from '../../components/ui/NumberInput'
 
 interface PieceworkLogItem {
   id: number
@@ -319,12 +320,12 @@ export default function PieceworkLogList() {
                 </div>
                 <div>
                   <label className={labelClass}>Jumlah Output <span className="text-red-500">*</span></label>
-                  <input type="number" step="0.01" className={inputClass} value={formData.quantity} required
+                  <NumberInput step="0.01" className={inputClass} value={formData.quantity} required
                     onChange={e => setFormData({...formData, quantity: e.target.value})} placeholder="0" />
                 </div>
                 <div>
                   <label className={labelClass}>Tarif per Unit (Rp) <span className="text-red-500">*</span></label>
-                  <input type="number" step="1" className={inputClass} value={formData.rate_per_unit} required
+                  <NumberInput step="1" className={inputClass} value={formData.rate_per_unit} required
                     onChange={e => setFormData({...formData, rate_per_unit: e.target.value})} placeholder="0" />
                 </div>
               </div>

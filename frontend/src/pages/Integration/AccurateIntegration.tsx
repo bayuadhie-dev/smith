@@ -66,6 +66,7 @@ import {
   MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline'
 import { confirmDialog, showSuccess, showError, showWarning } from '../../components/ui'
+import NumberInput from '../../components/ui/NumberInput'
 
 export default function AccurateIntegration() {
   const [activeTab, setActiveTab] = useState<'config' | 'mapping' | 'dryrun' | 'approval' | 'modules' | 'ejo' | 'warehouse' | 'transfer'>('config')
@@ -827,8 +828,7 @@ export default function AccurateIntegration() {
                   4. Rasio UoM (Accurate/Internal ERP)
                 </label>
                 <div className="flex gap-2">
-                  <input
-                    type="number"
+                  <NumberInput
                     step="0.01"
                     className="input w-full"
                     value={uomRatio}

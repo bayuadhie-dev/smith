@@ -11,6 +11,7 @@ import {
 } from '../../services/api';
 import { useGetMachinesQuery } from '../../services/api';
 import SearchableSelect from '../../components/SearchableSelect';
+import NumberInput from '../../components/ui/NumberInput'
 
 const emptyForm = { product_id: '', machine_id: '', batch_size: '', rate_per_hour: '', is_default: false };
 
@@ -112,13 +113,11 @@ export default function MasterDataRecipeTab() {
             onChange={(v) => setForm({ ...form, machine_id: v ?? '' })}
             placeholder="Pilih Mesin..."
           />
-          <input
-            type="number" step="any" placeholder="Kapasitas Batch"
+          <NumberInput step="any" placeholder="Kapasitas Batch"
             className="input-field" value={form.batch_size}
             onChange={(e) => setForm({ ...form, batch_size: e.target.value })}
           />
-          <input
-            type="number" step="any" placeholder="Rate/Jam"
+          <NumberInput step="any" placeholder="Rate/Jam"
             className="input-field" value={form.rate_per_hour}
             onChange={(e) => setForm({ ...form, rate_per_hour: e.target.value })}
           />

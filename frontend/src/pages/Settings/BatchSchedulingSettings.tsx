@@ -3,6 +3,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import SearchableSelect from '../../components/SearchableSelect';
 import { confirmDialog } from '../../components/ui';
 import { Plus, Trash2, Save, Settings2, Pencil } from 'lucide-react';
+import NumberInput from '../../components/ui/NumberInput'
 
 // Moved out of Production/BatchSchedulingMasterData.tsx (2026-08-24): these 3 tabs are
 // setup-once master data (recipe, baseline calendar, holiday exceptions), rarely touched
@@ -259,8 +260,7 @@ const RecipeTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Batch Size</label>
-              <input
-                type="number"
+              <NumberInput
                 value={form.batch_size}
                 onChange={(e) => setForm({ ...form, batch_size: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm"
@@ -268,8 +268,7 @@ const RecipeTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Rate / Jam</label>
-              <input
-                type="number"
+              <NumberInput
                 value={form.rate_per_hour}
                 onChange={(e) => setForm({ ...form, rate_per_hour: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm"
@@ -396,8 +395,7 @@ const GlobalCalendarTab: React.FC = () => {
                   <input type="checkbox" checked={d.is_working_day} onChange={(e) => update(idx, { is_working_day: e.target.checked })} />
                 </td>
                 <td className="px-3 py-2 text-center">
-                  <input
-                    type="number"
+                  <NumberInput
                     min={0}
                     className="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-center"
                     value={d.shift_count}
@@ -405,8 +403,7 @@ const GlobalCalendarTab: React.FC = () => {
                   />
                 </td>
                 <td className="px-3 py-2 text-center">
-                  <input
-                    type="number"
+                  <NumberInput
                     min={0}
                     step={0.5}
                     className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-center"
@@ -516,11 +513,11 @@ const ExceptionTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Jumlah Shift (opsional)</label>
-              <input type="number" value={form.shift_count} onChange={(e) => setForm({ ...form, shift_count: e.target.value })} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm" />
+              <NumberInput value={form.shift_count} onChange={(e) => setForm({ ...form, shift_count: e.target.value })} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Durasi Shift (opsional)</label>
-              <input type="number" step={0.5} value={form.shift_duration_hours} onChange={(e) => setForm({ ...form, shift_duration_hours: e.target.value })} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm" />
+              <NumberInput step={0.5} value={form.shift_duration_hours} onChange={(e) => setForm({ ...form, shift_duration_hours: e.target.value })} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm" />
             </div>
           </div>
           <div className="mt-3">

@@ -18,6 +18,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface MaterialUsage {
   material_name: string;
@@ -367,8 +368,7 @@ const ProductionApprovalDetail: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Qty Good</label>
-                <input
-                  type="number"
+                <NumberInput
                   value={editForm.quantity_good}
                   onChange={(e) => setEditForm({ ...editForm, quantity_good: parseFloat(e.target.value) || 0 })}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2"
@@ -376,8 +376,7 @@ const ProductionApprovalDetail: React.FC = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Qty Reject</label>
-                <input
-                  type="number"
+                <NumberInput
                   value={editForm.quantity_reject}
                   onChange={(e) => setEditForm({ ...editForm, quantity_reject: parseFloat(e.target.value) || 0 })}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2"
@@ -388,8 +387,7 @@ const ProductionApprovalDetail: React.FC = () => {
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Material Cost</label>
-                <input
-                  type="number"
+                <NumberInput currency
                   value={editForm.material_cost}
                   onChange={(e) => setEditForm({ ...editForm, material_cost: parseFloat(e.target.value) || 0 })}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2"
@@ -397,8 +395,7 @@ const ProductionApprovalDetail: React.FC = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Labor Cost</label>
-                <input
-                  type="number"
+                <NumberInput currency
                   value={editForm.labor_cost}
                   onChange={(e) => setEditForm({ ...editForm, labor_cost: parseFloat(e.target.value) || 0 })}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2"
@@ -406,8 +403,7 @@ const ProductionApprovalDetail: React.FC = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Overhead Cost</label>
-                <input
-                  type="number"
+                <NumberInput currency
                   value={editForm.overhead_cost}
                   onChange={(e) => setEditForm({ ...editForm, overhead_cost: parseFloat(e.target.value) || 0 })}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2"

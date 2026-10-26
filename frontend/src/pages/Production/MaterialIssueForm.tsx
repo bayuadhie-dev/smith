@@ -16,6 +16,7 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import SearchableSelect from '../../components/SearchableSelect';
+import NumberInput from '../../components/ui/NumberInput'
 interface WorkOrder {
   id: number;
   wo_number: string;
@@ -558,8 +559,7 @@ const MaterialIssueForm: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         {t('common.quantity')} *
                       </label>
-                      <input
-                        type="number"
+                      <NumberInput
                         value={item.required_quantity}
                         onChange={(e) => handleItemChange(index, 'required_quantity', e.target.value)}
                         required

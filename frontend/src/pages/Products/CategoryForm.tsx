@@ -10,6 +10,7 @@ import {
   TagIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface CategoryFormData {
   name: string;
   description: string;
@@ -275,8 +276,7 @@ const navigate = useNavigate();
                 <label htmlFor="sort_order" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Sort Order
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   id="sort_order"
                   value={formData.sort_order}
                   onChange={(e) => handleInputChange('sort_order', parseInt(e.target.value) || 0)}

@@ -13,6 +13,7 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Project {
   id: number;
@@ -293,8 +294,7 @@ const ExperimentForm: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Duration (hours)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 name="duration_hours"
                 value={formData.duration_hours}
                 onChange={handleChange}

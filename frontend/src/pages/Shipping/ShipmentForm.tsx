@@ -13,6 +13,7 @@ import {
   useGetCustomersQuery
 } from '../../services/api';
 import { useCreateShippingOrderMutation as useCreateShipmentMutation } from '../../services/shippingApi';
+import NumberInput from '../../components/ui/NumberInput'
 interface ShipmentFormData {
   sales_order_ids?: number[]
   customer_id?: number
@@ -375,8 +376,7 @@ const navigate = useNavigate()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Quantity *
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       step="0.01"
                       min="0"
                       {...register(`items.${index}.quantity` as const, {
@@ -404,8 +404,7 @@ const navigate = useNavigate()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Weight (kg)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       step="0.01"
                       min="0"
                       {...register(`items.${index}.weight_kg` as const)}

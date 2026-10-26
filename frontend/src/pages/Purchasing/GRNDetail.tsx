@@ -6,6 +6,7 @@ import {
   ShieldCheckIcon, XCircleIcon,
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import NumberInput from '../../components/ui/NumberInput'
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending:   { label: 'Pending',    color: 'bg-gray-100 text-gray-700' },
@@ -294,8 +295,7 @@ export default function GRNDetail() {
                   <span className="text-xs ml-1 text-gray-400">{item.uom}</span>
                 </div>
                 <div className="col-span-2">
-                  <input
-                    type="number"
+                  <NumberInput
                     value={item.quantity_accepted}
                     onChange={(e) => updateItem(idx, 'quantity_accepted', e.target.value)}
                     disabled={!isEditable}
@@ -306,8 +306,7 @@ export default function GRNDetail() {
                   />
                 </div>
                 <div className="col-span-2">
-                  <input
-                    type="number"
+                  <NumberInput
                     value={item.quantity_rejected}
                     onChange={(e) => updateItem(idx, 'quantity_rejected', e.target.value)}
                     disabled={!isEditable}

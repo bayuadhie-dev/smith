@@ -14,6 +14,7 @@ import {
   MapPinIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface Product {
   id: number;
   name: string;
@@ -374,8 +375,7 @@ const MovementForm: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Quantity *
               </label>
-              <input
-                type="number"
+              <NumberInput
                 name="quantity"
                 value={formData.quantity}
                 onChange={handleInputChange}
@@ -454,8 +454,7 @@ const MovementForm: React.FC = () => {
                 <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
                 Unit Cost (IDR)
               </label>
-              <input
-                type="number"
+              <NumberInput currency
                 name="unit_cost"
                 value={formData.unit_cost || ''}
                 onChange={handleInputChange}
@@ -500,8 +499,7 @@ const MovementForm: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Reference ID
               </label>
-              <input
-                type="number"
+              <NumberInput
                 name="reference_id"
                 value={formData.reference_id || ''}
                 onChange={handleInputChange}

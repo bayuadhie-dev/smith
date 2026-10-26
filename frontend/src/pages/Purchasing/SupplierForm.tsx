@@ -8,6 +8,7 @@ import {
   useCreateSupplierMutation, 
   useUpdateSupplierMutation 
 } from '../../services/api' 
+import NumberInput from '../../components/ui/NumberInput'
 interface SupplierFormData {
   name: string
   contact_person: string
@@ -253,8 +254,7 @@ const { id } = useParams()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Credit Limit
               </label>
-              <input
-                type="number"
+              <NumberInput
                 step="0.01"
                 {...register('credit_limit', { valueAsNumber: true })}
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"

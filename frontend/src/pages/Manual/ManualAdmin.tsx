@@ -16,6 +16,7 @@ import {
   XMarkIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Category {
   id: number;
@@ -652,8 +653,7 @@ const ManualAdmin: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Urutan</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={categoryForm.order}
                     onChange={(e) => setCategoryForm({ ...categoryForm, order: parseInt(e.target.value) || 0 })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
@@ -741,8 +741,7 @@ const ManualAdmin: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Urutan</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={articleForm.order}
                     onChange={(e) => setArticleForm({ ...articleForm, order: parseInt(e.target.value) || 0 })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
@@ -832,8 +831,7 @@ const ManualAdmin: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Urutan</label>
-                    <input
-                      type="number"
+                    <NumberInput
                       value={faqForm.order}
                       onChange={(e) => setFaqForm({ ...faqForm, order: parseInt(e.target.value) || 0 })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"

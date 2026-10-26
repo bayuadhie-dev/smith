@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import axiosInstance from '../../lib/axios';
 import { confirmDialog, showSuccess, showError, showWarning } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface LeaveRequest {
   id: number;
@@ -696,8 +697,7 @@ const StaffLeaveManagement: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Radius (meter)</label>
-                    <input
-                      type="number"
+                    <NumberInput
                       value={newLocation.radius_meters}
                       onChange={(e) => setNewLocation(prev => ({ ...prev, radius_meters: e.target.value }))}
                       placeholder="100"

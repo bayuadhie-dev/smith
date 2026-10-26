@@ -14,6 +14,7 @@ import {
   TruckIcon as Truck,
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface TrackingFormData {
   shipping_order_id: number;
   event_date: string;
@@ -402,8 +403,7 @@ const ShippingTrackingForm: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="latitude"
                   value={formData.latitude}
                   onChange={handleInputChange}
@@ -416,8 +416,7 @@ const ShippingTrackingForm: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="longitude"
                   value={formData.longitude}
                   onChange={handleInputChange}
@@ -440,8 +439,7 @@ const ShippingTrackingForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Temperature (°C)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="temperature"
                   value={formData.temperature}
                   onChange={handleInputChange}
@@ -455,8 +453,7 @@ const ShippingTrackingForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Humidity (%)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="humidity"
                   value={formData.humidity}
                   onChange={handleInputChange}

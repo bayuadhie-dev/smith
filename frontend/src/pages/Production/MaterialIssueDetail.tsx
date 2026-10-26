@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
 import { confirmDialog, showError } from '../../components/ui'
+import NumberInput from '../../components/ui/NumberInput'
 
 interface MaterialIssueItem {
   id: number
@@ -556,8 +557,7 @@ const MaterialIssueDetail: React.FC = () => {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">Jumlah Diterima</label>
-                      <input
-                        type="number"
+                      <NumberInput
                         step="0.01"
                         value={receiptQuantities[item.id] ?? ''}
                         onChange={(e) => setReceiptQuantities((prev) => ({ ...prev, [item.id]: e.target.value }))}

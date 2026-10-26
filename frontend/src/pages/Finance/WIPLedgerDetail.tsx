@@ -11,6 +11,7 @@ import {
   XCircleIcon,
   ArrowRightCircleIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface LedgerDetail {
   id: number;
@@ -396,8 +397,7 @@ export default function WIPLedgerDetail() {
               Memindahkan biaya WIP {ledger.work_order_number} ke persediaan barang jadi (COGM) dan posting jurnal otomatis. Tindakan ini tidak bisa dibatalkan.
             </p>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">Quantity Ditransfer</label>
-            <input
-              type="number"
+            <NumberInput
               value={transferQty}
               onChange={(e) => setTransferQty(e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 mb-4 bg-white dark:bg-gray-900"

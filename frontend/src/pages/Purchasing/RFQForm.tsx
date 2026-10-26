@@ -14,6 +14,7 @@ import {
   TrashIcon as Trash2,
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface Product {
   id: number;
   name: string;
@@ -378,8 +379,7 @@ const RFQForm: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Quantity *
                       </label>
-                      <input
-                        type="number"
+                      <NumberInput
                         value={item.quantity}
                         onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
                         required

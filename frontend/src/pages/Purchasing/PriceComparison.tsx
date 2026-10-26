@@ -9,6 +9,7 @@ import {
   MagnifyingGlassIcon 
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import NumberInput from '../../components/ui/NumberInput'
 
 export default function PriceComparison() {
     const { t } = useLanguage();
@@ -80,8 +81,7 @@ export default function PriceComparison() {
           
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.quantity')}</label>
-            <input
-              type="number"
+            <NumberInput
               min="1"
               value={quantity}
               onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}

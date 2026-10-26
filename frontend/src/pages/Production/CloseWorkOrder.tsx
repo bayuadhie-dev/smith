@@ -4,6 +4,7 @@ import { ArrowLeftIcon, CheckCircleIcon, ExclamationTriangleIcon, PlusIcon, Lock
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 import PackingListTab from '../../components/Production/PackingListTab';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface WasteRecord {
   id: number;
@@ -348,8 +349,7 @@ export default function CloseWorkOrder() {
               <option key={b.id} value={b.id}>{b.batch_number}</option>
             ))}
           </select>
-          <input
-            type="number"
+          <NumberInput
             step="any"
             placeholder="Quantity"
             className="input-field"

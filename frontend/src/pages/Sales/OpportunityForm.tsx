@@ -15,6 +15,7 @@ import {
 ,
   UserIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Customer {
   id: number
@@ -354,8 +355,7 @@ const OpportunityForm = () => {
                 <BanknotesIcon className="h-4 w-4 inline mr-1" />
                 Opportunity Value (Rp)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 className="input w-full"
                 placeholder="0"
                 min="0"
@@ -370,8 +370,7 @@ const OpportunityForm = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Probability (%)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 className="input w-full"
                 placeholder="0"
                 min="0"

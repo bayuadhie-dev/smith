@@ -11,6 +11,7 @@ import {
   ExclamationTriangleIcon
 
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 export default function OEERecordForm() {
   const { t } = useLanguage();
   const navigate = useNavigate()
@@ -192,8 +193,7 @@ export default function OEERecordForm() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('production.work_order')} ID
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="work_order_id"
                     value={formData.work_order_id}
                     onChange={handleInputChange}
@@ -244,8 +244,7 @@ export default function OEERecordForm() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('oee.planned_production_time')} *
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="planned_production_time"
                     value={formData.planned_production_time}
                     onChange={handleInputChange}
@@ -259,8 +258,7 @@ export default function OEERecordForm() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('oee.downtime')} (min)
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="downtime"
                     value={formData.downtime}
                     onChange={handleInputChange}
@@ -273,8 +271,7 @@ export default function OEERecordForm() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('oee.actual_production_time')} (min)
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="actual_production_time"
                     value={formData.actual_production_time}
                     onChange={handleInputChange}
@@ -296,8 +293,7 @@ export default function OEERecordForm() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('oee.ideal_cycle_time')} (sec/unit)
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     step="0.01"
                     name="ideal_cycle_time"
                     value={formData.ideal_cycle_time}
@@ -311,8 +307,7 @@ export default function OEERecordForm() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('production.actual_quantity')}
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput currency
                     name="total_pieces_produced"
                     value={formData.total_pieces_produced}
                     onChange={handleInputChange}
@@ -325,8 +320,7 @@ export default function OEERecordForm() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('production.good_quantity')}
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="good_pieces"
                     value={formData.good_pieces}
                     onChange={handleInputChange}
@@ -339,8 +333,7 @@ export default function OEERecordForm() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     {t('production.rejected_pieces')}
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="rejected_pieces"
                     value={formData.rejected_pieces}
                     onChange={handleInputChange}
@@ -404,8 +397,7 @@ export default function OEERecordForm() {
                         <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                           {t('common.quantity')} (min)
                         </label>
-                        <input
-                          type="number"
+                        <NumberInput
                           value={record.duration_minutes}
                           onChange={(e) => handleDowntimeChange(index, 'duration_minutes', e.target.value)}
                           className="input text-sm"

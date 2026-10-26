@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 import { ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface FormData {
   asset_name: string;
@@ -324,8 +325,7 @@ const AssetForm: React.FC = () => {
               <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
                 Harga Perolehan <span className="text-red-500">*</span>
               </label>
-              <input
-                type="number"
+              <NumberInput currency
                 name="purchase_cost"
                 value={formData.purchase_cost}
                 onChange={handleChange}
@@ -361,8 +361,7 @@ const AssetForm: React.FC = () => {
               <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
                 Masa Manfaat (Tahun) <span className="text-red-500">*</span>
               </label>
-              <input
-                type="number"
+              <NumberInput
                 name="useful_life_years"
                 value={formData.useful_life_years}
                 onChange={handleChange}
@@ -376,8 +375,7 @@ const AssetForm: React.FC = () => {
               <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
                 Nilai Sisa (Salvage)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 name="salvage_value"
                 value={formData.salvage_value}
                 onChange={handleChange}
@@ -407,8 +405,7 @@ const AssetForm: React.FC = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Masa Manfaat Fiskal (Tahun)</label>
-                <input
-                  type="number"
+                <NumberInput
                   name="tax_useful_life_years"
                   value={formData.tax_useful_life_years}
                   onChange={handleChange}
@@ -455,8 +452,7 @@ const AssetForm: React.FC = () => {
                 <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
                   Kapasitas
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="capacity"
                   value={formData.capacity}
                   onChange={handleChange}
@@ -469,8 +465,7 @@ const AssetForm: React.FC = () => {
                 <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
                   Kecepatan (pcs/jam)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="speed"
                   value={formData.speed}
                   onChange={handleChange}

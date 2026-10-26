@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
 import toast from 'react-hot-toast'
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Vendor {
   id: number
@@ -255,7 +256,7 @@ export default function OutsourcingVendorList() {
                 </div>
                 <div>
                   <label className={labelClass}>Fee Manajemen (%)</label>
-                  <input type="number" step="0.01" className={inputClass} value={formData.management_fee_percent}
+                  <NumberInput step="0.01" className={inputClass} value={formData.management_fee_percent}
                     onChange={e => setFormData({...formData, management_fee_percent: e.target.value})} />
                 </div>
               </div>

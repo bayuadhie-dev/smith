@@ -11,6 +11,7 @@ import {
 } from '../../services/api';
 import axiosInstance from '../../utils/axiosConfig';
 import { CalculatorIcon, CheckCircleIcon } from '@heroicons/react/24/outline'; 
+import NumberInput from '../../components/ui/NumberInput'
 interface ProductFormData {
   code: string
   name: string
@@ -246,8 +247,7 @@ const { id } = useParams()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Price (IDR)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput currency
                       step="0.01"
                       {...register('price')}
                       className="input-field"
@@ -259,8 +259,7 @@ const { id } = useParams()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Cost (IDR)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput currency
                       step="0.01"
                       {...register('cost')}
                       className="input-field"
@@ -302,8 +301,7 @@ const { id } = useParams()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       GSM (Grams per Square Meter)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       step="0.01"
                       {...register('gsm')}
                       className="input-field"
@@ -315,8 +313,7 @@ const { id } = useParams()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Width (cm)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       step="0.01"
                       {...register('width_cm')}
                       className="input-field"
@@ -328,8 +325,7 @@ const { id } = useParams()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Length (m)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       step="0.01"
                       {...register('length_m')}
                       className="input-field"
@@ -341,8 +337,7 @@ const { id } = useParams()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Thickness (mm)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       step="0.001"
                       {...register('thickness_mm')}
                       className="input-field"
@@ -365,8 +360,7 @@ const { id } = useParams()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Weight per Sheet (g)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       step="0.001"
                       {...register('weight_per_sheet_g')}
                       className="input-field"
@@ -560,8 +554,7 @@ const { id } = useParams()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Sheets per Pack
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       {...register('sheets_per_pack')}
                       className="input-field"
                       placeholder="e.g., 80"
@@ -572,8 +565,7 @@ const { id } = useParams()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Packs per Karton
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       {...register('packs_per_karton')}
                       className="input-field"
                       placeholder="e.g., 12"
@@ -584,8 +576,7 @@ const { id } = useParams()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Sheets per Karton (Auto)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       value={sheetsPerPack && packsPerKarton ? sheetsPerPack * packsPerKarton : ''}
                       disabled
                       className="input-field bg-gray-50 dark:bg-gray-900"
@@ -597,8 +588,7 @@ const { id } = useParams()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Pack Weight (kg)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       step="0.001"
                       {...register('pack_weight_kg')}
                       className="input-field"
@@ -610,8 +600,7 @@ const { id } = useParams()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Karton Weight (kg)
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       step="0.001"
                       {...register('karton_weight_kg')}
                       className="input-field"

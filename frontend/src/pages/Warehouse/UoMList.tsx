@@ -12,6 +12,7 @@ import {
   ChevronDownIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface UnitOfMeasure {
   id: number;
@@ -510,8 +511,7 @@ const UoMList: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Faktor Konversi * <span className="text-gray-400 font-normal">(1 dari = X ke)</span>
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   step="any"
                   value={conversionForm.conversion_factor}
                   onChange={(e) => setConversionForm({ ...conversionForm, conversion_factor: e.target.value })}
@@ -522,8 +522,7 @@ const UoMList: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Material ID <span className="text-gray-400 font-normal">(opsional)</span></label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={conversionForm.material_id}
                     onChange={(e) => setConversionForm({ ...conversionForm, material_id: e.target.value })}
                     placeholder="Kosong = global"
@@ -532,8 +531,7 @@ const UoMList: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product ID <span className="text-gray-400 font-normal">(opsional)</span></label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={conversionForm.product_id}
                     onChange={(e) => setConversionForm({ ...conversionForm, product_id: e.target.value })}
                     placeholder="Kosong = global"

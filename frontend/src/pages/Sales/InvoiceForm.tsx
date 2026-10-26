@@ -17,6 +17,7 @@ import {
   TrashIcon as Trash2,
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface Customer {
   id: number;
   company_name: string;
@@ -562,8 +563,7 @@ const InvoiceForm: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Quantity *
                       </label>
-                      <input
-                        type="number"
+                      <NumberInput
                         value={item.quantity}
                         onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
                         required
@@ -577,8 +577,7 @@ const InvoiceForm: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Unit Price *
                       </label>
-                      <input
-                        type="number"
+                      <NumberInput currency
                         value={item.unit_price}
                         onChange={(e) => handleItemChange(index, 'unit_price', e.target.value)}
                         required
@@ -592,8 +591,7 @@ const InvoiceForm: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Discount (%)
                       </label>
-                      <input
-                        type="number"
+                      <NumberInput
                         value={item.discount_percent}
                         onChange={(e) => handleItemChange(index, 'discount_percent', e.target.value)}
                         min="0"
@@ -607,8 +605,7 @@ const InvoiceForm: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Tax (%)
                       </label>
-                      <input
-                        type="number"
+                      <NumberInput
                         value={item.tax_percent}
                         onChange={(e) => handleItemChange(index, 'tax_percent', e.target.value)}
                         min="0"

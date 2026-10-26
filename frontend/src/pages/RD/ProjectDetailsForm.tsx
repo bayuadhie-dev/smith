@@ -13,6 +13,7 @@ import {
   ViewfinderCircleIcon as Target,
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface ProjectFormData {
   project_number: string;
   title: string;
@@ -479,8 +480,7 @@ const ProjectDetailsForm: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Budget Allocated</label>
-                <input
-                  type="number"
+                <NumberInput currency
                   value={formData.budget_allocated}
                   onChange={(e) => setFormData(prev => ({ ...prev, budget_allocated: parseFloat(e.target.value) || 0 }))}
                   min="0"
@@ -490,8 +490,7 @@ const ProjectDetailsForm: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Budget Spent</label>
-                <input
-                  type="number"
+                <NumberInput currency
                   value={formData.budget_spent}
                   onChange={(e) => setFormData(prev => ({ ...prev, budget_spent: parseFloat(e.target.value) || 0 }))}
                   min="0"

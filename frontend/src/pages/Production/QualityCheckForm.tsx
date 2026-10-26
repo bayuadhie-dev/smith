@@ -16,6 +16,7 @@ import {
   XCircleIcon as XCircle,
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface Product {
   id: number;
   name: string;
@@ -310,8 +311,7 @@ const QualityCheckForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Sample Size *
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="sample_size"
                   value={formData.sample_size}
                   onChange={handleInputChange}
@@ -326,8 +326,7 @@ const QualityCheckForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Defect Count
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="defect_count"
                   value={formData.defect_count}
                   onChange={handleInputChange}

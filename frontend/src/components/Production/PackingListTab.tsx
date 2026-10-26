@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import NumberInput from '../ui/NumberInput'
 
 interface PackingListItem {
   id: number;
@@ -357,8 +358,7 @@ export default function PackingListTab({
                     {item.batch_mixing || '-'}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
-                    <input
-                      type="number"
+                    <NumberInput
                       step="0.001"
                       min="0"
                       value={editedItems[item.id]?.weight_kg ?? item.weight_kg ?? ''}
@@ -482,8 +482,7 @@ export default function PackingListTab({
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Nomor Karton Awal
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   min="1"
                   max="10000"
                   value={startCartonNumber}

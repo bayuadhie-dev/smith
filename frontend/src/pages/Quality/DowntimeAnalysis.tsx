@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface DowntimeReason {
   reason: string;
@@ -438,8 +439,7 @@ const DowntimeAnalysis: React.FC = () => {
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Frekuensi</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={editingRecord.occurrence_count}
                     onChange={(e) => setEditingRecord({...editingRecord, occurrence_count: parseInt(e.target.value) || 0})}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg"
@@ -447,8 +447,7 @@ const DowntimeAnalysis: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Total Menit</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={editingRecord.total_minutes}
                     onChange={(e) => setEditingRecord({...editingRecord, total_minutes: parseInt(e.target.value) || 0})}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg"
@@ -456,8 +455,7 @@ const DowntimeAnalysis: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Persentase (%)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     step="0.1"
                     value={editingRecord.percentage}
                     onChange={(e) => setEditingRecord({...editingRecord, percentage: parseFloat(e.target.value) || 0})}

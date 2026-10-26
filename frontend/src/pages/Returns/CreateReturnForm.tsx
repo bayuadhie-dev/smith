@@ -9,6 +9,7 @@ import {
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface ReturnItem {
   id: string
   product_id: number
@@ -126,8 +127,7 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Customer ID *
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.customer_id}
                 onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -139,8 +139,7 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Sales Order ID (Optional)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 value={formData.sales_order_id}
                 onChange={(e) => setFormData({ ...formData, sales_order_id: e.target.value })}
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -241,8 +240,7 @@ const navigate = useNavigate()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Product ID *
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       value={item.product_id || ''}
                       onChange={(e) => updateItem(item.id, 'product_id', parseInt(e.target.value) || 0)}
                       className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -254,8 +252,7 @@ const navigate = useNavigate()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Quantity Returned *
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       value={item.quantity_returned}
                       onChange={(e) => updateItem(item.id, 'quantity_returned', parseInt(e.target.value) || 1)}
                       className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -268,8 +265,7 @@ const navigate = useNavigate()
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Unit Price *
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput currency
                       step="0.01"
                       value={item.unit_price}
                       onChange={(e) => updateItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)}

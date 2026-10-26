@@ -15,6 +15,7 @@ import { formatRupiah } from '../../utils/currencyUtils';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { confirmDialog, showError, showSuccess } from '../../components/ui';
 import SearchableSelect from '../../components/SearchableSelect';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface BOMItem {
   id: number;
@@ -662,8 +663,7 @@ const BOMManagement: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t('common.quantity')}</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     step="0.01"
                     value={itemForm.quantity}
                     onChange={(e) => setItemForm({...itemForm, quantity: parseFloat(e.target.value) || 0})}
@@ -674,8 +674,7 @@ const BOMManagement: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Waste Percentage</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     step="0.1"
                     value={itemForm.scrap_percent}
                     onChange={(e) => setItemForm({...itemForm, scrap_percent: parseFloat(e.target.value) || 0})}

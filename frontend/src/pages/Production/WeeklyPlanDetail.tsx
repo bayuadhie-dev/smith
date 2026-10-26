@@ -16,6 +16,7 @@ import {
   PlayIcon,
   ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface PlanItem {
   id: number;
@@ -473,8 +474,7 @@ const WeeklyPlanDetail: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Quantity *</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={formData.planned_quantity}
                     onChange={(e) => setFormData({ ...formData, planned_quantity: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"

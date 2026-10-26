@@ -17,6 +17,7 @@ import {
   useUpdateWarehouseZoneMutation,
   useDeleteWarehouseZoneMutation
 } from '../../services/api';
+import NumberInput from '../../components/ui/NumberInput'
 export default function WarehouseZones() {
     const { t } = useLanguage();
 
@@ -304,8 +305,7 @@ const [showModal, setShowModal] = useState(false)
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Capacity</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     step="0.01"
                     value={formData.capacity}
                     onChange={(e) => handleInputChange('capacity', e.target.value)}

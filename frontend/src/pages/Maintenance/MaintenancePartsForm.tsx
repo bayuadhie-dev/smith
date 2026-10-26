@@ -11,6 +11,7 @@ import {
   TrashIcon as Trash2,
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface PartsFormData {
   request_number: string;
   machine_id: number;
@@ -485,8 +486,7 @@ const MaintenancePartsForm: React.FC = () => {
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           Quantity Requested *
                         </label>
-                        <input
-                          type="number"
+                        <NumberInput
                           value={part.quantity_requested}
                           onChange={(e) => updatePart(index, 'quantity_requested', parseInt(e.target.value) || 0)}
                           required
@@ -497,8 +497,7 @@ const MaintenancePartsForm: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('products.bom.unit_cost')}</label>
-                        <input
-                          type="number"
+                        <NumberInput currency
                           value={part.unit_cost}
                           onChange={(e) => updatePart(index, 'unit_cost', parseFloat(e.target.value) || 0)}
                           min="0"

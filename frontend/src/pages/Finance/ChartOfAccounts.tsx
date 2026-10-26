@@ -15,6 +15,7 @@ import {
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Account {
   id: number
@@ -539,8 +540,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   {editingAccount ? 'Current Balance' : 'Opening Balance'}
                 </label>
-                <input 
-                  type="number" 
+                <NumberInput currency 
                   className="input w-full" 
                   placeholder="0"
                   value={formData.balance}

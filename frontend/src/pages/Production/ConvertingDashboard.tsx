@@ -14,6 +14,7 @@ import {
   TrashIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface ShiftData {
   id: number;
@@ -618,8 +619,7 @@ const ConvertingDashboard: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5">Grade A (Good)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={editForm.grade_a || ''}
                     onChange={(e) => setEditForm(prev => ({ ...prev, grade_a: Number(e.target.value) }))}
                     className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
@@ -629,8 +629,7 @@ const ConvertingDashboard: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5">Grade B/C (Reject)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={editForm.grade_b || ''}
                     onChange={(e) => setEditForm(prev => ({ ...prev, grade_b: Number(e.target.value) }))}
                     className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
@@ -639,8 +638,7 @@ const ConvertingDashboard: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5">Loss (kg)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     step="0.01"
                     value={editForm.loss_kg || ''}
                     onChange={(e) => setEditForm(prev => ({ ...prev, loss_kg: Number(e.target.value) }))}
@@ -650,8 +648,7 @@ const ConvertingDashboard: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5">Production Hour (menit)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={editForm.production_hour_minutes || ''}
                     onChange={(e) => setEditForm(prev => ({ ...prev, production_hour_minutes: Number(e.target.value) }))}
                     className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
@@ -660,8 +657,7 @@ const ConvertingDashboard: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5">Speed Mesin</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     step="0.1"
                     value={editForm.machine_speed || ''}
                     onChange={(e) => setEditForm(prev => ({ ...prev, machine_speed: Number(e.target.value) }))}
@@ -722,8 +718,7 @@ const ConvertingDashboard: React.FC = () => {
                           </div>
 
                           <div className="w-24">
-                            <input
-                              type="number"
+                            <NumberInput
                               value={entry.duration_minutes || ''}
                               onChange={(e) => updateEditDowntime(entry.id, 'duration_minutes', Number(e.target.value))}
                               className="w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-center bg-white"
@@ -734,8 +729,7 @@ const ConvertingDashboard: React.FC = () => {
                           </div>
 
                           <div className="w-16">
-                            <input
-                              type="number"
+                            <NumberInput
                               value={entry.frequency || ''}
                               onChange={(e) => updateEditDowntime(entry.id, 'frequency', Number(e.target.value))}
                               className="w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-center bg-white"

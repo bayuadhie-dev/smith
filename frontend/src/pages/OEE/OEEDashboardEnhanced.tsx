@@ -12,6 +12,7 @@ import {
   ExclamationCircleIcon, ArrowRightIcon, ClipboardDocumentCheckIcon, FireIcon, BeakerIcon
 } from '@heroicons/react/24/outline';
 import { useGetOEEDashboardQuery, useGetOEEAlertsQuery, useAcknowledgeAlertMutation, useResolveAlertMutation } from '../../services/api'
+import NumberInput from '../../components/ui/NumberInput'
 
 // Downtime categories with RCA templates
 const DOWNTIME_CATEGORIES: Record<string, any> = {
@@ -825,8 +826,7 @@ export default function OEEDashboardEnhanced() {
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   <CogIcon className="h-4 w-4 text-red-500" /> Downtime Mesin (menit)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   min="0"
                   value={editForm.downtime_mesin}
                   onChange={(e) => setEditForm({ ...editForm, downtime_mesin: parseInt(e.target.value) || 0 })}
@@ -840,8 +840,7 @@ export default function OEEDashboardEnhanced() {
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   <UserIcon className="h-4 w-4 text-orange-500" /> Downtime Operator (menit)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   min="0"
                   value={editForm.downtime_operator}
                   onChange={(e) => setEditForm({ ...editForm, downtime_operator: parseInt(e.target.value) || 0 })}
@@ -855,8 +854,7 @@ export default function OEEDashboardEnhanced() {
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   <CubeIcon className="h-4 w-4 text-yellow-500" /> Downtime Material (menit)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   min="0"
                   value={editForm.downtime_material}
                   onChange={(e) => setEditForm({ ...editForm, downtime_material: parseInt(e.target.value) || 0 })}
@@ -870,8 +868,7 @@ export default function OEEDashboardEnhanced() {
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   <PaintBrushIcon className="h-4 w-4 text-blue-500" /> Downtime Design Change (menit)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   min="0"
                   value={editForm.downtime_design}
                   onChange={(e) => setEditForm({ ...editForm, downtime_design: parseInt(e.target.value) || 0 })}
@@ -885,8 +882,7 @@ export default function OEEDashboardEnhanced() {
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   <EllipsisHorizontalIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" /> Downtime Lainnya (menit)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   min="0"
                   value={editForm.downtime_others}
                   onChange={(e) => setEditForm({ ...editForm, downtime_others: parseInt(e.target.value) || 0 })}

@@ -15,6 +15,7 @@ import {
   XCircleIcon as XCircle,
   XMarkIcon as X
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface Employee {
   id: number;
   employee_number: string;
@@ -445,8 +446,7 @@ const AttendanceForm: React.FC = () => {
                     <Timer className="inline h-4 w-4 mr-1" />
                     Regular Hours
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="worked_hours"
                     value={formData.worked_hours}
                     onChange={handleInputChange}
@@ -461,8 +461,7 @@ const AttendanceForm: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Overtime Hours
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     name="overtime_hours"
                     value={formData.overtime_hours}
                     onChange={handleInputChange}

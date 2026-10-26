@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import SearchableSelect from '../SearchableSelect';
 import axiosInstance from '../../utils/axiosConfig';
+import NumberInput from '../ui/NumberInput'
 
 interface Location {
   id: number;
@@ -228,8 +229,7 @@ const QuickStockInputModal: React.FC<QuickStockInputModalProps> = ({
                   Quantity <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <input
-                    type="number"
+                  <NumberInput
                     step="0.01"
                     min="0.01"
                     value={formData.quantity}

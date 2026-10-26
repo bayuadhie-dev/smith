@@ -6,6 +6,7 @@ import {
   CheckIcon, XMarkIcon, ArrowPathIcon, DocumentCheckIcon,
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import NumberInput from '../../components/ui/NumberInput'
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700' },
@@ -417,8 +418,7 @@ export default function PRForm() {
                 />
               </div>
               <div className="col-span-1">
-                <input
-                  type="number"
+                <NumberInput
                   value={item.quantity}
                   onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
                   disabled={!isEditable}
@@ -438,8 +438,7 @@ export default function PRForm() {
                 />
               </div>
               <div className="col-span-2">
-                <input
-                  type="number"
+                <NumberInput currency
                   value={item.estimated_unit_price}
                   onChange={(e) => updateItem(idx, 'estimated_unit_price', e.target.value)}
                   disabled={!isEditable}

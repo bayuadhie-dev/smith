@@ -14,6 +14,7 @@ import {
   XMarkIcon as X
 
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface WorkOrderFormData {
   work_order_number: string;
   title: string;
@@ -419,8 +420,7 @@ const MaintenanceWorkOrderForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Estimated Hours
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   value={formData.estimated_hours}
                   onChange={(e) => setFormData(prev => ({ ...prev, estimated_hours: parseFloat(e.target.value) || 0 }))}
                   min="0"
@@ -433,8 +433,7 @@ const MaintenanceWorkOrderForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Estimated Labor Cost
                 </label>
-                <input
-                  type="number"
+                <NumberInput currency
                   value={formData.estimated_cost}
                   onChange={(e) => setFormData(prev => ({ ...prev, estimated_cost: parseFloat(e.target.value) || 0 }))}
                   min="0"
@@ -474,8 +473,7 @@ const MaintenanceWorkOrderForm: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.quantity')}</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={part.quantity}
                     onChange={(e) => updatePart(index, 'quantity', parseInt(e.target.value) || 0)}
                     min="1"
@@ -484,8 +482,7 @@ const MaintenanceWorkOrderForm: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('products.bom.unit_cost')}</label>
-                  <input
-                    type="number"
+                  <NumberInput currency
                     value={part.unit_cost}
                     onChange={(e) => updatePart(index, 'unit_cost', parseFloat(e.target.value) || 0)}
                     min="0"
@@ -543,8 +540,7 @@ const MaintenanceWorkOrderForm: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Est. Time (hrs)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={task.estimated_time}
                     onChange={(e) => updateTask(index, 'estimated_time', parseFloat(e.target.value) || 0)}
                     min="0"

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import axiosInstance from '../../utils/axiosConfig';
 import { showError, showWarning } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface User {
   id: number;
@@ -352,8 +353,7 @@ const RNDProjectForm: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Estimasi Budget (Rp)
               </label>
-              <input
-                type="number"
+              <NumberInput currency
                 value={formData.estimated_budget}
                 onChange={(e) => setFormData({ ...formData, estimated_budget: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"

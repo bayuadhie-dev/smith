@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Clock, Plus, Pencil, Trash2, Users, Loader2, X } from 'lucide-react';
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog, showError } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface WorkSchedule {
   id: number;
@@ -248,8 +249,7 @@ const WorkScheduleManagement: React.FC = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Toleransi Terlambat (menit)</label>
-                <input
-                  type="number" value={form.late_tolerance_minutes}
+                <NumberInput value={form.late_tolerance_minutes}
                   onChange={e => setForm(p => ({ ...p, late_tolerance_minutes: parseInt(e.target.value) || 0 }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                 />

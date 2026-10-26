@@ -4,6 +4,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import { useLanguage } from '../../contexts/LanguageContext';
 import SearchableSelect from '../../components/SearchableSelect';
 import { showSuccess, showError } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Material {
   id: number;
@@ -307,8 +308,7 @@ const MaterialStockManagement: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                     Quantity * ({selectedMaterial.uom})
                   </label>
-                  <input
-                    type="number"
+                  <NumberInput
                     step="0.01"
                     required
                     value={addStockForm.quantity}

@@ -6,6 +6,7 @@ import {
   BanknotesIcon, XMarkIcon,
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import NumberInput from '../../components/ui/NumberInput'
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700' },
@@ -248,8 +249,7 @@ export default function InvoiceList() {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah Bayar (Rp)</label>
-                <input
-                  type="number"
+                <NumberInput currency
                   value={payAmount}
                   onChange={e => setPayAmount(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white"

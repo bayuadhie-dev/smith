@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { showError, showSuccess } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 const NonwovenCalculator: React.FC = () => {
   const { t } = useLanguage();
 
@@ -138,8 +139,7 @@ const NonwovenCalculator: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Width (cm)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={gsmInputs.width_cm}
                     onChange={(e) => setGsmInputs({...gsmInputs, width_cm: e.target.value})}
@@ -148,8 +148,7 @@ const NonwovenCalculator: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Length (m)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={gsmInputs.length_m}
                     onChange={(e) => setGsmInputs({...gsmInputs, length_m: e.target.value})}
@@ -158,8 +157,7 @@ const NonwovenCalculator: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Weight (g)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={gsmInputs.weight_g}
                     onChange={(e) => setGsmInputs({...gsmInputs, weight_g: e.target.value})}
@@ -182,8 +180,7 @@ const NonwovenCalculator: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">GSM</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={sheetWeightInputs.gsm}
                     onChange={(e) => setSheetWeightInputs({...sheetWeightInputs, gsm: e.target.value})}
@@ -192,8 +189,7 @@ const NonwovenCalculator: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Width (cm)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={sheetWeightInputs.width_cm}
                     onChange={(e) => setSheetWeightInputs({...sheetWeightInputs, width_cm: e.target.value})}
@@ -202,8 +198,7 @@ const NonwovenCalculator: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Length (cm)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={sheetWeightInputs.length_cm}
                     onChange={(e) => setSheetWeightInputs({...sheetWeightInputs, length_cm: e.target.value})}
@@ -226,8 +221,7 @@ const NonwovenCalculator: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Sheets per Pack</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={packagingInputs.sheets_per_pack}
                     onChange={(e) => setPackagingInputs({...packagingInputs, sheets_per_pack: e.target.value})}
@@ -236,8 +230,7 @@ const NonwovenCalculator: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Packs per Karton</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={packagingInputs.packs_per_karton}
                     onChange={(e) => setPackagingInputs({...packagingInputs, packs_per_karton: e.target.value})}
@@ -260,8 +253,7 @@ const NonwovenCalculator: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Value</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={uomInputs.value}
                     onChange={(e) => setUomInputs({...uomInputs, value: e.target.value})}

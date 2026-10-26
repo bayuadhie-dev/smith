@@ -10,6 +10,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig'
 import { showError, showSuccess } from '../../components/ui'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import NumberInput from '../../components/ui/NumberInput'
 interface ProductionRecordFormData {
   work_order_id: number
   product_id?: number
@@ -402,8 +403,7 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Quantity Produced *
               </label>
-              <input
-                type="number"
+              <NumberInput
                 {...register('quantity_produced', { 
                   required: 'Quantity produced is required',
                   min: { value: 0, message: 'Must be positive' }
@@ -420,8 +420,7 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Good Quantity *
               </label>
-              <input
-                type="number"
+              <NumberInput
                 {...register('quantity_good', { 
                   required: 'Good quantity is required',
                   min: { value: 0, message: 'Must be positive' }
@@ -438,8 +437,7 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Scrap Quantity
               </label>
-              <input
-                type="number"
+              <NumberInput
                 {...register('quantity_scrap', { min: { value: 0, message: 'Must be positive' } })}
                 className="input"
                 placeholder="0"
@@ -472,8 +470,7 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Downtime (minutes)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 {...register('downtime_minutes', { min: { value: 0, message: 'Must be positive' } })}
                 className="input"
                 placeholder="0"

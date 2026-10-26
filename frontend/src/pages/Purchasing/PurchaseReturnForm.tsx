@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { ArrowLeftIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface ReturnLine {
   invoice_item_id: number;
@@ -273,8 +274,7 @@ export default function PurchaseReturnForm() {
                       {line.max_quantity} {line.uom}
                     </td>
                     <td className="px-3 py-3 text-right">
-                      <input
-                        type="number"
+                      <NumberInput
                         min={0}
                         max={line.max_quantity}
                         value={line.quantity}

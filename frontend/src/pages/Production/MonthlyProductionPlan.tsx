@@ -19,6 +19,7 @@ import {
   ExclamationTriangleIcon,
   DocumentTextIcon,
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface MonthlySchedule {
   id: number;
@@ -616,8 +617,7 @@ const MonthlyProductionPlan: React.FC = () => {
                   Target (CTN) <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
-                  <input
-                    type="number"
+                  <NumberInput
                     value={formData.target_ctn}
                     onChange={(e) => setFormData({ ...formData, target_ctn: e.target.value })}
                     className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"

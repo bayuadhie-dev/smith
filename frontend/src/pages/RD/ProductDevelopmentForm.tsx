@@ -8,6 +8,7 @@ import {
   CalendarDaysIcon,
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Project {
   id: number;
@@ -229,7 +230,7 @@ const ProductDevelopmentForm: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Development Cost (Rp)</label>
               <div className="relative">
                 <CurrencyDollarIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input type="number" name="development_cost" value={formData.development_cost} onChange={handleChange} min="0"
+                <NumberInput currency name="development_cost" value={formData.development_cost} onChange={handleChange} min="0"
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" />
               </div>
             </div>
@@ -238,7 +239,7 @@ const ProductDevelopmentForm: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Target Price (Rp)</label>
               <div className="relative">
                 <CurrencyDollarIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input type="number" name="target_price" value={formData.target_price} onChange={handleChange} min="0"
+                <NumberInput currency name="target_price" value={formData.target_price} onChange={handleChange} min="0"
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" />
               </div>
             </div>

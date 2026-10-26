@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog, showSuccess, showError } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 interface MaintenanceSchedule {
   id: number;
   schedule_number: string;
@@ -401,8 +402,7 @@ const MaintenanceSchedule: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Frequency Value</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={formData.frequency_value}
                     onChange={(e) => setFormData({...formData, frequency_value: parseInt(e.target.value)})}
                     className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
@@ -424,8 +424,7 @@ const MaintenanceSchedule: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Estimated Duration (hours)</label>
-                  <input
-                    type="number"
+                  <NumberInput
                     value={formData.estimated_duration_hours}
                     onChange={(e) => setFormData({...formData, estimated_duration_hours: parseInt(e.target.value)})}
                     className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"

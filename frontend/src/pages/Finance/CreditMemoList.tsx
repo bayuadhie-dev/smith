@@ -4,6 +4,7 @@ import { formatRupiah } from '../../utils/currencyUtils';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { showSuccess, showError, confirmDialog } from '../../components/ui';
 import { ReceiptRefundIcon } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Memo {
   id: number;
@@ -204,7 +205,7 @@ const CreditMemoList: React.FC = () => {
             )}
             <div>
               <label className="block text-sm mb-1">Jumlah (Rp)</label>
-              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="border rounded px-3 py-2 w-full" />
+              <NumberInput currency value={amount} onChange={(e) => setAmount(e.target.value)} className="border rounded px-3 py-2 w-full" />
             </div>
             {(active.applications || []).length > 0 && (
               <div className="text-xs space-y-1">

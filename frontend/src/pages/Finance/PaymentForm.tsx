@@ -9,6 +9,7 @@ import {
   CreditCardIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Party {
   id: number;
@@ -393,8 +394,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                   Faktur yang dilunasi (centang satu atau lebih)
                 </label>
                 <div className="flex gap-2 mb-2">
-                  <input
-                    type="number"
+                  <NumberInput currency
                     className="input w-56"
                     placeholder="Nilai pembayaran (opsional)"
                     value={distributeAmount}
@@ -442,8 +442,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                               <td className="p-2 text-right">Rp{inv.total_amount.toLocaleString('id-ID')}</td>
                               <td className="p-2 text-right">Rp{inv.balance_due.toLocaleString('id-ID')}</td>
                               <td className="p-2">
-                                <input
-                                  type="number"
+                                <NumberInput
                                   className="input w-full text-right"
                                   disabled={!checked}
                                   max={inv.balance_due}
@@ -490,8 +489,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                         value={l.description}
                         onChange={(e) => updateLine(idx, { description: e.target.value })}
                       />
-                      <input
-                        type="number"
+                      <NumberInput currency
                         className="input col-span-2 text-right"
                         placeholder="Nilai"
                         value={l.amount}

@@ -28,6 +28,7 @@ import {
   PhoneIcon,
   UserIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 const CustomerDetails: React.FC = () => {
   const { t } = useLanguage();
 
@@ -346,7 +347,7 @@ function PricingConditionsManager({ customerId }: { customerId: number }) {
           <option value="percentage">Persen %</option>
           <option value="fixed_amount">Nominal Rp</option>
         </select>
-        <input type="number" className="input-field w-28" placeholder="Nilai" value={value} onChange={(e) => setValue(e.target.value)} />
+        <NumberInput currency className="input-field w-28" placeholder="Nilai" value={value} onChange={(e) => setValue(e.target.value)} />
         <button className="btn-secondary" disabled={creating} onClick={handleAdd}>
           Tambah
         </button>
@@ -441,17 +442,17 @@ function CustomerMaterialInfoManager({ customerId }: { customerId: number }) {
         </div>
         <div>
           <label className="block text-xs text-gray-500 mb-1">Harga Khusus</label>
-          <input type="number" className="input-field" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Rp" />
+          <NumberInput currency className="input-field" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Rp" />
         </div>
         <div>
           <label className="block text-xs text-gray-500 mb-1">MOQ</label>
-          <input type="number" className="input-field" value={moq} onChange={(e) => setMoq(e.target.value)} />
+          <NumberInput className="input-field" value={moq} onChange={(e) => setMoq(e.target.value)} />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-5 gap-2 items-end mt-2">
         <div>
           <label className="block text-xs text-gray-500 mb-1">Lead Time (hari)</label>
-          <input type="number" className="input-field" value={leadTime} onChange={(e) => setLeadTime(e.target.value)} />
+          <NumberInput className="input-field" value={leadTime} onChange={(e) => setLeadTime(e.target.value)} />
         </div>
         <button className="btn-secondary" disabled={creating} onClick={handleAdd}>
           Tambah

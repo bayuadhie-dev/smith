@@ -15,6 +15,7 @@ import {
   MapPinIcon,
   StarIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface User {
   id: number;
   full_name: string;
@@ -296,8 +297,7 @@ const LeadForm: React.FC = () => {
               </label>
               <div className="relative">
                 <BanknotesIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="number"
+                <NumberInput currency
                   name="annual_revenue"
                   value={formData.annual_revenue}
                   onChange={handleInputChange}
@@ -542,8 +542,7 @@ const LeadForm: React.FC = () => {
               </label>
               <div className="relative">
                 <BanknotesIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="number"
+                <NumberInput currency
                   name="budget"
                   value={formData.budget}
                   onChange={handleInputChange}

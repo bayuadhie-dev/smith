@@ -16,6 +16,7 @@ import {
   XMarkIcon as X,
   CreditCardIcon as CreditCard
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 interface Employee {
   id: number;
   employee_number: string;
@@ -432,8 +433,7 @@ const PayrollForm: React.FC = () => {
                   <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
                   Basic Salary *
                 </label>
-                <input
-                  type="number"
+                <NumberInput currency
                   name="basic_salary"
                   value={formData.basic_salary}
                   onChange={handleInputChange}
@@ -447,8 +447,7 @@ const PayrollForm: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 </label>
-                <input
-                  type="number"
+                <NumberInput currency
                   name="allowances"
                   value={formData.allowances}
                   onChange={handleInputChange}
@@ -465,8 +464,7 @@ const PayrollForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Overtime Amount
                 </label>
-                <input
-                  type="number"
+                <NumberInput currency
                   name="overtime_amount"
                   value={formData.overtime_amount}
                   onChange={handleInputChange}
@@ -479,8 +477,7 @@ const PayrollForm: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 </label>
-                <input
-                  type="number"
+                <NumberInput currency
                   name="bonus"
                   value={formData.bonus}
                   onChange={handleInputChange}
@@ -493,8 +490,7 @@ const PayrollForm: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 </label>
-                <input
-                  type="number"
+                <NumberInput currency
                   name="commission"
                   value={formData.commission}
                   onChange={handleInputChange}
@@ -518,8 +514,7 @@ const PayrollForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Total Working Days
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="total_working_days"
                   value={formData.total_working_days}
                   onChange={handleInputChange}
@@ -533,8 +528,7 @@ const PayrollForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Days Worked
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="days_worked"
                   value={formData.days_worked}
                   onChange={handleInputChange}
@@ -548,8 +542,7 @@ const PayrollForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Days Absent
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="days_absent"
                   value={formData.days_absent}
                   onChange={handleInputChange}
@@ -563,8 +556,7 @@ const PayrollForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Overtime Hours
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="overtime_hours"
                   value={formData.overtime_hours}
                   onChange={handleInputChange}
@@ -588,8 +580,7 @@ const PayrollForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   PPh 21 (Progresif)
                 </label>
-                <input
-                  type="number"
+                <NumberInput currency
                   name="tax_deduction"
                   value={formData.tax_deduction}
                   onChange={handleInputChange}
@@ -603,8 +594,7 @@ const PayrollForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   BPJS Kesehatan (1%)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="insurance_deduction"
                   value={formData.insurance_deduction}
                   onChange={handleInputChange}
@@ -620,8 +610,7 @@ const PayrollForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   BPJS Ketenagakerjaan (2%)
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="pension_deduction"
                   value={formData.pension_deduction}
                   onChange={handleInputChange}
@@ -635,8 +624,7 @@ const PayrollForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Loan Deduction
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="loan_deduction"
                   value={formData.loan_deduction}
                   onChange={handleInputChange}
@@ -650,8 +638,7 @@ const PayrollForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Other Deductions
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="other_deductions"
                   value={formData.other_deductions}
                   onChange={handleInputChange}

@@ -9,6 +9,7 @@ import {
   CheckCircleIcon 
 } from '@heroicons/react/24/outline';
 import { showSuccess } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface Product {
   id: number;
@@ -417,8 +418,7 @@ const ProductionPlanningForm: React.FC = () => {
                 Planned Quantity <span className="text-red-500">*</span>
               </label>
               <div className="flex gap-2">
-                <input
-                  type="number"
+                <NumberInput
                   name="planned_quantity"
                   value={formData.planned_quantity}
                   onChange={handleInputChange}
@@ -588,8 +588,7 @@ const ProductionPlanningForm: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Estimated Duration (hours)
               </label>
-              <input
-                type="number"
+              <NumberInput
                 name="estimated_duration_hours"
                 value={formData.estimated_duration_hours}
                 onChange={handleInputChange}
@@ -603,8 +602,7 @@ const ProductionPlanningForm: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Required Operators
               </label>
-              <input
-                type="number"
+              <NumberInput
                 name="required_operators"
                 value={formData.required_operators}
                 onChange={handleInputChange}

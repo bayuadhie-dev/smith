@@ -14,6 +14,7 @@ import {
   ArrowLeftIcon,
   BuildingOfficeIcon
 } from '@heroicons/react/24/outline'
+import NumberInput from '../../components/ui/NumberInput'
 
 interface ReadyForShippingItem {
   work_order_id: number
@@ -631,8 +632,7 @@ export default function CreateShippingFromQC() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Jumlah Koli/Paket
                       </label>
-                      <input
-                        type="number"
+                      <NumberInput
                         name="number_of_packages"
                         value={formData.number_of_packages}
                         onChange={handleInputChange}
@@ -644,8 +644,7 @@ export default function CreateShippingFromQC() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Total Berat (kg)
                       </label>
-                      <input
-                        type="number"
+                      <NumberInput
                         name="total_weight"
                         value={formData.total_weight}
                         onChange={handleInputChange}
@@ -658,8 +657,7 @@ export default function CreateShippingFromQC() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Biaya Kirim (Rp)
                       </label>
-                      <input
-                        type="number"
+                      <NumberInput currency
                         name="shipping_cost"
                         value={formData.shipping_cost}
                         onChange={handleInputChange}

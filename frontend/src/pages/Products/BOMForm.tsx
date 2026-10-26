@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/24/outline';
 import SearchableSelect from '../../components/SearchableSelect';
 import { showSuccess } from '../../components/ui';
+import NumberInput from '../../components/ui/NumberInput'
 interface Product {
   id: number;
   code: string;
@@ -620,8 +621,7 @@ const BOMForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Pack per Carton *
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="pack_per_carton"
                   value={formData.pack_per_carton}
                   onChange={handleInputChange}
@@ -639,8 +639,7 @@ const BOMForm: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Batch Size (Cartons) *
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   name="batch_size"
                   value={formData.batch_size}
                   onChange={handleInputChange}
@@ -791,8 +790,7 @@ const BOMForm: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-2 py-3">
-                          <input
-                            type="number"
+                          <NumberInput
                             value={item.quantity}
                             onChange={(e) => updateBOMItem(index, 'quantity', Number(e.target.value))}
                             min="0"
@@ -814,8 +812,7 @@ const BOMForm: React.FC = () => {
                           </select>
                         </td>
                         <td className="px-2 py-3">
-                          <input
-                            type="number"
+                          <NumberInput
                             value={item.conversion_factor}
                             onChange={(e) => updateBOMItem(index, 'conversion_factor', Number(e.target.value))}
                             min="0.00000001"
@@ -839,8 +836,7 @@ const BOMForm: React.FC = () => {
                           Rp {item.total_cost.toLocaleString('id-ID')}
                         </td>
                         <td className="px-2 py-3">
-                          <input
-                            type="number"
+                          <NumberInput
                             value={item.scrap_percent}
                             onChange={(e) => updateBOMItem(index, 'scrap_percent', Number(e.target.value))}
                             min="0"

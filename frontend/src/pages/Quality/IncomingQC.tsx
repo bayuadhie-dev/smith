@@ -16,6 +16,7 @@ import {
   CubeIcon,
   CalendarIcon,
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface IncomingMaterial {
   id: number;
@@ -515,8 +516,7 @@ export default function IncomingQC() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Jumlah Sampel
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       min="1"
                       value={formData.sample_size}
                       onChange={(e) => setFormData(prev => ({ ...prev, sample_size: parseInt(e.target.value) || 0 }))}
@@ -527,8 +527,7 @@ export default function IncomingQC() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Defect Ditemukan
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       min="0"
                       value={formData.defect_found}
                       onChange={(e) => setFormData(prev => ({ ...prev, defect_found: parseInt(e.target.value) || 0 }))}

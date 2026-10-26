@@ -7,6 +7,7 @@ import {
   useRescoreEWSShiftMutation,
 } from '../../services/api'
 import { format, subDays } from 'date-fns'
+import NumberInput from '../../components/ui/NumberInput'
 
 export default function EWSDashboard() {
   const { t } = useLanguage()
@@ -133,8 +134,7 @@ export default function EWSDashboard() {
           <option value="BAHAYA">BAHAYA</option>
           <option value="AMAN">AMAN</option>
         </select>
-        <input
-          type="number"
+        <NumberInput
           className="input"
           placeholder="Filter Machine ID"
           value={machineFilter}

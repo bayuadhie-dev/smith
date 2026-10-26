@@ -13,6 +13,7 @@ import {
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import NumberInput from '../../components/ui/NumberInput'
 
 interface QuotationFormData {
   customer_id: number
@@ -475,8 +476,7 @@ const QuotationForm = () => {
               <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
                 Biaya Kirim (Rp)
               </label>
-              <input
-                type="number"
+              <NumberInput currency
                 step="0.01"
                 min="0"
                 {...register('shipping_cost')}
