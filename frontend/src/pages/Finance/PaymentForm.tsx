@@ -120,7 +120,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   useEffect(() => {
     axiosInstance.get('/api/finance/chart-of-accounts').then((res) => {
       const all = res.data.accounts || [];
-      setCashBankAccounts(all.filter((a: any) => a.is_cash_bank));
+      setCashBankAccounts(all.filter((a: any) => a.is_cash_bank && !a.is_header));
       setContraAccounts(
         all
           .filter((a: any) => !a.is_cash_bank && !a.is_header)

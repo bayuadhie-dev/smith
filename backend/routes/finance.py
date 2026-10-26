@@ -828,7 +828,7 @@ def create_payment():
             return jsonify({'error': f'Nilai total (Rp{float(data["amount"]):,.2f}) tidak sama dengan jumlah rincian (Rp{float(total_amount):,.2f})'}), 400
 
         bank_account = db.session.get(Account, data['bank_account_id'])
-        if not bank_account or not bank_account.is_cash_bank:
+        if not bank_account or not bank_account.is_cash_bank or bank_account.is_header:
             return jsonify({'error': 'bank_account_id must reference a Kas/Bank account'}), 400
 
         # Akun kontrol piutang/hutang hanya boleh berubah lewat faktur (agar
