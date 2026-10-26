@@ -325,8 +325,8 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
             onChange={(e) => handleFilterChange('account_id', e.target.value)}
           >
             <option value="">All Accounts</option>
-            {accounts.filter(a => !a.is_header).map(a => (
-              <option key={a.id} value={a.id}>{a.code} - {a.name}</option>
+            {accounts.map(a => (
+              <option key={a.id} value={a.id}>{a.is_header ? '▸ ' : ''}{a.code} - {a.name}{a.is_header ? ' (induk: semua akun di bawahnya)' : ''}</option>
             ))}
           </select>
 

@@ -240,6 +240,7 @@ def get_statement_lines(statement_id):
                 AccountingEntry.entry_date >= date_from,
                 AccountingEntry.entry_date <= date_to,
                 debit_or_credit == target_amount,
+                *_unreconcilable_filters(),
             )
             if already_matched_ids:
                 query = query.filter(~AccountingEntry.id.in_(already_matched_ids))
@@ -276,6 +277,31 @@ def get_statement_lines(statement_id):
         'total_lines': len(statement.lines),
         'matched_lines': len([l for l in statement.lines if l.is_matched]),
     }), 200
+
+
+def _unreconcilable_filters():
+    """A voided transaction never reached the bank: hide its journal, the reversing journal and drafts."""
+    from models.finance import Payment
+    cancelled_payment_ids = db.session.query(Payment.id).filter(Payment.status == 'cancelled')
+    return (
+        AccountingEntry.status == 'posted',
+        db.or_(AccountingEntry.reference_type.is_(None), ~AccountingEntry.reference_type.like('void\\_%', escape='\\')),
+        db.or_(
+            AccountingEntry.reference_type != 'payment',
+            AccountingEntry.reference_id.is_(None),
+            ~AccountingEntry.reference_id.in_(cancelled_payment_ids),
+        ),
+    )
+
+
+def _is_voided_entry(entry):
+    from models.finance import Payment
+    if (entry.reference_type or '').startswith('void_'):
+        return True
+    if entry.reference_type == 'payment' and entry.reference_id:
+        p = db.session.get(Payment, entry.reference_id)
+        return bool(p and p.status == 'cancelled')
+    return False
 
 
 def _sync_payment_cleared(entry):
@@ -320,6 +346,8 @@ def match_line(line_id):
     statement = db.session.get(BankStatement, line.statement_id)
     if entry.status != 'posted':
         return jsonify({'error': 'Hanya entri jurnal berstatus posted yang bisa dicocokkan'}), 400
+    if _is_voided_entry(entry):
+        return jsonify({'error': 'Entri ini berasal dari transaksi yang sudah dibatalkan (void), tidak bisa dicocokkan dengan rekening koran'}), 400
     if statement and entry.account_id != statement.account_id:
         return jsonify({'error': 'Entri jurnal ini bukan milik akun Kas/Bank rekening koran tersebut'}), 400
     entry_net = float(entry.debit_amount or 0) - float(entry.credit_amount or 0)  # + masuk, - keluar

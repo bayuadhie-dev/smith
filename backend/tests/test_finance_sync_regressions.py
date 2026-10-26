@@ -824,3 +824,83 @@ def test_standalone_cash_payment_stores_paid_to_and_shows_it_on_list_and_detail(
     assert client.get(f'/api/finance/payments/{pid}', headers=auth_headers).get_json()['paid_to'] == 'Toko Bangunan Maju'
     rows = client.get('/api/finance/payments?type=payment', headers=auth_headers).get_json()['payments']
     assert rows[0]['party_name'] == 'Toko Bangunan Maju'
+
+
+def _accurate_chart(db_session):
+    from models.finance import Account
+    rows = [('1002', 'Piutang Dagang', 'asset', True), ('100201', 'Piutang Usaha IDR', 'asset', False),
+            ('100202', 'Piutang Usaha USD', 'asset', False), ('1003', 'Piutang Lain', 'asset', True),
+            ('100101', 'BCA', 'asset', False), ('1001', 'Bank', 'asset', True)]
+    out = {}
+    for code, name, typ, hdr in rows:
+        a = Account(account_code=code, account_name=name, account_type=typ, normal_balance='debit', is_header=hdr, is_active=True,
+                    is_cash_bank=code.startswith('1001') or code == '100101')
+        db_session.add(a)
+        out[code] = a
+    db_session.commit()
+    for code in ('100201', '100202'):
+        out[code].parent_id = out['1002'].id
+    out['100101'].parent_id = out['1001'].id
+    db_session.commit()
+    return out
+
+
+def test_general_ledger_header_account_includes_children_entries(client, auth_headers, db_session):
+    acc = _accurate_chart(db_session)
+    from models.finance import AccountingEntry
+    for code, amt in (('100201', 100), ('100202', 200), ('100101', 999)):
+        _seq['n'] += 1
+        db_session.add(AccountingEntry(entry_number=f'JE-GL-{_seq["n"]}-01', entry_date=date.today(), entry_type='general', account_id=acc[code].id,
+                                       account_code=code, account_name=acc[code].account_name, debit_amount=amt, credit_amount=0, status='posted'))
+    db_session.commit()
+    rows = client.get(f'/api/finance/general-ledger?account_id={acc["1002"].id}', headers=auth_headers).get_json()['entries']
+    assert sorted(r['account_code'] for r in rows) == ['100201', '100202']          # header = its children, not the bank
+    rows = client.get(f'/api/finance/general-ledger?account_id={acc["100201"].id}', headers=auth_headers).get_json()['entries']
+    assert [r['account_code'] for r in rows] == ['100201']
+
+
+def test_next_account_code_and_creating_header_with_children(client, auth_headers, db_session):
+    _accurate_chart(db_session)
+    get = lambda q: client.get(f'/api/finance/chart-of-accounts/next-code?{q}', headers=auth_headers).get_json()
+    assert get('parent_code=1002')['code'] == '100203'
+    assert get('type=asset')['code'] == '1004'                      # 1001/1002/1003 are taken
+    assert get('type=liability')['code'] == '2000'
+    # detail under a parent, flagged as cash/bank
+    resp = client.post('/api/finance/chart-of-accounts', headers=auth_headers, json={
+        'code': '100203', 'name': 'Piutang Usaha RMB', 'type': 'asset', 'parent_code': '1002'})
+    assert resp.status_code == 201
+    assert get('parent_code=1002')['code'] == '100204'
+    # a detail account cannot be a parent
+    bad = client.post('/api/finance/chart-of-accounts', headers=auth_headers, json={
+        'code': '10020301', 'name': 'x', 'type': 'asset', 'parent_code': '100203'})
+    assert bad.status_code == 400
+    resp = client.post('/api/finance/chart-of-accounts', headers=auth_headers, json={
+        'code': '100102', 'name': 'Mandiri', 'type': 'asset', 'parent_code': '1001', 'is_cash_bank': True})
+    assert resp.status_code == 201
+
+
+def test_bank_reconciliation_hides_voided_and_draft_entries(client, auth_headers, db_session):
+    from models.finance import AccountingEntry, BankStatement, BankStatementLine, Payment
+    bank = _bank(db_session)
+    live = Payment(payment_number='PAY-LIVE', payment_date=date.today(), payment_type='payment', payment_method='transfer', amount=500, bank_account_id=bank.id, status='pending')
+    voided = Payment(payment_number='PAY-VOID', payment_date=date.today(), payment_type='payment', payment_method='transfer', amount=500, bank_account_id=bank.id, status='cancelled')
+    db_session.add_all([live, voided])
+    db_session.commit()
+    def entry(ref_type, ref_id, status='posted'):
+        _seq['n'] += 1
+        e = AccountingEntry(entry_number=f'JE-BR-{_seq["n"]}-01', entry_date=date.today(), entry_type='general', account_id=bank.id, account_code='1-1010',
+                            account_name='Kas di Bank', debit_amount=0, credit_amount=500, reference_type=ref_type, reference_id=ref_id, status=status)
+        db_session.add(e); db_session.commit(); return e
+    good = entry('payment', live.id)
+    bad_voided = entry('payment', voided.id)
+    reversal = entry('void_payment', voided.id)
+    draft = entry('payment', live.id, status='draft')
+    st = BankStatement(account_id=bank.id, period_start=date.today(), period_end=date.today(), source_filename='x.csv', imported_by=1)
+    db_session.add(st); db_session.commit()
+    line = BankStatementLine(statement_id=st.id, line_date=date.today(), description='bank out', amount=-500, is_matched=False)
+    db_session.add(line); db_session.commit()
+    data = client.get(f'/api/finance/bank-reconciliation/statements/{st.id}/lines', headers=auth_headers).get_json()
+    assert [c['id'] for c in data['lines'][0]['suggested_matches']] == [good.id]
+    # and a voided entry cannot be matched by hand either
+    resp = client.post(f'/api/finance/bank-reconciliation/lines/{line.id}/match', headers=auth_headers, json={'accounting_entry_id': bad_voided.id})
+    assert resp.status_code == 400 and 'void' in resp.get_json()['error']

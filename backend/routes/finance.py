@@ -1346,7 +1346,20 @@ def get_general_ledger():
         query = AccountingEntry.query
         
         if account_id:
-            query = query.filter_by(account_id=account_id)
+            selected = db.session.get(Account, int(account_id)) if str(account_id).isdigit() else None
+            if selected is not None and selected.is_header:
+                # Akun induk: tampilkan semua jurnal akun turunannya (lewat induk-anak maupun awalan kode).
+                ids, frontier = {selected.id}, [selected.id]
+                while frontier:
+                    children = Account.query.filter(Account.parent_id.in_(frontier)).all()
+                    frontier = [c.id for c in children if c.id not in ids]
+                    ids.update(frontier)
+                prefix_ids = [a.id for a in Account.query.filter(
+                    Account.account_code.like(selected.account_code + '%'), Account.account_code != selected.account_code).all()]
+                ids.update(prefix_ids)
+                query = query.filter(AccountingEntry.account_id.in_(ids))
+            else:
+                query = query.filter_by(account_id=account_id)
         if start_date:
             query = query.filter(AccountingEntry.entry_date >= datetime.fromisoformat(start_date))
         if end_date:
@@ -3268,6 +3281,43 @@ def get_chart_of_accounts():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+TYPE_LEAD_DIGIT = {'asset': '1', 'liability': '2', 'equity': '3', 'revenue': '4', 'expense': '6'}
+
+
+@finance_bp.route('/chart-of-accounts/next-code', methods=['GET'])
+@jwt_required()
+@require_permission('accounting.view')
+def next_account_code():
+    """Suggest the next free account code. Accurate chart only: a detail account under header 1002 gets
+    100201, 100202, ...; a new header gets the next free 4-digit code in its type's range."""
+    from utils.coa_roles import is_accurate_coa
+    if not is_accurate_coa():
+        return jsonify({'code': None, 'message': 'Penomoran otomatis hanya untuk Chart of Accounts format Accurate; isi kode manual.'}), 200
+    parent_code = (request.args.get('parent_code') or '').strip()
+    acc_type = (request.args.get('type') or '').strip().lower()
+    if parent_code:
+        parent = Account.query.filter_by(account_code=parent_code).first()
+        if not parent:
+            return jsonify({'error': f"Akun induk '{parent_code}' tidak ditemukan"}), 404
+        width = len(parent_code) + 2
+        used = [int(c[0][len(parent_code):]) for c in db.session.query(Account.account_code).filter(
+            Account.account_code.like(parent_code + '%')).all()
+            if len(c[0]) == width and c[0][len(parent_code):].isdigit()]
+        nxt = (max(used) + 1) if used else 1
+        if nxt > 99:
+            return jsonify({'error': f'Kode di bawah {parent_code} sudah penuh (maks 99 akun)'}), 400
+        return jsonify({'code': f'{parent_code}{nxt:02d}', 'parent_type': parent.account_type}), 200
+    digit = TYPE_LEAD_DIGIT.get(acc_type)
+    if not digit:
+        return jsonify({'code': None, 'message': 'Pilih jenis akun dulu'}), 200
+    used = [int(c[0]) for c in db.session.query(Account.account_code).filter(Account.account_code.like(digit + '%')).all()
+            if len(c[0]) == 4 and c[0].isdigit()]
+    nxt = (max(used) + 1) if used else int(digit) * 1000
+    if nxt >= (int(digit) + 1) * 1000:
+        return jsonify({'error': f'Kode 4 digit berawalan {digit} sudah penuh'}), 400
+    return jsonify({'code': str(nxt)}), 200
+
+
 @finance_bp.route('/chart-of-accounts', methods=['POST'])
 @jwt_required()
 @require_permission('accounting.create')
@@ -3290,6 +3340,8 @@ def create_account():
             parent = Account.query.filter_by(account_code=data['parent_code']).first()
             if not parent:
                 return jsonify({'error': f"Parent account code '{data['parent_code']}' not found"}), 400
+            if not parent.is_header:
+                return jsonify({'error': f"Akun '{parent.account_code}' bukan akun induk (header), tidak bisa dijadikan induk"}), 400
             parent_id = parent.id
 
         new_account = Account(
@@ -3299,7 +3351,8 @@ def create_account():
             normal_balance=data.get('normal_balance') or ('debit' if data['type'].lower() in ['asset', 'expense'] else 'credit'),
             description=data.get('description', ''),
             is_active=True,
-            is_header=data.get('is_header', False),
+            is_header=bool(data.get('is_header', False)),
+            is_cash_bank=bool(data.get('is_cash_bank', False)) and not data.get('is_header', False),
             parent_id=parent_id,
             level=2 if parent_id else 1,
         )

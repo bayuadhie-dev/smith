@@ -117,13 +117,25 @@ const [accounts, setAccounts] = useState<Account[]>([])
   }
 
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
-  const [formData, setFormData] = useState({
-    code: '',
-    name: '',
-    type: '',
-    balance: 0,
-    description: ''
-  })
+  const EMPTY_FORM = { code: '', name: '', type: '', balance: 0, description: '', is_header: false, parent_code: '', is_cash_bank: false }
+  const [formData, setFormData] = useState(EMPTY_FORM)
+  const codeTouched = React.useRef(false)
+  const [codeHint, setCodeHint] = useState('')
+
+  // Suggest the next free code whenever the parent / type / kind changes (new accounts only, until the user types a code).
+  useEffect(() => {
+    if (!showAddModal || editingAccount) return
+    if (!formData.parent_code && !formData.type) return
+    let cancelled = false
+    axiosInstance.get('/api/finance/chart-of-accounts/next-code', { params: { parent_code: formData.parent_code || undefined, type: formData.type || undefined } })
+      .then((res) => {
+        if (cancelled) return
+        setCodeHint(res.data?.message || '')
+        if (res.data?.code && !codeTouched.current) setFormData((f) => ({ ...f, code: res.data.code }))
+      })
+      .catch((err) => { if (!cancelled) setCodeHint(err?.response?.data?.error || '') })
+    return () => { cancelled = true }
+  }, [showAddModal, editingAccount, formData.parent_code, formData.type])
 
   const handleEditAccount = (account: Account) => {
     setEditingAccount(account)
@@ -132,7 +144,10 @@ const [accounts, setAccounts] = useState<Account[]>([])
       name: account.name,
       type: account.type,
       balance: account.balance,
-      description: account.description || ''
+      description: account.description || '',
+      is_header: !!(account as any).is_header,
+      parent_code: (account as any).parent_code || '',
+      is_cash_bank: !!(account as any).is_cash_bank,
     })
     setShowAddModal(true)
   }
@@ -140,13 +155,9 @@ const [accounts, setAccounts] = useState<Account[]>([])
   const handleCloseModal = () => {
     setShowAddModal(false)
     setEditingAccount(null)
-    setFormData({
-      code: '',
-      name: '',
-      type: '',
-      balance: 0,
-      description: ''
-    })
+    codeTouched.current = false
+    setCodeHint('')
+    setFormData(EMPTY_FORM)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -497,11 +508,43 @@ const [accounts, setAccounts] = useState<Account[]>([])
                   className="input w-full" 
                   placeholder="e.g., 1000" 
                   value={formData.code}
-                  onChange={(e) => setFormData({...formData, code: e.target.value})}
+                  onChange={(e) => { codeTouched.current = true; setFormData({...formData, code: e.target.value}) }}
                   disabled={!!editingAccount}
                   required 
                 />
+                {!editingAccount && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {codeHint || 'Kode terisi otomatis setelah memilih akun induk atau jenis akun; boleh diubah.'}
+                  </p>
+                )}
               </div>
+
+              {!editingAccount && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Jenis Akun</label>
+                    <select className="input w-full" value={formData.is_header ? 'header' : 'detail'}
+                      onChange={(e) => { codeTouched.current = false; setFormData({...formData, is_header: e.target.value === 'header', is_cash_bank: false}) }}>
+                      <option value="detail">Akun Detail (bisa dipakai transaksi)</option>
+                      <option value="header">Akun Induk (pengelompok)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Akun Induk</label>
+                    <select className="input w-full" value={formData.parent_code}
+                      onChange={(e) => {
+                        codeTouched.current = false
+                        const parent = accounts.find((a: any) => a.code === e.target.value) as any
+                        setFormData({...formData, parent_code: e.target.value, type: parent ? parent.type : formData.type})
+                      }}>
+                      <option value="">(tanpa induk)</option>
+                      {accounts.filter((a: any) => a.is_header).map((a: any) => (
+                        <option key={a.code} value={a.code}>{a.code} - {a.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
@@ -535,6 +578,13 @@ const [accounts, setAccounts] = useState<Account[]>([])
                   <option value="expense">Expense</option>
                 </select>
               </div>
+
+              {!editingAccount && !formData.is_header && formData.type === 'asset' && (
+                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                  <input type="checkbox" checked={formData.is_cash_bank} onChange={(e) => setFormData({...formData, is_cash_bank: e.target.checked})} />
+                  Akun Kas/Bank (muncul di pilihan pembayaran dan rekonsiliasi bank)
+                </label>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
