@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Routes, Route, createPath, parsePath, UNSAFE_LocationContext, UNSAFE_NavigationContext, UNSAFE_RouteContext } from 'react-router-dom'
 import type { Location, NavigationType, To } from 'react-router-dom'
 import { currentClick } from './clickTracker'
@@ -76,6 +76,23 @@ export default function TabRouter({ initialPath, containerRef, onOpenNew, onPath
       replace: (to: To, state?: unknown) => go(to, state, true),
     }
   }, [containerRef])
+
+  // Legacy pages use plain <a href="/app/..."> (full page load). Catch those clicks after React has had its
+  // chance (react-router <Link> already calls preventDefault) and route them through this tab instead.
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+      const a = (e.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null
+      if (!a || !containerRef.current?.contains(a)) return
+      if ((a.target && a.target !== '_self') || a.hasAttribute('download')) return
+      const url = new URL(a.href, window.location.href)
+      if (url.origin !== window.location.origin || !url.pathname.startsWith('/app')) return
+      e.preventDefault()
+      navigator.push(url.pathname + url.search + url.hash)
+    }
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
+  }, [navigator, containerRef])
 
   const AppRoutes = getAppRoutes()
   const navValue = useMemo(() => ({ navigator, static: false, basename: '/' }), [navigator])

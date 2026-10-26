@@ -61,6 +61,8 @@ export default function Workspace({ visible }: { visible: boolean }) {
   const navigate = useNavigate()
   useDirtyVersion()
   const ignoreUrl = useRef<string | null>(null)
+  // URL path whose tab is being opened/activated; the tabs->URL effect must not run against stale state meanwhile.
+  const pendingUrl = useRef<string | null>(null)
   const recentClick = useRef<{ title: string; time: number } | null>(null)
 
   useEffect(() => {
@@ -85,8 +87,11 @@ export default function Workspace({ visible }: { visible: boolean }) {
     const title = click && Date.now() - click.time < 1500 ? click.title : undefined
     const result = ws.openPath(urlPath, title || undefined)
     if (result === 'full') {
+      pendingUrl.current = null
       const back = ws.activeTabPath()
       if (back) { ignoreUrl.current = back; navigate(back, { replace: true }) }
+    } else {
+      pendingUrl.current = urlPath
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlPath])
@@ -94,6 +99,10 @@ export default function Workspace({ visible }: { visible: boolean }) {
   // Tabs -> browser URL (tab clicked, tab navigated in place, tab closed)
   useEffect(() => {
     if (!inModule) return
+    if (pendingUrl.current) {
+      if (activePath === pendingUrl.current) pendingUrl.current = null
+      return
+    }
     if (!activePath) { ignoreUrl.current = '/app'; navigate('/app', { replace: true }); return }
     if (activePath !== urlPath) { ignoreUrl.current = activePath; navigate(activePath, { replace: true }) }
     // eslint-disable-next-line react-hooks/exhaustive-deps

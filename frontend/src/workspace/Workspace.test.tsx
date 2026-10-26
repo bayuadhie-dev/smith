@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor, cleanup, act } from '@testing-library/react'
 import { MemoryRouter, Routes, Route, Link, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { StrictMode, useState } from 'react'
 import { WorkspaceProvider } from './WorkspaceContext'
 import Workspace from './Workspace'
 import { registerAppRoutes } from './routeRegistry'
@@ -13,6 +13,7 @@ function ListPage() {
     <div data-testid="list">
       <input placeholder="Catatan" data-testid="note" />
       <Link to="/app/finance/payments/18">PAY-18</Link>
+      <a href="/app/finance/payments/20">PAY-20</a>
       <table><tbody><tr onClick={() => nav('/app/finance/payments/19')}><td>PAY-19</td><td>Alfamart</td></tr></tbody></table>
       <button onClick={() => nav('/app/finance/payments/new')}>Catat Baru</button>
     </div>
@@ -46,11 +47,13 @@ function AppRoutes() {
 
 function Shell({ start = '/app/finance/payments' }: { start?: string }) {
   return (
-    <MemoryRouter initialEntries={[start]}>
-      <WorkspaceProvider>
-        <Workspace visible />
-      </WorkspaceProvider>
-    </MemoryRouter>
+    <StrictMode>
+      <MemoryRouter initialEntries={[start]}>
+        <WorkspaceProvider>
+          <Workspace visible />
+        </WorkspaceProvider>
+      </MemoryRouter>
+    </StrictMode>
   )
 }
 
@@ -80,6 +83,7 @@ describe('workspace tabs', () => {
     await waitFor(() => expect(screen.getByTestId('list')).toBeTruthy())
     expect(tabTitles()).toContain('Finance')
     expect(tabTitles()).toContain('Payments')
+    expect(tabTitles().filter((t) => t === 'Payments').length).toBe(1)   // StrictMode must not create a twin tab
   })
 
   it('opens a detail in a new tab titled with the clicked text and keeps the list state', async () => {
@@ -92,6 +96,15 @@ describe('workspace tabs', () => {
     // the list is still mounted (hidden) with what was typed
     expect((screen.getByTestId('note') as HTMLInputElement).value).toBe('catatan saya')
     expect(screen.getByTestId('note').closest('[hidden]')).not.toBeNull()
+  })
+
+  it('a legacy plain <a href> opens a new tab with the link text instead of reloading the page', async () => {
+    render(<Shell />)
+    await waitFor(() => expect(screen.getByTestId('list')).toBeTruthy())
+    fireEvent.click(screen.getByText('PAY-20'))
+    await waitFor(() => expect(screen.getByTestId('detail')).toBeTruthy())
+    expect(tabTitles().some((t) => t?.startsWith('PAY-20'))).toBe(true)
+    expect(screen.getByTestId('list').closest('[hidden]')).not.toBeNull()
   })
 
   it('row click uses the first cell as the title, and the same detail is not opened twice', async () => {

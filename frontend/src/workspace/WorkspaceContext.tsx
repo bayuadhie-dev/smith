@@ -59,6 +59,10 @@ function reducer(state: WorkspaceState, action: Action): WorkspaceState {
   switch (action.type) {
     case 'open': {
       const cur = state.modules[action.moduleId] || { tabs: [], activeTabId: null }
+      // Idempotent: React StrictMode (dev) runs effects twice before state settles, so never trust the caller.
+      const same = cur.tabs.find((t) => t.path === action.tab.path)
+      if (same) return reducer(state, { type: 'activateTab', moduleId: action.moduleId, tabId: same.id })
+      if (cur.tabs.length >= MAX_TABS_PER_MODULE) return state
       return {
         modules: { ...state.modules, [action.moduleId]: { tabs: [...cur.tabs, action.tab], activeTabId: action.tab.id } },
         order: state.order.includes(action.moduleId) ? state.order : [...state.order, action.moduleId],
