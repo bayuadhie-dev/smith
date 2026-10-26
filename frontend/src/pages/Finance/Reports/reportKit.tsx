@@ -99,17 +99,13 @@ export async function downloadPdf(path: string, params: Record<string, any>) {
 }
 
 export async function printPdf(path: string, params: Record<string, any>) {
+  // Open the tab synchronously (inside the click) so popup blockers allow it, then point it at the PDF.
+  const tab = window.open('', '_blank')
+  if (tab) tab.document.write('<p style="font-family:sans-serif;padding:24px;color:#555">Menyiapkan PDF...</p>')
   const f = await fetchReportFile(path, params, 'pdf')
-  if (!f) return
-  const url = window.URL.createObjectURL(f.blob)
-  const frame = document.createElement('iframe')
-  frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0'
-  frame.src = url
-  frame.onload = () => {
-    try { frame.contentWindow?.focus(); frame.contentWindow?.print() } catch { window.open(url, '_blank') }
-    setTimeout(() => { frame.remove(); window.URL.revokeObjectURL(url) }, 60000)
-  }
-  document.body.appendChild(frame)
+  if (!f) { tab?.close(); return }
+  if (!tab) { saveBlob(f.blob, f.name); showError('Popup diblokir browser, PDF diunduh. Buka file lalu cetak.'); return }
+  tab.location.href = window.URL.createObjectURL(f.blob)
 }
 
 // ---------------------------------------------------------------- layout pieces
