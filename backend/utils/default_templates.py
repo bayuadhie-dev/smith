@@ -17,6 +17,7 @@ from models.document_management import DocumentTemplate, TemplateVersion
 
 LAYOUT = 'v2-2026-10h'
 AUTO_NOTE_PREFIX = 'Auto-generated'
+AUTO_NOTE_PREFIXES = ('Auto-generated', 'Migrasi otomatis')  # the font-unit migration only rescales values of auto-generated layouts
 
 TEAL = '#1f4e5a'
 GRID = '#8fa3aa'
@@ -367,6 +368,6 @@ def ensure_default_template(user_id, document_type):
         cv = template.current_version
         if (cv.canvas_data or {}).get('layout') == LAYOUT:
             return template
-        if not (cv.change_note or '').startswith(AUTO_NOTE_PREFIX):
+        if not (cv.change_note or '').startswith(AUTO_NOTE_PREFIXES):
             return template  # saved from the Designer - never overwrite
     return _publish_default(user_id, document_type)

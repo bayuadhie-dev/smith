@@ -739,3 +739,23 @@ def test_balance_sheet_counts_every_equity_account(client, auth_headers, db_sess
     _post(db_session, '3-4000', credit=1_000)
     data = client.get('/api/finance/reports/balance-sheet', headers=auth_headers).get_json()['balance_sheet']
     assert data['is_balanced'] is True and data['equity']['total_equity'] == 1_000
+
+
+def test_default_template_upgrades_after_font_migration_but_keeps_designer_versions(db_session):
+    from models.document_management import DocumentTemplate, TemplateVersion
+    from utils.default_templates import ensure_default_template, LAYOUT
+    t = ensure_default_template(None, 'kwitansi')
+    assert t.current_version.canvas_data.get('layout') == LAYOUT
+    # simulate the office DB: old layout whose note was rewritten by the font-unit migration
+    t.current_version.canvas_data = {'objects': [], 'layout': 'old'}
+    t.current_version.change_note = 'Migrasi otomatis: fontSize dikonversi dari pt ke mm'
+    db_session.commit()
+    t2 = ensure_default_template(None, 'kwitansi')
+    db_session.refresh(t2)
+    assert t2.id == t.id and t2.current_version.canvas_data.get('layout') == LAYOUT
+    # a version saved from the Designer is never overwritten
+    t2.current_version.canvas_data = {'objects': [], 'layout': 'old'}
+    t2.current_version.change_note = 'Ubah posisi tanda tangan'
+    db_session.commit()
+    vid = t2.current_version_id
+    assert ensure_default_template(None, 'kwitansi').current_version_id == vid
