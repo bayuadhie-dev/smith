@@ -509,8 +509,8 @@ def post_payroll_journal(period, records, posted_by_user_id=None):
 
     lines = []
 
-    upah_account = Account.query.filter_by(account_code='5-1210').first()
-    tunjangan_account = Account.query.filter_by(account_code='5-1220').first()
+    from utils.coa_roles import CoaRoles
+    upah_account, tunjangan_account = CoaRoles().direct_labor_wage_accounts()
     if not upah_account or not tunjangan_account:
         # Sub-accounts missing (e.g. migration not yet applied on this
         # environment) - fall back to the old single-account behavior
@@ -1214,10 +1214,12 @@ FX_ACCOUNT_CODE = '9-8000'
 def get_fx_gain_loss_account():
     """Akun Laba/Rugi Selisih Kurs (dibuat otomatis kalau belum ada)."""
     from models.finance import Account
-    acc = Account.query.filter_by(account_code=FX_ACCOUNT_CODE).first()
+    from utils.coa_roles import CoaRoles
+    code = CoaRoles().fx_account_code()
+    acc = Account.query.filter_by(account_code=code).first()
     if acc:
         return acc
-    acc = Account(account_code=FX_ACCOUNT_CODE, account_name='Laba/Rugi Selisih Kurs', account_type='expense',
+    acc = Account(account_code=code, account_name='Laba/Rugi Selisih Kurs', account_type='expense',
                   normal_balance='debit', is_active=True, is_header=False)
     db.session.add(acc)
     db.session.flush()
@@ -1417,10 +1419,12 @@ def manual_stock_unit_cost(product_id=None, material_id=None):
 
 def get_opening_stock_account():
     """Equity account that offsets stock entered by hand (opening/initial stock)."""
-    acc = Account.query.filter_by(account_code=OPENING_STOCK_ACCOUNT_CODE).first()
+    from utils.coa_roles import CoaRoles
+    code = CoaRoles().opening_stock_code()
+    acc = Account.query.filter_by(account_code=code).first()
     if acc:
         return acc
-    acc = Account(account_code=OPENING_STOCK_ACCOUNT_CODE, account_name='Saldo Awal Persediaan', account_type='equity',
+    acc = Account(account_code=code, account_name='Saldo Awal Persediaan', account_type='equity',
                   normal_balance='credit', is_active=True, is_header=False)
     db.session.add(acc)
     db.session.flush()

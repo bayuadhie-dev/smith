@@ -758,3 +758,56 @@ def test_default_template_upgrades_after_font_migration_but_keeps_designer_versi
     db_session.commit()
     vid = t2.current_version_id
     assert ensure_default_template(None, 'kwitansi').current_version_id == vid
+
+
+def test_reports_work_on_the_accurate_chart_of_accounts(client, auth_headers, db_session):
+    from models.finance import Account
+    chart = [  # (code, name, type, normal, header, cash)
+        ('1002', 'Piutang Dagang', 'asset', 'debit', True, False), ('100201', 'Piutang Usaha IDR', 'asset', 'debit', False, False),
+        ('100101', 'BCA', 'asset', 'debit', False, True), ('100501', 'Persediaan Bahan Baku', 'asset', 'debit', False, False),
+        ('110104', 'Mesin', 'asset', 'debit', False, False), ('110203', 'Akum Mesin', 'asset', 'debit', False, False),
+        ('200001', 'Hutang Usaha IDR', 'liability', 'credit', False, False), ('200606', 'Gaji YMH', 'liability', 'credit', False, False),
+        ('300003', 'Modal Saham', 'equity', 'credit', False, False), ('400002', 'Penjualan House Brand', 'revenue', 'credit', False, False),
+        ('400201', 'Sales Discount', 'revenue', 'credit', False, False), ('500002', 'HPP House Brand', 'expense', 'debit', False, False),
+        ('500101', 'Upah Spunlace', 'expense', 'debit', False, False), ('500301', 'Listrik Pabrik', 'expense', 'debit', False, False),
+        ('610012', 'Biaya Penjualan', 'expense', 'debit', False, False), ('620001', 'Gaji Staff', 'expense', 'debit', False, False),
+        ('700005', 'Bunga Kredit Bank', 'expense', 'debit', False, False), ('700011', 'Biaya Lain', 'expense', 'debit', False, False),
+    ]
+    acc = {}
+    for code, name, typ, normal, hdr, cash in chart:
+        a = Account(account_code=code, account_name=name, account_type=typ, normal_balance=normal, is_header=hdr, is_cash_bank=cash, is_active=True)
+        db_session.add(a)
+        acc[code] = a
+    db_session.commit()
+
+    def post(code, d=0, c=0):
+        _seq['n'] += 1
+        from models.finance import AccountingEntry
+        db_session.add(AccountingEntry(entry_number=f'JE-ACC-{_seq["n"]:05d}-01', entry_date=date.today(), entry_type='general',
+                                       account_id=acc[code].id, account_code=code, account_name=acc[code].account_name,
+                                       debit_amount=d, credit_amount=c, status='posted'))
+        db_session.commit()
+
+    post('100101', d=5_000); post('300003', c=5_000)                      # capital in bank
+    post('100501', d=1_000); post('200001', c=1_000)                      # stock bought on credit
+    post('100201', d=2_000); post('400002', c=2_300); post('400201', d=300)  # sale 2300 less discount 300... AR 2000
+    post('500002', d=600); post('100501', c=600)                          # COGS
+    post('500101', d=100); post('500301', d=50); post('610012', d=40); post('620001', d=30); post('700005', d=20); post('700011', d=10)
+    post('200606', c=250)                                                 # accrued wages credit offsets the above expenses
+
+    bs = client.get('/api/finance/reports/balance-sheet', headers=auth_headers).get_json()['balance_sheet']
+    assert bs['assets']['current_assets']['cash'] == 5_000
+    assert bs['assets']['current_assets']['accounts_receivable'] == 2_000
+    assert bs['assets']['current_assets']['inventory'] == 400
+    assert bs['liabilities']['current_liabilities']['accounts_payable'] == 1_000
+    assert bs['liabilities']['current_liabilities']['accrued_liabilities'] == 250
+    assert bs['is_balanced'] is True and bs['warnings'] == []
+
+    inc = client.get(f'/api/finance/reports/income-statement?date_from={date.today().replace(month=1, day=1)}&date_to={date.today()}',
+                     headers=auth_headers).get_json()['income_statement']
+    assert inc['revenue']['sales_revenue'] == 2_300 and inc['revenue']['sales_discounts'] == -300
+    assert inc['cost_of_sales']['direct_labor'] == 100 and inc['cost_of_sales']['manufacturing_overhead'] == 50
+    assert inc['cost_of_sales']['direct_materials'] == 600          # HPP (cogs_other) is reported with direct materials
+    assert inc['operating_expenses']['selling_expenses'] == 40 and inc['operating_expenses']['administrative_expenses'] == 30
+    assert inc['other_expenses']['interest_expense'] == 20 and inc['other_expenses']['total_other_expenses'] == 30
+    assert inc['net_income'] == 2_000 - 600 - 150 - 70 - 30

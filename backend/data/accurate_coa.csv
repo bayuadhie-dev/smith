@@ -1,0 +1,384 @@
+account_code,account_name,account_type,normal_balance,is_header,is_cash_bank
+1000,Kas,asset,debit,t,t
+100001,Kas Operasional,asset,debit,f,t
+100002,Kas Transfer(Post Silang),asset,debit,f,t
+1001,Bank,asset,debit,t,t
+100101,BCA,asset,debit,f,t
+100102,INA BANK,asset,debit,f,t
+100103,IDR Deposito,asset,debit,f,t
+1002,Piutang Dagang,asset,debit,t,f
+100201,Piutang Usaha IDR,asset,debit,f,f
+100202,Piutang Usaha USD,asset,debit,f,f
+100203,Piutang Usaha RMB,asset,debit,f,f
+100204,Cadangan Kerugian Piutang,asset,debit,f,f
+1003,Piutang Lain-lain,asset,debit,t,f
+100301,Piutang Karyawan,asset,debit,f,f
+100302,Piutang Lainnya,asset,debit,f,f
+100303,Cadangan Kerugian Piutang Lainnya,asset,debit,f,f
+100304,Pembelian Aset,asset,debit,f,f
+1004,Piutang Pemegang Saham,asset,debit,t,f
+100401,Piutang Modal A,asset,debit,f,f
+100403,Piutang Modal B,asset,debit,f,f
+1005,Persediaan,asset,debit,t,f
+100501,Persediaan Bahan Baku,asset,debit,f,f
+100502,Persediaan Barang Dalam Penyelesaian,asset,debit,f,f
+100503,Persediaan Bahan Pembantu,asset,debit,f,f
+100504,Persediaan Barang Jadi,asset,debit,f,f
+100505,Barang Terkirim,asset,debit,f,f
+100506,WIP InterTransaksi,asset,debit,f,f
+100507,Cadangan Kerugian Persediaan,asset,debit,f,f
+100508,Waste Produksi,asset,debit,f,f
+1006,Prepaid Expense,asset,debit,t,f
+100601,Biaya Dibayar Dimuka,asset,debit,f,f
+100602,Biaya Asuransi Dibayar Dimuka,asset,debit,f,f
+100603,Biaya Sewa Dibayar Dimuka,asset,debit,f,f
+100604,Uang Muka Lainnya,asset,debit,f,f
+100605,Pajak Dibayar Dimuka,asset,debit,f,f
+100606,Pajak Dibayar Dimuka PPh 21,asset,debit,f,f
+100607,Pajak Dibayar Dimuka PPh 22,asset,debit,f,f
+100608,Pajak Dibayar Dimuka PPh 23,asset,debit,f,f
+100609,Pajak Dibayar Dimuka PPh 25,asset,debit,f,f
+100610,Pajak Dibayar Dimuka PPh 4 Ayat 2,asset,debit,f,f
+100611,PPn Masukan,asset,debit,f,f
+100612,PPn Masukan Barang Mewah,asset,debit,f,f
+100613,Uang Muka PPN Rekonsiliasi,asset,debit,f,f
+100614,Biaya Pengiriman - Claim,asset,debit,f,f
+100615,Biaya Dibayar Dimuka Accurate,asset,debit,f,f
+1007,Uang Muka,asset,debit,t,f
+100701,Uang Muka Pembelian IDR,asset,debit,f,f
+100702,Uang Muka Pembelian USD,asset,debit,f,f
+100703,Uang Muka Pembelian RMB,asset,debit,f,f
+1101,Aktiva Tetap,asset,debit,t,f
+110101,Tanah,asset,debit,f,f
+110102,Bangunan,asset,debit,f,f
+110103,Instalasi Listrik,asset,debit,f,f
+110104,Mesin & Peralatan,asset,debit,f,f
+110105,Inventaris Pabrik,asset,debit,f,f
+110106,Inventaris Kantor,asset,debit,f,f
+110107,Kendaraan,asset,debit,f,f
+1102,Akumulasi Depresiasi Fixed Asset,asset,credit,t,f
+110201,Akumulasi Penyusutan Bangunan,asset,credit,f,f
+110202,Akumulasi Penyusutan Instalasi Listrik,asset,credit,f,f
+110203,Akumulasi Penyusutan Mesin & Peralatan,asset,credit,f,f
+110204,Akumulasi Penyusutan Inventaris Pabrik,asset,credit,f,f
+110205,Akumulasi Penyusutan Inventaris Kantor,asset,credit,f,f
+110206,Akumulasi Penyusutan Kendaraan,asset,credit,f,f
+1104,Intangible Asset,asset,debit,t,f
+110401,Trade Mark,asset,debit,f,f
+110402,Copy Right,asset,debit,f,f
+110403,Goodwiil,asset,debit,f,f
+1105,Aktiva Lain-Lain,asset,debit,t,f
+110504,Deferred Tax Asset,asset,debit,f,f
+1106,Saldo Awal AOL,asset,debit,f,f
+2000,Hutang,liability,credit,t,f
+200001,Hutang Usaha IDR,liability,credit,f,f
+200002,Hutang Usaha USD,liability,credit,f,f
+200003,Hutang Usaha  RMB,liability,credit,f,f
+200004,Hutang Lain - Lain,liability,credit,f,f
+200005,Hutang Pajak - PPH 4 Ayat 2,liability,credit,f,f
+200006,Hutang Pengiriman Barang,liability,credit,f,f
+200007,Hutang Jasa Profesional,liability,credit,f,f
+200008,Hutang Pajak - PPH 21,liability,credit,f,f
+200009,Hutang Pajak - PPH 22,liability,credit,f,f
+200010,Hutang Pajak - PPH 23,liability,credit,f,f
+200011,Hutang Pajak - PPH 25,liability,credit,f,f
+200012,Hutang Pajak - PPH 29,liability,credit,f,f
+200013,Hutang Pajak - PPN,liability,credit,f,f
+200014,Hutang Pajak - STP,liability,credit,f,f
+200016,Hutang Pembelian Kendaraan,liability,credit,f,f
+2001,Uang Muka Penjualan,liability,credit,t,f
+200101,Uang Muka Penjualan IDR,liability,credit,f,f
+200102,Uang Muka Penjualan USD,liability,credit,f,f
+200103,Uang Muka Penjualan RMB,liability,credit,f,f
+2002,Bank Loan Short Term,liability,credit,t,f
+200202,Hutang Bank,liability,credit,f,f
+2003,Bank Loan Long Term,liability,credit,t,f
+200302,Kredit Multi Guna,liability,credit,f,f
+200303,Imbalan Kerja,liability,credit,f,f
+200304,Deffered Income,liability,credit,f,f
+200305,Deferred Tax Liabulities,liability,credit,f,f
+2004,Hutang Kepada Pemegang Saham,liability,credit,t,f
+200401,Hutang Modal A,liability,credit,f,f
+200402,Hutang Modal B,liability,credit,f,f
+2005,Hutang Pembiayaan Konsumen,liability,credit,t,f
+200501,Hutang Pembelian Kendaraan,liability,credit,f,f
+200502,Hutang Leasing Kendaraan,liability,credit,f,f
+200503,Hutang Leasing Mesin,liability,credit,f,f
+2006,Accrued Payable,liability,credit,t,f
+200601,Listrik YMH Dibayar,liability,credit,f,f
+200602,BPJS & Jamsostek YMH,liability,credit,f,f
+200603,Jasa  Profesional YMH,liability,credit,f,f
+200604,Biaya Pengiriman YMH,liability,credit,f,f
+200605,Telepon dan Internet YMH,liability,credit,f,f
+200606,Gaji YMH,liability,credit,f,f
+200607,Upah YMH,liability,credit,f,f
+200608,Air Tanah YMH,liability,credit,f,f
+200609,THR YMH,liability,credit,f,f
+200610,Premi YMH,liability,credit,f,f
+200611,Pajak PBB YMH,liability,credit,f,f
+200612,Denda YMH,liability,credit,f,f
+200613,Iklan dan Promosi YMH,liability,credit,f,f
+200614,Listing Fee YMH,liability,credit,f,f
+200615,BPD-Luar Kota YMH,liability,credit,f,f
+200616,Repdir - YMH,liability,credit,f,f
+200617,Outsourching - YMH,liability,credit,f,f
+200618,Pesangon Harian - YMH,liability,credit,f,f
+200619,Pesangon Staf Produksi - YMH,liability,credit,f,f
+200620,Pesangon Staf Pembelian - YMH,liability,credit,f,f
+200621,Pesangon Sopir - YMH,liability,credit,f,f
+200622,Pesangon Staf - YMH,liability,credit,f,f
+200623,Pesangon Keamanan - YMH,liability,credit,f,f
+200624,Catering & Makan Karyawan YMH,liability,credit,f,f
+2007,Hutang Belum Ditagih,liability,credit,t,f
+200701,Selisih Barang Belum Ditagih,liability,credit,f,f
+200702,Hutang Pembelian Belum Ditagih,liability,credit,f,f
+2008,Uang Muka Cust,liability,credit,t,f
+200801,Uang Muka Customer,liability,credit,f,f
+200802,Uang Muka Penjualan Asset,liability,credit,f,f
+2009,Hutang Kepada Pihak Ketiga,liability,credit,t,f
+200919,Hutang Lainnya,liability,credit,f,f
+2100,Hutang Pajak,liability,credit,t,f
+210001,PPN Keluaran,liability,credit,f,f
+210002,Hutang PPh 4 Ayat 2,liability,credit,f,f
+210003,Hutang PPh 21,liability,credit,f,f
+210004,Hutang PPh 22,liability,credit,f,f
+210005,Hutang PPh 23,liability,credit,f,f
+210006,Hutang PPh 25,liability,credit,f,f
+210007,Hutang PPh 29,liability,credit,f,f
+210008,PPn Kurang Bayar,liability,credit,f,f
+210009,Akun Penampung PPH 21,liability,credit,f,f
+3000,Modal Perusahaan,equity,credit,t,f
+300001,OPENING BALANCE EQUITY,equity,credit,f,f
+300002,Tambahan Modal Disetor,equity,credit,f,f
+300003,Modal Saham,equity,credit,f,f
+300004,RETAINED EARNING,equity,credit,f,f
+300005,Deviden,equity,credit,f,f
+300006,Modal Saham IPO,equity,credit,f,f
+3100,Rugi/Laba,equity,credit,t,f
+310001,Ikhtisal Rugi / Laba,equity,credit,f,f
+310002,Rugi / Laba Aktuarial,equity,credit,f,f
+310003,Rugi / Laba Ditahan,equity,credit,f,f
+310004,Rugi / Laba Tahun Lalu,equity,credit,f,f
+310005,Rugi / Laba Tahun Berjalan,equity,credit,f,f
+310006,Rugi / Laba Ditahan Komprehensif Lain,equity,credit,f,f
+310008,Rugi / Laba Ditahan Aktuaria,equity,credit,f,f
+310009,SPT PPh Tahun Lalu,equity,credit,f,f
+310010,Selisih Penilaian Aktiva Tetap,equity,credit,f,f
+310011,Surplus Revaluasi,equity,credit,f,f
+310012,Amortisasi Surplus Revaluasi,equity,credit,f,f
+310013,Employee Benefit Tahun Lalu - Liabilities,equity,credit,f,f
+310014,Employee Benefit Current Year - Liabilities,equity,credit,f,f
+4000,Penjualan,revenue,credit,t,f
+400001,Penjualan Spunlace,revenue,credit,f,f
+400002,Penjualan House Brand,revenue,credit,f,f
+400003,Penjualan Private Label,revenue,credit,f,f
+400004,Penjualan Bantal,revenue,credit,f,f
+400005,Penjualan Lain-lain,revenue,credit,f,f
+400006,Penjualan Jasa,revenue,credit,f,f
+4001,Retur Penjualan,revenue,credit,t,f
+400101,Retur Jual - Spunlace,revenue,credit,f,f
+400102,Retur Jual - House Brand,revenue,credit,f,f
+400103,Retur Jual - Private Label,revenue,credit,f,f
+400104,Retur Jual - Bantal,revenue,credit,f,f
+400105,Retur Jual - Lain-lain,revenue,credit,f,f
+4002,Potongan Penjualan,revenue,credit,t,f
+400201,Sales Term Discount IDR,revenue,credit,f,f
+400202,Sales Term Discount USD,revenue,credit,f,f
+400203,Sales Term Discount RMB,revenue,credit,f,f
+5000,HPP,expense,debit,t,f
+500000,HPP - Spunlace,expense,debit,f,f
+500001,HPP - Spunlace,expense,debit,f,f
+500002,HPP - House Brand,expense,debit,f,f
+500003,HPP - Private Label,expense,debit,f,f
+500004,HPP - Bantal,expense,debit,f,f
+500005,HPP - Lain-lain,expense,debit,f,f
+5001,Biaya Upah & Tunjangan Karyawan,expense,debit,t,f
+500101,Upah - Spunlace,expense,debit,f,f
+500102,Upah - Laminasi,expense,debit,f,f
+500103,Upah - End Product/Packing,expense,debit,f,f
+500104,Upah - Inventory,expense,debit,f,f
+500105,Upah - General Affairs,expense,debit,f,f
+500106,Upah - Borongan,expense,debit,f,f
+500107,Kompensasi Karyawan,expense,debit,f,f
+500108,Outsourcing - Spunlace,expense,debit,f,f
+500109,Outsourcing - Laminasi,expense,debit,f,f
+500110,Outsourcing - End Product / Packing,expense,debit,f,f
+500111,Outsourcing - General Affairs,expense,debit,f,f
+500112,Biaya Lembur - Staff,expense,debit,f,f
+500113,Biaya BPJS TK & Kesehatan Upah Harian,expense,debit,f,f
+500114,Biaya BPJS TK & Kesehatan Upah Staff,expense,debit,f,f
+500115,Biaya Tunjangan Lain-Lain,expense,debit,f,f
+500116,Biaya Upah Jasa,expense,debit,f,f
+500117,Biaya THR Harian,expense,debit,f,f
+500118,Biaya Makloon,expense,debit,f,f
+500119,Biaya THR Outsourching,expense,debit,f,f
+500120,Pesangon - Harian,expense,debit,f,f
+500121,Outsourcing - Staff Pabrik,expense,debit,f,f
+500122,Outsourcing - Keamanan Pabrik,expense,debit,f,f
+500123,Outsourcing - Borongan Pabrik,expense,debit,f,f
+500124,Tunjangan Transportasi - Pabrik,expense,debit,f,f
+500125,Biaya Catering & Makan - Pabrik,expense,debit,f,f
+500126,Biaya Lembur - Outsourching,expense,debit,f,f
+500127,Biaya Outsourching - SPG & SMD,expense,debit,f,f
+5002,Premi Karyawan Harian,expense,debit,t,f
+500201,Premi Produksi - Spunlace,expense,debit,f,f
+500202,Premi Produksi - Laminasi,expense,debit,f,f
+500203,Premi Produksi - End Product/Packing,expense,debit,f,f
+500204,Premi Produksi - Inventory,expense,debit,f,f
+500205,Premi Produksi - General Affairs,expense,debit,f,f
+5003,Biaya Utiliti,expense,debit,t,f
+500301,Biaya Listrik - Pabrik,expense,debit,f,f
+500302,Bahan Bakar - Batu Bara,expense,debit,f,f
+500303,Biaya Air,expense,debit,f,f
+500304,Biaya Perlengkapan Packing,expense,debit,f,f
+500305,Biaya Keperluan Pabrik,expense,debit,f,f
+500306,Biaya Research & Development,expense,debit,f,f
+500307,Gaji Staff Produksi,expense,debit,f,f
+500308,Biaya Persediaan Barang Jadi,expense,debit,f,f
+500309,Biaya Pemakaian Bahan Kimia,expense,debit,f,f
+500310,Biaya Pemakaian Bahan Baku,expense,debit,f,f
+500311,Biaya Sewa Gedung Pabrik,expense,debit,f,f
+500312,Biaya Produksi / Rework,expense,debit,f,f
+500313,Pesangon - Staff Produksi,expense,debit,f,f
+500314,Biaya Sewa Mes Produksi,expense,debit,f,f
+500315,Biaya Listrik - HO,expense,debit,f,f
+500316,Biaya Waste Produksi,expense,debit,f,f
+5100,Biaya Perbaikan & Pemeliharaan,expense,debit,t,f
+510001,Biaya Perbaikan & Pemeliharaan Gedung Pabrik,expense,debit,f,f
+510002,Biaya Perbaikan & Pemeliharaan Mesin,expense,debit,f,f
+510003,Biaya Perbaikan & Pemeliharaan Inventaris,expense,debit,f,f
+510004,Biaya Perbaikan & Pemeliharaan Instalasi,expense,debit,f,f
+5200,Transaksi WIP,asset,debit,f,f
+5300,Variance,expense,debit,f,f
+5400,Alokasi Ke Stock,expense,debit,f,f
+6000,Freight In & Exclusive Tax,expense,debit,t,f
+600001,Freight In,expense,debit,f,f
+600002,Bea Masuk Impor,expense,debit,f,f
+6100,Biaya Pemasaran,expense,debit,t,f
+610001,Gaji Staff Penjualan - Pembelian,expense,debit,f,f
+610002,Gaji Supir,expense,debit,f,f
+610003,Biaya Iklan dan Promosi,expense,debit,f,f
+610004,Biaya Listing Fee,expense,debit,f,f
+610005,BPD-Luar Kota,expense,debit,f,f
+610006,BPD-Luar Negri,expense,debit,f,f
+610007,Biaya Kirim Dokumen & Paket,expense,debit,f,f
+610008,Biaya Pengiriman-Angkutan Luar,expense,debit,f,f
+610009,Biaya Pengiriman-Angkutan Internal,expense,debit,f,f
+610010,Biaya Entertainment,expense,debit,f,f
+610011,Hak Paten,expense,debit,f,f
+610012,Biaya Penjualan Lainnya,expense,debit,f,f
+610013,Biaya CSR,expense,debit,f,f
+610014,Outsourcing - Driver,expense,debit,f,f
+610015,Biaya Sewa Tempat,expense,debit,f,f
+610016,Biaya Sample,expense,debit,f,f
+610017,Biaya Sewa Kendaraan,expense,debit,f,f
+610018,Pesangon - Pembelian & Penjualan,expense,debit,f,f
+610019,Pesangon - Supir,expense,debit,f,f
+610020,Rebate Penjualan,expense,debit,f,f
+6101,Biaya Distribusi,expense,debit,t,f
+610101,Biaya Bensin,expense,debit,f,f
+610102,Biaya Tol dan Parkir,expense,debit,f,f
+610103,Biaya Bea Ekspor,expense,debit,f,f
+6200,Gaji & Tunjangan Karyawan,expense,debit,t,f
+620001,Gaji Direksi & Staff,expense,debit,f,f
+620002,Gaji Keamanan,expense,debit,f,f
+620003,Biaya Transport Karyawan,expense,debit,f,f
+620004,Biaya PPh 21,expense,debit,f,f
+620005,Biaya Catering & Makan Karyawan,expense,debit,f,f
+620006,Biaya Pengobatan,expense,debit,f,f
+620007,Biaya BPJS Ketenagakerjaan,expense,debit,f,f
+620008,Biaya THR,expense,debit,f,f
+620009,Premi Karyawan Bulanan,expense,debit,f,f
+620010,Representative Direktur,expense,debit,f,f
+620011,Outsourcing - Staff,expense,debit,f,f
+620012,Premi & Tunjangan Direksi,expense,debit,f,f
+620013,Outsourching - Keamanan,expense,debit,f,f
+620014,Outsourching - Harian,expense,debit,f,f
+620015,Pesangon - Keamanan,expense,debit,f,f
+620016,Pesangon - Staff,expense,debit,f,f
+620017,Biaya BPJS Kesehatan,expense,debit,f,f
+6201,"Beban Utiliti, Adm, Sewa & Lainnya",expense,debit,t,f
+620102,Biaya PAM,expense,debit,f,f
+620103,Biaya Telekomunikasi,expense,debit,f,f
+620104,Biaya Koran & Majalah,expense,debit,f,f
+620105,Biaya Benda Pos & Materai,expense,debit,f,f
+620106,Biaya Perjalanan Dinas,expense,debit,f,f
+620107,Biaya ATK Kantor,expense,debit,f,f
+620108,"STNK, KIR & Pajak Kendaraan",expense,debit,f,f
+620109,Biaya Pajak,expense,debit,f,f
+620110,Biaya Retribusi & Sumbangan,expense,debit,f,f
+620111,Biaya Sewa,expense,debit,f,f
+620112,Biaya Kontribusi Sosial/CSAR,expense,debit,f,f
+620113,Biaya Jasa Profesional,expense,debit,f,f
+620114,Biaya Perijinan,expense,debit,f,f
+620115,Biaya Pajak Bumi Bangunan,expense,debit,f,f
+620116,Biaya Management Fee,expense,debit,f,f
+620117,Biaya Transportasi,expense,debit,f,f
+620118,Biaya Umum dan Adm Lainnya,expense,debit,f,f
+620119,Biaya Denda Pajak dan Denda Lainnya,expense,debit,f,f
+620122,Biaya Pemeliharaan Saham,expense,debit,f,f
+620123,Biaya Transportasi Direksi,expense,debit,f,f
+620124,Biaya PPh 4 ayat 2,expense,debit,f,f
+620125,Biaya Imbalan Kerja,expense,debit,f,f
+620126,Biaya PPh 22,expense,debit,f,f
+620127,Biaya PPh 23,expense,debit,f,f
+620128,Biaya PPh 25,expense,debit,f,f
+620129,Biaya Software,expense,debit,f,f
+620130,Pelatihan Training,expense,debit,f,f
+620131,Biaya Listrik - HO,expense,debit,f,f
+620132,Biaya Asuransi Direksi,expense,debit,f,f
+6202,Repair & Maintenance Expense,expense,debit,t,f
+620201,Biaya Pemeliharaan Bangunan Kantor,expense,debit,f,f
+620202,Biaya Pemeliharaan Inventaris Kantor,expense,debit,f,f
+620203,Biaya Pemeliharaan Kendaraan,expense,debit,f,f
+620204,Biaya Asuransi Kendaraan,expense,debit,f,f
+620205,Biaya Asuransi Gedung Pabrik,expense,debit,f,f
+620206,Biaya Asuransi Mesin,expense,debit,f,f
+6204,Biaya Penyusutan & Amortisasi,expense,debit,f,f
+7000,Biaya Diluar Usaha,expense,debit,t,f
+700001,Biaya Adm Bank & Buku Cek/Giro/Provisi,expense,debit,f,f
+700002,Bunga Leasing Kendaraan,expense,debit,f,f
+700003,Bunga Leasing Mesin,expense,debit,f,f
+700004,Beban PPh Final,expense,debit,f,f
+700005,Bunga Kredit Bank,expense,debit,f,f
+700006,Bunga Kredit lainnya,expense,debit,f,f
+700007,Pembulatan,expense,debit,f,f
+700008,Selisih Kurs,expense,debit,f,f
+700009,Biaya Selisih  Pembayaran,expense,debit,f,f
+700010,Beban PPH Badan Pasal 29,expense,debit,f,f
+700011,Biaya Lain-lain (Adj),expense,debit,f,f
+700012,Biaya Penghapusan Piutang Usaha,expense,debit,f,f
+700013,Biaya IPO Tambahan,expense,debit,f,f
+700014,Gain/Loss Dispossal F.A,expense,debit,f,f
+700015,Biaya Penjualan Lain-lain,expense,debit,f,f
+700017,Beban PPN Hasil Pemeriksaan,expense,debit,f,f
+700018,Biaya Cadangan Kerugian Piutang Usaha,expense,debit,f,f
+700019,Biaya Cadangan Kerugian Piutang Lainnya,expense,debit,f,f
+700020,Biaya Cadangan Kerugian Persediaan,expense,debit,f,f
+7100,Depresiasi dan Amortisasi,expense,debit,t,f
+710001,Biaya Penyusutan Bangunan,expense,debit,f,f
+710002,Biaya Penyusutan Instalasi Listrik,expense,debit,f,f
+710003,Biaya Penyusutan Mesin dan Peralatan,expense,debit,f,f
+710004,Biaya Penyusutan Inventaris Pabrik,expense,debit,f,f
+710005,Biaya Penyusutan Inventaris Kantor,expense,debit,f,f
+710006,Biaya Penyusutan Kendaraan,expense,debit,f,f
+8000,Pendapatan Diluar Usaha,revenue,credit,t,f
+800001,Pendapatan Jasa Giro,revenue,credit,f,f
+800002,Pendapatan Bunga Deposito,revenue,credit,f,f
+800003,Penjualan Inventory / Perlengkapan,revenue,credit,f,f
+800004,Pendapatan Bunga Tabungan,revenue,credit,f,f
+800005,Pendapatan Lain-Lain,revenue,credit,f,f
+800006,Gain/Loss Revaluation FA,revenue,credit,f,f
+800007,Pendapatan Sewa Gedung,revenue,credit,f,f
+800008,Pendapatan atas dampak kurtailmen atau penyelesaian program,revenue,credit,f,f
+800009,Pendapatan Piutang Tertagih,revenue,credit,f,f
+800010,Deffered Tax,revenue,credit,f,f
+800011,Employee Benefit - Other Comprehensive Income,revenue,credit,f,f
+800012,Related Tax,revenue,credit,f,f
+9000,Gain Or Loss,expense,debit,t,f
+900001,Realize Gain or Loss IDR,expense,debit,f,f
+900002,Unrealize Gain or Loss IDR,expense,debit,f,f
+900003,Realize Gain or Loss USD,expense,debit,f,f
+900004,Unrealize Gain or Loss USD,expense,debit,f,f
+900005,Realize Gain or Loss RMB,expense,debit,f,f
+900006,Unrealize Gain or Loss RMB,expense,debit,f,f

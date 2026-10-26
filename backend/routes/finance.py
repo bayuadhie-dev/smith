@@ -833,14 +833,15 @@ def create_payment():
 
         # Akun kontrol piutang/hutang hanya boleh berubah lewat faktur (agar
         # daftar piutang/hutang selalu sinkron dengan buku besar).
-        CONTROL_CODES = {'1-1100', '1-1110', '2-1000', '2-1050'}
+        from utils.coa_roles import CoaRoles
+        _roles = CoaRoles()
         for l in lines_in:
             acc = db.session.get(Account, l.get('account_id')) if l.get('account_id') else None
             if not acc:
                 return jsonify({'error': 'Akun pada rincian tidak ditemukan'}), 400
             if acc.is_header:
                 return jsonify({'error': f'Akun {acc.account_code} adalah akun induk (header), pilih akun detail'}), 400
-            if acc.account_code in CONTROL_CODES:
+            if _roles.is_control(acc):
                 return jsonify({'error': f'Akun {acc.account_code} - {acc.account_name} adalah akun kontrol Piutang/Hutang. '
                                          'Gunakan form Penerimaan Penjualan / Pembayaran Pembelian dengan memilih faktur.'}), 400
 
@@ -2083,39 +2084,27 @@ def get_income_statement():
             # administrative expense until that classification exists
             # (would need Employee/Department tagging, a business decision,
             # not a safe code-only fix).
-            _mfg_overhead_codes_6xxx = {'6-1000', '6-2000', '6-3000', '6-3100', '6-3200', '6-4000'}
-
-            cogs_accounts = [a for a in expense_accounts if a.account_code.startswith('5-1')]
-            direct_materials = sum(year_balance(a) for a in cogs_accounts if a.account_code == '5-1100')
-            # 5-1210/5-1220 (2026-10-22, Upah Borongan / Tunjangan Karyawan
-            # Langsung) are children of 5-1200 - included here too so they
-            # don't fall through total_cogs uncounted.
-            direct_labor = sum(
-                year_balance(a) for a in cogs_accounts
-                if a.account_code in ('5-1200', '5-1210', '5-1220')
-            )
-            manufacturing_overhead = sum(year_balance(a) for a in cogs_accounts if a.account_code == '5-1300')
-            manufacturing_overhead += sum(
-                year_balance(a) for a in expense_accounts if a.account_code in _mfg_overhead_codes_6xxx
-            )
-            # 5-1000 is the HPP header account itself - include it too in case
-            # postings land there directly instead of its 5-11xx/12xx/13xx children.
-            cogs_other = sum(year_balance(a) for a in expense_accounts if a.account_code == '5-1000')
+            from utils.coa_roles import CoaRoles
+            roles = CoaRoles()
+            by_bucket = {}
+            for a in expense_accounts:
+                by_bucket.setdefault(roles.expense_bucket(a), []).append(a)
+            direct_materials = sum(year_balance(a) for a in by_bucket.get('direct_materials', []))
+            direct_labor = sum(year_balance(a) for a in by_bucket.get('direct_labor', []))
+            manufacturing_overhead = sum(year_balance(a) for a in by_bucket.get('overhead', []))
+            cogs_other = sum(year_balance(a) for a in by_bucket.get('cogs_other', []))
             total_cogs = direct_materials + direct_labor + manufacturing_overhead + cogs_other
 
-            selling_accounts = [
-                a for a in expense_accounts
-                if (a.account_code.startswith('8-1') or a.account_code.startswith('6-'))
-                and a.account_code not in _mfg_overhead_codes_6xxx
-            ]
-            admin_accounts = [a for a in expense_accounts if a.account_code.startswith('8-2') or a.account_code.startswith('7-')]
+            cogs_account_objs = [a for k in ('direct_materials', 'direct_labor', 'overhead', 'cogs_other') for a in by_bucket.get(k, [])]
+            selling_accounts = by_bucket.get('selling', [])
+            admin_accounts = by_bucket.get('admin', [])
             selling_expenses = sum(year_balance(a) for a in selling_accounts)
             administrative_expenses = sum(year_balance(a) for a in admin_accounts)
             total_operating_expenses = selling_expenses + administrative_expenses
 
-            other_accounts = [a for a in expense_accounts if a.account_code.startswith('9-')]
-            interest_expense = sum(year_balance(a) for a in other_accounts if a.account_code == '9-1000')
-            other_other = sum(year_balance(a) for a in other_accounts if a.account_code != '9-1000')
+            other_accounts = by_bucket.get('interest', []) + by_bucket.get('other', [])
+            interest_expense = sum(year_balance(a) for a in by_bucket.get('interest', []))
+            other_other = sum(year_balance(a) for a in by_bucket.get('other', []))
             total_other_expenses = interest_expense + other_other
 
             # 4-1200 Diskon Penjualan broken out as its own line (2026-10-22,
@@ -2126,9 +2115,9 @@ def get_income_statement():
             # view and double-counted it against sales_revenue (sales_revenue
             # was already net-of-discount before, so bucketing the discount
             # separately too would have subtracted it twice).
-            sales_revenue = sum(year_balance(a) for a in revenue_accounts if a.account_code == '4-1000')
-            sales_discounts = sum(year_balance(a) for a in revenue_accounts if a.account_code == '4-1200')
-            other_revenue_accounts = [a for a in revenue_accounts if a.account_code not in ('4-1000', '4-1200')]
+            sales_revenue = sum(year_balance(a) for a in revenue_accounts if roles.sales_revenue(a))
+            sales_discounts = sum(year_balance(a) for a in revenue_accounts if roles.sales_discount(a))
+            other_revenue_accounts = [a for a in revenue_accounts if not roles.sales_revenue(a) and not roles.sales_discount(a)]
             other_revenue = sum(year_balance(a) for a in other_revenue_accounts)
             # sales_discounts' balance is negative in 4-1200's own credit-normal
             # convention (it's debited, a contra-revenue account), so adding it
@@ -2156,9 +2145,7 @@ def get_income_statement():
                 return sorted(out, key=lambda r: r['code'])
 
             revenue_account_list = account_list(revenue_accounts)
-            cogs_account_list = account_list(
-                [a for a in expense_accounts if a.account_code.startswith('5-1') or a.account_code in _mfg_overhead_codes_6xxx]
-            )
+            cogs_account_list = account_list(cogs_account_objs)
             selling_account_list = account_list(selling_accounts)
             admin_account_list = account_list(admin_accounts)
             other_account_list = account_list(other_accounts)
@@ -2426,8 +2413,11 @@ def get_aging_report():
                                     'balance': balance, 'balance_idr': balance_idr})
 
         total = round(sum(totals.values()), 2)
-        control = '1-1100' if kind == 'receivable' else '2-1000'
-        entries = AccountingEntry.query.filter(AccountingEntry.account_code == control, AccountingEntry.status == 'posted',
+        from utils.coa_roles import CoaRoles
+        _roles = CoaRoles()
+        _pred = _roles.receivable_control if kind == 'receivable' else _roles.payable_control
+        control_codes = [a.account_code for a in Account.query.all() if _pred(a)]
+        entries = AccountingEntry.query.filter(AccountingEntry.account_code.in_(control_codes), AccountingEntry.status == 'posted',
                                                AccountingEntry.entry_date <= as_of).all()
         gl = sum(float(e.debit_amount or 0) - float(e.credit_amount or 0) for e in entries)
         if kind == 'payable':
@@ -2775,37 +2765,37 @@ def get_balance_sheet():
         # (date-ranged revenue/expense sums now come from the shared
         # _classified_balance_in_range() module-level helper, below)
 
-        cash = code_balance('1-1000') + code_balance('1-1010') + code_balance('1-1020')
-        # Akun kontra-aset (Cadangan Piutang 1-1110, Akumulasi Penyusutan 1-2100)
-        # bersaldo kredit. Pakai saldo mentah (debit - kredit, negatif untuk
-        # kredit) lalu DITAMBAHKAN ke akun induknya - sebelumnya dikurangkan,
-        # sehingga saldo kredit justru menambah aset dan neraca selisih 2x
-        # nilai akumulasi penyusutan.
-        accounts_receivable = _net.get('1-1100', 0.0) + _net.get('1-1110', 0.0)
-        inventory = code_balance('1-1200') + code_balance('1-1300') + code_balance('1-1400') + code_balance('1-1500')
-        prepaid_expenses = code_balance('1-1600')
+        from utils.coa_roles import CoaRoles
+        roles = CoaRoles()
+        _active = [a for a in _accounts.values() if a.is_active]
+
+        def asset_sum(pred):
+            return sum(_net.get(a.account_code, 0.0) for a in _active if a.account_type == 'asset' and pred(a))
+
+        def credit_sum(account_type, pred):
+            return sum(-_net.get(a.account_code, 0.0) for a in _active if a.account_type == account_type and pred(a))
+
+        # Assets use raw debit-credit so contra accounts (cadangan piutang, akumulasi penyusutan)
+        # naturally reduce the total; liabilities/equity use credit-debit.
+        cash = asset_sum(roles.cash)
+        accounts_receivable = asset_sum(roles.receivable)
+        inventory = asset_sum(roles.inventory)
+        prepaid_expenses = asset_sum(roles.prepaid)
         total_current_assets = cash + accounts_receivable + inventory + prepaid_expenses
 
-        property_plant_equipment = code_balance('1-2000')
-        accumulated_depreciation = _net.get('1-2100', 0.0)  # negatif (saldo kredit)
+        property_plant_equipment = asset_sum(roles.fixed_cost)
+        accumulated_depreciation = asset_sum(roles.accumulated_depreciation)  # negatif (saldo kredit)
         net_fixed_assets = property_plant_equipment + accumulated_depreciation
         total_assets = total_current_assets + net_fixed_assets
 
-        accounts_payable = code_balance('2-1000')
-        # Fase 1/6 follow-up fix (2026-10-01, found via real production
-        # testing after server came back online): was prefix_balance('2-11')
-        # only - missed '2-1210' Hutang PPN (and any other 2-1xxx sub-range
-        # besides 2-1000/2-1300), understating current_liabilities and
-        # throwing off the balance sheet by exactly that amount. Broadened
-        # to the whole '2-1' prefix minus the 2 codes already counted
-        # separately, so any future 2-1xxx sub-account (GR/IR clearing,
-        # other accrued-liability types, etc) is caught automatically
-        # instead of needing another narrow prefix patch each time.
-        accrued_liabilities = prefix_balance('2-1', exclude=('2-1000', '2-1300'))
-        short_term_debt = code_balance('2-1300')
+        accounts_payable = credit_sum('liability', roles.payable)
+        short_term_debt = credit_sum('liability', roles.short_term_debt)
+        long_term_debt = credit_sum('liability', roles.long_term_debt)
+        # Everything else owed (accrued, taxes, GR/IR, salaries, advances...) is a current liability.
+        accrued_liabilities = credit_sum(
+            'liability', lambda a: not (roles.payable(a) or roles.short_term_debt(a) or roles.long_term_debt(a)))
         total_current_liabilities = accounts_payable + accrued_liabilities + short_term_debt
 
-        long_term_debt = code_balance('2-2000')
         total_long_term_liabilities = long_term_debt
         total_liabilities = total_current_liabilities + total_long_term_liabilities
 
@@ -2857,15 +2847,9 @@ def get_balance_sheet():
         prior_years_expense = _classified_balance_in_range('expense', date_to=day_before_current_year)
         prior_years_net_income = prior_years_revenue - prior_years_expense
 
-        # Modal = 3-1000 plus every other detail equity account except Laba Ditahan/Laba Tahun
-        # Berjalan (e.g. 3-4000 Saldo Awal Persediaan), so a new equity account never unbalances the sheet.
-        _equity_special = {'3-2000', '3-3000'}
-        common_stock = sum(
-            code_balance(a.account_code)
-            for a in Account.query.filter(Account.account_code.like('3-%'), Account.is_active == True).all()
-            if a.account_code not in _equity_special and not a.is_header
-        )
-        retained_earnings = code_balance('3-2000') + code_balance('3-3000') + prior_years_net_income
+        # Modal = every equity account that is not Laba Ditahan / Laba Tahun Berjalan.
+        common_stock = credit_sum('equity', lambda a: not a.is_header and not roles.retained(a))
+        retained_earnings = credit_sum('equity', lambda a: not a.is_header and roles.retained(a)) + prior_years_net_income
         total_equity = common_stock + retained_earnings + current_year_earnings
 
         # fix_report_3.md: unclassified_accounts - active asset/liability/
@@ -2878,30 +2862,16 @@ def get_balance_sheet():
         # accounts are intentionally excluded (they already flow into
         # current_year_earnings/retained_earnings above via classify_account,
         # not individually listed on the Neraca).
-        from utils.finance_helpers import classify_account
-        _covered_codes = {
-            '1-1000', '1-1010', '1-1020', '1-1100', '1-1110',
-            '1-1200', '1-1300', '1-1400', '1-1500', '1-1600',
-            '1-2000', '1-2100',
-            '2-2000',
-            '3-1000', '3-2000', '3-3000',
-        }
-        _covered_prefixes = ('2-1',)  # whole current-liabilities range: AP + accrued + short_term_debt together already sum all of it
         unclassified_accounts = []
-        for acc in Account.query.filter(Account.is_active == True).all():
-            bucket = classify_account(acc)
-            if bucket not in ('asset', 'liability', 'equity'):
+        for acc in _active:
+            if acc.account_type != 'asset' or acc.is_header or roles.asset_classified(acc):
                 continue
-            if acc.account_code in _covered_codes or acc.account_code.startswith('3-'):
-                continue
-            if any(acc.account_code.startswith(p) for p in _covered_prefixes):
-                continue
-            balance = _signed(acc.account_code)
+            balance = _net.get(acc.account_code, 0.0)
             if abs(balance) > 0.01:
                 unclassified_accounts.append({
                     'account_code': acc.account_code,
                     'account_name': acc.account_name,
-                    'account_type': bucket,
+                    'account_type': 'asset',
                     'balance': balance,
                 })
 
@@ -3150,20 +3120,18 @@ def get_dashboard_expenses():
         # / Tunjangan Karyawan Langsung) count as labor, and the
         # unambiguously-manufacturing 6-xxxx accounts count as overhead, not
         # selling expense.
-        _mfg_overhead_codes_6xxx = {'6-1000', '6-2000', '6-3000', '6-3100', '6-3200', '6-4000'}
-        materials = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code in ('5-1000', '5-1100'))
-        labor = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code in ('5-1200', '5-1210', '5-1220'))
-        manufacturing = sum(
-            _account_balance_in_range(a) for a in expense_accounts
-            if a.account_code == '5-1300' or a.account_code in _mfg_overhead_codes_6xxx
-        )
-        selling = sum(
-            _account_balance_in_range(a) for a in expense_accounts
-            if (a.account_code.startswith('8-1') or a.account_code.startswith('6-'))
-            and a.account_code not in _mfg_overhead_codes_6xxx
-        )
-        admin = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code.startswith('8-2') or a.account_code.startswith('7-'))
-        others = sum(_account_balance_in_range(a) for a in expense_accounts if a.account_code.startswith('9-'))
+        from utils.coa_roles import CoaRoles
+        roles = CoaRoles()
+        bal = {}
+        for a in expense_accounts:
+            k = roles.expense_bucket(a)
+            bal[k] = bal.get(k, 0.0) + _account_balance_in_range(a)
+        materials = bal.get('direct_materials', 0.0) + bal.get('cogs_other', 0.0)
+        labor = bal.get('direct_labor', 0.0)
+        manufacturing = bal.get('overhead', 0.0)
+        selling = bal.get('selling', 0.0)
+        admin = bal.get('admin', 0.0)
+        others = bal.get('interest', 0.0) + bal.get('other', 0.0)
 
         categories = [
             ('Raw Materials', materials),
@@ -4201,10 +4169,11 @@ def create_recurring_payment_transaction(id):
         # - Beban Operasional (shared account), everything else - unchanged
         #   from the 2026-08-16 decision.
         if recurring_payment.is_factory_cost:
-            debit_account = Account.query.filter_by(account_code='5-1300').first()
+            from utils.coa_roles import CoaRoles
+            debit_account = CoaRoles().factory_overhead_account()
             if not debit_account:
                 db.session.rollback()
-                return jsonify({'error': 'Akun 5-1300 HPP - Overhead tidak ditemukan'}), 400
+                return jsonify({'error': 'Akun HPP - Overhead pabrik tidak ditemukan'}), 400
             debit_account_id = debit_account.id
         else:
             beban_default = GlobalAccountDefault.query.filter_by(transaction_key='beban_operasional').first()
