@@ -12,7 +12,7 @@ const Inner = () => (
 const App = () => (
   <Routes>
     <Route path="/app" element={<div><Outlet /></div>}>
-      <Route index element={<Inner />} />
+      <Route index element={<div>INDEX</div>} />
       <Route path="*" element={<Inner />} />
     </Route>
   </Routes>

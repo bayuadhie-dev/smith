@@ -1143,7 +1143,7 @@ function App() {
               } />
 
               <Route path="/app" element={isAuthenticated ? <Layout /> : <Navigate to="/" />}>
-                <Route index element={<AppChildRoutes />} />
+                <Route index element={<DashboardEnhanced />} />
                 <Route path="*" element={<AppChildRoutes />} />
               </Route>
               <Route path="*" element={<NotFound />} />
