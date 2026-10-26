@@ -352,6 +352,7 @@ def _publish_default(user_id, document_type):
     db.session.flush()
     template.current_version_id = version.id
     db.session.flush()
+    db.session.refresh(template)  # current_version relationship still points at the old version object otherwise
     return template
 
 

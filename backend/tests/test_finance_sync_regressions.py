@@ -750,8 +750,7 @@ def test_default_template_upgrades_after_font_migration_but_keeps_designer_versi
     t.current_version.canvas_data = {'objects': [], 'layout': 'old'}
     t.current_version.change_note = 'Migrasi otomatis: fontSize dikonversi dari pt ke mm'
     db_session.commit()
-    t2 = ensure_default_template(None, 'kwitansi')
-    db_session.refresh(t2)
+    t2 = ensure_default_template(None, 'kwitansi')   # no manual refresh: the relationship must already be current
     assert t2.id == t.id and t2.current_version.canvas_data.get('layout') == LAYOUT
     # a version saved from the Designer is never overwritten
     t2.current_version.canvas_data = {'objects': [], 'layout': 'old'}
