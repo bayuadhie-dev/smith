@@ -1,0 +1,2297 @@
+[
+{
+"account_no": "1000",
+"name": "Kas",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100001",
+"name": "Kas IDR",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100002",
+"name": "Kas USD",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100003",
+"name": "Kas Transfer(Post Silang)",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100004",
+"name": "Kas Operasional IDR",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100006",
+"name": "Kas Boyolali",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "1001",
+"name": "Bank",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100101",
+"name": "BCA 278.303.4000 IDR",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100102",
+"name": "BCA 5435093768 IDR",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100103",
+"name": "BUKOPIN 1006920094",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100105",
+"name": "ICBC - IDR",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100106",
+"name": "INA BANK 100 1381 888",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100107",
+"name": "INA BANK  100 1331 888 ESCROW",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100108",
+"name": "UOB PT FALMACO 437-300-207-5",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100109",
+"name": "UOB 437-300-210-5 Falmaco",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100110",
+"name": "BCA 278.333.8882 USD",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100111",
+"name": "ICBC-RMB",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100112",
+"name": "IDR Deposito",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100113",
+"name": "USD Deposito",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100114",
+"name": "MANDIRI 1320000686809",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "100115",
+"name": "B N I",
+"account_type": "CASH_BANK"
+},
+{
+"account_no": "1002",
+"name": "Piutang Dagang",
+"account_type": "ACCOUNT_RECEIVABLE"
+},
+{
+"account_no": "100201",
+"name": "Piutang Usaha IDR",
+"account_type": "ACCOUNT_RECEIVABLE"
+},
+{
+"account_no": "100202",
+"name": "Piutang usaha  USD",
+"account_type": "ACCOUNT_RECEIVABLE"
+},
+{
+"account_no": "100203",
+"name": "Cadangan Kerugian Piutang",
+"account_type": "ACCOUNT_RECEIVABLE"
+},
+{
+"account_no": "100204",
+"name": "Piutang Usaha RMB",
+"account_type": "ACCOUNT_RECEIVABLE"
+},
+{
+"account_no": "1003",
+"name": "Piutang Lain-lain",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100301",
+"name": "Piutang Karyawan",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100302",
+"name": "Piutang Lainnya",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100303",
+"name": "Piutang Lainnya - PT Dibantu Teman Selalu",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100304",
+"name": "Piutang Lainnya - Jis Capital Utama",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100305",
+"name": "Piutang Lainnya - David Singsing",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100306",
+"name": "Cadangan Kerugian Piutang Lainnya",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100307",
+"name": "Piutang GMS",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100308",
+"name": "Piutang PT GMS",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100309",
+"name": "Pembelian Aset",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "1004",
+"name": "Piutang Pemegang Saham",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100401",
+"name": "Piutang Theresia Indra Wirawan",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100402",
+"name": "Piutang Fredy Hanafi",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100403",
+"name": "Piutang Daniel Muljadi Hanafi",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100404",
+"name": "Piutang Rosalina Indra Wirawati",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100405",
+"name": "Piutang Irvan Hanafi",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "1005",
+"name": "Persediaan",
+"account_type": "INVENTORY"
+},
+{
+"account_no": "100501",
+"name": "Persediaan Bahan Baku",
+"account_type": "INVENTORY"
+},
+{
+"account_no": "100502",
+"name": "Persediaan Barang Dalam Penyelesaian",
+"account_type": "INVENTORY"
+},
+{
+"account_no": "100503",
+"name": "Persediaan Bahan Pembantu",
+"account_type": "INVENTORY"
+},
+{
+"account_no": "100504",
+"name": "Persediaan Barang Jadi",
+"account_type": "INVENTORY"
+},
+{
+"account_no": "100505",
+"name": "Barang Terkirim",
+"account_type": "INVENTORY"
+},
+{
+"account_no": "100506",
+"name": "WIP InterTransaksi",
+"account_type": "INVENTORY"
+},
+{
+"account_no": "100507",
+"name": "WIP",
+"account_type": "INVENTORY"
+},
+{
+"account_no": "100508",
+"name": "Cadangan Kerugian Persediaan",
+"account_type": "INVENTORY"
+},
+{
+"account_no": "100509",
+"name": "Waste Produksi",
+"account_type": "INVENTORY"
+},
+{
+"account_no": "1006",
+"name": "Prepaid Expense",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100601",
+"name": "Biaya Dibayar Dimuka",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100602",
+"name": "Biaya Asuransi Dibayar Dimuka",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100603",
+"name": "Biaya Sewa Dibayar Dimuka",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100604",
+"name": "Uang Muka Lainnya",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100605",
+"name": "Pajak Dibyr Dimuka",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100606",
+"name": "Pajak Dibayar Dimuka PPh 21",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100607",
+"name": "Pajak Dibayar Dimuka PPh 22",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100608",
+"name": "Pajak Dibayar Dimuka PPh 23",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100609",
+"name": "Pajak Dibayar Dimuka PPh 25",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100610",
+"name": "Pajak Dibayar Dimuka PPh 4 Ayat 2",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100611",
+"name": "PPn Masukan",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100612",
+"name": "PPn Masukan Barang Mewah",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100613",
+"name": "Uang Muka PPN Rekonsiliasi",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100614",
+"name": "Lebih Bayar SPT Pajak 2021",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100615",
+"name": "Biaya Dibayar Dimuka Accurate Online",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100616",
+"name": "Pajak KMS Dibayar Dimuka",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100617",
+"name": "Relokasi Pabrik Dibayar Dimuka",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100618",
+"name": "Kegiatan Membangun Sendiri",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "100619",
+"name": "Biaya Pengiriman - Claim",
+"account_type": "OTHER_CURRENT_ASSET"
+},
+{
+"account_no": "1007",
+"name": "Uang Muka",
+"account_type": "ACCOUNT_RECEIVABLE"
+},
+{
+"account_no": "100701",
+"name": "Uang Muka Pembelian IDR",
+"account_type": "ACCOUNT_RECEIVABLE"
+},
+{
+"account_no": "100702",
+"name": "Uang Muka Pembelian USD",
+"account_type": "ACCOUNT_RECEIVABLE"
+},
+{
+"account_no": "100703",
+"name": "Uang Muka Pembelian RMB",
+"account_type": "ACCOUNT_RECEIVABLE"
+},
+{
+"account_no": "1101",
+"name": "Aktiva Tetap",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "110101",
+"name": "Tanah",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "110102",
+"name": "Bangunan",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "110103",
+"name": "Instalasi Listrik",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "110104",
+"name": "Mesin & Peralatan",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "110105",
+"name": "Inventaris Pabrik",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "110106",
+"name": "Inventaris kantor",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "110107",
+"name": "Kendaraan",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "110108",
+"name": "Aktiva Tetap - Tax Amnesty",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "110109",
+"name": "Aset Sewa Guna Usaha",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "110110",
+"name": "Right-of-Use Of Assets",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "1102",
+"name": "Akumulasi Depresiasi Fixed Asset",
+"account_type": "ACCUMULATED_DEPRECIATION"
+},
+{
+"account_no": "110201",
+"name": "Akumulasi Penyusutan Bangunan",
+"account_type": "ACCUMULATED_DEPRECIATION"
+},
+{
+"account_no": "110202",
+"name": "Akumulasi Penyusutan Instalasi Listrik",
+"account_type": "ACCUMULATED_DEPRECIATION"
+},
+{
+"account_no": "110203",
+"name": "Akumulasi Penyusutan Mesin & Peralatan",
+"account_type": "ACCUMULATED_DEPRECIATION"
+},
+{
+"account_no": "110204",
+"name": "Akumulasi Penyusutan Inventaris Pabrik",
+"account_type": "ACCUMULATED_DEPRECIATION"
+},
+{
+"account_no": "110205",
+"name": "Akumulasi Penyusutan Inventaris Kantor",
+"account_type": "ACCUMULATED_DEPRECIATION"
+},
+{
+"account_no": "110206",
+"name": "Akumulasi Penyusutan Kendaraan",
+"account_type": "ACCUMULATED_DEPRECIATION"
+},
+{
+"account_no": "110207",
+"name": "Akumulasi Penyusutan Aset Sewa Guna Usaha",
+"account_type": "ACCUMULATED_DEPRECIATION"
+},
+{
+"account_no": "110208",
+"name": "Akumulasi Penyusutan - RoU",
+"account_type": "ACCUMULATED_DEPRECIATION"
+},
+{
+"account_no": "1103",
+"name": "Transaksi Pembelian Aset",
+"account_type": "OTHER_ASSET"
+},
+{
+"account_no": "1104",
+"name": "Intangible Asset",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "110401",
+"name": "Trade Mark",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "110402",
+"name": "Copy Right",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "110403",
+"name": "Goodwiil",
+"account_type": "FIXED_ASSET"
+},
+{
+"account_no": "1105",
+"name": "Aktiva Lain-Lain",
+"account_type": "OTHER_ASSET"
+},
+{
+"account_no": "110501",
+"name": "Investasi Bangunan dalam Renovasi",
+"account_type": "OTHER_ASSET"
+},
+{
+"account_no": "110502",
+"name": "Beban Ditangguhkan - IPO",
+"account_type": "OTHER_ASSET"
+},
+{
+"account_no": "110503",
+"name": "Beban Pajak ditangguhkan",
+"account_type": "OTHER_ASSET"
+},
+{
+"account_no": "110504",
+"name": "Deferred Tax Asset",
+"account_type": "OTHER_ASSET"
+},
+{
+"account_no": "1106",
+"name": "Saldo Awal AOL",
+"account_type": "OTHER_ASSET"
+},
+{
+"account_no": "2000",
+"name": "Hutang",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200001",
+"name": "Hutang Usaha IDR",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200002",
+"name": "Hutang Usaha USD",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200003",
+"name": "Hutang Lain - Lain",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200004",
+"name": "Hutang Pembelian Kendaraan",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200005",
+"name": "Hutang Pajak - PPH 4 Ayat 2",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200006",
+"name": "Hutang Pengiriman Barang",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200007",
+"name": "Hutang Jasa Profesional",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200008",
+"name": "Hutang Pajak - PPH 21",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200009",
+"name": "Hutang Pajak - PPH 22",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200010",
+"name": "Hutang Pajak - PPH 23",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200011",
+"name": "Hutang Pajak - PPH 25",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200012",
+"name": "Hutang Pajak - PPH 29",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200013",
+"name": "Hutang Pajak - PPN",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200014",
+"name": "Hutang Pajak - STP",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200015",
+"name": "Hutang Usaha  RMB",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "2001",
+"name": "Uang Muka Penjualan",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200101",
+"name": "Uang Muka Penjualan IDR",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200102",
+"name": "Uang Muka Penjualan USD",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200103",
+"name": "Uang Muka Saham",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "200104",
+"name": "Uang Muka Penjualan RMB",
+"account_type": "ACCOUNT_PAYABLE"
+},
+{
+"account_no": "2002",
+"name": "Bank Loan Short Term",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200202",
+"name": "Hutang Bank INA",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "2003",
+"name": "Bank Loan Long Term",
+"account_type": "LONG_TERM_LIABILITY"
+},
+{
+"account_no": "200302",
+"name": "Kredit Multi Guna - UOB",
+"account_type": "LONG_TERM_LIABILITY"
+},
+{
+"account_no": "200303",
+"name": "Imbalan Kerja",
+"account_type": "LONG_TERM_LIABILITY"
+},
+{
+"account_no": "200304",
+"name": "Deffered Income",
+"account_type": "LONG_TERM_LIABILITY"
+},
+{
+"account_no": "200305",
+"name": "Deferred Tax Liabulities",
+"account_type": "LONG_TERM_LIABILITY"
+},
+{
+"account_no": "200306",
+"name": "Lease Liabilities",
+"account_type": "LONG_TERM_LIABILITY"
+},
+{
+"account_no": "2004",
+"name": "Hutang Kepada Pemegang Saham",
+"account_type": "LONG_TERM_LIABILITY"
+},
+{
+"account_no": "200401",
+"name": "Hutang Theresia Indra Wirawan",
+"account_type": "LONG_TERM_LIABILITY"
+},
+{
+"account_no": "200402",
+"name": "Hutang Fredy Hanafi",
+"account_type": "LONG_TERM_LIABILITY"
+},
+{
+"account_no": "200403",
+"name": "Hutang Daniel Muljadi Hanafi",
+"account_type": "LONG_TERM_LIABILITY"
+},
+{
+"account_no": "200404",
+"name": "Hutang Rosalina Indra Wirawati",
+"account_type": "LONG_TERM_LIABILITY"
+},
+{
+"account_no": "200405",
+"name": "Hutang Irvan Hanafi",
+"account_type": "LONG_TERM_LIABILITY"
+},
+{
+"account_no": "2005",
+"name": "Hutang Pembiayaan Konsumen",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200501",
+"name": "Hutang Pembelian Kendaraan",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200502",
+"name": "Hutang Leasing Kendaraan",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200503",
+"name": "Hutang Leasing Mesin",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "2006",
+"name": "Accrued Payable",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200601",
+"name": "Listrik YMH Dibayar",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200602",
+"name": "BPJS & Jamsostek YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200603",
+"name": "Jasa  Profesional YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200604",
+"name": "Biaya Pengiriman YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200605",
+"name": "Telepon dan Internet YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200606",
+"name": "Gaji YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200607",
+"name": "Upah YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200608",
+"name": "Air Tanah YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200609",
+"name": "THR YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200610",
+"name": "Premi YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200611",
+"name": "Pajak PBB YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200612",
+"name": "Denda YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200613",
+"name": "Iklan dan Promosi YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200614",
+"name": "Listing Fee YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200615",
+"name": "BPD-Luar Kota YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200616",
+"name": "Repdir - YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200617",
+"name": "Outsourching - YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200618",
+"name": "Pesangon Harian - YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200619",
+"name": "Pesangon Staf Produksi - YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200620",
+"name": "Pesangon Staf Pembelian - YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200621",
+"name": "Pesangon Sopir - YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200622",
+"name": "Pesangon Staf - YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200623",
+"name": "Pesangon Keamanan - YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200624",
+"name": "Relokasi Pabrik YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200625",
+"name": "Catering & Makan Karyawan YMH",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "2007",
+"name": "Hutang Belum Ditagih",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200701",
+"name": "Selisih Barang Belum Ditagih",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200702",
+"name": "Hutang Pembelian Belum Ditagih",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "2008",
+"name": "Uang Muka Cust",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200801",
+"name": "Uang Muka Customer",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200802",
+"name": "Uang Muka Penjualan Asset",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "2009",
+"name": "Hutang Kepada Pihak Ketiga",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200901",
+"name": "Hutang Kepada Bu Ming Cen",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200902",
+"name": "Hutang Kepada Pak Leon dan Bu Fie Fie",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200903",
+"name": "Hutang Kepada KoinWorks",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200904",
+"name": "Hutang Kepada PT. Faluna Mulya Abadi",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200905",
+"name": "Hutang Kepada Yayasan & LIE",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200906",
+"name": "Hutang Kepada Ho Ban Jun",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200907",
+"name": "Hutang Kepada Wong Jie Kwin",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200908",
+"name": "Hutang Kepada Grace Natalia",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200909",
+"name": "Hutang Daniel Muljadi Hanafi - UOB / Inti Dana",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200910",
+"name": "Hutang Daniel Muljadi Hanafi - Kendaraan",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200919",
+"name": "Hutang Lainnya",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200920",
+"name": "Hutang Kepada PT Delta Investama Indonesia",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200921",
+"name": "Hutang GMS",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200922",
+"name": "Hutang Kepada Pak Handoyo",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200923",
+"name": "Hutang GAP",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200924",
+"name": "Hutang GMJ",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "200927",
+"name": "Hutang - CC",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "2010",
+"name": "Hutang Afiliasi",
+"account_type": "LONG_TERM_LIABILITY"
+},
+{
+"account_no": "2010001",
+"name": "Hutang Afiliasi Kepada Ibu Theresia",
+"account_type": "LONG_TERM_LIABILITY"
+},
+{
+"account_no": "2100",
+"name": "Hutang Pajak",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "210001",
+"name": "Ppn Keluaran",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "210002",
+"name": "Hutang PPh 4 Ayat 2",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "210003",
+"name": "Hutang PPh 21",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "210004",
+"name": "Hutang PPh 22",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "210005",
+"name": "Hutang PPh 23",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "210006",
+"name": "Hutang PPh 25",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "210007",
+"name": "Hutang PPh 29",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "210008",
+"name": "PPn Kurang Bayar",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "210009",
+"name": "Akun Penampung PPH 21",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "2101",
+"name": "Hutang Pajak Lain-lain",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "210101",
+"name": "Hutang Pajak Pabrik/Kantor",
+"account_type": "OTHER_CURRENT_LIABILITY"
+},
+{
+"account_no": "3000",
+"name": "Modal Perusahaan",
+"account_type": "EQUITY"
+},
+{
+"account_no": "300001",
+"name": "OPENING BALANCE EQUITY",
+"account_type": "EQUITY"
+},
+{
+"account_no": "300002",
+"name": "Tambahan Modal Disetor",
+"account_type": "EQUITY"
+},
+{
+"account_no": "300003",
+"name": "Modal Saham",
+"account_type": "EQUITY"
+},
+{
+"account_no": "300004",
+"name": "RETAINED EARNING",
+"account_type": "EQUITY"
+},
+{
+"account_no": "300005",
+"name": "Deviden",
+"account_type": "EQUITY"
+},
+{
+"account_no": "300006",
+"name": "Modal Saham IPO",
+"account_type": "EQUITY"
+},
+{
+"account_no": "3100",
+"name": "Rugi/Laba",
+"account_type": "EQUITY"
+},
+{
+"account_no": "310001",
+"name": "Ikhtisal Rugi / Laba",
+"account_type": "EQUITY"
+},
+{
+"account_no": "310002",
+"name": "Rugi / Laba Aktuarial",
+"account_type": "EQUITY"
+},
+{
+"account_no": "310003",
+"name": "Rugi / Laba Ditahan",
+"account_type": "EQUITY"
+},
+{
+"account_no": "310004",
+"name": "Rugi / Laba Tahun Lalu",
+"account_type": "EQUITY"
+},
+{
+"account_no": "310005",
+"name": "Rugi / Laba Tahun Berjalan",
+"account_type": "EQUITY"
+},
+{
+"account_no": "310006",
+"name": "Rugi / Laba Ditahan Komprehensif Lain",
+"account_type": "EQUITY"
+},
+{
+"account_no": "310008",
+"name": "Rugi / Laba Ditahan Aktuaria",
+"account_type": "EQUITY"
+},
+{
+"account_no": "310009",
+"name": "SPT PPh Tahun Lalu",
+"account_type": "EQUITY"
+},
+{
+"account_no": "310010",
+"name": "Selisih Penilaian Aktiva Tetap",
+"account_type": "EQUITY"
+},
+{
+"account_no": "310011",
+"name": "Surplus Revaluasi",
+"account_type": "EQUITY"
+},
+{
+"account_no": "310012",
+"name": "Amortisasi Surplus Revaluasi",
+"account_type": "EQUITY"
+},
+{
+"account_no": "310013",
+"name": "Employee Benefit Tahun Lalu - Liabilities",
+"account_type": "EQUITY"
+},
+{
+"account_no": "310014",
+"name": "Employee Benefit Current Year - Liabilities",
+"account_type": "EQUITY"
+},
+{
+"account_no": "4000",
+"name": "Penjualan",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400001",
+"name": "Penjualan Hazmat/APD",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400002",
+"name": "Penjualan House Brand",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400003",
+"name": "Penjualan Private Label",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400004",
+"name": "Penjualan Spunlace",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400005",
+"name": "Penjualan Lain-lain",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400006",
+"name": "Penjualan Jasa",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400007",
+"name": "Penjualan Bantal",
+"account_type": "REVENUE"
+},
+{
+"account_no": "4001",
+"name": "Retur Penjualan",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400101",
+"name": "Retur Jual - House Brand",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400102",
+"name": "Retur Jual - Private Label",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400103",
+"name": "Retur Jual - Hazmat",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400104",
+"name": "Retur Jual - Spunlace",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400105",
+"name": "Retur Jual - Bantal",
+"account_type": "REVENUE"
+},
+{
+"account_no": "4002",
+"name": "Potongan Penjualan",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400201",
+"name": "Sales Term Discount IDR",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400202",
+"name": "Sales Term Discount USD",
+"account_type": "REVENUE"
+},
+{
+"account_no": "400203",
+"name": "Sales Term Discount RMB",
+"account_type": "REVENUE"
+},
+{
+"account_no": "5000",
+"name": "HPP",
+"account_type": "COGS"
+},
+{
+"account_no": "500000",
+"name": "Harga Pokok Penjualan",
+"account_type": "COGS"
+},
+{
+"account_no": "500001",
+"name": "HPP - House Brand",
+"account_type": "COGS"
+},
+{
+"account_no": "500002",
+"name": "HPP - Private Label",
+"account_type": "COGS"
+},
+{
+"account_no": "500003",
+"name": "HPP - Hazmat",
+"account_type": "COGS"
+},
+{
+"account_no": "500004",
+"name": "HPP - Spunlace",
+"account_type": "COGS"
+},
+{
+"account_no": "500005",
+"name": "HPP - Bantal",
+"account_type": "COGS"
+},
+{
+"account_no": "5001",
+"name": "Biaya Upah & Tunjangan Karyawan",
+"account_type": "COGS"
+},
+{
+"account_no": "500101",
+"name": "Upah-Spunlace",
+"account_type": "COGS"
+},
+{
+"account_no": "500102",
+"name": "Upah-Laminasi",
+"account_type": "COGS"
+},
+{
+"account_no": "500103",
+"name": "Upah-End Product/Packing",
+"account_type": "COGS"
+},
+{
+"account_no": "500104",
+"name": "Upah-Inventory",
+"account_type": "COGS"
+},
+{
+"account_no": "500105",
+"name": "Upah-General Affairs",
+"account_type": "COGS"
+},
+{
+"account_no": "500106",
+"name": "Upah Borongan",
+"account_type": "COGS"
+},
+{
+"account_no": "500107",
+"name": "Kompensasi Karyawan",
+"account_type": "COGS"
+},
+{
+"account_no": "500108",
+"name": "Outsourcing -Spunlace",
+"account_type": "COGS"
+},
+{
+"account_no": "500109",
+"name": "Outsourcing Laminasi",
+"account_type": "COGS"
+},
+{
+"account_no": "500110",
+"name": "Outsourcing - End Product / Packing",
+"account_type": "COGS"
+},
+{
+"account_no": "500111",
+"name": "Outsourcing-General Affairs",
+"account_type": "COGS"
+},
+{
+"account_no": "500112",
+"name": "Biaya Lembur - Staff",
+"account_type": "COGS"
+},
+{
+"account_no": "500113",
+"name": "Biaya BPJS TK & Kesehatan Upah Harian",
+"account_type": "COGS"
+},
+{
+"account_no": "500114",
+"name": "Biaya BPJS TK & Kesehatan Upah Staff",
+"account_type": "COGS"
+},
+{
+"account_no": "500115",
+"name": "Biaya Tunjangan Lain-Lain",
+"account_type": "COGS"
+},
+{
+"account_no": "500116",
+"name": "Biaya Upah Jasa",
+"account_type": "COGS"
+},
+{
+"account_no": "500117",
+"name": "Biaya THR Harian",
+"account_type": "COGS"
+},
+{
+"account_no": "500118",
+"name": "Biaya Makloon",
+"account_type": "COGS"
+},
+{
+"account_no": "500119",
+"name": "Biaya THR Outsourching",
+"account_type": "COGS"
+},
+{
+"account_no": "500120",
+"name": "Pesangon - Harian",
+"account_type": "COGS"
+},
+{
+"account_no": "500121",
+"name": "Outsourcing - Staff Pabrik",
+"account_type": "COGS"
+},
+{
+"account_no": "500122",
+"name": "Outsourcing - Keamanan Pabrik",
+"account_type": "COGS"
+},
+{
+"account_no": "500123",
+"name": "Outsourcing - Borongan Pabrik",
+"account_type": "COGS"
+},
+{
+"account_no": "500124",
+"name": "Tunjangan Transportasi - Pabrik",
+"account_type": "COGS"
+},
+{
+"account_no": "500125",
+"name": "Biaya Catering & Makan - Pabrik",
+"account_type": "COGS"
+},
+{
+"account_no": "500126",
+"name": "Biaya Lembur - Outsourching",
+"account_type": "COGS"
+},
+{
+"account_no": "500127",
+"name": "BIAYA OUTSOURCING SPG & SMD",
+"account_type": "COGS"
+},
+{
+"account_no": "5002",
+"name": "Premi Karyawan Harian",
+"account_type": "COGS"
+},
+{
+"account_no": "500201",
+"name": "Premi Produksi-Spunlace",
+"account_type": "COGS"
+},
+{
+"account_no": "500202",
+"name": "Premi Produksi-Laminasi",
+"account_type": "COGS"
+},
+{
+"account_no": "500203",
+"name": "Premi Produksi-End Product/Packing",
+"account_type": "COGS"
+},
+{
+"account_no": "500204",
+"name": "Premi Produksi-Inventory",
+"account_type": "COGS"
+},
+{
+"account_no": "500205",
+"name": "Premi Produksi-General Affairs",
+"account_type": "COGS"
+},
+{
+"account_no": "5003",
+"name": "Biaya Utiliti",
+"account_type": "COGS"
+},
+{
+"account_no": "500301",
+"name": "Biaya Listrik - Pabrik",
+"account_type": "COGS"
+},
+{
+"account_no": "500302",
+"name": "Bahan Bakar-Batu Bara",
+"account_type": "COGS"
+},
+{
+"account_no": "500303",
+"name": "Biaya Air",
+"account_type": "COGS"
+},
+{
+"account_no": "500304",
+"name": "Biaya Perlengkapan Packing",
+"account_type": "COGS"
+},
+{
+"account_no": "500305",
+"name": "Biaya Keperluan Pabrik",
+"account_type": "COGS"
+},
+{
+"account_no": "500306",
+"name": "Biaya Research & Development",
+"account_type": "COGS"
+},
+{
+"account_no": "500307",
+"name": "Gaji Staff Produksi",
+"account_type": "COGS"
+},
+{
+"account_no": "500308",
+"name": "Biaya Persediaan Barang Jadi",
+"account_type": "COGS"
+},
+{
+"account_no": "500309",
+"name": "Biaya Pemakaian Bahan Kimia",
+"account_type": "COGS"
+},
+{
+"account_no": "500310",
+"name": "Biaya Pemakaian Bahan Baku",
+"account_type": "COGS"
+},
+{
+"account_no": "500311",
+"name": "Biaya Sewa Gedung Pabrik",
+"account_type": "COGS"
+},
+{
+"account_no": "500312",
+"name": "Biaya Produksi / Rework",
+"account_type": "COGS"
+},
+{
+"account_no": "500313",
+"name": "Pesangon - Staff Produksi",
+"account_type": "COGS"
+},
+{
+"account_no": "500314",
+"name": "Biaya Sewa Mes Produksi",
+"account_type": "COGS"
+},
+{
+"account_no": "500315",
+"name": "Biaya Listrik - HO",
+"account_type": "COGS"
+},
+{
+"account_no": "500316",
+"name": "Biaya Waste Produksi",
+"account_type": "COGS"
+},
+{
+"account_no": "500317",
+"name": "Biaya Relokasi Pabrik",
+"account_type": "COGS"
+},
+{
+"account_no": "5100",
+"name": "Biaya Perbaikan & Pemeliharaan",
+"account_type": "COGS"
+},
+{
+"account_no": "510001",
+"name": "Biaya Perbaikan & Pemeliharaan Gedung Pabrik",
+"account_type": "COGS"
+},
+{
+"account_no": "510002",
+"name": "Biaya Perbaikan & Pemeliharaan Mesin",
+"account_type": "COGS"
+},
+{
+"account_no": "510003",
+"name": "Biaya Perbaikan & Pemeliharaan Inventaris",
+"account_type": "COGS"
+},
+{
+"account_no": "510004",
+"name": "Biaya Perbaikan & Pemeliharaan Instalasi",
+"account_type": "COGS"
+},
+{
+"account_no": "5101",
+"name": "Biaya Penyusutan & Amortisasi Pabrik",
+"account_type": "COGS"
+},
+{
+"account_no": "510101",
+"name": "Biaya Penyusutan Bangunan Pabrik",
+"account_type": "COGS"
+},
+{
+"account_no": "510102",
+"name": "Biaya Penyusutan Peralatan Pabrik",
+"account_type": "COGS"
+},
+{
+"account_no": "510103",
+"name": "Biaya Penyusutan Instalasi",
+"account_type": "COGS"
+},
+{
+"account_no": "510104",
+"name": "Biaya Penyusutan Mesin",
+"account_type": "COGS"
+},
+{
+"account_no": "510107",
+"name": "Biaya penyusutan Aset Sewa Guna Usaha",
+"account_type": "COGS"
+},
+{
+"account_no": "510108",
+"name": "Biaya penyusutan - RoU",
+"account_type": "COGS"
+},
+{
+"account_no": "5200",
+"name": "Transaksi WIP",
+"account_type": "INVENTORY"
+},
+{
+"account_no": "5300",
+"name": "Variance",
+"account_type": "COGS"
+},
+{
+"account_no": "5400",
+"name": "Alokasi Ke Stock",
+"account_type": "COGS"
+},
+{
+"account_no": "6000",
+"name": "Freight In & Exclusive Tax",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "600001",
+"name": "Freight In",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "600002",
+"name": "Bea Masuk Impor",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "6100",
+"name": "Biaya Pemasaran",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610001",
+"name": "Gaji Staff Penjualan - Pembelian",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610002",
+"name": "Gaji Supir",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610003",
+"name": "Biaya Iklan dan Promosi",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610004",
+"name": "Biaya Listing Fee",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610005",
+"name": "BPD-Luar Kota",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610006",
+"name": "BPD-Luar Negri",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610007",
+"name": "Biaya Kirim Dokumen & Paket",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610008",
+"name": "Biaya Pengiriman-Angkutan Luar",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610009",
+"name": "Biaya Pengiriman-Angkutan FLM",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610010",
+"name": "Biaya Entertainment",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610011",
+"name": "Hak Paten",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610012",
+"name": "Biaya Penjualan Lainnya",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610013",
+"name": "Biaya CSR",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610014",
+"name": "Outsourcing - Driver",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610015",
+"name": "Biaya Sewa Tempat",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610016",
+"name": "Biaya Sample",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610017",
+"name": "Biaya Sewa Kendaraan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610018",
+"name": "Pesangon - Pembelian & Penjualan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610019",
+"name": "Pesangon - Supir",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610020",
+"name": "Rebate Penjualan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "6101",
+"name": "Biaya Distribusi",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610101",
+"name": "Biaya Bensin",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610102",
+"name": "Biaya Tol dan Parkir",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "610103",
+"name": "Biaya Bea Ekspor",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "6200",
+"name": "Gaji & Tunjangan Karyawan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620001",
+"name": "Gaji Direksi & Staff",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620002",
+"name": "Gaji Keamanan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620003",
+"name": "Biaya Transport Karyawan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620004",
+"name": "Biaya PPh 21",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620005",
+"name": "Biaya Catering & Makan Karyawan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620006",
+"name": "Biaya Pengobatan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620007",
+"name": "Biaya BPJS Ketenagakerjaan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620008",
+"name": "Biaya THR",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620009",
+"name": "Premi Karyawan Bulanan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "62001",
+"name": "Outsourcing - Staff",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620010",
+"name": "Representative Direktur",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620011",
+"name": "Outsourcing - Staff",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620012",
+"name": "Premi & Tunjangan Direksi",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620013",
+"name": "Outsourching - Keamanan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620014",
+"name": "Outsourching - Harian",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620015",
+"name": "Pesangon - Keamanan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620016",
+"name": "Pesangon - Staff",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620017",
+"name": "Biaya BPJS Kesehatan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "6201",
+"name": "Beban Utiliti, Adm, Sewa & Lainnya",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620102",
+"name": "Biaya PAM",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620103",
+"name": "Biaya Telekomunikasi",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620104",
+"name": "Biaya Koran & Majalah",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620105",
+"name": "Biaya Benda Pos & Materai",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620106",
+"name": "Biaya Perjalanan Dinas",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620107",
+"name": "Biaya ATK Kantor",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620108",
+"name": "STNK, KIR & Pajak Kendaraan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620109",
+"name": "Biaya Pajak",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620110",
+"name": "Biaya Retribusi & Sumbangan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620111",
+"name": "Biaya Sewa",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620112",
+"name": "Biaya Kontribusi Sosial/CSAR",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620113",
+"name": "Biaya Jasa Profesional",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620114",
+"name": "Biaya Perijinan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620115",
+"name": "Biaya Pajak Bumi Bangunan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620116",
+"name": "Biaya Management Fee",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620117",
+"name": "Biaya Transportasi",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620118",
+"name": "Biaya Umum dan Adm Lainnya",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620119",
+"name": "Biaya Denda Pajak dan Denda Lainnya",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620122",
+"name": "Biaya Pemeliharaan Saham",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620123",
+"name": "Biaya Transportasi Direksi",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620124",
+"name": "Biaya PPh 4 ayat 2",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620125",
+"name": "Biaya Imbalan Kerja",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620126",
+"name": "Biaya PPh 22",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620127",
+"name": "Biaya PPh 23",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620128",
+"name": "Biaya PPh 25",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620129",
+"name": "Biaya Software",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620130",
+"name": "Pelatihan Training",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620131",
+"name": "Biaya Listrik - HO",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620132",
+"name": "Biaya Pajak KMS",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620133",
+"name": "Biaya Asuransi Direksi",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620134",
+"name": "Beban Denda dan Sanksi",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "6202",
+"name": "Repair & Maintenance Expense",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620201",
+"name": "Biaya Pemeliharaan Bangunan Kantor",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620202",
+"name": "Biaya Pemeliharaan Inventaris Kantor",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620203",
+"name": "Biaya Pemeliharaan Kendaraan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620204",
+"name": "Biaya Asuransi Kendaraan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620205",
+"name": "Biaya Asuransi Gedung Pabrik",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620206",
+"name": "Biaya Asuransi Mesin",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "6204",
+"name": "Biaya Penyusutan & Amortisasi",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620401",
+"name": "Biaya Penyusutan Bangunan Kantor",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620402",
+"name": "Biaya Penyusutan Kendaraan",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "620403",
+"name": "Biaya Penyusutan Inventaris kantor",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "7000",
+"name": "Biaya Diluar Usaha",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700001",
+"name": "Biaya Adm Bank & Buku Cek/Giro/Provisi",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700002",
+"name": "Bunga Leasing Kendaraan",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700003",
+"name": "Bunga Leasing Mesin",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700004",
+"name": "Beban PPh Final",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700005",
+"name": "Bunga Kredit Bank Danamon",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700006",
+"name": "Bunga Kredit UOB",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700007",
+"name": "Bunga Kredit Bank INA",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700008",
+"name": "Bunga Kredit Koinworks",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700009",
+"name": "Bunga Kredit lainnya",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700010",
+"name": "Pembulatan",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700011",
+"name": "Selisih Kurs",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700012",
+"name": "Biaya Selisih  Pembayaran",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700013",
+"name": "Biaya IPO Tambahan",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700014",
+"name": "Gain/Loss Dispossal F.A",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700015",
+"name": "Biaya Penjualan Lain-lain",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700016",
+"name": "Tunggakan Denda Delta Investama Indonesia",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700017",
+"name": "Beban PPN Hasil Pemeriksaan",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700018",
+"name": "Biaya Cadangan Kerugian Piutang Usaha",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700019",
+"name": "Biaya Cadangan Kerugian Piutang Lainnya",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700020",
+"name": "Biaya Cadangan Kerugian Persediaan",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700021",
+"name": "Biaya Penghapusan Piutang Usaha",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700022",
+"name": "Biaya Lain-lain (Adj)",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700023",
+"name": "Beban PPH Badan Pasal 29",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700024",
+"name": "Biaya Bunga RoU",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "700025",
+"name": "Biaya Penghapusan Persediaan",
+"account_type": "OTHER_EXPENSE"
+},
+{
+"account_no": "8000",
+"name": "Pendapatan Diluar Usaha",
+"account_type": "OTHER_INCOME"
+},
+{
+"account_no": "800001",
+"name": "Pendapatan Jasa Giro",
+"account_type": "OTHER_INCOME"
+},
+{
+"account_no": "800002",
+"name": "Pendapatan Bunga Deposito",
+"account_type": "OTHER_INCOME"
+},
+{
+"account_no": "800003",
+"name": "Penjualan Inventory / Perlengkapan",
+"account_type": "OTHER_INCOME"
+},
+{
+"account_no": "800004",
+"name": "Pendapatan Bunga Tabungan",
+"account_type": "OTHER_INCOME"
+},
+{
+"account_no": "800005",
+"name": "Pendapatan Lain-Lain",
+"account_type": "OTHER_INCOME"
+},
+{
+"account_no": "800006",
+"name": "Gain/Loss Revaluation FA",
+"account_type": "OTHER_INCOME"
+},
+{
+"account_no": "800007",
+"name": "Pendapatan Sewa Gedung",
+"account_type": "OTHER_INCOME"
+},
+{
+"account_no": "800008",
+"name": "Pendapatan atas dampak kurtailmen atau penyelesaian program",
+"account_type": "OTHER_INCOME"
+},
+{
+"account_no": "800009",
+"name": "Pendapatan Piutang Tertagih",
+"account_type": "OTHER_INCOME"
+},
+{
+"account_no": "800010",
+"name": "Deffered Tax",
+"account_type": "OTHER_INCOME"
+},
+{
+"account_no": "800011",
+"name": "Employee Benefit - Other Comprehensive Income",
+"account_type": "OTHER_INCOME"
+},
+{
+"account_no": "800012",
+"name": "Related Tax",
+"account_type": "OTHER_INCOME"
+},
+{
+"account_no": "9000",
+"name": "Gain Or Loss",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "900001",
+"name": "Realize Gain or Loss IDR",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "900002",
+"name": "Unrealize Gain or Loss IDR",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "900003",
+"name": "Realize Gain or Loss USD",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "900004",
+"name": "Unrealize Gain or Loss USD",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "900005",
+"name": "Unrealize Gain or Loss RMB",
+"account_type": "EXPENSE"
+},
+{
+"account_no": "900006",
+"name": "Realize Gain or Loss RMB",
+"account_type": "EXPENSE"
+}
+]

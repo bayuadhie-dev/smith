@@ -136,7 +136,7 @@ class CoaRoles:
         return wage, allowance
 
     def fx_account_code(self):
-        return '700008' if self.accurate else '9-8000'
+        return '700011' if self.accurate else '9-8000'
 
     def ppn_masukan_code(self):
         return '100611' if self.accurate else '1-1700'
