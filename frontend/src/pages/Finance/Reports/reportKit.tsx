@@ -215,7 +215,7 @@ const TONES: Record<Tone, string> = {
 }
 export function StatCards({ items }: { items: { label: string; value: string; hint?: string; tone?: Tone }[] }) {
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className={`grid grid-cols-2 gap-3 ${items.length >= 5 ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}>
       {items.map((it) => (
         <div key={it.label} className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">{it.label}</p>
