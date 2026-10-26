@@ -361,17 +361,16 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
             <div className="hidden md:block" />
             {isStandalone && (
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  {cashDirection === 'in' ? 'Diterima dari' : 'Dibayarkan kepada'}
-                </label>
-                <input
-                  type="text"
-                  className="input w-full"
-                  maxLength={200}
-                  placeholder={cashDirection === 'in' ? 'Nama pemberi (opsional)' : 'Nama penerima pembayaran (opsional)'}
-                  value={formData.paid_to}
-                  onChange={(e) => setFormData({ ...formData, paid_to: e.target.value })}
-                />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                Bank Account
+              </label>
+              <SearchableSelect
+                options={cashBankAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name }))}
+                value={formData.bank_account_id ? Number(formData.bank_account_id) : null}
+                onChange={(v) => setFormData({ ...formData, bank_account_id: v ? String(v) : '' })}
+                placeholder="Pilih akun Kas/Bank"
+                required
+              />
               </div>
             )}
             {!isStandalone && (
@@ -550,6 +549,21 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
               />
             </div>
 
+            {isStandalone ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  {cashDirection === 'in' ? 'Diterima dari' : 'Dibayarkan kepada'}
+                </label>
+                <input
+                  type="text"
+                  className="input w-full"
+                  maxLength={200}
+                  placeholder={cashDirection === 'in' ? 'Nama pemberi (opsional)' : 'Nama penerima pembayaran (opsional)'}
+                  value={formData.paid_to}
+                  onChange={(e) => setFormData({ ...formData, paid_to: e.target.value })}
+                />
+              </div>
+            ) : (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Bank Account
@@ -562,6 +576,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                 required
               />
             </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">

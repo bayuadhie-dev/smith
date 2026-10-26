@@ -192,12 +192,42 @@ const [accounts, setAccounts] = useState<Account[]>([])
   const [payrollPeriodDetail, setPayrollPeriodDetail] = useState<any>(null)
   const [loadingPayrollPeriodDetail, setLoadingPayrollPeriodDetail] = useState(false)
 
-  const handleViewAccount = async (account: Account) => {
-    setDetailAccount(account)
+  const [detailFrom, setDetailFrom] = useState('')
+  const [detailTo, setDetailTo] = useState('')
+  const [detailSummary, setDetailSummary] = useState<any>(null)
+
+  const loadAccountTransactions = async (account: Account, from: string, to: string) => {
     setLoadingDetail(true)
     try {
-      const response = await axiosInstance.get(`/api/finance/accounts/${account.id}/transactions`)
+      const response = await axiosInstance.get(`/api/finance/accounts/${account.id}/transactions`, {
+        params: { start_date: from || undefined, end_date: to || undefined, per_page: 500 },
+      })
       setDetailTransactions(response.data?.transactions || [])
+      setDetailSummary(response.data?.summary || null)
+    } catch (error) {
+      console.error('Failed to load account transactions:', error)
+      setDetailTransactions([])
+      setDetailSummary(null)
+    } finally {
+      setLoadingDetail(false)
+    }
+  }
+
+  const setDetailPeriod = (from: string, to: string) => {
+    setDetailFrom(from)
+    setDetailTo(to)
+    if (detailAccount) loadAccountTransactions(detailAccount, from, to)
+  }
+
+  const handleViewAccount = async (account: Account) => {
+    setDetailAccount(account)
+    setDetailFrom('')
+    setDetailTo('')
+    setLoadingDetail(true)
+    try {
+      const response = await axiosInstance.get(`/api/finance/accounts/${account.id}/transactions`, { params: { per_page: 500 } })
+      setDetailTransactions(response.data?.transactions || [])
+      setDetailSummary(response.data?.summary || null)
     } catch (error) {
       console.error('Failed to load account transactions:', error)
       setDetailTransactions([])
@@ -209,6 +239,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
   const handleCloseDetailModal = () => {
     setDetailAccount(null)
     setDetailTransactions([])
+    setDetailSummary(null)
   }
 
   const handleOpenRecurringTxDetail = async (txId: number) => {
@@ -305,63 +336,63 @@ const [accounts, setAccounts] = useState<Account[]>([])
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
         <div className="card p-6">
           <div className="flex items-center">
-            <div className="bg-green-500 p-3 rounded-lg">
+            <div className="bg-green-500 p-3 rounded-lg shrink-0">
               <span className="text-2xl">🏢</span>
             </div>
-            <div className="ml-4">
+            <div className="ml-4 min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Assets</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalByType('asset'))}</p>
+              <p className="text-base xl:text-lg font-bold text-gray-900 dark:text-white break-words">{formatRupiah(getTotalByType('asset'))}</p>
             </div>
           </div>
         </div>
 
         <div className="card p-6">
           <div className="flex items-center">
-            <div className="bg-red-500 p-3 rounded-lg">
+            <div className="bg-red-500 p-3 rounded-lg shrink-0">
               <span className="text-2xl">💳</span>
             </div>
-            <div className="ml-4">
+            <div className="ml-4 min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Liabilities</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalByType('liability'))}</p>
+              <p className="text-base xl:text-lg font-bold text-gray-900 dark:text-white break-words">{formatRupiah(getTotalByType('liability'))}</p>
             </div>
           </div>
         </div>
 
         <div className="card p-6">
           <div className="flex items-center">
-            <div className="bg-blue-500 p-3 rounded-lg">
+            <div className="bg-blue-500 p-3 rounded-lg shrink-0">
               <span className="text-2xl">📈</span>
             </div>
-            <div className="ml-4">
+            <div className="ml-4 min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Equity</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalByType('equity'))}</p>
+              <p className="text-base xl:text-lg font-bold text-gray-900 dark:text-white break-words">{formatRupiah(getTotalByType('equity'))}</p>
             </div>
           </div>
         </div>
 
         <div className="card p-6">
           <div className="flex items-center">
-            <div className="bg-purple-500 p-3 rounded-lg">
+            <div className="bg-purple-500 p-3 rounded-lg shrink-0">
               <span className="text-2xl">💰</span>
             </div>
-            <div className="ml-4">
+            <div className="ml-4 min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Revenue</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalByType('revenue'))}</p>
+              <p className="text-base xl:text-lg font-bold text-gray-900 dark:text-white break-words">{formatRupiah(getTotalByType('revenue'))}</p>
             </div>
           </div>
         </div>
 
         <div className="card p-6">
           <div className="flex items-center">
-            <div className="bg-orange-500 p-3 rounded-lg">
+            <div className="bg-orange-500 p-3 rounded-lg shrink-0">
               <span className="text-2xl">💸</span>
             </div>
-            <div className="ml-4">
+            <div className="ml-4 min-w-0">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Expenses</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatRupiah(getTotalByType('expense'))}</p>
+              <p className="text-base xl:text-lg font-bold text-gray-900 dark:text-white break-words">{formatRupiah(getTotalByType('expense'))}</p>
             </div>
           </div>
         </div>
@@ -657,8 +688,47 @@ const [accounts, setAccounts] = useState<Account[]>([])
             </div>
 
             <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
-              Riwayat Transaksi
+              Riwayat Transaksi{detailSummary?.is_header ? ' (gabungan semua akun di bawahnya)' : ''}
             </h4>
+
+            <div className="flex flex-wrap items-end gap-2 mb-3">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Dari</label>
+                <input type="date" className="input" value={detailFrom} onChange={(e) => setDetailPeriod(e.target.value, detailTo)} />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Sampai</label>
+                <input type="date" className="input" value={detailTo} onChange={(e) => setDetailPeriod(detailFrom, e.target.value)} />
+              </div>
+              {[
+                ['Bulan ini', () => { const d = new Date(); return [new Date(d.getFullYear(), d.getMonth(), 1), new Date(d.getFullYear(), d.getMonth() + 1, 0)] }],
+                ['Bulan lalu', () => { const d = new Date(); return [new Date(d.getFullYear(), d.getMonth() - 1, 1), new Date(d.getFullYear(), d.getMonth(), 0)] }],
+                ['Tahun ini', () => { const d = new Date(); return [new Date(d.getFullYear(), 0, 1), new Date(d.getFullYear(), 11, 31)] }],
+              ].map(([label, range]: any) => (
+                <button key={label} type="button" className="btn-secondary text-xs px-3 py-2" onClick={() => {
+                  const [a, b] = range()
+                  const f = (x: Date) => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`
+                  setDetailPeriod(f(a), f(b))
+                }}>{label}</button>
+              ))}
+              <button type="button" className="btn-secondary text-xs px-3 py-2" onClick={() => setDetailPeriod('', '')}>Semua</button>
+            </div>
+
+            {detailSummary && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-sm">
+                {[
+                  ['Saldo awal', detailSummary.opening_balance],
+                  ['Total debit', detailSummary.total_debit],
+                  ['Total kredit', detailSummary.total_credit],
+                  ['Saldo akhir', detailSummary.closing_balance],
+                ].map(([label, value]: any) => (
+                  <div key={label} className="rounded-lg bg-gray-50 dark:bg-gray-700 px-3 py-2">
+                    <p className="text-xs text-gray-500 dark:text-gray-300">{label}</p>
+                    <p className="font-semibold text-gray-900 dark:text-white break-words">{formatRupiah(value)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {loadingDetail ? (
               <div className="text-gray-500 text-sm py-8 text-center">Memuat...</div>

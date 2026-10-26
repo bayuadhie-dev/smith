@@ -4815,10 +4815,44 @@ def get_account_transactions(id):
 
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 50, type=int)
+        start_date = datetime.fromisoformat(request.args['start_date']).date() if request.args.get('start_date') else None
+        end_date = datetime.fromisoformat(request.args['end_date']).date() if request.args.get('end_date') else None
+
+        # A header (induk) account shows everything posted to the accounts below it.
+        account_ids = {account.id}
+        if account.is_header:
+            frontier = [account.id]
+            while frontier:
+                kids = Account.query.filter(Account.parent_id.in_(frontier)).all()
+                frontier = [k.id for k in kids if k.id not in account_ids]
+                account_ids.update(frontier)
+            account_ids.update(a.id for a in Account.query.filter(
+                Account.account_code.like(account.account_code + '%'), Account.account_code != account.account_code).all())
+
+        base = AccountingEntry.query.filter(AccountingEntry.account_id.in_(account_ids))
+        period = base
+        if start_date:
+            period = period.filter(AccountingEntry.entry_date >= start_date)
+        if end_date:
+            period = period.filter(AccountingEntry.entry_date <= end_date)
+
+        def sums(q):
+            row = q.with_entities(
+                db.func.coalesce(db.func.sum(AccountingEntry.debit_amount), 0),
+                db.func.coalesce(db.func.sum(AccountingEntry.credit_amount), 0),
+            ).filter(AccountingEntry.status == 'posted').one()
+            return float(row[0]), float(row[1])
+
+        sign = 1 if account.normal_balance == 'debit' else -1
+        opening = 0.0
+        if start_date:
+            od, oc = sums(base.filter(AccountingEntry.entry_date < start_date))
+            opening = sign * (od - oc)
+        period_debit, period_credit = sums(period)
+        closing = opening + sign * (period_debit - period_credit)
 
         entries = (
-            AccountingEntry.query
-            .filter_by(account_id=id)
+            period
             .order_by(AccountingEntry.entry_date.desc(), AccountingEntry.id.desc())
             .paginate(page=page, per_page=per_page, error_out=False)
         )
@@ -4846,6 +4880,15 @@ def get_account_transactions(id):
             'total': entries.total,
             'pages': entries.pages,
             'current_page': entries.page,
+            'summary': {
+                'opening_balance': round(opening, 2),
+                'total_debit': round(period_debit, 2),
+                'total_credit': round(period_credit, 2),
+                'closing_balance': round(closing, 2),
+                'start_date': start_date.isoformat() if start_date else None,
+                'end_date': end_date.isoformat() if end_date else None,
+                'is_header': bool(account.is_header),
+            },
         }), 200
 
     except Exception as e:

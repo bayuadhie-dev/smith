@@ -904,3 +904,15 @@ def test_bank_reconciliation_hides_voided_and_draft_entries(client, auth_headers
     # and a voided entry cannot be matched by hand either
     resp = client.post(f'/api/finance/bank-reconciliation/lines/{line.id}/match', headers=auth_headers, json={'accounting_entry_id': bad_voided.id})
     assert resp.status_code == 400 and 'void' in resp.get_json()['error']
+
+
+def test_account_transactions_filter_by_period_with_opening_and_closing(client, auth_headers, db_session):
+    _post(db_session, '1-1010', debit=1000, on=date(2026, 1, 10))
+    _post(db_session, '1-1010', credit=300, on=date(2026, 2, 5))
+    _post(db_session, '1-1010', debit=50, on=date(2026, 2, 20))
+    bank = _acc(db_session, '1-1010')
+    data = client.get(f'/api/finance/accounts/{bank.id}/transactions?start_date=2026-02-01&end_date=2026-02-28', headers=auth_headers).get_json()
+    assert len(data['transactions']) == 2
+    assert data['summary'] == {**data['summary'], 'opening_balance': 1000.0, 'total_debit': 50.0, 'total_credit': 300.0, 'closing_balance': 750.0}
+    allrows = client.get(f'/api/finance/accounts/{bank.id}/transactions', headers=auth_headers).get_json()
+    assert len(allrows['transactions']) == 3 and allrows['summary']['closing_balance'] == 750.0
