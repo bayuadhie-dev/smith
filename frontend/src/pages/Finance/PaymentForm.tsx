@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import SearchableSelect from '../../components/SearchableSelect';
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
@@ -358,17 +359,13 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   {mode === 'ap' ? 'Supplier' : 'Customer'}
                 </label>
-                <select
-                  className="input w-full"
-                  value={formData.party_id}
-                  onChange={(e) => setFormData({ ...formData, party_id: e.target.value })}
+                <SearchableSelect
+                  options={parties.map((p) => ({ id: p.id, name: p.name }))}
+                  value={formData.party_id ? Number(formData.party_id) : null}
+                  onChange={(v) => setFormData({ ...formData, party_id: v ? String(v) : '' })}
+                  placeholder={`Pilih ${mode === 'ap' ? 'supplier' : 'customer'}`}
                   required
-                >
-                  <option value="">Pilih {mode === 'ap' ? 'supplier' : 'customer'}</option>
-                  {parties.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
+                />
               </div>
             )}
 
@@ -460,16 +457,14 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                 <div className="space-y-2">
                   {lines.map((l, idx) => (
                     <div key={idx} className="grid grid-cols-12 gap-2">
-                      <select
-                        className="input col-span-5"
-                        value={l.account_id}
-                        onChange={(e) => updateLine(idx, { account_id: e.target.value })}
-                      >
-                        <option value="">Pilih akun (mis. Beban Bunga, Pendapatan Lain-lain)</option>
-                        {contraAccounts.map((acc) => (
-                          <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
-                        ))}
-                      </select>
+                      <div className="col-span-5">
+                        <SearchableSelect
+                          options={contraAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name }))}
+                          value={l.account_id ? Number(l.account_id) : null}
+                          onChange={(v) => updateLine(idx, { account_id: v ? String(v) : '' })}
+                          placeholder="Pilih akun (mis. Beban Bunga, Pendapatan Lain-lain)"
+                        />
+                      </div>
                       <input
                         type="text"
                         className="input col-span-4"
@@ -542,17 +537,13 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Bank Account
               </label>
-              <select 
-                className="input w-full"
-                value={formData.bank_account_id}
-                onChange={(e) => setFormData({...formData, bank_account_id: e.target.value})}
+              <SearchableSelect
+                options={cashBankAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name }))}
+                value={formData.bank_account_id ? Number(formData.bank_account_id) : null}
+                onChange={(v) => setFormData({ ...formData, bank_account_id: v ? String(v) : '' })}
+                placeholder="Pilih akun Kas/Bank"
                 required
-              >
-                <option value="">Pilih akun Kas/Bank</option>
-                {cashBankAccounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
-                ))}
-              </select>
+              />
             </div>
 
             <div>
