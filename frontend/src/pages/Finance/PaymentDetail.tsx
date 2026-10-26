@@ -26,6 +26,7 @@ interface PaymentDetailData {
   reference_number: string | null;
   status: string;
   notes: string | null;
+  paid_to?: string | null;
   invoice_id: number | null;
   invoice_number: string | null;
   invoice_total_amount: number | null;
@@ -249,7 +250,7 @@ export default function PaymentDetail() {
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400">{isReceipt ? 'Pelanggan' : 'Supplier'}</p>
             <p className="text-base text-gray-900 dark:text-white">
-              {isReceipt ? (payment.customer_name || '-') : (payment.supplier_name || '-')}
+              {isReceipt ? (payment.customer_name || payment.paid_to || '-') : (payment.supplier_name || payment.paid_to || '-')}
             </p>
           </div>
           <div>

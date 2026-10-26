@@ -133,6 +133,7 @@ class Payment(db.Model):
     # own counterpart (Piutang/Hutang Usaha) automatically and leave this
     # null; this is only used/required when invoice_id is absent.
     contra_account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    paid_to = db.Column(db.String(200), nullable=True)  # free-text payee / payer for standalone Kas/Bank transactions
     status = db.Column(db.String(50), nullable=False, default='pending')  # pending, cleared, bounced, cancelled
     notes = db.Column(db.Text, nullable=True)
     received_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)

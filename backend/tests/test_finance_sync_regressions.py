@@ -811,3 +811,16 @@ def test_reports_work_on_the_accurate_chart_of_accounts(client, auth_headers, db
     assert inc['operating_expenses']['selling_expenses'] == 40 and inc['operating_expenses']['administrative_expenses'] == 30
     assert inc['other_expenses']['interest_expense'] == 20 and inc['other_expenses']['total_other_expenses'] == 30
     assert inc['net_income'] == 2_000 - 600 - 150 - 70 - 30
+
+
+def test_standalone_cash_payment_stores_paid_to_and_shows_it_on_list_and_detail(client, auth_headers, db_session):
+    bank = _bank(db_session)
+    expense = _acc(db_session, '9-1000')
+    resp = client.post('/api/finance/payments', headers=auth_headers, json={
+        'payment_type': 'payment', 'payment_date': date.today().isoformat(), 'bank_account_id': bank.id,
+        'payment_method': 'cash', 'paid_to': '  Toko Bangunan Maju  ', 'lines': [{'account_id': expense.id, 'amount': 1000}]})
+    assert resp.status_code == 201, resp.get_json()
+    pid = resp.get_json()['payment_id']
+    assert client.get(f'/api/finance/payments/{pid}', headers=auth_headers).get_json()['paid_to'] == 'Toko Bangunan Maju'
+    rows = client.get('/api/finance/payments?type=payment', headers=auth_headers).get_json()['payments']
+    assert rows[0]['party_name'] == 'Toko Bangunan Maju'

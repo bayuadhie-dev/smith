@@ -632,7 +632,7 @@ def generate_kwitansi_document(payment_id, user_id):
         'document_number': payment.payment_number,
         'document_date': payment.payment_date.strftime('%d-%m-%Y') if payment.payment_date else '',
         'is_receipt': payment.payment_type in ('receipt', 'received') or payment.customer_id is not None,
-        'party_name': (party.company_name if hasattr(party, 'company_name') else getattr(party, 'name', '')) if party else '',
+        'party_name': (party.company_name if hasattr(party, 'company_name') else getattr(party, 'name', '')) if party else (payment.paid_to or ''),
         'amount': amount,
         'terbilang': (_terbilang(amount).strip().capitalize() + ' rupiah') if amount >= 1 else 'Nol rupiah',
         'payment_method': (payment.payment_method or '').replace('_', ' ').title(),

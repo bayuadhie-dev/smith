@@ -89,6 +89,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     payment_method: 'bank_transfer',
     reference_number: '',
     notes: '',
+    paid_to: '',
     bank_account_id: ''
   })
 
@@ -180,6 +181,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
         payment_method: d.payment_method || 'bank_transfer',
         reference_number: d.reference_number || '',
         notes: d.notes || '',
+        paid_to: d.paid_to || '',
         bank_account_id: d.bank_account_id ? String(d.bank_account_id) : '',
       });
       if (d.lines?.length) {
@@ -302,6 +304,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
         amount: totalAmount,
         reference_number: formData.reference_number || undefined,
         notes: formData.notes || undefined,
+        paid_to: isStandalone ? (formData.paid_to.trim() || undefined) : undefined,
         bank_account_id: Number(formData.bank_account_id),
       });
       navigate(res.data?.payment_id ? `/app/finance/payments/${res.data.payment_id}` : '/app/finance/pembayaran');
@@ -354,6 +357,21 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
               <p className="text-xs text-gray-500 mt-1">Kosongkan untuk nomor otomatis, atau isi nomor sendiri.</p>
             </div>
             <div className="hidden md:block" />
+            {isStandalone && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  {cashDirection === 'in' ? 'Diterima dari' : 'Dibayarkan kepada'}
+                </label>
+                <input
+                  type="text"
+                  className="input w-full"
+                  maxLength={200}
+                  placeholder={cashDirection === 'in' ? 'Nama pemberi (opsional)' : 'Nama penerima pembayaran (opsional)'}
+                  value={formData.paid_to}
+                  onChange={(e) => setFormData({ ...formData, paid_to: e.target.value })}
+                />
+              </div>
+            )}
             {!isStandalone && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">

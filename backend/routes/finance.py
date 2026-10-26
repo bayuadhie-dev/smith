@@ -690,7 +690,7 @@ def get_payments():
                 return p.customer.company_name
             if p.supplier_id and p.supplier:
                 return p.supplier.company_name
-            return None
+            return p.paid_to or None
 
         # Payment has no `bank_account` relationship on the model - look
         # the referenced Account rows up in one batch instead of adding one
@@ -716,6 +716,7 @@ def get_payments():
                 'invoice_numbers': [a.invoice.invoice_number for a in p.allocations if a.invoice]
                                    or ([p.invoice.invoice_number] if p.invoice else []),
                 'account_lines': len(p.lines),
+                'paid_to': p.paid_to,
                 'notes': p.notes,
                 'reference_number': p.reference_number,
                 'status': p.status,
@@ -923,6 +924,7 @@ def create_payment():
             reference_number=data.get('reference_number'),
             bank_account_id=data['bank_account_id'],
             contra_account_id=lines_in[0]['account_id'] if len(lines_in) == 1 else None,
+            paid_to=((data.get('paid_to') or '').strip()[:200] or None) if lines_in else None,
             notes=data.get('notes'),
             received_by=user_id
         )
@@ -1134,6 +1136,7 @@ def get_payment_detail(id):
             'payment_method': payment.payment_method,
             'reference_number': payment.reference_number,
             'status': payment.status,
+            'paid_to': payment.paid_to,
             'notes': payment.notes,
             'invoice_id': payment.invoice_id,
             'invoice_number': payment.invoice.invoice_number if payment.invoice else None,
