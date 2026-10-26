@@ -662,7 +662,7 @@ def purchase_report():
             'supplier_id': i.supplier_id, 'supplier_name': sup[i.supplier_id].company_name if i.supplier_id in sup else None,
             'po_number': pos[i.purchase_order_id].po_number if i.purchase_order_id in pos else None,
             'supplier_invoice_number': i.supplier_invoice_number, 'currency': i.currency or 'IDR', 'rate': rate,
-            'subtotal': round(_f(i.subtotal) * rate, 2), 'tax': round(_f(i.tax_amount) * rate, 2), 'total': round(_f(i.total_amount) * rate, 2),
+            'subtotal': round((_f(i.subtotal) - _f(i.discount_amount)) * rate, 2), 'tax': round(_f(i.tax_amount) * rate, 2), 'total': round(_f(i.total_amount) * rate, 2),
             'paid': round(_f(i.paid_amount) * rate, 2), 'balance': round(_f(i.balance_due) * rate, 2), 'status': i.status,
             'url': f'/app/purchasing/invoices/{i.id}',
         })
