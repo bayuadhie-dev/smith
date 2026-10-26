@@ -15,7 +15,7 @@ export const MODULES: ModuleDef[] = [
   { id: 'quality', label: 'Quality', prefixes: ['/app/quality'] },
 ]
 
-export const MAX_TABS_PER_MODULE = 10
+export const MAX_TABS_PER_MODULE = Number.POSITIVE_INFINITY
 
 export function moduleForPath(pathname: string): ModuleDef | null {
   return MODULES.find((m) => m.prefixes.some((p) => pathname === p || pathname.startsWith(p + '/'))) || null
