@@ -657,31 +657,37 @@ def purchase_report():
     rows = []
     for i in invs:
         rate = _f(i.exchange_rate) if (i.currency or 'IDR') != 'IDR' else 1.0
+        tax_amt, total_amt = _f(i.tax_amount), _f(i.total_amount)
+        base = _f(i.subtotal) - _f(i.discount_amount)
+        if base == 0 and total_amt > 0:
+            base = total_amt - tax_amt           # header-only invoice without lines: derive DPP from the total
+        returned = max(0.0, base + tax_amt - total_amt)
         rows.append({
             'invoice_id': i.id, 'invoice_number': i.invoice_number, 'invoice_date': i.invoice_date.isoformat(),
+            'returns': round(returned * rate, 2),
             'supplier_id': i.supplier_id, 'supplier_name': sup[i.supplier_id].company_name if i.supplier_id in sup else None,
             'po_number': pos[i.purchase_order_id].po_number if i.purchase_order_id in pos else None,
             'supplier_invoice_number': i.supplier_invoice_number, 'currency': i.currency or 'IDR', 'rate': rate,
-            'subtotal': round((_f(i.subtotal) - _f(i.discount_amount)) * rate, 2), 'tax': round(_f(i.tax_amount) * rate, 2), 'total': round(_f(i.total_amount) * rate, 2),
+            'subtotal': round(base * rate, 2), 'tax': round(tax_amt * rate, 2), 'total': round(total_amt * rate, 2),
             'paid': round(_f(i.paid_amount) * rate, 2), 'balance': round(_f(i.balance_due) * rate, 2), 'status': i.status,
             'url': f'/app/purchasing/invoices/{i.id}',
         })
     by_supplier = {}
     for r in rows:
-        s = by_supplier.setdefault(r['supplier_id'], {'supplier_id': r['supplier_id'], 'supplier_name': r['supplier_name'], 'invoice_count': 0, 'subtotal': 0.0, 'tax': 0.0, 'total': 0.0, 'paid': 0.0, 'balance': 0.0})
+        s = by_supplier.setdefault(r['supplier_id'], {'supplier_id': r['supplier_id'], 'supplier_name': r['supplier_name'], 'invoice_count': 0, 'subtotal': 0.0, 'tax': 0.0, 'returns': 0.0, 'total': 0.0, 'paid': 0.0, 'balance': 0.0})
         s['invoice_count'] += 1
-        for k in ('subtotal', 'tax', 'total', 'paid', 'balance'):
+        for k in ('subtotal', 'tax', 'returns', 'total', 'paid', 'balance'):
             s[k] = round(s[k] + r[k], 2)
     summary = sorted(by_supplier.values(), key=lambda s: -s['total'])
-    totals = {k: round(sum(r[k] for r in rows), 2) for k in ('subtotal', 'tax', 'total', 'paid', 'balance')}
+    totals = {k: round(sum(r[k] for r in rows), 2) for k in ('subtotal', 'tax', 'returns', 'total', 'paid', 'balance')}
     if _wants_xlsx():
         if request.args.get('group') == 'supplier':
-            data = [[s['supplier_name'], s['invoice_count'], s['subtotal'], s['tax'], s['total'], s['paid'], s['balance']] for s in summary]
-            data.append(['TOTAL', len(rows), totals['subtotal'], totals['tax'], totals['total'], totals['paid'], totals['balance']])
-            return _xlsx('Pembelian per Supplier', ['Supplier', 'Jml Faktur', 'DPP', 'PPN', 'Total', 'Dibayar', 'Sisa'], data, f'pembelian_per_supplier_{date_from}_{date_to}.xlsx', f'Periode {date_from} s/d {date_to}')
-        data = [[r['invoice_date'], r['invoice_number'], r['supplier_invoice_number'] or '', r['supplier_name'] or '', r['po_number'] or '', r['subtotal'], r['tax'], r['total'], r['paid'], r['balance'], r['status']] for r in rows]
-        data.append(['', '', '', '', 'TOTAL', totals['subtotal'], totals['tax'], totals['total'], totals['paid'], totals['balance'], ''])
-        return _xlsx('Laporan Pembelian', ['Tanggal', 'No. Faktur', 'No. Faktur Supplier', 'Supplier', 'No. PO', 'DPP', 'PPN', 'Total', 'Dibayar', 'Sisa', 'Status'], data, f'laporan_pembelian_{date_from}_{date_to}.xlsx', f'Periode {date_from} s/d {date_to}')
+            data = [[s['supplier_name'], s['invoice_count'], s['subtotal'], s['tax'], s['returns'], s['total'], s['paid'], s['balance']] for s in summary]
+            data.append(['TOTAL', len(rows), totals['subtotal'], totals['tax'], totals['returns'], totals['total'], totals['paid'], totals['balance']])
+            return _xlsx('Pembelian per Supplier', ['Supplier', 'Jml Faktur', 'DPP', 'PPN', 'Retur', 'Total', 'Dibayar', 'Sisa'], data, f'pembelian_per_supplier_{date_from}_{date_to}.xlsx', f'Periode {date_from} s/d {date_to}')
+        data = [[r['invoice_date'], r['invoice_number'], r['supplier_invoice_number'] or '', r['supplier_name'] or '', r['po_number'] or '', r['subtotal'], r['tax'], r['returns'], r['total'], r['paid'], r['balance'], r['status']] for r in rows]
+        data.append(['', '', '', '', 'TOTAL', totals['subtotal'], totals['tax'], totals['returns'], totals['total'], totals['paid'], totals['balance'], ''])
+        return _xlsx('Laporan Pembelian', ['Tanggal', 'No. Faktur', 'No. Faktur Supplier', 'Supplier', 'No. PO', 'DPP', 'PPN', 'Retur', 'Total', 'Dibayar', 'Sisa', 'Status'], data, f'laporan_pembelian_{date_from}_{date_to}.xlsx', f'Periode {date_from} s/d {date_to}')
     return jsonify({'period': {'date_from': date_from.isoformat(), 'date_to': date_to.isoformat()}, 'rows': rows, 'by_supplier': summary, 'totals': totals}), 200
 
 
