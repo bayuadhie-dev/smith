@@ -727,3 +727,15 @@ def test_manual_stock_in_posts_inventory_and_opening_balance_journal(client, aut
     r = client.post('/api/warehouse/stock-input/quick-add', headers=auth_headers,
                     json={'material_id': test_material.id, 'location_id': loc.id, 'quantity': 3})
     assert r.status_code in (200, 201) and balance('1-1200') == 30_000
+
+
+def test_balance_sheet_counts_every_equity_account(client, auth_headers, db_session):
+    """Regression: only 3-1000/3-2000/3-3000 were summed, so Saldo Awal Persediaan (3-4000) unbalanced the sheet."""
+    from models.finance import Account
+    db_session.add(Account(account_code='3-4000', account_name='Saldo Awal Persediaan', account_type='equity',
+                           normal_balance='credit', is_active=True))
+    db_session.commit()
+    _post(db_session, '1-1010', debit=1_000)
+    _post(db_session, '3-4000', credit=1_000)
+    data = client.get('/api/finance/reports/balance-sheet', headers=auth_headers).get_json()['balance_sheet']
+    assert data['is_balanced'] is True and data['equity']['total_equity'] == 1_000

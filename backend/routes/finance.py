@@ -2857,7 +2857,14 @@ def get_balance_sheet():
         prior_years_expense = _classified_balance_in_range('expense', date_to=day_before_current_year)
         prior_years_net_income = prior_years_revenue - prior_years_expense
 
-        common_stock = code_balance('3-1000')
+        # Modal = 3-1000 plus every other detail equity account except Laba Ditahan/Laba Tahun
+        # Berjalan (e.g. 3-4000 Saldo Awal Persediaan), so a new equity account never unbalances the sheet.
+        _equity_special = {'3-2000', '3-3000'}
+        common_stock = sum(
+            code_balance(a.account_code)
+            for a in Account.query.filter(Account.account_code.like('3-%'), Account.is_active == True).all()
+            if a.account_code not in _equity_special and not a.is_header
+        )
         retained_earnings = code_balance('3-2000') + code_balance('3-3000') + prior_years_net_income
         total_equity = common_stock + retained_earnings + current_year_earnings
 
@@ -2885,7 +2892,7 @@ def get_balance_sheet():
             bucket = classify_account(acc)
             if bucket not in ('asset', 'liability', 'equity'):
                 continue
-            if acc.account_code in _covered_codes:
+            if acc.account_code in _covered_codes or acc.account_code.startswith('3-'):
                 continue
             if any(acc.account_code.startswith(p) for p in _covered_prefixes):
                 continue
