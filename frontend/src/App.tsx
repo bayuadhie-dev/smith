@@ -10,6 +10,7 @@ import { PermissionProvider } from './contexts/PermissionContext'
 import { ToastProvider, ErrorBoundary, ConfirmDialogProvider } from './components/ui'
 import SessionTimeoutModal from './components/SessionTimeoutModal'
 import Layout from './components/Layout/Layout'
+import { registerAppRoutes } from './workspace/routeRegistry'
 import RoleBasedRedirect from './components/RoleBasedRedirect'
 import Login from './pages/Auth/Login'
 import Register from './pages/Auth/Register'
@@ -408,188 +409,11 @@ const ProductFormNewWrapper = () => {
   return <ProductFormNew product={product} onSave={handleSave} onCancel={handleCancel} />
 }
 
-function App() {
-  const dispatch = useAppDispatch()
-  const { isAuthenticated, loading } = useAppSelector((state: { auth: { isAuthenticated: boolean; loading: boolean } }) => state.auth)
-  const location = useLocation()
-  
-  // Check if current route is public (no session timeout needed)
-  const isPublicRoute = location.pathname.startsWith('/public/') || 
-                        location.pathname === '/' || 
-                        location.pathname === '/login' ||
-                        location.pathname === '/register' ||
-                        location.pathname === '/forgot-password' ||
-                        location.pathname === '/reset-password' ||
-                        location.pathname === '/absensi'
 
-  // Update document title dynamically based on company settings
-  useDocumentTitle()
-
-  useEffect(() => {
-    // Check auth if token exists in localStorage
-    const token = localStorage.getItem('token')
-    if (token) {
-      dispatch(checkAuth())
-    }
-  }, [dispatch])
-
-  // Show loading screen while checking authentication
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-[#064e3b] to-slate-900">
-        <div className="text-center">
-          <div className="relative h-16 w-16 mx-auto mb-4">
-            <div className="absolute inset-0 rounded-full border-[3px] border-white/10" />
-            <div
-              className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[#10b981] border-r-teal-400 animate-spin"
-              style={{ animationDuration: '0.9s' }}
-            />
-            <div
-              className="absolute inset-[6px] rounded-full border-[3px] border-transparent border-b-[#F15D2C] animate-spin [animation-direction:reverse]"
-              style={{ animationDuration: '1.4s' }}
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-[#059669] to-[#047857] animate-pulse" />
-            </div>
-          </div>
-          <p className="text-emerald-100 text-sm font-medium">Verifying session...</p>
-        </div>
-      </div>
-    )
-  }
+// Every /app/* page. Rendered by the main router (non-module pages) and by each workspace tab.
+function AppChildRoutes() {
   return (
-    <ErrorBoundary>
-      <LanguageProvider>
-        <ThemeProvider>
-          <PermissionProvider>
-            <ToastProvider />
-            <ConfirmDialogProvider />
-            {!isPublicRoute && <SessionTimeoutModal />}
-            <Routes>
-              {/* System Overview for non-authenticated users */}
-              <Route path="/" element={!isAuthenticated ? <SystemOverview /> : <RoleBasedRedirect />} />
-              <Route path="/absensi" element={<PublicAttendance />} />
-              <Route path="/public/attendance" element={<PublicAttendance />} />
-              <Route path="/public/leave-request" element={<StaffLeaveRequest />} />
-              <Route path="/public/face-registration" element={<FaceRegistration />} />
-              {/* Public Production Monitoring - No login required */}
-              <Route path="/public/production-monitoring" element={<ProductionMonitoringDashboard />} />
-              <Route path="/public/factory-layout" element={<FactoryLayoutDashboard />} />
-              <Route path="/login" element={!isAuthenticated ? <Login /> : <RoleBasedRedirect />} />
-              <Route path="/forgot-password" element={!isAuthenticated ? <ForgotPassword /> : <RoleBasedRedirect />} />
-              <Route path="/reset-password" element={!isAuthenticated ? <ResetPassword /> : <RoleBasedRedirect />} />
-              <Route path="/register" element={!isAuthenticated ? <Register /> : <RoleBasedRedirect />} />
-              <Route path="/oauth/callback" element={<OAuthCallback />} />
-              <Route path="/complete-profile" element={<CompleteProfile />} />
-              <Route path="/verify/:token" element={<DocumentVerifyPage />} />
-
-              {/* Global Search Route */}
-              <Route path="/app/search" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
-                <Route index element={<GlobalSearchPage />} />
-              </Route>
-
-              {/* Redirect old /workspace/:module requests to dashboard */}
-              <Route path="/workspace/:module" element={<Navigate to="/app" replace />} />
-
-              {/* Redirect specific old URLs to correct app structure */}
-              <Route path="/sales/opportunities" element={<Navigate to="/app/sales/opportunities" replace />} />
-              <Route path="/sales/opportunities/new" element={<Navigate to="/app/sales/opportunities/new" replace />} />
-              <Route path="/sales/opportunities/:id/edit" element={<Navigate to="/app/sales/opportunities" replace />} />
-              <Route path="/sales/leads" element={<Navigate to="/app/sales/leads" replace />} />
-              <Route path="/sales/leads/new" element={<Navigate to="/app/sales/leads/new" replace />} />
-              <Route path="/sales/leads/:id/edit" element={<Navigate to="/app/sales/leads" replace />} />
-              <Route path="/sales/quotations" element={<Navigate to="/app/sales/quotations" replace />} />
-              <Route path="/sales/quotations/new" element={<Navigate to="/app/sales/quotations/new" replace />} />
-              <Route path="/sales/quotations/:id/edit" element={<Navigate to="/app/sales/quotations" replace />} />
-              <Route path="/sales/activities" element={<Navigate to="/app/sales/activities" replace />} />
-              <Route path="/sales/activities/new" element={<Navigate to="/app/sales/activities/new" replace />} />
-              <Route path="/sales/customers" element={<Navigate to="/app/sales/customers" replace />} />
-              <Route path="/sales/customers/new" element={<Navigate to="/app/sales/customers/new" replace />} />
-              <Route path="/sales/customers/:id/edit" element={<Navigate to="/app/sales/customers" replace />} />
-              <Route path="/sales/orders" element={<Navigate to="/app/sales/orders" replace />} />
-              <Route path="/sales/orders/new" element={<Navigate to="/app/sales/orders/new" replace />} />
-              <Route path="/sales/orders/:id/edit" element={<Navigate to="/app/sales/orders" replace />} />
-              <Route path="/production/machines" element={<Navigate to="/app/production/machines" replace />} />
-              <Route path="/production/work-orders" element={<Navigate to="/app/production/work-orders" replace />} />
-              <Route path="/production/work-orders/new" element={<Navigate to="/app/production/work-orders/new" replace />} />
-              <Route path="/production/work-orders/:id/edit" element={<Navigate to="/app/production/work-orders" replace />} />
-
-              <Route path="/tv/production" element={<TVDisplayProduction />} />
-              <Route path="/tv/shipping" element={<TVDisplayShipping />} />
-              <Route path="/tv/roster" element={<TVDisplayRoster />} />
-              <Route path="/tv/overview" element={<TVDisplayOverview />} />
-
-              {/* Redirect old product routes to app routes */}
-              <Route path="/products" element={<Navigate to="/app/products" replace />} />
-              <Route path="/products/new" element={<Navigate to="/app/products/new" replace />} />
-              <Route path="/products/:id/edit" element={<Navigate to="/app/products" replace />} />
-
-              {/* Redirect old warehouse routes to app routes */}
-              <Route path="/warehouse/inventory" element={<Navigate to="/app/warehouse/inventory" replace />} />
-              <Route path="/warehouse/stock-summary" element={<Navigate to="/app/warehouse/stock-summary" replace />} />
-              <Route path="/warehouse/locations" element={<Navigate to="/app/warehouse/locations" replace />} />
-              <Route path="/warehouse/locations/new" element={<Navigate to="/app/warehouse/locations/new" replace />} />
-              <Route path="/warehouse/zones" element={<Navigate to="/app/warehouse/zones" replace />} />
-              <Route path="/warehouse/zones/:id" element={<WarehouseZoneRedirect />} />
-              <Route path="/warehouse/zones/:id/locations" element={<WarehouseZoneLocationsRedirect />} />
-              <Route path="/warehouse/zones/new" element={<Navigate to="/app/warehouse/zones/new" replace />} />
-              <Route path="/warehouse/alerts" element={<Navigate to="/app/warehouse/alerts" replace />} />
-              <Route path="/warehouse/movements" element={<Navigate to="/app/warehouse/movements" replace />} />
-              <Route path="/warehouse/movements/new" element={<Navigate to="/app/warehouse/movements/new" replace />} />
-              <Route path="/warehouse/reports" element={<Navigate to="/app/warehouse/reports" replace />} />
-
-              {/* Redirect old purchasing routes to app routes */}
-              <Route path="/purchasing/suppliers" element={<Navigate to="/app/purchasing/suppliers" replace />} />
-              <Route path="/purchasing/suppliers/new" element={<Navigate to="/app/purchasing/suppliers/new" replace />} />
-              <Route path="/purchasing/suppliers/:id/edit" element={<Navigate to="/app/purchasing/suppliers" replace />} />
-              <Route path="/purchasing/purchase-orders" element={<Navigate to="/app/purchasing/purchase-orders" replace />} />
-              <Route path="/purchasing/purchase-orders/new" element={<Navigate to="/app/purchasing/purchase-orders/new" replace />} />
-              <Route path="/purchasing/purchase-orders/:id/edit" element={<Navigate to="/app/purchasing/purchase-orders" replace />} />
-
-              {/* Redirect old quality routes to app routes */}
-              <Route path="/quality/tests/new" element={<Navigate to="/app/quality/tests/new" replace />} />
-              <Route path="/quality/tests/:id/edit" element={<Navigate to="/app/quality/tests" replace />} />
-              <Route path="/quality/tests" element={<Navigate to="/app/quality/tests" replace />} />
-
-              {/* Redirect old maintenance routes to app routes */}
-              <Route path="/maintenance/new" element={<Navigate to="/app/maintenance/new" replace />} />
-              <Route path="/maintenance/:id/edit" element={<Navigate to="/app/maintenance" replace />} />
-              <Route path="/maintenance" element={<Navigate to="/app/maintenance" replace />} />
-
-              {/* Redirect old returns routes to app routes */}
-              <Route path="/returns" element={<Navigate to="/app/returns" replace />} />
-              <Route path="/returns/new" element={<Navigate to="/app/returns/new" replace />} />
-              <Route path="/returns/:id" element={<Navigate to="/app/returns" replace />} />
-
-              {/* Redirect old converting routes to app routes */}
-              <Route path="/production/converting" element={<Navigate to="/app/production/converting" replace />} />
-              <Route path="/production/converting/input" element={<Navigate to="/app/production/converting/input" replace />} />
-
-              {/* Redirect old MBF report routes to app routes */}
-              <Route path="/production/mbf-report" element={<Navigate to="/app/production/mbf-report" replace />} />
-              <Route path="/production/mbf-report/:id" element={<Navigate to="/app/production/mbf-report" replace />} />
-
-              {/* Bypass auth for specific debug route */}
-              <Route path="/app/debug/roster" element={
-                <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold text-purple-600">🔧 DEBUG ROSTER (Bypass Auth)</h1>
-                    <p className="mt-2">This route completely bypasses authentication.</p>
-                    <div className="mt-4 p-4 bg-purple-100 border border-purple-400 rounded">
-                      <p className="text-purple-800">Authentication Status: {isAuthenticated ? '✅ Authenticated' : '❌ Not Authenticated'}</p>
-                      <p className="text-purple-800">Token: {localStorage.getItem('token') ? '✅ Present' : '❌ Missing'}</p>
-                      <button
-                        onClick={() => window.location.href = '/app/hr/roster/integrated'}
-                        className="mt-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
-                      >
-                        Try Normal Route
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              } />
-
-              <Route path="/app" element={isAuthenticated ? <Layout /> : <Navigate to="/" />}>
+    <Routes>
                 <Route index element={<DashboardEnhanced />} />
 
                 {/* Old Dashboard */}
@@ -1132,6 +956,194 @@ function App() {
                 <Route path="reports/scheduler" element={<ReportScheduler />} />
                 <Route path="reports/production-by-product" element={<ProductionByProductReport />} />
                 <Route path="*" element={<NotFound />} />
+    </Routes>
+  )
+}
+registerAppRoutes(AppChildRoutes)
+
+function App() {
+  const dispatch = useAppDispatch()
+  const { isAuthenticated, loading } = useAppSelector((state: { auth: { isAuthenticated: boolean; loading: boolean } }) => state.auth)
+  const location = useLocation()
+  
+  // Check if current route is public (no session timeout needed)
+  const isPublicRoute = location.pathname.startsWith('/public/') || 
+                        location.pathname === '/' || 
+                        location.pathname === '/login' ||
+                        location.pathname === '/register' ||
+                        location.pathname === '/forgot-password' ||
+                        location.pathname === '/reset-password' ||
+                        location.pathname === '/absensi'
+
+  // Update document title dynamically based on company settings
+  useDocumentTitle()
+
+  useEffect(() => {
+    // Check auth if token exists in localStorage
+    const token = localStorage.getItem('token')
+    if (token) {
+      dispatch(checkAuth())
+    }
+  }, [dispatch])
+
+  // Show loading screen while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-[#064e3b] to-slate-900">
+        <div className="text-center">
+          <div className="relative h-16 w-16 mx-auto mb-4">
+            <div className="absolute inset-0 rounded-full border-[3px] border-white/10" />
+            <div
+              className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[#10b981] border-r-teal-400 animate-spin"
+              style={{ animationDuration: '0.9s' }}
+            />
+            <div
+              className="absolute inset-[6px] rounded-full border-[3px] border-transparent border-b-[#F15D2C] animate-spin [animation-direction:reverse]"
+              style={{ animationDuration: '1.4s' }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-[#059669] to-[#047857] animate-pulse" />
+            </div>
+          </div>
+          <p className="text-emerald-100 text-sm font-medium">Verifying session...</p>
+        </div>
+      </div>
+    )
+  }
+  return (
+    <ErrorBoundary>
+      <LanguageProvider>
+        <ThemeProvider>
+          <PermissionProvider>
+            <ToastProvider />
+            <ConfirmDialogProvider />
+            {!isPublicRoute && <SessionTimeoutModal />}
+            <Routes>
+              {/* System Overview for non-authenticated users */}
+              <Route path="/" element={!isAuthenticated ? <SystemOverview /> : <RoleBasedRedirect />} />
+              <Route path="/absensi" element={<PublicAttendance />} />
+              <Route path="/public/attendance" element={<PublicAttendance />} />
+              <Route path="/public/leave-request" element={<StaffLeaveRequest />} />
+              <Route path="/public/face-registration" element={<FaceRegistration />} />
+              {/* Public Production Monitoring - No login required */}
+              <Route path="/public/production-monitoring" element={<ProductionMonitoringDashboard />} />
+              <Route path="/public/factory-layout" element={<FactoryLayoutDashboard />} />
+              <Route path="/login" element={!isAuthenticated ? <Login /> : <RoleBasedRedirect />} />
+              <Route path="/forgot-password" element={!isAuthenticated ? <ForgotPassword /> : <RoleBasedRedirect />} />
+              <Route path="/reset-password" element={!isAuthenticated ? <ResetPassword /> : <RoleBasedRedirect />} />
+              <Route path="/register" element={!isAuthenticated ? <Register /> : <RoleBasedRedirect />} />
+              <Route path="/oauth/callback" element={<OAuthCallback />} />
+              <Route path="/complete-profile" element={<CompleteProfile />} />
+              <Route path="/verify/:token" element={<DocumentVerifyPage />} />
+
+              {/* Global Search Route */}
+              <Route path="/app/search" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
+                <Route index element={<GlobalSearchPage />} />
+              </Route>
+
+              {/* Redirect old /workspace/:module requests to dashboard */}
+              <Route path="/workspace/:module" element={<Navigate to="/app" replace />} />
+
+              {/* Redirect specific old URLs to correct app structure */}
+              <Route path="/sales/opportunities" element={<Navigate to="/app/sales/opportunities" replace />} />
+              <Route path="/sales/opportunities/new" element={<Navigate to="/app/sales/opportunities/new" replace />} />
+              <Route path="/sales/opportunities/:id/edit" element={<Navigate to="/app/sales/opportunities" replace />} />
+              <Route path="/sales/leads" element={<Navigate to="/app/sales/leads" replace />} />
+              <Route path="/sales/leads/new" element={<Navigate to="/app/sales/leads/new" replace />} />
+              <Route path="/sales/leads/:id/edit" element={<Navigate to="/app/sales/leads" replace />} />
+              <Route path="/sales/quotations" element={<Navigate to="/app/sales/quotations" replace />} />
+              <Route path="/sales/quotations/new" element={<Navigate to="/app/sales/quotations/new" replace />} />
+              <Route path="/sales/quotations/:id/edit" element={<Navigate to="/app/sales/quotations" replace />} />
+              <Route path="/sales/activities" element={<Navigate to="/app/sales/activities" replace />} />
+              <Route path="/sales/activities/new" element={<Navigate to="/app/sales/activities/new" replace />} />
+              <Route path="/sales/customers" element={<Navigate to="/app/sales/customers" replace />} />
+              <Route path="/sales/customers/new" element={<Navigate to="/app/sales/customers/new" replace />} />
+              <Route path="/sales/customers/:id/edit" element={<Navigate to="/app/sales/customers" replace />} />
+              <Route path="/sales/orders" element={<Navigate to="/app/sales/orders" replace />} />
+              <Route path="/sales/orders/new" element={<Navigate to="/app/sales/orders/new" replace />} />
+              <Route path="/sales/orders/:id/edit" element={<Navigate to="/app/sales/orders" replace />} />
+              <Route path="/production/machines" element={<Navigate to="/app/production/machines" replace />} />
+              <Route path="/production/work-orders" element={<Navigate to="/app/production/work-orders" replace />} />
+              <Route path="/production/work-orders/new" element={<Navigate to="/app/production/work-orders/new" replace />} />
+              <Route path="/production/work-orders/:id/edit" element={<Navigate to="/app/production/work-orders" replace />} />
+
+              <Route path="/tv/production" element={<TVDisplayProduction />} />
+              <Route path="/tv/shipping" element={<TVDisplayShipping />} />
+              <Route path="/tv/roster" element={<TVDisplayRoster />} />
+              <Route path="/tv/overview" element={<TVDisplayOverview />} />
+
+              {/* Redirect old product routes to app routes */}
+              <Route path="/products" element={<Navigate to="/app/products" replace />} />
+              <Route path="/products/new" element={<Navigate to="/app/products/new" replace />} />
+              <Route path="/products/:id/edit" element={<Navigate to="/app/products" replace />} />
+
+              {/* Redirect old warehouse routes to app routes */}
+              <Route path="/warehouse/inventory" element={<Navigate to="/app/warehouse/inventory" replace />} />
+              <Route path="/warehouse/stock-summary" element={<Navigate to="/app/warehouse/stock-summary" replace />} />
+              <Route path="/warehouse/locations" element={<Navigate to="/app/warehouse/locations" replace />} />
+              <Route path="/warehouse/locations/new" element={<Navigate to="/app/warehouse/locations/new" replace />} />
+              <Route path="/warehouse/zones" element={<Navigate to="/app/warehouse/zones" replace />} />
+              <Route path="/warehouse/zones/:id" element={<WarehouseZoneRedirect />} />
+              <Route path="/warehouse/zones/:id/locations" element={<WarehouseZoneLocationsRedirect />} />
+              <Route path="/warehouse/zones/new" element={<Navigate to="/app/warehouse/zones/new" replace />} />
+              <Route path="/warehouse/alerts" element={<Navigate to="/app/warehouse/alerts" replace />} />
+              <Route path="/warehouse/movements" element={<Navigate to="/app/warehouse/movements" replace />} />
+              <Route path="/warehouse/movements/new" element={<Navigate to="/app/warehouse/movements/new" replace />} />
+              <Route path="/warehouse/reports" element={<Navigate to="/app/warehouse/reports" replace />} />
+
+              {/* Redirect old purchasing routes to app routes */}
+              <Route path="/purchasing/suppliers" element={<Navigate to="/app/purchasing/suppliers" replace />} />
+              <Route path="/purchasing/suppliers/new" element={<Navigate to="/app/purchasing/suppliers/new" replace />} />
+              <Route path="/purchasing/suppliers/:id/edit" element={<Navigate to="/app/purchasing/suppliers" replace />} />
+              <Route path="/purchasing/purchase-orders" element={<Navigate to="/app/purchasing/purchase-orders" replace />} />
+              <Route path="/purchasing/purchase-orders/new" element={<Navigate to="/app/purchasing/purchase-orders/new" replace />} />
+              <Route path="/purchasing/purchase-orders/:id/edit" element={<Navigate to="/app/purchasing/purchase-orders" replace />} />
+
+              {/* Redirect old quality routes to app routes */}
+              <Route path="/quality/tests/new" element={<Navigate to="/app/quality/tests/new" replace />} />
+              <Route path="/quality/tests/:id/edit" element={<Navigate to="/app/quality/tests" replace />} />
+              <Route path="/quality/tests" element={<Navigate to="/app/quality/tests" replace />} />
+
+              {/* Redirect old maintenance routes to app routes */}
+              <Route path="/maintenance/new" element={<Navigate to="/app/maintenance/new" replace />} />
+              <Route path="/maintenance/:id/edit" element={<Navigate to="/app/maintenance" replace />} />
+              <Route path="/maintenance" element={<Navigate to="/app/maintenance" replace />} />
+
+              {/* Redirect old returns routes to app routes */}
+              <Route path="/returns" element={<Navigate to="/app/returns" replace />} />
+              <Route path="/returns/new" element={<Navigate to="/app/returns/new" replace />} />
+              <Route path="/returns/:id" element={<Navigate to="/app/returns" replace />} />
+
+              {/* Redirect old converting routes to app routes */}
+              <Route path="/production/converting" element={<Navigate to="/app/production/converting" replace />} />
+              <Route path="/production/converting/input" element={<Navigate to="/app/production/converting/input" replace />} />
+
+              {/* Redirect old MBF report routes to app routes */}
+              <Route path="/production/mbf-report" element={<Navigate to="/app/production/mbf-report" replace />} />
+              <Route path="/production/mbf-report/:id" element={<Navigate to="/app/production/mbf-report" replace />} />
+
+              {/* Bypass auth for specific debug route */}
+              <Route path="/app/debug/roster" element={
+                <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                  <div className="p-6">
+                    <h1 className="text-2xl font-bold text-purple-600">🔧 DEBUG ROSTER (Bypass Auth)</h1>
+                    <p className="mt-2">This route completely bypasses authentication.</p>
+                    <div className="mt-4 p-4 bg-purple-100 border border-purple-400 rounded">
+                      <p className="text-purple-800">Authentication Status: {isAuthenticated ? '✅ Authenticated' : '❌ Not Authenticated'}</p>
+                      <p className="text-purple-800">Token: {localStorage.getItem('token') ? '✅ Present' : '❌ Missing'}</p>
+                      <button
+                        onClick={() => window.location.href = '/app/hr/roster/integrated'}
+                        className="mt-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+                      >
+                        Try Normal Route
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              } />
+
+              <Route path="/app" element={isAuthenticated ? <Layout /> : <Navigate to="/" />}>
+                <Route path="*" element={<AppChildRoutes />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

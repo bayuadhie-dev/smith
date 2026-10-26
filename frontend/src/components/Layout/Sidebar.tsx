@@ -1,4 +1,5 @@
 import { Fragment, useState, useEffect } from 'react'
+import { clearWorkspaceStorage } from '../../workspace/WorkspaceContext'
 import { Dialog, Transition } from '@headlessui/react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux'
@@ -114,6 +115,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
   }
 
   const handleLogout = () => {
+    clearWorkspaceStorage()
     dispatch(logout())
     navigate('/')
   }

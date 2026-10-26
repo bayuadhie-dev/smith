@@ -1,14 +1,20 @@
 import { useState, useEffect } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import Breadcrumb from '../ui/Breadcrumb'
 import SkipLink from '../ui/SkipLink'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import KeyboardShortcutsModal from '../Common/KeyboardShortcutsModal'
+import { WorkspaceProvider } from '../../workspace/WorkspaceContext'
+import Workspace from '../../workspace/Workspace'
+import { moduleForPath, MAX_TABS_PER_MODULE } from '../../workspace/modules'
+import { showWarning } from '../ui'
 
 export default function Layout() {
   const [showShortcutsModal, setShowShortcutsModal] = useState(false)
+  const location = useLocation()
+  const inWorkspaceModule = moduleForPath(location.pathname) !== null
   
   // Enable keyboard shortcuts
   useKeyboardShortcuts()
@@ -98,7 +104,10 @@ export default function Layout() {
         <main id="main-content" className="py-6" role="main" aria-label="Konten utama">
           <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
             <Breadcrumb />
-            <Outlet />
+            <WorkspaceProvider onFull={(label) => showWarning(`Maksimal ${MAX_TABS_PER_MODULE} tab di modul ${label}. Tutup salah satu tab dulu.`)}>
+              <Workspace visible={inWorkspaceModule} />
+              {!inWorkspaceModule && <Outlet />}
+            </WorkspaceProvider>
           </div>
         </main>
       </div>

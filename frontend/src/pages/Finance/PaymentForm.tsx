@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import SearchableSelect from '../../components/SearchableSelect';
+import { useDraftState } from '../../workspace/drafts';
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
@@ -77,14 +78,14 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
 
   const editId = searchParams.get('edit');
   const editAllocRef = useRef<{ invoice_id: number; invoice_number: string | null; invoice_total_amount: number | null; amount: number }[] | null>(null);
-  const [paymentNumber, setPaymentNumber] = useState('');
+  const [paymentNumber, setPaymentNumber] = useDraftState('paymentNumber', '');
   const [nextNumber, setNextNumber] = useState('');
-  const [alloc, setAlloc] = useState<Record<number, string>>({});
-  const [lines, setLines] = useState<{ account_id: string; amount: string; description: string }[]>([
+  const [alloc, setAlloc] = useDraftState<Record<number, string>>('alloc', {});
+  const [lines, setLines] = useDraftState<{ account_id: string; amount: string; description: string }[]>('lines', [
     { account_id: '', amount: '', description: '' },
   ]);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useDraftState('formData', {
     party_id: '',
     payment_date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
     payment_method: 'bank_transfer',
@@ -221,7 +222,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     });
   };
 
-  const [distributeAmount, setDistributeAmount] = useState('');
+  const [distributeAmount, setDistributeAmount] = useDraftState('distributeAmount', '');
   // Seperti "Distribusi Nilai Pembayaran" di Accurate: isi dari faktur
   // paling lama (jatuh tempo terdekat) sampai nilai habis.
   const distribute = () => {
