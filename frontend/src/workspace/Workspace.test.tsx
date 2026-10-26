@@ -146,3 +146,21 @@ describe('workspace tabs', () => {
     expect(tabTitles().some((t) => t?.startsWith('Catat Baru'))).toBe(false)
   })
 })
+
+import userEvent from '@testing-library/user-event'
+
+describe('typing inside a tab', () => {
+  it('keeps every typed character (first keystroke included)', async () => {
+    render(<Shell start="/app/finance/payments/new" />)
+    await waitFor(() => expect(screen.getByTestId('form')).toBeTruthy())
+    const input = screen.getByPlaceholderText('Nama') as HTMLInputElement
+    const user = userEvent.setup()
+    await user.click(input)
+    await user.keyboard('Toko Maju')
+    expect(input.value).toBe('Toko Maju')
+    await act(async () => { await new Promise((r) => setTimeout(r, 20)) })
+    expect(input.value).toBe('Toko Maju')
+    // the form tab is marked as holding unsaved input
+    expect(document.querySelector('[role="tab"] .bg-amber-500')).not.toBeNull()
+  })
+})

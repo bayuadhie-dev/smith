@@ -9,9 +9,18 @@ const dirtyMap = new Map<string, Set<string>>()
 const listeners = new Set<() => void>()
 let dirtyVersion = 0
 
+// Deferred on purpose: setDirty() is called from a capture-phase input listener. A synchronous re-render at that
+// moment lands BEFORE React handles the same input event, and React would reset the controlled input to its old
+// value (the first typed character vanished). A macrotask runs after the event has been fully handled.
+let notifyScheduled = false
 function notify() {
-  dirtyVersion++
-  listeners.forEach((l) => l())
+  if (notifyScheduled) return
+  notifyScheduled = true
+  setTimeout(() => {
+    notifyScheduled = false
+    dirtyVersion++
+    listeners.forEach((l) => l())
+  }, 0)
 }
 
 export function setDirty(tabId: string, key: string, dirty: boolean) {
