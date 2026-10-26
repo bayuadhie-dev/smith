@@ -33,15 +33,7 @@ Tangkapan layar dari aplikasi yang berjalan. Nama perusahaan, customer, supplier
 
 <table>
 <tr>
-<td width="50%"><img src="docs/screenshots/01_pusat_laporan.jpg" alt="Pusat Laporan Keuangan"><br><sub>Finance: Pusat Laporan Keuangan, dengan tab modul dan tab halaman di atas</sub></td>
-<td width="50%"><img src="docs/screenshots/02_neraca_saldo.jpg" alt="Neraca Saldo"><br><sub>Finance: Neraca Saldo dengan saldo awal, mutasi, saldo akhir, dan cek keseimbangan</sub></td>
-</tr>
-<tr>
-<td width="50%"><img src="docs/screenshots/03_rekap_kas_harian.jpg" alt="Rekap Kas Harian"><br><sub>Finance: Rekap Kas Harian per hari dan per rekening</sub></td>
-<td width="50%"><img src="docs/screenshots/04_kartu_piutang.jpg" alt="Kartu Piutang per Customer"><br><sub>Finance: Kartu Piutang per Customer</sub></td>
-</tr>
-<tr>
-<td width="50%"><img src="docs/screenshots/05_rekap_ppn.jpg" alt="Rekap PPN"><br><sub>Finance: Rekap PPN Keluaran dan Masukan per bulan</sub></td>
+<td width="50%"><img src="docs/screenshots/00_dashboard_utama.jpg" alt="Dashboard utama"><br><sub>Dashboard utama: KPI penjualan, produksi, kualitas, scorecard, dan margin produk</sub></td>
 <td width="50%"><img src="docs/screenshots/06_produksi.jpg" alt="Dashboard Produksi"><br><sub>Produksi: dashboard SPK aktif, mesin, dan menu modul</sub></td>
 </tr>
 <tr>
@@ -53,7 +45,16 @@ Tangkapan layar dari aplikasi yang berjalan. Nama perusahaan, customer, supplier
 <td width="50%"><img src="docs/screenshots/10_hr_dashboard.jpg" alt="Dashboard HR"><br><sub>HR: karyawan, kehadiran, cuti, dan menu HR</sub></td>
 </tr>
 <tr>
-<td colspan="2"><img src="docs/screenshots/11_maintenance.jpg" alt="Dashboard Maintenance"><br><sub>Maintenance: SPK, uptime, MTTR, dan biaya</sub></td>
+<td width="50%"><img src="docs/screenshots/11_maintenance.jpg" alt="Dashboard Maintenance"><br><sub>Maintenance: SPK, uptime, MTTR, dan biaya</sub></td>
+<td width="50%"><img src="docs/screenshots/01_pusat_laporan.jpg" alt="Pusat Laporan Keuangan"><br><sub>Finance: Pusat Laporan Keuangan, dengan tab modul dan tab halaman di atas</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/02_neraca_saldo.jpg" alt="Neraca Saldo"><br><sub>Finance: Neraca Saldo dengan saldo awal, mutasi, saldo akhir, dan cek keseimbangan</sub></td>
+<td width="50%"><img src="docs/screenshots/03_rekap_kas_harian.jpg" alt="Rekap Kas Harian"><br><sub>Finance: Rekap Kas Harian per hari dan per rekening</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/04_kartu_piutang.jpg" alt="Kartu Piutang per Customer"><br><sub>Finance: Kartu Piutang per Customer</sub></td>
+<td width="50%"><img src="docs/screenshots/05_rekap_ppn.jpg" alt="Rekap PPN"><br><sub>Finance: Rekap PPN Keluaran dan Masukan per bulan</sub></td>
 </tr>
 </table>
 
