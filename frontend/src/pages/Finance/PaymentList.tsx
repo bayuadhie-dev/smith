@@ -38,8 +38,8 @@ function today(): string {
 }
 
 const statusLabel: Record<string, string> = {
-  pending: 'Pending',
-  cleared: 'Cleared',
+  pending: 'Belum Direkonsiliasi',
+  cleared: 'Sudah Direkonsiliasi',
   bounced: 'Bounced',
   cancelled: 'Dibatalkan',
 };
@@ -179,6 +179,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
                           ? 'bg-green-50 text-green-700'
                           : 'bg-yellow-50 text-yellow-700'
                       }`}
+                      title={r.status === 'pending' ? 'Transaksi sudah dijurnal (tidak perlu approval). Status berubah otomatis setelah dicocokkan dengan mutasi bank di Rekonsiliasi Bank.' : undefined}
                     >
                       {statusLabel[r.status] || r.status}
                     </span>

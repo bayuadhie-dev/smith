@@ -916,3 +916,76 @@ def test_account_transactions_filter_by_period_with_opening_and_closing(client, 
     assert data['summary'] == {**data['summary'], 'opening_balance': 1000.0, 'total_debit': 50.0, 'total_credit': 300.0, 'closing_balance': 750.0}
     allrows = client.get(f'/api/finance/accounts/{bank.id}/transactions', headers=auth_headers).get_json()
     assert len(allrows['transactions']) == 3 and allrows['summary']['closing_balance'] == 750.0
+
+
+def test_standalone_cash_allows_negative_lines_but_not_zero(client, auth_headers, db_session):
+    """Baris pengurang (negatif) membalik sisi jurnalnya; total bersih menentukan arah kas/bank."""
+    from models.finance import AccountingEntry, Payment
+    bank = _bank(db_session)
+    beban = _acc(db_session, '6-6000')
+    potongan = _acc(db_session, '9-1000')
+    base = {'payment_date': date.today().isoformat(), 'payment_type': 'payment', 'payment_method': 'cash', 'bank_account_id': bank.id}
+
+    zero = client.post('/api/finance/payments', headers=auth_headers, json={**base, 'lines': [{'account_id': beban.id, 'amount': 0}]})
+    assert zero.status_code == 400 and '0' in zero.get_json()['error']
+    net0 = client.post('/api/finance/payments', headers=auth_headers, json={**base, 'lines': [
+        {'account_id': beban.id, 'amount': 50}, {'account_id': potongan.id, 'amount': -50}]})
+    assert net0.status_code == 400
+
+    ok = client.post('/api/finance/payments', headers=auth_headers, json={**base, 'lines': [
+        {'account_id': beban.id, 'amount': 100}, {'account_id': potongan.id, 'amount': -30}]})
+    assert ok.status_code == 201, ok.get_json()
+    pid = ok.get_json()['payment_id']
+    assert float(db_session.get(Payment, pid).amount) == 70
+    es = AccountingEntry.query.filter_by(reference_type='payment', reference_id=pid, status='posted').all()
+    by = {e.account_id: (float(e.debit_amount), float(e.credit_amount)) for e in es}
+    assert by[beban.id] == (100, 0) and by[potongan.id] == (0, 30) and by[bank.id] == (0, 70)
+    assert round(sum(d for d, _ in by.values()) - sum(c for _, c in by.values()), 2) == 0
+
+    neg_total = client.post('/api/finance/payments', headers=auth_headers, json={**base, 'lines': [
+        {'account_id': beban.id, 'amount': 20}, {'account_id': potongan.id, 'amount': -80}]})
+    assert neg_total.status_code == 201
+    es = AccountingEntry.query.filter_by(reference_type='payment', reference_id=neg_total.get_json()['payment_id'], status='posted').all()
+    by = {e.account_id: (float(e.debit_amount), float(e.credit_amount)) for e in es}
+    assert by[bank.id] == (60, 0)
+
+
+def test_negative_allocation_reverses_part_of_a_payment_like_accurate(client, auth_headers, db_session):
+    """Alokasi faktur boleh negatif (membalik sebagian pelunasan), bukan 0, dan tidak boleh melebihi yang sudah dibayar."""
+    from models.finance import AccountingEntry, GlobalAccountDefault, Payment
+    from models.sales import Customer
+    bank = _bank(db_session)
+    db_session.add(GlobalAccountDefault(transaction_key='accounts_receivable', account_id=_acc(db_session, '1-1100').id))
+    cust = Customer(code='C-NEG', company_name='PT Negatif', is_active=True)
+    db_session.add(cust)
+    db_session.commit()
+    inv = _sales_invoice(db_session, total=1_000_000)
+    inv.customer_id = cust.id
+    db_session.commit()
+    base = {'payment_date': date.today().isoformat(), 'payment_method': 'cash', 'bank_account_id': bank.id}
+
+    def post(amount):
+        return client.post('/api/finance/payments', headers=auth_headers, json={**base, 'allocations': [{'invoice_id': inv.id, 'amount': amount}]})
+
+    assert post(0).status_code == 400
+    too_much_negative = post(-10)                      # belum ada yang dibayar
+    assert too_much_negative.status_code == 400 and 'sudah dibayar' in too_much_negative.get_json()['error']
+
+    assert post(600_000).status_code == 201
+    db_session.refresh(inv)
+    assert float(inv.paid_amount) == 600_000 and inv.status == 'partial'
+
+    assert post(-700_000).status_code == 400           # lebih dari yang sudah dibayar
+    back = post(-200_000)
+    assert back.status_code == 201, back.get_json()
+    db_session.refresh(inv)
+    assert float(inv.paid_amount) == 400_000 and float(inv.balance_due) == 600_000
+    pid = back.get_json()['payment_id']
+    assert float(db_session.get(Payment, pid).amount) == -200_000
+    by = {e.account_code: (float(e.debit_amount), float(e.credit_amount))
+          for e in AccountingEntry.query.filter_by(reference_type='payment', reference_id=pid, status='posted').all()}
+    assert by['1-1100'] == (200_000, 0) and by['1-1010'] == (0, 200_000)       # Dr Piutang, Cr Kas/Bank
+
+    assert client.post(f'/api/finance/payments/{pid}/void', headers=auth_headers, json={}).status_code == 200
+    db_session.refresh(inv)
+    assert float(inv.paid_amount) == 600_000 and inv.status == 'partial'

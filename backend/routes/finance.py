@@ -782,6 +782,8 @@ def _void_payment_core(payment, user_id, reason):
                     invoice.status = 'sent' if invoice.invoice_type == 'sales' else 'draft'
                 elif invoice.balance_due > 0:
                     invoice.status = 'partial'
+                else:
+                    invoice.status = 'paid'
 
     payment.status = 'cancelled'
     payment.voided_by = user_id
@@ -822,9 +824,13 @@ def create_payment():
             return jsonify({'error': 'bank_account_id is required'}), 400
 
         items = allocations_in or lines_in
-        if any(Decimal(str(i.get('amount') or 0)) <= 0 for i in items):
-            return jsonify({'error': 'Setiap baris harus bernilai lebih dari 0'}), 400
+        # Seperti Accurate Online: nilai tiap baris (alokasi faktur maupun akun lawan) boleh negatif, tidak boleh 0.
+        # Alokasi negatif membalik sebagian pelunasan faktur yang sudah dibayar (mis. pengembalian kelebihan).
+        if any(Decimal(str(i.get('amount') or 0)) == 0 for i in items):
+            return jsonify({'error': 'Setiap baris tidak boleh bernilai 0'}), 400
         total_amount = sum((Decimal(str(i['amount'])) for i in items), Decimal('0'))
+        if total_amount == 0:
+            return jsonify({'error': 'Total transaksi tidak boleh 0'}), 400
         if data.get('amount') is not None and abs(Decimal(str(data['amount'])) - total_amount) > Decimal('0.01'):
             return jsonify({'error': f'Nilai total (Rp{float(data["amount"]):,.2f}) tidak sama dengan jumlah rincian (Rp{float(total_amount):,.2f})'}), 400
 
@@ -874,9 +880,15 @@ def create_payment():
                 if inv.status == 'cancelled':
                     return jsonify({'error': f'Invoice {inv.invoice_number} sudah dibatalkan'}), 400
                 balance = Decimal(str(inv.balance_due or 0)) + released.get(inv.id, Decimal('0'))
-                if Decimal(str(a['amount'])) > balance + Decimal('0.01'):
+                already_paid = Decimal(str(inv.paid_amount or 0)) - released.get(inv.id, Decimal('0'))
+                amount_in = Decimal(str(a['amount']))
+                if amount_in > balance + Decimal('0.01'):
                     return jsonify({
                         'error': f'Jumlah untuk {inv.invoice_number} (Rp{float(a["amount"]):,.2f}) melebihi sisa tagihan (Rp{float(balance):,.2f})'
+                    }), 400
+                if amount_in < 0 and -amount_in > max(already_paid, Decimal('0')) + Decimal('0.01'):
+                    return jsonify({
+                        'error': f'Jumlah negatif untuk {inv.invoice_number} (Rp{float(amount_in):,.2f}) melebihi yang sudah dibayar (Rp{float(max(already_paid, Decimal("0"))):,.2f})'
                     }), 400
                 invoices.append(inv)
             if len({i.invoice_type for i in invoices}) > 1:
@@ -952,25 +964,31 @@ def create_payment():
                 if inv.balance_due <= 0.005:
                     inv.balance_due = 0
                     inv.status = 'paid'
-                elif inv.paid_amount > 0:
+                elif inv.paid_amount > 0.005:
                     inv.status = 'partial'
+                else:
+                    inv.paid_amount = 0
+                    inv.status = 'sent' if inv.invoice_type == 'sales' else 'draft'
                 if inv.invoice_type == 'sales':
-                    lines.append({'account_id': resolve_accounts_receivable(inv.customer_id), 'debit': 0, 'credit': amt,
-                                  'description': f'Pelunasan piutang - {inv.invoice_number}'})
+                    lines.append({'account_id': resolve_accounts_receivable(inv.customer_id), 'debit': -amt if amt < 0 else 0, 'credit': amt if amt > 0 else 0,
+                                  'description': f'Pelunasan piutang - {inv.invoice_number}' if amt > 0 else f'Pembalikan pelunasan piutang - {inv.invoice_number}'})
                 else:
                     # Hutang valas dibukukan dalam Rupiah dengan kurs saat faktur; amt ada dalam mata uang faktur.
                     ap_idr = round(amt * float(inv.exchange_rate or 1), 2) if (inv.currency or 'IDR') != 'IDR' else amt
                     ap_idr_total += ap_idr
-                    lines.append({'account_id': resolve_accounts_payable(inv.supplier_id), 'debit': ap_idr, 'credit': 0,
-                                  'description': f'Pelunasan hutang - {inv.invoice_number}'})
+                    lines.append({'account_id': resolve_accounts_payable(inv.supplier_id), 'debit': ap_idr if ap_idr > 0 else 0, 'credit': -ap_idr if ap_idr < 0 else 0,
+                                  'description': f'Pelunasan hutang - {inv.invoice_number}' if ap_idr > 0 else f'Pembalikan pelunasan hutang - {inv.invoice_number}'})
             memo = f'Payment {payment.payment_number} - ' + ', '.join(i.invoice_number for i in invoices)
         else:
             for l in lines_in:
                 amt = float(Decimal(str(l['amount'])))
                 desc = l.get('description') or payment.notes or f'{"Penerimaan" if is_receipt else "Pembayaran"} - {payment.payment_number}'
                 db.session.add(PaymentLine(payment_id=payment.id, account_id=l['account_id'], amount=amt, description=l.get('description')))
-                lines.append({'account_id': l['account_id'], 'debit': 0 if is_receipt else amt, 'credit': amt if is_receipt else 0,
-                              'description': desc})
+                if is_receipt:
+                    dr, cr = (0, amt) if amt > 0 else (-amt, 0)
+                else:
+                    dr, cr = (amt, 0) if amt > 0 else (0, -amt)
+                lines.append({'account_id': l['account_id'], 'debit': dr, 'credit': cr, 'description': desc})
             memo = payment.notes or f'Payment {payment.payment_number}'
 
         if invoices and payment.currency != 'IDR':
@@ -978,9 +996,9 @@ def create_payment():
             # (tanpa selisih). Beda keduanya masuk Laba/Rugi Selisih Kurs.
             ap_idr_total = round(ap_idr_total, 2)
             if data.get('amount_idr') is not None:
-                if float(data['amount_idr']) <= 0:
+                if float(data['amount_idr']) == 0 or (float(data['amount_idr']) > 0) != (ap_idr_total > 0):
                     db.session.rollback()
-                    return jsonify({'error': 'amount_idr harus lebih dari 0'}), 400
+                    return jsonify({'error': 'amount_idr tidak boleh 0 dan harus searah dengan nilai hutang'}), 400
                 total = round(float(data['amount_idr']), 2)
             else:
                 total = ap_idr_total
@@ -991,10 +1009,11 @@ def create_payment():
             db.session.rollback()
             return jsonify({'error': 'amount_idr hanya untuk pembayaran invoice valas'}), 400
 
+        bank_in = is_receipt if total >= 0 else not is_receipt   # total bersih negatif membalik arah kas/bank
         lines.append({
             'account_id': data['bank_account_id'],
-            'debit': total if is_receipt else 0,
-            'credit': 0 if is_receipt else total,
+            'debit': abs(total) if bank_in else 0,
+            'credit': 0 if bank_in else abs(total),
             'description': f'{"Penerimaan" if is_receipt else "Pembayaran"} - {payment.payment_number}',
         })
 

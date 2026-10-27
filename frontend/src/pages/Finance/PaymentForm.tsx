@@ -240,7 +240,11 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   const updateLine = (idx: number, patch: Partial<{ account_id: string; amount: string; description: string }>) =>
     setLines((ls) => ls.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
 
-  const overAllocated = invoices.filter((i) => (Number(alloc[i.id]) || 0) > i.balance_due + 0.01);
+  const paidOf = (i: { total_amount: number; balance_due: number }) => Math.max(0, i.total_amount - i.balance_due);
+  const overAllocated = invoices.filter((i) => {
+    const n = Number(alloc[i.id]) || 0;
+    return n > i.balance_due + 0.01 || (n < 0 && -n > paidOf(i) + 0.01);
+  });
   const bankName = cashBankAccounts.find((a) => a.id === Number(formData.bank_account_id));
   const accName = (id: string) => {
     const a = contraAccounts.find((c) => c.id === Number(id));
@@ -249,30 +253,31 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   const isReceiptKind = mode === 'ar' || (mode === 'kas' && cashDirection === 'in');
   const bankLabel = bankName ? `${bankName.code} - ${bankName.name}` : '(Kas/Bank belum dipilih)';
   const journalPreview: { account: string; debit: number; credit: number }[] = [];
-  if (totalAmount > 0) {
-    const bankLine = { account: bankLabel, debit: isReceiptKind ? totalAmount : 0, credit: isReceiptKind ? 0 : totalAmount };
+  if (totalAmount !== 0) {
+    const bankIn = totalAmount > 0 ? isReceiptKind : !isReceiptKind;
+    const bankLine = { account: bankLabel, debit: bankIn ? Math.abs(totalAmount) : 0, credit: bankIn ? 0 : Math.abs(totalAmount) };
     const detail = isStandalone
-      ? lines.filter((l) => Number(l.amount) > 0).map((l) => ({
-          account: accName(l.account_id),
-          debit: isReceiptKind ? 0 : Number(l.amount),
-          credit: isReceiptKind ? Number(l.amount) : 0,
-        }))
-      : invoices.filter((i) => Number(alloc[i.id]) > 0).map((i) => ({
-          account: `${mode === 'ar' ? 'Piutang Usaha' : 'Hutang Usaha'} — ${i.invoice_number}`,
-          debit: mode === 'ap' ? Number(alloc[i.id]) : 0,
-          credit: mode === 'ar' ? Number(alloc[i.id]) : 0,
-        }));
+      ? lines.filter((l) => Number(l.amount) !== 0).map((l) => {
+          const n = Number(l.amount);
+          const onDebit = isReceiptKind ? n < 0 : n > 0;
+          return { account: accName(l.account_id), debit: onDebit ? Math.abs(n) : 0, credit: onDebit ? 0 : Math.abs(n) };
+        })
+      : invoices.filter((i) => Number(alloc[i.id]) !== 0 && alloc[i.id] !== undefined).map((i) => {
+          const n = Number(alloc[i.id]);
+          const onDebit = mode === 'ap' ? n > 0 : n < 0;
+          return { account: `${mode === 'ar' ? 'Piutang Usaha' : 'Hutang Usaha'} — ${i.invoice_number}`, debit: onDebit ? Math.abs(n) : 0, credit: onDebit ? 0 : Math.abs(n) };
+        });
     if (isReceiptKind) journalPreview.push(bankLine, ...detail);
     else journalPreview.push(...detail, bankLine);
   }
-  const canSubmit = totalAmount > 0 && overAllocated.length === 0 && !!formData.bank_account_id && !!formData.payment_date;
+  const canSubmit = totalAmount !== 0 && overAllocated.length === 0 && !!formData.bank_account_id && !!formData.payment_date;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null);
 
     const allocations = Object.entries(alloc)
-      .filter(([, v]) => Number(v) > 0)
+      .filter(([, v]) => Number(v) !== 0)
       .map(([id, v]) => ({ invoice_id: Number(id), amount: Number(v) }));
     const cleanLines = lines
       .filter((l) => l.account_id || Number(l.amount))
@@ -282,8 +287,8 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
       setError('Centang minimal satu faktur yang akan dilunasi.');
       return;
     }
-    if (isStandalone && (cleanLines.length === 0 || cleanLines.some((l) => !l.account_id || !(l.amount > 0)))) {
-      setError('Setiap baris rincian harus punya akun dan nilai lebih dari 0.');
+    if (isStandalone && (cleanLines.length === 0 || cleanLines.some((l) => !l.account_id || !l.amount))) {
+      setError('Setiap baris rincian harus punya akun dan nilai tidak sama dengan 0 (boleh negatif untuk pengurang).');
       return;
     }
     if (!formData.bank_account_id) {
@@ -445,12 +450,14 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                                 <NumberInput
                                   className="input w-full text-right"
                                   disabled={!checked}
-                                  max={inv.balance_due}
                                   value={alloc[inv.id] ?? ''}
                                   onChange={(e) => setAlloc((a) => ({ ...a, [inv.id]: e.target.value }))}
                                 />
                                 {(Number(alloc[inv.id]) || 0) > inv.balance_due + 0.01 && (
                                   <p className="text-xs text-red-600 mt-1">Melebihi sisa faktur</p>
+                                )}
+                                {(Number(alloc[inv.id]) || 0) < 0 && -(Number(alloc[inv.id]) || 0) > paidOf(inv) + 0.01 && (
+                                  <p className="text-xs text-red-600 mt-1">Melebihi yang sudah dibayar</p>
                                 )}
                               </td>
                               <td className="p-2 text-right">

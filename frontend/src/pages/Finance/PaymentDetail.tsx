@@ -140,8 +140,11 @@ export default function PaymentDetail() {
         </div>
         <div className="flex items-center gap-3">
           <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${statusBadgeClass(payment.status)}`}>
-            {payment.status.toUpperCase()}
+            {({ pending: 'BELUM DIREKONSILIASI', cleared: 'SUDAH DIREKONSILIASI', cancelled: 'DIBATALKAN', bounced: 'DITOLAK BANK' } as Record<string, string>)[payment.status] || payment.status.toUpperCase()}
           </span>
+          {payment.status === 'pending' && (
+            <span className="max-w-xs text-xs text-gray-500">Sudah dijurnal, tidak perlu approval. Berubah jadi Sudah Direkonsiliasi setelah dicocokkan dengan mutasi bank.</span>
+          )}
           <button onClick={() => navigate(-1)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
             Kembali
           </button>
