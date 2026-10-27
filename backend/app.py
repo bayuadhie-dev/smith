@@ -374,6 +374,7 @@ def create_app(config_class=Config):
 
     from routes.finance_reports import finance_reports_bp
     from routes.finance_search import finance_search_bp
+    from routes.finance_payment_import import finance_payment_import_bp
     from routes.finance import finance_bp
 
     from routes.bank_reconciliation import bank_reconciliation_bp
@@ -561,6 +562,7 @@ def create_app(config_class=Config):
     app.register_blueprint(finance_bp, url_prefix='/api/finance')
     app.register_blueprint(finance_reports_bp, url_prefix='/api/finance/reports')
     app.register_blueprint(finance_search_bp, url_prefix='/api/finance/search')
+    app.register_blueprint(finance_payment_import_bp, url_prefix='/api/finance/payment-import')
 
     app.register_blueprint(bank_reconciliation_bp, url_prefix='/api/finance/bank-reconciliation')
 

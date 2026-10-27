@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
-import { BanknotesIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { BanknotesIcon, PlusIcon, ArrowUpTrayIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import ImportPaymentsModal from './ImportPaymentsModal';
 
 interface PaymentRow {
   id: number;
@@ -37,6 +38,19 @@ function today(): string {
   return localISO(new Date());
 }
 
+type SortKey = 'payment_number' | 'payment_date' | 'bank' | 'party_name' | 'description' | 'amount' | 'status';
+const SORT_TEXT = new Intl.Collator('id', { numeric: true, sensitivity: 'base' });
+
+const sortValue = (r: PaymentRow, key: SortKey): string | number => {
+  switch (key) {
+    case 'bank': return r.bank_account ? `${r.bank_account.code} ${r.bank_account.name}` : '';
+    case 'description': return [r.invoice_numbers?.join(', '), r.notes || r.reference_number].filter(Boolean).join(' ');
+    case 'amount': return r.amount;
+    case 'party_name': return r.party_name || '';
+    default: return String(r[key] ?? '');
+  }
+};
+
 const statusLabel: Record<string, string> = {
   pending: 'Belum Direkonsiliasi',
   cleared: 'Sudah Direkonsiliasi',
@@ -50,6 +64,17 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
   const [rows, setRows] = useState<PaymentRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bankId, setBankId] = useState('');
+  const [banks, setBanks] = useState<{ id: number; code: string; name: string }[]>([]);
+  const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' } | null>(null);
+  const [showImport, setShowImport] = useState(false);
+
+  useEffect(() => {
+    axiosInstance.get('/api/finance/reports/cash-accounts').then((r) => setBanks(r.data.accounts || [])).catch(() => setBanks([]));
+  }, []);
+
+  const toggleSort = (key: SortKey) =>
+    setSort((s) => (!s || s.key !== key ? { key, dir: 'asc' } : s.dir === 'asc' ? { key, dir: 'desc' } : null));
 
   const isReceipt = type === 'receipt';
   const title = source === 'kas'
@@ -65,7 +90,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
     setError(null);
     try {
       const res = await axiosInstance.get(
-        `/api/finance/payments?type=${type}&source=${source}&date_from=${dateFrom}&date_to=${dateTo}`
+        `/api/finance/payments?type=${type}&source=${source}&date_from=${dateFrom}&date_to=${dateTo}${bankId ? `&bank_account_id=${bankId}` : ''}`
       );
       setRows(res.data.payments || []);
     } catch (e: any) {
@@ -73,11 +98,21 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
     } finally {
       setLoading(false);
     }
-  }, [type, source, dateFrom, dateTo]);
+  }, [type, source, dateFrom, dateTo, bankId]);
 
   useEffect(() => {
     fetchRows();
   }, [fetchRows]);
+
+  const sortedRows = React.useMemo(() => {
+    if (!sort) return rows;
+    const sign = sort.dir === 'asc' ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      const x = sortValue(a, sort.key);
+      const y = sortValue(b, sort.key);
+      return (typeof x === 'number' && typeof y === 'number' ? x - y : SORT_TEXT.compare(String(x), String(y))) * sign;
+    });
+  }, [rows, sort]);
 
   const total = rows
     .filter((r) => r.status !== 'cancelled')
@@ -90,6 +125,15 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
           <BanknotesIcon className="w-6 h-6 text-green-700" />
           <h1 className="text-2xl font-bold">{title}</h1>
         </div>
+        <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setShowImport(true)}
+          className="flex items-center gap-1 border border-gray-300 px-4 py-2 rounded hover:bg-gray-50"
+        >
+          <ArrowUpTrayIcon className="w-4 h-4" />
+          Import
+        </button>
         <Link
           to={newHref}
           className="flex items-center gap-1 bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800"
@@ -97,6 +141,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
           <PlusIcon className="w-4 h-4" />
           Catat {isReceipt ? 'Penerimaan' : 'Pembayaran'}
         </Link>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow p-4 flex flex-wrap items-end gap-4">
@@ -118,6 +163,13 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
             className="border rounded px-3 py-2"
           />
         </div>
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">Kas/Bank</label>
+          <select value={bankId} onChange={(e) => setBankId(e.target.value)} className="border rounded px-3 py-2 min-w-[14rem]">
+            <option value="">Semua Kas/Bank</option>
+            {banks.map((b) => <option key={b.id} value={b.id}>{b.code} - {b.name}</option>)}
+          </select>
+        </div>
         <button onClick={fetchRows} className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">
           Tampilkan
         </button>
@@ -131,13 +183,69 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-2 text-left">No. Transaksi</th>
-                <th className="px-4 py-2 text-left">Tanggal</th>
-                <th className="px-4 py-2 text-left">Kas/Bank</th>
-                <th className="px-4 py-2 text-left">{partyLabel}</th>
-                <th className="px-4 py-2 text-left">Keterangan</th>
-                <th className="px-4 py-2 text-right">Nilai</th>
-                <th className="px-4 py-2 text-center">Status</th>
+                <th className="px-4 py-2 text-left" aria-sort={sort?.key === 'payment_number' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button type="button" onClick={() => toggleSort('payment_number')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
+                    No. Transaksi
+                    <span className="flex flex-col leading-none">
+                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'payment_number' && sort.dir === 'asc' ? 'text-green-700' : 'text-gray-300'}`} />
+                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'payment_number' && sort.dir === 'desc' ? 'text-green-700' : 'text-gray-300'}`} />
+                    </span>
+                  </button>
+                </th>
+                <th className="px-4 py-2 text-left" aria-sort={sort?.key === 'payment_date' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button type="button" onClick={() => toggleSort('payment_date')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
+                    Tanggal
+                    <span className="flex flex-col leading-none">
+                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'payment_date' && sort.dir === 'asc' ? 'text-green-700' : 'text-gray-300'}`} />
+                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'payment_date' && sort.dir === 'desc' ? 'text-green-700' : 'text-gray-300'}`} />
+                    </span>
+                  </button>
+                </th>
+                <th className="px-4 py-2 text-left" aria-sort={sort?.key === 'bank' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button type="button" onClick={() => toggleSort('bank')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
+                    Kas/Bank
+                    <span className="flex flex-col leading-none">
+                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'bank' && sort.dir === 'asc' ? 'text-green-700' : 'text-gray-300'}`} />
+                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'bank' && sort.dir === 'desc' ? 'text-green-700' : 'text-gray-300'}`} />
+                    </span>
+                  </button>
+                </th>
+                <th className="px-4 py-2 text-left" aria-sort={sort?.key === 'party_name' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button type="button" onClick={() => toggleSort('party_name')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
+                    {partyLabel}
+                    <span className="flex flex-col leading-none">
+                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'party_name' && sort.dir === 'asc' ? 'text-green-700' : 'text-gray-300'}`} />
+                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'party_name' && sort.dir === 'desc' ? 'text-green-700' : 'text-gray-300'}`} />
+                    </span>
+                  </button>
+                </th>
+                <th className="px-4 py-2 text-left" aria-sort={sort?.key === 'description' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button type="button" onClick={() => toggleSort('description')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
+                    Keterangan
+                    <span className="flex flex-col leading-none">
+                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'description' && sort.dir === 'asc' ? 'text-green-700' : 'text-gray-300'}`} />
+                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'description' && sort.dir === 'desc' ? 'text-green-700' : 'text-gray-300'}`} />
+                    </span>
+                  </button>
+                </th>
+                <th className="px-4 py-2 text-right" aria-sort={sort?.key === 'amount' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button type="button" onClick={() => toggleSort('amount')} className="inline-flex w-full items-center gap-1 justify-end font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
+                    Nilai
+                    <span className="flex flex-col leading-none">
+                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'amount' && sort.dir === 'asc' ? 'text-green-700' : 'text-gray-300'}`} />
+                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'amount' && sort.dir === 'desc' ? 'text-green-700' : 'text-gray-300'}`} />
+                    </span>
+                  </button>
+                </th>
+                <th className="px-4 py-2 text-center" aria-sort={sort?.key === 'status' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                  <button type="button" onClick={() => toggleSort('status')} className="inline-flex w-full items-center gap-1 justify-center font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
+                    Status
+                    <span className="flex flex-col leading-none">
+                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'status' && sort.dir === 'asc' ? 'text-green-700' : 'text-gray-300'}`} />
+                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'status' && sort.dir === 'desc' ? 'text-green-700' : 'text-gray-300'}`} />
+                    </span>
+                  </button>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -148,7 +256,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
                   </td>
                 </tr>
               )}
-              {rows.map((r) => (
+              {sortedRows.map((r) => (
                 <tr key={r.id} className={`border-t ${r.status === 'cancelled' ? 'opacity-50' : ''}`}>
                   <td className="px-4 py-2">
                     <Link to={`/app/finance/payments/${r.id}`} className="text-blue-600 hover:underline">
@@ -196,6 +304,10 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
             </tfoot>
           </table>
         </div>
+      )}
+
+      {showImport && (
+        <ImportPaymentsModal type={type} source={source} onClose={() => setShowImport(false)} onImported={fetchRows} />
       )}
     </div>
   );

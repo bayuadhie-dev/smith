@@ -676,6 +676,8 @@ def get_payments():
             query = query.filter(db.or_(Payment.invoice_id.isnot(None), Payment.allocations.any()))
         elif source == 'kas':
             query = query.filter(Payment.invoice_id.is_(None), ~Payment.allocations.any())
+        if request.args.get('bank_account_id', type=int):
+            query = query.filter(Payment.bank_account_id == request.args.get('bank_account_id', type=int))
         date_from = request.args.get('date_from')
         date_to = request.args.get('date_to')
         if date_from:
@@ -796,6 +798,10 @@ def _void_payment_core(payment, user_id, reason):
 @jwt_required()
 @require_permission('finance.create')
 def create_payment():
+    return create_payment_core(request.get_json(), get_jwt_identity())
+
+
+def create_payment_core(data, user_id, commit=True):
     """Record a payment. Three shapes (2026-10-24):
     - allocations=[{invoice_id, amount}, ...]: one Penerimaan Piutang /
       Pembayaran Hutang settling several invoices (legacy single
@@ -805,8 +811,6 @@ def create_payment():
       amount is normalized into one line).
     Total amount is always derived server-side from the allocations/lines."""
     try:
-        data = request.get_json()
-        user_id = get_jwt_identity()
         from decimal import Decimal
 
         allocations_in = data.get('allocations') or (
@@ -1032,7 +1036,10 @@ def create_payment():
         db.session.flush()
         post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='payment', reference_id=payment.id)
 
-        db.session.commit()
+        if commit:
+            db.session.commit()
+        else:
+            db.session.flush()      # dry run (import preview): the caller rolls everything back
         return jsonify({'message': 'Payment recorded', 'payment_id': payment.id, 'payment_number': payment.payment_number}), 201
     except Exception as e:
         db.session.rollback()
