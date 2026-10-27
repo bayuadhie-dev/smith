@@ -45,13 +45,16 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(functio
     const target = caretDigits.current
     if (!el || target === null || document.activeElement !== el) return
     caretDigits.current = null
-    let seen = 0
     let pos = el.value.length
-    for (let i = 0; i < el.value.length; i++) {
-      if (seen === target) { pos = i; break }
-      if (/[\d,]/.test(el.value[i])) seen++
+    if (target === 0) {
+      const first = el.value.search(/[\d,]/)
+      if (first !== -1) pos = first
+    } else {
+      let seen = 0
+      for (let i = 0; i < el.value.length; i++) {
+        if (/[\d,]/.test(el.value[i]) && ++seen === target) { pos = i + 1; break }
+      }
     }
-    if (seen < target) pos = el.value.length
     el.setSelectionRange(pos, pos)
   })
 

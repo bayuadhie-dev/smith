@@ -18,6 +18,8 @@ export function formatRawNumber(raw: string | number | null | undefined, opts: N
   const negative = s.startsWith('-')
   if (negative) s = s.slice(1)
   const [intPartRaw, decPart] = s.split('.')
+  // A lone '-' (user is about to type a negative number) stays '-' instead of becoming '-0'.
+  if (negative && !intPartRaw && decPart === undefined) return opts.currency ? 'Rp -' : '-'
   const intPart = (intPartRaw || '0').replace(/\D/g, '') || '0'
   const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
   let out = grouped

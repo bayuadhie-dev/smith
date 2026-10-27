@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor, cleanup, act } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, cleanup, act, within } from '@testing-library/react'
 import { MemoryRouter, Routes, Route, Link, useNavigate } from 'react-router-dom'
 import { StrictMode, useState } from 'react'
 import { WorkspaceProvider } from './WorkspaceContext'
@@ -144,6 +144,32 @@ describe('workspace tabs', () => {
     fireEvent.click(screen.getByText('Batal'))
     await waitFor(() => expect(screen.queryByTestId('form')).toBeNull())
     expect(tabTitles().some((t) => t?.startsWith('Catat Baru'))).toBe(false)
+  })
+  it('a second new-record form opens fresh when the first one still has unsaved input', async () => {
+    render(<Shell />)
+    await waitFor(() => expect(screen.getByTestId('list')).toBeTruthy())
+    fireEvent.click(within(screen.getByTestId('list')).getByText('Catat Baru'))
+    await waitFor(() => expect(screen.getByTestId('form')).toBeTruthy())
+    fireEvent.click(screen.getByText('pilih'))
+    await waitFor(() => expect(screen.getByTestId('party').textContent).toBe('ALFAMART'))
+    await act(async () => { await new Promise((r) => setTimeout(r, 450)) })
+    fireEvent.click(screen.getByText('Payments'))
+    await waitFor(() => expect(screen.getByTestId('list')).toBeTruthy())
+    fireEvent.click(within(screen.getByTestId('list')).getByText('Catat Baru'))
+    await waitFor(() => expect(tabTitles().filter((t) => t?.startsWith('Catat Baru')).length).toBe(2))
+    await waitFor(() => expect(screen.getAllByTestId('party').some((n) => n.textContent === '')).toBe(true))
+  })
+
+  it('reuses a new-record form that is still empty instead of opening a duplicate', async () => {
+    render(<Shell />)
+    await waitFor(() => expect(screen.getByTestId('list')).toBeTruthy())
+    fireEvent.click(within(screen.getByTestId('list')).getByText('Catat Baru'))
+    await waitFor(() => expect(screen.getByTestId('form')).toBeTruthy())
+    fireEvent.click(screen.getByText('Payments'))
+    await waitFor(() => expect(screen.getByTestId('list')).toBeTruthy())
+    fireEvent.click(within(screen.getByTestId('list')).getByText('Catat Baru'))
+    await waitFor(() => expect(screen.getByTestId('form')).toBeTruthy())
+    expect(tabTitles().filter((t) => t?.startsWith('Catat Baru')).length).toBe(1)
   })
 })
 

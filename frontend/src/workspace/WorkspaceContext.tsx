@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react'
 import { MAX_TABS_PER_MODULE, moduleById, moduleForPath, pathLabel, splitPath } from './modules'
-import { clearAllDrafts, clearTabDrafts } from './drafts'
+import { clearAllDrafts, clearTabDrafts, isTabDirty } from './drafts'
 
 export interface TabState {
   id: string
@@ -48,19 +48,21 @@ export function clearWorkspaceStorage() {
 }
 
 type Action =
-  | { type: 'open'; moduleId: string; tab: TabState }
+  | { type: 'open'; moduleId: string; tab: TabState; allowDuplicate?: boolean }
   | { type: 'activateTab'; moduleId: string; tabId: string }
   | { type: 'activateModule'; moduleId: string }
   | { type: 'closeTab'; moduleId: string; tabId: string }
   | { type: 'closeModule'; moduleId: string }
   | { type: 'path'; tabId: string; path: string; closeInFavourOf?: string }
 
+const isNewFormPath = (pathname: string) => /\/new\/?$/.test(pathname)
+
 function reducer(state: WorkspaceState, action: Action): WorkspaceState {
   switch (action.type) {
     case 'open': {
       const cur = state.modules[action.moduleId] || { tabs: [], activeTabId: null }
       // Idempotent: React StrictMode (dev) runs effects twice before state settles, so never trust the caller.
-      const same = cur.tabs.find((t) => t.path === action.tab.path)
+      const same = action.allowDuplicate ? undefined : cur.tabs.find((t) => t.path === action.tab.path)
       if (same) return reducer(state, { type: 'activateTab', moduleId: action.moduleId, tabId: same.id })
       if (cur.tabs.length >= MAX_TABS_PER_MODULE) return state
       return {
@@ -156,7 +158,9 @@ export function WorkspaceProvider({ children, onFull }: { children: React.ReactN
     if (!mod) return 'not-module'
     const cur = ref.current.modules[mod.id]
     const existing = cur?.tabs.find((t) => t.path === path)
-    if (existing) {
+    // A form for a new record that already has unsaved input must not be reopened: start a fresh empty one instead.
+    const allowDuplicate = !!existing && isNewFormPath(pathname) && isTabDirty(existing.id)
+    if (existing && !allowDuplicate) {
       dispatch({ type: 'activateTab', moduleId: mod.id, tabId: existing.id })
       return 'activated'
     }
@@ -164,7 +168,7 @@ export function WorkspaceProvider({ children, onFull }: { children: React.ReactN
       onFull?.(mod.label)
       return 'full'
     }
-    dispatch({ type: 'open', moduleId: mod.id, tab: { id: newId(), path, title: title || pathLabel(path) } })
+    dispatch({ type: 'open', moduleId: mod.id, tab: { id: newId(), path, title: title || pathLabel(path) }, allowDuplicate })
     return 'opened'
   }, [onFull])
 

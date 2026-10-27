@@ -21,3 +21,12 @@ describe('numberFormat', () => {
     expect(parseDisplayNumber('abc')).toBe('')
   })
 })
+
+describe('lone minus', () => {
+  it('keeps a typed "-" as "-" so the next digit is not displaced', () => {
+    expect(formatRawNumber('-', { currency: true })).toBe('Rp -')
+    expect(formatRawNumber('-', {})).toBe('-')
+    expect(formatRawNumber('-5', { currency: true })).toBe('Rp -5')
+    expect(parseDisplayNumber('Rp -5', { currency: true })).toBe('-5')
+  })
+})

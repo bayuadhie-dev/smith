@@ -73,4 +73,13 @@ describe('NumberInput with react-hook-form register', () => {
     expect(String(submitted.price)).toBe('2500000')
     expect(String(submitted.qty)).toBe('1234.5')
   })
+  it('types a negative currency amount character by character without losing the minus', async () => {
+    const { default: userEvent } = await import('@testing-library/user-event')
+    render(<Harness currency />)
+    const input = screen.getByTestId('n') as HTMLInputElement
+    await userEvent.click(input)
+    await userEvent.keyboard('-50000')
+    expect(input.value).toBe('Rp -50.000')
+    expect(screen.getByTestId('raw').textContent).toBe('-50000')
+  })
 })
