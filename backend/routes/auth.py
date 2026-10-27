@@ -153,6 +153,7 @@ def login():
                 'full_name': user.full_name,
                 'is_admin': user.is_admin,
                 'is_super_admin': getattr(user, 'is_super_admin', False),
+                'must_change_password': bool(user.must_change_password),
                 'roles': user_roles
             }
         }), 200
@@ -382,6 +383,7 @@ def get_current_user():
                 'is_active': user.is_active,
                 'is_admin': user.is_admin,
                 'is_super_admin': getattr(user, 'is_super_admin', False),
+                'must_change_password': bool(user.must_change_password),
                 'roles': user_roles,
                 'last_login': utc_to_local(user.last_login).isoformat() if user.last_login else None,
                 'created_at': utc_to_local(user.created_at).isoformat() if user.created_at else None
@@ -482,9 +484,13 @@ def change_password():
         
         if not user or not user.check_password(current_password):
             return jsonify({'error': 'Current password is incorrect'}), 401
+
+        if user.must_change_password and current_password == new_password:
+            return jsonify({'error': 'Password baru harus berbeda dari password sementara'}), 400
         
         # Update password using set_password method
         user.set_password(new_password)
+        user.must_change_password = False
         db.session.commit()
         
         # Send password changed notification email

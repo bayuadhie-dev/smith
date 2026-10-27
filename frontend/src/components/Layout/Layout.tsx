@@ -10,6 +10,7 @@ import { WorkspaceProvider } from '../../workspace/WorkspaceContext'
 import Workspace from '../../workspace/Workspace'
 import { moduleForPath, MAX_TABS_PER_MODULE } from '../../workspace/modules'
 import { showWarning } from '../ui'
+import ForcePasswordChange from '../Auth/ForcePasswordChange'
 
 export default function Layout() {
   const [showShortcutsModal, setShowShortcutsModal] = useState(false)
@@ -95,6 +96,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <ForcePasswordChange />
       {/* Skip Link for keyboard navigation */}
       <SkipLink href="#main-content" />
 

@@ -31,6 +31,7 @@ interface User {
   full_name: string
   is_admin: boolean
   is_super_admin: boolean
+  must_change_password?: boolean
   roles: string[]
   last_login?: string
 }
@@ -118,6 +119,9 @@ const authSlice = createSlice({
       state.isAuthenticated = false
       localStorage.removeItem('token')
     },
+    passwordChanged: (state) => {
+      if (state.user) state.user.must_change_password = false
+    },
     tokenRenewed: (state, action) => {
       state.token = action.payload
     },
@@ -163,5 +167,5 @@ const authSlice = createSlice({
   },
 })
 
-export const { logout, setCredentials, tokenRenewed } = authSlice.actions
+export const { logout, setCredentials, tokenRenewed, passwordChanged } = authSlice.actions
 export default authSlice.reducer

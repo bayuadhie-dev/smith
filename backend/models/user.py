@@ -19,6 +19,7 @@ class User(db.Model):
     is_admin = db.Column(db.Boolean, default=False, nullable=False)  # Staff Admin (Admin Produksi, Admin Gudang)
     is_super_admin = db.Column(db.Boolean, default=False, nullable=False)  # System Administrator (full access)
     last_login = db.Column(db.DateTime, nullable=True)
+    must_change_password = db.Column(db.Boolean, default=False, nullable=False, server_default='false')
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

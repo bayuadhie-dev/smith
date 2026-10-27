@@ -463,7 +463,8 @@ def create_user():
             # request at all - checking "superadmin" in the create-user
             # form silently did nothing, the field always defaulted to
             # False regardless of what was submitted.
-            is_super_admin=data.get('is_super_admin', False)
+            is_super_admin=data.get('is_super_admin', False),
+            must_change_password=True,
         )
         new_user.set_password(data['password'])
         
@@ -539,6 +540,8 @@ def update_user(user_id):
         # Update password if provided
         if 'password' in data and data['password']:
             user.set_password(data['password'])
+            if user.id != int(get_jwt_identity()):
+                user.must_change_password = True
         
         user.updated_at = get_local_now()
         db.session.commit()
