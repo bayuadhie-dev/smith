@@ -72,25 +72,39 @@ export const login = createAsyncThunk(
   }
 )
 
+const AUTH_RETRY_DELAYS_MS = [1500, 3000, 5000, 8000, 10000]
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
 export const checkAuth = createAsyncThunk('auth/check', async (_, { rejectWithValue }) => {
-  try {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      return rejectWithValue('No token found')
+  const token = localStorage.getItem('token')
+  if (!token) {
+    return rejectWithValue('No token found')
+  }
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      // Update localStorage with latest user info
+      if (response.data) {
+        localStorage.setItem('userId', response.data.id?.toString() || '')
+        localStorage.setItem('username', response.data.username || '')
+        localStorage.setItem('fullName', response.data.full_name || response.data.username || '')
+      }
+      return response.data
+    } catch (error: any) {
+      const status = error?.response?.status
+      // Only a real rejection of the token ends the session. A backend that is restarting (network error, 502/503/504)
+      // must not log the user out: wait and try again, and keep the token if it never comes back.
+      if (status === 401 || status === 422) {
+        localStorage.removeItem('token')
+        return rejectWithValue('Authentication failed')
+      }
+      if (attempt >= AUTH_RETRY_DELAYS_MS.length) {
+        return rejectWithValue('SERVER_UNAVAILABLE')
+      }
+      await sleep(AUTH_RETRY_DELAYS_MS[attempt])
     }
-    const response = await axios.get(`${API_BASE_URL}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    // Update localStorage with latest user info
-    if (response.data) {
-      localStorage.setItem('userId', response.data.id?.toString() || '')
-      localStorage.setItem('username', response.data.username || '')
-      localStorage.setItem('fullName', response.data.full_name || response.data.username || '')
-    }
-    return response.data
-  } catch (error) {
-    localStorage.removeItem('token')
-    return rejectWithValue('Authentication failed')
   }
 })
 
@@ -136,11 +150,12 @@ const authSlice = createSlice({
         state.isAuthenticated = true
         state.user = action.payload.user
       })
-      .addCase(checkAuth.rejected, (state) => {
+      .addCase(checkAuth.rejected, (state, action) => {
         state.loading = false
         state.isAuthenticated = false
         state.user = null
-        state.token = null
+        // 'SERVER_UNAVAILABLE': the token is still in localStorage, so a reload once the server is back signs in again.
+        if (action.payload !== 'SERVER_UNAVAILABLE') state.token = null
       })
   },
 })
