@@ -373,6 +373,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           permission: 'finance',
           children: [
             { name: 'Dashboard', href: '/app/finance', icon: PresentationChartLineIcon },
+            { name: 'Pencarian Transaksi', href: '/app/finance/search', icon: MagnifyingGlassIcon },
             { name: 'Pusat Laporan', href: '/app/finance/reports', icon: DocumentChartBarIcon },
             { name: 'Laporan Penjualan', href: '/app/finance/sales-report', icon: DocumentTextIcon },
             { name: 'Umur Piutang & Hutang', href: '/app/finance/aging', icon: DocumentTextIcon },

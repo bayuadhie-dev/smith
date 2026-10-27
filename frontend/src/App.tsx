@@ -193,6 +193,7 @@ import FinancialReports from './pages/Finance/FinancialReports'
 import SalesReport from './pages/Finance/SalesReport'
 import AgingReport from './pages/Finance/AgingReport'
 import ReportsHub from './pages/Finance/Reports/ReportsHub'
+import FinanceSearch from './pages/Finance/FinanceSearch'
 import TrialBalance from './pages/Finance/Reports/TrialBalance'
 import AccountLedger from './pages/Finance/Reports/AccountLedger'
 import CashDaily from './pages/Finance/Reports/CashDaily'
@@ -761,6 +762,7 @@ function AppChildRoutes() {
                 <Route path="accounting/reports" element={<FinancialReports />} />
                 <Route path="finance/sales-report" element={<SalesReport />} />
                 <Route path="finance/aging" element={<AgingReport />} />
+                <Route path="finance/search" element={<FinanceSearch />} />
                 <Route path="finance/reports" element={<ReportsHub />} />
                 <Route path="finance/reports/trial-balance" element={<TrialBalance />} />
                 <Route path="finance/reports/bank-mutation" element={<AccountLedger mode="bank" />} />
