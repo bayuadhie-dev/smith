@@ -1,6 +1,5 @@
 import React, { Suspense, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { XMarkIcon } from '@heroicons/react/24/outline'
 import ErrorBoundary from '../components/ui/ErrorBoundary'
 import LoadingSpinner from '../components/Common/LoadingSpinner'
 import { confirmDialog } from '../components/ui'
@@ -8,6 +7,7 @@ import { installClickTracker, titleFromElement } from './clickTracker'
 import { attachDomDraft, type DomDraftHandle } from './domDraft'
 import { TabContext, isTabDirty, useDirtyVersion } from './drafts'
 import { moduleById, moduleForPath, splitPath } from './modules'
+import TabBar from './TabBar'
 import TabRouter from './TabRouter'
 import { useWorkspace, type TabState } from './WorkspaceContext'
 
@@ -115,11 +115,6 @@ export default function Workspace({ visible }: { visible: boolean }) {
     if (path && path !== urlPath) { ignoreUrl.current = path; navigate(path) }
   }
 
-  const closeTab = async (moduleId: string, tab: TabState) => {
-    if (isTabDirty(tab.id) && !(await confirmDialog(`Tab "${tab.title}" berisi isian yang belum disimpan. Tutup tab ini?`))) return
-    ws.closeTab(moduleId, tab.id)
-  }
-
   const closeModule = async (moduleId: string) => {
     const tabs = state.modules[moduleId]?.tabs || []
     const dirty = tabs.filter((t) => isTabDirty(t.id)).length
@@ -129,73 +124,21 @@ export default function Workspace({ visible }: { visible: boolean }) {
     ws.closeModule(moduleId)
   }
 
-  const bar = 'flex items-end gap-1 overflow-x-auto'
+  const closeTabs = async (moduleId: string, tabs: TabState[]) => {
+    if (!tabs.length) return
+    const dirty = tabs.filter((t) => isTabDirty(t.id))
+    if (dirty.length) {
+      const msg = tabs.length === 1
+        ? `Tab "${tabs[0].title}" berisi isian yang belum disimpan. Tutup tab ini?`
+        : `${dirty.length} dari ${tabs.length} tab punya isian yang belum disimpan. Tutup semuanya?`
+      if (!(await confirmDialog(msg))) return
+    } else if (tabs.length > 3 && !(await confirmDialog(`Tutup ${tabs.length} tab?`))) return
+    ws.closeTabs(moduleId, tabs.map((t) => t.id))
+  }
+
   return (
     <div className={visible ? '' : 'hidden'} data-workspace>
-      {state.order.length > 0 && (
-        <div className="mb-3 space-y-2">
-          <div className={`${bar} border-b border-gray-200 dark:border-gray-700`} role="tablist" aria-label="Modul">
-            {state.order.map((id) => {
-              const mod = moduleById(id)
-              const active = id === state.activeModule
-              const anyDirty = (state.modules[id]?.tabs || []).some((t) => isTabDirty(t.id))
-              return (
-                <div
-                  key={id}
-                  role="tab"
-                  aria-selected={active}
-                  className={`group flex shrink-0 items-center gap-2 rounded-t-lg border border-b-0 px-3 py-1.5 text-sm font-semibold ${
-                    active
-                      ? 'border-gray-200 bg-white text-emerald-700 dark:border-gray-700 dark:bg-gray-800 dark:text-emerald-400'
-                      : 'border-transparent text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  <button type="button" onClick={() => goModule(id)} className="flex items-center gap-1.5">
-                    {mod?.label || id}
-                    {anyDirty && <span className="h-2 w-2 rounded-full bg-amber-500" title="Ada isian belum disimpan" />}
-                  </button>
-                  <button type="button" onClick={() => closeModule(id)} className="rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-700" aria-label={`Tutup modul ${mod?.label}`}>
-                    <XMarkIcon className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-
-          {activeModuleState && (
-            <div className={bar} role="tablist" aria-label="Halaman">
-              {activeModuleState.tabs.map((tab) => {
-                const active = tab.id === activeModuleState.activeTabId
-                return (
-                  <div
-                    key={tab.id}
-                    role="tab"
-                    aria-selected={active}
-                    className={`flex max-w-[220px] shrink-0 items-center gap-1.5 rounded-md border px-2.5 py-1 text-[13px] ${
-                      active
-                        ? 'border-emerald-600 bg-emerald-50 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200'
-                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      title={tab.title}
-                      className="min-w-0 truncate"
-                      onClick={() => ws.activateTab(state.activeModule!, tab.id)}
-                    >
-                      {tab.title}
-                    </button>
-                    {isTabDirty(tab.id) && <span className="h-2 w-2 shrink-0 rounded-full bg-amber-500" title="Belum disimpan" />}
-                    <button type="button" onClick={() => closeTab(state.activeModule!, tab)} className="shrink-0 rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-700" aria-label={`Tutup ${tab.title}`}>
-                      <XMarkIcon className="h-3 w-3" />
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      )}
+      {state.order.length > 0 && <TabBar goModule={goModule} closeModule={closeModule} closeTabs={closeTabs} />}
 
       {state.order.map((id) =>
         (state.modules[id]?.tabs || []).map((tab) => (

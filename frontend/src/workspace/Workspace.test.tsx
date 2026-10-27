@@ -173,6 +173,86 @@ describe('workspace tabs', () => {
   })
 })
 
+describe('tab bar features', () => {
+  const tabEl = (label: string) => screen.getAllByRole('tab').find((t) => t.textContent?.trim().startsWith(label))!
+  const pageTitles = () => tabTitles().slice(1)               // first one is the module tab
+  const activeTitle = () => screen.getAllByRole('tab').filter((t) => t.getAttribute('aria-selected') === 'true')[1]?.textContent?.trim()
+
+  async function openTwoDetails() {
+    render(<Shell />)
+    await waitFor(() => expect(screen.getByTestId('list')).toBeTruthy())
+    fireEvent.click(within(screen.getByTestId('list')).getByText('PAY-18'))
+    await waitFor(() => expect(pageTitles()).toContain('PAY-18'))
+    fireEvent.click(screen.getByText('Payments'))
+    await waitFor(() => expect(screen.getByTestId('list')).toBeTruthy())
+    fireEvent.click(within(screen.getByTestId('list')).getByText('PAY-19'))
+    await waitFor(() => expect(pageTitles()).toContain('PAY-19'))
+    expect(pageTitles()).toEqual(['Payments', 'PAY-18', 'PAY-19'])
+  }
+
+  it('pins a tab from the right-click menu: it moves first and loses its close button', async () => {
+    await openTwoDetails()
+    fireEvent.contextMenu(tabEl('PAY-19'))
+    fireEvent.click(screen.getByRole('menuitem', { name: /Sematkan tab/ }))
+    await waitFor(() => expect(pageTitles()).toEqual(['PAY-19', 'Payments', 'PAY-18']))
+    expect(screen.queryByLabelText('Tutup PAY-19')).toBeNull()
+    expect(screen.getByLabelText('Tutup PAY-18')).toBeTruthy()
+  })
+
+  it('duplicates a tab next to the original and activates the copy', async () => {
+    await openTwoDetails()
+    fireEvent.contextMenu(tabEl('PAY-18'))
+    fireEvent.click(screen.getByRole('menuitem', { name: /Duplikat tab/ }))
+    await waitFor(() => expect(pageTitles()).toEqual(['Payments', 'PAY-18', 'PAY-18', 'PAY-19']))
+  })
+
+  it('closes the other tabs but keeps pinned ones', async () => {
+    await openTwoDetails()
+    fireEvent.contextMenu(tabEl('Payments'))
+    fireEvent.click(screen.getByRole('menuitem', { name: /Sematkan tab/ }))
+    fireEvent.contextMenu(tabEl('PAY-18'))
+    fireEvent.click(screen.getByRole('menuitem', { name: /Tutup tab lain/ }))
+    await waitFor(() => expect(pageTitles()).toEqual(['Payments', 'PAY-18']))
+  })
+
+  it('reorders tabs by dragging one onto another', async () => {
+    await openTwoDetails()
+    const dataTransfer = { effectAllowed: '', setData: () => {}, getData: () => '' }
+    fireEvent.dragStart(tabEl('PAY-19'), { dataTransfer })
+    fireEvent.dragOver(tabEl('PAY-18'), { dataTransfer })
+    fireEvent.drop(tabEl('PAY-18'), { dataTransfer })
+    await waitFor(() => expect(pageTitles()).toEqual(['Payments', 'PAY-19', 'PAY-18']))
+  })
+
+  it('keyboard: Alt+Shift+arrows / digits move between tabs, Alt+Shift+W closes the active one', async () => {
+    await openTwoDetails()
+    expect(activeTitle()).toBe('PAY-19')
+    fireEvent.keyDown(window, { code: 'ArrowLeft', altKey: true, shiftKey: true })
+    await waitFor(() => expect(activeTitle()).toBe('PAY-18'))
+    fireEvent.keyDown(window, { code: 'ArrowRight', altKey: true, shiftKey: true })
+    await waitFor(() => expect(activeTitle()).toBe('PAY-19'))
+    fireEvent.keyDown(window, { code: 'Digit1', altKey: true, shiftKey: true })
+    await waitFor(() => expect(activeTitle()).toBe('Payments'))
+    fireEvent.keyDown(window, { code: 'Digit3', altKey: true, shiftKey: true })
+    await waitFor(() => expect(activeTitle()).toBe('PAY-19'))
+    fireEvent.keyDown(window, { code: 'KeyW', altKey: true, shiftKey: true })
+    await waitFor(() => expect(pageTitles()).toEqual(['Payments', 'PAY-18']))
+    fireEvent.keyDown(window, { code: 'KeyW', altKey: true })        // without Shift: ignored
+    expect(pageTitles()).toEqual(['Payments', 'PAY-18'])
+  })
+
+  it('tab list: search and Enter jump to a tab', async () => {
+    await openTwoDetails()
+    fireEvent.click(screen.getByRole('button', { name: 'Daftar tab' }))
+    const box = screen.getByLabelText('Cari tab')
+    fireEvent.change(box, { target: { value: 'pay-18' } })
+    expect(screen.getAllByRole('option')).toHaveLength(1)
+    fireEvent.keyDown(box, { key: 'Enter' })
+    await waitFor(() => expect(activeTitle()).toBe('PAY-18'))
+    expect(screen.queryByLabelText('Cari tab')).toBeNull()
+  })
+})
+
 import userEvent from '@testing-library/user-event'
 
 describe('typing inside a tab', () => {

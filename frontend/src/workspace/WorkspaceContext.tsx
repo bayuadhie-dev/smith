@@ -6,6 +6,7 @@ export interface TabState {
   id: string
   path: string
   title: string
+  pinned?: boolean
 }
 export interface ModuleState {
   tabs: TabState[]
@@ -32,7 +33,7 @@ function load(): WorkspaceState {
       if (!moduleById(id) || !m?.tabs?.length) continue
       const tabs = m.tabs.filter((t) => t && t.id && t.path && moduleForPath(splitPath(t.path).pathname))
       if (!tabs.length) continue
-      modules[id] = { tabs, activeTabId: tabs.some((t) => t.id === m.activeTabId) ? m.activeTabId : tabs[0].id }
+      modules[id] = { tabs: pinnedFirst(tabs), activeTabId: tabs.some((t) => t.id === m.activeTabId) ? m.activeTabId : tabs[0].id }
       order.push(id)
     }
     const activeModule = parsed.activeModule && modules[parsed.activeModule] ? parsed.activeModule : order[0] || null
@@ -54,8 +55,14 @@ type Action =
   | { type: 'closeTab'; moduleId: string; tabId: string }
   | { type: 'closeModule'; moduleId: string }
   | { type: 'path'; tabId: string; path: string; closeInFavourOf?: string }
+  | { type: 'reorder'; moduleId: string; fromId: string; toId: string }
+  | { type: 'pin'; moduleId: string; tabId: string; pinned: boolean }
+  | { type: 'duplicate'; moduleId: string; tabId: string; newId: string }
+  | { type: 'closeMany'; moduleId: string; tabIds: string[] }
 
 const isNewFormPath = (pathname: string) => /\/new\/?$/.test(pathname)
+
+const pinnedFirst = (tabs: TabState[]) => [...tabs.filter((t) => t.pinned), ...tabs.filter((t) => !t.pinned)]
 
 function reducer(state: WorkspaceState, action: Action): WorkspaceState {
   switch (action.type) {
@@ -85,6 +92,44 @@ function reducer(state: WorkspaceState, action: Action): WorkspaceState {
       const tabs = cur.tabs.filter((t) => t.id !== action.tabId)
       if (!tabs.length) return reducer(state, { type: 'closeModule', moduleId: action.moduleId })
       const activeTabId = cur.activeTabId === action.tabId ? tabs[Math.min(idx, tabs.length - 1)].id : cur.activeTabId
+      return { ...state, modules: { ...state.modules, [action.moduleId]: { tabs, activeTabId } } }
+    }
+    case 'reorder': {
+      const cur = state.modules[action.moduleId]
+      if (!cur || action.fromId === action.toId) return state
+      const from = cur.tabs.find((t) => t.id === action.fromId)
+      const toIdx = cur.tabs.findIndex((t) => t.id === action.toId)
+      if (!from || toIdx < 0) return state
+      const rest = cur.tabs.filter((t) => t.id !== action.fromId)
+      rest.splice(toIdx, 0, from)
+      return { ...state, modules: { ...state.modules, [action.moduleId]: { ...cur, tabs: pinnedFirst(rest) } } }
+    }
+    case 'pin': {
+      const cur = state.modules[action.moduleId]
+      if (!cur) return state
+      const tabs = cur.tabs.map((t) => (t.id === action.tabId ? { ...t, pinned: action.pinned || undefined } : t))
+      return { ...state, modules: { ...state.modules, [action.moduleId]: { ...cur, tabs: pinnedFirst(tabs) } } }
+    }
+    case 'duplicate': {
+      const cur = state.modules[action.moduleId]
+      const src = cur?.tabs.find((t) => t.id === action.tabId)
+      if (!cur || !src) return state
+      const copy: TabState = { id: action.newId, path: src.path, title: src.title }
+      const at = cur.tabs.findIndex((t) => t.id === action.tabId)
+      const tabs = [...cur.tabs.slice(0, at + 1), copy, ...cur.tabs.slice(at + 1)]
+      return { ...state, activeModule: action.moduleId, modules: { ...state.modules, [action.moduleId]: { tabs: pinnedFirst(tabs), activeTabId: copy.id } } }
+    }
+    case 'closeMany': {
+      const cur = state.modules[action.moduleId]
+      if (!cur) return state
+      const drop = new Set(action.tabIds)
+      const tabs = cur.tabs.filter((t) => !drop.has(t.id))
+      if (!tabs.length) return reducer(state, { type: 'closeModule', moduleId: action.moduleId })
+      let activeTabId = cur.activeTabId
+      if (activeTabId && drop.has(activeTabId)) {
+        const before = cur.tabs.slice(0, cur.tabs.findIndex((t) => t.id === activeTabId)).filter((t) => !drop.has(t.id))
+        activeTabId = (before[before.length - 1] || tabs[0]).id
+      }
       return { ...state, modules: { ...state.modules, [action.moduleId]: { tabs, activeTabId } } }
     }
     case 'closeModule': {
@@ -129,6 +174,10 @@ interface WorkspaceApi {
   closeTab: (moduleId: string, tabId: string) => void
   closeModule: (moduleId: string) => void
   setTabPath: (tabId: string, path: string) => void
+  reorderTab: (moduleId: string, fromId: string, toId: string) => void
+  setPinned: (moduleId: string, tabId: string, pinned: boolean) => void
+  duplicateTab: (moduleId: string, tabId: string) => void
+  closeTabs: (moduleId: string, tabIds: string[]) => void
   activeTabPath: () => string | null
 }
 
@@ -200,6 +249,10 @@ export function WorkspaceProvider({ children, onFull }: { children: React.ReactN
       dispatch({ type: 'closeModule', moduleId })
     },
     setTabPath,
+    reorderTab: (moduleId, fromId, toId) => dispatch({ type: 'reorder', moduleId, fromId, toId }),
+    setPinned: (moduleId, tabId, pinned) => dispatch({ type: 'pin', moduleId, tabId, pinned }),
+    duplicateTab: (moduleId, tabId) => dispatch({ type: 'duplicate', moduleId, tabId, newId: newId() }),
+    closeTabs: (moduleId, tabIds) => { tabIds.forEach(clearTabDrafts); dispatch({ type: 'closeMany', moduleId, tabIds }) },
     activeTabPath: () => {
       const s = ref.current
       const m = s.activeModule ? s.modules[s.activeModule] : null
