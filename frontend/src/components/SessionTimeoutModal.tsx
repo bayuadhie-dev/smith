@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { logout } from '../store/slices/authSlice';
 import { RootState } from '../store';
 import { SESSION_EXPIRED_EVENT } from '../store/api';
+import { setSessionToken, startAutoRenew } from '../utils/sessionToken';
 import {
   ExclamationTriangleIcon,
   ClockIcon,
@@ -109,6 +110,12 @@ export default function SessionTimeoutModal({ onExtendSession }: SessionTimeoutM
       });
     };
   }, [isAuthenticated, updateActivity]);
+
+  // Keep the token fresh while the user is working (works for every HTTP client, not only axios)
+  useEffect(() => {
+    if (!isAuthenticated || isPublicPath()) return;
+    return startAutoRenew();
+  }, [isAuthenticated]);
 
   // Listen for 401 errors from API calls
   // Show notification and redirect to login
@@ -228,7 +235,7 @@ export default function SessionTimeoutModal({ onExtendSession }: SessionTimeoutM
         const data = await response.json();
         // Update token in localStorage
         if (data.access_token) {
-          localStorage.setItem('token', data.access_token);
+          setSessionToken(data.access_token);
         }
         
         // Reset activity and hide modal

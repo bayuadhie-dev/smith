@@ -22,7 +22,8 @@ const getApiBaseUrl = () => {
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: getApiBaseUrl(),
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as RootState).auth.token
+    // localStorage first: a token renewed in the background is written there (and mirrored into Redux).
+    const token = localStorage.getItem('token') || (getState() as RootState).auth.token
     if (token) {
       headers.set('Authorization', `Bearer ${token}`)
     }

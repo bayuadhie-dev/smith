@@ -1,3 +1,4 @@
+import { renewIfNeeded } from './sessionToken';
 import axios from 'axios';
 
 // Custom event for session expiry - same as in store/api.ts
@@ -30,42 +31,6 @@ const axiosInstance = axios.create({
   },
 });
 
-// Sliding session - extend token when user is active
-const SESSION_EXTEND_INTERVAL = 30 * 60 * 1000; // 30 minutes
-let lastExtendTime = Date.now();
-let isExtending = false;
-
-const extendSession = async () => {
-  if (isExtending) return;
-  
-  const token = localStorage.getItem('token');
-  if (!token) return;
-  
-  const now = Date.now();
-  // Only extend if 30 minutes have passed since last extend
-  if (now - lastExtendTime < SESSION_EXTEND_INTERVAL) return;
-  
-  try {
-    isExtending = true;
-    const response = await axios.post(
-      `${getBaseURL()}/api/auth/extend-session`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    
-    if (response.data.access_token) {
-      localStorage.setItem('token', response.data.access_token);
-      lastExtendTime = now;
-      console.log('Session extended successfully');
-    }
-  } catch (error) {
-    // If extend fails, don't worry - user will be prompted to login when token expires
-    console.log('Session extend failed, will retry on next activity');
-  } finally {
-    isExtending = false;
-  }
-};
-
 // Request interceptor to add auth token
 axiosInstance.interceptors.request.use(
   (config) => {
@@ -73,8 +38,8 @@ axiosInstance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
       
-      // Try to extend session on each request (throttled)
-      extendSession();
+      // Renew the token in the background while the user is active (shared with the other HTTP clients)
+      void renewIfNeeded();
     }
     return config;
   },
