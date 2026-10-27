@@ -87,9 +87,10 @@ def _date_idn(v):
 
 
 def _company_name():
+    # The CompanyProfile row (Settings) is the source of truth; the constant in company_config is only a fallback.
     try:
-        from company_config.company import COMPANY_NAME
-        return COMPANY_NAME
+        from company_config.company import get_company_info
+        return get_company_info()['name']
     except Exception:
         return 'SMITH ERP'
 

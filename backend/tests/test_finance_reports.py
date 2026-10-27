@@ -205,3 +205,13 @@ def test_every_report_exports_to_excel_and_real_pdf(client, auth_headers, db_ses
             resp = _q(client, auth_headers, f'/api/finance/reports/{u}&format={fmt}')
             assert resp.status_code == 200, (u, fmt, resp.data[:200])
             assert resp.data[:4].startswith(marker), (u, fmt)
+
+
+def test_export_header_uses_the_company_profile_not_the_code_constant(client, auth_headers, db_session):
+    from models.settings import CompanyProfile
+    db_session.add(CompanyProfile(company_name='PT PROFIL UJI'))
+    db_session.commit()
+    w = _world()
+    resp = _q(client, auth_headers, f'/api/finance/reports/trial-balance?date_from=2000-01-01&date_to={w["d3"]}&format=xlsx')
+    ws = openpyxl.load_workbook(io.BytesIO(resp.data)).active
+    assert ws['A1'].value == 'PT PROFIL UJI'
