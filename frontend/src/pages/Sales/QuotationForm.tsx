@@ -107,7 +107,7 @@ const QuotationForm = () => {
       setLoadingData(true)
       
       const [customersRes, productsRes] = await Promise.all([
-        axiosInstance.get('/api/sales/customers'),
+        axiosInstance.get('/api/sales/customers?per_page=1000'),
         axiosInstance.get('/api/products-new/?per_page=1000')
       ])
       
@@ -283,17 +283,14 @@ const QuotationForm = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Customer *
               </label>
-              <select
-                {...register('customer_id', { required: 'Customer is required' })}
-                className="input"
-              >
-                <option value="">Select a customer</option>
-                {customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.company_name} ({customer.code})
-                  </option>
-                ))}
-              </select>
+              <input type="hidden" {...register('customer_id', { required: 'Customer is required' })} />
+              <SearchableSelect
+                options={(customers || []).map((x: any) => ({ id: x.id, name: `${x.company_name} (${x.code})` }))}
+                value={watch('customer_id') ? Number(watch('customer_id')) : null}
+                onChange={(v) => setValue('customer_id', (v ?? '') as any, { shouldValidate: true, shouldDirty: true })}
+                placeholder="Select a customer"
+                className="w-full"
+              />
               {errors.customer_id && (
                 <p className="mt-1 text-sm text-red-600">{errors.customer_id.message}</p>
               )}

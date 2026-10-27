@@ -88,7 +88,7 @@ const navigate = useNavigate()
   const [loadingMRP, setLoadingMRP] = useState(false)
   const [showMRPPanel, setShowMRPPanel] = useState(false)
 
-  const { data: customers } = useGetCustomersQuery({})
+  const { data: customers } = useGetCustomersQuery({ per_page: 1000 })
   const { data: existingOrder, isLoading: isLoadingOrder } = useGetSalesOrderQuery(id!, { skip: !isEdit })
   const [createOrder] = useCreateSalesOrderMutation()
   const [updateOrder] = useUpdateSalesOrderMutation()
@@ -468,17 +468,14 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Customer *
               </label>
-              <select
-                {...register('customer_id', { required: 'Customer is required' })}
-                className="input-field"
-              >
-                <option value="">Select a customer</option>
-                {customers?.customers?.map((customer: any) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.code} - {customer.company_name}
-                  </option>
-                ))}
-              </select>
+              <input type="hidden" {...register('customer_id', { required: 'Customer is required' })} />
+              <SearchableSelect
+                options={(customers?.customers || []).map((x: any) => ({ id: x.id, name: `${x.code} - ${x.company_name}` }))}
+                value={watch('customer_id') ? Number(watch('customer_id')) : null}
+                onChange={(v) => setValue('customer_id', (v ?? '') as any, { shouldValidate: true, shouldDirty: true })}
+                placeholder="Select a customer"
+                className="w-full"
+              />
               {errors.customer_id && (
                 <p className="mt-1 text-sm text-red-600">{errors.customer_id.message}</p>
               )}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SearchableSelect from '../../components/SearchableSelect'
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
@@ -145,7 +146,7 @@ const SupplierQuoteForm: React.FC = () => {
 
   const fetchSuppliers = async () => {
     try {
-      const response = await axiosInstance.get('/api/purchasing/suppliers');
+      const response = await axiosInstance.get('/api/purchasing/suppliers?per_page=1000');
       setSuppliers(response.data.suppliers || []);
     } catch (error) {
       console.error('Failed to fetch suppliers:', error);
@@ -335,20 +336,13 @@ const SupplierQuoteForm: React.FC = () => {
                   <Building className="inline h-4 w-4 mr-1" />
                   Supplier *
                 </label>
-                <select
-                  name="supplier_id"
-                  value={formData.supplier_id}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select Supplier</option>
-                  {suppliers.map(supplier => (
-                    <option key={supplier.id} value={supplier.id}>
-                      {supplier.code} - {supplier.company_name}
-                    </option>
-                  ))}
-                </select>
+                <SearchableSelect
+                  options={suppliers.map((x: any) => ({ id: x.id, name: `${x.code} - ${x.company_name}` }))}
+                  value={formData.supplier_id ? Number(formData.supplier_id) : null}
+                  onChange={(v) => handleInputChange({ target: { name: 'supplier_id', value: v == null ? '' : String(v) } } as any)}
+                  placeholder="Select Supplier"
+                  className="w-full"
+                />
               </div>
 
               <div>

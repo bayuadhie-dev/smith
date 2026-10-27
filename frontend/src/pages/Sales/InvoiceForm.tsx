@@ -135,7 +135,7 @@ const InvoiceForm: React.FC = () => {
 
   const fetchCustomers = async () => {
     try {
-      const response = await axiosInstance.get('/api/sales/customers');
+      const response = await axiosInstance.get('/api/sales/customers?per_page=1000');
       setCustomers(response.data.customers || []);
     } catch (error) {
       console.error('Failed to fetch customers:', error);
@@ -371,20 +371,13 @@ const InvoiceForm: React.FC = () => {
                   <Building className="inline h-4 w-4 mr-1" />
                   Customer *
                 </label>
-                <select
-                  name="customer_id"
-                  value={formData.customer_id}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select Customer</option>
-                  {customers.map(customer => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.code} - {customer.company_name}
-                    </option>
-                  ))}
-                </select>
+                <SearchableSelect
+                  options={customers.map((x: any) => ({ id: x.id, name: `${x.code} - ${x.company_name}` }))}
+                  value={formData.customer_id ? Number(formData.customer_id) : null}
+                  onChange={(v) => handleInputChange({ target: { name: 'customer_id', value: v == null ? '' : String(v) } } as any)}
+                  placeholder="Select Customer"
+                  className="w-full"
+                />
                 {selectedCustomer && (
                   <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     {selectedCustomer.email} • {selectedCustomer.phone}

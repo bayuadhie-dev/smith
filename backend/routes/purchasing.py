@@ -7,6 +7,7 @@ from models import db, Supplier, PurchaseOrder, PurchaseOrderItem, GoodsReceived
 from utils.i18n import success_response, error_response, get_message
 from utils.auth_decorators import require_permission
 from models.purchasing import (
+    PurchaseOrderItemSchedule,
     PurchaseApproval, SupplierQuote, PurchaseRFQ, RFQItem, SupplierQuoteItem,
     SupplierContract, ContractItem, PriceHistory
 )
@@ -106,7 +107,7 @@ def get_suppliers():
                 'city': s.city,
                 'country': s.country,
                 'supplier_type': s.supplier_type,
-                'payment_terms': str(s.payment_terms_days) if s.payment_terms_days else '30',
+                'payment_terms': str(s.payment_terms_days) if s.payment_terms_days is not None else '30',
                 'credit_limit': float(s.credit_limit) if s.credit_limit else 0.0,
                 'rating': s.rating,
                 'is_active': s.is_active,
@@ -214,7 +215,7 @@ def get_supplier(id):
             'postal_code': supplier.postal_code,
             'country': supplier.country,
             'tax_id': supplier.tax_id,
-            'payment_terms': str(supplier.payment_terms_days) if supplier.payment_terms_days else '30',
+            'payment_terms': str(supplier.payment_terms_days) if supplier.payment_terms_days is not None else '30',
             'credit_limit': float(supplier.credit_limit) if supplier.credit_limit else 0.0,
             'supplier_type': supplier.supplier_type,
             'rating': supplier.rating,
@@ -396,6 +397,27 @@ def get_purchase_orders():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+def _apply_item_schedules(item, schedules):
+    """Replace the planned deliveries of a PO line. Raises ValueError when invalid."""
+    rows = []
+    total = 0.0
+    for sc in schedules or []:
+        if not sc.get('expected_date') and not sc.get('quantity'):
+            continue
+        try:
+            qty = float(sc.get('quantity') or 0)
+            when = datetime.fromisoformat(str(sc['expected_date'])[:10]).date()
+        except (KeyError, ValueError, TypeError):
+            raise ValueError(f'Jadwal baris {item.line_number}: tanggal atau jumlah tidak valid')
+        if qty <= 0:
+            raise ValueError(f'Jadwal baris {item.line_number}: jumlah harus lebih dari 0')
+        total += qty
+        rows.append((when, qty, (sc.get('notes') or '')[:255] or None))
+    if total > float(item.quantity) + 0.0001:
+        raise ValueError(f'Jadwal baris {item.line_number}: total jadwal ({total:g}) melebihi jumlah pesanan ({float(item.quantity):g})')
+    item.schedules[:] = [PurchaseOrderItemSchedule(expected_date=w, quantity=q, notes=n) for w, q, n in rows]
+
+
 @purchasing_bp.route('/purchase-orders', methods=['POST'])
 @jwt_required()
 @require_permission('purchase_orders.create')
@@ -480,6 +502,8 @@ def create_purchase_order():
                 total_price=item_total
             )
             db.session.add(item)
+            if item_data.get('schedules'):
+                _apply_item_schedules(item, item_data['schedules'])
             subtotal += item_total
         
         po.subtotal = subtotal
@@ -506,6 +530,9 @@ def create_purchase_order():
             print(f"Notification creation failed: {notif_error}")
         
         return jsonify({'message': 'PO created', 'po_id': po.id, 'po_number': po_number}), 201
+    except ValueError as ve:
+        db.session.rollback()
+        return jsonify({'error': str(ve)}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -561,7 +588,9 @@ def get_purchase_order(id):
                 'quantity': float(i.quantity),
                 'uom': i.uom,
                 'unit_price': float(i.unit_price),
-                'total_price': float(i.total_price)
+                'total_price': float(i.total_price),
+                'quantity_received': float(i.quantity_received or 0),
+                'schedules': [sc.to_dict() for sc in i.schedules],
             } for i in po.items]
         }), 200
     except Exception as e:
@@ -657,12 +686,43 @@ def update_purchase_order(id):
                         total_price=item_total
                     )
                     db.session.add(item)
+                    if item_data.get('schedules'):
+                        _apply_item_schedules(item, item_data['schedules'])
                     subtotal += item_total
                 po.subtotal = subtotal
                 po.total_amount = _calculate_po_total(po, subtotal)
 
         db.session.commit()
         return jsonify({'message': 'PO updated', 'po_id': po.id}), 200
+    except ValueError as ve:
+        db.session.rollback()
+        return jsonify({'error': str(ve)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@purchasing_bp.route('/purchase-orders/<int:id>/schedules', methods=['PUT'])
+@jwt_required()
+@require_permission('purchase_orders.edit')
+def update_po_schedules(id):
+    """Update planned delivery dates/qty per line; allowed even after GRN exists."""
+    try:
+        po = db.session.get(PurchaseOrder, id)
+        if not po:
+            return jsonify({'error': 'PO tidak ditemukan'}), 404
+        if po.status in ('cancelled', 'closed', 'received'):
+            return jsonify({'error': 'PO sudah selesai/dibatalkan, jadwal tidak bisa diubah'}), 400
+        by_id = {i.id: i for i in po.items}
+        for row in (request.get_json() or {}).get('items', []):
+            item = by_id.get(row.get('item_id'))
+            if item:
+                _apply_item_schedules(item, row.get('schedules'))
+        db.session.commit()
+        return jsonify({'message': 'Jadwal kedatangan disimpan'}), 200
+    except ValueError as ve:
+        db.session.rollback()
+        return jsonify({'error': str(ve)}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

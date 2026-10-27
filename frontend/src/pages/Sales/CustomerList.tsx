@@ -43,6 +43,9 @@ const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [perPage, setPerPage] = useState(50)
+  const [customerTypes, setCustomerTypes] = useState<string[]>([])
   const [filters, setFilters] = useState({
     search: '',
     customer_type: '',
@@ -51,14 +54,18 @@ const [customers, setCustomers] = useState<Customer[]>([])
 
   useEffect(() => {
     loadCustomers()
-  }, [currentPage, filters])
+  }, [currentPage, filters, perPage])
+
+  useEffect(() => {
+    axiosInstance.get('/api/sales/customers/types').then((r) => setCustomerTypes(r.data.types || [])).catch(() => setCustomerTypes([]))
+  }, [])
 
   const loadCustomers = async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        per_page: '20',
+        per_page: String(perPage),
         ...(filters.search && { search: filters.search }),
         ...(filters.customer_type && { customer_type: filters.customer_type }),
         ...(filters.is_active && { is_active: filters.is_active })
@@ -67,6 +74,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
       const response = await axiosInstance.get(`/api/sales/customers?${params}`)
       setCustomers(response.data.customers || [])
       setTotalPages(response.data.pages || 1)
+      setTotal(response.data.total || 0)
     } catch (error) {
       console.error('Error loading customers:', error)
     } finally {
@@ -85,7 +93,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
   }
 
   const getTypeColor = (type: string) => {
-    switch (type) {
+    switch ((type || '').toLowerCase()) {
       case 'retail': return 'bg-blue-100 text-blue-800'
       case 'wholesale': return 'bg-green-100 text-green-800'
       case 'distributor': return 'bg-purple-100 text-purple-800'
@@ -201,10 +209,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
               className="input mt-1"
             >
               <option value="">All Types</option>
-              <option value="retail">Retail</option>
-              <option value="wholesale">Wholesale</option>
-              <option value="distributor">Distributor</option>
-              <option value="corporate">Corporate</option>
+              {customerTypes.map((type) => <option key={type} value={type}>{type}</option>)}
             </select>
           </div>
           
@@ -361,23 +366,36 @@ const [customers, setCustomers] = useState<Customer[]>([])
         </div>
         
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+        {total > 0 && (
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex flex-wrap justify-between items-center gap-3">
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              Page {currentPage} of {totalPages}
+              Menampilkan {(currentPage - 1) * perPage + 1}-{Math.min(currentPage * perPage, total)} dari {total} pelanggan
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+              <label className="flex items-center gap-1.5">
+                Per halaman
+                <select
+                  value={perPage}
+                  onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1) }}
+                  className="rounded border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-900"
+                >
+                  {[25, 50, 100, 200].map((n) => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </label>
+              <span>Halaman {currentPage} dari {totalPages}</span>
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
                 className="btn-secondary disabled:opacity-50"
               >
+                Sebelumnya
               </button>
               <button
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 className="btn-secondary disabled:opacity-50"
               >
+                Berikutnya
               </button>
             </div>
           </div>

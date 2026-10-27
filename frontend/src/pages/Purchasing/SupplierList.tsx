@@ -21,12 +21,14 @@ export default function SupplierList() {
 
 const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(50)
   const [supplierType, setSupplierType] = useState('')
   const [status, setStatus] = useState('')
   
   const { data, isLoading, refetch } = useGetSuppliersQuery({
     search,
     page,
+    per_page: perPage,
     supplier_type: supplierType,
     is_active: status === 'active' ? true : status === 'inactive' ? false : undefined
   })
@@ -198,7 +200,7 @@ const [search, setSearch] = useState('')
                           {supplier.supplier_type || 'General'}
                         </span>
                         <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          Payment: {supplier.payment_terms || '30'} days
+                          Payment: {supplier.payment_terms === '0' ? 'C.O.D' : `${supplier.payment_terms || '30'} days`}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
                           Credit: ${supplier.credit_limit?.toLocaleString() || '0'}
@@ -271,12 +273,23 @@ const [search, setSearch] = useState('')
           </div>
           
           {/* Pagination */}
-          {data?.pages && data.pages > 1 && (
-            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          {data?.total > 0 && (
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-3">
               <div className="text-sm text-gray-700 dark:text-gray-200">
-                Showing page {data.current_page} of {data.pages}
+                Menampilkan {(data.current_page - 1) * perPage + 1}-{Math.min(data.current_page * perPage, data.total)} dari {data.total} pemasok
               </div>
-              <div className="flex space-x-2">
+              <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200">
+                <label className="flex items-center gap-1.5">
+                  Per halaman
+                  <select
+                    value={perPage}
+                    onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1) }}
+                    className="rounded border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-900"
+                  >
+                    {[25, 50, 100, 200].map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </label>
+                <span>Halaman {data.current_page} dari {data.pages}</span>
                 <button
                   onClick={() => setPage(page - 1)}
                   disabled={page <= 1}

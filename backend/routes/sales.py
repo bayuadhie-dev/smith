@@ -58,6 +58,17 @@ def _apply_shipping_amounts(order_or_quote):
     return shipping_cost + tax_amount
 
 # Customers
+@sales_bp.route('/customers/types', methods=['GET'])
+@jwt_required()
+@require_permission('customers.view')
+def get_customer_types():
+    """Distinct customer_type (category) values actually in use, for the list filter dropdown."""
+    rows = db.session.query(Customer.customer_type).filter(
+        Customer.customer_type.isnot(None), Customer.customer_type != ''
+    ).distinct().order_by(Customer.customer_type).all()
+    return jsonify({'types': [r[0] for r in rows]}), 200
+
+
 @sales_bp.route('/customers', methods=['GET'])
 @jwt_required()
 @require_permission('customers.view')
@@ -120,7 +131,7 @@ def get_customers():
                 'address': getattr(c, 'billing_address', None) or getattr(c, 'address', ''),
                 'customer_type': getattr(c, 'customer_type', 'retail'),
                 'credit_limit': float(c.credit_limit) if c.credit_limit else 0,
-                'payment_terms': f"Net {getattr(c, 'payment_terms_days', 30)}",
+                'payment_terms': 'C.O.D' if getattr(c, 'payment_terms_days', 30) == 0 else f"Net {getattr(c, 'payment_terms_days', 30)}",
                 'tax_number': getattr(c, 'tax_id', ''),
                 'website': getattr(c, 'website', ''),
                 'industry': getattr(c, 'industry', ''),

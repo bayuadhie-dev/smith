@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SearchableSelect from '../../components/SearchableSelect'
 import { useNavigate } from 'react-router-dom';
 import { useForm, useFieldArray } from 'react-hook-form';
 import toast from 'react-hot-toast';
@@ -43,10 +44,10 @@ const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   
   const { data: salesOrders } = useGetSalesOrdersQuery({})
-  const { data: customers } = useGetCustomersQuery({})
+  const { data: customers } = useGetCustomersQuery({ per_page: 1000 })
   const [createShipment] = useCreateShipmentMutation()
   
-  const { register, control, handleSubmit, watch, formState: { errors } } = useForm<ShipmentFormData>({
+  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<ShipmentFormData>({
     defaultValues: {
       shipping_date: new Date().toISOString().split('T')[0],
       shipping_method: 'company_vehicle',
@@ -150,17 +151,14 @@ const navigate = useNavigate()
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
-              <select
-                {...register('customer_id')}
-                className="input-field"
-              >
-                <option value="">Select customer (optional)</option>
-                {customers?.customers?.map((customer: any) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.code} - {customer.company_name}
-                  </option>
-                ))}
-              </select>
+              <input type="hidden" {...register('customer_id')} />
+              <SearchableSelect
+                options={(customers?.customers || []).map((x: any) => ({ id: x.id, name: `${x.code} - ${x.company_name}` }))}
+                value={watch('customer_id') ? Number(watch('customer_id')) : null}
+                onChange={(v) => setValue('customer_id', (v ?? '') as any, { shouldValidate: true, shouldDirty: true })}
+                placeholder="Select customer (optional)"
+                className="w-full"
+              />
             </div>
 
             <div>

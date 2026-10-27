@@ -7,6 +7,14 @@ import {
   BuildingStorefrontIcon, TruckIcon,
 } from '@heroicons/react/24/outline';
 import { formatRupiah, formatCurrencyAmount } from '../../utils/currencyUtils';
+import { scheduleStatuses } from '../../components/POScheduleEditor';
+
+const SCHEDULE_BADGE: Record<string, { label: string; color: string }> = {
+  done:    { label: 'Sudah datang', color: 'bg-emerald-100 text-emerald-700' },
+  partial: { label: 'Datang sebagian', color: 'bg-amber-100 text-amber-700' },
+  late:    { label: 'Terlambat', color: 'bg-red-100 text-red-700' },
+  waiting: { label: 'Menunggu', color: 'bg-gray-100 text-gray-700' },
+};
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700' },
@@ -159,6 +167,8 @@ export default function PODetail() {
                 <th className="pb-2 pr-3">Item</th>
                 <th className="pb-2 pr-3 text-right">Qty</th>
                 <th className="pb-2 pr-3">Satuan</th>
+                <th className="pb-2 pr-3 text-right">Diterima</th>
+                <th className="pb-2 pr-3 text-right">Sisa</th>
                 <th className="pb-2 pr-3 text-right">Harga Satuan ({ccy})</th>
                 <th className="pb-2 text-right">Total ({ccy})</th>
               </tr>
@@ -183,6 +193,8 @@ export default function PODetail() {
                     </td>
                     <td className="py-2 pr-3 text-right tabular-nums">{item.quantity.toLocaleString('id-ID')}</td>
                     <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{item.uom}</td>
+                    <td className="py-2 pr-3 text-right tabular-nums">{(item.quantity_received || 0).toLocaleString('id-ID')}</td>
+                    <td className="py-2 pr-3 text-right tabular-nums">{Math.max(0, item.quantity - (item.quantity_received || 0)).toLocaleString('id-ID')}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">{formatCurrencyAmount(item.unit_price, ccy)}</td>
                     <td className="py-2 text-right tabular-nums font-medium">{formatCurrencyAmount(item.total_price, ccy)}</td>
                   </tr>
@@ -206,6 +218,46 @@ export default function PODetail() {
           </div>
         </div>
       </div>
+
+      {po.items.some((i: any) => (i.schedules || []).length > 0) && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold text-gray-900 dark:text-white">Jadwal Kedatangan</h2>
+            <Link to={`/app/purchasing/purchase-orders/${id}/edit`} className="text-sm text-[#059669] hover:underline">Ubah jadwal</Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                  <th className="pb-2 pr-3">Item</th>
+                  <th className="pb-2 pr-3">Estimasi Tiba</th>
+                  <th className="pb-2 pr-3 text-right">Jumlah</th>
+                  <th className="pb-2 pr-3 text-right">Sudah Datang</th>
+                  <th className="pb-2 pr-3">Status</th>
+                  <th className="pb-2">Catatan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {po.items.flatMap((item: any) => {
+                  const scs = item.schedules || [];
+                  const st = scheduleStatuses(scs, item.quantity_received || 0);
+                  const name = item.material_name || item.product_name || item.description || '(tanpa nama)';
+                  return scs.map((sc: any, i: number) => (
+                    <tr key={`${item.id}-${sc.id}`}>
+                      <td className="py-2 pr-3 font-medium text-gray-900 dark:text-white">{i === 0 ? name : ''}</td>
+                      <td className="py-2 pr-3">{new Date(sc.expected_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                      <td className="py-2 pr-3 text-right tabular-nums">{sc.quantity.toLocaleString('id-ID')} {item.uom}</td>
+                      <td className="py-2 pr-3 text-right tabular-nums">{st[i].received.toLocaleString('id-ID')}</td>
+                      <td className="py-2 pr-3"><span className={`px-2 py-0.5 rounded-full text-xs font-medium ${SCHEDULE_BADGE[st[i].status].color}`}>{SCHEDULE_BADGE[st[i].status].label}</span></td>
+                      <td className="py-2 text-gray-500 dark:text-gray-400">{sc.notes || '-'}</td>
+                    </tr>
+                  ));
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Drill-down modal: material stock */}
       <AccessibleModal

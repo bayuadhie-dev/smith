@@ -191,6 +191,20 @@ def check_approval_escalations(app):
         return escalated_count
 
 
+def refresh_exchange_rates(app):
+    """Self-contained daily kurs refresh so servers without the crontab curl
+    still get rates. Skips when a rate was stored in the last 12 hours (the
+    office server also runs the cron endpoint)."""
+    from datetime import datetime, timedelta
+    with app.app_context():
+        from models.finance import ExchangeRate
+        from utils.exchange_rates import fetch_exchange_rates
+        latest = ExchangeRate.query.order_by(ExchangeRate.fetched_at.desc()).first()
+        if latest and latest.fetched_at and latest.fetched_at > datetime.utcnow() - timedelta(hours=12):
+            return 0
+        return fetch_exchange_rates()
+
+
 def register_scheduled_jobs(app):
     """Registers the daily auto-quarantine job. Guarded so it only runs in the
     actual server process, not Flask's dev-mode reloader parent process (which
@@ -218,6 +232,22 @@ def register_scheduled_jobs(app):
         trigger='interval',
         hours=1,
         id='check_approval_escalations',
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        func=lambda: refresh_exchange_rates(app),
+        trigger='cron',
+        hour=6,
+        minute=0,
+        id='refresh_exchange_rates',
+        replace_existing=True,
+    )
+    from datetime import datetime, timedelta
+    scheduler.add_job(
+        func=lambda: refresh_exchange_rates(app),
+        trigger='date',
+        run_date=datetime.now() + timedelta(seconds=45),
+        id='refresh_exchange_rates_startup',
         replace_existing=True,
     )
     scheduler.start()

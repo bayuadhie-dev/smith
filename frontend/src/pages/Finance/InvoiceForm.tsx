@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import SearchableSelect from '../../components/SearchableSelect'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosConfig'
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -55,8 +56,8 @@ const navigate = useNavigate()
   const { data: salesOrders } = useGetSalesOrdersQuery({})
   const { data: prefillOrderDetail } = useGetSalesOrderQuery(prefillSalesOrderId!, { skip: !prefillSalesOrderId })
   const { data: purchaseOrders } = useGetPurchaseOrdersQuery({})
-  const { data: customers } = useGetCustomersQuery({})
-  const { data: suppliers } = useGetSuppliersQuery({})
+  const { data: customers } = useGetCustomersQuery({ per_page: 1000 })
+  const { data: suppliers } = useGetSuppliersQuery({ per_page: 1000 })
   const [createInvoice] = useCreateInvoiceMutation()
   
   const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<InvoiceFormData>({
@@ -429,30 +430,28 @@ const navigate = useNavigate()
                 {watchedInvoiceType === 'sales' ? 'Customer *' : 'Supplier *'}
               </label>
               {watchedInvoiceType === 'sales' ? (
-                <select
-                  {...register('customer_id', { required: 'Customer is required' })}
-                  disabled={Boolean(prefillSalesOrderId)}
-                  className="input-field"
-                >
-                  <option value="">Select customer</option>
-                  {customers?.customers?.map((customer: any) => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.code} - {customer.company_name}
-                    </option>
-                  ))}
-                </select>
+                <>
+                  <input type="hidden" {...register('customer_id', { required: 'Customer is required' })} />
+                  <SearchableSelect
+                    options={(customers?.customers || []).map((x: any) => ({ id: x.id, name: `${x.code} - ${x.company_name}` }))}
+                    value={watch('customer_id') ? Number(watch('customer_id')) : null}
+                    onChange={(v) => setValue('customer_id', (v ?? '') as any, { shouldValidate: true, shouldDirty: true })}
+                    placeholder="Select customer"
+                    disabled={Boolean(prefillSalesOrderId)}
+                    className="w-full"
+                  />
+                </>
               ) : (
-                <select
-                  {...register('supplier_id', { required: 'Supplier is required' })}
-                  className="input-field"
-                >
-                  <option value="">Select supplier</option>
-                  {suppliers?.suppliers?.map((supplier: any) => (
-                    <option key={supplier.id} value={supplier.id}>
-                      {supplier.code} - {supplier.company_name}
-                    </option>
-                  ))}
-                </select>
+                <>
+                  <input type="hidden" {...register('supplier_id', { required: 'Supplier is required' })} />
+                  <SearchableSelect
+                    options={(suppliers?.suppliers || []).map((x: any) => ({ id: x.id, name: `${x.code} - ${x.company_name}` }))}
+                    value={watch('supplier_id') ? Number(watch('supplier_id')) : null}
+                    onChange={(v) => setValue('supplier_id', (v ?? '') as any, { shouldValidate: true, shouldDirty: true })}
+                    placeholder="Select supplier"
+                    className="w-full"
+                  />
+                </>
               )}
             </div>
 

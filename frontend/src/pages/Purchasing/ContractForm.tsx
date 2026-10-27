@@ -29,7 +29,7 @@ export default function ContractForm() {
   const isEdit = Boolean(id)
   const navigate = useNavigate()
 
-  const { data: suppliers } = useGetSuppliersQuery({})
+  const { data: suppliers } = useGetSuppliersQuery({ per_page: 1000 })
   const { data: products } = useGetProductsQuery({})
   const { data: existing, isLoading: loadingExisting } = useGetContractQuery(id, { skip: !isEdit })
   const [createContract, { isLoading: creating }] = useCreateContractMutation()
@@ -156,13 +156,14 @@ export default function ContractForm() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Supplier *</label>
-              <select value={supplierId} onChange={e => setSupplierId(e.target.value)} disabled={locked}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white">
-                <option value="">Pilih supplier...</option>
-                {(suppliers?.suppliers || suppliers || []).map((s: any) => (
-                  <option key={s.id} value={s.id}>{s.company_name}</option>
-                ))}
-              </select>
+              <SearchableSelect
+                options={(suppliers?.suppliers || suppliers || []).map((x: any) => ({ id: x.id, name: `${x.code ? x.code + ' - ' : ''}${x.company_name}` }))}
+                value={supplierId ? Number(supplierId) : null}
+                onChange={(v) => setSupplierId(v == null ? '' : String(v))}
+                placeholder="Pilih supplier..."
+                disabled={locked}
+                className="w-full"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jenis Kontrak *</label>

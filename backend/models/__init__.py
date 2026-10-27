@@ -9,7 +9,7 @@ from .product import Material, Product, ProductSpecification, ProductPackaging, 
 from .product_excel_schema import ProductNew, ProductVersion
 from .warehouse import WarehouseZone, WarehouseLocation, Inventory, InventoryMovement
 from .sales import Customer, SalesOrder, SalesOrderItem, ForecastHeader, ForecastLine, ForecastLineConversion, ForecastLineMonth
-from .purchasing import Supplier, PurchaseOrder, PurchaseOrderItem, GoodsReceivedNote, GRNItem, PurchaseReturn, PurchaseReturnItem, PurchaseRequisition, PRItem
+from .purchasing import Supplier, PurchaseOrder, PurchaseOrderItem, PurchaseOrderItemSchedule, GoodsReceivedNote, GRNItem, PurchaseReturn, PurchaseReturnItem, PurchaseRequisition, PRItem
 from .ews import EWSPrediction
 from .production import (
     Machine, WorkOrder, ProductionRecord, BillOfMaterials, BOMItem, 
@@ -120,7 +120,7 @@ __all__ = [
     # Sales models
     'Customer', 'SalesOrder', 'SalesOrderItem', 'ForecastHeader', 'ForecastLine', 'ForecastLineConversion', 'ForecastLineMonth',
     # Purchasing models
-    'Supplier', 'PurchaseOrder', 'PurchaseOrderItem', 'GoodsReceivedNote', 'GRNItem',
+    'Supplier', 'PurchaseOrder', 'PurchaseOrderItem', 'PurchaseOrderItemSchedule', 'GoodsReceivedNote', 'GRNItem',
     # Production models
     'Machine', 'WorkOrder', 'ProductionRecord', 'BillOfMaterials', 'BOMItem', 'ProductionSchedule', 'ShiftProduction', 'DowntimeRecord', 'WeeklyProductionPlan', 'WeeklyProductionPlanItem', 'ProductChangeover',
     'PackingList', 'PackingListItem', 'WIPStock', 'WIPStockMovement', 'LiveMonitoringCheck',

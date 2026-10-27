@@ -119,10 +119,29 @@ class PurchaseOrderItem(db.Model):
     purchase_order = db.relationship('PurchaseOrder', back_populates='items')
     product = db.relationship('Product', back_populates='purchase_order_items')
     material = db.relationship('Material', back_populates='purchase_order_items')
+    schedules = db.relationship('PurchaseOrderItemSchedule', backref='po_item',
+                                order_by='PurchaseOrderItemSchedule.expected_date',
+                                cascade='all, delete-orphan', passive_deletes=True)
     
     __table_args__ = (
         db.UniqueConstraint('po_id', 'line_number', name='unique_po_line'),
     )
+
+
+class PurchaseOrderItemSchedule(db.Model):
+    """Planned delivery (date + qty) for a PO line; actual receipts stay in GRN."""
+    __tablename__ = 'purchase_order_item_schedules'
+
+    id = db.Column(db.Integer, primary_key=True)
+    po_item_id = db.Column(db.Integer, db.ForeignKey('purchase_order_items.id', ondelete='CASCADE'), nullable=False, index=True)
+    expected_date = db.Column(db.Date, nullable=False)
+    quantity = db.Column(db.Numeric(15, 2), nullable=False)
+    notes = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    def to_dict(self):
+        return {'id': self.id, 'expected_date': self.expected_date.isoformat(),
+                'quantity': float(self.quantity), 'notes': self.notes}
 
 class GoodsReceivedNote(db.Model):
     __tablename__ = 'goods_received_notes'

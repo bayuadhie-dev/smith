@@ -19,6 +19,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import POScheduleEditor, { POSchedule } from '../../components/POScheduleEditor'
 interface PurchaseOrderFormData {
   supplier_id: number
   order_date: string
@@ -32,6 +33,7 @@ interface PurchaseOrderFormData {
     quantity: number
     unit_price: number
     uom: string
+    schedules?: POSchedule[]
   }[]
 }
 
@@ -42,13 +44,19 @@ const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const isEdit = Boolean(id)
   const [isLoading, setIsLoading] = useState(false)
+  const [uomCodes, setUomCodes] = useState<string[]>([])
+  useEffect(() => {
+    axiosInstance.get('/api/uom/units')
+      .then(r => setUomCodes((r.data?.units || []).map((u: any) => u.code).filter(Boolean)))
+      .catch(() => setUomCodes([]))
+  }, [])
   const [rateInfo, setRateInfo] = useState<{ rate: number | null; available: boolean; loading: boolean }>({
     rate: 1,
     available: true,
     loading: false
   })
 
-  const { data: suppliers } = useGetSuppliersQuery({})
+  const { data: suppliers } = useGetSuppliersQuery({ per_page: 1000 })
   const { data: products } = useGetProductsQuery({})
   const { data: materials } = useGetMaterialsListQuery({ per_page: 2000 })
   const [createPO] = useCreatePurchaseOrderMutation()
@@ -87,7 +95,8 @@ const navigate = useNavigate()
           material_id: item.material_id ?? null,
           quantity: item.quantity,
           unit_price: item.unit_price,
-          uom: item.uom || 'PCS'
+          uom: item.uom || 'PCS',
+          schedules: (item.schedules || []).map((sc: any) => ({ expected_date: sc.expected_date, quantity: sc.quantity, notes: sc.notes || '' }))
         }))
       })
     }
@@ -148,6 +157,7 @@ const navigate = useNavigate()
           quantity: parseFloat(item.quantity.toString()),
           unit_price: parseFloat(item.unit_price.toString()),
           uom: item.uom,
+          schedules: (item.schedules || []).filter(sc => sc.expected_date && Number(sc.quantity) > 0).map(sc => ({ expected_date: sc.expected_date, quantity: Number(sc.quantity), notes: sc.notes || '' })),
           ...(item.product_id ? { product_id: parseInt(item.product_id.toString()) } : {}),
           ...(item.material_id ? { material_id: parseInt(item.material_id.toString()) } : {})
         }))
@@ -160,6 +170,15 @@ const navigate = useNavigate()
           delete payload.supplier_id
         }
         await updatePO({ id, ...payload }).unwrap()
+        if (hasGrn) {
+          await axiosInstance.put(`/api/purchasing/purchase-orders/${id}/schedules`, {
+            items: (existingPO.items || []).map((it: any, i: number) => ({
+              item_id: it.id,
+              schedules: (data.items[i]?.schedules || []).filter((sc: any) => sc.expected_date && Number(sc.quantity) > 0)
+                .map((sc: any) => ({ expected_date: sc.expected_date, quantity: Number(sc.quantity), notes: sc.notes || '' })),
+            })),
+          })
+        }
         toast.success('Purchase Order updated successfully!')
       } else {
         await createPO(payload).unwrap()
@@ -248,18 +267,15 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Supplier *
               </label>
-              <select
-                {...register('supplier_id', { required: 'Supplier is required' })}
-                className="input-field"
+              <input type="hidden" {...register('supplier_id', { required: 'Supplier is required' })} />
+              <SearchableSelect
+                options={(suppliers?.suppliers || []).map((sp: any) => ({ id: sp.id, name: `${sp.code} - ${sp.company_name}` }))}
+                value={watch('supplier_id') ? Number(watch('supplier_id')) : null}
+                onChange={(v) => setValue('supplier_id', (v ?? '') as any, { shouldValidate: true, shouldDirty: true })}
+                placeholder="Select a supplier"
                 disabled={hasGrn}
-              >
-                <option value="">Select a supplier</option>
-                {suppliers?.suppliers?.map((supplier: any) => (
-                  <option key={supplier.id} value={supplier.id}>
-                    {supplier.code} - {supplier.company_name}
-                  </option>
-                ))}
-              </select>
+                className="w-full"
+              />
               {errors.supplier_id && (
                 <p className="mt-1 text-sm text-red-600">{errors.supplier_id.message}</p>
               )}
@@ -373,7 +389,7 @@ const navigate = useNavigate()
 
               return (
                 <div key={field.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-start">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                         Product *
@@ -392,6 +408,9 @@ const navigate = useNavigate()
                           const parsedId = parseInt(rawId, 10)
                           setValue(`items.${index}.product_id`, kind === 'p' ? parsedId : null, { shouldValidate: true })
                           setValue(`items.${index}.material_id`, kind === 'm' ? parsedId : null, { shouldValidate: true })
+                          const picked: any = kind === 'p' ? getProductById(parsedId as any) : getMaterialById(parsedId as any)
+                          const pickedUom = kind === 'p' ? picked?.primary_uom : picked?.unit_of_measure
+                          if (pickedUom) setValue(`items.${index}.uom`, pickedUom, { shouldDirty: true })
                         }}
                         placeholder="Select product or material"
                         disabled={hasGrn}
@@ -413,11 +432,16 @@ const navigate = useNavigate()
                         className="input-field"
                         disabled={hasGrn}
                       />
-                      {(selectedProduct || selectedMaterial) && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          {selectedProduct ? selectedProduct.primary_uom : selectedMaterial.unit_of_measure}
-                        </p>
-                      )}
+                      <select
+                        {...register(`items.${index}.uom` as const)}
+                        className="input-field mt-1 text-sm"
+                        disabled={hasGrn}
+                        title="Satuan"
+                      >
+                        {Array.from(new Set([watchedItems[index]?.uom, ...uomCodes].filter(Boolean) as string[])).map((u) => (
+                          <option key={u} value={u}>{u}</option>
+                        ))}
+                      </select>
                     </div>
 
                     <div>
@@ -456,6 +480,13 @@ const navigate = useNavigate()
                       )}
                     </div>
                   </div>
+
+                  <POScheduleEditor
+                    quantity={Number(watchedItems[index]?.quantity) || 0}
+                    uom={watchedItems[index]?.uom}
+                    value={watchedItems[index]?.schedules || []}
+                    onChange={(next) => setValue(`items.${index}.schedules`, next, { shouldDirty: true })}
+                  />
 
                   {/* Product / Material Info */}
                   {selectedProduct && (

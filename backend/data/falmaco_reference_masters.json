@@ -1,0 +1,466 @@
+{
+ "units_of_measure": [
+  {
+   "code": "PCS",
+   "name": "Pieces",
+   "category": "unit",
+   "description": null,
+   "is_active": true
+  },
+  {
+   "code": "ROLL",
+   "name": "Roll",
+   "category": "unit",
+   "description": null,
+   "is_active": true
+  },
+  {
+   "code": "PACK",
+   "name": "Pack",
+   "category": "unit",
+   "description": null,
+   "is_active": true
+  },
+  {
+   "code": "CTN",
+   "name": "Carton",
+   "category": "unit",
+   "description": null,
+   "is_active": true
+  },
+  {
+   "code": "BOX",
+   "name": "Box",
+   "category": "unit",
+   "description": null,
+   "is_active": true
+  },
+  {
+   "code": "SET",
+   "name": "Set",
+   "category": "unit",
+   "description": null,
+   "is_active": true
+  },
+  {
+   "code": "KG",
+   "name": "Kilogram",
+   "category": "weight",
+   "description": null,
+   "is_active": true
+  },
+  {
+   "code": "GR",
+   "name": "Gram",
+   "category": "weight",
+   "description": null,
+   "is_active": true
+  },
+  {
+   "code": "TON",
+   "name": "Ton",
+   "category": "weight",
+   "description": null,
+   "is_active": true
+  },
+  {
+   "code": "MTR",
+   "name": "Meter",
+   "category": "length",
+   "description": null,
+   "is_active": true
+  },
+  {
+   "code": "CM",
+   "name": "Centimeter",
+   "category": "length",
+   "description": null,
+   "is_active": true
+  },
+  {
+   "code": "MM",
+   "name": "Milimeter",
+   "category": "length",
+   "description": null,
+   "is_active": true
+  },
+  {
+   "code": "LTR",
+   "name": "Liter",
+   "category": "volume",
+   "description": null,
+   "is_active": true
+  },
+  {
+   "code": "ML",
+   "name": "Mililiter",
+   "category": "volume",
+   "description": null,
+   "is_active": true
+  },
+  {
+   "code": "M2",
+   "name": "Meter Persegi",
+   "category": "area",
+   "description": null,
+   "is_active": true
+  }
+ ],
+ "warehouse_zones": [
+  {
+   "code": "ZONE-RM",
+   "name": "Raw Materials Zone",
+   "description": "Default zone for raw materials storage",
+   "material_type": "raw_materials",
+   "zone_type": "storage",
+   "capacity": 10000.0,
+   "capacity_uom": "m3",
+   "is_active": false
+  },
+  {
+   "code": "FG-01",
+   "name": "Gudang Finished Goods",
+   "description": "Warehouse for finished products from production",
+   "material_type": "finished_goods",
+   "zone_type": "storage",
+   "capacity": null,
+   "capacity_uom": null,
+   "is_active": false
+  },
+  {
+   "code": "WIP-01",
+   "name": "Gudang WIP (Work In Progress)",
+   "description": "Warehouse zone for Work-In-Progress products",
+   "material_type": "wip",
+   "zone_type": "storage",
+   "capacity": 0.0,
+   "capacity_uom": "unit",
+   "is_active": false
+  },
+  {
+   "code": "ZONE-PM",
+   "name": "Gudang Packing Material",
+   "description": "Packing material warehouse (Bu Lisa) - ACC/kemasan siap pakai",
+   "material_type": "packaging_materials",
+   "zone_type": "storage",
+   "capacity": 0.0,
+   "capacity_uom": "unit",
+   "is_active": false
+  },
+  {
+   "code": "ZONE-EPD",
+   "name": "Gudang EPD",
+   "description": "Hasil produksi yang belum ada packing list, dan ACC di area produksi",
+   "material_type": "finished_goods",
+   "zone_type": "storage",
+   "capacity": 0.0,
+   "capacity_uom": "unit",
+   "is_active": false
+  },
+  {
+   "code": "PROD-AREA",
+   "name": "Area Produksi",
+   "description": null,
+   "material_type": "all",
+   "zone_type": "production",
+   "capacity": null,
+   "capacity_uom": null,
+   "is_active": true
+  },
+  {
+   "code": "WH-RM",
+   "name": "Gudang Bahan Baku",
+   "description": null,
+   "material_type": "raw_materials",
+   "zone_type": "storage",
+   "capacity": null,
+   "capacity_uom": null,
+   "is_active": true
+  },
+  {
+   "code": "WH-PM",
+   "name": "Gudang Bahan Kemas",
+   "description": null,
+   "material_type": "packaging_materials",
+   "zone_type": "storage",
+   "capacity": null,
+   "capacity_uom": null,
+   "is_active": true
+  },
+  {
+   "code": "WH-FG",
+   "name": "Gudang Barang Jadi",
+   "description": null,
+   "material_type": "finished_goods",
+   "zone_type": "storage",
+   "capacity": null,
+   "capacity_uom": null,
+   "is_active": true
+  },
+  {
+   "code": "WH-REJECT",
+   "name": "Gudang Reject",
+   "description": null,
+   "material_type": "all",
+   "zone_type": "reject",
+   "capacity": null,
+   "capacity_uom": null,
+   "is_active": true
+  }
+ ],
+ "warehouse_locations": [
+  {
+   "zone_code": "ZONE-RM",
+   "location_code": "RM-R01-L01-P01",
+   "rack": "R01",
+   "level": "L01",
+   "position": "P01",
+   "capacity": 100.0,
+   "capacity_uom": "m3",
+   "is_active": false,
+   "is_available": false
+  },
+  {
+   "zone_code": "WIP-01",
+   "location_code": "WIP-R01-L01-P01",
+   "rack": "R01",
+   "level": "L01",
+   "position": "P01",
+   "capacity": 0.0,
+   "capacity_uom": "unit",
+   "is_active": false,
+   "is_available": false
+  },
+  {
+   "zone_code": "FG-01",
+   "location_code": "FG-R01-L01-P01",
+   "rack": "R01",
+   "level": "L01",
+   "position": "P01",
+   "capacity": 0.0,
+   "capacity_uom": "unit",
+   "is_active": false,
+   "is_available": false
+  },
+  {
+   "zone_code": "ZONE-PM",
+   "location_code": "PM-R01-L01-P01",
+   "rack": "R01",
+   "level": "L01",
+   "position": "P01",
+   "capacity": 0.0,
+   "capacity_uom": "unit",
+   "is_active": false,
+   "is_available": false
+  },
+  {
+   "zone_code": "ZONE-EPD",
+   "location_code": "EPD-R01-L01-P01",
+   "rack": "R01",
+   "level": "L01",
+   "position": "P01",
+   "capacity": 0.0,
+   "capacity_uom": "unit",
+   "is_active": false,
+   "is_available": false
+  },
+  {
+   "zone_code": "PROD-AREA",
+   "location_code": "PROD-AREA-01",
+   "rack": "R01",
+   "level": "L01",
+   "position": "P01",
+   "capacity": 999999.0,
+   "capacity_uom": "PCS",
+   "is_active": true,
+   "is_available": true
+  },
+  {
+   "zone_code": "WH-RM",
+   "location_code": "WH-RM-01",
+   "rack": "R01",
+   "level": "L01",
+   "position": "P01",
+   "capacity": 999999.0,
+   "capacity_uom": "PCS",
+   "is_active": true,
+   "is_available": true
+  },
+  {
+   "zone_code": "WH-PM",
+   "location_code": "WH-PM-01",
+   "rack": "R01",
+   "level": "L01",
+   "position": "P01",
+   "capacity": 999999.0,
+   "capacity_uom": "PCS",
+   "is_active": true,
+   "is_available": true
+  },
+  {
+   "zone_code": "WH-FG",
+   "location_code": "WH-FG-01",
+   "rack": "R01",
+   "level": "L01",
+   "position": "P01",
+   "capacity": 999999.0,
+   "capacity_uom": "PCS",
+   "is_active": true,
+   "is_available": true
+  },
+  {
+   "zone_code": "WH-REJECT",
+   "location_code": "WH-REJECT-01",
+   "rack": "R01",
+   "level": "L01",
+   "position": "P01",
+   "capacity": 999999.0,
+   "capacity_uom": "PCS",
+   "is_active": true,
+   "is_available": true
+  }
+ ],
+ "global_account_defaults": [
+  {
+   "transaction_key": "cash",
+   "account_code": "100101",
+   "description": "Dikoreksi 2026-10-01 ke Kas di Bank (1-1010) - transaksi kas nyata selalu lewat 1-1010, 1-1000 tidak pernah terdanai"
+  },
+  {
+   "transaction_key": "accounts_payable",
+   "account_code": "200001",
+   "description": "Auto-seeded default for accounts_payable"
+  },
+  {
+   "transaction_key": "accounts_receivable",
+   "account_code": "100201",
+   "description": "Auto-seeded default for accounts_receivable"
+  },
+  {
+   "transaction_key": "beban_operasional",
+   "account_code": "620118",
+   "description": "Auto-seeded default for beban_operasional"
+  },
+  {
+   "transaction_key": "hutang_karyawan",
+   "account_code": "200003",
+   "description": "Auto-seeded default for hutang_karyawan"
+  },
+  {
+   "transaction_key": "aset_tetap",
+   "account_code": "110104",
+   "description": "Auto-seeded default for aset_tetap (mapped from fixed_assets)"
+  },
+  {
+   "transaction_key": "depreciation_expense",
+   "account_code": "510104",
+   "description": "Auto-seeded default for depreciation_expense"
+  },
+  {
+   "transaction_key": "accumulated_depreciation",
+   "account_code": "110203",
+   "description": "Auto-seeded default for accumulated_depreciation"
+  },
+  {
+   "transaction_key": "payroll_expense",
+   "account_code": "620001",
+   "description": "Payroll GL default - 7-1000"
+  },
+  {
+   "transaction_key": "payroll_pph21_expense",
+   "account_code": "620004",
+   "description": "Payroll GL default - 7-1010"
+  },
+  {
+   "transaction_key": "payroll_tax_payable",
+   "account_code": "210003",
+   "description": "Payroll GL default - 2-1120"
+  },
+  {
+   "transaction_key": "payroll_insurance_payable",
+   "account_code": "200602",
+   "description": "Payroll GL default - 2-1130"
+  },
+  {
+   "transaction_key": "payroll_pension_payable",
+   "account_code": "200602",
+   "description": "Payroll GL default - 2-1140"
+  },
+  {
+   "transaction_key": "payroll_other_deduction_payable",
+   "account_code": "200003",
+   "description": "Payroll GL default - 2-1150"
+  },
+  {
+   "transaction_key": "payroll_net_payable",
+   "account_code": "200606",
+   "description": "Payroll GL default - 2-1110"
+  },
+  {
+   "transaction_key": "akun_persediaan_id",
+   "account_code": "100501",
+   "description": "Default akun persediaan untuk item Purchasing (Material/Product inventory) - per keputusan Bayu 2026-08-18"
+  },
+  {
+   "transaction_key": "akun_beban_id",
+   "account_code": "620118",
+   "description": "Default akun beban untuk item Purchasing non-persediaan (jasa/operasional) - per keputusan Bayu 2026-08-18"
+  },
+  {
+   "transaction_key": "akun_penjualan_id",
+   "account_code": "400002",
+   "description": "Default akun pendapatan penjualan untuk item Sales Invoice - per keputusan Bayu 2026-08-18"
+  },
+  {
+   "transaction_key": "akumulasi_penyusutan",
+   "account_code": "110203",
+   "description": "Auto-seeded for fixed asset disposal (Akumulasi Penyusutan)"
+  },
+  {
+   "transaction_key": "laba_pelepasan_aset",
+   "account_code": "800005",
+   "description": "Auto-seeded for fixed asset disposal (Pendapatan Lain-lain)"
+  },
+  {
+   "transaction_key": "rugi_pelepasan_aset",
+   "account_code": "700022",
+   "description": "Auto-seeded for fixed asset disposal (Beban Lain-lain)"
+  },
+  {
+   "transaction_key": "persediaan",
+   "account_code": "100501",
+   "description": "Auto-seeded for purchase return GL (Persediaan Bahan Baku)"
+  },
+  {
+   "transaction_key": "akun_retur_penjualan_id",
+   "account_code": "400101",
+   "description": ""
+  },
+  {
+   "transaction_key": "gr_ir_clearing",
+   "account_code": "200702",
+   "description": "Akun kewajiban sementara GRN - dibalik saat Purchase Invoice diposting."
+  },
+  {
+   "transaction_key": "akun_hpp_id",
+   "account_code": "500001",
+   "description": "Digunakan untuk HPP shipment dan invoice pembelian non-stok."
+  },
+  {
+   "transaction_key": "wip_persediaan",
+   "account_code": "100502",
+   "description": "Persediaan Barang Dalam Proses (WIP) - tujuan debit saat bahan baku di-issue ke produksi"
+  }
+ ],
+ "tax_account_settings": {
+  "ppn_keluaran": "210001",
+  "ppn_masukan": "100611",
+  "pph22": "100607",
+  "pph23": "100608"
+ },
+ "company_account_settings": {
+  "ekuitas": null,
+  "laba_ditahan": null,
+  "exchange_rate_refresh_enabled": true
+ }
+}
