@@ -49,7 +49,7 @@ pytest-mock==3.12.0
 # Code Quality (optional for production)
 flake8==6.1.0
 black==23.12.1
-pylint==3.0.3
+pylint==4.0.9
 
 # Security
 cryptography==50.0.0
