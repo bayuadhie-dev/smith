@@ -4,6 +4,7 @@ import { useDraftState } from '../../workspace/drafts';
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
+import toast from 'react-hot-toast';
 import {
   BanknotesIcon,
   CalendarDaysIcon,
@@ -275,6 +276,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null);
+    const fail = (msg: string) => { setError(msg); toast.error(msg); window.scrollTo({ top: 0, behavior: 'smooth' }) }
 
     const allocations = Object.entries(alloc)
       .filter(([, v]) => Number(v) !== 0)
@@ -284,15 +286,15 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
       .map((l) => ({ account_id: Number(l.account_id), amount: Number(l.amount), description: l.description || undefined }));
 
     if (!isStandalone && allocations.length === 0) {
-      setError('Centang minimal satu faktur yang akan dilunasi.');
+      fail('Centang minimal satu faktur yang akan dilunasi.');
       return;
     }
     if (isStandalone && (cleanLines.length === 0 || cleanLines.some((l) => !l.account_id || !l.amount))) {
-      setError('Setiap baris rincian harus punya akun dan nilai tidak sama dengan 0 (boleh negatif untuk pengurang).');
+      fail('Setiap baris rincian harus punya akun dan nilai tidak sama dengan 0 (boleh negatif untuk pengurang).');
       return;
     }
     if (!formData.bank_account_id) {
-      setError('Pilih akun Kas/Bank.');
+      fail('Pilih akun Kas/Bank.');
       return;
     }
 
@@ -316,7 +318,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
       });
       navigate(res.data?.payment_id ? `/app/finance/payments/${res.data.payment_id}` : '/app/finance/pembayaran');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Gagal menyimpan pembayaran. Silakan coba lagi.');
+      fail(err.response?.data?.error || 'Gagal menyimpan pembayaran. Silakan coba lagi.');
     } finally {
       setSubmitting(false);
     }
@@ -652,7 +654,12 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
           )}
 
           {/* Form Actions */}
-          <div className="flex justify-end gap-4 pt-6 border-t">
+          <div className="flex justify-end items-center gap-4 pt-6 border-t">
+            {!canSubmit && !submitting && (
+              <span className="text-sm text-amber-700 mr-auto">
+                {!formData.bank_account_id ? 'Pilih akun Kas/Bank dulu.' : totalAmount === 0 ? 'Isi nilai (tidak boleh 0).' : overAllocated.length > 0 ? 'Nilai melebihi sisa tagihan.' : !formData.payment_date ? 'Isi tanggal.' : ''}
+              </span>
+            )}
             <button 
               type="button"
               onClick={handleCancel}

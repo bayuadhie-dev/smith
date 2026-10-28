@@ -180,6 +180,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Opportunities', href: '/app/sales/opportunities', icon: ChartBarIcon },
             { name: 'Quotations', href: '/app/sales/quotations', icon: DocumentTextIcon, permission: 'quotations' },
             { name: 'Sales Orders', href: '/app/sales/orders', icon: ClipboardDocumentListIcon, permission: 'sales_orders' },
+            { name: 'Surat Jalan', href: '/app/shipping/orders', icon: TruckIcon, permission: 'shipping' },
+            { name: 'Faktur Penjualan', href: '/app/finance/invoices', icon: ReceiptPercentIcon, permission: 'finance' },
             { name: 'Forecasts', href: '/app/sales/forecasts', icon: ChartPieIcon },
           ]
         },
