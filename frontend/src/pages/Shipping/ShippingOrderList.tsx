@@ -29,7 +29,7 @@ const { data, isLoading } = useGetShippingOrdersQuery({})
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pesanan Pengiriman</h1>
-        <Link to="/shipping/orders/new" className="btn-primary inline-flex items-center gap-2">
+        <Link to="/app/shipping/orders/new" className="btn-primary inline-flex items-center gap-2">
           <PlusIcon className="h-5 w-5" />
           Create Shipment
         </Link>
@@ -71,7 +71,7 @@ const { data, isLoading } = useGetShippingOrdersQuery({})
                     <td>{order.vehicle_number || '-'}</td>
                     <td>
                       <Link
-                        to={`/shipping/orders/${order.id}`}
+                        to={`/app/shipping/orders/${order.id}`}
                         className="text-primary-600 hover:text-primary-800 text-sm"
                       >
                       </Link>
@@ -93,7 +93,7 @@ const { data, isLoading } = useGetShippingOrdersQuery({})
           <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No shipments</h3>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating your first shipment.</p>
           <div className="mt-6">
-            <Link to="/shipping/orders/new" className="btn-primary">
+            <Link to="/app/shipping/orders/new" className="btn-primary">
               <PlusIcon className="h-5 w-5 mr-2" />
               Create Shipment
             </Link>
