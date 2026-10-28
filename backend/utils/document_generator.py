@@ -468,23 +468,23 @@ def generate_invoice_document(invoice_id, user_id):
     return document
 
 
-def generate_purchase_order_document(po_id, user_id):
-    """
-    Generate a printable Purchase Order document (Print Template Designer Fase 2).
-    Mirrors generate_invoice_document()'s shape - Fase 1 proved the pattern works
-    generically across document types, this is that proof extended to PO.
-    """
-    from models.purchasing import PurchaseOrder
-
-    po = db.session.get(PurchaseOrder, po_id)
-    if not po:
-        raise ValueError('Purchase Order not found')
-
-    template = ensure_default_template(user_id, 'purchase_order')
-
-    doc_number = generate_number('DOC-PO', Document, 'document_number')
+def build_po_document_data(po):
+    """Amounts are pre-formatted in the PO's own currency (the render engine's
+    'rp' format is IDR-only)."""
+    from utils.tax_helpers import ppn_rate_for_code
 
     supplier = po.supplier
+    ccy = (po.currency or 'IDR').upper()
+    symbols = {'IDR': 'Rp', 'USD': 'US$', 'EUR': 'EUR', 'CNY': 'CNY', 'JPY': 'JPY', 'SGD': 'S$'}
+    words_name = {'IDR': 'rupiah', 'USD': 'dolar Amerika Serikat', 'EUR': 'euro', 'CNY': 'yuan',
+                  'JPY': 'yen', 'SGD': 'dolar Singapura'}
+
+    def money(v, force_decimals=False):
+        n = float(v or 0)
+        decimals = 2 if (ccy != 'IDR' or force_decimals or n != int(n)) else 0
+        txt = f'{n:,.{decimals}f}'.replace(',', '_').replace('.', ',').replace('_', '.')
+        return f'{symbols.get(ccy, ccy)} {txt}'
+
     line_items = []
     for item in po.items:
         line_items.append({
@@ -493,30 +493,82 @@ def generate_purchase_order_document(po_id, user_id):
             'item_name': item.description or (item.product.name if item.product else (item.material.name if item.material else '')),
             'quantity': float(item.quantity),
             'uom': item.uom or '',
-            'unit_price': float(item.unit_price),
-            'subtotal': float(item.total_price),
+            'unit_price_text': money(item.unit_price),
+            'subtotal_text': money(item.total_price),
         })
+
+    def fmt_date(d):
+        return d.strftime('%d-%m-%Y') if d else ''
+
+    contact = ' | '.join(x for x in [
+        f'Attn: {supplier.contact_person}' if supplier and supplier.contact_person else '',
+        f'Telp: {supplier.phone or supplier.mobile}' if supplier and (supplier.phone or supplier.mobile) else '',
+        supplier.email if supplier and supplier.email else '',
+    ] if x)
+
+    rate = float(po.exchange_rate or 1)
+    foreign = ccy != 'IDR'
+    kurs_text = ''
+    if foreign:
+        if po.status == 'draft' and not po.manual_exchange_rate:
+            kurs_text = 'Kurs belum dikunci'
+        else:
+            r = float(po.manual_exchange_rate) if (po.status == 'draft' and po.manual_exchange_rate) else rate
+            kurs_text = f'Kurs 1 {ccy} = Rp {r:,.2f}'.replace(',', '_').replace('.', ',').replace('_', '.')
+
+    tax_pct = ppn_rate_for_code(po.ppn_code)
+    if po.is_taxable:
+        pct = f'{tax_pct:g}%' if tax_pct else ''
+        tax_note = f'PPN {pct} {"sudah termasuk dalam harga" if po.tax_inclusive else "belum termasuk, ditambahkan pada total"}'.replace('  ', ' ')
+    else:
+        tax_note = 'Harga tanpa PPN'
+
+    total = float(po.total_amount or 0)
+    idr_text = ''
+    if foreign and not (po.status == 'draft' and not po.manual_exchange_rate):
+        r = float(po.manual_exchange_rate) if (po.status == 'draft' and po.manual_exchange_rate) else rate
+        idr_text = ('Setara Rp ' + f'{total * r:,.0f}'.replace(',', '.'))
+        tax_note += '. Setara Rp ' + f'{total * r:,.0f}'.replace(',', '.') + f' ({kurs_text})'
 
     document_data = {
         'document_number': po.po_number,
         'hdr_no': f'No. {po.po_number}',
-        'hdr_date': f"Tanggal: {po.order_date.strftime('%d-%m-%Y') if po.order_date else ''}",
-        'document_date': po.order_date.strftime('%d-%m-%Y') if po.order_date else '',
-        'required_date': po.required_date.strftime('%d-%m-%Y') if po.required_date else '',
+        'hdr_date': f"Tanggal: {fmt_date(po.order_date)}",
+        'hdr_extra': f'Mata Uang: {ccy}' + (f' ({kurs_text})' if kurs_text else ''),
+        'document_date': fmt_date(po.order_date),
+        'required_date': fmt_date(po.required_date),
+        'expected_date': fmt_date(po.expected_date),
         'supplier_name': supplier.company_name if supplier else '',
-        'supplier_address': supplier.address if supplier else '',
+        'supplier_address': ', '.join(x for x in [supplier.address, supplier.city, supplier.country] if x) if supplier else '',
+        'supplier_contact': contact,
+        'supplier_tax_id': f'NPWP/Tax ID: {supplier.tax_id}' if supplier and supplier.tax_id else '',
         'delivery_address': po.delivery_address or '',
         'payment_terms': po.payment_terms or '',
         'notes': po.notes or '',
-        'subtotal': float(po.subtotal or 0),
-        'tax_amount': float(po.tax_amount or 0),
-        'discount_amount': float(po.discount_amount or 0),
-        'total_amount': float(po.total_amount or 0),
-        'terbilang': (_terbilang(float(po.total_amount or 0)).strip().capitalize() + ' rupiah') if float(po.total_amount or 0) >= 1 else 'Nol rupiah',
+        'subtotal_text': money(po.subtotal),
+        'discount_text': money(po.discount_amount),
+        'tax_text': money(po.tax_amount),
+        'total_text': money(total),
+        'tax_note': tax_note,
+        'terbilang': (_terbilang(total).strip().capitalize() + ' ' + words_name.get(ccy, ccy)) if total >= 1 else f'Nol {words_name.get(ccy, ccy)}',
         'line_items': line_items,
         'company': get_company_context(),
     }
+    return document_data
 
+
+def generate_purchase_order_document(po_id, user_id):
+    """Printable Purchase Order."""
+    from models.purchasing import PurchaseOrder
+
+    po = db.session.get(PurchaseOrder, po_id)
+    if not po:
+        raise ValueError('Purchase Order not found')
+
+    template = ensure_default_template(user_id, 'purchase_order')
+    doc_number = generate_number('DOC-PO', Document, 'document_number')
+    document_data = build_po_document_data(po)
+    supplier = po.supplier
     document = Document(
         document_number=doc_number,
         document_title=f'PO {po.po_number} - {supplier.company_name if supplier else ""}',
@@ -549,6 +601,41 @@ def generate_purchase_order_document(po_id, user_id):
 
 
 _SATUAN = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas']
+
+
+def refresh_documents_layout(document_type, user_id=None):
+    """Re-render already generated documents of one type with the current default
+    layout and fresh company header, keeping each document's stored data."""
+    template = ensure_default_template(user_id, document_type)
+    n = 0
+    for doc in Document.query.filter_by(document_type=document_type).all():
+        data = dict(doc.document_data or {})
+        data['company'] = get_company_context()
+        doc.document_data = data
+        doc.template_version_id = template.current_version_id
+        doc.html_content = render_template_version_to_html(template.current_version, data)
+        n += 1
+    db.session.commit()
+    return n
+
+
+def refresh_po_documents(user_id=None):
+    """Re-render already generated PO documents with the current default layout."""
+    from models.purchasing import PurchaseOrder
+
+    template = ensure_default_template(user_id, 'purchase_order')
+    n = 0
+    for doc in Document.query.filter_by(document_type='purchase_order').all():
+        po = db.session.get(PurchaseOrder, doc.reference_id) if doc.reference_id else None
+        if not po:
+            continue
+        data = build_po_document_data(po)
+        doc.document_data = data
+        doc.template_version_id = template.current_version_id
+        doc.html_content = render_template_version_to_html(template.current_version, data)
+        n += 1
+    db.session.commit()
+    return n
 
 
 def _terbilang(n):

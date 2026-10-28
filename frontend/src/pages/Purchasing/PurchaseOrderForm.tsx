@@ -19,11 +19,11 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
-import POScheduleEditor, { POSchedule } from '../../components/POScheduleEditor'
 interface PurchaseOrderFormData {
   supplier_id: number
   order_date: string
   required_date?: string
+  expected_date?: string
   payment_terms?: string
   po_number?: string
   use_manual_rate?: boolean
@@ -39,7 +39,6 @@ interface PurchaseOrderFormData {
     quantity: number
     unit_price: number
     uom: string
-    schedules?: POSchedule[]
   }[]
 }
 
@@ -108,6 +107,7 @@ const navigate = useNavigate()
         supplier_id: existingPO.supplier_id,
         order_date: existingPO.order_date,
         required_date: existingPO.required_date || '',
+        expected_date: existingPO.expected_date || '',
         payment_terms: existingPO.payment_terms || '',
         po_number: existingPO.po_number || '',
         use_manual_rate: Boolean(existingPO.manual_exchange_rate),
@@ -122,8 +122,7 @@ const navigate = useNavigate()
           material_id: item.material_id ?? null,
           quantity: item.quantity,
           unit_price: item.unit_price,
-          uom: item.uom || 'PCS',
-          schedules: (item.schedules || []).map((sc: any) => ({ expected_date: sc.expected_date, quantity: sc.quantity, notes: sc.notes || '' }))
+          uom: item.uom || 'PCS'
         }))
       })
     }
@@ -207,7 +206,6 @@ const navigate = useNavigate()
           quantity: parseFloat(item.quantity.toString()),
           unit_price: parseFloat(item.unit_price.toString()),
           uom: item.uom,
-          schedules: (item.schedules || []).filter(sc => sc.expected_date && Number(sc.quantity) > 0).map(sc => ({ expected_date: sc.expected_date, quantity: Number(sc.quantity), notes: sc.notes || '' })),
           ...(item.product_id ? { product_id: parseInt(item.product_id.toString()) } : {}),
           ...(item.material_id ? { material_id: parseInt(item.material_id.toString()) } : {})
         }))
@@ -220,15 +218,6 @@ const navigate = useNavigate()
           delete payload.supplier_id
         }
         await updatePO({ id, ...payload }).unwrap()
-        if (hasGrn) {
-          await axiosInstance.put(`/api/purchasing/purchase-orders/${id}/schedules`, {
-            items: (existingPO.items || []).map((it: any, i: number) => ({
-              item_id: it.id,
-              schedules: (data.items[i]?.schedules || []).filter((sc: any) => sc.expected_date && Number(sc.quantity) > 0)
-                .map((sc: any) => ({ expected_date: sc.expected_date, quantity: Number(sc.quantity), notes: sc.notes || '' })),
-            })),
-          })
-        }
         toast.success('Purchase Order updated successfully!')
       } else {
         await createPO(payload).unwrap()
@@ -371,6 +360,13 @@ const navigate = useNavigate()
                 className="input-field"
                 min={new Date().toISOString().split('T')[0]}
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                Estimasi Kedatangan
+              </label>
+              <input type="date" {...register('expected_date')} className="input-field" />
             </div>
 
             <div>
@@ -604,13 +600,6 @@ const navigate = useNavigate()
                       )}
                     </div>
                   </div>
-
-                  <POScheduleEditor
-                    quantity={Number(watchedItems[index]?.quantity) || 0}
-                    uom={watchedItems[index]?.uom}
-                    value={watchedItems[index]?.schedules || []}
-                    onChange={(next) => setValue(`items.${index}.schedules`, next, { shouldDirty: true })}
-                  />
                 </div>
               )
             })}

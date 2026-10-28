@@ -7,6 +7,7 @@ import {
   BuildingStorefrontIcon, TruckIcon,
 } from '@heroicons/react/24/outline';
 import { formatRupiah, formatCurrencyAmount } from '../../utils/currencyUtils';
+import DocumentGenerateButton from '../../components/DocumentGenerateButton';
 import { scheduleStatuses } from '../../components/POScheduleEditor';
 
 const SCHEDULE_BADGE: Record<string, { label: string; color: string }> = {
@@ -111,12 +112,15 @@ export default function PODetail() {
             </div>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+        <DocumentGenerateButton transactionType="purchase_order" transactionId={po.id} transactionNumber={po.po_number} label="Cetak PO" />
         <Link
           to={`/app/purchasing/purchase-orders/${id}/edit`}
           className="flex items-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-lg hover:bg-emerald-700 text-sm font-medium"
         >
           <PencilSquareIcon className="h-4 w-4" /> Edit
         </Link>
+        </div>
       </div>
 
       {/* Informasi Umum */}
@@ -134,6 +138,7 @@ export default function PODetail() {
           </div>
           <InfoRow label="Tanggal Order" value={po.order_date} />
           <InfoRow label="Tanggal Dibutuhkan" value={po.required_date || '-'} />
+          <InfoRow label="Estimasi Kedatangan" value={po.expected_date || '-'} />
           <InfoRow label="Termin Pembayaran" value={po.payment_terms || '-'} />
           <InfoRow label="Metode Pembayaran" value={po.payment_method || '-'} />
           <InfoRow label="Metode Pengiriman" value={po.shipping_method || '-'} />

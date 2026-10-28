@@ -46,7 +46,7 @@ def get_company_context():
         return {
             'name': '', 'legal_name': '', 'address': '', 'city': '', 'country': '',
             'phone': '', 'email': '', 'website': '', 'tax_id': '', 'logo_url': '',
-            'address_line': '', 'contact_line': '',
+            'address_line': '', 'contact_line': '', 'address_contact_line': '',
         }
 
     return {
@@ -60,6 +60,9 @@ def get_company_context():
         'website': profile.website or '',
         'tax_id': profile.tax_id or '',
         'logo_url': _resolve_logo_url(profile.logo_path),
-        'address_line': ', '.join(x for x in [profile.address, profile.city] if x),
+        'address_line': ', '.join(x for x in [profile.address, profile.city if (profile.city or '').lower() not in (profile.address or '').lower() else ''] if x),
         'contact_line': ' | '.join(x for x in [profile.phone, profile.email] if x),
+        'address_contact_line': ' | '.join(x for x in [
+            ', '.join(y for y in [profile.address, profile.city if (profile.city or '').lower() not in (profile.address or '').lower() else ''] if y),
+            ' / '.join(y for y in [profile.phone, profile.email] if y)] if x),
     }

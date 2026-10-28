@@ -523,6 +523,7 @@ def create_purchase_order_core(data, user_id, po_number=None):
         supplier_id=data['supplier_id'],
         order_date=datetime.fromisoformat(data['order_date']),
         required_date=datetime.fromisoformat(data['required_date']) if data.get('required_date') else None,
+        expected_date=datetime.fromisoformat(data['expected_date']).date() if data.get('expected_date') else None,
         status='draft',
         payment_terms=data.get('payment_terms'),
         notes=data.get('notes'),

@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-10h'
+LAYOUT = 'v2-2026-10m'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 AUTO_NOTE_PREFIXES = ('Auto-generated', 'Migrasi otomatis')  # the font-unit migration only rescales values of auto-generated layouts
 
@@ -105,8 +105,7 @@ def header(left, width, title, lines=3):
     objs = [
         IMG('company.logo_url', left, 9, 16, 14),
         F('company.name', left + 19, 8.5, 78, 10, fs=12, bold=True),
-        F('company.address_line', left + 19, 19, 78, 4, fs=8, color='#444444'),
-        F('company.contact_line', left + 19, 23, 78, 4, fs=8, color='#444444'),
+        F('company.address_contact_line', left + 19, 18.8, 78, 9.5, fs=7, color='#444444'),
         L(title, right_x, 8, right_w, 7, fs=15, bold=True, align='right'),
     ]
     for i, path in enumerate(['hdr_no', 'hdr_date', 'hdr_extra', 'hdr_extra2'][:lines]):
@@ -202,24 +201,44 @@ def build_invoice():
 
 
 def build_po():
-    o = header(14, 182, 'PURCHASE ORDER', lines=2)
-    o += [BOX(14, 33, 90, 26),
+    o = header(14, 182, 'PURCHASE ORDER', lines=3)
+    o += [BOX(14, 33, 90, 32),
           L('KEPADA SUPPLIER', 16, 34, 86, 3.5, fs=7.5, color=MUTED),
           F('supplier_name', 16, 38.5, 86, 5, fs=11, bold=True),
-          F('supplier_address', 16, 44.5, 86, 13, fs=9)]
-    o += meta_grid(104, 33, 34, 58, [('Dibutuhkan', 'required_date'), ('Syarat Pembayaran', 'payment_terms'),
-                                     ('Kirim Ke', 'delivery_address')], 8.67)
-    o.append(TABLE('line_items', 14, 63, 182, [
-        C('no', 'No.', 9, 'center'), C('code', 'Kode', 26), C('item_name', 'Deskripsi', 66),
-        C('quantity', 'Qty', 20, 'right', 'num'), C('uom', 'Satuan', 17), C('unit_price', 'Harga', 24, 'right', 'num'),
-        C('subtotal', 'Jumlah', 20, 'right', 'num'),
+          F('supplier_address', 16, 44.5, 86, 10, fs=8.5),
+          F('supplier_contact', 16, 55, 86, 4, fs=8.5, color=MUTED),
+          F('supplier_tax_id', 16, 59.5, 86, 4, fs=8.5, color=MUTED)]
+    o += meta_grid(104, 33, 34, 58, [('Dibutuhkan', 'required_date'), ('Estimasi Kedatangan', 'expected_date'),
+                                     ('Syarat Pembayaran', 'payment_terms')], 7)
+    o += [BOX(104, 54, 34, 11, fill=CELL), BOX(138, 54, 58, 11),
+          L('Kirim Ke', 105.5, 55.5, 32, 4, fs=9),
+          F('delivery_address', 139.5, 54.8, 55, 10, fs=8)]
+    o.append(TABLE('line_items', 14, 69, 182, [
+        C('no', 'No.', 9, 'center'), C('code', 'Kode', 24), C('item_name', 'Deskripsi', 62),
+        C('quantity', 'Qty', 18, 'right', 'num'), C('uom', 'Satuan', 15),
+        C('unit_price_text', 'Harga', 28, 'right'), C('subtotal_text', 'Jumlah', 26, 'right'),
     ], min_rows=0, row_h=6.5, height=30, fs=9))
-    o += flow(totals_block(116, 98, 40, 40, [('Subtotal', 'subtotal', False), ('Diskon', 'discount_amount', False),
-                                             ('PPN', 'tax_amount', False), ('TOTAL', 'total_amount', True)]))
-    o += flow(words_box(14, 128, 182))
-    o += flow(notes_line(14, 141, 182))
-    o += flow(signatures(14, 182, 160, ['Dibuat oleh,', 'Disetujui oleh,']))
+    o += flow(po_totals(116, 104))
+    o += flow(words_box(14, 134, 182))
+    o += flow([F('tax_note', 14, 145, 182, 8, fs=8.5, color=MUTED)])
+    o += flow(notes_line(14, 151, 182))
+    o += flow(signatures(14, 182, 168, ['Dibuat oleh,', 'Disetujui oleh,'], captions={0: ' ', 1: ' '}))
     return o, 'A4', 'portrait', None, None
+
+
+def po_totals(left, top, label_w=40, value_w=40, row_h=6.5):
+    objs = []
+    rows = [('Subtotal', 'subtotal_text', False), ('Diskon', 'discount_text', False),
+            ('PPN', 'tax_text', False), ('TOTAL', 'total_text', True)]
+    for i, (label, path, grand) in enumerate(rows):
+        y = top + i * row_h
+        fill = TEAL if grand else None
+        color = '#ffffff' if grand else '#000000'
+        objs.append(BOX(left, y, label_w, row_h, fill=fill))
+        objs.append(BOX(left + label_w, y, value_w, row_h, fill=fill))
+        objs.append(L(label, left + 1.5, y + 1.2, label_w - 2, 4, fs=9.5, bold=grand, color=color))
+        objs.append(F(path, left + label_w + 1.5, y + 1.2, value_w - 3, 4, fs=9.5, bold=grand, align='right', color=color))
+    return objs
 
 
 def build_surat_jalan():

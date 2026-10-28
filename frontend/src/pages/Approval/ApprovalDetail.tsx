@@ -10,6 +10,7 @@ import {
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { store } from '../../store'
 
 interface WorkflowDetail {
   id: number;
@@ -69,8 +70,8 @@ export default function ApprovalDetail() {
   }, [id]);
 
   const loadUserRole = () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    setUserRole(user.role || '');
+    const user = store.getState().auth?.user as any;
+    setUserRole(user?.is_super_admin ? 'admin' : (user?.roles?.[0] || (user ? 'user' : '')));
   };
 
   const loadWorkflowDetail = async () => {
@@ -150,13 +151,11 @@ export default function ApprovalDetail() {
   };
 
   const canReview = () => {
-    return workflow?.status === 'pending_review' && 
-           ['production_manager', 'warehouse_manager', 'admin'].includes(userRole);
+    return workflow?.status === 'pending_review' && userRole !== '';
   };
 
   const canApprove = () => {
-    return workflow?.status === 'pending_approval' && 
-           ['finance', 'accounting', 'finance_manager', 'admin'].includes(userRole);
+    return workflow?.status === 'pending_approval' && userRole !== '';
   };
 
   if (loading) {
