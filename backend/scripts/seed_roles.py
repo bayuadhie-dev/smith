@@ -110,6 +110,10 @@ MODULES = {
         'name': 'Shipping',
         'actions': ['view', 'create', 'edit', 'delete', 'dispatch']
     },
+    'invoices': {
+        'name': 'Faktur Penjualan (tim sales)',
+        'actions': ['view', 'create']
+    },
     'returns': {
         'name': 'Returns',
         'actions': ['view', 'create', 'edit', 'delete', 'process']
@@ -403,6 +407,7 @@ DEFAULT_ROLES = {
             'customers': ['view', 'create', 'edit', 'delete'],
             'products': ['view'],
             'inventory': ['view'],
+            'invoices': ['view', 'create'],
             'shipping': ['view', 'create', 'edit'],
             'returns': ['view', 'approve'],
             'ar': ['view'],
@@ -647,6 +652,7 @@ DEFAULT_ROLES = {
             'customers': ['view', 'create', 'edit'],
             'products': ['view'],
             'inventory': ['view'],
+            'invoices': ['view', 'create'],
             'shipping': ['view', 'create', 'edit'],
             'documents': ['view', 'print'],
             'reports': ['view']

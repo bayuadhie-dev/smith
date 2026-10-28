@@ -20,9 +20,18 @@ finance_bp = Blueprint('finance', __name__)
 from utils.invoice_errors import InvoiceInputError
 
 
+def _has_full_finance_access(perm):
+    """True for super admin / users holding the broad finance permission; users with only
+    invoices.* (sales team) are limited to sales invoices."""
+    from models import User
+    from utils.auth_decorators import _get_user_permissions
+    user = db.session.get(User, get_jwt_identity())
+    return bool(user and (getattr(user, 'is_super_admin', False) or perm in _get_user_permissions(user)))
+
+
 @finance_bp.route('/invoices', methods=['GET'])
 @jwt_required()
-@require_permission('finance.view')
+@require_permission('finance.view', 'invoices.view')
 def get_invoices():
     """
     Get all invoices with pagination
@@ -89,6 +98,8 @@ def get_invoices():
         invoice_type = request.args.get('type')
         
         query = Invoice.query
+        if not _has_full_finance_access('finance.view'):
+            invoice_type = 'sales'
         if invoice_type:
             query = query.filter_by(invoice_type=invoice_type)
         
@@ -112,7 +123,7 @@ def get_invoices():
 
 @finance_bp.route('/invoices/<int:id>', methods=['GET'])
 @jwt_required()
-@require_permission('finance.view')
+@require_permission('finance.view', 'invoices.view')
 def get_invoice(id):
     """
     Get single invoice by ID with items
@@ -171,6 +182,8 @@ def get_invoice(id):
     """
     try:
         invoice = db.session.get(Invoice, id) or abort(404)
+        if invoice.invoice_type != 'sales' and not _has_full_finance_access('finance.view'):
+            abort(404)
         
         # Get invoice items
         items = InvoiceItem.query.filter_by(invoice_id=id).order_by(InvoiceItem.line_number).all()
@@ -392,9 +405,11 @@ def export_efaktur_retur():
 
 @finance_bp.route('/invoices', methods=['POST'])
 @jwt_required()
-@require_permission('finance.create')
+@require_permission('finance.create', 'invoices.create')
 def create_invoice():
     try:
+        if not _has_full_finance_access('finance.create') and (request.get_json() or {}).get('invoice_type', 'sales') != 'sales':
+            return jsonify({'error': 'Anda hanya boleh membuat faktur penjualan'}), 403
         result = create_invoice_core(request.get_json(), get_jwt_identity(), commit=True)
         return jsonify(result), 201
     except InvoiceInputError as e:
