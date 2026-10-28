@@ -151,6 +151,7 @@ import WeeklyController from './pages/Production/WeeklyController'
 import MonthlyController from './pages/Production/MonthlyController'
 import ConvertingDashboard from './pages/Production/ConvertingDashboard'
 import ConvertingInput from './pages/Production/ConvertingInput'
+import ConvertingDetail from './pages/Production/ConvertingDetail'
 import WorkOrderMonitoring from './pages/Production/WorkOrderMonitoring'
 import BreakdownSummary from './pages/Production/BreakdownSummary'
 import WorkOrderTimeline from './pages/Production/WorkOrderTimeline'
@@ -604,6 +605,7 @@ function AppChildRoutes() {
                 <Route path="production/monthly-controller" element={<MonthlyController />} />
                 <Route path="production/converting" element={<ConvertingDashboard />} />
                 <Route path="production/converting/input" element={<ConvertingInput />} />
+                <Route path="production/converting/:id" element={<ConvertingDetail />} />
                 <Route path="production/work-orders" element={<WorkOrderList />} />
                 <Route path="production/work-orders-monitoring" element={<WorkOrderMonitoring />} />
                 <Route path="production/breakdown-summary" element={<BreakdownSummary />} />

@@ -276,7 +276,7 @@ export default function ConvertingInput() {
       
       let machine_data: any = {}
       let fA = gradeA, fB = gradeB, fL = lossKg
-      if (mtype === 'slitting') { machine_data = { rows: slitRows }; fA = 0; fB = 0; fL = 0 }
+      if (mtype === 'slitting') { machine_data = { rows: slitRows }; fA = slitRows.reduce((s, r) => s + N(r.total_weight), 0); fB = 0; fL = slitRows.reduce((s, r) => s + N(r.loss), 0) }
       else if (mtype === 'perforating') { machine_data = { rows: perfRows } }
       else if (mtype === 'folding') { machine_data = { rows: foldRows } }
       else if (mtype === 'cutting') { machine_data = { rows: cutRows } }

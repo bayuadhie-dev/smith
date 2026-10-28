@@ -15,6 +15,7 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { fmtQty, unitFor } from './convertingUnits'
 
 interface ShiftData {
   id: number;
@@ -338,6 +339,22 @@ const ConvertingDashboard: React.FC = () => {
     return acc;
   }, {} as Record<string, MachineData[]>);
 
+  // Satuan beda per jenis mesin (kg / pcs): jangan dijumlahkan jadi satu angka, tampilkan per satuan.
+  const totalsByUnit = (field: 'total_output' | 'total_good' | 'total_reject') => {
+    const acc: Record<string, number> = {};
+    machines.forEach((m) => {
+      const u = unitFor(m.machine_type);
+      if (!u) return;
+      acc[u] = (acc[u] || 0) + Number((m as any)[field] || 0);
+    });
+    return Object.entries(acc).filter(([, v]) => v > 0);
+  };
+  const renderTotals = (field: 'total_output' | 'total_good' | 'total_reject') => {
+    const list = totalsByUnit(field);
+    if (list.length === 0) return <p className="text-2xl font-bold">0</p>;
+    return list.map(([u, v]) => <p key={u} className="text-2xl font-bold leading-tight">{fmtQty(v)} <span className="text-sm font-normal opacity-80">{u}</span></p>);
+  };
+
   // 2026-10-07: Axion bento-grid restyle (tier-2 sub-dashboard). Machine
   // list/detail sections below are intentionally left as-is - only the
   // header + summary cards are in scope.
@@ -392,18 +409,15 @@ const ConvertingDashboard: React.FC = () => {
           </div>
           <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
             <p className="text-sm opacity-90">Total Output</p>
-            <p className="text-2xl font-bold">{summary.total_output.toLocaleString()}</p>
-            <p className="text-xs opacity-75">pcs</p>
+            {renderTotals('total_output')}
           </div>
           <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
             <p className="text-sm opacity-90">Grade A</p>
-            <p className="text-2xl font-bold">{summary.total_good.toLocaleString()}</p>
-            <p className="text-xs opacity-75">pcs</p>
+            {renderTotals('total_good')}
           </div>
           <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
             <p className="text-sm opacity-90">Reject</p>
-            <p className="text-2xl font-bold">{summary.total_reject.toLocaleString()}</p>
-            <p className="text-xs opacity-75">pcs</p>
+            {renderTotals('total_reject')}
           </div>
           <div className={`bg-gradient-to-br ${summary.quality_rate >= 95 ? 'from-emerald-500 to-emerald-600' : 'from-amber-500 to-amber-600'} rounded-xl p-4 text-white shadow-lg`}>
             <p className="text-sm opacity-90">Quality Rate</p>
@@ -459,7 +473,7 @@ const ConvertingDashboard: React.FC = () => {
                   {machine.shifts.length > 0 ? (
                     <div className="space-y-3">
                       {machine.shifts.map((shift) => (
-                        <div key={shift.id} className="flex items-center justify-between py-2 border-b last:border-0 hover:bg-slate-50/50 group/row px-1 rounded transition-colors">
+                        <div key={shift.id} onClick={() => navigate(`/app/production/converting/${shift.id}`)} className="flex items-center justify-between py-2 border-b last:border-0 hover:bg-slate-50/50 group/row px-1 rounded transition-colors cursor-pointer">
                           <div>
                             <p className="font-medium text-slate-700">
                               {typeof shift.shift === 'string' 
@@ -473,7 +487,7 @@ const ConvertingDashboard: React.FC = () => {
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="text-right">
-                              <p className="font-bold text-slate-800">{shift.good_quantity.toLocaleString()}</p>
+                              <p className="font-bold text-slate-800">{fmtQty(shift.good_quantity)} {unitFor(machine.machine_type)}</p>
                               <p className={`text-xs ${shift.efficiency_rate >= machine.target_efficiency ? 'text-green-600' : 'text-yellow-600'}`}>
                                 Eff: {shift.efficiency_rate}%
                               </p>
@@ -482,14 +496,14 @@ const ConvertingDashboard: React.FC = () => {
                             {/* Hover Actions */}
                             <div className="flex items-center gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
                               <button
-                                onClick={() => handleEditClick(shift, machine)}
+                                onClick={(e) => { e.stopPropagation(); handleEditClick(shift, machine); }}
                                 className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
                                 title="Edit data produksi"
                               >
                                 <PencilIcon className="h-4 w-4" />
                               </button>
                               <button
-                                onClick={() => handleDeleteClick(shift.id)}
+                                onClick={(e) => { e.stopPropagation(); handleDeleteClick(shift.id); }}
                                 className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                                 title="Hapus data produksi"
                               >
@@ -504,16 +518,16 @@ const ConvertingDashboard: React.FC = () => {
                       <div className="pt-2 mt-2 border-t border-dashed">
                         <div className="flex justify-between text-sm">
                           <span className="text-slate-500">Total Output:</span>
-                          <span className="font-bold text-slate-800">{machine.total_output.toLocaleString()}</span>
+                          <span className="font-bold text-slate-800">{fmtQty(machine.total_output)} {unitFor(machine.machine_type)}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-slate-500">Grade A:</span>
-                          <span className="font-bold text-green-600">{machine.total_good.toLocaleString()}</span>
+                          <span className="font-bold text-green-600">{fmtQty(machine.total_good)} {unitFor(machine.machine_type)}</span>
                         </div>
                         {machine.total_reject > 0 && (
                           <div className="flex justify-between text-sm">
                             <span className="text-slate-500">Reject:</span>
-                            <span className="font-bold text-red-600">{machine.total_reject.toLocaleString()}</span>
+                            <span className="font-bold text-red-600">{fmtQty(machine.total_reject)} {unitFor(machine.machine_type)}</span>
                           </div>
                         )}
                       </div>

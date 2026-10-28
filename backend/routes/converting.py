@@ -223,6 +223,45 @@ def get_converting_productions():
         return jsonify({'error': str(e)}), 500
 
 
+@converting_bp.route('/api/converting/production/<int:prod_id>', methods=['GET'])
+@jwt_required()
+@require_permission('production.view')
+def get_converting_production_detail(prod_id):
+    """Satu rekaman produksi converting lengkap dengan data per baris (machine_data) dan downtime."""
+    try:
+        p = db.session.get(ConvertingProduction, prod_id)
+        if not p:
+            return jsonify({'error': 'Data produksi tidak ditemukan'}), 404
+        mdata = p.get_machine_data() or {}
+        return jsonify({'production': {
+            'id': p.id,
+            'production_date': p.production_date.isoformat(),
+            'shift': p.shift,
+            'machine': {'id': p.machine.id, 'code': p.machine.code, 'name': p.machine.name,
+                        'machine_type': p.machine.machine_type,
+                        'target_efficiency': p.machine.target_efficiency} if p.machine else None,
+            'njo': p.njo,
+            'product_name': p.product_name,
+            'specification': p.specification,
+            'operator_name': p.operator_name,
+            'notes': p.notes,
+            'status': p.status,
+            'grade_a': float(p.grade_a or 0),
+            'grade_b': float(p.grade_b or 0),
+            'loss_kg': float(p.loss_kg or 0),
+            'target_speed': p.target_speed,
+            'actual_speed': p.actual_speed,
+            'efficiency_rate': float(p.efficiency_rate or 0),
+            'quality_rate': float(p.quality_rate or 0),
+            'planned_runtime': p.planned_runtime,
+            'downtime_minutes': p.downtime_minutes,
+            'machine_data': mdata,
+            'created_at': p.created_at.isoformat() if getattr(p, 'created_at', None) else None,
+        }}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @converting_bp.route('/api/converting/production', methods=['POST'])
 @jwt_required()
 @require_permission('production.create')
@@ -311,7 +350,14 @@ def create_converting_production():
             
         if machine_data:
             production.set_machine_data(machine_data)
-        
+
+        # Slitting tidak punya isian hasil produksi terpisah: hasil baik = total berat tiap roll, loss = loss tiap roll.
+        # Tanpa ini dashboard dan ringkasan menampilkan 0 walau data barisnya tersimpan.
+        if machine.machine_type == 'slitting' and not float(production.grade_a or 0) and not float(production.loss_kg or 0):
+            rows = machine_data.get('rows') or []
+            production.grade_a = round(sum(float(r.get('total_weight') or 0) for r in rows), 2)
+            production.loss_kg = round(sum(float(r.get('loss') or 0) for r in rows), 2)
+
         db.session.add(production)
         db.session.commit()
         
