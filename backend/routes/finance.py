@@ -17,6 +17,9 @@ import openpyxl
 
 finance_bp = Blueprint('finance', __name__)
 
+from utils.invoice_errors import InvoiceInputError
+
+
 @finance_bp.route('/invoices', methods=['GET'])
 @jwt_required()
 @require_permission('finance.view')
@@ -392,270 +395,276 @@ def export_efaktur_retur():
 @require_permission('finance.create')
 def create_invoice():
     try:
-        data = request.get_json()
-        user_id = get_jwt_identity()
-        
-        invoice_number = generate_number_v2('invoice', 'INV', Invoice, 'invoice_number')
-
-        invoice_date_parsed = datetime.fromisoformat(data['invoice_date'])
-
-        from utils.finance_helpers import is_period_locked
-        invoice_transaction_type = 'sales_invoice' if data.get('invoice_type') == 'sales' else 'purchase_invoice'
-        if is_period_locked(invoice_date_parsed.date() if hasattr(invoice_date_parsed, 'date') else invoice_date_parsed,
-                             transaction_type=invoice_transaction_type):
-            return jsonify({'error': f'Periode {invoice_date_parsed.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa membuat transaksi baru di periode ini.'}), 400
-
-        invoice = Invoice(
-            invoice_number=invoice_number,
-            invoice_type=data['invoice_type'],
-            invoice_date=invoice_date_parsed,
-            due_date=datetime.fromisoformat(data['due_date']) if data.get('due_date') else None,
-            customer_id=data.get('customer_id'),
-            supplier_id=data.get('supplier_id'),
-            sales_order_id=data.get('sales_order_id'),
-            created_by=user_id
-        )
-        
-        db.session.add(invoice)
-        db.session.flush()
-        
-        subtotal = 0
-        discount_amount = data.get('discount_amount', 0)
-        tax_rate = data.get('tax_rate', 0)
-        items_tax_amount = 0
-        any_item_ppn_resolved = False
-
-        for idx, item_data in enumerate(data.get('items', []), 1):
-            line_total = item_data['quantity'] * item_data['unit_price']
-            line_discount = line_total * (item_data.get('discount_percent', 0) / 100)
-            line_net = line_total - line_discount
-
-            explicit_item_tax = item_data.get('tax_amount', 0)
-            item_tax = explicit_item_tax
-            if not explicit_item_tax and item_data.get('product_id'):
-                # No manual tax_amount given for this line - derive the rate from
-                # the product's own ppn_code (Y/A/B/L = 11%/1.1%/1.2%/12%) instead
-                # of silently leaving it at 0 or applying one flat rate to every
-                # item regardless of its real PPN classification.
-                item_rate = resolve_item_tax_percent(0, product_id=item_data['product_id'])
-                if item_rate:
-                    item_tax = line_net * (item_rate / 100)
-                    any_item_ppn_resolved = True
-
-            item = InvoiceItem(
-                invoice_id=invoice.id,
-                line_number=idx,
-                product_id=item_data.get('product_id'),
-                description=item_data['description'],
-                quantity=item_data['quantity'],
-                uom=item_data.get('uom'),
-                unit_price=item_data['unit_price'],
-                discount_percent=item_data.get('discount_percent', 0),
-                total_amount=line_net,
-                tax_amount=item_tax
-            )
-            db.session.add(item)
-            subtotal += line_net
-            items_tax_amount += item_tax
-
-        # Total tax: prefer the sum of real per-item PPN (derived from each
-        # item's own ppn_code) whenever at least one line resolved one -
-        # otherwise fall back to the old flat header-level tax_rate, for
-        # invoices with no product-linked items to derive a rate from (e.g.
-        # the manual free-text Invoice form, which has no product selector).
-        if any_item_ppn_resolved:
-            tax_amount = items_tax_amount
-        else:
-            taxable_amount = subtotal - discount_amount
-            tax_amount = taxable_amount * (tax_rate / 100) if tax_rate else 0
-        
-        invoice.subtotal = subtotal
-        invoice.discount_amount = discount_amount
-        # tax_rate is not a field on Invoice model — used only for calculation
-        invoice.tax_amount = tax_amount
-        invoice.total_amount = subtotal - discount_amount + tax_amount
-        invoice.balance_due = invoice.total_amount
-        invoice.payment_terms = data.get('payment_terms')
-        invoice.notes = data.get('notes')
-        db.session.flush()
-
-        # Link Shipping Order(s) (Surat Jalan) this invoice was billed from.
-        # Pola Accurate Online: Surat Jalan dibuat dulu dari SO, lalu
-        # "dilanjutkan" jadi Faktur Penjualan (bisa 1 SJ -> 1 invoice, atau
-        # beberapa SJ digabung jadi 1 invoice). Di sini invoice_id di
-        # ShippingOrder diisi supaya rantai SO -> WO -> SJ -> Invoice bisa
-        # ditelusuri (lihat E2E_TRACKING_READINESS_REPORT.md Gap 2).
-        shipping_order_ids = data.get('shipping_order_ids') or (
-            [data['shipping_order_id']] if data.get('shipping_order_id') else []
-        )
-        if shipping_order_ids and invoice.invoice_type == 'sales':
-            from models.shipping import ShippingOrder
-            shipping_orders = ShippingOrder.query.filter(
-                ShippingOrder.id.in_(shipping_order_ids)
-            ).all()
-            for so_shipment in shipping_orders:
-                if invoice.sales_order_id and so_shipment.sales_order_id and \
-                        so_shipment.sales_order_id != invoice.sales_order_id:
-                    return jsonify({
-                        'error': f'Shipping order {so_shipment.shipping_number} bukan dari sales order yang sama dengan invoice ini'
-                    }), 400
-                if so_shipment.invoice_id:
-                    return jsonify({
-                        'error': f'Shipping order {so_shipment.shipping_number} sudah terhubung ke invoice lain'
-                    }), 400
-                so_shipment.invoice_id = invoice.id
-            db.session.flush()
-
-        # GL posting: only for sales invoices (invoice_type == 'sales').
-        # Purchase-side invoices go through routes/purchase_invoice.py's own
-        # dedicated create_purchase_invoice(), which already posts to GL.
-        deposit_applied = 0
-        if invoice.invoice_type == 'sales' and invoice.customer_id:
-            from models.finance import SalesAccountSettings
-            from models.approval_workflow import PendingJournalEntry
-            from utils.finance_helpers import (
-                post_pending_journal, resolve_account, get_or_create_singleton,
-                apply_customer_deposit,
-            )
-
-            journal_lines = []
-
-            # Debit: Piutang Usaha (accounts receivable) for the full invoice
-            # amount. Resolved per-customer via resolve_accounts_receivable()
-            # (Customer.akun_piutang_id override, falls back to the global
-            # 'accounts_receivable' GlobalAccountDefault) - matches Accurate's
-            # actual pattern (confirmed via web search 2026-08-17: piutang
-            # usaha is set per-customer, same as accounts payable is set
-            # per-supplier).
-            from utils.finance_helpers import resolve_accounts_receivable
-            try:
-                ar_account_id = resolve_accounts_receivable(invoice.customer_id)
-            except ValueError as e:
-                return jsonify({'error': str(e)}), 400
-
-            journal_lines.append({
-                'account_id': ar_account_id,
-                'debit': float(invoice.total_amount),
-                'credit': 0,
-                'description': f'Piutang - {invoice_number}',
-            })
-
-            # Credit: Penjualan (revenue) at GROSS (pre-discount) per line
-            # item's resolved akun_penjualan_id, with discount posted
-            # separately (debit) to the dedicated Diskon Penjualan account
-            # (4-1200) instead of being silently netted into the revenue
-            # line (2026-10-22 fix - the account already existed in
-            # account_config.py's ACCOUNT_CODES['sales_discounts'] mapping
-            # and on the chart of accounts, but nothing ever posted to it,
-            # so Laporan Penjualan's Diskon column had nothing in the GL to
-            # tie out to). Net effect on the journal balance is unchanged;
-            # this only makes the discount visible as its own line.
-            total_line_discount = 0.0
-            for item_data in data.get('items', []):
-                product_id = item_data.get('product_id')
-                line_total = item_data['quantity'] * item_data['unit_price']
-                line_discount = line_total * (item_data.get('discount_percent', 0) / 100)
-                total_line_discount += line_discount
-                sales_account_id = resolve_account('akun_penjualan_id', product_id=product_id)
-                journal_lines.append({
-                    'account_id': sales_account_id,
-                    'debit': 0,
-                    'credit': float(line_total),
-                    'description': item_data.get('description') or f'Penjualan - {invoice_number}',
-                })
-            if total_line_discount > 0.01:
-                from utils.account_config import ACCOUNT_CODES
-                discount_account = Account.query.filter_by(account_code=ACCOUNT_CODES['sales_discounts']).first()
-                if discount_account:
-                    journal_lines.append({
-                        'account_id': discount_account.id,
-                        'debit': float(total_line_discount),
-                        'credit': 0,
-                        'description': f'Diskon Penjualan - {invoice_number}',
-                    })
-
-            # Balance the journal against tax/discount deltas if subtotal of
-            # credit lines doesn't already equal total_amount (tax_amount is
-            # added on top of item lines, so route it to PPN Keluaran if set,
-            # otherwise fold it into the last sales line to keep balance).
-            credit_sum = sum(l['credit'] for l in journal_lines)
-            debit_sum = sum(l['debit'] for l in journal_lines)
-            imbalance = round(debit_sum - credit_sum, 2)
-            if abs(imbalance) > 0.01:
-                from models.finance import TaxAccountSettings
-                tax_settings = get_or_create_singleton(TaxAccountSettings)
-                if tax_settings.akun_ppn_keluaran_id and tax_amount and abs(imbalance - float(tax_amount)) < 0.01:
-                    journal_lines.append({
-                        'account_id': tax_settings.akun_ppn_keluaran_id,
-                        'debit': 0,
-                        'credit': float(tax_amount),
-                        'description': f'PPN Keluaran - {invoice_number}',
-                    })
-                else:
-                    # Fallback: fold any remaining imbalance into the last line
-                    for line in reversed(journal_lines):
-                        if line['credit'] > 0:
-                            line['credit'] += imbalance
-                            break
-
-            pending = PendingJournalEntry(
-                workflow_id=None,
-                entry_date=invoice.invoice_date.date() if hasattr(invoice.invoice_date, 'date') else invoice.invoice_date,
-                description=f'Sales Invoice {invoice_number}',
-                reference=invoice_number,
-                lines=journal_lines,
-                total_debit=sum(l['debit'] for l in journal_lines),
-                total_credit=sum(l['credit'] for l in journal_lines),
-                created_by=user_id,
-            )
-            db.session.add(pending)
-            db.session.flush()
-            post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='sales_invoice', reference_id=invoice.id)
-
-            # Auto-apply any available customer deposit balance, then post
-            # the reversal journal (deposit liability -> piutang) for
-            # whatever amount was actually applied.
-            deposit_applied = apply_customer_deposit(invoice)
-            if deposit_applied > 0:
-                sales_settings = get_or_create_singleton(SalesAccountSettings)
-                if sales_settings.akun_uang_muka_pelanggan_id:
-                    reversal_lines = [
-                        {
-                            'account_id': sales_settings.akun_uang_muka_pelanggan_id,
-                            'debit': float(deposit_applied),
-                            'credit': 0,
-                            'description': f'Pemakaian uang muka - {invoice_number}',
-                        },
-                        {
-                            'account_id': ar_account_id,
-                            'debit': 0,
-                            'credit': float(deposit_applied),
-                            'description': f'Pemakaian uang muka - {invoice_number}',
-                        },
-                    ]
-                    reversal_pending = PendingJournalEntry(
-                        workflow_id=None,
-                        entry_date=invoice.invoice_date.date() if hasattr(invoice.invoice_date, 'date') else invoice.invoice_date,
-                        description=f'Pemakaian Uang Muka - {invoice_number}',
-                        reference=invoice_number,
-                        lines=reversal_lines,
-                        total_debit=deposit_applied,
-                        total_credit=deposit_applied,
-                        created_by=user_id,
-                    )
-                    db.session.add(reversal_pending)
-                    db.session.flush()
-                    post_pending_journal(reversal_pending.id, posted_by_user_id=user_id, reference_type='customer_deposit_usage', reference_id=invoice.id)
-
-        db.session.commit()
-        return jsonify({
-            'message': 'Invoice created',
-            'invoice_id': invoice.id,
-            'deposit_applied': deposit_applied,
-        }), 201
+        result = create_invoice_core(request.get_json(), get_jwt_identity(), commit=True)
+        return jsonify(result), 201
+    except InvoiceInputError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), e.status
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+def create_invoice_core(data, user_id, commit=True):
+    """Buat faktur penjualan/umum + jurnal GL. commit=False dipakai Pusat Impor (savepoint dipegang pemanggil).
+    Kesalahan input -> InvoiceInputError."""
+    
+    invoice_number = generate_number_v2('invoice', 'INV', Invoice, 'invoice_number')
+
+    invoice_date_parsed = datetime.fromisoformat(data['invoice_date'])
+
+    from utils.finance_helpers import is_period_locked
+    invoice_transaction_type = 'sales_invoice' if data.get('invoice_type') == 'sales' else 'purchase_invoice'
+    if is_period_locked(invoice_date_parsed.date() if hasattr(invoice_date_parsed, 'date') else invoice_date_parsed,
+                         transaction_type=invoice_transaction_type):
+        raise InvoiceInputError(f'Periode {invoice_date_parsed.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa membuat transaksi baru di periode ini.')
+
+    invoice = Invoice(
+        invoice_number=invoice_number,
+        invoice_type=data['invoice_type'],
+        invoice_date=invoice_date_parsed,
+        due_date=datetime.fromisoformat(data['due_date']) if data.get('due_date') else None,
+        customer_id=data.get('customer_id'),
+        supplier_id=data.get('supplier_id'),
+        sales_order_id=data.get('sales_order_id'),
+        created_by=user_id
+    )
+    
+    db.session.add(invoice)
+    db.session.flush()
+    
+    subtotal = 0
+    discount_amount = data.get('discount_amount', 0)
+    tax_rate = data.get('tax_rate', 0)
+    items_tax_amount = 0
+    any_item_ppn_resolved = False
+
+    for idx, item_data in enumerate(data.get('items', []), 1):
+        line_total = item_data['quantity'] * item_data['unit_price']
+        line_discount = line_total * (item_data.get('discount_percent', 0) / 100)
+        line_net = line_total - line_discount
+
+        explicit_item_tax = item_data.get('tax_amount', 0)
+        item_tax = explicit_item_tax
+        if not explicit_item_tax and item_data.get('product_id'):
+            # No manual tax_amount given for this line - derive the rate from
+            # the product's own ppn_code (Y/A/B/L = 11%/1.1%/1.2%/12%) instead
+            # of silently leaving it at 0 or applying one flat rate to every
+            # item regardless of its real PPN classification.
+            item_rate = resolve_item_tax_percent(0, product_id=item_data['product_id'])
+            if item_rate:
+                item_tax = line_net * (item_rate / 100)
+                any_item_ppn_resolved = True
+
+        item = InvoiceItem(
+            invoice_id=invoice.id,
+            line_number=idx,
+            product_id=item_data.get('product_id'),
+            description=item_data['description'],
+            quantity=item_data['quantity'],
+            uom=item_data.get('uom'),
+            unit_price=item_data['unit_price'],
+            discount_percent=item_data.get('discount_percent', 0),
+            total_amount=line_net,
+            tax_amount=item_tax
+        )
+        db.session.add(item)
+        subtotal += line_net
+        items_tax_amount += item_tax
+
+    # Total tax: prefer the sum of real per-item PPN (derived from each
+    # item's own ppn_code) whenever at least one line resolved one -
+    # otherwise fall back to the old flat header-level tax_rate, for
+    # invoices with no product-linked items to derive a rate from (e.g.
+    # the manual free-text Invoice form, which has no product selector).
+    if any_item_ppn_resolved:
+        tax_amount = items_tax_amount
+    else:
+        taxable_amount = subtotal - discount_amount
+        tax_amount = taxable_amount * (tax_rate / 100) if tax_rate else 0
+    
+    invoice.subtotal = subtotal
+    invoice.discount_amount = discount_amount
+    # tax_rate is not a field on Invoice model — used only for calculation
+    invoice.tax_amount = tax_amount
+    invoice.total_amount = subtotal - discount_amount + tax_amount
+    invoice.balance_due = invoice.total_amount
+    invoice.payment_terms = data.get('payment_terms')
+    invoice.notes = data.get('notes')
+    db.session.flush()
+
+    # Link Shipping Order(s) (Surat Jalan) this invoice was billed from.
+    # Pola Accurate Online: Surat Jalan dibuat dulu dari SO, lalu
+    # "dilanjutkan" jadi Faktur Penjualan (bisa 1 SJ -> 1 invoice, atau
+    # beberapa SJ digabung jadi 1 invoice). Di sini invoice_id di
+    # ShippingOrder diisi supaya rantai SO -> WO -> SJ -> Invoice bisa
+    # ditelusuri (lihat E2E_TRACKING_READINESS_REPORT.md Gap 2).
+    shipping_order_ids = data.get('shipping_order_ids') or (
+        [data['shipping_order_id']] if data.get('shipping_order_id') else []
+    )
+    if shipping_order_ids and invoice.invoice_type == 'sales':
+        from models.shipping import ShippingOrder
+        shipping_orders = ShippingOrder.query.filter(
+            ShippingOrder.id.in_(shipping_order_ids)
+        ).all()
+        for so_shipment in shipping_orders:
+            if invoice.sales_order_id and so_shipment.sales_order_id and \
+                    so_shipment.sales_order_id != invoice.sales_order_id:
+                raise InvoiceInputError(f'Shipping order {so_shipment.shipping_number} bukan dari sales order yang sama dengan invoice ini')
+            if so_shipment.invoice_id:
+                raise InvoiceInputError(f'Shipping order {so_shipment.shipping_number} sudah terhubung ke invoice lain')
+            so_shipment.invoice_id = invoice.id
+        db.session.flush()
+
+    # GL posting: only for sales invoices (invoice_type == 'sales').
+    # Purchase-side invoices go through routes/purchase_invoice.py's own
+    # dedicated create_purchase_invoice(), which already posts to GL.
+    deposit_applied = 0
+    if invoice.invoice_type == 'sales' and invoice.customer_id:
+        from models.finance import SalesAccountSettings
+        from models.approval_workflow import PendingJournalEntry
+        from utils.finance_helpers import (
+            post_pending_journal, resolve_account, get_or_create_singleton,
+            apply_customer_deposit,
+        )
+
+        journal_lines = []
+
+        # Debit: Piutang Usaha (accounts receivable) for the full invoice
+        # amount. Resolved per-customer via resolve_accounts_receivable()
+        # (Customer.akun_piutang_id override, falls back to the global
+        # 'accounts_receivable' GlobalAccountDefault) - matches Accurate's
+        # actual pattern (confirmed via web search 2026-08-17: piutang
+        # usaha is set per-customer, same as accounts payable is set
+        # per-supplier).
+        from utils.finance_helpers import resolve_accounts_receivable
+        try:
+            ar_account_id = resolve_accounts_receivable(invoice.customer_id)
+        except ValueError as e:
+            raise InvoiceInputError(str(e))
+
+        journal_lines.append({
+            'account_id': ar_account_id,
+            'debit': float(invoice.total_amount),
+            'credit': 0,
+            'description': f'Piutang - {invoice_number}',
+        })
+
+        # Credit: Penjualan (revenue) at GROSS (pre-discount) per line
+        # item's resolved akun_penjualan_id, with discount posted
+        # separately (debit) to the dedicated Diskon Penjualan account
+        # (4-1200) instead of being silently netted into the revenue
+        # line (2026-10-22 fix - the account already existed in
+        # account_config.py's ACCOUNT_CODES['sales_discounts'] mapping
+        # and on the chart of accounts, but nothing ever posted to it,
+        # so Laporan Penjualan's Diskon column had nothing in the GL to
+        # tie out to). Net effect on the journal balance is unchanged;
+        # this only makes the discount visible as its own line.
+        total_line_discount = 0.0
+        for item_data in data.get('items', []):
+            product_id = item_data.get('product_id')
+            line_total = item_data['quantity'] * item_data['unit_price']
+            line_discount = line_total * (item_data.get('discount_percent', 0) / 100)
+            total_line_discount += line_discount
+            sales_account_id = resolve_account('akun_penjualan_id', product_id=product_id)
+            journal_lines.append({
+                'account_id': sales_account_id,
+                'debit': 0,
+                'credit': float(line_total),
+                'description': item_data.get('description') or f'Penjualan - {invoice_number}',
+            })
+        if total_line_discount > 0.01:
+            from utils.account_config import ACCOUNT_CODES
+            discount_account = Account.query.filter_by(account_code=ACCOUNT_CODES['sales_discounts']).first()
+            if discount_account:
+                journal_lines.append({
+                    'account_id': discount_account.id,
+                    'debit': float(total_line_discount),
+                    'credit': 0,
+                    'description': f'Diskon Penjualan - {invoice_number}',
+                })
+
+        # Balance the journal against tax/discount deltas if subtotal of
+        # credit lines doesn't already equal total_amount (tax_amount is
+        # added on top of item lines, so route it to PPN Keluaran if set,
+        # otherwise fold it into the last sales line to keep balance).
+        credit_sum = sum(l['credit'] for l in journal_lines)
+        debit_sum = sum(l['debit'] for l in journal_lines)
+        imbalance = round(debit_sum - credit_sum, 2)
+        if abs(imbalance) > 0.01:
+            from models.finance import TaxAccountSettings
+            tax_settings = get_or_create_singleton(TaxAccountSettings, commit=commit)
+            if tax_settings.akun_ppn_keluaran_id and tax_amount and abs(imbalance - float(tax_amount)) < 0.01:
+                journal_lines.append({
+                    'account_id': tax_settings.akun_ppn_keluaran_id,
+                    'debit': 0,
+                    'credit': float(tax_amount),
+                    'description': f'PPN Keluaran - {invoice_number}',
+                })
+            else:
+                # Fallback: fold any remaining imbalance into the last line
+                for line in reversed(journal_lines):
+                    if line['credit'] > 0:
+                        line['credit'] += imbalance
+                        break
+
+        pending = PendingJournalEntry(
+            workflow_id=None,
+            entry_date=invoice.invoice_date.date() if hasattr(invoice.invoice_date, 'date') else invoice.invoice_date,
+            description=f'Sales Invoice {invoice_number}',
+            reference=invoice_number,
+            lines=journal_lines,
+            total_debit=sum(l['debit'] for l in journal_lines),
+            total_credit=sum(l['credit'] for l in journal_lines),
+            created_by=user_id,
+        )
+        db.session.add(pending)
+        db.session.flush()
+        post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='sales_invoice', reference_id=invoice.id)
+
+        # Auto-apply any available customer deposit balance, then post
+        # the reversal journal (deposit liability -> piutang) for
+        # whatever amount was actually applied.
+        deposit_applied = apply_customer_deposit(invoice)
+        if deposit_applied > 0:
+            sales_settings = get_or_create_singleton(SalesAccountSettings, commit=commit)
+            if sales_settings.akun_uang_muka_pelanggan_id:
+                reversal_lines = [
+                    {
+                        'account_id': sales_settings.akun_uang_muka_pelanggan_id,
+                        'debit': float(deposit_applied),
+                        'credit': 0,
+                        'description': f'Pemakaian uang muka - {invoice_number}',
+                    },
+                    {
+                        'account_id': ar_account_id,
+                        'debit': 0,
+                        'credit': float(deposit_applied),
+                        'description': f'Pemakaian uang muka - {invoice_number}',
+                    },
+                ]
+                reversal_pending = PendingJournalEntry(
+                    workflow_id=None,
+                    entry_date=invoice.invoice_date.date() if hasattr(invoice.invoice_date, 'date') else invoice.invoice_date,
+                    description=f'Pemakaian Uang Muka - {invoice_number}',
+                    reference=invoice_number,
+                    lines=reversal_lines,
+                    total_debit=deposit_applied,
+                    total_credit=deposit_applied,
+                    created_by=user_id,
+                )
+                db.session.add(reversal_pending)
+                db.session.flush()
+                post_pending_journal(reversal_pending.id, posted_by_user_id=user_id, reference_type='customer_deposit_usage', reference_id=invoice.id)
+
+    if commit:
+        db.session.commit()
+    return {
+        'message': 'Invoice created',
+        'invoice_id': invoice.id,
+        'invoice_number': invoice_number,
+        'deposit_applied': deposit_applied,
+    }
 
 @finance_bp.route('/payments', methods=['GET'])
 @jwt_required()
@@ -1433,6 +1442,37 @@ def get_general_ledger():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+def create_manual_journal_core(entry_date, description, reference, lines, user_id):
+    """Validate and post a manual journal (Jurnal Umum) WITHOUT committing. lines: [{account_id, debit, credit,
+    description}]. Raises ValueError with a user-facing message. Returns (entry_number_base, entries)."""
+    from models.approval_workflow import PendingJournalEntry
+    from utils.finance_helpers import post_pending_journal, is_period_locked
+
+    if not entry_date or not description:
+        raise ValueError('entry_date dan description wajib diisi')
+    if len(lines) < 2:
+        raise ValueError('Jurnal butuh minimal 2 baris (debit dan kredit) yang seimbang')
+    if is_period_locked(entry_date, transaction_type='journal_entry'):
+        raise ValueError(f'Periode {entry_date.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa membuat jurnal manual di periode ini.')
+    total_debit = sum(float(l.get('debit', 0) or 0) for l in lines)
+    total_credit = sum(float(l.get('credit', 0) or 0) for l in lines)
+    if round(total_debit, 2) != round(total_credit, 2):
+        raise ValueError(f'Jurnal tidak balance: debit={total_debit}, kredit={total_credit}')
+    if total_debit == 0:
+        raise ValueError('Total debit/kredit tidak boleh 0')
+
+    from models.approval_workflow import PendingJournalEntry
+    pending = PendingJournalEntry(
+        workflow_id=None, entry_date=entry_date, description=description, reference=reference,
+        lines=lines, total_debit=total_debit, total_credit=total_credit, created_by=user_id,
+    )
+    db.session.add(pending)
+    db.session.flush()
+    # reference_type stays 'manual_journal' so PUT/DELETE can tell manual journals from automatic ones.
+    entries = post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='manual_journal', reference_id=pending.id)
+    return (entries[0].entry_number.rsplit('-', 1)[0] if entries else None), entries
+
+
 @finance_bp.route('/general-ledger', methods=['POST'])
 @jwt_required()
 @require_permission('journal.create')
@@ -1448,64 +1488,26 @@ def create_manual_journal_entry():
     a real journal entry is never just one leg.
     """
     try:
-        from models.finance import GlobalAccountDefault
-        from models.approval_workflow import PendingJournalEntry
-        from utils.finance_helpers import post_pending_journal, is_period_locked
-
         data = request.get_json() or {}
         user_id = get_jwt_identity()
-
         entry_date_str = data.get('entry_date')
-        description = data.get('description')
-        reference = data.get('reference_number')
-        lines = data.get('lines', [])
-
-        if not entry_date_str or not description:
-            return jsonify({'error': 'entry_date dan description wajib diisi'}), 400
-
-        if len(lines) < 2:
-            return jsonify({'error': 'Jurnal butuh minimal 2 baris (debit dan kredit) yang seimbang'}), 400
-
-        entry_date_parsed = datetime.strptime(entry_date_str, '%Y-%m-%d').date()
-        if is_period_locked(entry_date_parsed, transaction_type='journal_entry'):
-            return jsonify({'error': f'Periode {entry_date_parsed.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa membuat jurnal manual di periode ini.'}), 400
-
-        total_debit = sum(float(l.get('debit', 0) or 0) for l in lines)
-        total_credit = sum(float(l.get('credit', 0) or 0) for l in lines)
-        if round(total_debit, 2) != round(total_credit, 2):
-            return jsonify({'error': f'Jurnal tidak balance: debit={total_debit}, kredit={total_credit}'}), 400
-        if total_debit == 0:
-            return jsonify({'error': 'Total debit/kredit tidak boleh 0'}), 400
-
-        pending = PendingJournalEntry(
-            workflow_id=None,
-            entry_date=entry_date_parsed,
-            description=description,
-            reference=reference,
-            lines=lines,
-            total_debit=total_debit,
-            total_credit=total_credit,
-            created_by=user_id,
-        )
-        db.session.add(pending)
-        db.session.flush()
-
-        # reference_type intentionally left as the default 'pending_journal'
-        # rather than None, so post_pending_journal()'s own grouping still
-        # works - PUT/DELETE below key off reference being NOT one of the
-        # known automatic-source types instead of requiring exactly None.
-        created_entries = post_pending_journal(
-            pending.id, posted_by_user_id=user_id,
-            reference_type='manual_journal', reference_id=pending.id,
-        )
+        if entry_date_str:
+            entry_date_parsed = datetime.strptime(entry_date_str, '%Y-%m-%d').date()
+        else:
+            entry_date_parsed = None
+        number, created_entries = create_manual_journal_core(
+            entry_date_parsed, data.get('description'), data.get('reference_number'), data.get('lines', []), user_id)
 
         db.session.commit()
         return jsonify({
             'message': 'Jurnal manual berhasil dibuat',
-            'entry_number': created_entries[0].entry_number.rsplit('-', 1)[0] if created_entries else None,
+            'entry_number': number,
             'entries_created': len(created_entries),
         }), 201
 
+    except ValueError as ve:
+        db.session.rollback()
+        return jsonify({'error': str(ve)}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

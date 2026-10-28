@@ -4064,6 +4064,79 @@ def get_schedules():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+def _schedule_dict(s):
+    return {
+        'id': s.id, 'schedule_number': s.schedule_number, 'work_order_id': s.work_order_id, 'machine_id': s.machine_id,
+        'scheduled_start': s.scheduled_start.isoformat(), 'scheduled_end': s.scheduled_end.isoformat(),
+        'shift': s.shift, 'notes': s.notes, 'status': s.status,
+    }
+
+
+@production_bp.route('/schedules/<int:schedule_id>', methods=['GET'])
+@jwt_required()
+@require_permission('production.view')
+def get_schedule(schedule_id):
+    s = db.session.get(ProductionSchedule, schedule_id)
+    if not s:
+        return jsonify({'error': 'Jadwal tidak ditemukan'}), 404
+    return jsonify(_schedule_dict(s)), 200
+
+
+@production_bp.route('/schedules/<int:schedule_id>', methods=['DELETE'])
+@jwt_required()
+@require_permission('production.delete')
+def delete_schedule(schedule_id):
+    """Hapus jadwal yang belum berjalan; jadwal berjalan/selesai dibatalkan lewat status, bukan dihapus."""
+    try:
+        s = db.session.get(ProductionSchedule, schedule_id)
+        if not s:
+            return jsonify({'error': 'Jadwal tidak ditemukan'}), 404
+        if s.status != 'scheduled':
+            return jsonify({'error': 'Hanya jadwal berstatus scheduled yang bisa dihapus'}), 400
+        db.session.delete(s)
+        db.session.commit()
+        return jsonify({'message': 'Schedule deleted'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@production_bp.route('/schedules/<int:schedule_id>', methods=['PUT'])
+@jwt_required()
+@require_permission('production.edit')
+def update_schedule(schedule_id):
+    try:
+        s = db.session.get(ProductionSchedule, schedule_id)
+        if not s:
+            return jsonify({'error': 'Jadwal tidak ditemukan'}), 404
+        if s.status in ('completed', 'cancelled'):
+            return jsonify({'error': 'Jadwal yang sudah selesai/dibatalkan tidak bisa diubah'}), 400
+        data = request.get_json() or {}
+        if data.get('work_order_id') and not db.session.get(WorkOrder, data['work_order_id']):
+            return jsonify({'error': f"Work order {data['work_order_id']} not found"}), 400
+        if data.get('machine_id') and not db.session.get(Machine, data['machine_id']):
+            return jsonify({'error': f"Machine {data['machine_id']} not found"}), 400
+        try:
+            start = datetime.fromisoformat(data['scheduled_start']) if data.get('scheduled_start') else s.scheduled_start
+            end = datetime.fromisoformat(data['scheduled_end']) if data.get('scheduled_end') else s.scheduled_end
+        except (ValueError, TypeError):
+            return jsonify({'error': 'scheduled_start/scheduled_end must be valid ISO datetime strings'}), 400
+        if end <= start:
+            return jsonify({'error': 'Waktu selesai harus setelah waktu mulai'}), 400
+        s.work_order_id = data.get('work_order_id') or s.work_order_id
+        s.machine_id = data.get('machine_id') or s.machine_id
+        s.scheduled_start, s.scheduled_end = start, end
+        if 'shift' in data:
+            s.shift = data['shift']
+        if 'notes' in data:
+            s.notes = data['notes']
+        db.session.commit()
+        return jsonify({'message': 'Schedule updated', **_schedule_dict(s)}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 # ============= ADVANCED SCHEDULING =============
 @production_bp.route('/schedules', methods=['POST'])
 @jwt_required()

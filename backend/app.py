@@ -562,6 +562,9 @@ def create_app(config_class=Config):
     app.register_blueprint(finance_bp, url_prefix='/api/finance')
     app.register_blueprint(finance_reports_bp, url_prefix='/api/finance/reports')
     app.register_blueprint(finance_search_bp, url_prefix='/api/finance/search')
+    from utils.import_center import import_center_bp
+    import imports  # noqa: F401  (mendaftarkan semua jenis impor)
+    app.register_blueprint(import_center_bp, url_prefix='/api/imports')
     app.register_blueprint(finance_payment_import_bp, url_prefix='/api/finance/payment-import')
 
     app.register_blueprint(bank_reconciliation_bp, url_prefix='/api/finance/bank-reconciliation')

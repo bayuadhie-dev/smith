@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 import { PencilIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import SearchableSelect from '../../components/SearchableSelect';
 import {
@@ -12,7 +13,6 @@ import {
   useLazyGetProductUsageQuery,
   useLazyGetMaterialUsageQuery,
   useGetChartOfAccountsQuery,
-  useImportMasterDataItemsMutation,
   useGetUomUnitsQuery,
   useCreateUomUnitMutation,
   useGetUomConversionsQuery,
@@ -81,10 +81,6 @@ export default function MasterDataBarangTab() {
   const [usage, setUsage] = useState<{ table: string; column: string; count: number; sample_ids: number[] }[] | null>(null);
   const [loadingUsage, setLoadingUsage] = useState(false);
 
-  const [importItems, { isLoading: isImporting }] = useImportMasterDataItemsMutation();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [importResult, setImportResult] = useState<any>(null);
-  const [showImportResult, setShowImportResult] = useState(false);
 
   const accountOptions = useMemo(
     () => (accountsData?.accounts || []).map((a: any) => ({ id: a.id, code: a.code, name: a.name })),
@@ -208,24 +204,6 @@ export default function MasterDataBarangTab() {
   const isLoading = loadingProducts || loadingMaterials;
   const isWip = editingRow?.source === 'product' && form.material_type === 'wip';
 
-  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-      const res = await importItems(formData).unwrap();
-      setImportResult(res);
-      setShowImportResult(true);
-      refetchProducts();
-      refetchMaterials();
-      toast.success('Import selesai');
-    } catch (err: any) {
-      toast.error(err?.data?.error || 'Gagal mengimpor file');
-    }
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center gap-4 flex-wrap">
@@ -236,21 +214,10 @@ export default function MasterDataBarangTab() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <input
-          type="file"
-          ref={fileInputRef}
-          accept=".xlsx,.xls"
-          className="hidden"
-          onChange={handleFileSelected}
-        />
-        <button
-          className="btn-secondary inline-flex items-center gap-2 whitespace-nowrap"
-          disabled={isImporting}
-          onClick={() => fileInputRef.current?.click()}
-        >
+        <Link to="/app/imports?kind=item" className="btn-secondary inline-flex items-center gap-2 whitespace-nowrap" title="Buka Pusat Impor">
           <ArrowUpTrayIcon className="h-5 w-5" />
-          {isImporting ? 'Mengimpor...' : 'Import Excel'}
-        </button>
+          Import Excel
+        </Link>
         <select className="input-field w-auto" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as any)}>
           <option value="all">Semua Tipe</option>
           <option value="product">Product</option>
@@ -577,53 +544,6 @@ export default function MasterDataBarangTab() {
         </div>
       )}
 
-      {showImportResult && importResult && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="card w-full max-w-lg p-6 space-y-4">
-            <h2 className="text-lg font-bold">Hasil Import Excel</h2>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="card p-3">
-                <div className="text-2xl font-bold text-primary-600">{importResult.created_product}</div>
-                <div className="text-gray-500">Product dibuat</div>
-              </div>
-              <div className="card p-3">
-                <div className="text-2xl font-bold text-primary-600">{importResult.created_material}</div>
-                <div className="text-gray-500">Material dibuat</div>
-              </div>
-              <div className="card p-3">
-                <div className="text-2xl font-bold text-gray-500">{importResult.skipped_exists}</div>
-                <div className="text-gray-500">Dilewati (sudah ada)</div>
-              </div>
-              <div className="card p-3">
-                <div className="text-2xl font-bold text-gray-500">{importResult.skipped_category}</div>
-                <div className="text-gray-500">Dilewati (kategori)</div>
-              </div>
-            </div>
-
-            {importResult.error_count > 0 && (
-              <div>
-                <p className="text-sm font-medium text-red-600">{importResult.error_count} error:</p>
-                <ul className="text-xs text-gray-500 max-h-24 overflow-y-auto list-disc pl-4">
-                  {importResult.errors.map((e: string, i: number) => <li key={i}>{e}</li>)}
-                </ul>
-              </div>
-            )}
-
-            {importResult.missing_gl_code_count > 0 && (
-              <div>
-                <p className="text-sm font-medium text-amber-600">
-                  {importResult.missing_gl_code_count} kode akun tidak ditemukan di Chart of Accounts:
-                </p>
-                <p className="text-xs text-gray-500">{importResult.missing_gl_codes.join(', ')}</p>
-              </div>
-            )}
-
-            <div className="flex justify-end pt-2">
-              <button className="btn-primary" onClick={() => setShowImportResult(false)}>Tutup</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

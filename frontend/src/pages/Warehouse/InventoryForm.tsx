@@ -161,7 +161,7 @@ const InventoryForm: React.FC = () => {
         navigate('/app/warehouse/inventory');
       } else {
         const errorData = await response.json();
-        setError(errorData.message || 'Failed to save inventory item');
+        setError(errorData.message || errorData.error || 'Failed to save inventory item');
       }
     } catch (error) {
       setError('Network error occurred');

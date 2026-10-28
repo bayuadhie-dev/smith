@@ -596,7 +596,7 @@ def post_payroll_journal(period, records, posted_by_user_id=None):
     )
 
 
-def get_or_create_singleton(model_class):
+def get_or_create_singleton(model_class, commit=True):
     """
     Get the single row of a "single-row config table" (e.g. SalesAccountSettings,
     TaxAccountSettings), creating it with all-default values if it doesn't exist
@@ -607,7 +607,10 @@ def get_or_create_singleton(model_class):
     if not row:
         row = model_class()
         db.session.add(row)
-        db.session.commit()
+        if commit:
+            db.session.commit()
+        else:
+            db.session.flush()
     return row
 
 

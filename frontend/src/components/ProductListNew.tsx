@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { Link } from 'react-router-dom';
 import { confirmDialog, showError, showSuccess } from './ui';
 import {
   ArrowDownTrayIcon,
@@ -168,35 +169,6 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
     }
   };
 
-  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const response = await fetch('/api/products-new/import/excel', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (response.ok) {
-        showSuccess('Import berhasil!');
-        fetchProducts();
-      } else {
-        const error = await response.json();
-        showError('Import gagal: ' + error.error);
-      }
-    } catch (error) {
-      console.error('Error importing:', error);
-      showError('Terjadi kesalahan saat import');
-    }
-
-    // Reset file input
-    event.target.value = '';
-  };
-
   const formatNumber = (num: string | number | undefined) => {
     if (num === undefined || num === null || num === '') return '-';
     if (num === 'MANUAL') return 'MANUAL';
@@ -229,16 +201,10 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
             <ArrowDownTrayIcon className="w-4 h-4" />
             <span>{t('common.export')}</span>
           </button>
-          <label className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2 cursor-pointer">
+          <Link to="/app/imports?kind=item" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2" title="Buka Pusat Impor">
             <ArrowUpTrayIcon className="w-4 h-4" />
             <span>{t('common.import')}</span>
-            <input
-              type="file"
-              accept=".xlsx,.xls"
-              onChange={handleImport}
-              className="hidden"
-            />
-          </label>
+          </Link>
           <button
             onClick={onAdd}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2"

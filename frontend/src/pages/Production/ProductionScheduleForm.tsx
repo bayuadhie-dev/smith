@@ -190,7 +190,7 @@ const ProductionScheduleForm: React.FC = () => {
         navigate('/app/production/schedules');
       } else {
         const errorData = await response.json();
-        setError(errorData.message || 'Failed to save schedule');
+        setError(errorData.message || errorData.error || 'Failed to save schedule');
       }
     } catch (error) {
       setError('Network error occurred');

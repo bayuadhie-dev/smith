@@ -23,68 +23,15 @@ from app import create_app
 from models import db
 from models.finance import Account, CompanyAccountSettings, GlobalAccountDefault, TaxAccountSettings
 from models.uom import UnitOfMeasure
-
-TYPE_MAP = {   # kode "Tipe Akun" ekspor Accurate -> (account_type, normal_balance)
-    'BANK': ('asset', 'debit'), 'AREC': ('asset', 'debit'), 'OCAS': ('asset', 'debit'), 'INTR': ('asset', 'debit'),
-    'FASS': ('asset', 'debit'), 'OASS': ('asset', 'debit'), 'DEPR': ('asset', 'credit'),
-    'APAY': ('liability', 'credit'), 'OCLY': ('liability', 'credit'), 'LTLY': ('liability', 'credit'),
-    'EQTY': ('equity', 'credit'), 'REVE': ('revenue', 'credit'), 'OINC': ('revenue', 'credit'),
-    'COGS': ('expense', 'debit'), 'EXPS': ('expense', 'debit'), 'OEXP': ('expense', 'debit'),
-}
-ASSET_TYPE_MAP = {'MESIN & PERALATAN': 'machinery', 'SEWA GUNA USAHA': 'machinery', 'INVENTARIS PABRIK': 'equipment',
-                  'INVENTARIS KANTOR': 'furniture', 'KENDARAAN': 'vehicle'}
-
+from utils.master_import_helpers import (  # noqa: F401  dipakai bersama Pusat Impor (imports/master.py)
+    ASSET_TYPE_MAP, TYPE_MAP, asset_fields, clean, customer_fields, digits_or_none, number, parse_date, parse_terms_days,
+    supplier_fields)
 
 def sheet_rows(path):
     ws = openpyxl.load_workbook(path, data_only=True).worksheets[0]
     rows = list(ws.iter_rows(values_only=True))
     head = [str(h).strip() if h is not None else '' for h in rows[0]]
     return head, rows[1:]
-
-
-def clean(v, maxlen=None):
-    if v is None:
-        return None
-    s = str(v).strip()
-    if s in ('', '-', '--'):
-        return None
-    return s[:maxlen] if maxlen else s
-
-
-def digits_or_none(v):
-    s = clean(v)
-    return None if (s is None or not s.strip('0 ')) else s
-
-
-def number(v, default=0.0):
-    try:
-        return float(v) if v not in (None, '') else default
-    except (TypeError, ValueError):
-        return default
-
-
-def parse_terms_days(v):
-    s = (clean(v) or '').lower()
-    if not s or 'c.o.d' in s or s in ('cod', 'tunai'):
-        return 0
-    m = re.search(r'(\d+)', s)
-    return int(m.group(1)) if m else 30
-
-
-def parse_date(v):
-    if isinstance(v, datetime):
-        return v.date()
-    if isinstance(v, date):
-        return v
-    s = clean(v)
-    if not s:
-        return None
-    for fmt in ('%d/%m/%Y', '%Y-%m-%d', '%d-%m-%Y'):
-        try:
-            return datetime.strptime(s[:10], fmt).date()
-        except ValueError:
-            continue
-    return None
 
 
 class Report:
@@ -224,21 +171,9 @@ def import_suppliers(path, rep):
             skipped += 1
             continue
         seen.add(code)
-        notes = [clean(r[ix['Catatan']])]
-        cur = clean(r[ix['Mata Uang Utama']])
-        if cur and cur != 'IDR':
-            foreign += 1
-            notes.append(f'Mata uang utama: {cur}')
-        akun = clean(r[ix['Akun Utang']])
-        akun = akun.split(',')[0].strip() if akun else None
-        db.session.add(Supplier(
-            code=code, company_name=name, contact_person=clean(r[ix['Kontak']], 200), email=clean(r[ix['Email']], 120),
-            phone=clean(r[ix['No. Telp. Bisnis']], 50), mobile=clean(r[ix['Handphone']], 50), fax=clean(r[ix['Faximili']], 50),
-            website=clean(r[ix['Website']], 200), tax_id=digits_or_none(r[ix['NPWP']]) and clean(r[ix['NPWP']], 100),
-            address=clean(r[ix['Alamat Pembayaran']]), city=clean(r[ix['Kota']], 100), state=clean(r[ix['Provinsi']], 100),
-            country=clean(r[ix['Negara']], 100), postal_code=clean(r[ix['Kode Pos']], 20),
-            payment_terms_days=parse_terms_days(r[ix['Syarat Pembayaran']]), supplier_type=clean(r[ix['Kategori']], 50),
-            akun_hutang_usaha_id=accs.get(akun), notes=' | '.join(n for n in notes if n) or None, is_active=True))
+        fields, is_foreign = supplier_fields(lambda h: r[ix[h]], accs)
+        foreign += is_foreign
+        db.session.add(Supplier(**fields))
         created += 1
     db.session.flush()
     rep.add('pemasok', f'{created} pemasok baru ({skipped} dilewati: kode ganda/sudah ada; {foreign} bermata uang asing dicatat di Catatan)')
@@ -260,26 +195,11 @@ def import_customers(path, rep):
             skipped += 1
             continue
         seen.add(code)
-        notes = [clean(r[ix['Catatan']])]
-        cur = clean(r[ix['Mata Uang Utama']])
-        if cur and cur != 'IDR':
-            foreign += 1
-            notes.append(f'Mata uang utama: {cur}')
-        akun = clean(r[ix['Akun Piutang']])
-        akun = akun.split(',')[0].strip() if akun else None
-        ship = clean(r[ix['Alamat Pengiriman']])
-        if not ship:
+        fields, is_foreign = customer_fields(lambda h: r[ix[h]], accs)
+        foreign += is_foreign
+        if not fields['shipping_address']:
             no_ship += 1
-        db.session.add(Customer(
-            code=code, company_name=name, contact_person=clean(r[ix['Kontak']], 200), email=clean(r[ix['Email']], 120),
-            phone=clean(r[ix['No. Telp. Bisnis']], 50), mobile=clean(r[ix['Handphone']], 50), fax=clean(r[ix['Faximili']], 50),
-            website=clean(r[ix['Website']], 200),
-            tax_id=clean(r[ix['Nomor Wajib Pajak']], 100) if digits_or_none(r[ix['Nomor Wajib Pajak']]) else None,
-            billing_address=clean(r[ix['Alamat Penagihan']]), billing_city=clean(r[ix['Kota']], 100), billing_state=clean(r[ix['Provinsi']], 100),
-            billing_country=clean(r[ix['Negara']], 100), billing_postal_code=clean(r[ix['Kode Pos']], 20),
-            shipping_address=ship, customer_type=clean(r[ix['Kategori']], 50),
-            payment_terms_days=parse_terms_days(r[ix['Syarat Pembayaran']]), credit_limit=number(r[ix['Jumlah Limit Piutang']]),
-            akun_piutang_id=accs.get(akun), notes=' | '.join(n for n in notes if n) or None, is_active=True))
+        db.session.add(Customer(**fields))
         created += 1
     db.session.flush()
     rep.add('pelanggan', f'{created} pelanggan baru ({skipped} dilewati; {foreign} bermata uang asing dicatat di Catatan; {no_ship} tanpa alamat pengiriman)')
@@ -301,20 +221,7 @@ def import_assets(path, rep):
             rep.warn('aset', f'{code}: kode ganda/sudah ada, dilewati')
             continue
         seen.add(code)
-        kategori = clean(r[ix['Kategori Aset']]) or ''
-        years = int(number(r[ix['Umur Aset Tahun']]))
-        months = int(number(r[ix['Umur Aset Bulan']]))
-        specs = {'akun_aset': clean(r[ix['Akun Aset']]), 'akun_akumulasi_penyusutan': clean(r[ix['Akun Akumulasi Penyusutan']]),
-                 'akun_beban_penyusutan': clean(r[ix['Akun Beban Penyusutan']]), 'kategori_pajak': clean(r[ix['Kategori Pajak']]),
-                 'kuantitas': number(r[ix['Kuantitas']], 1), 'aset_tidak_berwujud': clean(r[ix['Aset Tidak Berwujud']]),
-                 'kode_accurate': clean(r[ix['Kode #']])}
-        db.session.add(Asset(
-            asset_code=code, asset_name=name, asset_type=ASSET_TYPE_MAP.get(kategori.upper(), 'equipment'), category=kategori.title() or None,
-            description=clean(r[ix['Catatan']]), status='active', purchase_date=parse_date(r[ix['Tanggal Beli']]),
-            commissioning_date=parse_date(r[ix['Tanggal Pakai']]), purchase_cost=number(r[ix['Jumlah']]),
-            location=clean(r[ix['Lokasi Aset']], 200), depreciation_method='straight_line',
-            useful_life_years=years + (1 if months >= 6 else 0) if years or months else None, salvage_value=number(r[ix['Nilai Sisa']]),
-            accumulated_depreciation=0, is_production_machine=False, specifications=json.dumps({k: v for k, v in specs.items() if v not in (None, '')})))
+        db.session.add(Asset(**asset_fields(lambda h: r[ix[h]])))
         created += 1
     db.session.flush()
     # Akun default penyusutan/pelepasan dari akun yang dipakai aset di file Fengsheng sendiri.

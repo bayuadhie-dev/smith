@@ -418,6 +418,75 @@ def _apply_item_schedules(item, schedules):
     item.schedules[:] = [PurchaseOrderItemSchedule(expected_date=w, quantity=q, notes=n) for w, q, n in rows]
 
 
+def _po_source_list_errors(data, supplier_id):
+    """Pelanggaran source list (material dengan ApprovedVendor aktif hanya boleh dibeli dari supplier terdaftar)."""
+    from models.purchasing import ApprovedVendor
+    source_list_errors = []
+    for item_data in data.get('items', []):
+        material_id = item_data.get('material_id')
+        if not material_id:
+            continue
+        has_source_list = ApprovedVendor.query.filter_by(material_id=material_id, is_active=True).first()
+        if has_source_list:
+            approved = ApprovedVendor.query.filter_by(
+                material_id=material_id, supplier_id=supplier_id, is_active=True
+            ).first()
+            if not approved:
+                material = db.session.get(Material, material_id)
+                source_list_errors.append(
+                    f"{material.name if material else f'Material #{material_id}'} tidak ada di source list supplier ini"
+                )
+    return source_list_errors
+
+
+def create_purchase_order_core(data, user_id, po_number=None):
+    """Buat PurchaseOrder draft + item (+ jadwal kedatangan) + total, TANPA commit (dipakai endpoint dan Pusat Impor). ValueError bila mata uang tidak valid."""
+    po_number = po_number or generate_number_v2('purchase_order', 'PO', PurchaseOrder, 'po_number')
+
+    currency = _validate_po_currency(data.get('currency'))
+
+    po = PurchaseOrder(
+        po_number=po_number,
+        supplier_id=data['supplier_id'],
+        order_date=datetime.fromisoformat(data['order_date']),
+        required_date=datetime.fromisoformat(data['required_date']) if data.get('required_date') else None,
+        status='draft',
+        payment_terms=data.get('payment_terms'),
+        notes=data.get('notes'),
+        # exchange_rate is never taken from the client; it stays 1 until
+        # submit_for_approval locks the real rate.
+        currency=currency,
+        exchange_rate=1,
+        created_by=user_id
+    )
+    
+    db.session.add(po)
+    db.session.flush()
+    
+    subtotal = 0
+    for idx, item_data in enumerate(data.get('items', []), 1):
+        item_total = item_data['quantity'] * item_data['unit_price']
+        
+        item = PurchaseOrderItem(
+            po_id=po.id,
+            line_number=idx,
+            product_id=item_data.get('product_id'),
+            material_id=item_data.get('material_id'),
+            quantity=item_data['quantity'],
+            uom=item_data.get('uom', 'PCS'),  # Default to PCS if not provided
+            unit_price=item_data['unit_price'],
+            total_price=item_total
+        )
+        db.session.add(item)
+        if item_data.get('schedules'):
+            _apply_item_schedules(item, item_data['schedules'])
+        subtotal += item_total
+    
+    po.subtotal = subtotal
+    po.total_amount = _calculate_po_total(po, subtotal)
+    return po
+
+
 @purchasing_bp.route('/purchase-orders', methods=['POST'])
 @jwt_required()
 @require_permission('purchase_orders.create')
@@ -443,71 +512,12 @@ def create_purchase_order():
         # active ApprovedVendor row restricts which supplier a PO for it can
         # use; a material with none is unrestricted (opt-in, never
         # retroactively blocks materials nobody has configured yet).
-        from models.purchasing import ApprovedVendor
-        source_list_errors = []
-        for item_data in data.get('items', []):
-            material_id = item_data.get('material_id')
-            if not material_id:
-                continue
-            has_source_list = ApprovedVendor.query.filter_by(material_id=material_id, is_active=True).first()
-            if has_source_list:
-                approved = ApprovedVendor.query.filter_by(
-                    material_id=material_id, supplier_id=supplier_id, is_active=True
-                ).first()
-                if not approved:
-                    material = db.session.get(Material, material_id)
-                    source_list_errors.append(
-                        f"{material.name if material else f'Material #{material_id}'} tidak ada di source list supplier ini"
-                    )
+        source_list_errors = _po_source_list_errors(data, supplier_id)
         if source_list_errors:
             return jsonify({'error': 'Source list violation', 'details': source_list_errors}), 400
 
-        po_number = generate_number_v2('purchase_order', 'PO', PurchaseOrder, 'po_number')
-
-        try:
-            currency = _validate_po_currency(data.get('currency'))
-        except ValueError as ve:
-            return jsonify({'error': str(ve)}), 400
-
-        po = PurchaseOrder(
-            po_number=po_number,
-            supplier_id=data['supplier_id'],
-            order_date=datetime.fromisoformat(data['order_date']),
-            required_date=datetime.fromisoformat(data['required_date']) if data.get('required_date') else None,
-            status='draft',
-            payment_terms=data.get('payment_terms'),
-            notes=data.get('notes'),
-            # exchange_rate is never taken from the client; it stays 1 until
-            # submit_for_approval locks the real rate.
-            currency=currency,
-            exchange_rate=1,
-            created_by=user_id
-        )
-        
-        db.session.add(po)
-        db.session.flush()
-        
-        subtotal = 0
-        for idx, item_data in enumerate(data.get('items', []), 1):
-            item_total = item_data['quantity'] * item_data['unit_price']
-            
-            item = PurchaseOrderItem(
-                po_id=po.id,
-                line_number=idx,
-                product_id=item_data.get('product_id'),
-                material_id=item_data.get('material_id'),
-                quantity=item_data['quantity'],
-                uom=item_data.get('uom', 'PCS'),  # Default to PCS if not provided
-                unit_price=item_data['unit_price'],
-                total_price=item_total
-            )
-            db.session.add(item)
-            if item_data.get('schedules'):
-                _apply_item_schedules(item, item_data['schedules'])
-            subtotal += item_total
-        
-        po.subtotal = subtotal
-        po.total_amount = _calculate_po_total(po, subtotal)
+        po = create_purchase_order_core(data, user_id)
+        po_number = po.po_number
 
         db.session.commit()
 

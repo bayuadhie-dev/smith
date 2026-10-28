@@ -445,6 +445,8 @@ def record_attendance():
             clock_out=datetime.fromisoformat(data['clock_out']) if data.get('clock_out') else None,
             status=data.get('status', 'present'),
             worked_hours=data.get('worked_hours', 0),
+            overtime_hours=data.get('overtime_hours', 0),
+            notes=data.get('notes'),
             late_hours=late_hours
         )
         
@@ -454,6 +456,68 @@ def record_attendance():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+def _attendance_detail(a):
+    return {
+        'id': a.id, 'employee_id': a.employee_id,
+        'attendance_date': a.attendance_date.isoformat() if a.attendance_date else None,
+        'shift_id': a.shift_id,
+        'clock_in': a.clock_in.isoformat() if a.clock_in else None,
+        'clock_out': a.clock_out.isoformat() if a.clock_out else None,
+        'status': a.status, 'worked_hours': float(a.worked_hours or 0),
+        'overtime_hours': float(a.overtime_hours or 0), 'late_hours': float(a.late_hours or 0),
+        'notes': a.notes,
+    }
+
+
+@hr_bp.route('/attendance/<int:attendance_id>', methods=['GET'])
+@jwt_required()
+@require_permission('attendance.view')
+def get_attendance_detail(attendance_id):
+    a = db.session.get(Attendance, attendance_id)
+    if not a:
+        return jsonify({'error': 'Data absensi tidak ditemukan'}), 404
+    return jsonify(_attendance_detail(a)), 200
+
+
+@hr_bp.route('/attendance/<int:attendance_id>', methods=['PUT'])
+@jwt_required()
+@require_permission('attendance.edit')
+def update_attendance(attendance_id):
+    try:
+        a = db.session.get(Attendance, attendance_id)
+        if not a:
+            return jsonify({'error': 'Data absensi tidak ditemukan'}), 404
+        data = request.get_json() or {}
+        if data.get('attendance_date'):
+            a.attendance_date = datetime.fromisoformat(str(data['attendance_date'])[:10]).date()
+        if 'employee_id' in data and data['employee_id']:
+            a.employee_id = data['employee_id']
+        if 'shift_id' in data:
+            a.shift_id = data['shift_id'] or None
+        if 'clock_in' in data:
+            a.clock_in = datetime.fromisoformat(data['clock_in']) if data['clock_in'] else None
+        if 'clock_out' in data:
+            a.clock_out = datetime.fromisoformat(data['clock_out']) if data['clock_out'] else None
+        for f in ('status', 'worked_hours', 'overtime_hours', 'notes'):
+            if f in data:
+                setattr(a, f, data[f])
+        a.late_hours = 0
+        if a.shift_id and a.clock_in:
+            shift = db.session.get(ShiftSchedule, a.shift_id)
+            if shift:
+                start = datetime.combine(a.attendance_date, shift.start_time)
+                if a.clock_in > start:
+                    a.late_hours = (a.clock_in - start).total_seconds() / 3600
+        db.session.commit()
+        return jsonify({'message': 'Absensi diperbarui', 'attendance': _attendance_detail(a)}), 200
+    except ValueError as ve:
+        db.session.rollback()
+        return jsonify({'error': str(ve)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 
 @hr_bp.route('/leaves', methods=['GET'])
 @jwt_required()
@@ -516,6 +580,57 @@ def create_leave():
         db.session.add(leave)
         db.session.commit()
         return jsonify({'message': 'Leave request created', 'leave_id': leave.id}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+def _leave_detail(l):
+    return {
+        'id': l.id, 'leave_number': l.leave_number, 'employee_id': l.employee_id,
+        'leave_type': l.leave_type,
+        'start_date': l.start_date.isoformat(), 'end_date': l.end_date.isoformat(),
+        'total_days': l.total_days, 'reason': l.reason, 'status': l.status, 'notes': l.notes,
+    }
+
+
+@hr_bp.route('/leaves/<int:leave_id>', methods=['GET'])
+@jwt_required()
+@require_permission('leave.view')
+def get_leave_detail(leave_id):
+    l = db.session.get(Leave, leave_id)
+    if not l:
+        return jsonify({'error': 'Pengajuan cuti tidak ditemukan'}), 404
+    return jsonify(_leave_detail(l)), 200
+
+
+@hr_bp.route('/leaves/<int:leave_id>', methods=['PUT'])
+@jwt_required()
+@require_permission('leave.edit')
+def update_leave(leave_id):
+    """Edit isian pengajuan cuti. Status/persetujuan hanya lewat endpoint approve/reject."""
+    try:
+        l = db.session.get(Leave, leave_id)
+        if not l:
+            return jsonify({'error': 'Pengajuan cuti tidak ditemukan'}), 404
+        if l.status != 'pending':
+            return jsonify({'error': 'Pengajuan cuti yang sudah diproses tidak bisa diubah'}), 400
+        data = request.get_json() or {}
+        for f in ('leave_type', 'total_days', 'reason', 'notes'):
+            if f in data:
+                setattr(l, f, data[f])
+        if 'employee_id' in data and data['employee_id']:
+            l.employee_id = data['employee_id']
+        for f in ('start_date', 'end_date'):
+            if data.get(f):
+                setattr(l, f, datetime.fromisoformat(str(data[f])[:10]).date())
+        if l.end_date < l.start_date:
+            db.session.rollback()
+            return jsonify({'error': 'Tanggal selesai tidak boleh sebelum tanggal mulai'}), 400
+        db.session.commit()
+        return jsonify({'message': 'Pengajuan cuti diperbarui', 'leave': _leave_detail(l)}), 200
+    except ValueError as ve:
+        db.session.rollback()
+        return jsonify({'error': str(ve)}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

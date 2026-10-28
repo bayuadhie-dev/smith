@@ -660,6 +660,258 @@ def update_tracking_status(tracking_number):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+
+# ---------------------------------------------------------------------------
+# Reports, carriers, status update, proof of delivery
+# ---------------------------------------------------------------------------
+STATUS_COLORS = {'preparing': '#F59E0B', 'packed': '#3B82F6', 'shipped': '#8B5CF6', 'in_transit': '#6366F1',
+                 'delivered': '#10B981', 'cancelled': '#EF4444'}
+# The status buttons on the order page use pending/confirmed; map them onto the real model statuses.
+STATUS_ALIASES = {'pending': 'preparing', 'confirmed': 'packed'}
+# Moving to shipped happens in the ship workflow (it deducts stock and posts the delivery journal), never here.
+ALLOWED_STATUS_MOVES = {
+    'preparing': {'packed', 'cancelled'},
+    'packed': {'in_transit', 'cancelled'},
+    'shipped': {'in_transit', 'delivered'},
+    'in_transit': {'delivered'},
+}
+
+
+def _parse_date_arg(name):
+    v = request.args.get(name)
+    if not v:
+        return None
+    try:
+        return datetime.fromisoformat(v[:10]).date()
+    except ValueError:
+        raise ValueError(f'{name} tidak valid')
+
+
+def _report_orders():
+    q = ShippingOrder.query
+    d_from, d_to = _parse_date_arg('date_from'), _parse_date_arg('date_to')
+    if d_from:
+        q = q.filter(ShippingOrder.shipping_date >= d_from)
+    if d_to:
+        q = q.filter(ShippingOrder.shipping_date <= d_to)
+    if request.args.get('customer_id', type=int):
+        q = q.filter(ShippingOrder.customer_id == request.args.get('customer_id', type=int))
+    if request.args.get('status'):
+        q = q.filter(ShippingOrder.status == request.args['status'])
+    if request.args.get('shipping_method'):
+        q = q.filter(ShippingOrder.delivery_method == request.args['shipping_method'])
+    carrier = request.args.get('carrier')
+    if carrier:
+        q = q.join(LogisticsProvider, LogisticsProvider.id == ShippingOrder.logistics_provider_id).filter(LogisticsProvider.company_name == carrier)
+    return q.order_by(ShippingOrder.shipping_date.desc(), ShippingOrder.id.desc()).all()
+
+
+def _order_value(order):
+    from models import SalesOrderItem
+    total = 0.0
+    for it in order.items or []:
+        price = None
+        if order.sales_order_id:
+            soi = SalesOrderItem.query.filter_by(sales_order_id=order.sales_order_id, product_id=it.product_id).first()
+            price = float(soi.unit_price) if soi and soi.unit_price is not None else None
+        if price is None:
+            price = float(it.product.price or 0) if it.product else 0.0
+        total += float(it.quantity or 0) * price
+    return total
+
+
+def _build_report(orders):
+    from collections import Counter, defaultdict
+    delivered = [o for o in orders if o.status == 'delivered' and o.actual_delivery_date]
+    days = [(o.actual_delivery_date - o.shipping_date).days for o in delivered]
+    judged = [o for o in delivered if o.expected_delivery_date]
+    on_time = [o for o in judged if o.actual_delivery_date <= o.expected_delivery_date]
+    damaged = 0
+    if orders:
+        damaged = db.session.query(DeliveryTracking.shipping_id).filter(
+            DeliveryTracking.shipping_id.in_([o.id for o in orders]), DeliveryTracking.status.in_(['damaged', 'returned'])
+        ).distinct().count()
+    status_count = Counter(o.status for o in orders)
+    method_count = Counter(o.delivery_method or '-' for o in orders)
+    perf = defaultdict(lambda: [0, 0])
+    for o in judged:
+        perf[o.shipping_date.isoformat()][0 if o.actual_delivery_date <= o.expected_delivery_date else 1] += 1
+    cost = defaultdict(float)
+    for o in orders:
+        cost[o.shipping_date.strftime('%Y-%m')] += float(o.shipping_cost or 0)
+    carriers = defaultdict(lambda: [0, 0, 0])
+    for o in orders:
+        name = o.logistics_provider.company_name if o.logistics_provider else '-'
+        carriers[name][0] += 1
+    for o in judged:
+        name = o.logistics_provider.company_name if o.logistics_provider else '-'
+        carriers[name][1] += 1
+        carriers[name][2] += 1 if o.actual_delivery_date <= o.expected_delivery_date else 0
+    return {
+        'summary': {
+            'total_shipments': len(orders),
+            'total_value': round(sum(_order_value(o) for o in orders), 2),
+            'total_weight': round(sum(float(o.total_weight or 0) for o in orders), 3),
+            'average_delivery_time': round(sum(days) / len(days), 1) if days else 0,
+            'on_time_delivery_rate': round(len(on_time) * 100 / len(judged), 1) if judged else 0,
+            'damaged_shipments': damaged,
+        },
+        'charts': {
+            'shipments_by_status': [{'name': k, 'value': v, 'color': STATUS_COLORS.get(k, '#9CA3AF')} for k, v in status_count.items()],
+            'shipments_by_method': [{'name': k, 'value': v} for k, v in method_count.items()],
+            'delivery_performance': [{'date': d, 'on_time': v[0], 'delayed': v[1]} for d, v in sorted(perf.items())],
+            'cost_analysis': [{'month': m, 'shipping_cost': c, 'insurance_cost': 0} for m, c in sorted(cost.items())],
+            'carrier_performance': [{'carrier': k, 'shipments': v[0], 'on_time_rate': round(v[2] * 100 / v[1], 1) if v[1] else 0} for k, v in carriers.items()],
+        },
+        'details': [{
+            'shipping_number': o.shipping_number,
+            'customer_name': o.customer.company_name if o.customer else '',
+            'shipping_date': o.shipping_date.isoformat(),
+            'delivery_date': o.actual_delivery_date.isoformat() if o.actual_delivery_date else '',
+            'status': o.status,
+            'shipping_cost': float(o.shipping_cost or 0),
+            'carrier': o.logistics_provider.company_name if o.logistics_provider else '',
+        } for o in orders],
+    }
+
+
+@shipping_bp.route('/carriers', methods=['GET'])
+@jwt_required()
+@require_permission('shipping.view')
+def get_carriers():
+    names = [p.company_name for p in LogisticsProvider.query.filter_by(is_active=True).order_by(LogisticsProvider.company_name).all()]
+    return jsonify({'carriers': names}), 200
+
+
+@shipping_bp.route('/reports', methods=['GET'])
+@jwt_required()
+@require_permission('shipping.view')
+def shipping_report():
+    try:
+        return jsonify(_build_report(_report_orders())), 200
+    except ValueError as ve:
+        return jsonify({'error': str(ve)}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@shipping_bp.route('/reports/export', methods=['GET'])
+@jwt_required()
+@require_permission('shipping.view')
+def export_shipping_report():
+    import io
+    from flask import send_file
+    try:
+        rep = _build_report(_report_orders())
+    except ValueError as ve:
+        return jsonify({'error': str(ve)}), 400
+    fmt = request.args.get('format', 'excel')
+    sm = rep['summary']
+    summary_rows = [('Total Pengiriman', sm['total_shipments']), ('Total Nilai', sm['total_value']), ('Total Berat (kg)', sm['total_weight']),
+                    ('Rata-rata Waktu Kirim (hari)', sm['average_delivery_time']), ('Tepat Waktu (%)', sm['on_time_delivery_rate']),
+                    ('Pengiriman Rusak/Retur', sm['damaged_shipments'])]
+    head = ['No. Pengiriman', 'Pelanggan', 'Tgl Kirim', 'Tgl Terima', 'Status', 'Biaya Kirim', 'Ekspedisi']
+    rows = [[d['shipping_number'], d['customer_name'], d['shipping_date'], d['delivery_date'], d['status'], d['shipping_cost'], d['carrier']] for d in rep['details']]
+    buf = io.BytesIO()
+    if fmt == 'pdf':
+        from reportlab.lib.pagesizes import A4, landscape
+        from reportlab.lib import colors
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        doc = SimpleDocTemplate(buf, pagesize=landscape(A4), leftMargin=24, rightMargin=24, topMargin=24, bottomMargin=24)
+        st = getSampleStyleSheet()
+        parts = [Paragraph('Laporan Pengiriman', st['Title']), Table([[a, str(b)] for a, b in summary_rows], colWidths=[220, 120]), Spacer(1, 12)]
+        t = Table([head] + [[str(c) for c in r] for r in rows], repeatRows=1)
+        t.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#059669')), ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                               ('GRID', (0, 0), (-1, -1), 0.3, colors.grey), ('FONTSIZE', (0, 0), (-1, -1), 8)]))
+        parts.append(t)
+        doc.build(parts)
+        mime = 'application/pdf'
+    else:
+        import openpyxl
+        from openpyxl.styles import Font
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = 'Ringkasan'
+        for a, b in summary_rows:
+            ws.append([a, b])
+        ws.column_dimensions['A'].width = 34
+        wd = wb.create_sheet('Rincian')
+        wd.append(head)
+        for c in wd[1]:
+            c.font = Font(bold=True)
+        for r in rows:
+            wd.append(r)
+        for col, w in zip('ABCDEFG', (22, 34, 12, 12, 14, 14, 26)):
+            wd.column_dimensions[col].width = w
+        wb.save(buf)
+        mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    buf.seek(0)
+    return send_file(buf, mimetype=mime, as_attachment=True, download_name='shipping_report.pdf' if fmt == 'pdf' else 'shipping_report.xlsx')
+
+
+@shipping_bp.route('/orders/<int:order_id>/status', methods=['PUT'])
+@jwt_required()
+@require_permission('shipping.edit')
+def update_shipping_status(order_id):
+    try:
+        order = db.session.get(ShippingOrder, order_id) or abort(404)
+        new = (request.get_json() or {}).get('status')
+        new = STATUS_ALIASES.get(new, new)
+        if new not in STATUS_COLORS:
+            return jsonify({'error': f'Status "{new}" tidak dikenal'}), 400
+        if new == order.status:
+            return jsonify(success_response('api.success')), 200
+        if new == 'shipped':
+            return jsonify({'error': 'Status "shipped" diset lewat proses pengiriman (memotong stok dan menjurnal), bukan dari sini'}), 400
+        if new not in ALLOWED_STATUS_MOVES.get(order.status, set()):
+            return jsonify({'error': f'Tidak bisa mengubah status dari {order.status} ke {new}'}), 400
+        order.status = new
+        now = get_local_now()
+        if new == 'delivered':
+            order.actual_delivery_date = order.actual_delivery_date or now.date()
+            order.received_at = order.received_at or now
+        db.session.add(DeliveryTracking(shipping_id=order.id, status=new, remarks='Status diubah dari halaman detail', updated_by=int(get_jwt_identity()), tracking_date=now))
+        order.updated_at = now
+        db.session.commit()
+        return jsonify(success_response('api.success')), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@shipping_bp.route('/orders/<int:order_id>/pod', methods=['GET'])
+@jwt_required()
+@require_permission('shipping.view')
+def shipping_pod(order_id):
+    """Proof of delivery (Tanda Terima) PDF generated from the order."""
+    import io
+    from flask import send_file
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    order = db.session.get(ShippingOrder, order_id) or abort(404)
+    st = getSampleStyleSheet()
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
+    info = [['No. Pengiriman', order.shipping_number], ['Pelanggan', order.customer.company_name if order.customer else '-'],
+            ['Alamat', order.shipping_address or '-'], ['Tanggal Kirim', order.shipping_date.isoformat()],
+            ['Tanggal Terima', order.actual_delivery_date.isoformat() if order.actual_delivery_date else '-'],
+            ['Penerima', order.received_by or '-'], ['Sopir / Kendaraan', f'{order.driver_name or "-"} / {order.vehicle_number or "-"}'],
+            ['Status', order.status]]
+    items = [['No', 'Barang', 'Jumlah', 'Satuan', 'Batch']] + [
+        [str(i), (it.product.name if it.product else '-'), f'{float(it.quantity):g}', it.uom or '', it.batch_number or ''] for i, it in enumerate(order.items or [], 1)]
+    grid = [('GRID', (0, 0), (-1, -1), 0.3, colors.grey), ('FONTSIZE', (0, 0), (-1, -1), 9)]
+    t_items = Table(items, repeatRows=1, colWidths=[24, 260, 60, 50, 110])
+    t_items.setStyle(TableStyle(grid + [('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#E5E7EB'))]))
+    sign = Table([['Pengirim', 'Penerima'], ['\n\n\n', '\n\n\n'], ['(                    )', '(                    )']], colWidths=[250, 250])
+    doc.build([Paragraph('TANDA TERIMA BARANG (POD)', st['Title']), Table(info, colWidths=[120, 400], style=TableStyle(grid)),
+               Spacer(1, 12), t_items, Spacer(1, 24), sign])
+    buf.seek(0)
+    safe = ''.join(c for c in order.shipping_number if c.isalnum() or c in '-_')
+    return send_file(buf, mimetype='application/pdf', as_attachment=True, download_name=f'POD_{safe}.pdf')
+
 @shipping_bp.route('/available-sales-orders', methods=['GET'])
 @jwt_required()
 @require_permission('shipping.view')

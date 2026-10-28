@@ -240,7 +240,7 @@ const TransferForm: React.FC = () => {
         navigate('/app/warehouse/transfers');
       } else {
         const errorData = await response.json();
-        setError(errorData.message || 'Failed to save transfer');
+        setError(errorData.message || errorData.error || 'Failed to save transfer');
       }
     } catch (error) {
       setError('Network error occurred');

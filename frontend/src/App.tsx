@@ -29,6 +29,7 @@ import ProductCategories from './pages/Products/ProductCategories'
 import BOMManagement from './pages/Products/BOMManagement'
 import ProductLifecycle from './pages/Products/ProductLifecycle'
 import ProductsNewPage from './pages/ProductsNewPage'
+import ImportCenter from './pages/ImportCenter'
 import MasterDataPage from './pages/MasterData/MasterDataPage'
 import ProductFormNew from './components/ProductFormNew'
 import ProductVersionHistory from './components/ProductVersionHistory'
@@ -976,6 +977,7 @@ function AppChildRoutes() {
                 {/* Integration - Admin Only */}
                 <Route path="integration/accurate" element={<StaffAdminRoute><AccurateIntegration /></StaffAdminRoute>} />
                 <Route path="reports" element={<Reports />} />
+                <Route path="imports" element={<ImportCenter />} />
                 <Route path="reports/advanced-builder" element={<AdvancedReportBuilder />} />
                 <Route path="reports/scheduled" element={<ScheduledReports />} />
                 <Route path="reports/executive" element={<ExecutiveDashboard />} />

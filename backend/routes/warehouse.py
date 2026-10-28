@@ -473,6 +473,136 @@ def get_inventory():
         print(f"Inventory error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+class StockLockedError(ValueError):
+    """Item/location is locked by a running stock opname."""
+
+
+def add_stock_core(data, user_id):
+    """Put stock into one lot (manual stock-in) WITHOUT committing: creates the lot when missing, moves quantities,
+    writes the stock ledger and, for manual types, the opening-stock inflow journal. Returns (inventory, movement).
+    Raises ValueError (StockLockedError when an opname lock applies). Optional data keys: unit_cost, entry_date."""
+    from utils.opname_lock import check_opname_lock
+    # Check opname lock
+    lock = check_opname_lock(
+        location_id=data.get('location_id'),
+        material_id=data.get('material_id'),
+        product_id=data.get('product_id')
+    )
+    if lock['locked']:
+        raise StockLockedError(lock['message'])
+    
+    # Validate required fields
+    if not data.get('location_id'):
+        raise ValueError('Location is required')
+    
+    if not data.get('quantity') or float(data['quantity']) <= 0:
+        raise ValueError('Quantity must be greater than 0')
+    
+    product_id = data.get('product_id')
+    material_id = data.get('material_id')
+    
+    if not product_id and not material_id:
+        raise ValueError('Either product_id or material_id is required')
+    
+    quantity = float(data['quantity'])
+    location_id = data['location_id']
+    
+    # Get or create inventory record
+    if product_id:
+        inventory = Inventory.query.filter_by(
+            product_id=product_id,
+            location_id=location_id,
+            batch_number=data.get('batch_number')
+        ).first()
+        
+        if not inventory:
+            from utils.inventory_helpers import resolve_initial_stock_status
+            inventory = Inventory(
+                product_id=product_id,
+                location_id=location_id,
+                quantity_on_hand=0,
+                quantity_reserved=0,
+                quantity_available=0,
+                batch_number=data.get('batch_number'),
+                lot_number=data.get('lot_number'),
+                production_date=datetime.fromisoformat(data['production_date']).date() if data.get('production_date') else None,
+                expiry_date=datetime.fromisoformat(data['expiry_date']).date() if data.get('expiry_date') else None,
+                stock_status=resolve_initial_stock_status(data.get('stock_status', 'released'), product=db.session.get(Product, product_id)),
+                is_active=True,
+                created_by=user_id
+            )
+            db.session.add(inventory)
+            db.session.flush()
+    else:
+        inventory = Inventory.query.filter_by(
+            material_id=material_id,
+            location_id=location_id,
+            batch_number=data.get('batch_number')
+        ).first()
+        
+        if not inventory:
+            from utils.inventory_helpers import resolve_initial_stock_status
+            inventory = Inventory(
+                material_id=material_id,
+                location_id=location_id,
+                quantity_on_hand=0,
+                quantity_reserved=0,
+                quantity_available=0,
+                batch_number=data.get('batch_number'),
+                lot_number=data.get('lot_number'),
+                expiry_date=datetime.fromisoformat(data['expiry_date']).date() if data.get('expiry_date') else None,
+                stock_status=resolve_initial_stock_status(data.get('stock_status', 'available'), material=db.session.get(Material, material_id)),  # Material default = available
+                supplier_batch=data.get('supplier_batch'),
+                is_active=True,
+                created_by=user_id
+            )
+            db.session.add(inventory)
+            db.session.flush()
+    
+    # Update quantities. float(...) wrap required: an EXISTING Inventory
+    # row's quantity_on_hand/quantity_available load back from Postgres
+    # as Decimal, and Decimal += float raises TypeError - only ever hit
+    # for materials/products that already had stock (a brand-new row's
+    # Python-side default of 0 (int) tolerates += float fine, which is
+    # why this went unnoticed). Found via real production testing
+    # 2026-10-02 adding raw material stock mid-batch.
+    inventory.quantity_on_hand = float(inventory.quantity_on_hand or 0) + quantity
+    inventory.quantity_available = float(inventory.quantity_available or 0) + quantity
+    inventory.updated_at = get_local_now()
+    
+    # Create movement record
+    from utils.finance_helpers import (manual_stock_unit_cost, post_manual_stock_inflow_journal,
+                                       MANUAL_STOCK_REF_TYPES)
+    _is_manual_stock = data.get('reference_type', 'manual_input') in MANUAL_STOCK_REF_TYPES
+    _manual_cost = (float(data['unit_cost']) if data.get('unit_cost') not in (None, '') else (manual_stock_unit_cost(product_id, material_id) or None)) if _is_manual_stock else None
+    movement = record_inventory_transaction(
+        transaction_type='stock_in',
+        direction='in',
+        quantity=quantity,
+        product_id=product_id,
+        material_id=material_id,
+        to_location_id=location_id,
+        reference_number=data.get('reference_number'),
+        reference_type=data.get('reference_type', 'manual_input'),
+        reference_id=data.get('reference_id'),
+        batch_number=data.get('batch_number'),
+        lot_number=data.get('lot_number'),
+        notes=data.get('notes'),
+        unit_cost=_manual_cost,
+        created_by=user_id
+    )
+    if _is_manual_stock:
+        post_manual_stock_inflow_journal(movement, user_id, product_id=product_id, material_id=material_id,
+                                         entry_date=data.get('entry_date') if hasattr(data.get('entry_date'), 'year') else None)
+    
+    # Update location occupied
+    location = db.session.get(WarehouseLocation, location_id)
+    if location:
+        location.occupied = float(location.occupied or 0) + quantity
+    return inventory, movement
+
+
+@warehouse_bp.route('/inventory', methods=['POST'])
 @warehouse_bp.route('/inventory/add', methods=['POST'])
 @jwt_required()
 @require_permission('inventory.create')
@@ -483,124 +613,8 @@ def add_to_inventory():
         from utils.opname_lock import check_opname_lock
         data = request.get_json()
         user_id = int(get_jwt_identity())
-        
-        # Check opname lock
-        lock = check_opname_lock(
-            location_id=data.get('location_id'),
-            material_id=data.get('material_id'),
-            product_id=data.get('product_id')
-        )
-        if lock['locked']:
-            return error_response(lock['message']), 423
-        
-        # Validate required fields
-        if not data.get('location_id'):
-            return error_response('Location is required'), 400
-        
-        if not data.get('quantity') or float(data['quantity']) <= 0:
-            return error_response('Quantity must be greater than 0'), 400
-        
-        product_id = data.get('product_id')
-        material_id = data.get('material_id')
-        
-        if not product_id and not material_id:
-            return error_response('Either product_id or material_id is required'), 400
-        
-        quantity = float(data['quantity'])
-        location_id = data['location_id']
-        
-        # Get or create inventory record
-        if product_id:
-            inventory = Inventory.query.filter_by(
-                product_id=product_id,
-                location_id=location_id,
-                batch_number=data.get('batch_number')
-            ).first()
-            
-            if not inventory:
-                from utils.inventory_helpers import resolve_initial_stock_status
-                inventory = Inventory(
-                    product_id=product_id,
-                    location_id=location_id,
-                    quantity_on_hand=0,
-                    quantity_reserved=0,
-                    quantity_available=0,
-                    batch_number=data.get('batch_number'),
-                    lot_number=data.get('lot_number'),
-                    production_date=datetime.fromisoformat(data['production_date']).date() if data.get('production_date') else None,
-                    expiry_date=datetime.fromisoformat(data['expiry_date']).date() if data.get('expiry_date') else None,
-                    stock_status=resolve_initial_stock_status(data.get('stock_status', 'released'), product=db.session.get(Product, product_id)),
-                    is_active=True,
-                    created_by=user_id
-                )
-                db.session.add(inventory)
-                db.session.flush()
-        else:
-            inventory = Inventory.query.filter_by(
-                material_id=material_id,
-                location_id=location_id,
-                batch_number=data.get('batch_number')
-            ).first()
-            
-            if not inventory:
-                from utils.inventory_helpers import resolve_initial_stock_status
-                inventory = Inventory(
-                    material_id=material_id,
-                    location_id=location_id,
-                    quantity_on_hand=0,
-                    quantity_reserved=0,
-                    quantity_available=0,
-                    batch_number=data.get('batch_number'),
-                    lot_number=data.get('lot_number'),
-                    expiry_date=datetime.fromisoformat(data['expiry_date']).date() if data.get('expiry_date') else None,
-                    stock_status=resolve_initial_stock_status(data.get('stock_status', 'available'), material=db.session.get(Material, material_id)),  # Material default = available
-                    supplier_batch=data.get('supplier_batch'),
-                    is_active=True,
-                    created_by=user_id
-                )
-                db.session.add(inventory)
-                db.session.flush()
-        
-        # Update quantities. float(...) wrap required: an EXISTING Inventory
-        # row's quantity_on_hand/quantity_available load back from Postgres
-        # as Decimal, and Decimal += float raises TypeError - only ever hit
-        # for materials/products that already had stock (a brand-new row's
-        # Python-side default of 0 (int) tolerates += float fine, which is
-        # why this went unnoticed). Found via real production testing
-        # 2026-10-02 adding raw material stock mid-batch.
-        inventory.quantity_on_hand = float(inventory.quantity_on_hand or 0) + quantity
-        inventory.quantity_available = float(inventory.quantity_available or 0) + quantity
-        inventory.updated_at = get_local_now()
-        
-        # Create movement record
-        from utils.finance_helpers import (manual_stock_unit_cost, post_manual_stock_inflow_journal,
-                                           MANUAL_STOCK_REF_TYPES)
-        _is_manual_stock = data.get('reference_type', 'manual_input') in MANUAL_STOCK_REF_TYPES
-        _manual_cost = (manual_stock_unit_cost(product_id, material_id) or None) if _is_manual_stock else None
-        movement = record_inventory_transaction(
-            transaction_type='stock_in',
-            direction='in',
-            quantity=quantity,
-            product_id=product_id,
-            material_id=material_id,
-            to_location_id=location_id,
-            reference_number=data.get('reference_number'),
-            reference_type=data.get('reference_type', 'manual_input'),
-            reference_id=data.get('reference_id'),
-            batch_number=data.get('batch_number'),
-            lot_number=data.get('lot_number'),
-            notes=data.get('notes'),
-            unit_cost=_manual_cost,
-            created_by=user_id
-        )
-        if _is_manual_stock:
-            post_manual_stock_inflow_journal(movement, user_id, product_id=product_id, material_id=material_id)
-        
-        # Update location occupied
-        location = db.session.get(WarehouseLocation, location_id)
-        if location:
-            location.occupied = float(location.occupied or 0) + quantity
-        
+        inventory, movement = add_stock_core(data, user_id)
+
         db.session.commit()
 
         # fix_report_3.md (2026-10-02): requeue_insufficient_items()
@@ -625,9 +639,281 @@ def add_to_inventory():
             'new_quantity': float(inventory.quantity_on_hand)
         }), 201
 
+    except StockLockedError as e:
+        db.session.rollback()
+        return error_response(str(e)), 423
+    except ValueError as e:
+        db.session.rollback()
+        return error_response(str(e)), 400
     except Exception as e:
         db.session.rollback()
         return error_response(str(e)), 500
+
+def _inventory_form_dict(i):
+    return {
+        'id': i.id, 'product_id': i.product_id, 'material_id': i.material_id, 'location_id': i.location_id,
+        'quantity': float(i.quantity_on_hand or 0), 'reserved_quantity': float(i.quantity_reserved or 0),
+        'available_quantity': float(i.quantity_available or 0),
+        'batch_number': i.batch_number, 'lot_number': i.lot_number, 'serial_number': i.serial_number,
+        'production_date': i.production_date.isoformat() if i.production_date else None,
+        'expiry_date': i.expiry_date.isoformat() if i.expiry_date else None,
+        'stock_status': i.stock_status,
+    }
+
+
+@warehouse_bp.route('/inventory/available', methods=['GET'])
+@jwt_required()
+@require_permission('inventory.view')
+def get_available_inventory():
+    """Free (on hand - reserved) stock of one product/material at one location, summed over its lots."""
+    try:
+        product_id = request.args.get('product_id', type=int)
+        material_id = request.args.get('material_id', type=int)
+        location_id = request.args.get('location_id', type=int)
+        if not (product_id or material_id) or not location_id:
+            return jsonify({'error': 'product_id (atau material_id) dan location_id wajib diisi'}), 400
+        q = db.session.query(func.coalesce(func.sum(Inventory.quantity_available), 0)).filter(
+            Inventory.is_active == True, Inventory.location_id == location_id)
+        q = q.filter(Inventory.product_id == product_id) if product_id else q.filter(Inventory.material_id == material_id)
+        return jsonify({'available_quantity': float(q.scalar() or 0), 'location_id': location_id}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@warehouse_bp.route('/inventory/<int:inventory_id>', methods=['GET'])
+@jwt_required()
+@require_permission('inventory.view')
+def get_inventory_item(inventory_id):
+    inv = db.session.get(Inventory, inventory_id)
+    if not inv:
+        return jsonify({'error': 'Data inventaris tidak ditemukan'}), 404
+    return jsonify(_inventory_form_dict(inv)), 200
+
+
+@warehouse_bp.route('/inventory/<int:inventory_id>', methods=['PUT'])
+@jwt_required()
+@require_permission('inventory.edit')
+def update_inventory_item(inventory_id):
+    """Edit one stock lot. A changed quantity is booked as an adjustment in the stock ledger (never silently)."""
+    try:
+        from flask_jwt_extended import get_jwt_identity
+        from utils.opname_lock import check_opname_lock
+        inv = db.session.get(Inventory, inventory_id)
+        if not inv:
+            return jsonify({'error': 'Data inventaris tidak ditemukan'}), 404
+        data = request.get_json() or {}
+        user_id = int(get_jwt_identity())
+        lock = check_opname_lock(location_id=inv.location_id, material_id=inv.material_id, product_id=inv.product_id)
+        if lock['locked']:
+            return error_response(lock['message']), 423
+
+        old_qty = float(inv.quantity_on_hand or 0)
+        new_qty = float(data['quantity']) if data.get('quantity') not in (None, '') else old_qty
+        reserved = float(data['reserved_quantity']) if data.get('reserved_quantity') not in (None, '') else float(inv.quantity_reserved or 0)
+        if new_qty < 0 or reserved < 0:
+            return jsonify({'error': 'Jumlah tidak boleh negatif'}), 400
+        if reserved > new_qty + 0.0001:
+            return jsonify({'error': 'Jumlah reserved tidak boleh melebihi jumlah on hand'}), 400
+
+        if data.get('location_id') and int(data['location_id']) != inv.location_id:
+            if not db.session.get(WarehouseLocation, int(data['location_id'])):
+                return jsonify({'error': 'Lokasi tidak ditemukan'}), 400
+            inv.location_id = int(data['location_id'])
+        for f in ('batch_number', 'lot_number', 'serial_number'):
+            if f in data:
+                setattr(inv, f, (data[f] or None))
+        for f in ('production_date', 'expiry_date'):
+            if f in data:
+                setattr(inv, f, datetime.fromisoformat(str(data[f])[:10]).date() if data[f] else None)
+
+        inv.quantity_on_hand = new_qty
+        inv.quantity_reserved = reserved
+        inv.quantity_available = new_qty - reserved
+        inv.updated_at = get_local_now()
+
+        delta = round(new_qty - old_qty, 2)
+        if delta != 0:
+            record_inventory_transaction(
+                transaction_type='adjustment', direction='in' if delta > 0 else 'out', quantity=abs(delta),
+                product_id=inv.product_id, material_id=inv.material_id,
+                to_location_id=inv.location_id if delta > 0 else None, from_location_id=inv.location_id if delta < 0 else None,
+                batch_number=inv.batch_number, lot_number=inv.lot_number,
+                reference_type='inventory_edit', reference_id=inv.id, reference_number=f'INV-EDIT-{inv.id}',
+                balance_before=old_qty, balance_after=new_qty,
+                notes=data.get('notes') or 'Koreksi jumlah dari form edit inventaris', created_by=user_id)
+            loc = db.session.get(WarehouseLocation, inv.location_id)
+            if loc:
+                loc.occupied = max(0.0, float(loc.occupied or 0) + delta)
+        db.session.commit()
+        return jsonify({'message': 'Inventaris diperbarui', **_inventory_form_dict(inv)}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+def _transfer_dict(t):
+    return {
+        'id': t.id, 'transfer_number': t.transfer_number, 'product_id': t.product_id,
+        'product_code': t.product.code if t.product else None, 'product_name': t.product.name if t.product else None,
+        'from_location_id': t.from_location_id, 'to_location_id': t.to_location_id,
+        'from_location_code': t.from_location.location_code if t.from_location else None,
+        'to_location_code': t.to_location.location_code if t.to_location else None,
+        'quantity': float(t.quantity), 'uom': t.uom, 'batch_number': t.batch_number, 'lot_number': t.lot_number,
+        'serial_number': t.serial_number, 'status': t.status, 'priority': t.priority, 'reason': t.reason, 'notes': t.notes,
+        'requested_date': t.requested_date.isoformat() if t.requested_date else None,
+        'expected_date': t.expected_date.isoformat() if t.expected_date else None,
+    }
+
+
+def _apply_transfer_fields(t, data):
+    """Validate + copy form fields; returns an error string or None."""
+    for f in ('product_id', 'from_location_id', 'to_location_id'):
+        if data.get(f) in (None, ''):
+            return f'{f} wajib diisi'
+    if int(data['from_location_id']) == int(data['to_location_id']):
+        return 'Lokasi asal dan tujuan tidak boleh sama'
+    if not db.session.get(Product, int(data['product_id'])):
+        return 'Produk tidak ditemukan'
+    for f in ('from_location_id', 'to_location_id'):
+        if not db.session.get(WarehouseLocation, int(data[f])):
+            return 'Lokasi tidak ditemukan'
+    qty = float(data.get('quantity') or 0)
+    if qty <= 0:
+        return 'Jumlah harus lebih dari 0'
+    free = float(db.session.query(func.coalesce(func.sum(Inventory.quantity_available), 0)).filter(
+        Inventory.is_active == True, Inventory.product_id == int(data['product_id']),
+        Inventory.location_id == int(data['from_location_id'])).scalar() or 0)
+    if qty > free + 0.0001:
+        return f'Stok tidak cukup di lokasi asal. Tersedia: {free:g}'
+    t.product_id, t.from_location_id, t.to_location_id = int(data['product_id']), int(data['from_location_id']), int(data['to_location_id'])
+    t.quantity = qty
+    t.uom = (data.get('uom') or 'PCS')[:20]
+    for f in ('batch_number', 'lot_number', 'serial_number', 'reason', 'notes'):
+        if f in data:
+            setattr(t, f, data[f] or None)
+    if data.get('priority') in ('low', 'normal', 'high', 'urgent'):
+        t.priority = data['priority']
+    t.expected_date = datetime.fromisoformat(str(data['expected_date'])[:10]) if data.get('expected_date') else None
+    return None
+
+
+@warehouse_bp.route('/transfers', methods=['GET'])
+@jwt_required()
+@require_permission('warehouse.view')
+def list_transfers():
+    from models.warehouse_adjustment import InventoryTransfer
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    q = InventoryTransfer.query
+    if request.args.get('status'):
+        q = q.filter(InventoryTransfer.status == request.args['status'])
+    res = q.order_by(InventoryTransfer.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    return jsonify({'transfers': [_transfer_dict(t) for t in res.items], 'total': res.total, 'pages': res.pages, 'current_page': res.page}), 200
+
+
+@warehouse_bp.route('/transfers/<int:transfer_id>', methods=['GET'])
+@jwt_required()
+@require_permission('warehouse.view')
+def get_transfer(transfer_id):
+    from models.warehouse_adjustment import InventoryTransfer
+    t = db.session.get(InventoryTransfer, transfer_id)
+    if not t:
+        return jsonify({'error': 'Transfer tidak ditemukan'}), 404
+    return jsonify(_transfer_dict(t)), 200
+
+
+@warehouse_bp.route('/transfers', methods=['POST'])
+@jwt_required()
+@require_permission('warehouse.create')
+def create_transfer():
+    """Transfer REQUEST (status pending). Stock itself moves via POST /movements (type transfer), so FIFO/batch rules stay in one place."""
+    try:
+        from flask_jwt_extended import get_jwt_identity
+        from models.warehouse_adjustment import InventoryTransfer
+        from utils.helpers import generate_number
+        data = request.get_json() or {}
+        t = InventoryTransfer(transfer_number=generate_number('TRF', InventoryTransfer, 'transfer_number'),
+                              requested_by=int(get_jwt_identity()), status='pending', quantity=0, uom='PCS',
+                              product_id=0, from_location_id=0, to_location_id=0)
+        err = _apply_transfer_fields(t, data)
+        if err:
+            return jsonify({'error': err, 'message': err}), 400
+        db.session.add(t)
+        db.session.commit()
+        return jsonify({'message': 'Permintaan transfer dibuat', **_transfer_dict(t)}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e), 'message': str(e)}), 500
+
+
+@warehouse_bp.route('/transfers/<int:transfer_id>', methods=['PUT'])
+@jwt_required()
+@require_permission('warehouse.create')
+def update_transfer(transfer_id):
+    try:
+        from models.warehouse_adjustment import InventoryTransfer
+        t = db.session.get(InventoryTransfer, transfer_id)
+        if not t:
+            return jsonify({'error': 'Transfer tidak ditemukan'}), 404
+        if t.status != 'pending':
+            return jsonify({'error': 'Hanya transfer berstatus pending yang bisa diubah', 'message': 'Hanya transfer berstatus pending yang bisa diubah'}), 400
+        err = _apply_transfer_fields(t, request.get_json() or {})
+        if err:
+            return jsonify({'error': err, 'message': err}), 400
+        db.session.commit()
+        return jsonify({'message': 'Transfer diperbarui', **_transfer_dict(t)}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e), 'message': str(e)}), 500
+
+
+@warehouse_bp.route('/movements/export', methods=['GET'])
+@jwt_required()
+@require_permission('warehouse.view')
+def export_movements():
+    """Excel export of the movement ledger with the same filters as the list."""
+    try:
+        import io
+        import openpyxl
+        from flask import send_file
+        from models.wms_advanced import InventoryTransaction
+        search = request.args.get('search', '')
+        q = InventoryTransaction.query
+        if search:
+            q = q.outerjoin(Product, InventoryTransaction.product_id == Product.id).outerjoin(Material, InventoryTransaction.material_id == Material.id).filter(
+                db.or_(InventoryTransaction.reference_number.ilike(f'%{search}%'), InventoryTransaction.transaction_number.ilike(f'%{search}%'),
+                       InventoryTransaction.notes.ilike(f'%{search}%'), Product.code.ilike(f'%{search}%'), Product.name.ilike(f'%{search}%'),
+                       Material.code.ilike(f'%{search}%'), Material.name.ilike(f'%{search}%')))
+        if request.args.get('movement_type'):
+            q = q.filter(InventoryTransaction.transaction_type == request.args['movement_type'])
+        if request.args.get('status'):
+            q = q.filter(InventoryTransaction.status == request.args['status'])
+        if request.args.get('date_from'):
+            q = q.filter(InventoryTransaction.transaction_date >= request.args['date_from'])
+        if request.args.get('date_to'):
+            q = q.filter(InventoryTransaction.transaction_date <= f"{request.args['date_to']} 23:59:59")
+        rows = q.order_by(InventoryTransaction.transaction_date.desc()).limit(50000).all()
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = 'Mutasi Stok'
+        ws.append(['No. Mutasi', 'Tanggal', 'Tipe', 'Arah', 'Kode Barang', 'Nama Barang', 'Jumlah', 'Lokasi Asal', 'Lokasi Tujuan',
+                   'Batch', 'Tipe Referensi', 'No. Referensi', 'Status', 'Catatan'])
+        for m in rows:
+            item = m.product or m.material
+            ws.append([m.transaction_number, m.transaction_date.strftime('%Y-%m-%d %H:%M') if m.transaction_date else '', m.transaction_type,
+                       m.direction, item.code if item else '', item.name if item else '', float(m.quantity or 0),
+                       m.from_location.location_code if m.from_location else '', m.to_location.location_code if m.to_location else '',
+                       m.batch_number or '', m.reference_type or '', m.reference_number or '', m.status or '', m.notes or ''])
+        for col in ws.columns:
+            ws.column_dimensions[col[0].column_letter].width = min(40, max(10, max(len(str(c.value or '')) for c in col[:200]) + 2))
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        return send_file(buf, as_attachment=True, download_name='inventory_movements.xlsx',
+                         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 @warehouse_bp.route('/movements', methods=['GET'])
 @jwt_required()

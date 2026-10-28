@@ -6,6 +6,7 @@ from utils.i18n import success_response, error_response, get_message
 from utils import generate_number, generate_number_v2
 from datetime import datetime, date
 from utils.timezone import get_local_now, get_local_today
+from utils.invoice_errors import InvoiceInputError
 
 purchase_invoice_bp = Blueprint('purchase_invoice', __name__)
 
@@ -370,361 +371,368 @@ def create_purchase_invoice():
         description: Purchase order not found
     """
     try:
-        data = request.get_json()
-        user_id = get_jwt_identity()
-
-        # Generate invoice number
-        invoice_number = generate_number_v2('purchase_invoice', 'PI', Invoice, 'invoice_number')
-
-        # Get PO to validate
-        po = db.session.get(PurchaseOrder, data.get('po_id'))
-        if not po:
-            return jsonify({'error': 'Purchase Order not found'}), 404
-
-        # Multi-currency (2026-10-19, po_multicurrency_plan.md): currency and
-        # exchange_rate come strictly from the PO (single source of truth).
-        if po.currency != 'IDR' and po.status == 'draft':
-            return jsonify({'error': f'PO {po.currency} masih draft, kurs belum dikunci. Submit PO terlebih dahulu.'}), 400
-        if data.get('currency') and data['currency'].strip().upper() != po.currency:
-            return jsonify({'error': f"Mata uang invoice harus mengikuti PO ({po.currency}), tidak bisa diubah ke '{data['currency']}'"}), 400
-        if data.get('exchange_rate') is not None and abs(float(data['exchange_rate']) - float(po.exchange_rate or 1)) > 1e-6:
-            return jsonify({'error': f"Kurs invoice mengikuti kurs PO yang sudah dikunci ({float(po.exchange_rate or 1)}), tidak bisa diisi manual"}), 400
-        inv_currency = po.currency
-        inv_rate = float(po.exchange_rate or 1)
-
-        invoice_date_parsed = datetime.strptime(data.get('invoice_date'), '%Y-%m-%d').date() if data.get('invoice_date') else get_local_today()
-
-        from utils.finance_helpers import is_period_locked
-        if is_period_locked(invoice_date_parsed, transaction_type='purchase_invoice'):
-            return jsonify({'error': f'Periode {invoice_date_parsed.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa membuat transaksi baru di periode ini.'}), 400
-
-        # Create invoice - journal is posted immediately below (see original
-        # PurchaseInvoice behavior), so posted_by/posted_at are set here too.
-        invoice = Invoice(
-            invoice_number=invoice_number,
-            invoice_type='purchase',
-            purchase_order_id=data.get('po_id'),
-            supplier_id=data.get('supplier_id') or po.supplier_id,
-            invoice_date=invoice_date_parsed,
-            due_date=datetime.strptime(data.get('due_date'), '%Y-%m-%d').date() if data.get('due_date') else None,
-            supplier_invoice_number=data.get('supplier_invoice_number'),
-            supplier_invoice_date=datetime.strptime(data.get('supplier_invoice_date'), '%Y-%m-%d').date() if data.get('supplier_invoice_date') else None,
-            status=_resolve_incoming_status(data, default='sent'),
-            currency=inv_currency,
-            exchange_rate=inv_rate,
-            payment_terms=data.get('payment_terms'),
-            payment_method=data.get('payment_method'),
-            subtotal=data.get('subtotal', 0),
-            tax_amount=data.get('tax_amount', 0),
-            discount_amount=data.get('discount_amount', 0),
-            shipping_amount=data.get('shipping_amount', 0),
-            other_charges=data.get('other_charges', 0),
-            total_amount=data.get('total_amount', 0),
-            paid_amount=data.get('amount_paid', 0),
-            balance_due=data.get('balance_due', data.get('total_amount', 0)),
-            notes=data.get('notes'),
-            internal_notes=data.get('internal_notes'),
-            received_by=data.get('received_by') or user_id,
-            posted_by=user_id,
-            posted_at=get_local_now(),
-            created_by=user_id,
-            created_at=get_local_now()
-        )
-
-        db.session.add(invoice)
-        db.session.flush()
-
-        # Add invoice items
-        # Guard rail: every item must link back to a PO line item, so
-        # quantity_invoiced tracking and 3-way match stay accurate.
-        items_data = data.get('items', [])
-        for idx, item_data in enumerate(items_data, 1):
-            if not item_data.get('po_item_id'):
-                return jsonify({
-                    'error': f'Item {idx}: po_item_id is required. '
-                             'Every invoice line must reference a purchase order line item.'
-                }), 400
-
-        from models.product import Product, Material
-        from models.approval_workflow import PendingJournalEntry
-        from utils.finance_helpers import post_pending_journal, resolve_account, resolve_accounts_payable
-
-        journal_lines = []
-        total_items_amount = 0.0
-        total_debit_amount = 0.0
-        ppn_masukan_total = 0.0
-        from utils.finance_helpers import resolve_ppn_masukan_account_id
-        from utils.tax_helpers import ppn_rate_for_code, resolve_item_tax_percent
-        ppn_masukan_account_id = None
-
-        for idx, item_data in enumerate(items_data, 1):
-            # Item identity (material/product/description/uom) comes from the PO
-            # line when the caller didn't send it - otherwise an inventory
-            # purchase silently fell through to the EXPENSE debit below.
-            _poi = db.session.get(PurchaseOrderItem, item_data.get('po_item_id'))
-            if _poi:
-                if not item_data.get('material_id') and not item_data.get('product_id'):
-                    item_data['material_id'] = getattr(_poi, 'material_id', None)
-                    item_data['product_id'] = getattr(_poi, 'product_id', None)
-                if not item_data.get('description'):
-                    item_data['description'] = getattr(_poi, 'description', None) or ''
-                if not item_data.get('uom'):
-                    item_data['uom'] = getattr(_poi, 'uom', None)
-            # total_price is NOT NULL and was left entirely to the caller to
-            # supply - auto-compute from quantity*unit_price when omitted,
-            # same fallback already used in purchase_return.py. Found via
-            # real production testing 2026-10-01 (500 NotNullViolation).
-            total_price = item_data.get('total_price')
-            if total_price is None and not float(item_data.get('tax_amount') or 0):
-                # PPN per baris: kode PPN yang dipilih di baris (ppn_code: Y/A/B/L, kosong = tanpa PPN),
-                # atau persen eksplisit, atau default dari master barang.
-                if item_data.get('tax_percent'):
-                    pct = float(item_data['tax_percent'])
-                elif 'ppn_code' in item_data:
-                    pct = ppn_rate_for_code(item_data.get('ppn_code')) or 0
-                else:
-                    pct = resolve_item_tax_percent(0, product_id=item_data.get('product_id'),
-                                                   material_id=item_data.get('material_id')) or 0
-                if pct:
-                    base = (float(item_data.get('quantity') or 0) * float(item_data.get('unit_price') or 0)
-                            - float(item_data.get('discount_amount') or 0))
-                    item_data['tax_percent'] = pct
-                    item_data['tax_amount'] = round(base * pct / 100, 2)
-            if total_price is None:
-                quantity = float(item_data.get('quantity') or 0)
-                unit_price = float(item_data.get('unit_price') or 0)
-                discount_amount = float(item_data.get('discount_amount') or 0)
-                tax_amount = float(item_data.get('tax_amount') or 0)
-                total_price = quantity * unit_price - discount_amount + tax_amount
-                item_data['total_price'] = total_price
-
-            item = InvoiceItem(
-                invoice_id=invoice.id,
-                po_item_id=item_data.get('po_item_id'),
-                line_number=idx,
-                product_id=item_data.get('product_id'),
-                material_id=item_data.get('material_id'),
-                description=item_data.get('description') or '',
-                quantity=item_data.get('quantity'),
-                uom=item_data.get('uom'),
-                unit_price=item_data.get('unit_price'),
-                discount_percent=item_data.get('discount_percent', 0),
-                discount_amount=item_data.get('discount_amount', 0),
-                tax_percent=item_data.get('tax_percent', 0),
-                tax_amount=item_data.get('tax_amount', 0),
-                total_amount=total_price,
-                notes=item_data.get('notes'),
-                created_at=get_local_now()
-            )
-            db.session.add(item)
-
-            # Track quantity_invoiced on the PO line item
-            po_item = db.session.get(PurchaseOrderItem, item_data.get('po_item_id'))
-            if po_item:
-                po_item.quantity_invoiced = float(po_item.quantity_invoiced or 0) + float(item_data.get('quantity') or 0)
-
-            # Release the matching budget commitment (reserved when the PO
-            # was approved) by exactly the amount now becoming actual -
-            # partial invoicing releases proportionally, not all-or-nothing.
-            if po:
-                from utils.finance_helpers import release_po_budget_commitment
-                release_po_budget_commitment(po, items=[{
-                    'product_id': item_data.get('product_id'),
-                    'material_id': item_data.get('material_id'),
-                    'amount': item_data.get('total_price') or 0,
-                }])
-
-            # Determine debit account: inventory if this is a stocked item
-            # (Material is always inventory; Product depends on material_type),
-            # otherwise expense.
-            line_amount = float(item_data.get('total_price') or 0)
-            line_amount_idr = line_amount * inv_rate
-            product_id = item_data.get('product_id')
-            material_id = item_data.get('material_id')
-
-            is_inventory_item = False
-            if material_id:
-                is_inventory_item = True
-            elif product_id:
-                product = db.session.get(Product, product_id)
-                if product and product.material_type in ('raw_materials', 'packaging_materials', 'chemical_materials', 'finished_goods'):
-                    is_inventory_item = True
-
-            # Fase 3 (2026-09-21): for stocked items, GRN already posted a
-            # provisional Dr Persediaan / Cr GR/IR Clearing when the goods
-            # physically arrived (routes/purchasing.py:create_grn). This
-            # invoice's debit must therefore reverse GR/IR Clearing here,
-            # NOT debit Persediaan again - debiting Persediaan a second time
-            # would double the inventory value for every stocked line. Falls
-            # back to the old direct-Persediaan behavior only if gr_ir_clearing
-            # isn't configured yet (keeps invoices postable during rollout,
-            # matching this GRN/GR-IR pair's other fallback points).
-            gr_ir_default = None
-            if is_inventory_item:
-                from models.finance import GlobalAccountDefault
-                gr_ir_default = GlobalAccountDefault.query.filter_by(transaction_key='gr_ir_clearing').first()
-
-            if gr_ir_default:
-                debit_account_id = gr_ir_default.account_id
-            else:
-                slot = 'akun_persediaan_id' if is_inventory_item else 'akun_beban_id'
-                debit_account_id = resolve_account(slot, product_id=product_id, category_id=None)
-
-            # PPN Masukan dipisah dari nilai barang (kalau akunnya sudah diatur) supaya persediaan/GR-IR
-            # hanya berisi nilai barang dan PPN bisa dikreditkan.
-            line_tax_idr = 0.0
-            if float(item_data.get('tax_amount') or 0) > 0:
-                ppn_masukan_account_id = ppn_masukan_account_id or resolve_ppn_masukan_account_id()
-                line_tax_idr = min(round(float(item_data.get('tax_amount') or 0) * inv_rate, 2), line_amount_idr)
-            ppn_masukan_total += line_tax_idr
-            journal_lines.append({
-                'account_id': debit_account_id,
-                'debit': line_amount_idr - line_tax_idr,
-                'credit': 0,
-                'description': item_data.get('description') or f'Purchase invoice {invoice_number} line {idx}',
-            })
-            total_items_amount += line_amount
-            total_debit_amount += line_amount_idr
-
-        # Header total_amount had the same gap as item total_price: left
-        # entirely to the caller, defaulting to 0 when omitted - an invoice
-        # with correct item lines could still show Rp0 total/balance_due,
-        # misleading AP/payment reports. Auto-sum from the items' total_price
-        # (now itself guaranteed non-null by the fallback above) when the
-        # caller didn't supply total_amount. Found via real production
-        # testing 2026-10-02, same session as the item-level fix.
-        if data.get('total_amount') is None:
-            invoice.total_amount = total_items_amount
-            invoice.balance_due = total_items_amount - float(invoice.paid_amount or 0)
-
-        # Invoice blocking (SAP MM concept, 2026-09-14) - a 3-way-match discrepancy
-        # bigger than the configured tolerance now HOLDS the invoice's journal entry
-        # for manual review instead of always silently auto-posting the variance
-        # (the direction found inverted vs real SAP during the MM gap audit -
-        # see project_sap_alignment_survey memory). Small/no variance still
-        # auto-posts exactly as before - this only changes behavior for genuine
-        # discrepancies past the tolerance.
-        from models.finance import PurchaseAccountSettings
-        from utils.finance_helpers import get_or_create_singleton
-        purchase_settings = get_or_create_singleton(PurchaseAccountSettings)
-        hold_reason = None
-        try:
-            match_result = _compute_three_way_match(invoice)
-            total_price_variance = sum(
-                (line['inv_price'] - line['po_price']) * line['inv_qty'] * inv_rate
-                for line in match_result['lines']
-                if abs(line['price_variance']) > 0.01
-            )
-            variance_percent = (abs(total_price_variance) / total_debit_amount * 100) if total_debit_amount else 0
-            tolerance = float(purchase_settings.invoice_variance_tolerance_percent or 0)
-            if abs(total_price_variance) > 0.01 and variance_percent > tolerance:
-                discrepancy_lines = [
-                    f"{l.get('description', l.get('product_id') or l.get('material_id'))}: PO {inv_currency} {l['po_price']:,.2f} vs Invoice {inv_currency} {l['inv_price']:,.2f}"
-                    for l in match_result['lines'] if abs(l['price_variance']) > 0.01
-                ]
-                hold_reason = (
-                    f"Selisih harga {variance_percent:.1f}% melebihi toleransi {tolerance:.1f}%. " +
-                    '; '.join(discrepancy_lines)
-                )
-            if abs(total_price_variance) > 0.01 and not hold_reason:
-                if purchase_settings.akun_selisih_pembelian_id:
-                    if total_price_variance > 0:
-                        journal_lines.append({
-                            'account_id': purchase_settings.akun_selisih_pembelian_id,
-                            'debit': float(total_price_variance),
-                            'credit': 0,
-                            'description': f'Selisih harga pembelian - {invoice_number}',
-                        })
-                        for line in journal_lines:
-                            if line['debit'] > 0 and line['account_id'] != purchase_settings.akun_selisih_pembelian_id:
-                                reduction = min(line['debit'], float(total_price_variance))
-                                line['debit'] -= reduction
-                                break
-                    else:
-                        journal_lines.append({
-                            'account_id': purchase_settings.akun_selisih_pembelian_id,
-                            'debit': 0,
-                            'credit': float(abs(total_price_variance)),
-                            'description': f'Selisih harga pembelian - {invoice_number}',
-                        })
-                        for line in journal_lines:
-                            if line['debit'] > 0:
-                                line['debit'] += float(abs(total_price_variance))
-                                break
-        except ValueError:
-            # No PO linked, or no GRN yet - skip variance posting silently,
-            # this is a normal case (e.g. invoice created before any goods
-            # receipt), not an error condition for invoice creation itself.
-            pass
-
-        header_tax = float(data.get('tax_amount') or 0)
-        if ppn_masukan_total <= 0 and header_tax > 0 and items_data:
-            # PPN hanya diisi di header (item tanpa PPN): bukukan sebagai PPN Masukan di atas nilai barang
-            # dan tambahkan ke hutang.
-            ppn_masukan_account_id = ppn_masukan_account_id or resolve_ppn_masukan_account_id()
-            header_tax_idr = round(header_tax * inv_rate, 2)
-            ppn_masukan_total = header_tax_idr
-            total_debit_amount += header_tax_idr
-            if data.get('total_amount') is None:
-                invoice.total_amount = float(invoice.total_amount or 0) + header_tax
-                invoice.balance_due = float(invoice.total_amount) - float(invoice.paid_amount or 0)
-        if ppn_masukan_total > 0:
-            journal_lines.append({
-                'account_id': ppn_masukan_account_id,
-                'debit': round(ppn_masukan_total, 2),
-                'credit': 0,
-                'description': f'PPN Masukan - {invoice_number}',
-            })
-
-        # Credit: accounts payable (resolved per-supplier per Accurate's pattern)
-        payable_account_id = resolve_accounts_payable(invoice.supplier_id)
-        journal_lines.append({
-            'account_id': payable_account_id,
-            'debit': 0,
-            'credit': total_debit_amount,
-            'description': f'Accounts payable for {invoice_number}',
-        })
-
-        pending = PendingJournalEntry(
-            workflow_id=None,
-            entry_date=invoice.invoice_date,
-            description=f'Purchase Invoice {invoice_number}',
-            reference=invoice_number,
-            lines=journal_lines,
-            total_debit=total_debit_amount,
-            total_credit=total_debit_amount,
-            created_by=user_id,
-        )
-        db.session.add(pending)
-        db.session.flush()
-
-        invoice.pending_journal_entry_id = pending.id
-        if hold_reason:
-            # Held for review - journal deliberately left UNPOSTED (see
-            # POST /purchase-invoices/<id>/release-hold). The invoice row itself
-            # still exists so nothing is lost, but no GL entries exist yet.
-            invoice.on_hold = True
-            invoice.hold_reason = hold_reason
-            invoice.posted_by = None
-            invoice.posted_at = None
-        else:
-            post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='purchase_invoice', reference_id=invoice.id)
-
-        db.session.commit()
-
-        return jsonify({
-            'message': 'Purchase invoice ditahan untuk review (selisih harga melebihi toleransi)' if hold_reason else 'Purchase invoice created successfully',
-            'invoice': {
-                'id': invoice.id,
-                'invoice_number': invoice.invoice_number,
-                'on_hold': bool(hold_reason),
-                'hold_reason': hold_reason,
-            }
-        }), 201
-
+        result = create_purchase_invoice_core(request.get_json(), get_jwt_identity(), commit=True)
+        return jsonify(result), 201
+    except InvoiceInputError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), e.status
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+def create_purchase_invoice_core(data, user_id, commit=True):
+    """Buat faktur pembelian terkait PO + jurnal GL. commit=False dipakai Pusat Impor (savepoint dipegang pemanggil).
+    Kesalahan input -> InvoiceInputError."""
+
+    # Generate invoice number
+    invoice_number = generate_number_v2('purchase_invoice', 'PI', Invoice, 'invoice_number')
+
+    # Get PO to validate
+    po = db.session.get(PurchaseOrder, data.get('po_id'))
+    if not po:
+        raise InvoiceInputError('Purchase Order not found', 404)
+
+    # Multi-currency (2026-10-19, po_multicurrency_plan.md): currency and
+    # exchange_rate come strictly from the PO (single source of truth).
+    if po.currency != 'IDR' and po.status == 'draft':
+        raise InvoiceInputError(f'PO {po.currency} masih draft, kurs belum dikunci. Submit PO terlebih dahulu.')
+    if data.get('currency') and data['currency'].strip().upper() != po.currency:
+        raise InvoiceInputError(f"Mata uang invoice harus mengikuti PO ({po.currency}), tidak bisa diubah ke '{data['currency']}'")
+    if data.get('exchange_rate') is not None and abs(float(data['exchange_rate']) - float(po.exchange_rate or 1)) > 1e-6:
+        raise InvoiceInputError(f"Kurs invoice mengikuti kurs PO yang sudah dikunci ({float(po.exchange_rate or 1)}), tidak bisa diisi manual")
+    inv_currency = po.currency
+    inv_rate = float(po.exchange_rate or 1)
+
+    invoice_date_parsed = datetime.strptime(data.get('invoice_date'), '%Y-%m-%d').date() if data.get('invoice_date') else get_local_today()
+
+    from utils.finance_helpers import is_period_locked
+    if is_period_locked(invoice_date_parsed, transaction_type='purchase_invoice'):
+        raise InvoiceInputError(f'Periode {invoice_date_parsed.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa membuat transaksi baru di periode ini.')
+
+    # Create invoice - journal is posted immediately below (see original
+    # PurchaseInvoice behavior), so posted_by/posted_at are set here too.
+    invoice = Invoice(
+        invoice_number=invoice_number,
+        invoice_type='purchase',
+        purchase_order_id=data.get('po_id'),
+        supplier_id=data.get('supplier_id') or po.supplier_id,
+        invoice_date=invoice_date_parsed,
+        due_date=datetime.strptime(data.get('due_date'), '%Y-%m-%d').date() if data.get('due_date') else None,
+        supplier_invoice_number=data.get('supplier_invoice_number'),
+        supplier_invoice_date=datetime.strptime(data.get('supplier_invoice_date'), '%Y-%m-%d').date() if data.get('supplier_invoice_date') else None,
+        status=_resolve_incoming_status(data, default='sent'),
+        currency=inv_currency,
+        exchange_rate=inv_rate,
+        payment_terms=data.get('payment_terms'),
+        payment_method=data.get('payment_method'),
+        subtotal=data.get('subtotal', 0),
+        tax_amount=data.get('tax_amount', 0),
+        discount_amount=data.get('discount_amount', 0),
+        shipping_amount=data.get('shipping_amount', 0),
+        other_charges=data.get('other_charges', 0),
+        total_amount=data.get('total_amount', 0),
+        paid_amount=data.get('amount_paid', 0),
+        balance_due=data.get('balance_due', data.get('total_amount', 0)),
+        notes=data.get('notes'),
+        internal_notes=data.get('internal_notes'),
+        received_by=data.get('received_by') or user_id,
+        posted_by=user_id,
+        posted_at=get_local_now(),
+        created_by=user_id,
+        created_at=get_local_now()
+    )
+
+    db.session.add(invoice)
+    db.session.flush()
+
+    # Add invoice items
+    # Guard rail: every item must link back to a PO line item, so
+    # quantity_invoiced tracking and 3-way match stay accurate.
+    items_data = data.get('items', [])
+    for idx, item_data in enumerate(items_data, 1):
+        if not item_data.get('po_item_id'):
+            raise InvoiceInputError(f'Item {idx}: po_item_id is required. '
+                         'Every invoice line must reference a purchase order line item.')
+
+    from models.product import Product, Material
+    from models.approval_workflow import PendingJournalEntry
+    from utils.finance_helpers import post_pending_journal, resolve_account, resolve_accounts_payable
+
+    journal_lines = []
+    total_items_amount = 0.0
+    total_debit_amount = 0.0
+    ppn_masukan_total = 0.0
+    from utils.finance_helpers import resolve_ppn_masukan_account_id
+    from utils.tax_helpers import ppn_rate_for_code, resolve_item_tax_percent
+    ppn_masukan_account_id = None
+
+    for idx, item_data in enumerate(items_data, 1):
+        # Item identity (material/product/description/uom) comes from the PO
+        # line when the caller didn't send it - otherwise an inventory
+        # purchase silently fell through to the EXPENSE debit below.
+        _poi = db.session.get(PurchaseOrderItem, item_data.get('po_item_id'))
+        if _poi:
+            if not item_data.get('material_id') and not item_data.get('product_id'):
+                item_data['material_id'] = getattr(_poi, 'material_id', None)
+                item_data['product_id'] = getattr(_poi, 'product_id', None)
+            if not item_data.get('description'):
+                item_data['description'] = getattr(_poi, 'description', None) or ''
+            if not item_data.get('uom'):
+                item_data['uom'] = getattr(_poi, 'uom', None)
+        # total_price is NOT NULL and was left entirely to the caller to
+        # supply - auto-compute from quantity*unit_price when omitted,
+        # same fallback already used in purchase_return.py. Found via
+        # real production testing 2026-10-01 (500 NotNullViolation).
+        total_price = item_data.get('total_price')
+        if total_price is None and not float(item_data.get('tax_amount') or 0):
+            # PPN per baris: kode PPN yang dipilih di baris (ppn_code: Y/A/B/L, kosong = tanpa PPN),
+            # atau persen eksplisit, atau default dari master barang.
+            if item_data.get('tax_percent'):
+                pct = float(item_data['tax_percent'])
+            elif 'ppn_code' in item_data:
+                pct = ppn_rate_for_code(item_data.get('ppn_code')) or 0
+            else:
+                pct = resolve_item_tax_percent(0, product_id=item_data.get('product_id'),
+                                               material_id=item_data.get('material_id')) or 0
+            if pct:
+                base = (float(item_data.get('quantity') or 0) * float(item_data.get('unit_price') or 0)
+                        - float(item_data.get('discount_amount') or 0))
+                item_data['tax_percent'] = pct
+                item_data['tax_amount'] = round(base * pct / 100, 2)
+        if total_price is None:
+            quantity = float(item_data.get('quantity') or 0)
+            unit_price = float(item_data.get('unit_price') or 0)
+            discount_amount = float(item_data.get('discount_amount') or 0)
+            tax_amount = float(item_data.get('tax_amount') or 0)
+            total_price = quantity * unit_price - discount_amount + tax_amount
+            item_data['total_price'] = total_price
+
+        item = InvoiceItem(
+            invoice_id=invoice.id,
+            po_item_id=item_data.get('po_item_id'),
+            line_number=idx,
+            product_id=item_data.get('product_id'),
+            material_id=item_data.get('material_id'),
+            description=item_data.get('description') or '',
+            quantity=item_data.get('quantity'),
+            uom=item_data.get('uom'),
+            unit_price=item_data.get('unit_price'),
+            discount_percent=item_data.get('discount_percent', 0),
+            discount_amount=item_data.get('discount_amount', 0),
+            tax_percent=item_data.get('tax_percent', 0),
+            tax_amount=item_data.get('tax_amount', 0),
+            total_amount=total_price,
+            notes=item_data.get('notes'),
+            created_at=get_local_now()
+        )
+        db.session.add(item)
+
+        # Track quantity_invoiced on the PO line item
+        po_item = db.session.get(PurchaseOrderItem, item_data.get('po_item_id'))
+        if po_item:
+            po_item.quantity_invoiced = float(po_item.quantity_invoiced or 0) + float(item_data.get('quantity') or 0)
+
+        # Release the matching budget commitment (reserved when the PO
+        # was approved) by exactly the amount now becoming actual -
+        # partial invoicing releases proportionally, not all-or-nothing.
+        if po:
+            from utils.finance_helpers import release_po_budget_commitment
+            release_po_budget_commitment(po, items=[{
+                'product_id': item_data.get('product_id'),
+                'material_id': item_data.get('material_id'),
+                'amount': item_data.get('total_price') or 0,
+            }])
+
+        # Determine debit account: inventory if this is a stocked item
+        # (Material is always inventory; Product depends on material_type),
+        # otherwise expense.
+        line_amount = float(item_data.get('total_price') or 0)
+        line_amount_idr = line_amount * inv_rate
+        product_id = item_data.get('product_id')
+        material_id = item_data.get('material_id')
+
+        is_inventory_item = False
+        if material_id:
+            is_inventory_item = True
+        elif product_id:
+            product = db.session.get(Product, product_id)
+            if product and product.material_type in ('raw_materials', 'packaging_materials', 'chemical_materials', 'finished_goods'):
+                is_inventory_item = True
+
+        # Fase 3 (2026-09-21): for stocked items, GRN already posted a
+        # provisional Dr Persediaan / Cr GR/IR Clearing when the goods
+        # physically arrived (routes/purchasing.py:create_grn). This
+        # invoice's debit must therefore reverse GR/IR Clearing here,
+        # NOT debit Persediaan again - debiting Persediaan a second time
+        # would double the inventory value for every stocked line. Falls
+        # back to the old direct-Persediaan behavior only if gr_ir_clearing
+        # isn't configured yet (keeps invoices postable during rollout,
+        # matching this GRN/GR-IR pair's other fallback points).
+        gr_ir_default = None
+        if is_inventory_item:
+            from models.finance import GlobalAccountDefault
+            gr_ir_default = GlobalAccountDefault.query.filter_by(transaction_key='gr_ir_clearing').first()
+
+        if gr_ir_default:
+            debit_account_id = gr_ir_default.account_id
+        else:
+            slot = 'akun_persediaan_id' if is_inventory_item else 'akun_beban_id'
+            debit_account_id = resolve_account(slot, product_id=product_id, category_id=None)
+
+        # PPN Masukan dipisah dari nilai barang (kalau akunnya sudah diatur) supaya persediaan/GR-IR
+        # hanya berisi nilai barang dan PPN bisa dikreditkan.
+        line_tax_idr = 0.0
+        if float(item_data.get('tax_amount') or 0) > 0:
+            ppn_masukan_account_id = ppn_masukan_account_id or resolve_ppn_masukan_account_id()
+            line_tax_idr = min(round(float(item_data.get('tax_amount') or 0) * inv_rate, 2), line_amount_idr)
+        ppn_masukan_total += line_tax_idr
+        journal_lines.append({
+            'account_id': debit_account_id,
+            'debit': line_amount_idr - line_tax_idr,
+            'credit': 0,
+            'description': item_data.get('description') or f'Purchase invoice {invoice_number} line {idx}',
+        })
+        total_items_amount += line_amount
+        total_debit_amount += line_amount_idr
+
+    # Header total_amount had the same gap as item total_price: left
+    # entirely to the caller, defaulting to 0 when omitted - an invoice
+    # with correct item lines could still show Rp0 total/balance_due,
+    # misleading AP/payment reports. Auto-sum from the items' total_price
+    # (now itself guaranteed non-null by the fallback above) when the
+    # caller didn't supply total_amount. Found via real production
+    # testing 2026-10-02, same session as the item-level fix.
+    if data.get('total_amount') is None:
+        invoice.total_amount = total_items_amount
+        invoice.balance_due = total_items_amount - float(invoice.paid_amount or 0)
+
+    # Invoice blocking (SAP MM concept, 2026-09-14) - a 3-way-match discrepancy
+    # bigger than the configured tolerance now HOLDS the invoice's journal entry
+    # for manual review instead of always silently auto-posting the variance
+    # (the direction found inverted vs real SAP during the MM gap audit -
+    # see project_sap_alignment_survey memory). Small/no variance still
+    # auto-posts exactly as before - this only changes behavior for genuine
+    # discrepancies past the tolerance.
+    from models.finance import PurchaseAccountSettings
+    from utils.finance_helpers import get_or_create_singleton
+    purchase_settings = get_or_create_singleton(PurchaseAccountSettings, commit=commit)
+    hold_reason = None
+    try:
+        match_result = _compute_three_way_match(invoice)
+        total_price_variance = sum(
+            (line['inv_price'] - line['po_price']) * line['inv_qty'] * inv_rate
+            for line in match_result['lines']
+            if abs(line['price_variance']) > 0.01
+        )
+        variance_percent = (abs(total_price_variance) / total_debit_amount * 100) if total_debit_amount else 0
+        tolerance = float(purchase_settings.invoice_variance_tolerance_percent or 0)
+        if abs(total_price_variance) > 0.01 and variance_percent > tolerance:
+            discrepancy_lines = [
+                f"{l.get('description', l.get('product_id') or l.get('material_id'))}: PO {inv_currency} {l['po_price']:,.2f} vs Invoice {inv_currency} {l['inv_price']:,.2f}"
+                for l in match_result['lines'] if abs(l['price_variance']) > 0.01
+            ]
+            hold_reason = (
+                f"Selisih harga {variance_percent:.1f}% melebihi toleransi {tolerance:.1f}%. " +
+                '; '.join(discrepancy_lines)
+            )
+        if abs(total_price_variance) > 0.01 and not hold_reason:
+            if purchase_settings.akun_selisih_pembelian_id:
+                if total_price_variance > 0:
+                    journal_lines.append({
+                        'account_id': purchase_settings.akun_selisih_pembelian_id,
+                        'debit': float(total_price_variance),
+                        'credit': 0,
+                        'description': f'Selisih harga pembelian - {invoice_number}',
+                    })
+                    for line in journal_lines:
+                        if line['debit'] > 0 and line['account_id'] != purchase_settings.akun_selisih_pembelian_id:
+                            reduction = min(line['debit'], float(total_price_variance))
+                            line['debit'] -= reduction
+                            break
+                else:
+                    journal_lines.append({
+                        'account_id': purchase_settings.akun_selisih_pembelian_id,
+                        'debit': 0,
+                        'credit': float(abs(total_price_variance)),
+                        'description': f'Selisih harga pembelian - {invoice_number}',
+                    })
+                    for line in journal_lines:
+                        if line['debit'] > 0:
+                            line['debit'] += float(abs(total_price_variance))
+                            break
+    except ValueError:
+        # No PO linked, or no GRN yet - skip variance posting silently,
+        # this is a normal case (e.g. invoice created before any goods
+        # receipt), not an error condition for invoice creation itself.
+        pass
+
+    header_tax = float(data.get('tax_amount') or 0)
+    if ppn_masukan_total <= 0 and header_tax > 0 and items_data:
+        # PPN hanya diisi di header (item tanpa PPN): bukukan sebagai PPN Masukan di atas nilai barang
+        # dan tambahkan ke hutang.
+        ppn_masukan_account_id = ppn_masukan_account_id or resolve_ppn_masukan_account_id()
+        header_tax_idr = round(header_tax * inv_rate, 2)
+        ppn_masukan_total = header_tax_idr
+        total_debit_amount += header_tax_idr
+        if data.get('total_amount') is None:
+            invoice.total_amount = float(invoice.total_amount or 0) + header_tax
+            invoice.balance_due = float(invoice.total_amount) - float(invoice.paid_amount or 0)
+    if ppn_masukan_total > 0:
+        journal_lines.append({
+            'account_id': ppn_masukan_account_id,
+            'debit': round(ppn_masukan_total, 2),
+            'credit': 0,
+            'description': f'PPN Masukan - {invoice_number}',
+        })
+
+    # Credit: accounts payable (resolved per-supplier per Accurate's pattern)
+    payable_account_id = resolve_accounts_payable(invoice.supplier_id)
+    journal_lines.append({
+        'account_id': payable_account_id,
+        'debit': 0,
+        'credit': total_debit_amount,
+        'description': f'Accounts payable for {invoice_number}',
+    })
+
+    pending = PendingJournalEntry(
+        workflow_id=None,
+        entry_date=invoice.invoice_date,
+        description=f'Purchase Invoice {invoice_number}',
+        reference=invoice_number,
+        lines=journal_lines,
+        total_debit=total_debit_amount,
+        total_credit=total_debit_amount,
+        created_by=user_id,
+    )
+    db.session.add(pending)
+    db.session.flush()
+
+    invoice.pending_journal_entry_id = pending.id
+    if hold_reason:
+        # Held for review - journal deliberately left UNPOSTED (see
+        # POST /purchase-invoices/<id>/release-hold). The invoice row itself
+        # still exists so nothing is lost, but no GL entries exist yet.
+        invoice.on_hold = True
+        invoice.hold_reason = hold_reason
+        invoice.posted_by = None
+        invoice.posted_at = None
+    else:
+        post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='purchase_invoice', reference_id=invoice.id)
+
+    if commit:
+        db.session.commit()
+
+    return {
+        'message': 'Purchase invoice ditahan untuk review (selisih harga melebihi toleransi)' if hold_reason else 'Purchase invoice created successfully',
+        'invoice': {
+            'id': invoice.id,
+            'invoice_number': invoice.invoice_number,
+            'on_hold': bool(hold_reason),
+            'hold_reason': hold_reason,
+        }
+    }
+
 
 @purchase_invoice_bp.route('/purchase-invoices/<int:id>', methods=['PUT'])
 @jwt_required()

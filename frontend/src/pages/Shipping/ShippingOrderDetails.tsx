@@ -329,8 +329,9 @@ const ShippingOrderDetails: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'confirmed': return 'bg-blue-100 text-blue-800';
+      case 'pending': case 'preparing': return 'bg-yellow-100 text-yellow-800';
+      case 'confirmed': case 'packed': return 'bg-blue-100 text-blue-800';
+      case 'shipped': return 'bg-indigo-100 text-indigo-800';
       case 'in_transit': return 'bg-purple-100 text-purple-800';
       case 'delivered': return 'bg-green-100 text-green-800';
       case 'cancelled': return 'bg-red-100 text-red-800';
@@ -872,16 +873,16 @@ const ShippingOrderDetails: React.FC = () => {
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
             
             <div className="space-y-2">
-              {order.status === 'pending' && (
+              {order.status === 'preparing' && (
                 <button
-                  onClick={() => updateOrderStatus('confirmed')}
+                  onClick={() => updateOrderStatus('packed')}
                   className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
-                  Confirm Order
+                  Tandai Siap Kirim (Packed)
                 </button>
               )}
               
-              {order.status === 'confirmed' && (
+              {['packed', 'shipped'].includes(order.status) && (
                 <button
                   onClick={() => updateOrderStatus('in_transit')}
                   className="w-full px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
@@ -899,7 +900,7 @@ const ShippingOrderDetails: React.FC = () => {
                 </button>
               )}
               
-              {['pending', 'confirmed'].includes(order.status) && (
+              {['preparing', 'packed'].includes(order.status) && (
                 <button
                   onClick={() => updateOrderStatus('cancelled')}
                   className="w-full px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"

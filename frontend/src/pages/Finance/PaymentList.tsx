@@ -4,7 +4,6 @@ import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { BanknotesIcon, PlusIcon, ArrowUpTrayIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
-import ImportPaymentsModal from './ImportPaymentsModal';
 
 interface PaymentRow {
   id: number;
@@ -67,7 +66,6 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
   const [bankId, setBankId] = useState('');
   const [banks, setBanks] = useState<{ id: number; code: string; name: string }[]>([]);
   const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' } | null>(null);
-  const [showImport, setShowImport] = useState(false);
 
   useEffect(() => {
     axiosInstance.get('/api/finance/reports/cash-accounts').then((r) => setBanks(r.data.accounts || [])).catch(() => setBanks([]));
@@ -126,14 +124,14 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
           <h1 className="text-2xl font-bold">{title}</h1>
         </div>
         <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setShowImport(true)}
+        <Link
+          to={`/app/imports?kind=${type}_${source}`}
           className="flex items-center gap-1 border border-gray-300 px-4 py-2 rounded hover:bg-gray-50"
+          title="Buka Pusat Impor"
         >
           <ArrowUpTrayIcon className="w-4 h-4" />
           Import
-        </button>
+        </Link>
         <Link
           to={newHref}
           className="flex items-center gap-1 bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800"
@@ -306,9 +304,6 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
         </div>
       )}
 
-      {showImport && (
-        <ImportPaymentsModal type={type} source={source} onClose={() => setShowImport(false)} onImported={fetchRows} />
-      )}
     </div>
   );
 };

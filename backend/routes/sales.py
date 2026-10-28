@@ -527,6 +527,64 @@ def get_orders():
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
+def create_sales_order_core(data, user_id, order_number=None):
+    """Buat SalesOrder draft + item + total, TANPA commit (dipakai endpoint dan Pusat Impor). Return order."""
+    order_number = order_number or generate_number_v2('sales_order', 'SO', SalesOrder, 'order_number')
+    
+    order = SalesOrder(
+        order_number=order_number,
+        customer_id=data['customer_id'],
+        order_date=datetime.fromisoformat(data['order_date']),
+        required_date=datetime.fromisoformat(data['required_date']) if data.get('required_date') else None,
+        status='draft',
+        priority=data.get('priority', 'normal'),
+        customer_po_number=data.get('customer_po_number'),
+        payment_terms=data.get('payment_terms'),
+        delivery_address=data.get('delivery_address'),
+        shipping_method=data.get('shipping_method'),
+        shipping_cost=data.get('shipping_cost', 0),
+        shipping_ppn_code=data.get('shipping_ppn_code', 'Y'),
+        notes=data.get('notes'),
+        created_by=user_id
+    )
+
+    db.session.add(order)
+    db.session.flush()
+
+    # Add items
+    subtotal = 0
+    grand_total = 0
+    for idx, item_data in enumerate(data.get('items', []), 1):
+        item_total = item_data['quantity'] * item_data['unit_price']
+        discount_percent = item_data.get('discount_percent', 0)
+        tax_percent = resolve_item_tax_percent(item_data.get('tax_percent', 0), product_id=item_data['product_id'])
+
+        item = SalesOrderItem(
+            order_id=order.id,
+            line_number=idx,
+            product_id=item_data['product_id'],
+            description=item_data.get('description'),
+            quantity=item_data['quantity'],
+            uom=item_data.get('uom', 'PCS'),  # Default to PCS if not provided
+            unit_price=item_data['unit_price'],
+            discount_percent=discount_percent,
+            tax_percent=tax_percent,
+        )
+        grand_total += _apply_item_amounts(item, item_total, discount_percent, tax_percent)
+        db.session.add(item)
+        subtotal += item_total
+
+    order.subtotal = subtotal
+    # SAP-equivalence plan item #3 (2026-10-05): shipping_cost was a real
+    # column on this model that no create/update path ever set or rolled
+    # into total_amount - effectively dead. Added as a header-level charge
+    # on top of the item-level grand_total (which already carries its own
+    # discount+tax per _apply_item_amounts), taxed via its own
+    # shipping_ppn_code since it isn't tied to any one product/ppn_code.
+    order.total_amount = grand_total + _apply_shipping_amounts(order)
+    return order
+
+
 @sales_bp.route('/orders', methods=['POST'])
 @jwt_required()
 @require_permission('sales_orders.create')
@@ -575,59 +633,8 @@ def create_order():
             except ValidationError as ve:
                 print(f"Validation warning: {ve}")
         
-        order_number = generate_number_v2('sales_order', 'SO', SalesOrder, 'order_number')
-        
-        order = SalesOrder(
-            order_number=order_number,
-            customer_id=data['customer_id'],
-            order_date=datetime.fromisoformat(data['order_date']),
-            required_date=datetime.fromisoformat(data['required_date']) if data.get('required_date') else None,
-            status='draft',
-            priority=data.get('priority', 'normal'),
-            customer_po_number=data.get('customer_po_number'),
-            payment_terms=data.get('payment_terms'),
-            delivery_address=data.get('delivery_address'),
-            shipping_method=data.get('shipping_method'),
-            shipping_cost=data.get('shipping_cost', 0),
-            shipping_ppn_code=data.get('shipping_ppn_code', 'Y'),
-            notes=data.get('notes'),
-            created_by=user_id
-        )
-
-        db.session.add(order)
-        db.session.flush()
-
-        # Add items
-        subtotal = 0
-        grand_total = 0
-        for idx, item_data in enumerate(data.get('items', []), 1):
-            item_total = item_data['quantity'] * item_data['unit_price']
-            discount_percent = item_data.get('discount_percent', 0)
-            tax_percent = resolve_item_tax_percent(item_data.get('tax_percent', 0), product_id=item_data['product_id'])
-
-            item = SalesOrderItem(
-                order_id=order.id,
-                line_number=idx,
-                product_id=item_data['product_id'],
-                description=item_data.get('description'),
-                quantity=item_data['quantity'],
-                uom=item_data.get('uom', 'PCS'),  # Default to PCS if not provided
-                unit_price=item_data['unit_price'],
-                discount_percent=discount_percent,
-                tax_percent=tax_percent,
-            )
-            grand_total += _apply_item_amounts(item, item_total, discount_percent, tax_percent)
-            db.session.add(item)
-            subtotal += item_total
-
-        order.subtotal = subtotal
-        # SAP-equivalence plan item #3 (2026-10-05): shipping_cost was a real
-        # column on this model that no create/update path ever set or rolled
-        # into total_amount - effectively dead. Added as a header-level charge
-        # on top of the item-level grand_total (which already carries its own
-        # discount+tax per _apply_item_amounts), taxed via its own
-        # shipping_ppn_code since it isn't tied to any one product/ppn_code.
-        order.total_amount = grand_total + _apply_shipping_amounts(order)
+        order = create_sales_order_core(data, user_id)
+        order_number = order.order_number
 
         db.session.commit()
 

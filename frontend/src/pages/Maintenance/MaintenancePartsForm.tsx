@@ -125,12 +125,12 @@ const MaintenancePartsForm: React.FC = () => {
 
   const fetchAvailableParts = async () => {
     try {
-      const response = await fetch('/api/inventory/parts', {
+      const response = await fetch('/api/assets/spare-parts', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (response.ok) {
         const data = await response.json();
-        setAvailableParts(data.parts || []);
+        setAvailableParts(data.spare_parts || []);
       }
     } catch (error) {
       console.error('Failed to fetch parts:', error);
@@ -221,11 +221,9 @@ const MaintenancePartsForm: React.FC = () => {
   };
 
   const selectFromInventory = (index: number, selectedPart: any) => {
-    updatePart(index, 'part_name', selectedPart.name);
+    updatePart(index, 'part_name', selectedPart.part_name);
     updatePart(index, 'part_number', selectedPart.part_number);
     updatePart(index, 'unit_cost', selectedPart.unit_cost);
-    updatePart(index, 'supplier', selectedPart.supplier);
-    updatePart(index, 'description', selectedPart.description);
   };
 
   const calculateTotalCost = () => {
@@ -453,7 +451,7 @@ const MaintenancePartsForm: React.FC = () => {
                           >
                             <option value="">Select from inventory</option>
                             {availableParts.map(p => (
-                              <option key={p.id} value={p.id}>{p.name}</option>
+                              <option key={p.id} value={p.id}>{p.part_number} - {p.part_name}</option>
                             ))}
                           </select>
                         </div>

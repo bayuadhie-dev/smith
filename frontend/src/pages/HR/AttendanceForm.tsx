@@ -126,7 +126,7 @@ const AttendanceForm: React.FC = () => {
 
   const fetchAttendance = async () => {
     try {
-      const response = await fetch(`/api/hr/attendances/${id}`, {
+      const response = await fetch(`/api/hr/attendance/${id}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -198,8 +198,8 @@ const AttendanceForm: React.FC = () => {
 
     try {
       const url = isEdit 
-        ? `/api/hr/attendances/${id}` 
-        : '/api/hr/attendances';
+        ? `/api/hr/attendance/${id}` 
+        : '/api/hr/attendance';
       
       const method = isEdit ? 'PUT' : 'POST';
 

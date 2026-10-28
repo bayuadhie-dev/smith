@@ -797,3 +797,27 @@ def equity_changes():
     return jsonify({'period': {'date_from': date_from.isoformat(), 'date_to': date_to.isoformat()}, 'rows': rows,
                     'prior_profit': prior_profit, 'period_profit': period_profit,
                     'total_opening': round(total_open, 2), 'total_closing': round(total_close, 2)}), 200
+
+
+@finance_reports_bp.route('/generate-pdf', methods=['POST'])
+@jwt_required()
+@require_permission('finance.view')
+def generate_pdf_from_rows():
+    """PDF dari baris laporan yang sudah dihitung di layar: body {type, data: {title, data: [{kolom: nilai}], period}}."""
+    body = request.get_json(silent=True) or {}
+    payload = body.get('data') or {}
+    records = payload.get('data') if isinstance(payload, dict) else payload
+    if not isinstance(records, list) or not records or not all(isinstance(r, dict) for r in records):
+        return jsonify({'error': 'Data laporan kosong atau formatnya tidak dikenali'}), 400
+    headers = []
+    for r in records:
+        for k in r:
+            if k not in headers:
+                headers.append(k)
+    rows = [[r.get(h, '') for h in headers] for r in records]
+    title = str(payload.get('title') or body.get('type') or 'Laporan')[:120]
+    period = payload.get('period')
+    subtitle = f'Periode {period}' if period else None
+    kinds = _col_kinds(headers, rows)
+    safe = re.sub(r'[^A-Za-z0-9_.-]+', '_', str(body.get('type') or 'laporan'))[:60]
+    return _pdf_file(title, headers, rows, f'{safe}.pdf', subtitle, kinds)
