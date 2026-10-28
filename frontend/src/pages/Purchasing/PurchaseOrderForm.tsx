@@ -570,7 +570,9 @@ const navigate = useNavigate()
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                         Unit Price ({currencySymbol(watchedCurrency)}) *
                       </label>
-                      <NumberInput currency
+                      <NumberInput
+                        currency={watchedCurrency === 'IDR'}
+                        decimals={2}
                         step="0.01"
                         min="0"
                         {...register(`items.${index}.unit_price` as const, {
