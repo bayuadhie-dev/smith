@@ -77,6 +77,11 @@ const navigate = useNavigate()
   })
 
   const watchedInvoiceType = watch('invoice_type')
+
+  // Faktur pembelian baru punya form sendiri (PO/GRN, PPN per baris, jurnal hutang); form ini hanya untuk faktur penjualan baru.
+  useEffect(() => {
+    if (watchedInvoiceType === 'purchase' && !id) navigate('/app/purchasing/invoices/new')
+  }, [watchedInvoiceType, id])
   const watchedItems = watch('items')
   const watchedTaxRate = watch('tax_rate') || 0
   const watchedDiscountAmount = watch('discount_amount') || 0
@@ -418,10 +423,10 @@ const navigate = useNavigate()
                 className="input-field"
               >
                 <option value="sales">Sales Invoice</option>
-                {watchedInvoiceType === 'purchase' && <option value="purchase">Purchase Invoice</option>}
+                <option value="purchase">Purchase Invoice (Faktur Pembelian)</option>
               </select>
               <p className="mt-1 text-xs text-gray-500">
-                Faktur pembelian dibuat dari menu <Link to="/app/purchasing/invoices/new" className="text-blue-600 hover:underline">Faktur Pembelian</Link> (terhubung ke PO dan GRN, jurnal hutang otomatis).
+                Memilih Purchase Invoice membuka form <Link to="/app/purchasing/invoices/new" className="text-blue-600 hover:underline">Faktur Pembelian</Link> (terhubung ke PO dan GRN, jurnal hutang otomatis).
               </p>
               {errors.invoice_type && (
                 <p className="mt-1 text-sm text-red-600">{errors.invoice_type.message}</p>
