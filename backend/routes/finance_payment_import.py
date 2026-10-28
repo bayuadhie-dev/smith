@@ -198,6 +198,7 @@ def build_transactions(rows, ptype, source):
         items = groups[key]
         tx = {'key': key, 'number': None if key.startswith('__row') else key, 'rows': [n for n, _ in items], 'errors': [], 'data': None}
         first = items[0][1]
+        zero_skipped = 0
         try:
             pdate = _parse_date(first.get('tanggal'))
             bank = account(first.get('kas_bank'), want_cash=True)
@@ -205,7 +206,12 @@ def build_transactions(rows, ptype, source):
                 lines = []
                 for n, rec in items:
                     try:
-                        lines.append({'account_id': account(rec.get('akun_lawan')).id, 'amount': _parse_amount(rec.get('nilai')),
+                        amt = _parse_amount(rec.get('nilai'))
+                        acc_line = account(rec.get('akun_lawan'))
+                        if amt == 0:
+                            zero_skipped += 1
+                            continue
+                        lines.append({'account_id': acc_line.id, 'amount': amt,
                                       'description': (str(rec.get('keterangan')).strip() if rec.get('keterangan') else None)})
                     except ValueError as e:
                         tx['errors'].append(f'Baris {n}: {e}')
@@ -220,10 +226,16 @@ def build_transactions(rows, ptype, source):
                             raise ValueError(f'Faktur "{num}" tidak ditemukan')
                         if inv.invoice_type != ('sales' if ptype == 'receipt' else 'purchase'):
                             raise ValueError(f'Faktur {num} bukan faktur {"penjualan" if ptype == "receipt" else "pembelian"}')
-                        allocs.append({'invoice_id': inv.id, 'amount': _parse_amount(rec.get('nilai'))})
+                        amt = _parse_amount(rec.get('nilai'))
+                        if amt == 0:
+                            zero_skipped += 1
+                            continue
+                        allocs.append({'invoice_id': inv.id, 'amount': amt})
                     except ValueError as e:
                         tx['errors'].append(f'Baris {n}: {e}')
                 body = {'allocations': allocs}
+            if not tx['errors'] and not (body.get('lines') or body.get('allocations')):
+                tx['errors'].append(f'Baris {tx["rows"][0]}: semua baris bernilai 0, tidak ada yang bisa disimpan')
             if not tx['errors']:
                 tx['data'] = {
                     **body, 'payment_date': pdate.isoformat(), 'payment_type': ptype, 'payment_method': 'bank_transfer',
@@ -234,7 +246,7 @@ def build_transactions(rows, ptype, source):
                 }
                 tx['summary'] = {'date': pdate.isoformat(), 'bank': f'{bank.account_code} {bank.account_name}',
                                  'total': round(sum(float(i['amount']) for i in body.get('lines') or body.get('allocations')), 2),
-                                 'lines': len(body.get('lines') or body.get('allocations'))}
+                                 'lines': len(body.get('lines') or body.get('allocations')), 'zero_skipped': zero_skipped}
         except ValueError as e:
             tx['errors'].append(f'Baris {tx["rows"][0]}: {e}')
         txs.append(tx)

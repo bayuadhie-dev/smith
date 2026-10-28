@@ -103,3 +103,21 @@ def test_bad_files_are_rejected_clearly(client, auth_headers, db_session):
     _bank(db_session); _acc(db_session, '9-1000')
     r = _post(client, auth_headers, csv_buf, name='x.csv').get_json()
     assert r['summary']['ok'] == 1 and r['transactions'][0]['summary']['total'] == 1500.5
+
+
+def test_zero_value_lines_are_skipped_not_rejected(client, auth_headers, db_session):
+    from models.finance import Payment
+    bank = _bank(db_session)
+    beban, lain = _acc(db_session, '6-6000'), _acc(db_session, '9-1000')
+    today = date.today().isoformat()
+    rows = [
+        [today, 'IMP-Z', bank.account_code, beban.account_code, 50000, 'PT Z', 'Baris isi', ''],
+        [today, 'IMP-Z', bank.account_code, lain.account_code, 0, '', 'Baris nol', ''],
+        [today, 'IMP-ALLZERO', bank.account_code, beban.account_code, 0, '', '', ''],
+    ]
+    res = _post(client, auth_headers, _xlsx(rows, KAS), commit=True).get_json()
+    assert res['summary']['ok'] == 1 and res['summary']['error'] == 1
+    ok = [t for t in res['transactions'] if not t['errors']][0]
+    assert ok['summary']['lines'] == 1 and ok['summary']['zero_skipped'] == 1
+    assert Payment.query.filter_by(payment_number='IMP-Z').count() == 1
+    assert any('bernilai 0' in e for t in res['transactions'] for e in t['errors'])
