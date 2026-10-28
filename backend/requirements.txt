@@ -1,3 +1,4 @@
+# Requires Python 3.12 (verified 2026-10-28 in a clean venv: all deps install and create_app() boots; Python 3.14 breaks SQLAlchemy 2.0.23)
 # Core Framework
 Flask==3.0.0
 Flask-SQLAlchemy==3.1.1
@@ -29,7 +30,7 @@ waitress==2.1.2  # Windows-compatible WSGI server
 
 # Utilities
 python-dotenv==1.0.0
-Werkzeug==3.1.8
+Werkzeug==3.1.9
 
 # Date & Time
 python-dateutil==2.8.2
@@ -64,7 +65,7 @@ flasgger==0.9.7.1
 sentry-sdk[flask]==1.40.6
 
 # Additional utilities
-numpy==1.26.2
+numpy==2.5.1
 Pillow==13.0.0  # Image processing if needed
 
 # PDF Generation
@@ -114,3 +115,12 @@ alembic==1.13.1
 
 # Rate Limiting
 Flask-Limiter==3.5.0
+
+# Added 2026-10-28 after scanning all imports (were installed by hand or missing)
+scikit-learn==1.9.0  # utils/ews_scoring.py (Early Warning System .pkl models)
+joblib==1.5.3  # utils/ews_scoring.py
+opencv-python-headless==4.14.0.94  # utils/face_detector.py
+pikepdf==10.17.0  # utils/dcc_pdf.py (lock DCC PDFs)
+pywebpush==2.5.0  # utils/send_notification.py (web push)
+resend==2.50.0  # utils/email_service.py (EMAIL_PROVIDER=resend)
+google-api-python-client==2.201.0  # backup_database.py (Google Drive upload)
