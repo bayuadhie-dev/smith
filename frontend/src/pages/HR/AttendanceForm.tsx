@@ -397,7 +397,7 @@ const AttendanceForm: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     <ClockIcon className="inline h-4 w-4 mr-1" />
-                    ClockIcon In Time *
+                    Clock In Time *
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -419,7 +419,7 @@ const AttendanceForm: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    ClockIcon Out Time *
+                    Clock Out Time *
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -487,11 +487,11 @@ const AttendanceForm: React.FC = () => {
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">Time Summary</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-600 dark:text-gray-300">ClockIcon In:</span>
+                    <span className="text-gray-600 dark:text-gray-300">Clock In:</span>
                     <div className="font-medium">{formData.clock_in || 'Not set'}</div>
                   </div>
                   <div>
-                    <span className="text-gray-600 dark:text-gray-300">ClockIcon Out:</span>
+                    <span className="text-gray-600 dark:text-gray-300">Clock Out:</span>
                     <div className="font-medium">{formData.clock_out || 'Not set'}</div>
                   </div>
                   <div>

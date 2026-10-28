@@ -14,10 +14,11 @@ import {
 interface WorkOrder {
   id: number;
   wo_number: string;
-  product: {
+  product?: {
     name: string;
     code: string;
   };
+  product_name?: string;
   quantity: number;
   status: string;
 }
@@ -102,7 +103,7 @@ const ProductionScheduleForm: React.FC = () => {
 
   const fetchWorkOrders = async () => {
     try {
-      const response = await fetch('/api/production/work-orders?status=released,in_progress', {
+      const response = await fetch('/api/production/work-orders?status=released,in_progress&per_page=1000', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -267,13 +268,13 @@ const ProductionScheduleForm: React.FC = () => {
                 <option value="">Select SPK</option>
                 {workOrders.map(wo => (
                   <option key={wo.id} value={wo.id}>
-                    {wo.wo_number} - {wo.product.name} ({wo.quantity} pcs)
+                    {wo.wo_number} - {wo.product?.name ?? wo.product_name ?? '-'} ({wo.quantity} pcs)
                   </option>
                 ))}
               </select>
               {selectedWorkOrder && (
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Product: {selectedWorkOrder.product.code} - {selectedWorkOrder.product.name}
+                  Product: {selectedWorkOrder.product ? `${selectedWorkOrder.product.code} - ${selectedWorkOrder.product.name}` : (selectedWorkOrder.product_name ?? '-')}
                 </p>
               )}
             </div>

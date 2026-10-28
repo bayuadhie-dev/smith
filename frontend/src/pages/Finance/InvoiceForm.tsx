@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import SearchableSelect from '../../components/SearchableSelect'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosConfig'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useForm, useFieldArray } from 'react-hook-form'
@@ -418,8 +418,11 @@ const navigate = useNavigate()
                 className="input-field"
               >
                 <option value="sales">Sales Invoice</option>
-                <option value="purchase">Purchase Invoice</option>
+                {watchedInvoiceType === 'purchase' && <option value="purchase">Purchase Invoice</option>}
               </select>
+              <p className="mt-1 text-xs text-gray-500">
+                Faktur pembelian dibuat dari menu <Link to="/app/purchasing/invoices/new" className="text-blue-600 hover:underline">Faktur Pembelian</Link> (terhubung ke PO dan GRN, jurnal hutang otomatis).
+              </p>
               {errors.invoice_type && (
                 <p className="mt-1 text-sm text-red-600">{errors.invoice_type.message}</p>
               )}

@@ -22,6 +22,49 @@ from utils.timezone import get_local_now, get_local_today
 purchasing_bp = Blueprint('purchasing', __name__)
 
 
+def _sync_po_received(po_id):
+    """Hitung ulang PurchaseOrderItem.quantity_received dari jumlah DITERIMA (accepted) di semua GRN PO ini
+    (GRN yang ditolak tidak dihitung). Sumber kebenaran tetap baris GRN; kolom ini hanya salinan untuk tampilan."""
+    for it in PurchaseOrderItem.query.filter_by(po_id=po_id).all():
+        total = db.session.query(db.func.coalesce(db.func.sum(GRNItem.quantity_accepted), 0)) \
+            .join(GoodsReceivedNote, GoodsReceivedNote.id == GRNItem.grn_id) \
+            .filter(GRNItem.po_item_id == it.id, GoodsReceivedNote.status != 'rejected').scalar() or 0
+        it.quantity_received = float(total)
+
+
+def _apply_po_tax(po):
+    """Hitung pajak PO dari dua centang: Kena Pajak (is_taxable) dan Total termasuk pajak (tax_inclusive).
+    - tidak kena pajak: tanpa PPN
+    - kena pajak: PPN sesuai kode (Y/A/B/L) ditambahkan di atas harga
+    - kena pajak + termasuk pajak: harga sudah memuat PPN; PPN dipisahkan (DPP = harga - PPN), total tetap
+    Mengisi tax_percent/tax_amount tiap baris, po.subtotal (DPP), po.tax_amount dan po.total_amount."""
+    from utils.tax_helpers import ppn_rate_for_code
+    items = PurchaseOrderItem.query.filter_by(po_id=po.id).all()
+    rate = 0.0
+    if po.is_taxable:
+        if not po.ppn_code:
+            sup = db.session.get(Supplier, po.supplier_id)
+            po.ppn_code = (sup.ppn_code if sup and sup.ppn_code else 'Y')
+        rate = ppn_rate_for_code(po.ppn_code) or 0.0
+    inclusive = bool(po.is_taxable and po.tax_inclusive and rate)
+    gross = tax_total = 0.0
+    for it in items:
+        base = float(it.total_price or 0)
+        if not rate:
+            tax = 0.0
+        elif inclusive:
+            tax = round(base - base / (1 + rate / 100), 2)
+        else:
+            tax = round(base * rate / 100, 2)
+        it.tax_percent = rate
+        it.tax_amount = tax
+        gross += base
+        tax_total += tax
+    po.tax_amount = round(tax_total, 2)
+    po.subtotal = round(gross - tax_total, 2) if inclusive else round(gross, 2)
+    po.total_amount = _calculate_po_total(po, float(po.subtotal))
+
+
 def _calculate_po_total(po, subtotal):
     """Single source of truth for PurchaseOrder.total_amount - create and
     update used to compute this two different ways (create ignored tax/
@@ -42,6 +85,19 @@ def _validate_po_currency(value):
     if currency not in PO_ALLOWED_CURRENCIES:
         raise ValueError(f"Mata uang '{currency}' tidak didukung. Pilihan: {', '.join(PO_ALLOWED_CURRENCIES)}")
     return currency
+
+
+def _parse_manual_rate(value):
+    """Kurs manual dari form: kosong -> None; angka > 0 -> float; selain itu ValueError."""
+    if value in (None, ''):
+        return None
+    try:
+        rate = float(value)
+    except (TypeError, ValueError):
+        raise ValueError('Kurs manual harus berupa angka')
+    if rate <= 0:
+        raise ValueError('Kurs manual harus lebih dari 0')
+    return rate
 
 
 def _po_amount_idr(po, amount):
@@ -110,6 +166,7 @@ def get_suppliers():
                 'payment_terms': str(s.payment_terms_days) if s.payment_terms_days is not None else '30',
                 'credit_limit': float(s.credit_limit) if s.credit_limit else 0.0,
                 'rating': s.rating,
+                'ppn_code': s.ppn_code,
                 'is_active': s.is_active,
                 'created_at': s.created_at.isoformat() if s.created_at else None
             } for s in suppliers.items],
@@ -171,6 +228,7 @@ def create_supplier():
             payment_terms_days=int(data.get('payment_terms', 30)) if data.get('payment_terms') else 30,
             credit_limit=float(data.get('credit_limit', 0)) if data.get('credit_limit') else 0.0,
             supplier_type=data.get('supplier_type'),
+            ppn_code=(str(data.get('ppn_code')).strip().upper()[:1] or None) if data.get('ppn_code') else None,
             is_active=data.get('is_active', True),
             notes=data.get('notes'),
             created_at=get_local_now()
@@ -219,6 +277,7 @@ def get_supplier(id):
             'credit_limit': float(supplier.credit_limit) if supplier.credit_limit else 0.0,
             'supplier_type': supplier.supplier_type,
             'rating': supplier.rating,
+            'ppn_code': supplier.ppn_code,
             'is_active': supplier.is_active,
             'notes': supplier.notes,
             'created_at': supplier.created_at.isoformat() if supplier.created_at else None
@@ -298,6 +357,8 @@ def update_supplier(id):
             supplier.credit_limit = float(data['credit_limit']) if data['credit_limit'] else 0.0
         if 'supplier_type' in data:
             supplier.supplier_type = data['supplier_type']
+        if 'ppn_code' in data:
+            supplier.ppn_code = (str(data['ppn_code']).strip().upper()[:1] or None) if data['ppn_code'] else None
         if 'is_active' in data:
             supplier.is_active = bool(data['is_active'])
         if 'notes' in data:
@@ -366,8 +427,11 @@ def get_purchase_orders():
         search = request.args.get('search', '').strip()
         status = request.args.get('status', '').strip()
         priority = request.args.get('priority', '').strip()
+        supplier_filter = request.args.get('supplier_id', type=int)
 
         query = PurchaseOrder.query
+        if supplier_filter:
+            query = query.filter(PurchaseOrder.supplier_id == supplier_filter)
         if search:
             query = query.filter(PurchaseOrder.po_number.ilike(f'%{search}%'))
         if status:
@@ -382,6 +446,7 @@ def get_purchase_orders():
             'purchase_orders': [{
                 'id': po.id,
                 'po_number': po.po_number,
+                'supplier_id': po.supplier_id,
                 'supplier_name': po.supplier.company_name,
                 'order_date': po.order_date.isoformat(),
                 'status': po.status,
@@ -441,9 +506,17 @@ def _po_source_list_errors(data, supplier_id):
 
 def create_purchase_order_core(data, user_id, po_number=None):
     """Buat PurchaseOrder draft + item (+ jadwal kedatangan) + total, TANPA commit (dipakai endpoint dan Pusat Impor). ValueError bila mata uang tidak valid."""
+    custom_number = (str(data.get('po_number')).strip() if data.get('po_number') else '')
+    if not po_number and custom_number:
+        if len(custom_number) > 100:
+            raise ValueError('Nomor PO maksimal 100 karakter')
+        if PurchaseOrder.query.filter(db.func.lower(PurchaseOrder.po_number) == custom_number.lower()).first():
+            raise ValueError(f'Nomor PO {custom_number} sudah dipakai')
+        po_number = custom_number
     po_number = po_number or generate_number_v2('purchase_order', 'PO', PurchaseOrder, 'po_number')
 
     currency = _validate_po_currency(data.get('currency'))
+    manual_rate = _parse_manual_rate(data.get('manual_exchange_rate')) if currency != 'IDR' else None
 
     po = PurchaseOrder(
         po_number=po_number,
@@ -457,6 +530,10 @@ def create_purchase_order_core(data, user_id, po_number=None):
         # submit_for_approval locks the real rate.
         currency=currency,
         exchange_rate=1,
+        manual_exchange_rate=manual_rate,
+        is_taxable=bool(data.get('is_taxable')),
+        tax_inclusive=bool(data.get('is_taxable') and data.get('tax_inclusive')),
+        ppn_code=(str(data.get('ppn_code')).strip().upper()[:1] or None) if data.get('ppn_code') else None,
         created_by=user_id
     )
     
@@ -484,6 +561,8 @@ def create_purchase_order_core(data, user_id, po_number=None):
     
     po.subtotal = subtotal
     po.total_amount = _calculate_po_total(po, subtotal)
+    db.session.flush()
+    _apply_po_tax(po)
     return po
 
 
@@ -572,6 +651,9 @@ def get_purchase_order(id):
             'priority': po.priority,
             'payment_terms': po.payment_terms,
             'payment_method': po.payment_method,
+            'is_taxable': bool(po.is_taxable),
+            'tax_inclusive': bool(po.tax_inclusive),
+            'ppn_code': po.ppn_code,
             'delivery_address': po.delivery_address,
             'shipping_method': po.shipping_method,
             'shipping_cost': float(po.shipping_cost or 0),
@@ -584,6 +666,7 @@ def get_purchase_order(id):
             'currency': po.currency,
             'exchange_rate': float(po.exchange_rate or 1),
             'exchange_rate_source': po.exchange_rate_source,
+            'manual_exchange_rate': float(po.manual_exchange_rate) if po.manual_exchange_rate else None,
             'total_amount_idr': _po_amount_idr(po, po.total_amount),
             'has_grn': len(po.grn_records) > 0,
             'items': [{
@@ -600,6 +683,7 @@ def get_purchase_order(id):
                 'unit_price': float(i.unit_price),
                 'total_price': float(i.total_price),
                 'quantity_received': float(i.quantity_received or 0),
+                'quantity_invoiced': float(i.quantity_invoiced or 0),
                 'schedules': [sc.to_dict() for sc in i.schedules],
             } for i in po.items]
         }), 200
@@ -669,6 +753,20 @@ def update_purchase_order(id):
             if field in data:
                 setattr(po, field, data[field])
 
+        if 'manual_exchange_rate' in data:
+            if po.status != 'draft':
+                return jsonify({'error': 'Kurs manual hanya bisa diubah saat PO masih draft'}), 400
+            po.manual_exchange_rate = _parse_manual_rate(data['manual_exchange_rate']) if po.currency != 'IDR' else None
+        if po.currency == 'IDR':
+            po.manual_exchange_rate = None
+        tax_changed = False
+        if not has_grn and ('is_taxable' in data or 'tax_inclusive' in data or 'ppn_code' in data):
+            po.is_taxable = bool(data.get('is_taxable', po.is_taxable))
+            po.tax_inclusive = bool(po.is_taxable and data.get('tax_inclusive', po.tax_inclusive))
+            if 'ppn_code' in data:
+                po.ppn_code = (str(data['ppn_code']).strip().upper()[:1] or None) if data['ppn_code'] else None
+            tax_changed = True
+
         for date_field in ['required_date', 'expected_date', 'delivery_date']:
             if date_field in data and data[date_field]:
                 setattr(po, date_field, datetime.fromisoformat(data[date_field]))
@@ -701,6 +799,10 @@ def update_purchase_order(id):
                     subtotal += item_total
                 po.subtotal = subtotal
                 po.total_amount = _calculate_po_total(po, subtotal)
+
+        if not has_grn and ('items' in data or tax_changed or 'supplier_id' in data):
+            db.session.flush()
+            _apply_po_tax(po)
 
         db.session.commit()
         return jsonify({'message': 'PO updated', 'po_id': po.id}), 200
@@ -863,6 +965,10 @@ def create_grn():
                 quantity_accepted=quantity_accepted,
                 uom=uom,
                 batch_number=batch_number,
+                lot_number=(item_data.get('lot_number') or None),
+                production_date=datetime.strptime(item_data['production_date'][:10], '%Y-%m-%d').date() if item_data.get('production_date') else None,
+                expiry_date=datetime.strptime(item_data['expiry_date'][:10], '%Y-%m-%d').date() if item_data.get('expiry_date') else None,
+                notes=(item_data.get('notes') or None),
                 location_id=location_id
             )
             db.session.add(grn_item)
@@ -1023,6 +1129,8 @@ def create_grn():
                 else:
                     po.status = 'partial'
 
+        db.session.flush()
+        _sync_po_received(data['po_id'])
         db.session.commit()
 
         try:
@@ -1440,6 +1548,8 @@ def inspect_grn(grn_id):
         else:
             grn.quality_status = 'partial'
 
+        db.session.flush()
+        _sync_po_received(grn.po_id)
         db.session.commit()
         return jsonify({
             'message': f'Inspeksi selesai — diterima: {total_accepted}, ditolak: {total_rejected}',
@@ -1530,6 +1640,8 @@ def update_grn(grn_id):
                 if 'expiry_date' in item_data and item_data['expiry_date']:
                     grn_item.expiry_date = datetime.strptime(item_data['expiry_date'], '%Y-%m-%d').date()
 
+        db.session.flush()
+        _sync_po_received(grn.po_id)
         db.session.commit()
         return jsonify({'message': 'GRN updated', 'grn_id': grn.id}), 200
     except Exception as e:
@@ -1685,6 +1797,10 @@ def submit_for_approval(po_id):
         if po.currency == 'IDR':
             po.exchange_rate = 1
             po.exchange_rate_source = 'auto'
+        elif po.manual_exchange_rate and manual_rate is None:
+            # Kurs manual yang sengaja diisi user di form PO: dipakai menggantikan kurs otomatis.
+            po.exchange_rate = float(po.manual_exchange_rate)
+            po.exchange_rate_source = 'manual'
         else:
             from utils.exchange_rates import get_current_rate
             auto_rate = get_current_rate(f'{po.currency}_IDR')

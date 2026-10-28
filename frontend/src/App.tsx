@@ -30,6 +30,7 @@ import BOMManagement from './pages/Products/BOMManagement'
 import ProductLifecycle from './pages/Products/ProductLifecycle'
 import ProductsNewPage from './pages/ProductsNewPage'
 import ImportCenter from './pages/ImportCenter'
+import PurchaseInvoiceForm from './pages/Purchasing/PurchaseInvoiceForm'
 import MasterDataPage from './pages/MasterData/MasterDataPage'
 import ProductFormNew from './components/ProductFormNew'
 import ProductVersionHistory from './components/ProductVersionHistory'
@@ -538,6 +539,7 @@ function AppChildRoutes() {
                 <Route path="sales/orders/:id" element={<SalesOrderDetails />} />
                 <Route path="sales/forecasts" element={<SalesForecastList />} />
                 <Route path="sales/forecasts/:id" element={<SalesForecastGrid />} />
+                <Route path="sales/invoices" element={<Navigate to="/app/finance/invoices" replace />} />
                 <Route path="sales/invoices/new" element={<SalesInvoiceForm />} />
                 <Route path="sales/invoices/:id/edit" element={<SalesInvoiceForm />} />
                 <Route path="sales/invoices/:id" element={<SalesInvoiceDetail />} />
@@ -578,6 +580,7 @@ function AppChildRoutes() {
                 <Route path="purchasing/contracts/:id/edit" element={<ContractForm />} />
                 <Route path="purchasing/price-comparison" element={<PriceComparison />} />
                 <Route path="purchasing/invoices" element={<PurchaseInvoiceList />} />
+                <Route path="purchasing/invoices/new" element={<PurchaseInvoiceForm />} />
                 <Route path="purchasing/invoices/:id/match" element={<InvoiceMatching />} />
                 <Route path="purchasing/invoices/:id" element={<PurchaseInvoiceDetail />} />
                 <Route path="purchasing/requisitions" element={<PRList />} />

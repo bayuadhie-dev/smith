@@ -20,6 +20,7 @@ class Supplier(db.Model):
     country = db.Column(db.String(100), nullable=True)
     postal_code = db.Column(db.String(20), nullable=True)
     payment_terms_days = db.Column(db.Integer, default=30)
+    ppn_code = db.Column(db.String(1), nullable=True)  # jenis PPN pemasok: Y/A/B/L (lihat utils/tax_helpers)
     credit_limit = db.Column(db.Numeric(15, 2), default=0.0)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     supplier_type = db.Column(db.String(50), nullable=True)  # manufacturer, distributor, trader
@@ -64,6 +65,9 @@ class PurchaseOrder(db.Model):
     tax_amount = db.Column(db.Numeric(15, 2), default=0)
     discount_amount = db.Column(db.Numeric(15, 2), default=0)
     total_amount = db.Column(db.Numeric(15, 2), default=0)
+    is_taxable = db.Column(db.Boolean, nullable=False, default=False, server_default='false')      # Kena Pajak
+    tax_inclusive = db.Column(db.Boolean, nullable=False, default=False, server_default='false')   # Total termasuk pajak
+    ppn_code = db.Column(db.String(1), nullable=True)                                             # Y/A/B/L
     # Multi-currency (2026-10-19, po_multicurrency_plan.md): amounts above
     # are in `currency`. exchange_rate (<currency> -> IDR) is locked once at
     # PO approval from utils/exchange_rates.get_current_rate and is the single
@@ -73,6 +77,8 @@ class PurchaseOrder(db.Model):
     # 'auto' (exchange_rates feed) or 'manual' (user-entered when the feed had
     # no rate, after confirming the real rate). NULL = not locked yet / legacy.
     exchange_rate_source = db.Column(db.String(10), nullable=True)
+    # Kurs manual yang diisi user di form PO (draft); dikunci menggantikan kurs otomatis saat submit approval.
+    manual_exchange_rate = db.Column(db.Numeric(15, 6), nullable=True)
     notes = db.Column(db.Text, nullable=True)
     internal_notes = db.Column(db.Text, nullable=True)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)

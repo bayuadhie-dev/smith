@@ -751,7 +751,8 @@ def get_work_orders():
         
         query = WorkOrder.query
         if status:
-            query = query.filter_by(status=status)
+            statuses = [x.strip() for x in status.split(',') if x.strip()]
+            query = query.filter(WorkOrder.status.in_(statuses)) if len(statuses) > 1 else query.filter_by(status=statuses[0] if statuses else status)
         
         wos = query.order_by(WorkOrder.created_at.desc()).paginate(page=page, per_page=per_page)
         

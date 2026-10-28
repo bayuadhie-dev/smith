@@ -106,9 +106,9 @@ export default function InvoiceMatching() {
           { label: 'Total PO', value: `Rp ${data.po_total.toLocaleString('id-ID')}`, color: 'text-blue-700' },
           { label: 'GRN Terkait', value: `${data.grn_count} dokumen`, color: 'text-purple-700' },
           {
-            label: 'Selisih Invoice vs PO',
-            value: `Rp ${Math.abs(data.invoice_total - data.po_total).toLocaleString('id-ID')}`,
-            color: Math.abs(data.invoice_total - data.po_total) < 1 ? 'text-green-700' : 'text-red-600',
+            label: 'Selisih Harga Invoice vs PO (tanpa PPN)',
+            value: `Rp ${Math.abs((data.invoice_subtotal ?? data.invoice_total) - (data.po_total_invoiced ?? data.po_total)).toLocaleString('id-ID')}`,
+            color: Math.abs((data.invoice_subtotal ?? data.invoice_total) - (data.po_total_invoiced ?? data.po_total)) < 1 ? 'text-green-700' : 'text-red-600',
           },
         ].map(({ label, value, color }) => (
           <div key={label} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 text-center">

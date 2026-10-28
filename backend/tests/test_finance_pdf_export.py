@@ -8,3 +8,8 @@ def test_generate_pdf_from_rows(client, auth_headers):
 def test_generate_pdf_rejects_empty_or_bad_data(client, auth_headers):
     for body in ({}, {'data': {'data': []}}, {'data': {'data': ['x']}}):
         assert client.post('/api/finance/reports/generate-pdf', json=body, headers=auth_headers).status_code == 400
+
+
+def test_generate_pdf_accepts_plain_list_of_rows(client, auth_headers, db_session):
+    r = client.post('/api/finance/reports/generate-pdf', headers=auth_headers, json={'type': 'Neraca Uji', 'data': [{'akun': 'Kas', 'nilai': 1000000}, {'akun': 'Bank', 'nilai': 2500000}]})
+    assert r.status_code == 200 and r.data[:4] == b'%PDF'

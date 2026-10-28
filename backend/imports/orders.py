@@ -135,7 +135,8 @@ class SalesOrderImport(ImportKind):
         try:
             credit = BusinessRules.validate_credit_limit(d['customer_id'], total)
             if not credit['approved']:
-                raise ValueError(f'Batas kredit pelanggan terlampaui ({credit})')
+                raise ValueError('Batas kredit pelanggan terlampaui: limit Rp{:,.0f}, piutang berjalan Rp{:,.0f}, tersedia Rp{:,.0f}, pesanan ini Rp{:,.0f}. Isi batas kredit di master pelanggan.'.format(
+                    credit['credit_limit'], credit['current_balance'], credit['available_credit'], credit['order_amount']).replace(',', '.'))
             terms = BusinessRules.validate_payment_terms(d['customer_id'])
             if not terms['valid']:
                 raise ValueError(f'Syarat pembayaran pelanggan tidak valid ({terms})')

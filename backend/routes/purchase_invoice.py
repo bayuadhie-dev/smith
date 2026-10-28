@@ -1013,6 +1013,9 @@ def _compute_three_way_match(invoice):
         overall = 'matched'
 
     po_total_val = sum(float(i.total_price or 0) for i in po.items)
+    # Pembanding apel-ke-apel: baris yang ditagih, tanpa PPN (PPN tidak ada di harga PO)
+    invoice_subtotal = round(sum(l['inv_qty'] * l['inv_price'] for l in lines), 2)
+    po_total_invoiced = round(sum(l['inv_qty'] * l['po_price'] for l in lines), 2)
     rate = float(invoice.exchange_rate or 1)
     return {
         'invoice_id': invoice.id,
@@ -1025,6 +1028,8 @@ def _compute_three_way_match(invoice):
         'invoice_total': float(invoice.total_amount or 0),
         'invoice_total_idr': _inv_amount_idr(invoice, invoice.total_amount),
         'po_total': po_total_val,
+        'invoice_subtotal': invoice_subtotal,
+        'po_total_invoiced': po_total_invoiced,
         'po_total_idr': po_total_val * rate,
         'grn_count': len(grns),
         'overall_status': overall,

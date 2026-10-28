@@ -20,6 +20,7 @@ interface SupplierFormData {
   country: string
   tax_id: string
   payment_terms: string
+  ppn_code?: string
   credit_limit: number
   is_active: boolean
   notes: string
@@ -48,6 +49,7 @@ const { id } = useParams()
       country: 'Indonesia',
       tax_id: '',
       payment_terms: '30',
+      ppn_code: '',
       credit_limit: 0,
       is_active: true,
       notes: ''
@@ -67,6 +69,7 @@ const { id } = useParams()
         country: supplier.country || 'Indonesia',
         tax_id: supplier.tax_id || '',
         payment_terms: supplier.payment_terms || '30',
+        ppn_code: supplier.ppn_code || '',
         credit_limit: supplier.credit_limit || 0,
         is_active: supplier.is_active !== false,
         notes: supplier.notes || ''
@@ -247,6 +250,22 @@ const { id } = useParams()
                 <option value="45">45 Days</option>
                 <option value="60">60 Days</option>
                 <option value="90">90 Days</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Jenis PPN
+              </label>
+              <select
+                {...register('ppn_code')}
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Belum diatur (dianggap Y)</option>
+                <option value="Y">Y - 11%</option>
+                <option value="A">A - 1,1%</option>
+                <option value="B">B - 1,2%</option>
+                <option value="L">L - 12%</option>
               </select>
             </div>
 

@@ -815,8 +815,9 @@ def generate_pdf_from_rows():
             if k not in headers:
                 headers.append(k)
     rows = [[r.get(h, '') for h in headers] for r in records]
-    title = str(payload.get('title') or body.get('type') or 'Laporan')[:120]
-    period = payload.get('period')
+    meta = payload if isinstance(payload, dict) else {}
+    title = str(meta.get('title') or body.get('type') or 'Laporan')[:120]
+    period = meta.get('period')
     subtitle = f'Periode {period}' if period else None
     kinds = _col_kinds(headers, rows)
     safe = re.sub(r'[^A-Za-z0-9_.-]+', '_', str(body.get('type') or 'laporan'))[:60]

@@ -194,6 +194,14 @@ export default function GRNDetail() {
               Simpan Inspeksi
             </button>
           )}
+          {grn.status === 'approved' && (
+            <Link
+              to={`/app/purchasing/invoices/new?po_id=${grn.po_id}`}
+              className="flex items-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-lg hover:bg-emerald-700 text-sm font-medium"
+            >
+              Buat Faktur Pembelian
+            </Link>
+          )}
           {grn.status === 'inspected' && (
             <button
               onClick={handleApprove}

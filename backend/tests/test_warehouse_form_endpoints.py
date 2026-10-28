@@ -81,3 +81,18 @@ def test_schedule_get_put(client, auth_headers, db_session):
     r = client.put(f'/api/production/schedules/{s.id}', headers=auth_headers, json={'scheduled_start': '2026-11-02T08:00', 'scheduled_end': '2026-11-02T18:00', 'shift': 'shift_2'})
     assert r.status_code == 200 and r.get_json()['shift'] == 'shift_2'
     assert client.put(f'/api/production/schedules/{s.id}', headers=auth_headers, json={'scheduled_start': '2026-11-02T08:00', 'scheduled_end': '2026-11-02T07:00'}).status_code == 400
+
+
+def test_work_order_list_accepts_comma_separated_statuses(client, auth_headers, db_session):
+    from models import Product
+    from models.production import WorkOrder
+    p = Product(code='PWOS', name='P WOS', primary_uom='PCS', price=0, cost=0, material_type='finished_goods')
+    db_session.add(p); db_session.commit()
+    for i, st in enumerate(['released', 'in_progress', 'planned']):
+        db_session.add(WorkOrder(wo_number=f'WO-CSV-{i}', product_id=p.id, quantity=1, uom='PCS', status=st))
+    db_session.commit()
+    got = client.get('/api/production/work-orders?status=released,in_progress&per_page=100', headers=auth_headers).get_json()
+    nums = {w['wo_number'] for w in got['work_orders']}
+    assert {'WO-CSV-0', 'WO-CSV-1'} <= nums and 'WO-CSV-2' not in nums
+    one = client.get('/api/production/work-orders?status=planned&per_page=100', headers=auth_headers).get_json()
+    assert {w['wo_number'] for w in one['work_orders']} >= {'WO-CSV-2'}

@@ -375,6 +375,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Dashboard', href: '/app/finance', icon: PresentationChartLineIcon },
             { name: 'Pencarian Transaksi', href: '/app/finance/search', icon: MagnifyingGlassIcon },
             { name: 'Pusat Laporan', href: '/app/finance/reports', icon: DocumentChartBarIcon },
+            { name: 'Faktur Penjualan & Pembelian', href: '/app/finance/invoices', icon: DocumentTextIcon },
             { name: 'Laporan Penjualan', href: '/app/finance/sales-report', icon: DocumentTextIcon },
             { name: 'Umur Piutang & Hutang', href: '/app/finance/aging', icon: DocumentTextIcon },
             { name: 'Nota Kredit Customer', href: '/app/finance/credit-memos', icon: DocumentTextIcon },

@@ -25,6 +25,12 @@ interface PurchaseOrderFormData {
   order_date: string
   required_date?: string
   payment_terms?: string
+  po_number?: string
+  use_manual_rate?: boolean
+  manual_exchange_rate?: number | string
+  is_taxable?: boolean
+  tax_inclusive?: boolean
+  ppn_code?: string
   currency: string
   notes?: string
   items: {
@@ -36,6 +42,8 @@ interface PurchaseOrderFormData {
     schedules?: POSchedule[]
   }[]
 }
+
+const PPN_RATES: Record<string, number> = { Y: 11, A: 1.1, B: 1.2, L: 12 }
 
 export default function PurchaseOrderForm() {
     const { t } = useLanguage();
@@ -67,6 +75,12 @@ const navigate = useNavigate()
     defaultValues: {
       order_date: new Date().toISOString().split('T')[0],
       currency: 'IDR',
+      po_number: '',
+      use_manual_rate: false,
+      manual_exchange_rate: '',
+      is_taxable: false,
+      tax_inclusive: false,
+      ppn_code: '',
       items: [{ product_id: null, material_id: null, quantity: 1, unit_price: 0, uom: 'PCS' }]
     }
   })
@@ -78,6 +92,13 @@ const navigate = useNavigate()
 
   const watchedItems = watch('items')
   const watchedCurrency = watch('currency') || 'IDR'
+  const watchedTaxable = Boolean(watch('is_taxable'))
+  const watchedUseManual = Boolean(watch('use_manual_rate'))
+  const watchedManualRate = Number(watch('manual_exchange_rate')) || 0
+  const effectiveRate = watchedUseManual && watchedManualRate > 0 ? watchedManualRate : rateInfo.rate
+  const watchedInclusive = Boolean(watch('tax_inclusive'))
+  const watchedPpn = watch('ppn_code') || ''
+  const watchedSupplier = watch('supplier_id')
   const hasGrn = Boolean(existingPO?.has_grn)
   const isNotDraft = Boolean(isEdit && existingPO && existingPO.status !== 'draft')
 
@@ -88,6 +109,12 @@ const navigate = useNavigate()
         order_date: existingPO.order_date,
         required_date: existingPO.required_date || '',
         payment_terms: existingPO.payment_terms || '',
+        po_number: existingPO.po_number || '',
+        use_manual_rate: Boolean(existingPO.manual_exchange_rate),
+        manual_exchange_rate: existingPO.manual_exchange_rate ?? '',
+        is_taxable: Boolean(existingPO.is_taxable),
+        tax_inclusive: Boolean(existingPO.tax_inclusive),
+        ppn_code: existingPO.ppn_code || '',
         currency: existingPO.currency || 'IDR',
         notes: existingPO.notes || '',
         items: (existingPO.items || []).map((item: any) => ({
@@ -131,6 +158,26 @@ const navigate = useNavigate()
     return () => { cancelled = true }
   }, [watchedCurrency, isNotDraft, existingPO?.exchange_rate])
 
+  useEffect(() => {
+    if (!watchedTaxable) {
+      if (watchedInclusive) setValue('tax_inclusive', false)
+      return
+    }
+    if (!watchedPpn) {
+      const sup = (suppliers?.suppliers || []).find((x: any) => x.id === Number(watchedSupplier))
+      setValue('ppn_code', sup?.ppn_code || 'Y')
+    }
+  }, [watchedTaxable, watchedSupplier, watchedPpn, suppliers])
+
+  const taxSummary = () => {
+    const gross = calculateTotal()
+    const rate = watchedTaxable ? (PPN_RATES[watchedPpn] ?? 0) : 0
+    const inclusive = watchedTaxable && watchedInclusive && rate > 0
+    const tax = !rate ? 0 : inclusive ? gross - gross / (1 + rate / 100) : (gross * rate) / 100
+    const dpp = inclusive ? gross - tax : gross
+    return { rate, tax, dpp, grand: dpp + tax, inclusive }
+  }
+
   const calculateTotal = () => {
     return watchedItems.reduce((total, item) => {
       return total + (item.quantity || 0) * (item.unit_price || 0)
@@ -152,6 +199,9 @@ const navigate = useNavigate()
 
       const payload: any = {
         ...data,
+        po_number: !isEdit && data.po_number && data.po_number.trim() ? data.po_number.trim() : undefined,
+        manual_exchange_rate: !isNotDraft ? (data.use_manual_rate && data.currency !== 'IDR' && Number(data.manual_exchange_rate) > 0 ? Number(data.manual_exchange_rate) : null) : undefined,
+        use_manual_rate: undefined,
         supplier_id: parseInt(data.supplier_id.toString()),
         items: validItems.map(item => ({
           quantity: parseFloat(item.quantity.toString()),
@@ -265,6 +315,22 @@ const navigate = useNavigate()
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                Nomor PO <span className="text-gray-400 font-normal">(opsional)</span>
+              </label>
+              <input
+                {...register('po_number')}
+                className="input-field"
+                placeholder="Kosongkan agar nomor dibuat otomatis"
+                disabled={isEdit}
+                maxLength={100}
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                {isEdit ? 'Nomor PO tidak bisa diubah setelah dibuat.' : 'Diisi = dipakai sebagai nomor PO. Kosong = nomor otomatis.'}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Supplier *
               </label>
               <input type="hidden" {...register('supplier_id', { required: 'Supplier is required' })} />
@@ -346,6 +412,62 @@ const navigate = useNavigate()
                       : 'Kurs otomatis belum tersedia — kurs akan diminta secara manual saat Submit Approval.'}
                 </p>
               )}
+              {watchedCurrency !== 'IDR' && !isNotDraft && (
+                <div className="mt-3 space-y-2">
+                  <label className="inline-flex items-center gap-2 text-sm">
+                    <input type="checkbox" {...register('use_manual_rate')} className="h-4 w-4" />
+                    Input kurs manual
+                  </label>
+                  {watchedUseManual && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">1 {watchedCurrency} =</span>
+                      <NumberInput
+                        step="0.0001"
+                        min="0"
+                        {...register('manual_exchange_rate')}
+                        className="input-field w-48"
+                        placeholder="Kurs ke Rupiah"
+                      />
+                      <span className="text-sm text-gray-600 dark:text-gray-300">IDR</span>
+                    </div>
+                  )}
+                  {watchedUseManual && (
+                    <p className="text-xs text-amber-600">Kurs manual dipakai menggantikan kurs otomatis saat PO di-submit untuk approval, lalu terkunci.</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="md:col-span-2 rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Pajak (PPN)</p>
+              <div className="flex flex-wrap items-center gap-6">
+                <label className="inline-flex items-center gap-2 text-sm">
+                  <input type="checkbox" {...register('is_taxable')} disabled={hasGrn} className="h-4 w-4" />
+                  Kena Pajak
+                </label>
+                <label className={`inline-flex items-center gap-2 text-sm ${watchedTaxable ? '' : 'opacity-50'}`}>
+                  <input type="checkbox" {...register('tax_inclusive')} disabled={!watchedTaxable || hasGrn} className="h-4 w-4" />
+                  Total Termasuk Pajak
+                </label>
+                {watchedTaxable && (
+                  <label className="inline-flex items-center gap-2 text-sm">
+                    Jenis PPN
+                    <select {...register('ppn_code')} disabled={hasGrn} className="input-field w-auto">
+                      <option value="Y">Y - 11%</option>
+                      <option value="A">A - 1,1%</option>
+                      <option value="B">B - 1,2%</option>
+                      <option value="L">L - 12%</option>
+                    </select>
+                  </label>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {!watchedTaxable
+                  ? 'Tanpa pajak.'
+                  : watchedInclusive
+                    ? 'Harga sudah termasuk pajak: PPN dipisahkan dari harga, total pembayaran tidak bertambah.'
+                    : 'PPN ditambahkan di atas harga sesuai jenis PPN pemasok (bisa diganti di sini).'}
+              </p>
             </div>
 
             <div className="md:col-span-2">
@@ -487,44 +609,6 @@ const navigate = useNavigate()
                     value={watchedItems[index]?.schedules || []}
                     onChange={(next) => setValue(`items.${index}.schedules`, next, { shouldDirty: true })}
                   />
-
-                  {/* Product / Material Info */}
-                  {selectedProduct && (
-                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <span className="text-blue-600">Category:</span>
-                          <p className="font-medium">{selectedProduct.category || 'N/A'}</p>
-                        </div>
-                        <div>
-                          <span className="text-blue-600">Material Type:</span>
-                          <p className="font-medium">{selectedProduct.material_type?.replace('_', ' ')}</p>
-                        </div>
-                        <div>
-                          <span className="text-blue-600">Standard Cost:</span>
-                          <p className="font-medium">Rp {selectedProduct.cost?.toLocaleString()}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {selectedMaterial && (
-                    <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <span className="text-amber-700">Category:</span>
-                          <p className="font-medium">{selectedMaterial.category || 'N/A'}</p>
-                        </div>
-                        <div>
-                          <span className="text-amber-700">Material Type:</span>
-                          <p className="font-medium">{selectedMaterial.material_type?.replace('_', ' ')}</p>
-                        </div>
-                        <div>
-                          <span className="text-amber-700">Standard Cost:</span>
-                          <p className="font-medium">Rp {selectedMaterial.cost_per_unit?.toLocaleString()}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               )
             })}
@@ -534,14 +618,26 @@ const navigate = useNavigate()
           <div className="mt-6 pt-4 border-t">
             <div className="flex justify-end">
               <div className="w-80 space-y-1">
+                {watchedTaxable && (
+                  <>
+                    <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-300">
+                      <span>{taxSummary().inclusive ? 'DPP (harga tanpa PPN):' : 'Subtotal:'}</span>
+                      <span>{formatCurrencyAmount(taxSummary().dpp, watchedCurrency)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-300">
+                      <span>PPN {taxSummary().rate}%{taxSummary().inclusive ? ' (sudah termasuk)' : ''}:</span>
+                      <span>{formatCurrencyAmount(taxSummary().tax, watchedCurrency)}</span>
+                    </div>
+                  </>
+                )}
                 <div className="flex justify-between items-center text-lg font-semibold">
                   <span>Total Amount ({watchedCurrency}):</span>
-                  <span>{formatCurrencyAmount(calculateTotal(), watchedCurrency)}</span>
+                  <span>{formatCurrencyAmount(taxSummary().grand, watchedCurrency)}</span>
                 </div>
-                {watchedCurrency !== 'IDR' && rateInfo.rate && (
+                {watchedCurrency !== 'IDR' && effectiveRate && (
                   <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                     <span>{isNotDraft ? 'Ekuivalen IDR (kurs terkunci):' : 'Estimasi IDR:'}</span>
-                    <span>≈ {formatRupiah(calculateTotal() * rateInfo.rate)}</span>
+                    <span>≈ {formatRupiah(taxSummary().grand * effectiveRate)}</span>
                   </div>
                 )}
               </div>

@@ -159,6 +159,12 @@ def _current_user():
     return db.session.get(User, int(get_jwt_identity()))
 
 
+def _with_row(rows, msg):
+    """Awali pesan dengan nomor baris pertama kecuali pesan itu sudah menyebut barisnya sendiri."""
+    msg = str(msg)
+    return msg if msg.lower().startswith('baris ') else f'Baris {rows[0]}: {msg}'
+
+
 def _kind_or_404(key):
     kind = REGISTRY.get(key)
     return kind
@@ -250,7 +256,7 @@ def run_import(key):
             data, summary = kind.build(gkey, items)
             tx['summary'] = summary
         except ValueError as e:
-            tx['errors'].append(f'Baris {tx["rows"][0]}: {e}')
+            tx['errors'].append(_with_row(tx['rows'], e))
             results.append(tx)
             continue
         sp = db.session.begin_nested()
@@ -263,7 +269,7 @@ def run_import(key):
                 sp.rollback()
         except ValueError as e:
             sp.rollback()
-            tx['errors'].append(f'Baris {tx["rows"][0]}: {e}')
+            tx['errors'].append(_with_row(tx['rows'], e))
         except Exception as e:
             sp.rollback()
             tx['errors'].append(f'Baris {tx["rows"][0]}: gagal diproses ({str(e)[:160]})')

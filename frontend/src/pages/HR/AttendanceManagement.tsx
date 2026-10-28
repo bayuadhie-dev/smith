@@ -206,8 +206,8 @@ const navigate = useNavigate()
                   <th>Employee</th>
                   <th>Department</th>
                   <th>{t('production.shift')}</th>
-                  <th>ClockIcon In</th>
-                  <th>ClockIcon Out</th>
+                  <th>Clock In</th>
+                  <th>Clock Out</th>
                   <th>Worked Hours</th>
                   <th>Overtime</th>
                   <th>{t('common.status')}</th>
@@ -260,7 +260,7 @@ const navigate = useNavigate()
                             onClick={() => handleClockIn(attendance.employee.id)}
                             className="btn-sm btn-success"
                           >
-                            ClockIcon In
+                            Clock In
                           </button>
                         )}
                         {attendance.clock_in && !attendance.clock_out && (
@@ -268,7 +268,7 @@ const navigate = useNavigate()
                             onClick={() => handleClockOut(attendance.employee.id)}
                             className="btn-sm btn-warning"
                           >
-                            ClockIcon Out
+                            Clock Out
                           </button>
                         )}
                         <button className="btn-sm btn-outline">{t('common.edit')}</button>

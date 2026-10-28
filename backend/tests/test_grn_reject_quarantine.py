@@ -141,3 +141,18 @@ def test_grn_reject_without_quarantine_zone_returns_clear_error(client, auth_hea
     }, headers=auth_headers)
     assert resp.status_code == 500
     assert 'karantina' in resp.get_json()['error'].lower() or 'reject' in resp.get_json()['error'].lower()
+
+
+def test_po_item_quantity_received_follows_accepted_grn_quantities(client, auth_headers, db_session, test_material):
+    from models.purchasing import PurchaseOrderItem
+    main_location, _ = _setup_warehouse(db_session)
+    grn, grn_item = _setup_grn(db_session, main_location, test_material)
+    po_item = db_session.get(PurchaseOrderItem, grn_item.po_item_id)
+    assert float(po_item.quantity_received or 0) == 0
+    resp = client.post(f'/api/purchasing/grn/{grn.id}/inspect', json={
+        'items': [{'id': grn_item.id, 'quantity_accepted': 80, 'quantity_rejected': 20}]}, headers=auth_headers)
+    assert resp.status_code == 200, resp.get_json()
+    db_session.refresh(po_item)
+    assert float(po_item.quantity_received) == 80
+    d = client.get(f'/api/purchasing/purchase-orders/{po_item.po_id}', headers=auth_headers).get_json()
+    assert d['items'][0]['quantity_received'] == 80.0

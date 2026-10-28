@@ -18,6 +18,8 @@ class Config:
     # Database
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///erp_database.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Koneksi yang diputus server saat menganggur ("SSL connection has been closed unexpectedly") dites dulu sebelum dipakai
+    SQLALCHEMY_ENGINE_OPTIONS = {'pool_pre_ping': True, 'pool_recycle': 1800}
 
     # Shared secret for server-crontab-triggered endpoints (Accurate sync
     # scans, warehouse sync, exchange rate sync, machine-health check) -

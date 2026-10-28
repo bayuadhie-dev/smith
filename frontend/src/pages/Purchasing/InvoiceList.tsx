@@ -115,6 +115,9 @@ export default function InvoiceList() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Faktur Pembelian</h1>
           <p className="text-sm text-gray-500 mt-0.5">Tagihan supplier & 3-Way Matching — {total} total</p>
         </div>
+        <Link to="/app/purchasing/invoices/new" className="inline-flex items-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
+          + Buat Faktur Pembelian
+        </Link>
       </div>
 
       <div className="flex flex-wrap gap-3">
