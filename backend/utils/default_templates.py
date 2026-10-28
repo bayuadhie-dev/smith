@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-10m'
+LAYOUT = 'v2-2026-10n'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 AUTO_NOTE_PREFIXES = ('Auto-generated', 'Migrasi otomatis')  # the font-unit migration only rescales values of auto-generated layouts
 
@@ -140,16 +140,16 @@ def totals_block(left, top, label_w, value_w, rows, row_h=6.5):
     return objs
 
 
-def words_box(left, top, width):
+def words_box(left, top, width, h=9):
     return [
-        BOX(left, top, width, 9, fill=STRIPE),
+        BOX(left, top, width, h, fill=STRIPE),
         L('Terbilang:', left + 2, top + 2.5, 22, 4, fs=9.5, bold=True),
-        F('terbilang', left + 22, top + 2.5, width - 24, 5, fs=9.5),
+        F('terbilang', left + 22, top + 2.5, width - 24, h - 3.5, fs=9.5),
     ]
 
 
-def notes_line(left, top, width):
-    return [L('Catatan:', left, top, 18, 4, fs=9, bold=True), F('notes', left + 18, top, width - 18, 12, fs=9)]
+def notes_line(left, top, width, h=12):
+    return [L('Catatan:', left, top, 18, 4, fs=9, bold=True), F('notes', left + 18, top, width - 18, h, fs=9)]
 
 
 def signatures(left, width, top, labels, caption_paths=None, captions=None):
@@ -194,9 +194,9 @@ def build_invoice():
     o += flow(totals_block(116, 98, 40, 40, [('Subtotal', 'gross', False), ('Diskon', 'discount_total', False),
                                              ('PPN', 'tax_amount', False), ('TOTAL', 'total_amount', True),
                                              ('Sudah Dibayar', 'paid_amount', False), ('Sisa Tagihan', 'balance_due', True)]))
-    o += flow(words_box(14, 141, 182))
-    o += flow(notes_line(14, 154, 182))
-    o += flow(signatures(14, 182, 172, ['Diterima oleh,', 'Hormat kami,'], {1: 'company.name'}))
+    o += flow(words_box(14, 141, 182, 14))
+    o += flow(notes_line(14, 159, 182, 24))
+    o += flow(signatures(14, 182, 188, ['Diterima oleh,', 'Hormat kami,'], {1: 'company.name'}))
     return o, 'A4', 'portrait', None, None
 
 
@@ -219,10 +219,10 @@ def build_po():
         C('unit_price_text', 'Harga', 28, 'right'), C('subtotal_text', 'Jumlah', 26, 'right'),
     ], min_rows=0, row_h=6.5, height=30, fs=9))
     o += flow(po_totals(116, 104))
-    o += flow(words_box(14, 134, 182))
-    o += flow([F('tax_note', 14, 145, 182, 8, fs=8.5, color=MUTED)])
-    o += flow(notes_line(14, 151, 182))
-    o += flow(signatures(14, 182, 168, ['Dibuat oleh,', 'Disetujui oleh,'], captions={0: ' ', 1: ' '}))
+    o += flow(words_box(14, 134, 182, 14))
+    o += flow([F('tax_note', 14, 150, 182, 8, fs=8.5, color=MUTED)])
+    o += flow(notes_line(14, 159, 182, 24))
+    o += flow(signatures(14, 182, 188, ['Dibuat oleh,', 'Disetujui oleh,'], captions={0: ' ', 1: ' '}))
     return o, 'A4', 'portrait', None, None
 
 

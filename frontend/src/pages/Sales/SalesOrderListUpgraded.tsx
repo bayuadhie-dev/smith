@@ -171,6 +171,12 @@ const SalesOrderListUpgraded: React.FC = () => {
               <ArrowPathIcon className="h-5 w-5" />
             </button>
             <Link
+              to="/app/imports?kind=sales_order"
+              className="inline-flex items-center px-4 py-2 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 transition-colors"
+            >
+              Import
+            </Link>
+            <Link
               to="/app/sales/orders/new"
               className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-emerald-600 rounded-lg font-medium hover:bg-emerald-50 transition-colors shadow-md"
             >

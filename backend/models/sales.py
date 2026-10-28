@@ -425,6 +425,7 @@ class SalesOrderItem(db.Model):
     tax_percent = db.Column(db.Numeric(5, 2), default=0)
     tax_amount = db.Column(db.Numeric(15, 2), default=0)
     total_price = db.Column(db.Numeric(15, 2), nullable=False)
+    discount_tiers = db.Column(db.String(60), nullable=True)  # diskon bertingkat, mis. '10+5+2'
     quantity_shipped = db.Column(db.Numeric(15, 2), default=0)
     quantity_invoiced = db.Column(db.Numeric(15, 2), default=0)
     required_date = db.Column(db.Date, nullable=True)

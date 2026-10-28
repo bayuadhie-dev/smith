@@ -70,20 +70,20 @@ class SalesOrderImport(ImportKind):
         Col('qty', 'Qty', required=True, aliases=('jumlah', 'kuantitas')),
         Col('satuan', 'Satuan'),
         Col('harga', 'Harga Satuan', required=True, aliases=('harga',)),
-        Col('diskon', 'Diskon %', aliases=('diskon',)),
+        Col('diskon', 'Diskon %', aliases=('diskon', 'diskon bertingkat')),
         Col('kode_pajak', 'Kode Pajak', aliases=('ppn',)),
         Col('keterangan', 'Keterangan'),
         Col('alamat_kirim', 'Alamat Kirim'),
     ]
     sample_rows = [
         ['SO-IMP-001', '2026-11-02', 'CUST-001', '2026-11-20', 'PO-123', 'FG-0001', 100, 'PCS', 25000, 0, 'Y', 'Item pertama', 'Jl. Contoh No. 1'],
-        ['SO-IMP-001', '2026-11-02', 'CUST-001', '', '', 'FG-0002', 50, '', 40000, 5, '', 'Item kedua', ''],
+        ['SO-IMP-001', '2026-11-02', 'CUST-001', '', '', 'FG-0002', 50, '', 40000, '10+5', '', 'Item kedua', ''],
         ['', '2026-11-03', 'CUST-002', '', '', 'FG-0001', 10, '', 25000, 0, '', 'No. kosong = nomor otomatis', ''],
     ]
     guide = [
         'Pelanggan: kode atau nama persis seperti di master pelanggan.',
         'Kode Barang: kode produk (barang jual). Satuan kosong = satuan utama produk.',
-        'Kode Pajak: Y/A/B/L. Kosong = otomatis dari data barang. Diskon dalam persen.',
+        'Kode Pajak: Y/A/B/L. Kosong = otomatis dari data barang. Diskon dalam persen; bertingkat ditulis 10+5 (dihitung berantai).',
         'Kolom Nilai di hasil pemeriksaan = jumlah setelah diskon, sebelum PPN. Total SO yang tersimpan sudah termasuk PPN.',
         'SO yang diimpor berstatus draft, tidak otomatis dikonfirmasi.',
     ]
@@ -105,15 +105,22 @@ class SalesOrderImport(ImportKind):
                 if not product:
                     raise ValueError(f'Barang "{code}" tidak ditemukan di master produk')
                 qty, price = _qty(r.get('qty')), parse_amount(r.get('harga'), allow_negative=False)
-                disc = parse_amount(r.get('diskon')) if r.get('diskon') not in (None, '') else 0.0
-                if not 0 <= disc <= 100:
-                    raise ValueError(f'Diskon {disc:g}% harus antara 0 dan 100')
+                tiers, disc = None, 0.0
+                if r.get('diskon') not in (None, ''):
+                    from routes.sales import _parse_discount_tiers
+                    raw = str(r.get('diskon')).strip()
+                    if '+' in raw:
+                        disc, tiers = _parse_discount_tiers(raw)
+                    else:
+                        disc = parse_amount(raw)
+                        if not 0 <= disc <= 100:
+                            raise ValueError(f'Diskon {disc:g}% harus antara 0 dan 100')
                 tax = 0
                 if r.get('kode_pajak') not in (None, ''):
                     tax = ppn_rate_for_code(r.get('kode_pajak'))
                     if tax is None:
                         raise ValueError(f'Kode pajak "{r.get("kode_pajak")}" tidak dikenal (Y/A/B/L)')
-                items.append({'product_id': product.id, 'quantity': qty, 'unit_price': price, 'discount_percent': disc,
+                items.append({'product_id': product.id, 'quantity': qty, 'unit_price': price, 'discount_percent': disc, 'discount_tiers': tiers,
                               'tax_percent': tax, 'uom': text(r.get('satuan'), 20) or product.primary_uom,
                               'description': text(r.get('keterangan'))})
                 net += qty * price * (1 - disc / 100)

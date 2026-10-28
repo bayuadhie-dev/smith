@@ -23,6 +23,20 @@ import os
 sales_bp = Blueprint('sales', __name__)
 
 
+def _parse_discount_tiers(text):
+    """'10+5+2' -> (effective percent, normalized text). Raises ValueError if invalid."""
+    parts = [x.strip().replace(',', '.') for x in str(text or '').replace('%', '').split('+') if x.strip()]
+    if not parts:
+        return 0.0, None
+    keep = 1.0
+    for x in parts:
+        d = float(x)
+        if d < 0 or d > 100:
+            raise ValueError('Diskon bertingkat harus antara 0 dan 100 per tingkat')
+        keep *= 1 - d / 100
+    return round((1 - keep) * 100, 2), '+'.join(f'{float(x):g}' for x in parts)
+
+
 def _apply_item_amounts(item, item_total, discount_percent, tax_percent):
     """Fills in an order/quotation line item's discount_amount/tax_amount/
     total_price from its own discount_percent/tax_percent, and returns the
@@ -557,6 +571,9 @@ def create_sales_order_core(data, user_id, order_number=None):
     for idx, item_data in enumerate(data.get('items', []), 1):
         item_total = item_data['quantity'] * item_data['unit_price']
         discount_percent = item_data.get('discount_percent', 0)
+        discount_tiers = None
+        if item_data.get('discount_tiers'):
+            discount_percent, discount_tiers = _parse_discount_tiers(item_data['discount_tiers'])
         tax_percent = resolve_item_tax_percent(item_data.get('tax_percent', 0), product_id=item_data['product_id'])
 
         item = SalesOrderItem(
@@ -568,6 +585,7 @@ def create_sales_order_core(data, user_id, order_number=None):
             uom=item_data.get('uom', 'PCS'),  # Default to PCS if not provided
             unit_price=item_data['unit_price'],
             discount_percent=discount_percent,
+            discount_tiers=discount_tiers,
             tax_percent=tax_percent,
         )
         grand_total += _apply_item_amounts(item, item_total, discount_percent, tax_percent)
@@ -730,6 +748,7 @@ def get_order(id):
                 'uom': i.uom,
                 'unit_price': float(i.unit_price),
                 'discount_percent': float(i.discount_percent or 0),
+                'discount_tiers': i.discount_tiers,
                 'tax_percent': float(i.tax_percent or 0),
                 'total_price': float(i.total_price)
             } for i in order.items]
@@ -1250,6 +1269,9 @@ def update_order(id):
             for idx, item_data in enumerate(new_items_data, 1):
                 item_total = float(item_data['quantity']) * float(item_data['unit_price'])
                 discount_percent = item_data.get('discount_percent', 0)
+                discount_tiers = None
+                if item_data.get('discount_tiers'):
+                    discount_percent, discount_tiers = _parse_discount_tiers(item_data['discount_tiers'])
                 tax_percent = resolve_item_tax_percent(item_data.get('tax_percent', 0), product_id=item_data['product_id'])
                 item = SalesOrderItem(
                     order_id=order.id,
@@ -1260,6 +1282,7 @@ def update_order(id):
                     uom=item_data.get('uom', 'PCS'),
                     unit_price=item_data['unit_price'],
                     discount_percent=discount_percent,
+                    discount_tiers=discount_tiers,
                     tax_percent=tax_percent,
                 )
                 grand_total += _apply_item_amounts(item, item_total, discount_percent, tax_percent)

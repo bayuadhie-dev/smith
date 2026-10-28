@@ -526,6 +526,7 @@ def create_purchase_order_core(data, user_id, po_number=None):
         expected_date=datetime.fromisoformat(data['expected_date']).date() if data.get('expected_date') else None,
         status='draft',
         payment_terms=data.get('payment_terms'),
+        delivery_address=data.get('delivery_address'),
         notes=data.get('notes'),
         # exchange_rate is never taken from the client; it stays 1 until
         # submit_for_approval locks the real rate.

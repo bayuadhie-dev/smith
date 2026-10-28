@@ -25,6 +25,7 @@ interface PurchaseOrderFormData {
   required_date?: string
   expected_date?: string
   payment_terms?: string
+  delivery_address?: string
   po_number?: string
   use_manual_rate?: boolean
   manual_exchange_rate?: number | string
@@ -109,6 +110,7 @@ const navigate = useNavigate()
         required_date: existingPO.required_date || '',
         expected_date: existingPO.expected_date || '',
         payment_terms: existingPO.payment_terms || '',
+        delivery_address: existingPO.delivery_address || '',
         po_number: existingPO.po_number || '',
         use_manual_rate: Boolean(existingPO.manual_exchange_rate),
         manual_exchange_rate: existingPO.manual_exchange_rate ?? '',
@@ -467,8 +469,12 @@ const navigate = useNavigate()
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Kirim Ke (alamat pengiriman)</label>
+              <textarea {...register('delivery_address')} rows={2} className="input-field" placeholder="Alamat gudang / lokasi penerimaan barang" />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Catatan</label>
               <textarea
                 {...register('notes')}
                 rows={3}

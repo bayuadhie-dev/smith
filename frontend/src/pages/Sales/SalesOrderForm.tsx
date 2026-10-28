@@ -34,7 +34,17 @@ interface SalesOrderFormData {
     quantity: number
     unit_price: number
     discount_percent?: number
+    discount_tiers?: string
+    uom?: string
   }[]
+}
+
+const effectiveDiscount = (tiers?: string, pct?: number) => {
+  if (tiers && String(tiers).trim()) {
+    const parts = String(tiers).replace('%', '').split('+').map(x => parseFloat(x.trim().replace(',', '.'))).filter(x => !isNaN(x))
+    return (1 - parts.reduce((k, d) => k * (1 - d / 100), 1)) * 100
+  }
+  return Number(pct) || 0
 }
 
 interface BOMInfo {
@@ -93,6 +103,12 @@ const navigate = useNavigate()
   const [createOrder] = useCreateSalesOrderMutation()
   const [updateOrder] = useUpdateSalesOrderMutation()
   const [fetchPricing] = useLazyCalculatePricingQuery()
+  const [uomCodes, setUomCodes] = useState<string[]>([])
+  useEffect(() => {
+    axiosInstance.get('/api/uom/units')
+      .then(r => setUomCodes((r.data?.units || []).map((u: any) => u.code).filter(Boolean)))
+      .catch(() => setUomCodes([]))
+  }, [])
 
   const { register, control, handleSubmit, watch, reset, setValue, formState: { errors } } = useForm<SalesOrderFormData>({
     defaultValues: {
@@ -100,7 +116,7 @@ const navigate = useNavigate()
       priority: 'normal',
       shipping_cost: 0,
       shipping_ppn_code: 'Y',
-      items: [{ product_id: 0, quantity: 1, unit_price: 0, discount_percent: 0 }]
+      items: [{ product_id: 0, quantity: 1, unit_price: 0, discount_percent: 0, discount_tiers: '', uom: 'PCS' }]
     }
   })
 
@@ -119,7 +135,9 @@ const navigate = useNavigate()
           product_id: item.product_id,
           quantity: item.quantity,
           unit_price: item.unit_price,
-          discount_percent: item.discount_percent || 0
+          discount_percent: item.discount_percent || 0,
+          discount_tiers: item.discount_tiers || '',
+          uom: item.uom || 'PCS'
         }))
       })
     }
@@ -262,7 +280,7 @@ const navigate = useNavigate()
     const item = watchedItems[index]
     if (!item) return 0
     const subtotal = (item.quantity || 0) * (item.unit_price || 0)
-    const discount = subtotal * ((item.discount_percent || 0) / 100)
+    const discount = subtotal * (effectiveDiscount(item.discount_tiers, item.discount_percent) / 100)
     return subtotal - discount
   }
 
@@ -303,7 +321,9 @@ const navigate = useNavigate()
         product_id: parseInt(item.product_id.toString()),
         quantity: parseFloat(item.quantity.toString()),
         unit_price: parseFloat(item.unit_price.toString()),
-        discount_percent: parseFloat((item.discount_percent || 0).toString())
+        uom: item.uom || undefined,
+        discount_tiers: item.discount_tiers && String(item.discount_tiers).trim() ? String(item.discount_tiers).trim() : undefined,
+        discount_percent: effectiveDiscount(item.discount_tiers, item.discount_percent)
       }))
 
       if (isEdit) {
@@ -395,7 +415,7 @@ const navigate = useNavigate()
   }
 
   const addItem = () => {
-    append({ product_id: 0, quantity: 1, unit_price: 0, discount_percent: 0 })
+    append({ product_id: 0, quantity: 1, unit_price: 0, discount_percent: 0, discount_tiers: '', uom: 'PCS' })
   }
 
   const getProductById = (productId: number | string) => {
@@ -424,6 +444,7 @@ const navigate = useNavigate()
       const result = await fetchPricing({ product_id: productId, customer_id: customerId || undefined, quantity }).unwrap()
       setValue(`items.${index}.unit_price`, result.unit_price)
       setValue(`items.${index}.discount_percent`, result.discount_percent || 0)
+      setValue(`items.${index}.discount_tiers`, result.discount_percent ? String(result.discount_percent) : '')
       if (result.moq_warning) {
         toast.error(result.moq_warning)
       }
@@ -594,7 +615,7 @@ const navigate = useNavigate()
               
               return (
                 <div key={field.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-7 gap-4 items-end">
+                  <div className="grid grid-cols-1 md:grid-cols-8 gap-4 items-end">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                         Product *
@@ -608,7 +629,11 @@ const navigate = useNavigate()
                         value={watchedItems[index]?.product_id || null}
                         onChange={(value) => {
                           setValue(`items.${index}.product_id`, value as any, { shouldValidate: true })
-                          if (value) handleProductPricing(index, value as number)
+                          if (value) {
+                            const bp: any = bomProducts.find((x: any) => x.product_id === value)
+                            if (bp?.primary_uom) setValue(`items.${index}.uom`, bp.primary_uom, { shouldDirty: true })
+                            handleProductPricing(index, value as number)
+                          }
                         }}
                         placeholder="Select product"
                         className="w-full"
@@ -629,9 +654,15 @@ const navigate = useNavigate()
                         })}
                         className="input-field"
                       />
-                      {selectedProduct && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{selectedProduct.primary_uom}</p>
-                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Satuan</label>
+                      <select {...register(`items.${index}.uom` as const)} className="input-field">
+                        {Array.from(new Set([watchedItems[index]?.uom, selectedProduct?.primary_uom, ...uomCodes].filter(Boolean) as string[])).map((u) => (
+                          <option key={u} value={u}>{u}</option>
+                        ))}
+                      </select>
                     </div>
 
                     <div>
@@ -652,16 +683,18 @@ const navigate = useNavigate()
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                        Discount %
+                        Diskon % (bertingkat)
                       </label>
-                      <NumberInput
-                        step="0.01"
-                        min="0"
-                        max="100"
-                        {...register(`items.${index}.discount_percent` as const)}
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        {...register(`items.${index}.discount_tiers` as const)}
                         className="input-field"
-                        placeholder="0.00"
+                        placeholder="mis. 10+5+2"
                       />
+                      {String(watchedItems[index]?.discount_tiers || '').includes('+') && (
+                        <p className="text-xs text-gray-500 mt-1">Efektif {effectiveDiscount(watchedItems[index]?.discount_tiers).toFixed(2)}%</p>
+                      )}
                     </div>
 
                     <div>

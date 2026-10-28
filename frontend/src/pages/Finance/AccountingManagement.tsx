@@ -12,6 +12,7 @@ import {
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
 import ChartOfAccounts from './ChartOfAccounts';
 import { confirmDialog, showSuccess, showError, showWarning } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
@@ -79,8 +80,12 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
         const response = await axiosInstance.get('/api/finance/chart-of-accounts');
         setAccounts(response.data?.accounts || []);
       } else {
-        const response = await axiosInstance.get('/api/finance/accounting/journal-entries');
+        const [response, coa] = await Promise.all([
+          axiosInstance.get('/api/finance/accounting/journal-entries'),
+          axiosInstance.get('/api/finance/chart-of-accounts').catch(() => null),
+        ]);
         setJournalEntries(response.data?.entries || []);
+        setAccounts((coa?.data?.accounts || []).filter((a: Account) => !a.is_header && a.is_active !== false));
       }
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -254,9 +259,12 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
         </div>
         {activeTab === 'journal' && (
           <div className="flex space-x-3">
-            <button className="btn-secondary">
-              <ArrowPathIcon className="h-4 w-4 mr-2" />
+            <button className="btn-secondary" onClick={loadData} title="Muat ulang">
+              <ArrowPathIcon className="h-4 w-4" />
             </button>
+            <Link to="/app/imports?kind=manual_journal" className="btn-secondary inline-flex items-center">
+              Import
+            </Link>
             <button
               onClick={() => setShowAddJournalModal(true)}
               className="btn-primary"

@@ -366,7 +366,7 @@ const SalesOrderDetails: React.FC = () => {
                     Rp {item.unit_price?.toLocaleString('id-ID') || '0'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {item.discount_percent ? `${item.discount_percent}%` : '-'}
+                    {item.discount_percent ? `${item.discount_tiers && item.discount_tiers.includes('+') ? item.discount_tiers + ' = ' : ''}${item.discount_percent}%` : '-'}
                     {item.discount_amount ? ` (Rp ${item.discount_amount.toLocaleString('id-ID')})` : ''}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
