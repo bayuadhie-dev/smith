@@ -82,4 +82,47 @@ describe('NumberInput with react-hook-form register', () => {
     expect(input.value).toBe('Rp -50.000')
     expect(screen.getByTestId('raw').textContent).toBe('-50000')
   })
+
+  it('keeps typed decimals when the parent converts the text to a number on every keystroke', () => {
+    function NumericParent() {
+      const [v, setV] = useState<number>(0)
+      return (
+        <div>
+          <NumberInput data-testid="n" value={v || ''} onChange={(e) => setV(parseFloat(e.target.value) || 0)} />
+          <span data-testid="val">{v}</span>
+        </div>
+      )
+    }
+    render(<NumericParent />)
+    const input = screen.getByTestId('n') as HTMLInputElement
+    fireEvent.change(input, { target: { value: '0,' } })
+    expect(input.value).toBe('0,')
+    fireEvent.change(input, { target: { value: '0,5' } })
+    expect(input.value).toBe('0,5')
+    expect(screen.getByTestId('val').textContent).toBe('0.5')
+    fireEvent.change(input, { target: { value: '12,' } })
+    expect(input.value).toBe('12,')
+    fireEvent.change(input, { target: { value: '12,50' } })
+    expect(input.value).toBe('12,50')
+    expect(screen.getByTestId('val').textContent).toBe('12.5')
+    fireEvent.change(input, { target: { value: '' } })
+    expect(input.value).toBe('')
+  })
+  it('still follows a different value set by the parent (reset)', () => {
+    function Resettable() {
+      const [v, setV] = useState<number>(0)
+      return (
+        <div>
+          <NumberInput data-testid="n" value={v || ''} onChange={(e) => setV(parseFloat(e.target.value) || 0)} />
+          <button onClick={() => setV(0)}>reset</button>
+        </div>
+      )
+    }
+    render(<Resettable />)
+    const input = screen.getByTestId('n') as HTMLInputElement
+    fireEvent.change(input, { target: { value: '7,5' } })
+    expect(input.value).toBe('7,5')
+    fireEvent.click(screen.getByText('reset'))
+    expect(input.value).toBe('')
+  })
 })

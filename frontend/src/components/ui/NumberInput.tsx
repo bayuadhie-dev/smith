@@ -30,7 +30,20 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(functio
 ) {
   const controlled = value !== undefined
   const [inner, setInner] = useState<string>(() => (defaultValue === null || defaultValue === undefined ? '' : String(defaultValue)))
-  const raw = controlled ? (value === null ? '' : String(value)) : inner
+  const incoming = controlled ? (value === null ? '' : String(value)) : inner
+  // Parents often turn the text into a number on every keystroke (parseFloat(...) || 0), which drops what the user
+  // is still typing ("12," -> 12, "0," -> ''). While the parent's value is numerically the same as what was last
+  // typed, keep showing the typed text so decimals can be entered.
+  const lastTyped = useRef<string | null>(null)
+  const sameNumber = (a: string, b: string) => {
+    const toNum = (t: string) => (t === '' || t === '-' ? 0 : Number(t.endsWith('.') ? t.slice(0, -1) || '0' : t))
+    const x = toNum(a)
+    const y = toNum(b)
+    return Number.isFinite(x) && Number.isFinite(y) && x === y
+  }
+  const raw = controlled && lastTyped.current !== null && lastTyped.current !== incoming && sameNumber(lastTyped.current, incoming)
+    ? lastTyped.current
+    : incoming
   const maxDecimals = decimalsFor({ currency, decimals, step })
   const allowNegative = min === undefined || Number(min) < 0
   const opts = { currency, maxDecimals, allowNegative }
@@ -72,12 +85,14 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(functio
     const before = el.value.slice(0, el.selectionStart ?? el.value.length)
     caretDigits.current = (before.match(/[\d,]/g) || []).length
     const next = parseDisplayNumber(el.value, opts)
-    if (!controlled) setInner(next)
+    lastTyped.current = next
+    setInner(next) // also re-renders when a controlled parent keeps the same state (e.g. 0 -> 0)
     emit(e, next)
   }
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     let next = raw
+    lastTyped.current = null
     if (next.endsWith('.')) next = next.slice(0, -1)
     if (next === '-') next = ''
     if (next !== raw) {
