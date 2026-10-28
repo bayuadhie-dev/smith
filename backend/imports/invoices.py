@@ -41,6 +41,9 @@ def _discount(rec):
     raw = rec.get('diskon')
     if raw in (None, ''):
         return 0.0
+    if '+' in str(raw):
+        from routes.sales import _parse_discount_tiers
+        return _parse_discount_tiers(raw)[0]
     d = parse_amount(raw, allow_negative=False)
     if d > 100:
         raise ValueError('Diskon % tidak boleh lebih dari 100')
@@ -83,7 +86,7 @@ class SalesInvoiceImport(ImportKind):
         Col('qty', 'Qty', required=True, aliases=['kuantitas', 'jumlah']),
         Col('satuan', 'Satuan'),
         Col('harga', 'Harga Satuan', required=True, aliases=['harga']),
-        Col('diskon', 'Diskon %', aliases=['diskon']),
+        Col('diskon', 'Diskon %', aliases=['diskon', 'diskon bertingkat']),
         Col('kode_pajak', 'Kode Pajak', aliases=['pajak', 'ppn']),
         Col('keterangan', 'Keterangan', aliases=['catatan']),
         Col('no_so', 'No. Pesanan', aliases=['no. so', 'no so', 'no. pesanan penjualan']),

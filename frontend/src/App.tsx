@@ -88,6 +88,7 @@ import SalesDashboard from './pages/Sales/SalesDashboard'
 import SalesForecastList from './pages/Sales/SalesForecastList'
 import SalesForecastGrid from './pages/Sales/SalesForecastGrid'
 import SalesInvoiceForm from './pages/Sales/InvoiceForm'
+import SalesInvoiceFormNew from './pages/Sales/SalesInvoiceFormNew'
 import SupplierList from './pages/Purchasing/SupplierList'
 import SupplierForm from './pages/Purchasing/SupplierForm'
 import PurchaseOrderList from './pages/Purchasing/PurchaseOrderList'
@@ -541,7 +542,7 @@ function AppChildRoutes() {
                 <Route path="sales/forecasts" element={<SalesForecastList />} />
                 <Route path="sales/forecasts/:id" element={<SalesForecastGrid />} />
                 <Route path="sales/invoices" element={<Navigate to="/app/finance/invoices" replace />} />
-                <Route path="sales/invoices/new" element={<SalesInvoiceForm />} />
+                <Route path="sales/invoices/new" element={<SalesInvoiceFormNew />} />
                 <Route path="sales/invoices/:id/edit" element={<SalesInvoiceForm />} />
                 <Route path="sales/invoices/:id" element={<SalesInvoiceDetail />} />
 
@@ -726,7 +727,7 @@ function AppChildRoutes() {
                 <Route path="accounting/bank-reconciliation" element={<BankReconciliation />} />
                 <Route path="finance/cash-flow" element={<CashFlowManagement />} />
                 <Route path="finance/invoices" element={<InvoiceList />} />
-                <Route path="finance/invoices/new" element={<FinanceInvoiceForm />} />
+                <Route path="finance/invoices/new" element={<SalesInvoiceFormNew />} />
                 <Route path="finance/invoices/:id" element={<FinanceInvoiceForm />} />
                 <Route path="finance/invoices/:id/edit" element={<FinanceInvoiceForm />} />
                 <Route path="finance/payments/:id" element={<PaymentDetail />} />

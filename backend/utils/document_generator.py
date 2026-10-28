@@ -468,6 +468,81 @@ def generate_invoice_document(invoice_id, user_id):
     return document
 
 
+def generate_surat_jalan_from_shipping_order(shipping_id, user_id):
+    """Printable Surat Jalan for an existing ShippingOrder. Stock was already deducted when the
+    shipping order was created, so this only renders - it never touches inventory."""
+    from models.shipping import ShippingOrder
+
+    so_ship = db.session.get(ShippingOrder, shipping_id)
+    if not so_ship:
+        raise ValueError('Surat Jalan tidak ditemukan')
+    template = ensure_default_template(user_id, 'surat_jalan')
+    doc_number = generate_number('SJ', Document, 'document_number')
+    sales_order = so_ship.sales_order
+    customer = so_ship.customer
+
+    grouped = {}
+    for it in so_ship.items:
+        key = (it.sales_order_item_id or 0, it.product_id)
+        g = grouped.setdefault(key, {'item': it, 'qty': 0.0, 'batches': []})
+        g['qty'] += float(it.quantity)
+        if it.batch_number:
+            g['batches'].append((it.batch_number, float(it.quantity)))
+    items_data, total_qty = [], 0.0
+    for g in grouped.values():
+        it = g['item']
+        prod = it.product
+        so_item = it.sales_order_item
+        total_qty += g['qty']
+        items_data.append({
+            'no': len(items_data) + 1,
+            'code': prod.code if prod else '',
+            'product_name': prod.name if prod else '',
+            'pack': prod.packaging.packs_per_karton if prod and prod.packaging else None,
+            'quantity': g['qty'],
+            'uom': it.uom,
+            'batch_text': ', '.join(f"{b} ({_format_value(q, 'num')})" for b, q in g['batches']),
+            'description': (so_item.description if so_item and so_item.description else '') or '',
+        })
+    d = so_ship.shipping_date.strftime('%d-%m-%Y') if so_ship.shipping_date else ''
+    document_data = {
+        'document_number': so_ship.shipping_number,
+        'document_date': d,
+        'sales_order_number': sales_order.order_number if sales_order else '',
+        'customer_name': customer.company_name if customer else '',
+        'customer_address': so_ship.shipping_address or (sales_order.delivery_address if sales_order else None) or (customer.billing_address if customer else ''),
+        'customer_phone': customer.phone if customer else '',
+        'hdr_no': f'No. {so_ship.shipping_number}',
+        'hdr_date': f'Tanggal: {d}',
+        'hdr_extra': f'Ref. SO: {sales_order.order_number}' if sales_order else '',
+        'items': items_data,
+        'total_quantity': total_qty,
+        'notes': so_ship.notes or '',
+        'driver_name': so_ship.driver_name or '',
+        'vehicle_number': so_ship.vehicle_number or '',
+        'company': get_company_context(),
+    }
+    document = Document(
+        document_number=doc_number,
+        document_title=f'Surat Jalan {so_ship.shipping_number}',
+        document_type='surat_jalan',
+        template_version_id=template.current_version_id,
+        document_data=document_data,
+        reference_type='shipping_order',
+        reference_id=so_ship.id,
+        reference_number=so_ship.shipping_number,
+        status='generated',
+        created_by=user_id,
+    )
+    document.html_content = render_template_version_to_html(template.current_version, document_data)
+    db.session.add(document)
+    db.session.flush()
+    db.session.add(DocumentLog(document_id=document.id, activity_type='auto_generated',
+                               activity_description=f'Surat Jalan dicetak dari pengiriman {so_ship.shipping_number}', user_id=user_id))
+    db.session.commit()
+    return document
+
+
 def build_po_document_data(po):
     """Amounts are pre-formatted in the PO's own currency (the render engine's
     'rp' format is IDR-only)."""

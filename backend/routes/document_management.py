@@ -1097,6 +1097,22 @@ def generate_from_invoice(invoice_id):
         return jsonify({'error': str(e)}), 500
 
 
+@document_bp.route('/generate-from-shipping-order/<int:shipping_id>', methods=['POST'])
+@jwt_required()
+@require_permission('documents.create')
+def generate_from_shipping_order(shipping_id):
+    """Print Surat Jalan for an existing shipping order (no stock movement)."""
+    try:
+        from utils.document_generator import generate_surat_jalan_from_shipping_order
+        document = generate_surat_jalan_from_shipping_order(shipping_id, get_jwt_identity())
+        return jsonify({'message': 'Surat Jalan generated successfully', 'document_id': document.id,
+                        'document_number': document.document_number}), 201
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @document_bp.route('/generate-from-purchase-order/<int:po_id>', methods=['POST'])
 @jwt_required()
 @require_permission('documents.create')

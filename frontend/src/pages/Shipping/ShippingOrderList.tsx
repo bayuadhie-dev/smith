@@ -29,10 +29,13 @@ const { data, isLoading } = useGetShippingOrdersQuery({})
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pesanan Pengiriman</h1>
+        <div className="flex items-center gap-2">
+        <Link to="/app/imports?kind=shipping_order" className="btn-secondary inline-flex items-center gap-2">Import</Link>
         <Link to="/app/shipping/orders/new" className="btn-primary inline-flex items-center gap-2">
           <PlusIcon className="h-5 w-5" />
           Create Shipment
         </Link>
+        </div>
       </div>
 
       {isLoading ? (

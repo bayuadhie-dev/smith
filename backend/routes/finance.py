@@ -455,6 +455,12 @@ def create_invoice_core(data, user_id, commit=True):
     any_item_ppn_resolved = False
 
     for idx, item_data in enumerate(data.get('items', []), 1):
+        if item_data.get('discount_tiers'):
+            from routes.sales import _parse_discount_tiers
+            try:
+                item_data['discount_percent'], _ = _parse_discount_tiers(item_data['discount_tiers'])
+            except ValueError as e:
+                raise InvoiceInputError(str(e))
         line_total = item_data['quantity'] * item_data['unit_price']
         line_discount = line_total * (item_data.get('discount_percent', 0) / 100)
         line_net = line_total - line_discount

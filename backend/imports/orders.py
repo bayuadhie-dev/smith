@@ -245,5 +245,79 @@ class PurchaseOrderImport(ImportKind):
         return {'number': po.po_number}
 
 
+class ShippingOrderImport(ImportKind):
+    key = 'shipping_order'
+    label = 'Surat Jalan (Pengiriman)'
+    description = ('Impor Surat Jalan dari Sales Order yang sudah ada. Stok terpotong otomatis (FIFO) dan jurnal HPP dibuat, '
+                   'sama seperti input manual. Baris dengan No. Pengiriman sama menjadi satu surat jalan.')
+    view_permission = 'shipping.view'
+    create_permission = 'shipping.create'
+    group_field = 'no_pengiriman'
+    columns = [
+        Col('no_pengiriman', 'No. Pengiriman', example='KIRIM-1'),
+        Col('no_so', 'No. Sales Order', required=True, aliases=('no so', 'sales order', 'no pesanan')),
+        Col('tanggal', 'Tanggal', required=True),
+        Col('kode_barang', 'Kode Barang', required=True, aliases=('kode produk',)),
+        Col('qty', 'Qty Kirim', required=True, aliases=('qty', 'jumlah')),
+        Col('satuan', 'Satuan'),
+        Col('sopir', 'Sopir', aliases=('driver',)),
+        Col('no_kendaraan', 'No. Kendaraan', aliases=('nopol', 'plat')),
+        Col('alamat_kirim', 'Alamat Kirim'),
+        Col('keterangan', 'Catatan'),
+    ]
+    sample_rows = [
+        ['KIRIM-1', 'SO-IMP-001', '2026-11-05', 'FG-0001', 60, 'PCS', 'Pak Budi', 'B 1234 XY', 'Jl. Contoh No. 1', 'Kirim tahap 1'],
+        ['KIRIM-1', 'SO-IMP-001', '2026-11-05', 'FG-0002', 20, '', 'Pak Budi', 'B 1234 XY', '', ''],
+    ]
+    guide = [
+        'No. Sales Order harus sudah ada. Kode Barang harus termasuk dalam SO itu.',
+        'Qty Kirim tidak boleh melebihi sisa yang belum dikirim. Satuan kosong = satuan di SO.',
+        'Stok finished goods dipotong otomatis berdasarkan batch tertua (FIFO). Jika stok kurang, baris ditolak.',
+        'Satu surat jalan hanya untuk satu Sales Order; baris dengan No. Pengiriman sama harus punya No. SO dan Tanggal yang sama.',
+    ]
+
+    def build(self, key, rows):
+        _same_header(rows, 'no_so', 'No. Sales Order')
+        _same_header(rows, 'tanggal', 'Tanggal')
+        first = rows[0][1]
+        so_no = str(first.get('no_so') or '').strip()
+        order = SalesOrder.query.filter(db.func.lower(SalesOrder.order_number) == so_no.lower()).first() if so_no else None
+        if not order:
+            raise ValueError(f'Sales Order "{so_no}" tidak ditemukan')
+        if str(order.status or '').lower() in ('draft', 'cancelled'):
+            raise ValueError(f'Sales Order {order.order_number} berstatus {order.status}, belum bisa dikirim')
+        ship_date = parse_date(first.get('tanggal'))
+        items, total = [], 0.0
+        for n, r in rows:
+            try:
+                code = str(r.get('kode_barang') or '').strip()
+                product = Product.query.filter(db.func.lower(Product.code) == code.lower()).first() if code else None
+                so_item = next((i for i in order.items if product and i.product_id == product.id), None)
+                if not so_item:
+                    raise ValueError(f'Barang "{code}" tidak ada di {order.order_number}')
+                qty = _qty(r.get('qty'))
+                items.append({'product_id': product.id, 'quantity': qty, 'uom': text(r.get('satuan'), 20) or so_item.uom})
+                total += qty
+            except ValueError as e:
+                raise ValueError(f'item di baris {n}: {e}' if len(rows) > 1 else str(e))
+        header = {}
+        for _, r in rows:
+            for src, dst in (('sopir', 'driver_name'), ('no_kendaraan', 'vehicle_number'), ('alamat_kirim', 'shipping_address'), ('keterangan', 'notes')):
+                if not header.get(dst) and r.get(src) not in (None, ''):
+                    header[dst] = str(r[src]).strip()
+        data = {'sales_order_id': order.id, 'customer_id': order.customer_id, 'shipping_date': ship_date.isoformat(),
+                'items': items, **header}
+        return {'number': None, 'data': data}, {'date': ship_date.isoformat(), 'party': order.customer.company_name if order.customer else '', 'total': round(total, 2)}
+
+    def save(self, data, user_id):
+        from routes.shipping import create_shipping_order_core, ShippingInputError
+        try:
+            order = create_shipping_order_core(data['data'], user_id, commit=False)
+        except ShippingInputError as e:
+            raise ValueError(str(e))
+        return {'number': order.shipping_number}
+
+
+register(ShippingOrderImport())
 register(SalesOrderImport())
 register(PurchaseOrderImport())

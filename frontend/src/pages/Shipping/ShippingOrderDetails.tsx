@@ -1,3 +1,4 @@
+import DocumentGenerateButton from '../../components/DocumentGenerateButton';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -415,6 +416,7 @@ const ShippingOrderDetails: React.FC = () => {
           </span>
           
           <div className="flex items-center gap-2">
+            <DocumentGenerateButton transactionType="shipping_order" transactionId={order.id} transactionNumber={order.shipping_number} label="Cetak Surat Jalan" />
             <button
               onClick={printShippingLabel}
               className="px-3 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"

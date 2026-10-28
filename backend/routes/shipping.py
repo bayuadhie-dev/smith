@@ -89,13 +89,34 @@ def create_shipment():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+class ShippingInputError(ValueError):
+    status = 400
+
+
 @shipping_bp.route('/orders', methods=['POST'])
 @jwt_required()
 @require_permission('shipping.create')
 def create_shipping_order():
     try:
-        data = request.get_json()
-        user_id = int(get_jwt_identity())
+        order = create_shipping_order_core(request.get_json(), int(get_jwt_identity()))
+        return jsonify({'message': 'Shipping order created', 'shipping_id': order.id}), 201
+    except ShippingInputError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), e.status
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+def create_shipping_order_core(data, user_id, commit=True):
+    """Buat Surat Jalan + potong stok FIFO + jurnal HPP. commit=False dipakai Pusat Impor
+    (savepoint dipegang pemanggil). Kesalahan input -> ShippingInputError."""
+    if True:
+        data = data or {}
+        if not data.get('sales_order_id'):
+            raise ShippingInputError('Sales Order wajib dipilih')
+        if not data.get('items'):
+            raise ShippingInputError('Minimal satu barang harus dikirim')
 
         # Guard against OVER-shipping a sales order line, not against a
         # second shipment existing at all - a SO legitimately ships in
@@ -117,9 +138,7 @@ def create_shipping_order():
                 requesting = float(item_data['quantity'])
                 remaining = ordered - already_shipped
                 if requesting > remaining + 0.01:
-                    return jsonify({
-                        'error': f'Kuantitas kirim untuk produk ini ({requesting}) melebihi sisa yang belum dikirim ({remaining} dari {ordered} dipesan, {already_shipped} sudah dikirim).'
-                    }), 400
+                    raise ShippingInputError(f'Kuantitas kirim untuk produk ini ({requesting}) melebihi sisa yang belum dikirim ({remaining} dari {ordered} dipesan, {already_shipped} sudah dikirim).')
 
         shipping_number = generate_number('SHP', ShippingOrder, 'shipping_number')
 
@@ -132,8 +151,12 @@ def create_shipping_order():
             logistics_provider_id=data.get('logistics_provider_id'),
             tracking_number=data.get('tracking_number'),
             vehicle_number=data.get('vehicle_number'),
+            vehicle_type=data.get('vehicle_type'),
             driver_name=data.get('driver_name'),
+            driver_phone=data.get('driver_phone'),
+            delivery_method=data.get('delivery_method') or 'expedition',
             shipping_address=data.get('shipping_address'),
+            notes=data.get('notes'),
             prepared_by=user_id
         )
 
@@ -246,7 +269,7 @@ def create_shipping_order():
                 user_id=user_id,
             )
             if not result['success']:
-                return jsonify({'error': result['error']}), 400
+                raise ShippingInputError(result['error'])
 
             for movement_info in result['movements']:
                 batch_qty = movement_info['quantity_deducted']
@@ -304,11 +327,11 @@ def create_shipping_order():
                     txn.accounting_entry_number = base_number
                     txn.accounting_entry_status = 'posted'
 
-        db.session.commit()
-        return jsonify({'message': 'Shipping order created', 'shipping_id': order.id}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        if commit:
+            db.session.commit()
+        else:
+            db.session.flush()
+        return order
 
 @shipping_bp.route('/tracking', methods=['GET'])
 @jwt_required()
@@ -491,6 +514,28 @@ def delete_provider(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+@shipping_bp.route('/orders/uninvoiced', methods=['GET'])
+@jwt_required()
+@require_permission('shipping.view', 'invoices.view', 'finance.view')
+def get_uninvoiced_shipping_orders():
+    """Surat Jalan of one Sales Order that are not yet linked to an invoice (for the invoice form)."""
+    so_id = request.args.get('sales_order_id', type=int)
+    if not so_id:
+        return jsonify({'orders': []}), 200
+    rows = ShippingOrder.query.filter(ShippingOrder.sales_order_id == so_id, ShippingOrder.invoice_id.is_(None),
+                                      ShippingOrder.status != 'cancelled').order_by(ShippingOrder.shipping_date).all()
+    out = []
+    for o in rows:
+        per_product = {}
+        for it in o.items:
+            g = per_product.setdefault(it.product_id, {'product_id': it.product_id, 'quantity': 0.0, 'uom': it.uom})
+            g['quantity'] += float(it.quantity)
+        out.append({'id': o.id, 'shipping_number': o.shipping_number,
+                    'shipping_date': o.shipping_date.isoformat() if o.shipping_date else None,
+                    'items': list(per_product.values())})
+    return jsonify({'orders': out}), 200
+
 
 @shipping_bp.route('/orders/<int:order_id>', methods=['GET'])
 @jwt_required()

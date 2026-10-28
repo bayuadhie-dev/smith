@@ -1,546 +1,224 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useLanguage } from '../../contexts/LanguageContext';
-import {
-  CalculatorIcon,
-  ChartBarIcon as Calculator,
-  PlusIcon,
-  TrashIcon,
-  TruckIcon
-
-} from '@heroicons/react/24/outline';
-import { useGetCustomersQuery } from '../../services/api'
-import { useCreateShippingOrderMutation, useGetLogisticsProvidersQuery } from '../../services/shippingApi'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import toast from 'react-hot-toast'
+import axiosInstance from '../../utils/axiosConfig'
+import SearchableSelect from '../../components/SearchableSelect'
 import NumberInput from '../../components/ui/NumberInput'
+import { useGetLogisticsProvidersQuery } from '../../services/shippingApi'
 
-interface ShippingItem {
-  product_name: string
-  quantity: number
-  weight: number
-  length: number
-  width: number
-  height: number
-  value: number
+interface Line {
+  so_item_id: number
+  product_id: number
+  code: string
+  name: string
+  description: string
+  ordered: number
+  shipped: number
+  uom: string
+  ship: string
 }
+
+const SHIPPABLE_EXCLUDED = ['draft', 'cancelled', 'shipped', 'completed', 'closed']
+const fmt = (n: number) => Number(n).toLocaleString('id-ID', { maximumFractionDigits: 2 })
 
 export default function ShippingOrderForm() {
   const navigate = useNavigate()
-  const { t } = useLanguage();
-  
-  const [createShippingOrder, { isLoading: isCreating }] = useCreateShippingOrderMutation()
+  const { id } = useParams<{ id: string }>()
   const { data: providersData } = useGetLogisticsProvidersQuery({})
-  const { data: customersData } = useGetCustomersQuery({})
+  const providers: any[] = providersData?.logistics_providers || providersData?.providers || []
 
-  const [formData, setFormData] = useState({
-    customer_id: '',
-    logistics_provider_id: '',
+  const [orders, setOrders] = useState<any[]>([])
+  const [soId, setSoId] = useState<number | string | null>(null)
+  const [so, setSo] = useState<any>(null)
+  const [lines, setLines] = useState<Line[]>([])
+  const [saving, setSaving] = useState(false)
+  const [f, setF] = useState({
     shipping_date: new Date().toISOString().split('T')[0],
-    recipient_name: '',
-    recipient_address: '',
-    recipient_phone: '',
-    sender_name: '',
-    sender_address: '',
-    sender_phone: '',
-    service_type: 'regular',
-    insurance_value: 0,
-    cod_amount: 0,
-    notes: ''
+    shipping_address: '',
+    driver_name: '',
+    driver_phone: '',
+    vehicle_number: '',
+    vehicle_type: '',
+    logistics_provider_id: '',
+    tracking_number: '',
+    notes: '',
   })
 
-  const [items, setItems] = useState<ShippingItem[]>([
-    {
-      product_name: '',
-      quantity: 1,
-      weight: 0,
-      length: 0,
-      width: 0,
-      height: 0,
-      value: 0
-    }
-  ])
-
-  const [shippingCost, setShippingCost] = useState(0)
-  const [totalWeight, setTotalWeight] = useState(0)
-  const [totalValue, setTotalValue] = useState(0)
-
-  // Calculate totals when items change
   useEffect(() => {
-    const weight = items.reduce((sum, item) => sum + (item.weight * item.quantity), 0)
-    const value = items.reduce((sum, item) => sum + (item.value * item.quantity), 0)
-    setTotalWeight(weight)
-    setTotalValue(value)
-    
-    // Simple shipping cost calculation (can be enhanced)
-    const baseCost = 15000 // Base cost
-    const weightCost = weight * 2000 // Per kg
-    const distanceCost = 5000 // Flat rate for now
-    setShippingCost(baseCost + weightCost + distanceCost)
-  }, [items])
+    axiosInstance.get('/api/sales/orders?per_page=500')
+      .then((r) => setOrders((r.data?.orders || []).filter((o: any) => !SHIPPABLE_EXCLUDED.includes(String(o.status || '').toLowerCase()))))
+      .catch(() => setOrders([]))
+  }, [])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
-
-  const handleCustomerChange = (customerId: string) => {
-    const customer = customersData?.customers?.find((c: any) => c.id === parseInt(customerId))
-    if (customer) {
-      setFormData(prev => ({
-        ...prev,
-        customer_id: customerId,
-        recipient_name: customer.name,
-        recipient_address: customer.address,
-        recipient_phone: customer.phone
+  useEffect(() => {
+    if (!soId) { setSo(null); setLines([]); return }
+    axiosInstance.get(`/api/sales/orders/${soId}`).then((r) => {
+      const o = r.data
+      setSo(o)
+      setF((p) => ({ ...p, shipping_address: o.delivery_address || p.shipping_address, notes: p.notes || o.notes || '' }))
+      setLines((o.items || []).map((i: any) => {
+        const remaining = Math.max(0, Number(i.quantity) - Number(i.quantity_shipped || 0))
+        return {
+          so_item_id: i.id, product_id: i.product_id, code: i.product_code, name: i.product_name,
+          description: i.description || '', ordered: Number(i.quantity), shipped: Number(i.quantity_shipped || 0),
+          uom: i.uom, ship: remaining > 0 ? String(remaining) : '',
+        }
       }))
-    }
+    }).catch(() => toast.error('Gagal memuat Sales Order'))
+  }, [soId])
+
+  const totalQty = useMemo(() => lines.reduce((s, l) => s + (Number(l.ship) || 0), 0), [lines])
+  const set = (k: string, v: string) => setF((p) => ({ ...p, [k]: v }))
+  const setShip = (idx: number, v: string) => setLines((ls) => ls.map((l, i) => (i === idx ? { ...l, ship: v } : l)))
+
+  if (id) {
+    return (
+      <div className="p-6 max-w-2xl space-y-3">
+        <h1 className="text-2xl font-bold">Surat Jalan tidak dapat diubah</h1>
+        <p className="text-gray-600 dark:text-gray-300">Stok sudah terpotong saat surat jalan dibuat. Untuk koreksi, batalkan surat jalan lalu buat yang baru.</p>
+        <Link to={`/app/shipping/orders/${id}`} className="btn-primary inline-block">Kembali ke detail</Link>
+      </div>
+    )
   }
 
-  const handleItemChange = (index: number, field: keyof ShippingItem, value: string | number) => {
-    setItems(prev => prev.map((item, i) => 
-      i === index ? { ...item, [field]: value } : item
-    ))
-  }
-
-  const addItem = () => {
-    setItems(prev => [...prev, {
-      product_name: '',
-      quantity: 1,
-      weight: 0,
-      length: 0,
-      width: 0,
-      height: 0,
-      value: 0
-    }])
-  }
-
-  const removeItem = (index: number) => {
-    if (items.length > 1) {
-      setItems(prev => prev.filter((_, i) => i !== index))
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+    if (!so) { toast.error('Pilih Sales Order dulu'); return }
+    const items = lines.filter((l) => Number(l.ship) > 0)
+    if (items.length === 0) { toast.error('Isi qty kirim minimal satu barang'); return }
+    const over = items.find((l) => Number(l.ship) > l.ordered - l.shipped + 0.01)
+    if (over) { toast.error(`Qty kirim ${over.name} melebihi sisa (${fmt(over.ordered - over.shipped)})`); return }
+    setSaving(true)
     try {
-      const shippingData = {
-        ...formData,
-        customer_id: parseInt(formData.customer_id),
-        logistics_provider_id: parseInt(formData.logistics_provider_id),
-        total_weight: totalWeight,
-        total_value: totalValue,
-        shipping_cost: shippingCost,
-        items: items
-      }
-
-      await createShippingOrder(shippingData).unwrap()
-      navigate('/app/shipping')
-    } catch (error) {
-      console.error('Error creating shipping order:', error)
+      const res = await axiosInstance.post('/api/shipping/orders', {
+        sales_order_id: so.id,
+        customer_id: so.customer_id,
+        shipping_date: f.shipping_date,
+        shipping_address: f.shipping_address || undefined,
+        driver_name: f.driver_name || undefined,
+        driver_phone: f.driver_phone || undefined,
+        vehicle_number: f.vehicle_number || undefined,
+        vehicle_type: f.vehicle_type || undefined,
+        logistics_provider_id: f.logistics_provider_id ? Number(f.logistics_provider_id) : undefined,
+        tracking_number: f.tracking_number || undefined,
+        notes: f.notes || undefined,
+        items: items.map((l) => ({ product_id: l.product_id, quantity: Number(l.ship), uom: l.uom })),
+      })
+      toast.success('Surat Jalan dibuat, stok terpotong')
+      navigate(`/app/shipping/orders/${res.data.shipping_id}`)
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Gagal menyimpan surat jalan')
+    } finally {
+      setSaving(false)
     }
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Buat Pengiriman Baru</h1>
-        <button
-          onClick={() => navigate('/app/shipping')}
-          className="btn-outline"
-        >
-        </button>
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Surat Jalan Baru</h1>
+        <p className="text-gray-600 dark:text-gray-300">Isian di bawah sama dengan yang tercetak di dokumen Surat Jalan. Stok terpotong otomatis (FIFO) saat disimpan.</p>
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Customer & Provider Selection */}
-        <div className="card">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Informasi Dasar</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              </label>
-              <select
-                name="customer_id"
-                value={formData.customer_id}
-                onChange={(e) => handleCustomerChange(e.target.value)}
-                className="input"
-                required
-              >
-                <option value="">Pilih Pelanggan</option>
-                {customersData?.customers?.map((customer: any) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.name} - {customer.company}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Provider Logistik
-              </label>
-              <select
-                name="logistics_provider_id"
-                value={formData.logistics_provider_id}
-                onChange={handleInputChange}
-                className="input"
-                required
-              >
-                <option value="">Pilih Provider</option>
-                {providersData?.logistics_providers?.map((provider: any) => (
-                  <option key={provider.id} value={provider.id}>
-                    {provider.name} - {provider.service_type}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Tanggal Kirim
-              </label>
-              <input
-                type="date"
-                name="shipping_date"
-                value={formData.shipping_date}
-                onChange={handleInputChange}
-                className="input"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Jenis Layanan
-              </label>
-              <select
-                name="service_type"
-                value={formData.service_type}
-                onChange={handleInputChange}
-                className="input"
-              >
-                <option value="regular">Regular</option>
-                <option value="express">Express</option>
-                <option value="same_day">Same Day</option>
-                <option value="next_day">Next Day</option>
-              </select>
-            </div>
+      <form onSubmit={submit} className="space-y-6">
+        <div className="card p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Sales Order *</label>
+            <SearchableSelect
+              options={orders.map((o: any) => ({ id: o.id, code: o.order_number, name: o.customer_name || o.customer?.company_name || '' }))}
+              value={soId}
+              onChange={(v) => setSoId(v)}
+              placeholder="Pilih Sales Order"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Tanggal *</label>
+            <input type="date" className="input-field" value={f.shipping_date} onChange={(e) => set('shipping_date', e.target.value)} required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Kepada (Pelanggan)</label>
+            <input className="input-field bg-gray-50 dark:bg-gray-900" value={so?.customer?.company_name || ''} readOnly placeholder="Terisi dari Sales Order" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">No. PO Pelanggan</label>
+            <input className="input-field bg-gray-50 dark:bg-gray-900" value={so?.customer_po_number || ''} readOnly />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-2">Alamat Kirim</label>
+            <textarea className="input-field" rows={2} value={f.shipping_address} onChange={(e) => set('shipping_address', e.target.value)} placeholder="Kosong = alamat tagihan pelanggan" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Sopir</label>
+            <input className="input-field" value={f.driver_name} onChange={(e) => set('driver_name', e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">No. Kendaraan</label>
+            <input className="input-field" value={f.vehicle_number} onChange={(e) => set('vehicle_number', e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Telepon Sopir</label>
+            <input className="input-field" value={f.driver_phone} onChange={(e) => set('driver_phone', e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Jenis Kendaraan</label>
+            <input className="input-field" value={f.vehicle_type} onChange={(e) => set('vehicle_type', e.target.value)} placeholder="Truk, Van, ..." />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Ekspedisi (opsional)</label>
+            <select className="input-field" value={f.logistics_provider_id} onChange={(e) => set('logistics_provider_id', e.target.value)}>
+              <option value="">- Kirim sendiri -</option>
+              {providers.map((p: any) => <option key={p.id} value={p.id}>{p.company_name || p.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">No. Resi (opsional)</label>
+            <input className="input-field" value={f.tracking_number} onChange={(e) => set('tracking_number', e.target.value)} />
           </div>
         </div>
 
-        {/* Sender Information */}
-        <div className="card">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Informasi Pengirim</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Nama Pengirim
-              </label>
-              <input
-                type="text"
-                name="sender_name"
-                value={formData.sender_name}
-                onChange={handleInputChange}
-                className="input"
-                required
-              />
+        <div className="card p-6">
+          <h2 className="text-lg font-semibold mb-3">Barang</h2>
+          {lines.length === 0 ? (
+            <p className="text-sm text-gray-500">Pilih Sales Order untuk memuat barang.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs uppercase text-gray-500 border-b">
+                    <th className="py-2 pr-3">No.</th><th className="pr-3">Kode</th><th className="pr-3">Nama Produk</th>
+                    <th className="pr-3 text-right">Dipesan</th><th className="pr-3 text-right">Sudah Dikirim</th>
+                    <th className="pr-3 text-right w-40">Qty Kirim</th><th className="pr-3">Satuan</th><th>Keterangan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lines.map((l, i) => (
+                    <tr key={l.so_item_id} className="border-b last:border-0">
+                      <td className="py-2 pr-3">{i + 1}</td>
+                      <td className="pr-3">{l.code}</td>
+                      <td className="pr-3">{l.name}</td>
+                      <td className="pr-3 text-right">{fmt(l.ordered)}</td>
+                      <td className="pr-3 text-right">{fmt(l.shipped)}</td>
+                      <td className="pr-3"><NumberInput className="input-field text-right" value={l.ship} onChange={(e: any) => setShip(i, e.target.value)} /></td>
+                      <td className="pr-3">{l.uom}</td>
+                      <td>{l.description}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="mt-3 text-right font-semibold">Total Qty: {fmt(totalQty)}</p>
+              <p className="text-xs text-gray-500 text-right">Batch dipilih otomatis (FIFO) dan tercetak di kolom Batch.</p>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Telepon Pengirim
-              </label>
-              <input
-                type="tel"
-                name="sender_phone"
-                value={formData.sender_phone}
-                onChange={handleInputChange}
-                className="input"
-                required
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Alamat Pengirim
-              </label>
-              <textarea
-                name="sender_address"
-                value={formData.sender_address}
-                onChange={handleInputChange}
-                rows={3}
-                className="input"
-                required
-              />
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Recipient Information */}
-        <div className="card">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Informasi Penerima</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Nama Penerima
-              </label>
-              <input
-                type="text"
-                name="recipient_name"
-                value={formData.recipient_name}
-                onChange={handleInputChange}
-                className="input"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Telepon Penerima
-              </label>
-              <input
-                type="tel"
-                name="recipient_phone"
-                value={formData.recipient_phone}
-                onChange={handleInputChange}
-                className="input"
-                required
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Alamat Penerima
-              </label>
-              <textarea
-                name="recipient_address"
-                value={formData.recipient_address}
-                onChange={handleInputChange}
-                rows={3}
-                className="input"
-                required
-              />
-            </div>
-          </div>
+        <div className="card p-6">
+          <label className="block text-sm font-medium mb-2">Catatan</label>
+          <textarea className="input-field" rows={3} value={f.notes} onChange={(e) => set('notes', e.target.value)} />
         </div>
 
-        {/* Items */}
-        <div className="card">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Item Pengiriman</h2>
-            <button
-              type="button"
-              onClick={addItem}
-              className="btn-outline inline-flex items-center gap-2"
-            >
-              <PlusIcon className="h-4 w-4" />
-              Tambah Item
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {items.map((item, index) => (
-              <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">Item {index + 1}</h3>
-                  {items.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeItem(index)}
-                      className="text-red-600 hover:text-red-500"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Nama Produk
-                    </label>
-                    <input
-                      type="text"
-                      value={item.product_name}
-                      onChange={(e) => handleItemChange(index, 'product_name', e.target.value)}
-                      className="input"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                    </label>
-                    <NumberInput
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value))}
-                      className="input"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Berat (kg)
-                    </label>
-                    <NumberInput
-                      step="0.1"
-                      min="0"
-                      value={item.weight}
-                      onChange={(e) => handleItemChange(index, 'weight', parseFloat(e.target.value))}
-                      className="input"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Panjang (cm)
-                    </label>
-                    <NumberInput
-                      min="0"
-                      value={item.length}
-                      onChange={(e) => handleItemChange(index, 'length', parseFloat(e.target.value))}
-                      className="input"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Lebar (cm)
-                    </label>
-                    <NumberInput
-                      min="0"
-                      value={item.width}
-                      onChange={(e) => handleItemChange(index, 'width', parseFloat(e.target.value))}
-                      className="input"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Tinggi (cm)
-                    </label>
-                    <NumberInput
-                      min="0"
-                      value={item.height}
-                      onChange={(e) => handleItemChange(index, 'height', parseFloat(e.target.value))}
-                      className="input"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Nilai (Rp)
-                    </label>
-                    <NumberInput
-                      min="0"
-                      value={item.value}
-                      onChange={(e) => handleItemChange(index, 'value', parseFloat(e.target.value))}
-                      className="input"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Additional Options */}
-        <div className="card">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Opsi Tambahan</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Nilai Asuransi (Rp)
-              </label>
-              <NumberInput
-                name="insurance_value"
-                value={formData.insurance_value}
-                onChange={handleInputChange}
-                className="input"
-                min="0"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                COD Amount (Rp)
-              </label>
-              <NumberInput currency
-                name="cod_amount"
-                value={formData.cod_amount}
-                onChange={handleInputChange}
-                className="input"
-                min="0"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              </label>
-              <textarea
-                name="notes"
-                value={formData.notes}
-                onChange={handleInputChange}
-                rows={3}
-                className="input"
-                placeholder="Catatan khusus untuk pengiriman..."
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Summary */}
-        <div className="card bg-blue-50 border-blue-200">
-          <h2 className="text-lg font-medium text-blue-900 mb-4 flex items-center gap-2">
-            <CalculatorIcon className="h-5 w-5" />
-            Ringkasan Pengiriman
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <dt className="text-sm font-medium text-blue-700">Total Berat</dt>
-              <dd className="text-lg font-semibold text-blue-900">{totalWeight.toFixed(1)} kg</dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-blue-700">Total Nilai</dt>
-              <dd className="text-lg font-semibold text-blue-900">
-                Rp {totalValue.toLocaleString('id-ID')}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-blue-700">Estimasi Biaya Kirim</dt>
-              <dd className="text-lg font-semibold text-blue-900">
-                Rp {shippingCost.toLocaleString('id-ID')}
-              </dd>
-            </div>
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <div className="flex justify-end gap-4">
-          <button
-            type="button"
-            onClick={() => navigate('/app/shipping')}
-            className="btn-outline"
-          >
-          </button>
-          <button
-            type="submit"
-            disabled={isCreating}
-            className="btn-primary inline-flex items-center gap-2"
-          >
-            <TruckIcon className="h-5 w-5" />
-            {isCreating ? 'Membuat...' : 'Buat Pengiriman'}
-          </button>
+        <div className="flex justify-end gap-3">
+          <button type="button" className="btn-secondary" onClick={() => navigate('/app/shipping/orders')}>Batal</button>
+          <button type="submit" className="btn-primary disabled:opacity-50" disabled={saving || !so}>{saving ? 'Menyimpan...' : 'Simpan Surat Jalan'}</button>
         </div>
       </form>
     </div>
