@@ -85,7 +85,7 @@ def get_customer_types():
 
 @sales_bp.route('/customers', methods=['GET'])
 @jwt_required()
-@require_permission('customers.view')
+@require_permission('customers.view', 'finance.view')
 def get_customers():
     """Get all customers"""
     try:

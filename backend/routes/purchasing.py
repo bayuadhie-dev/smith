@@ -105,7 +105,7 @@ def _po_amount_idr(po, amount):
 
 @purchasing_bp.route('/suppliers', methods=['GET'])
 @jwt_required()
-@require_permission('suppliers.view')
+@require_permission('suppliers.view', 'finance.view')
 def get_suppliers():
     try:
         page = request.args.get('page', 1, type=int)
