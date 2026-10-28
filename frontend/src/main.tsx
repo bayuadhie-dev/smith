@@ -17,6 +17,19 @@ const SESSION_EXPIRED_EVENT = 'session-expired';
 // Override global fetch to handle 401 errors
 const originalFetch = window.fetch;
 window.fetch = async function(...args) {
+  // Plain fetch() calls to our API have no auth header of their own; without one the backend answers 401 and the
+  // 401 handler below would log the user out. Attach the session token to API requests that do not carry one.
+  const [input, init] = args;
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : '';
+  const isApi = url.startsWith('/api/') || /^https?:\/\/[^/]+\/api\//.test(url);
+  const token = localStorage.getItem('token');
+  if (isApi && token && !(input instanceof Request)) {
+    const headers = new Headers(init?.headers);
+    if (!headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${token}`);
+      args = [input, { ...init, headers }] as unknown as typeof args;
+    }
+  }
   const response = await originalFetch.apply(this, args);
   
   // Check for 401 status and dispatch session expired event
