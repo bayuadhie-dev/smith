@@ -1127,7 +1127,9 @@ def create_grn():
         # Fixed 2026-09-11.
         po = db.session.get(PurchaseOrder, data['po_id'])
         if po and po.status in ('approved', 'partial'):
-            po_items = PurchaseOrderItem.query.filter_by(po_id=po.id).all()
+            from utils.finance_helpers import is_non_inventory_material
+            # jasa/biaya tidak punya penerimaan barang, jadi tidak ikut dihitung agar PO tetap bisa berstatus 'received'
+            po_items = [i for i in PurchaseOrderItem.query.filter_by(po_id=po.id).all() if not is_non_inventory_material(i.material_id)]
             total_ordered = sum(float(i.quantity) for i in po_items)
             po_item_ids = [i.id for i in po_items]
             total_accepted = db.session.query(

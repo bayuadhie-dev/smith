@@ -35,3 +35,25 @@ def test_non_inventory_material_posts_to_its_expense_account_without_grn(client,
     by = {e.account_id: float(e.debit_amount) for e in debit}
     assert by[beban.id] == 500000.0          # biaya langsung ke akun beban barangnya, tanpa GR/IR atau persediaan
     assert sum(by.values()) == 555000.0      # + PPN Masukan 11%
+
+
+def test_po_with_service_line_still_reaches_received_and_stock_list_hides_services(client, auth_headers, db_session):
+    from models.product import Material
+    from models import Inventory
+    from models.purchasing import PurchaseOrderItem, PurchaseOrder
+    from models.warehouse import WarehouseZone, WarehouseLocation
+    supplier, material, po, po_item = _setup_po(db_session, unit_price=1000, quantity=10)
+    svc = Material(code='JASA-X', name='Jasa X', material_type='non_inventory', category='Non Persediaan', primary_uom='TRIP', is_active=True)
+    db_session.add(svc); db_session.commit()
+    db_session.add(PurchaseOrderItem(po_id=po.id, line_number=2, material_id=svc.id, description='Jasa', quantity=3, uom='TRIP', unit_price=100, total_price=300))
+    zone = WarehouseZone(code='Z-NI', name='Z', zone_type='all', material_type='all'); db_session.add(zone); db_session.commit()
+    loc = WarehouseLocation(zone_id=zone.id, location_code='LOC-NI', rack='R', level='L', position='P', capacity=100, capacity_uom='kg')
+    db_session.add(loc); po.status = 'approved'; db_session.commit()
+    r = client.post('/api/purchasing/grn', headers=auth_headers, json={
+        'po_id': po.id, 'supplier_id': supplier.id, 'received_date': date.today().isoformat(),
+        'items': [{'po_item_id': po_item.id, 'material_id': material.id, 'quantity_ordered': 10, 'quantity_received': 10, 'uom': 'KG', 'location_id': loc.id}]})
+    assert r.status_code in (200, 201), r.get_json()
+    db_session.refresh(po)
+    assert po.status == 'received'
+    codes = [m['code'] for m in client.get('/api/materials/inventory', headers=auth_headers).get_json().get('materials', [])]
+    assert 'JASA-X' not in codes

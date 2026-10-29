@@ -220,6 +220,9 @@ def get_materials_inventory():
             Material.id, Material.code, Material.name, Material.material_type, Material.primary_uom
         )
         
+        # Barang non persediaan (jasa/biaya) tidak punya stok
+        query = query.filter(Material.material_type != 'non_inventory')
+
         # Filter by type
         if material_type:
             query = query.filter(Material.material_type == material_type)
@@ -310,8 +313,8 @@ def get_materials_dashboard():
     """Get materials dashboard metrics"""
     try:
         # Basic counts
-        total_materials = Material.query.count()
-        active_materials = Material.query.filter_by(is_active=True).count()
+        total_materials = Material.query.filter(Material.material_type != 'non_inventory').count()
+        active_materials = Material.query.filter(Material.material_type != 'non_inventory', Material.is_active.is_(True)).count()
         
         # By type
         type_counts = db.session.query(
