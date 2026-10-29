@@ -863,8 +863,6 @@ def create_payment_core(data, user_id, commit=True):
         if any(Decimal(str(i.get('amount') or 0)) == 0 for i in items):
             return jsonify({'error': 'Setiap baris tidak boleh bernilai 0'}), 400
         total_amount = sum((Decimal(str(i['amount'])) for i in items), Decimal('0'))
-        if total_amount == 0:
-            return jsonify({'error': 'Total transaksi tidak boleh 0'}), 400
         if data.get('amount') is not None and abs(Decimal(str(data['amount'])) - total_amount) > Decimal('0.01'):
             return jsonify({'error': f'Nilai total (Rp{float(data["amount"]):,.2f}) tidak sama dengan jumlah rincian (Rp{float(total_amount):,.2f})'}), 400
 
@@ -1044,12 +1042,13 @@ def create_payment_core(data, user_id, commit=True):
             return jsonify({'error': 'amount_idr hanya untuk pembayaran invoice valas'}), 400
 
         bank_in = is_receipt if total >= 0 else not is_receipt   # total bersih negatif membalik arah kas/bank
-        lines.append({
-            'account_id': data['bank_account_id'],
-            'debit': abs(total) if bank_in else 0,
-            'credit': 0 if bank_in else abs(total),
-            'description': f'{"Penerimaan" if is_receipt else "Pembayaran"} - {payment.payment_number}',
-        })
+        if abs(total) > 0.005:   # total bersih 0 (baris plus/minus saling meniadakan): tidak ada pergerakan kas, jurnal hanya antar akun rincian
+            lines.append({
+                'account_id': data['bank_account_id'],
+                'debit': abs(total) if bank_in else 0,
+                'credit': 0 if bank_in else abs(total),
+                'description': f'{"Penerimaan" if is_receipt else "Pembayaran"} - {payment.payment_number}',
+            })
 
         journal_total = round(sum(l['debit'] for l in lines), 2)
         pending = PendingJournalEntry(

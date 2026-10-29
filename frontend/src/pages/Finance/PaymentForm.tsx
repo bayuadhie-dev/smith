@@ -253,10 +253,13 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   };
   const isReceiptKind = mode === 'ar' || (mode === 'kas' && cashDirection === 'in');
   const bankLabel = bankName ? `${bankName.code} - ${bankName.name}` : '(Kas/Bank belum dipilih)';
+  const hasDetail = isStandalone
+    ? lines.some((l) => Number(l.amount) !== 0)
+    : Object.values(alloc).some((v) => Number(v) !== 0);
   const journalPreview: { account: string; debit: number; credit: number }[] = [];
-  if (totalAmount !== 0) {
+  if (hasDetail) {
     const bankIn = totalAmount > 0 ? isReceiptKind : !isReceiptKind;
-    const bankLine = { account: bankLabel, debit: bankIn ? Math.abs(totalAmount) : 0, credit: bankIn ? 0 : Math.abs(totalAmount) };
+    const bankLine = totalAmount === 0 ? null : { account: bankLabel, debit: bankIn ? Math.abs(totalAmount) : 0, credit: bankIn ? 0 : Math.abs(totalAmount) };
     const detail = isStandalone
       ? lines.filter((l) => Number(l.amount) !== 0).map((l) => {
           const n = Number(l.amount);
@@ -268,10 +271,10 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
           const onDebit = mode === 'ap' ? n > 0 : n < 0;
           return { account: `${mode === 'ar' ? 'Piutang Usaha' : 'Hutang Usaha'} — ${i.invoice_number}`, debit: onDebit ? Math.abs(n) : 0, credit: onDebit ? 0 : Math.abs(n) };
         });
-    if (isReceiptKind) journalPreview.push(bankLine, ...detail);
-    else journalPreview.push(...detail, bankLine);
+    if (isReceiptKind) journalPreview.push(...(bankLine ? [bankLine] : []), ...detail);
+    else journalPreview.push(...detail, ...(bankLine ? [bankLine] : []));
   }
-  const canSubmit = totalAmount !== 0 && overAllocated.length === 0 && !!formData.bank_account_id && !!formData.payment_date;
+  const canSubmit = hasDetail && overAllocated.length === 0 && !!formData.bank_account_id && !!formData.payment_date;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -657,7 +660,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
           <div className="flex justify-end items-center gap-4 pt-6 border-t">
             {!canSubmit && !submitting && (
               <span className="text-sm text-amber-700 mr-auto">
-                {!formData.bank_account_id ? 'Pilih akun Kas/Bank dulu.' : totalAmount === 0 ? 'Isi nilai (tidak boleh 0).' : overAllocated.length > 0 ? 'Nilai melebihi sisa tagihan.' : !formData.payment_date ? 'Isi tanggal.' : ''}
+                {!formData.bank_account_id ? 'Pilih akun Kas/Bank dulu.' : !hasDetail ? 'Isi nilai rincian (tidak boleh 0 semua).' : overAllocated.length > 0 ? 'Nilai melebihi sisa tagihan.' : !formData.payment_date ? 'Isi tanggal.' : ''}
               </span>
             )}
             <button 

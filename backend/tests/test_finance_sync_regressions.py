@@ -918,7 +918,7 @@ def test_account_transactions_filter_by_period_with_opening_and_closing(client, 
     assert len(allrows['transactions']) == 3 and allrows['summary']['closing_balance'] == 750.0
 
 
-def test_standalone_cash_allows_negative_lines_but_not_zero(client, auth_headers, db_session):
+def test_standalone_cash_allows_negative_lines_and_zero_net_but_not_zero_lines(client, auth_headers, db_session):
     """Baris pengurang (negatif) membalik sisi jurnalnya; total bersih menentukan arah kas/bank."""
     from models.finance import AccountingEntry, Payment
     bank = _bank(db_session)
@@ -930,7 +930,7 @@ def test_standalone_cash_allows_negative_lines_but_not_zero(client, auth_headers
     assert zero.status_code == 400 and '0' in zero.get_json()['error']
     net0 = client.post('/api/finance/payments', headers=auth_headers, json={**base, 'lines': [
         {'account_id': beban.id, 'amount': 50}, {'account_id': potongan.id, 'amount': -50}]})
-    assert net0.status_code == 400
+    assert net0.status_code == 201   # total bersih 0 tetap diproses (hanya jurnal antar akun rincian)
 
     ok = client.post('/api/finance/payments', headers=auth_headers, json={**base, 'lines': [
         {'account_id': beban.id, 'amount': 100}, {'account_id': potongan.id, 'amount': -30}]})

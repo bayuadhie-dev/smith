@@ -121,3 +121,16 @@ def test_zero_value_lines_are_skipped_not_rejected(client, auth_headers, db_sess
     assert ok['summary']['lines'] == 1 and ok['summary']['zero_skipped'] == 1
     assert Payment.query.filter_by(payment_number='IMP-Z').count() == 1
     assert any('bernilai 0' in e for t in res['transactions'] for e in t['errors'])
+
+
+def test_standalone_payment_with_zero_net_total_still_posts_journal(client, auth_headers, db_session):
+    from tests.test_finance_sync_regressions import _acc, _bank
+    from models.finance import AccountingEntry
+    bank = _bank(db_session); a = _acc(db_session, '9-1000'); b = _acc(db_session, '6-6000')
+    r = client.post('/api/finance/payments', headers=auth_headers, json={
+        'payment_date': '2026-10-29', 'payment_type': 'payment', 'payment_method': 'bank_transfer', 'amount': 0,
+        'bank_account_id': bank.id, 'lines': [{'account_id': a.id, 'amount': 5000}, {'account_id': b.id, 'amount': -5000}]})
+    assert r.status_code == 201, r.get_json()
+    ents = AccountingEntry.query.filter_by(reference_type='payment', reference_id=r.get_json()['payment_id']).all()
+    assert len(ents) == 2 and all(e.account_id != bank.id for e in ents)
+    assert round(sum(float(e.debit_amount) for e in ents), 2) == round(sum(float(e.credit_amount) for e in ents), 2) == 5000
