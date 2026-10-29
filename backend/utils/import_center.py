@@ -171,7 +171,9 @@ def _kind_or_404(key):
 
 
 def kind_info(kind):
+    from imports import exports
     return {'key': kind.key, 'label': kind.label, 'group': kind.group, 'description': kind.description,
+            'can_export': kind.key in exports.EXPORTERS, 'export_by_date': exports.uses_date(kind.key),
             'columns': [{'field': c.field, 'label': c.label, 'required': c.required} for c in kind.columns],
             'summary_columns': [{'key': k, 'label': l, 'type': t} for k, l, t in kind.summary_columns]}
 
@@ -225,6 +227,47 @@ def template(key):
     buf.seek(0)
     return send_file(buf, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True,
                      download_name=f'template_import_{kind.key}.xlsx')
+
+
+@import_center_bp.route('/<key>/export', methods=['GET'])
+@jwt_required()
+def export_data(key):
+    """Unduh data dalam format template impor (xlsx). Query: date_from, date_to (YYYY-MM-DD, opsional; diabaikan untuk data master)."""
+    kind = _kind_or_404(key)
+    from imports import exports
+    if not kind or key not in exports.EXPORTERS:
+        return jsonify({'error': 'Jenis data ini belum bisa diekspor'}), 404
+    if not (_allowed(_current_user(), kind.view_permission) or _allowed(_current_user(), kind.create_permission)):
+        return jsonify({'error': 'Permission denied', 'required_permission': kind.view_permission}), 403
+    try:
+        d_from = parse_date(request.args['date_from']) if request.args.get('date_from') else None
+        d_to = parse_date(request.args['date_to']) if request.args.get('date_to') else None
+        if d_from and d_to and d_from > d_to:
+            return jsonify({'error': 'Tanggal awal tidak boleh setelah tanggal akhir'}), 400
+        rows = exports.run_export(kind, d_from, d_to)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    import openpyxl
+    from openpyxl.styles import Alignment, Font, PatternFill
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'Data'
+    ws.append([c.label for c in kind.columns])
+    for c in ws[1]:
+        c.font = Font(bold=True, color='FFFFFF')
+        c.fill = PatternFill('solid', fgColor='047857')
+        c.alignment = Alignment(horizontal='center')
+    for r in rows:
+        ws.append(r)
+    for i, c in enumerate(kind.columns, start=1):
+        ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = max(14, min(36, len(c.label) + 6))
+    ws.freeze_panes = 'A2'
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    span = '' if not exports.uses_date(key) else f'_{d_from or "awal"}_{d_to or "akhir"}'
+    return send_file(buf, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', as_attachment=True,
+                     download_name=f'ekspor_{kind.key}{span}.xlsx')
 
 
 @import_center_bp.route('/<key>', methods=['POST'])

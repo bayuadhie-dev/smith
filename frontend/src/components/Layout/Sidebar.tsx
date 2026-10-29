@@ -555,7 +555,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
       groupName: 'Reports & Settings',
       items: [
         { name: 'Pusat Laporan', href: '/app/reports', icon: DocumentChartBarIcon, permission: 'reports' },
-        { name: 'Pusat Impor', href: '/app/imports', icon: ArrowUpTrayIcon },
+        { name: 'Pusat Impor & Ekspor Data', href: '/app/imports', icon: ArrowUpTrayIcon },
         // Lintas modul (Purchasing/Production/Shipping/Finance semua
         // menulis ke sini - lihat plan.md) - bukan cuma milik Warehouse
         // lagi, jadi ditaruh di sini bukan di bawah Warehouse > WMS

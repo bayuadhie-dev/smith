@@ -1402,7 +1402,7 @@ const Settings: React.FC = () => {
               onClick={() => navigate('/app/imports')}
               className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
             >
-              Buka Pusat Impor
+              Buka Pusat Impor & Ekspor Data
             </button>
           </div>
         );

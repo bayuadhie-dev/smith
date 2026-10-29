@@ -201,7 +201,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
             <ArrowDownTrayIcon className="w-4 h-4" />
             <span>{t('common.export')}</span>
           </button>
-          <Link to="/app/imports?kind=item" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2" title="Buka Pusat Impor">
+          <Link to="/app/imports?kind=item" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2" title="Buka Pusat Impor & Ekspor Data">
             <ArrowUpTrayIcon className="w-4 h-4" />
             <span>{t('common.import')}</span>
           </Link>

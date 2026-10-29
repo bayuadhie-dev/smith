@@ -140,10 +140,17 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
         <Link
           to={`/app/imports?kind=${type}_${source}`}
           className="flex items-center gap-1 border border-gray-300 px-4 py-2 rounded hover:bg-gray-50"
-          title="Buka Pusat Impor"
+          title="Buka Pusat Impor & Ekspor Data"
         >
           <ArrowUpTrayIcon className="w-4 h-4" />
           Import
+        </Link>
+        <Link
+          to={`/app/imports?kind=${type}_${source}&mode=export`}
+          className="flex items-center gap-1 border border-gray-300 px-4 py-2 rounded hover:bg-gray-50"
+          title="Ekspor ke Excel (pilih rentang tanggal)"
+        >
+          Ekspor
         </Link>
         <Link
           to={newHref}

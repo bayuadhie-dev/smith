@@ -11,6 +11,8 @@ interface Kind {
   group: string;
   description: string;
   can_import: boolean;
+  can_export: boolean;
+  export_by_date: boolean;
   columns: { field: string; label: string; required: boolean }[];
   summary_columns: { key: string; label: string; type: string }[];
 }
@@ -28,6 +30,15 @@ interface Result {
   summary: { total: number; ok: number; error: number; amount: number };
 }
 
+const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const monthStart = (offset = 0) => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth() + offset, 1); };
+const PRESETS: { label: string; range: () => [string, string] }[] = [
+  { label: 'Bulan ini', range: () => [iso(monthStart()), iso(new Date())] },
+  { label: 'Bulan lalu', range: () => [iso(monthStart(-1)), iso(new Date(new Date().getFullYear(), new Date().getMonth(), 0))] },
+  { label: 'Tahun ini', range: () => [`${new Date().getFullYear()}-01-01`, iso(new Date())] },
+  { label: 'Semua', range: () => ['', ''] },
+];
+
 const ImportCenter: React.FC = () => {
   const [kinds, setKinds] = useState<Kind[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +46,10 @@ const ImportCenter: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [busy, setBusy] = useState(false);
+  const [mode, setMode] = useState<'import' | 'export'>('import');
+  const [dateFrom, setDateFrom] = useState(iso(monthStart()));
+  const [dateTo, setDateTo] = useState(iso(new Date()));
+  const [exporting, setExporting] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const [params] = useSearchParams();
 
@@ -42,9 +57,11 @@ const ImportCenter: React.FC = () => {
     axiosInstance.get('/api/imports/kinds')
       .then((r) => {
         setKinds(r.data.kinds || []);
-        const wanted = (r.data.kinds || []).find((k: Kind) => k.key === params.get('kind') && k.can_import);
-        const first = wanted || (r.data.kinds || []).find((k: Kind) => k.can_import);
-        if (first) setSelected(first.key);
+        const usable = (k: Kind) => k.can_import || k.can_export;
+        const wanted = (r.data.kinds || []).find((k: Kind) => k.key === params.get('kind') && usable(k));
+        const first = wanted || (r.data.kinds || []).find(usable);
+        if (first) { setSelected(first.key); setMode(first.can_import ? 'import' : 'export'); }
+        if (params.get('mode') === 'export' && first?.can_export) setMode('export');
       })
       .catch(() => showError('Gagal memuat daftar impor'))
       .finally(() => setLoading(false));
@@ -58,7 +75,37 @@ const ImportCenter: React.FC = () => {
     return Object.fromEntries(Object.entries(g).sort(([a], [b]) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99)));
   }, [kinds]);
 
-  const pick = (key: string) => { setSelected(key); setFile(null); setResult(null); };
+  const pick = (key: string) => {
+    setSelected(key); setFile(null); setResult(null);
+    const k = kinds.find((x) => x.key === key);
+    if (k && !k.can_import) setMode('export');
+    if (k && !k.can_export) setMode('import');
+  };
+
+  const downloadExport = async () => {
+    if (!kind) return;
+    if (kind.export_by_date && dateFrom && dateTo && dateFrom > dateTo) { showError('Tanggal awal tidak boleh setelah tanggal akhir'); return; }
+    setExporting(true);
+    try {
+      const qs = kind.export_by_date ? `?${dateFrom ? `date_from=${dateFrom}&` : ''}${dateTo ? `date_to=${dateTo}` : ''}` : '';
+      const res = await axiosInstance.get(`/api/imports/${kind.key}/export${qs}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(res.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ekspor_${kind.key}${kind.export_by_date ? `_${dateFrom || 'awal'}_${dateTo || 'akhir'}` : ''}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      showSuccess('File ekspor diunduh');
+    } catch (e: any) {
+      let msg = 'Ekspor gagal';
+      try { msg = JSON.parse(await e.response.data.text()).error || msg; } catch { /* keep default */ }
+      showError(msg);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const downloadTemplate = async () => {
     if (!kind) return;
@@ -123,8 +170,8 @@ const ImportCenter: React.FC = () => {
   return (
     <div className="mx-auto max-w-7xl space-y-4 p-4">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pusat Impor</h1>
-        <p className="text-sm text-gray-500">Masukkan banyak transaksi atau data master sekaligus dari Excel (.xlsx) atau CSV. Selalu diperiksa dulu, baru disimpan.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pusat Impor &amp; Ekspor Data</h1>
+        <p className="text-sm text-gray-500">Masukkan banyak transaksi atau data master sekaligus dari Excel (.xlsx) atau CSV (selalu diperiksa dulu, baru disimpan), atau unduh datanya ke Excel dengan format yang sama dengan template impor.</p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[18rem_1fr]">
@@ -133,7 +180,7 @@ const ImportCenter: React.FC = () => {
             <div key={g}>
               <p className="mb-1 px-2 text-xs font-semibold uppercase text-gray-400">{g}</p>
               {list.map((k) => (
-                <button key={k.key} type="button" onClick={() => pick(k.key)} disabled={!k.can_import}
+                <button key={k.key} type="button" onClick={() => pick(k.key)} disabled={!(k.can_import || k.can_export)}
                   className={`block w-full rounded-lg px-3 py-2 text-left text-sm disabled:opacity-40 ${selected === k.key ? 'bg-emerald-600 text-white' : 'text-gray-700 hover:bg-emerald-50 dark:text-gray-200'}`}>
                   {k.label}
                 </button>
@@ -155,6 +202,49 @@ const ImportCenter: React.FC = () => {
                 </p>
               </div>
 
+              <div className="flex gap-1 border-b">
+                {([['import', 'Impor', kind.can_import], ['export', 'Ekspor', kind.can_export]] as const).map(([m, label, ok]) => (
+                  <button key={m} type="button" disabled={!ok} onClick={() => setMode(m)}
+                    className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium disabled:opacity-40 ${mode === m ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {mode === 'export' && kind.can_export && (
+                <div className="space-y-3 rounded-lg border border-emerald-200 bg-emerald-50/40 p-4">
+                  {kind.export_by_date ? (
+                    <>
+                      <div className="flex flex-wrap items-end gap-3">
+                        <div>
+                          <label className="mb-1 block text-xs text-gray-600">Dari tanggal</label>
+                          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded border px-3 py-2 text-sm" />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs text-gray-600">Sampai tanggal</label>
+                          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded border px-3 py-2 text-sm" />
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {PRESETS.map((p) => (
+                            <button key={p.label} type="button" onClick={() => { const [a, b] = p.range(); setDateFrom(a); setDateTo(b); }}
+                              className="rounded border border-gray-300 bg-white px-2.5 py-1.5 text-xs hover:bg-gray-50">{p.label}</button>
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500">Tanggal kosong = tanpa batas. Tanggal yang dipakai: tanggal dokumen (pesanan, faktur, bukti, jurnal, pengiriman).</p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-gray-600">Data master diekspor seluruhnya (tidak memakai rentang tanggal).</p>
+                  )}
+                  <button type="button" disabled={exporting} onClick={downloadExport}
+                    className="inline-flex items-center gap-1.5 rounded bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700 disabled:opacity-50">
+                    <ArrowDownTrayIcon className="h-4 w-4" /> {exporting ? 'Menyiapkan...' : 'Unduh Excel (.xlsx)'}
+                  </button>
+                  <p className="text-xs text-gray-500">Kolom file sama dengan template impor, jadi bisa diedit lalu diimpor kembali. Dokumen yang dibatalkan tidak ikut.</p>
+                </div>
+              )}
+
+              {mode === 'import' && kind.can_import && (<>
               <div className="flex flex-wrap items-center gap-3">
                 <button type="button" onClick={downloadTemplate} className="inline-flex items-center gap-1.5 rounded border border-emerald-600 px-3 py-2 text-sm text-emerald-700 hover:bg-emerald-50">
                   <ArrowDownTrayIcon className="h-4 w-4" /> Unduh Template
@@ -213,6 +303,7 @@ const ImportCenter: React.FC = () => {
                   </div>
                 </div>
               )}
+              </>)}
             </>
           )}
         </section>

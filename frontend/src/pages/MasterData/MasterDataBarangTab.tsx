@@ -214,7 +214,7 @@ export default function MasterDataBarangTab() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <Link to="/app/imports?kind=item" className="btn-secondary inline-flex items-center gap-2 whitespace-nowrap" title="Buka Pusat Impor">
+        <Link to="/app/imports?kind=item" className="btn-secondary inline-flex items-center gap-2 whitespace-nowrap" title="Buka Pusat Impor & Ekspor Data">
           <ArrowUpTrayIcon className="h-5 w-5" />
           Import Excel
         </Link>
