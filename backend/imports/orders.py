@@ -318,6 +318,82 @@ class ShippingOrderImport(ImportKind):
         return {'number': order.shipping_number}
 
 
+class PurchaseRequisitionImport(ImportKind):
+    key = 'purchase_requisition'
+    label = 'Permintaan Pembelian (PR)'
+    description = 'Impor PR draft beserta item. Banyak baris dengan No. PR sama menjadi satu PR. PR tidak otomatis diajukan/disetujui.'
+    view_permission = 'purchase_requests.view'
+    create_permission = 'purchase_requests.create'
+    group_field = 'no_pr'
+    columns = [
+        Col('no_pr', 'No. PR', example='PR-IMP-001'),
+        Col('tanggal', 'Tanggal', required=True),
+        Col('tanggal_dibutuhkan', 'Tanggal Dibutuhkan', aliases=('required date',)),
+        Col('departemen', 'Departemen', aliases=('department',)),
+        Col('prioritas', 'Prioritas', aliases=('priority',)),
+        Col('tujuan', 'Tujuan', aliases=('purpose', 'keperluan')),
+        Col('kode_barang', 'Kode Barang', required=True, aliases=('kode material', 'kode produk')),
+        Col('qty', 'Qty', required=True, aliases=('jumlah', 'kuantitas')),
+        Col('satuan', 'Satuan'),
+        Col('estimasi_harga', 'Estimasi Harga Satuan', aliases=('harga', 'estimasi harga')),
+        Col('pemasok', 'Pemasok Usulan', aliases=('supplier', 'vendor')),
+        Col('keterangan', 'Keterangan'),
+    ]
+    sample_rows = [
+        ['PR-IMP-001', '2026-11-02', '2026-11-20', 'Produksi', 'normal', 'Kebutuhan bahan baku bulan November', 'RM-0001', 500, 'KG', 25000, 'SUP-001', 'Item pertama'],
+        ['PR-IMP-001', '2026-11-02', '', '', '', '', 'JASA-EKS', 2, 'TRIP', 250000, '', 'Jasa (non persediaan) juga boleh'],
+        ['', '2026-11-03', '', 'Gudang', 'high', '', 'RM-0002', 10, '', '', '', 'No. kosong = nomor otomatis'],
+    ]
+    guide = [
+        'Kode Barang: kode material, produk, atau barang non persediaan (jasa/biaya). Satuan kosong = satuan utama barang.',
+        'Prioritas: low, normal, high, urgent (kosong = normal). Pemasok Usulan: kode atau nama pemasok (opsional).',
+        'Nilai di hasil pemeriksaan = estimasi total (Qty kali Estimasi Harga).',
+        'Header (tanggal, departemen, prioritas, tujuan) diambil dari baris pertama tiap PR.',
+    ]
+
+    def build(self, key, rows):
+        number = None if key.startswith('__row') else key
+        from models.purchasing import PurchaseRequisition
+        if number and PurchaseRequisition.query.filter(db.func.lower(PurchaseRequisition.pr_number) == number.lower()).first():
+            raise ValueError(f'No. PR {number} sudah ada')
+        _same_header(rows, 'tanggal', 'Tanggal')
+        first = rows[0][1]
+        req_date = parse_date(first.get('tanggal'))
+        items, total = [], 0.0
+        for n, r in rows:
+            try:
+                code = str(r.get('kode_barang') or '').strip()
+                if not code:
+                    raise ValueError('Kode Barang wajib diisi')
+                material = Material.query.filter(db.func.lower(Material.code) == code.lower()).first()
+                product = None if material else Product.query.filter(db.func.lower(Product.code) == code.lower()).first()
+                if not material and not product:
+                    raise ValueError(f'Barang "{code}" tidak ditemukan di master material/produk')
+                qty = _qty(r.get('qty'))
+                price = parse_amount(r.get('estimasi_harga'), allow_negative=False) if r.get('estimasi_harga') not in (None, '') else 0.0
+                supplier = _find_party(Supplier, r.get('pemasok'), 'Pemasok') if r.get('pemasok') not in (None, '') else None
+                item = material or product
+                items.append({'material_id': material.id if material else None, 'product_id': product.id if product else None,
+                              'item_name': item.name[:200], 'item_code': item.code, 'quantity': qty,
+                              'uom': text(r.get('satuan'), 20) or item.primary_uom or 'pcs', 'estimated_unit_price': price,
+                              'preferred_supplier_id': supplier.id if supplier else None, 'notes': text(r.get('keterangan'))})
+                total += qty * price
+            except ValueError as e:
+                raise ValueError(f'item di baris {n}: {e}' if len(rows) > 1 else str(e))
+        priority = str(first.get('prioritas') or 'normal').strip().lower()
+        if priority not in ('low', 'normal', 'high', 'urgent'):
+            raise ValueError(f'Prioritas "{priority}" tidak dikenal (low, normal, high, urgent)')
+        data = {'request_date': req_date.isoformat(), 'required_date': _iso(first.get('tanggal_dibutuhkan'), 'Tanggal Dibutuhkan'),
+                'department': text(first.get('departemen'), 100), 'purpose': text(first.get('tujuan')), 'priority': priority, 'items': items}
+        return {'number': number, 'data': data}, {'date': req_date.isoformat(), 'party': data['department'] or '-', 'total': round(total, 2)}
+
+    def save(self, data, user_id):
+        from routes.purchase_requisition import create_pr_core
+        pr = create_pr_core(data['data'], user_id, pr_number=data['number'])
+        return {'number': pr.pr_number}
+
+
+register(PurchaseRequisitionImport())
 register(ShippingOrderImport())
 register(SalesOrderImport())
 register(PurchaseOrderImport())

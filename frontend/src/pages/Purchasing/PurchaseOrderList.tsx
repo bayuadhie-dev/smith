@@ -142,6 +142,8 @@ const [search, setSearch] = useState('')
           >
             <DocumentTextIcon className="h-5 w-5" />
           </Link>
+          <Link to="/app/imports?kind=purchase_order" className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium">Import</Link>
+          <Link to="/app/imports?kind=purchase_order&mode=export" className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium">Ekspor</Link>
           <Link
             to="/app/purchasing/purchase-orders/new"
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"

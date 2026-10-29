@@ -193,48 +193,52 @@ def get_pr(pr_id):
 @require_permission('purchase_requests.create')
 def create_pr():
     try:
-        user_id = int(get_jwt_identity())
-        data = request.get_json()
-
-        pr = PurchaseRequisition(
-            pr_number=generate_pr_number(),
-            requested_by=data.get('requested_by', user_id),
-            department=data.get('department'),
-            request_date=datetime.strptime(data['request_date'], '%Y-%m-%d').date() if data.get('request_date') else date.today(),
-            required_date=datetime.strptime(data['required_date'], '%Y-%m-%d').date() if data.get('required_date') else None,
-            purpose=data.get('purpose'),
-            status='draft',
-            priority=data.get('priority', 'normal'),
-            notes=data.get('notes'),
-        )
-        db.session.add(pr)
-        db.session.flush()
-
-        for idx, item_data in enumerate(data.get('items', []), start=1):
-            qty = float(item_data.get('quantity', 0))
-            unit_price = float(item_data.get('estimated_unit_price') or 0)
-            item = PRItem(
-                pr_id=pr.id,
-                line_number=idx,
-                material_id=item_data.get('material_id'),
-                product_id=item_data.get('product_id'),
-                item_name=item_data['item_name'],
-                item_code=item_data.get('item_code'),
-                quantity=qty,
-                uom=item_data.get('uom', 'pcs'),
-                estimated_unit_price=unit_price or None,
-                estimated_total=qty * unit_price if unit_price else None,
-                preferred_supplier_id=item_data.get('preferred_supplier_id'),
-                notes=item_data.get('notes'),
-            )
-            db.session.add(item)
-
+        pr = create_pr_core(request.get_json(), int(get_jwt_identity()))
         db.session.commit()
         return jsonify(format_pr(pr)), 201
 
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+def create_pr_core(data, user_id, pr_number=None):
+    """Buat PR draft + itemnya TANPA commit (dipakai form dan Pusat Impor). pr_number kosong = nomor otomatis."""
+    if pr_number and PurchaseRequisition.query.filter(db.func.lower(PurchaseRequisition.pr_number) == pr_number.lower()).first():
+        raise ValueError(f'No. PR {pr_number} sudah ada')
+    pr = PurchaseRequisition(
+        pr_number=pr_number or generate_pr_number(),
+        requested_by=data.get('requested_by', user_id),
+        department=data.get('department'),
+        request_date=datetime.strptime(data['request_date'], '%Y-%m-%d').date() if data.get('request_date') else date.today(),
+        required_date=datetime.strptime(data['required_date'], '%Y-%m-%d').date() if data.get('required_date') else None,
+        purpose=data.get('purpose'),
+        status='draft',
+        priority=data.get('priority', 'normal'),
+        notes=data.get('notes'),
+    )
+    db.session.add(pr)
+    db.session.flush()
+
+    for idx, item_data in enumerate(data.get('items', []), start=1):
+        qty = float(item_data.get('quantity', 0))
+        unit_price = float(item_data.get('estimated_unit_price') or 0)
+        db.session.add(PRItem(
+            pr_id=pr.id,
+            line_number=idx,
+            material_id=item_data.get('material_id'),
+            product_id=item_data.get('product_id'),
+            item_name=item_data['item_name'],
+            item_code=item_data.get('item_code'),
+            quantity=qty,
+            uom=item_data.get('uom', 'pcs'),
+            estimated_unit_price=unit_price or None,
+            estimated_total=qty * unit_price if unit_price else None,
+            preferred_supplier_id=item_data.get('preferred_supplier_id'),
+            notes=item_data.get('notes'),
+        ))
+    db.session.flush()
+    return pr
 
 
 # ─── UPDATE ──────────────────────────────────────────────────────────────────

@@ -65,6 +65,9 @@ export default function PRList() {
             Permintaan pembelian dari departemen — {total} total
           </p>
         </div>
+        <div className="flex items-center gap-2">
+          <Link to="/app/imports?kind=purchase_requisition" className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium">Import</Link>
+          <Link to="/app/imports?kind=purchase_requisition&mode=export" className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium">Ekspor</Link>
         <Link
           to="/app/purchasing/requisitions/new"
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
@@ -72,6 +75,7 @@ export default function PRList() {
           <PlusIcon className="h-4 w-4" />
           Buat PR
         </Link>
+        </div>
       </div>
 
       {/* Filters */}

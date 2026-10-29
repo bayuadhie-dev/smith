@@ -141,3 +141,27 @@ def test_general_ledger_hides_cancelled_pairs_and_links_to_source(client, auth_h
     assert sum(e['debit_amount'] - e['credit_amount'] for e in d['entries']) == 0
     d = client.get('/api/finance/general-ledger?include_voided=1&per_page=100', headers=auth_headers).get_json()
     assert d['total'] == 6
+
+
+def test_purchase_requisition_import_export_roundtrip(client, auth_headers, db_session):
+    import io
+    import openpyxl
+    from models.product import Material
+    from models.purchasing import PurchaseRequisition
+    db_session.add(Material(code='RM-PR1', name='Bahan PR', material_type='raw_materials', category='RM', primary_uom='KG', is_active=True))
+    db_session.commit()
+    wb = openpyxl.Workbook(); ws = wb.active
+    ws.append(['No. PR', 'Tanggal', 'Tanggal Dibutuhkan', 'Departemen', 'Prioritas', 'Tujuan', 'Kode Barang', 'Qty', 'Satuan', 'Estimasi Harga Satuan', 'Pemasok Usulan', 'Keterangan'])
+    ws.append(['PR-IMP-1', '2026-10-05', '2026-10-20', 'Produksi', 'high', 'Uji', 'RM-PR1', 10, '', 1500, '', 'a'])
+    ws.append(['PR-IMP-1', '2026-10-05', '', '', '', '', 'RM-PR1', 5, 'KG', '', '', 'b'])
+    ws.append(['PR-BAD', '2026-10-05', '', '', '', '', 'TIDAK-ADA', 1, '', '', '', ''])
+    def book():
+        b = io.BytesIO(); wb.save(b); b.seek(0); return b
+    post = lambda c: client.post('/api/imports/purchase_requisition', headers=auth_headers, content_type='multipart/form-data', data={'file': (book(), 'p.xlsx'), 'commit': c}).get_json()
+    prev = post('0')
+    assert prev['summary']['ok'] == 1 and prev['summary']['error'] == 1 and prev['summary']['amount'] == 15000.0
+    assert PurchaseRequisition.query.count() == 0
+    assert post('1')['committed'] and PurchaseRequisition.query.filter_by(pr_number='PR-IMP-1').count() == 1
+    assert post('1')['summary']['ok'] == 0       # same number again is refused
+    rows = _download(client, auth_headers, 'purchase_requisition', '?date_from=2026-10-01&date_to=2026-10-31')
+    assert [(r[0], r[6], r[7], r[8]) for r in rows[1:]] == [('PR-IMP-1', 'RM-PR1', 10.0, 'KG'), ('PR-IMP-1', 'RM-PR1', 5.0, 'KG')]

@@ -92,6 +92,20 @@ def purchase_orders(date_from, date_to):
     return rows
 
 
+@exporter('purchase_requisition')
+def purchase_requisitions(date_from, date_to):
+    from models.purchasing import PurchaseRequisition, Supplier
+    q = PurchaseRequisition.query.options(selectinload(PurchaseRequisition.items)).filter(PurchaseRequisition.status != 'cancelled')
+    suppliers = {s_.id: s_.code for s_ in Supplier.query.with_entities(Supplier.id, Supplier.code)}
+    rows = []
+    for pr in _between(PurchaseRequisition.request_date, date_from, date_to, q).order_by(PurchaseRequisition.request_date, PurchaseRequisition.pr_number):
+        for i in pr.items:
+            rows.append([pr.pr_number, _d(pr.request_date), _d(pr.required_date), pr.department or '', pr.priority or '', pr.purpose or '',
+                         i.item_code or _item_code(i), _f(i.quantity), i.uom or '', _f(i.estimated_unit_price) if i.estimated_unit_price else '',
+                         suppliers.get(i.preferred_supplier_id, ''), i.notes or ''])
+    return rows
+
+
 @exporter('shipping_order')
 def shipping_orders(date_from, date_to):
     from models.shipping import ShippingOrder
