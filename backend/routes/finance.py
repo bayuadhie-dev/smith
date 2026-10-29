@@ -1398,8 +1398,19 @@ def get_general_ledger():
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
         
-        query = AccountingEntry.query
-        
+        # The GL is a balance check: cancelled transactions must not appear. A void leaves the original journal
+        # posted plus a reversing 'void_*' journal (they net to zero), so hide both sides and anything not posted.
+        # include_voided=1 shows them again (audit).
+        query = AccountingEntry.query.filter(AccountingEntry.status == 'posted')
+        if request.args.get('include_voided') != '1':
+            voided = {}
+            for rt, rid in db.session.query(AccountingEntry.reference_type, AccountingEntry.reference_id).filter(
+                    AccountingEntry.reference_type.like('void\\_%', escape='\\'), AccountingEntry.reference_id.isnot(None)).distinct():
+                voided.setdefault(rt[5:], set()).add(rid)
+            query = query.filter(~AccountingEntry.reference_type.like('void\\_%', escape='\\') | AccountingEntry.reference_type.is_(None))
+            for orig_type, ids in voided.items():
+                query = query.filter(db.not_(db.and_(AccountingEntry.reference_type == orig_type, AccountingEntry.reference_id.in_(ids))))
+
         if account_id:
             selected = db.session.get(Account, int(account_id)) if str(account_id).isdigit() else None
             if selected is not None and selected.is_header:
@@ -1432,11 +1443,13 @@ def get_general_ledger():
                 )
             )
 
-        entries = query.order_by(AccountingEntry.entry_date.desc()).paginate(page=page, per_page=per_page, error_out=False)
-        
+        entries = query.order_by(AccountingEntry.entry_date.desc(), AccountingEntry.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
+        from routes.finance_reports import _doc_url
+
         return jsonify({
             'entries': [{
                 'id': e.id,
+                'document_url': None if e.reference_type == 'manual_journal' else _doc_url(e.reference_type, e.reference_id),
                 'entry_date': e.entry_date.isoformat(),
                 # BUG FIX 2026-08-17: Account's real columns are account_code/
                 # account_name, not code/name - getattr's default silently

@@ -126,3 +126,18 @@ def test_doc_url_covers_automatic_journal_sources():
     assert _doc_url('inventory_destruction', 9) == '/app/waste/9/edit'
     assert _doc_url('payroll_period', 2) == '/app/hr/payroll/periods/2/records'
     assert _doc_url('pending_journal', None) is None and _doc_url('payment', None) is None
+
+
+def test_general_ledger_hides_cancelled_pairs_and_links_to_source(client, auth_headers, db_session):
+    from tests.test_finance_sync_regressions import _acc, _bank
+    bank = _bank(db_session); a = _acc(db_session, '9-1000')
+    mk = lambda n, amt: client.post('/api/finance/payments', headers=auth_headers, json={
+        'payment_date': '2026-10-20', 'payment_type': 'payment', 'payment_method': 'cash', 'amount': amt, 'bank_account_id': bank.id,
+        'payment_number': n, 'lines': [{'account_id': a.id, 'amount': amt}]}).get_json()['payment_id']
+    keep, gone = mk('PAY-GK', 100), mk('PAY-GV', 250)
+    assert client.post(f'/api/finance/payments/{gone}/void', headers=auth_headers, json={}).status_code == 200
+    d = client.get('/api/finance/general-ledger?start_date=2026-10-01&end_date=2026-10-31&per_page=100', headers=auth_headers).get_json()
+    assert d['total'] == 2 and {e['document_url'] for e in d['entries']} == {f'/app/finance/payments/{keep}'}
+    assert sum(e['debit_amount'] - e['credit_amount'] for e in d['entries']) == 0
+    d = client.get('/api/finance/general-ledger?include_voided=1&per_page=100', headers=auth_headers).get_json()
+    assert d['total'] == 6
