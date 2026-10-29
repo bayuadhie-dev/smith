@@ -518,7 +518,13 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {journalDetail ? journalDetail.reference_number : 'Memuat...'}
+                {journalDetail ? (
+                  journalDetail.document_url ? (
+                    <Link to={journalDetail.document_url} onClick={handleCloseJournalDetail} className="text-blue-600 hover:underline" title="Buka halaman transaksi">
+                      {journalDetail.reference_number || 'Buka transaksi'} &rarr;
+                    </Link>
+                  ) : journalDetail.reference_number
+                ) : 'Memuat...'}
               </h3>
               <button
                 onClick={handleCloseJournalDetail}
