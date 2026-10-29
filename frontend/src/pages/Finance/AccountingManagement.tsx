@@ -39,6 +39,7 @@ interface JournalEntry {
   total_credit: number;
   status: string;
   created_by: string;
+  kind?: 'normal' | 'reversal' | 'voided';
 }
 
 interface AccountingManagementProps {
@@ -52,6 +53,10 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
   const [activeTab, setActiveTab] = useState<'accounts' | 'journal'>(initialTab);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [showVoided, setShowVoided] = useState(false);
+  const [journalPage, setJournalPage] = useState(1);
+  const [journalPages, setJournalPages] = useState(1);
+  const [journalSummary, setJournalSummary] = useState<{ journals: number; total_debit: number; hidden: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -70,7 +75,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
 
   useEffect(() => {
     loadData();
-  }, [activeTab]);
+  }, [activeTab, showVoided, journalPage]);
 
   const loadData = async () => {
     try {
@@ -81,10 +86,12 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
         setAccounts(response.data?.accounts || []);
       } else {
         const [response, coa] = await Promise.all([
-          axiosInstance.get('/api/finance/accounting/journal-entries'),
+          axiosInstance.get(`/api/finance/accounting/journal-entries?per_page=50&page=${journalPage}&hide_voided=${showVoided ? 0 : 1}`),
           axiosInstance.get('/api/finance/chart-of-accounts').catch(() => null),
         ]);
         setJournalEntries(response.data?.entries || []);
+        setJournalPages(response.data?.pages || 1);
+        setJournalSummary(response.data?.summary || null);
         setAccounts((coa?.data?.accounts || []).filter((a: Account) => !a.is_header && a.is_active !== false));
       }
     } catch (error) {
@@ -332,6 +339,10 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
               <option value="draft">Draft</option>
               <option value="cancelled">Cancelled</option>
             </select>
+            <label className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 ml-3">
+              <input type="checkbox" checked={showVoided} onChange={(e) => { setShowVoided(e.target.checked); setJournalPage(1); }} />
+              Tampilkan jurnal pembalik &amp; dibatalkan
+            </label>
           </div>
         </div>
       )}
@@ -376,9 +387,15 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                     {formatRupiah(entry.total_debit)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(entry.status)}`}>
-                      {entry.status}
-                    </span>
+                    {entry.kind === 'reversal' ? (
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800" title="Jurnal pembalik dari transaksi yang dibatalkan">Pembalik (void)</span>
+                    ) : entry.kind === 'voided' ? (
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-600" title="Transaksi ini sudah dibatalkan; dinetralkan oleh jurnal pembalik">Dibatalkan</span>
+                    ) : (
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(entry.status)}`}>
+                        {entry.status}
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {entry.created_by}
@@ -415,6 +432,13 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
             </tbody>
           </table>
           
+          {journalPages > 1 && (
+            <div className="flex items-center justify-end gap-3 px-6 py-3 text-sm">
+              <button type="button" disabled={journalPage <= 1} onClick={() => setJournalPage((p) => p - 1)} className="btn-secondary disabled:opacity-40">Sebelumnya</button>
+              <span>Halaman {journalPage} dari {journalPages}</span>
+              <button type="button" disabled={journalPage >= journalPages} onClick={() => setJournalPage((p) => p + 1)} className="btn-secondary disabled:opacity-40">Berikutnya</button>
+            </div>
+          )}
           {filteredJournalEntries.length === 0 && (
             <div className="text-center py-8">
               <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -475,8 +499,10 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Journal Entries</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{journalEntries.length}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{journalEntries.filter(e => e.status === 'posted').length} posted</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{journalSummary ? journalSummary.journals : journalEntries.length}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {journalSummary ? `${formatRupiah(journalSummary.total_debit)} total debit` : 'posted'}{journalSummary && journalSummary.hidden ? ` · ${journalSummary.hidden} jurnal pembalik/dibatalkan tidak dihitung` : ''}
+              </p>
             </div>
           </div>
         </div>

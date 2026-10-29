@@ -65,3 +65,21 @@ def test_payment_and_invoice_exports_roundtrip(client, auth_headers, db_session,
     assert inv.status_code in (200, 201), inv.get_json()
     rows = _download(client, auth_headers, 'sales_invoice', '?date_from=2026-10-01&date_to=2026-10-31')
     assert len(rows) == 2 and rows[1][2] == test_customer.code and rows[1][5] == 'Barang X' and rows[1][7] == 'KG' and rows[1][9] == 14.5
+
+
+def test_journal_list_flags_voided_pairs_and_excludes_them_from_summary(client, auth_headers, db_session):
+    from tests.test_finance_sync_regressions import _acc, _bank
+    bank = _bank(db_session); a = _acc(db_session, '9-1000')
+    mk = lambda n, amt: client.post('/api/finance/payments', headers=auth_headers, json={
+        'payment_date': '2026-10-20', 'payment_type': 'payment', 'payment_method': 'cash', 'amount': amt, 'bank_account_id': bank.id,
+        'payment_number': n, 'lines': [{'account_id': a.id, 'amount': amt}]}).get_json()['payment_id']
+    keep, gone = mk('PAY-K', 100), mk('PAY-V', 250)
+    assert client.post(f'/api/finance/payments/{gone}/void', headers=auth_headers, json={}).status_code == 200
+    d = client.get('/api/finance/accounting/journal-entries?hide_voided=0', headers=auth_headers).get_json()
+    assert sorted(e['kind'] for e in d['entries']) == ['normal', 'reversal', 'voided']
+    assert d['summary'] == {'journals': 1, 'total_debit': 100.0, 'total_credit': 100.0, 'hidden': 2}
+    d = client.get('/api/finance/accounting/journal-entries', headers=auth_headers).get_json()
+    assert [e['kind'] for e in d['entries']] == ['normal'] and d['total'] == 1
+    for page in (1, 2):
+        r = client.get(f'/api/finance/accounting/journal-entries?hide_voided=0&per_page=2&page={page}', headers=auth_headers).get_json()
+        assert len(r['entries']) == (2 if page == 1 else 1)

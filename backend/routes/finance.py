@@ -3486,53 +3486,67 @@ def delete_account(code):
 @jwt_required()
 @require_permission('journal.view')
 def get_journal_entries():
-    """Get journal entries, grouped one row per journal (not per GL line)."""
+    """Journal list, one row per journal, paginated per JOURNAL (not per GL line).
+
+    Void/cancel posts a reversing journal (reference_type 'void_<x>') and leaves the original posted, so both
+    exist in the books. Each row gets kind = 'normal' | 'reversal' (the void journal) | 'voided' (the original
+    that was reversed). hide_voided=1 (default) hides reversal+voided pairs; the summary counts and sums only
+    'normal' journals either way, so cancelled transactions never inflate the numbers."""
     try:
-        # Get journal entries from AccountingEntry model
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
-        
-        entries = AccountingEntry.query.order_by(AccountingEntry.entry_date.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
-        
-        # Group entries by journal entry number.
-        # BUG FIX 2026-08-17: grouping was keyed on reference_number, which
-        # is NOT unique per journal (many journals from the same source
-        # transaction, or with no reference_number at all, would collide
-        # and get merged into one row with wrong totals). The real grouping
-        # key is entry_number's BASE segment (before the "-NN" line suffix
-        # post_pending_journal() appends) - same fix pattern already applied
-        # in post_pending_journal() itself for the generate_number()
-        # collision bug found during Payroll wiring this session.
-        journal_entries = {}
-        for entry in entries.items:
-            base_number = entry.entry_number.rsplit('-', 1)[0] if entry.entry_number else f"JE-{entry.id}"
-            if base_number not in journal_entries:
-                journal_entries[base_number] = {
-                    'id': entry.id,
-                    'entry_number': base_number,
-                    'entry_date': entry.entry_date.isoformat(),
-                    'description': entry.description,
-                    'reference_number': entry.reference_number,
-                    'reference_type': entry.reference_type,
-                    'total_debit': 0,
-                    'total_credit': 0,
-                    'status': entry.status or 'posted',
-                    'created_by': getattr(entry.posted_by_user, 'username', 'N/A') if entry.posted_by_user else 'N/A',
+        from models import User
+        page = max(request.args.get('page', 1, type=int), 1)
+        per_page = min(max(request.args.get('per_page', 20, type=int), 1), 200)
+        hide_voided = request.args.get('hide_voided', '1') != '0'
+
+        rows = db.session.query(
+            AccountingEntry.id, AccountingEntry.entry_number, AccountingEntry.entry_date, AccountingEntry.description,
+            AccountingEntry.reference_number, AccountingEntry.reference_type, AccountingEntry.reference_id,
+            AccountingEntry.debit_amount, AccountingEntry.credit_amount, AccountingEntry.status, AccountingEntry.posted_by,
+        ).filter(AccountingEntry.status == 'posted').order_by(AccountingEntry.entry_date.desc(), AccountingEntry.id.desc()).all()
+
+        voided_keys = {(r.reference_type[5:], r.reference_id) for r in rows
+                       if r.reference_type and r.reference_type.startswith('void_') and r.reference_id}
+        users = {}
+        journals = {}
+        for r in rows:
+            base = r.entry_number.rsplit('-', 1)[0] if r.entry_number else f'JE-{r.id}'
+            if base not in journals:
+                if r.reference_type and r.reference_type.startswith('void_'):
+                    kind = 'reversal'
+                elif (r.reference_type, r.reference_id) in voided_keys:
+                    kind = 'voided'
+                else:
+                    kind = 'normal'
+                if r.posted_by and r.posted_by not in users:
+                    u = db.session.get(User, r.posted_by)
+                    users[r.posted_by] = u.username if u else 'N/A'
+                journals[base] = {
+                    'id': r.id, 'entry_number': base, 'entry_date': r.entry_date.isoformat(), 'description': r.description,
+                    'reference_number': r.reference_number, 'reference_type': r.reference_type, 'kind': kind,
+                    'total_debit': 0.0, 'total_credit': 0.0, 'status': r.status or 'posted',
+                    'created_by': users.get(r.posted_by, 'N/A'),
                 }
-            
-            journal_entries[base_number]['total_debit'] += float(entry.debit_amount or 0)
-            journal_entries[base_number]['total_credit'] += float(entry.credit_amount or 0)
-        
+            journals[base]['total_debit'] += float(r.debit_amount or 0)
+            journals[base]['total_credit'] += float(r.credit_amount or 0)
+
+        all_journals = list(journals.values())
+        normal = [j for j in all_journals if j['kind'] == 'normal']
+        summary = {'journals': len(normal), 'total_debit': round(sum(j['total_debit'] for j in normal), 2),
+                   'total_credit': round(sum(j['total_credit'] for j in normal), 2),
+                   'hidden': len(all_journals) - len(normal)}
+        shown = normal if hide_voided else all_journals
+        total = len(shown)
+        start = (page - 1) * per_page
         return jsonify({
-            'entries': list(journal_entries.values()),
-            'total': entries.total,
-            'pages': entries.pages
+            'entries': shown[start:start + per_page],
+            'total': total,
+            'pages': max((total + per_page - 1) // per_page, 1),
+            'summary': summary,
         }), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 def _budget_line_actuals(budget):
     """Realisasi per baris anggaran dihitung langsung dari buku besar (jurnal
