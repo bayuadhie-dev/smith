@@ -40,6 +40,7 @@ interface JournalEntry {
   status: string;
   created_by: string;
   kind?: 'normal' | 'reversal' | 'voided';
+  document_url?: string | null;
 }
 
 interface AccountingManagementProps {
@@ -381,7 +382,11 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                     {new Date(entry.entry_date).toLocaleDateString('id-ID')}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                    {entry.description}
+                    {entry.document_url ? (
+                      <Link to={entry.document_url} className="text-blue-600 hover:underline" title="Buka transaksi asal jurnal ini">{entry.description}</Link>
+                    ) : entry.reference_type === 'manual_journal' ? (
+                      <span>{entry.description} <span className="ml-1 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700">Jurnal manual</span></span>
+                    ) : entry.description}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right font-medium">
                     {formatRupiah(entry.total_debit)}
@@ -543,6 +548,9 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                   <div className="col-span-2">
                     <div className="text-gray-500 dark:text-gray-400">Deskripsi</div>
                     <div className="font-medium text-gray-900 dark:text-white">{journalDetail.description}</div>
+                    {journalDetail.document_url && (
+                      <Link to={journalDetail.document_url} className="mt-1 inline-block text-sm text-blue-600 hover:underline">Buka transaksi asal &rarr;</Link>
+                    )}
                   </div>
                 </div>
 

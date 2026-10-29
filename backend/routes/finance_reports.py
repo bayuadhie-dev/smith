@@ -28,6 +28,18 @@ DOC_URLS = {
     'void_purchase_invoice': '/app/purchasing/invoices/{id}',
     'credit_memo_refund': '/app/finance/credit-memos',
     'manual_journal': '/app/accounting/journal',
+    'invoice': '/app/finance/invoices/{id}',
+    'work_order': '/app/production/work-orders/{id}',
+    'work_order_ready_to_close': '/app/production/work-orders/{id}',
+    'work_order_revert': '/app/production/work-orders/{id}',
+    'work_order_ipqc': '/app/production/work-orders/{id}',
+    'sales_order': '/app/sales/orders/{id}',
+    'sales_order_correction': '/app/sales/orders/{id}',
+    'purchase_order': '/app/purchasing/purchase-orders/{id}',
+    'stock_opname': '/app/warehouse/stock-opname/{id}',
+    'sales_delivery': '/app/shipping/orders/{id}',
+    'asset': '/app/assets/{id}',
+    'recurring_payment': '/app/finance/recurring-payments',
 }
 
 

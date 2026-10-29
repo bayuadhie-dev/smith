@@ -83,3 +83,15 @@ def test_journal_list_flags_voided_pairs_and_excludes_them_from_summary(client, 
     for page in (1, 2):
         r = client.get(f'/api/finance/accounting/journal-entries?hide_voided=0&per_page=2&page={page}', headers=auth_headers).get_json()
         assert len(r['entries']) == (2 if page == 1 else 1)
+
+
+def test_journal_list_and_detail_link_to_source_transaction(client, auth_headers, db_session):
+    from tests.test_finance_sync_regressions import _acc, _bank
+    bank = _bank(db_session); a = _acc(db_session, '9-1000')
+    pid = client.post('/api/finance/payments', headers=auth_headers, json={
+        'payment_date': '2026-10-20', 'payment_type': 'payment', 'payment_method': 'cash', 'amount': 50, 'bank_account_id': bank.id,
+        'lines': [{'account_id': a.id, 'amount': 50}]}).get_json()['payment_id']
+    row = client.get('/api/finance/accounting/journal-entries', headers=auth_headers).get_json()['entries'][0]
+    assert row['document_url'] == f'/app/finance/payments/{pid}'
+    det = client.get(f"/api/finance/accounting/journal-entries/{row['entry_number']}", headers=auth_headers).get_json()
+    assert det['document_url'] == f'/app/finance/payments/{pid}'

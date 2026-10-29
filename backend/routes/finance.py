@@ -3494,6 +3494,7 @@ def get_journal_entries():
     'normal' journals either way, so cancelled transactions never inflate the numbers."""
     try:
         from models import User
+        from routes.finance_reports import _doc_url
         page = max(request.args.get('page', 1, type=int), 1)
         per_page = min(max(request.args.get('per_page', 20, type=int), 1), 200)
         hide_voided = request.args.get('hide_voided', '1') != '0'
@@ -3523,6 +3524,7 @@ def get_journal_entries():
                 journals[base] = {
                     'id': r.id, 'entry_number': base, 'entry_date': r.entry_date.isoformat(), 'description': r.description,
                     'reference_number': r.reference_number, 'reference_type': r.reference_type, 'kind': kind,
+                    'document_url': None if r.reference_type == 'manual_journal' else _doc_url(r.reference_type, r.reference_id),
                     'total_debit': 0.0, 'total_credit': 0.0, 'status': r.status or 'posted',
                     'created_by': users.get(r.posted_by, 'N/A'),
                 }
@@ -5099,6 +5101,7 @@ def get_journal_entry_detail(entry_number_base):
             'reference_number': first.reference_number,
             'reference_type': first.reference_type,
             'reference_id': first.reference_id,
+            'document_url': None if first.reference_type == 'manual_journal' else __import__('routes.finance_reports', fromlist=['_doc_url'])._doc_url(first.reference_type, first.reference_id),
             'entry_date': first.entry_date.isoformat() if first.entry_date else None,
             'description': first.description,
             'status': first.status,
