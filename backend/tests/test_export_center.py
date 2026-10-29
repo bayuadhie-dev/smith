@@ -95,3 +95,25 @@ def test_journal_list_and_detail_link_to_source_transaction(client, auth_headers
     assert row['document_url'] == f'/app/finance/payments/{pid}'
     det = client.get(f"/api/finance/accounting/journal-entries/{row['entry_number']}", headers=auth_headers).get_json()
     assert det['document_url'] == f'/app/finance/payments/{pid}'
+
+
+def test_edit_manual_journal_keeps_number_and_rejects_auto_journals(client, auth_headers, db_session):
+    from tests.test_finance_sync_regressions import _acc, _bank
+    from models.finance import AccountingEntry
+    bank = _bank(db_session); a = _acc(db_session, '9-1000'); b = _acc(db_session, '6-6000')
+    body = lambda amt, d='2026-10-10': {'entry_date': d, 'description': 'Koreksi', 'reference_number': 'REF-1',
+                                        'lines': [{'account_id': a.id, 'debit': amt, 'credit': 0}, {'account_id': b.id, 'debit': 0, 'credit': amt}]}
+    assert client.post('/api/finance/general-ledger', headers=auth_headers, json=body(100)).status_code == 201
+    row = client.get('/api/finance/accounting/journal-entries', headers=auth_headers).get_json()['entries'][0]
+    r = client.put(f"/api/finance/general-ledger/{row['id']}", headers=auth_headers, json=body(250, '2026-10-12'))
+    assert r.status_code == 200, r.get_json()
+    rows = AccountingEntry.query.filter(AccountingEntry.entry_number.like(f"{row['entry_number']}-%")).all()
+    assert len(rows) == 2 and sorted(float(x.debit_amount) for x in rows) == [0.0, 250.0] and all(str(x.entry_date) == '2026-10-12' for x in rows)
+    assert AccountingEntry.query.filter_by(reference_type='manual_journal').count() == 2
+    unbalanced = body(5); unbalanced['lines'][1]['credit'] = 4
+    assert client.put(f"/api/finance/general-ledger/{row['id']}", headers=auth_headers, json=unbalanced).status_code == 400
+    assert AccountingEntry.query.filter(AccountingEntry.entry_number.like(f"{row['entry_number']}-%")).count() == 2
+    pid = client.post('/api/finance/payments', headers=auth_headers, json={'payment_date': '2026-10-20', 'payment_type': 'payment', 'payment_method': 'cash',
+        'amount': 50, 'bank_account_id': bank.id, 'lines': [{'account_id': a.id, 'amount': 50}]}).get_json()['payment_id']
+    auto = AccountingEntry.query.filter_by(reference_type='payment', reference_id=pid).first()
+    assert client.put(f'/api/finance/general-ledger/{auto.id}', headers=auth_headers, json=body(1)).status_code == 400

@@ -1533,6 +1533,52 @@ def create_manual_journal_entry():
         return jsonify({'error': str(e)}), 500
 
 
+@finance_bp.route('/general-ledger/<int:id>', methods=['PUT'])
+@jwt_required()
+@require_permission('journal.create')
+def update_manual_journal_entry(id):
+    """Edit a manual journal (date, description, reference, lines). Same rules as delete: only reference_type
+    'manual_journal'; closed periods (old OR new date) are rejected. The journal keeps its number: the old lines
+    are replaced by freshly validated ones in one transaction."""
+    try:
+        from utils.finance_helpers import is_period_locked
+        from models.approval_workflow import PendingJournalEntry
+        entry = AccountingEntry.query.get_or_404(id)
+        if entry.reference_type != 'manual_journal':
+            return jsonify({'error': f'Jurnal ini dibuat otomatis dari transaksi {entry.reference_type or "lain"}. Koreksi dari transaksi sumbernya.'}), 400
+        if is_period_locked(entry.entry_date, transaction_type='journal_entry'):
+            return jsonify({'error': f'Periode {entry.entry_date.strftime("%Y-%m")} sudah ditutup (period-close). Jurnal ini tidak bisa diubah.'}), 400
+        data = request.get_json() or {}
+        try:
+            new_date = datetime.strptime(data.get('entry_date') or '', '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'error': 'entry_date wajib diisi (YYYY-MM-DD)'}), 400
+
+        base = entry.entry_number.rsplit('-', 1)[0]
+        old = AccountingEntry.query.filter(AccountingEntry.entry_number.like(f'{base}-%'),
+                                           AccountingEntry.reference_type == 'manual_journal').all()
+        old_pending_ids = {e.reference_id for e in old if e.reference_id}
+        for e in old:
+            db.session.delete(e)
+        db.session.flush()
+        new_base, created = create_manual_journal_core(new_date, data.get('description'), data.get('reference_number'),
+                                                       data.get('lines', []), get_jwt_identity())
+        for e in created:
+            e.entry_number = f"{base}-{e.entry_number.rsplit('-', 1)[1]}"
+        for pid in old_pending_ids:
+            p = db.session.get(PendingJournalEntry, pid)
+            if p:
+                db.session.delete(p)
+        db.session.commit()
+        return jsonify({'message': 'Jurnal manual diperbarui', 'entry_number': base, 'entries': len(created)}), 200
+    except ValueError as ve:
+        db.session.rollback()
+        return jsonify({'error': str(ve)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 @finance_bp.route('/general-ledger/<int:id>', methods=['DELETE'])
 @jwt_required()
 @require_permission('finance.delete')

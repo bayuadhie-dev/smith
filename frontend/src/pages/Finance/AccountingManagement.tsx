@@ -64,6 +64,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
   const [journalDetail, setJournalDetail] = useState<any | null>(null);
   const [loadingJournalDetail, setLoadingJournalDetail] = useState(false);
   const [showAddJournalModal, setShowAddJournalModal] = useState(false);
+  const [editingJournalId, setEditingJournalId] = useState<number | null>(null);
   const [journalFormData, setJournalFormData] = useState({
     entry_date: new Date().toISOString().split('T')[0],
     description: '',
@@ -136,6 +137,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
 
   const handleCloseJournalModal = () => {
     setShowAddJournalModal(false);
+    setEditingJournalId(null);
     setJournalFormData({
       entry_date: new Date().toISOString().split('T')[0],
       description: '',
@@ -145,6 +147,25 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
         { account_id: '', debit: 0, credit: 0, description: '' }
       ]
     });
+  };
+
+  const handleEditJournal = async (entry: JournalEntry) => {
+    try {
+      const res = await axiosInstance.get(`/api/finance/accounting/journal-entries/${entry.entry_number}`);
+      const d = res.data;
+      setJournalFormData({
+        entry_date: d.entry_date || entry.entry_date,
+        description: d.description || '',
+        reference_number: d.reference_number || '',
+        lines: (d.lines || []).map((l: any) => ({
+          account_id: String(l.account_id), debit: Number(l.debit_amount) || 0, credit: Number(l.credit_amount) || 0, description: l.description || '',
+        })),
+      });
+      setEditingJournalId(entry.id);
+      setShowAddJournalModal(true);
+    } catch {
+      showError('Gagal memuat jurnal untuk diubah');
+    }
   };
 
   const handleDeleteJournal = async (entry: JournalEntry) => {
@@ -183,8 +204,13 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
       // {account_id, debit, credit, description} line shape this form
       // already produces) rather than building a second near-duplicate
       // endpoint for the same underlying table.
-      await axiosInstance.post('/api/finance/general-ledger', journalFormData);
-      showSuccess('Journal entry created successfully!');
+      if (editingJournalId) {
+        await axiosInstance.put(`/api/finance/general-ledger/${editingJournalId}`, journalFormData);
+        showSuccess('Jurnal manual diperbarui');
+      } else {
+        await axiosInstance.post('/api/finance/general-ledger', journalFormData);
+        showSuccess('Journal entry created successfully!');
+      }
       handleCloseJournalModal();
       loadData();
     } catch (error: any) {
@@ -415,6 +441,14 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                         <EyeIcon className="h-4 w-4" />
                       </button>
                       {entry.reference_type === 'manual_journal' ? (
+                        <>
+                        <button
+                          onClick={() => handleEditJournal(entry)}
+                          className="text-amber-600 hover:text-amber-800"
+                          title="Ubah jurnal manual ini"
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                        </button>
                         <button
                           onClick={() => handleDeleteJournal(entry)}
                           className="text-red-600 hover:text-red-900"
@@ -422,6 +456,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                         >
                           <TrashIcon className="h-4 w-4" />
                         </button>
+                        </>
                       ) : (
                         <span
                           className="text-gray-400 text-xs italic"
@@ -613,7 +648,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
             <div className="flex justify-between items-center p-6 border-b">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">New Journal Entry</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{editingJournalId ? 'Ubah Jurnal Manual' : 'New Journal Entry'}</h3>
               <button 
                 onClick={handleCloseJournalModal}
                 className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
@@ -800,7 +835,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                   type="submit" 
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
-                  Create Journal Entry
+                  {editingJournalId ? 'Simpan Perubahan' : 'Create Journal Entry'}
                 </button>
               </div>
             </form>
