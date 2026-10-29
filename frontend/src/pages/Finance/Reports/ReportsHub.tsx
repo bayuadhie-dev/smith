@@ -18,6 +18,8 @@ const GROUPS: { title: string; hint: string; items: Item[] }[] = [
   { title: 'Kas & Bank', hint: 'Pergerakan uang di rekening', items: [
     { title: 'Mutasi Rekening Bank / Kas', desc: 'Buku bank per rekening dengan saldo berjalan', to: '/app/finance/reports/bank-mutation', icon: BuildingLibraryIcon, isNew: true },
     { title: 'Rekap Kas Harian', desc: 'Penerimaan dan pengeluaran per hari, klik untuk rincian', to: '/app/finance/reports/cash-daily', icon: CalendarDaysIcon, isNew: true },
+    { title: 'Daftar Penerimaan Kas/Bank', desc: 'Semua penerimaan kas/bank yang diinput, per periode, bisa dicari', to: '/app/finance/penerimaan', icon: BanknotesIcon },
+    { title: 'Daftar Pembayaran Kas/Bank', desc: 'Semua pembayaran kas/bank yang diinput, per periode, bisa dicari', to: '/app/finance/pembayaran', icon: BanknotesIcon },
     { title: 'Posisi Kas & Bank', desc: 'Saldo semua rekening per tanggal', to: '/app/finance/reports/cash-position', icon: BanknotesIcon, isNew: true },
     { title: 'Rekonsiliasi Bank', desc: 'Cocokkan rekening koran dengan jurnal', to: '/app/accounting/bank-reconciliation', icon: ArrowsRightLeftIcon },
   ] },
