@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
-import { BanknotesIcon, PlusIcon, ArrowUpTrayIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { BanknotesIcon, PlusIcon, ArrowUpTrayIcon, ChevronUpIcon, ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 interface PaymentRow {
   id: number;
@@ -64,6 +64,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bankId, setBankId] = useState('');
+  const [search, setSearch] = useState('');
   const [banks, setBanks] = useState<{ id: number; code: string; name: string }[]>([]);
   const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' } | null>(null);
 
@@ -102,17 +103,29 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
     fetchRows();
   }, [fetchRows]);
 
+  const filteredRows = React.useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    const digits = q.replace(/[.\s]/g, '').replace(',', '.');
+    return rows.filter((r) => {
+      const hay = [r.payment_number, r.payment_date, r.party_name, r.notes, r.reference_number, (r as any).paid_to,
+        r.invoice_numbers?.join(' '), r.bank_account ? `${r.bank_account.code} ${r.bank_account.name}` : '',
+        statusLabel[r.status] || r.status].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(q) || (digits !== '' && /^[0-9.]+$/.test(digits) && String(Math.abs(r.amount)).includes(digits));
+    });
+  }, [rows, search]);
+
   const sortedRows = React.useMemo(() => {
-    if (!sort) return rows;
+    if (!sort) return filteredRows;
     const sign = sort.dir === 'asc' ? 1 : -1;
-    return [...rows].sort((a, b) => {
+    return [...filteredRows].sort((a, b) => {
       const x = sortValue(a, sort.key);
       const y = sortValue(b, sort.key);
       return (typeof x === 'number' && typeof y === 'number' ? x - y : SORT_TEXT.compare(String(x), String(y))) * sign;
     });
-  }, [rows, sort]);
+  }, [filteredRows, sort]);
 
-  const total = rows
+  const total = filteredRows
     .filter((r) => r.status !== 'cancelled')
     .reduce((sum, r) => sum + r.amount, 0);
 
@@ -167,6 +180,19 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
             <option value="">Semua Kas/Bank</option>
             {banks.map((b) => <option key={b.id} value={b.id}>{b.code} - {b.name}</option>)}
           </select>
+        </div>
+        <div className="flex-1 min-w-[16rem]">
+          <label className="block text-sm text-gray-600 mb-1">Cari</label>
+          <div className="relative">
+            <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="No. bukti, pihak, kas/bank, faktur, keterangan, nominal..."
+              className="border rounded pl-9 pr-3 py-2 w-full"
+            />
+          </div>
         </div>
         <button onClick={fetchRows} className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">
           Tampilkan
@@ -247,10 +273,10 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
               </tr>
             </thead>
             <tbody>
-              {rows.length === 0 && (
+              {sortedRows.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-4 py-6 text-center text-gray-400">
-                    Tidak ada {isReceipt ? 'penerimaan' : 'pembayaran'} pada periode ini.
+                    Tidak ada {isReceipt ? 'penerimaan' : 'pembayaran'} {search.trim() ? 'yang cocok dengan pencarian' : 'pada periode ini'}.
                   </td>
                 </tr>
               )}

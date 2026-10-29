@@ -381,16 +381,37 @@ def render_template_version_to_html(template_version, document_data):
 
     content_html = ''.join(p for p in body_parts if p)
 
+    def build(page_h):
+        return _wrap_page(content_html, page_width_mm, page_h)
+
+    html = build(page_height_mm)
+    # Small paper (e.g. A5 landscape kwitansi) that overflows: move to A4 portrait (same 210 mm width, so the
+    # layout holds) instead of leaving a split sheet. A4 itself just continues onto further pages.
+    if page_height_mm < 290 and abs(page_width_mm - 210) < 1:
+        try:
+            from weasyprint import HTML
+            if len(HTML(string=html).render().pages) > 1:
+                html = build(297)
+        except Exception:
+            pass
+    return html
+
+
+def _wrap_page(content_html, page_width_mm, page_height_mm):
     return f'''
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
         <style>
-            @page {{ size: {page_width_mm}mm {page_height_mm}mm; margin: 0 0 12mm 0; }}
+            @page {{ size: {page_width_mm}mm {page_height_mm}mm; margin: 0 0 12mm 0;
+                     @bottom-center {{ content: "Halaman " counter(page) " dari " counter(pages); font-family: Arial, sans-serif; font-size: 7pt; color: #888; }} }}
             @page :not(:first) {{ margin-top: 12mm; }}
             body {{ margin: 0; padding: 0; font-family: Arial, sans-serif; }}
-            .tpd-page {{ position: relative; width: {page_width_mm}mm; min-height: {page_height_mm}mm; }}
+            /* height = page minus bottom margin: a full-page min-height always overflowed into a blank 2nd page */
+            .tpd-page {{ position: relative; width: {page_width_mm}mm; min-height: {page_height_mm - 13}mm; }}
+            table tr {{ page-break-inside: avoid; break-inside: avoid; }}
+            thead {{ display: table-header-group; }}
         </style>
     </head>
     <body>
