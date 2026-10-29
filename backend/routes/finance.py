@@ -2953,6 +2953,16 @@ def get_balance_sheet():
                 f"konvensi yang sudah ditangani."
             )
 
+        account_detail = {'assets': [], 'liabilities': [], 'equity': []}
+        for acc in sorted(_active, key=lambda x: x.account_code):
+            if acc.is_header or abs(_net.get(acc.account_code, 0.0)) <= 0.005:
+                continue
+            bucket = {'asset': 'assets', 'liability': 'liabilities', 'equity': 'equity'}.get(acc.account_type)
+            if bucket:
+                raw = _net.get(acc.account_code, 0.0)
+                account_detail[bucket].append({'code': acc.account_code, 'name': acc.account_name,
+                                               'balance': raw if bucket == 'assets' else -raw})
+
         balance_sheet = {
             'assets': {
                 'current_assets': {
@@ -2988,6 +2998,7 @@ def get_balance_sheet():
                 'current_year_earnings': current_year_earnings,
                 'total_equity': total_equity
             },
+            'account_detail': account_detail,
             'total_liabilities_equity': total_liabilities + total_equity,
             # fix_report_3.md: new fields, additive - existing keys above
             # are all untouched so old callers/tests keep working.

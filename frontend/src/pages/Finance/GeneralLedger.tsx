@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
@@ -47,10 +48,12 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [showNewEntryModal, setShowNewEntryModal] = useState(false)
+  const [searchParams] = useSearchParams()
+  const linkedAccountCode = searchParams.get('account_code')
   const [filters, setFilters] = useState({
     account_id: '',
-    start_date: '',
-    end_date: '',
+    start_date: searchParams.get('start_date') || '',
+    end_date: searchParams.get('end_date') || '',
     search: ''
   })
 
@@ -82,7 +85,10 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
   const loadAccounts = async () => {
     try {
       const response = await axiosInstance.get('/api/finance/accounts')
-      setAccounts(response.data?.accounts || [])
+      const list = response.data?.accounts || []
+      setAccounts(list)
+      const linked = linkedAccountCode ? list.find((a: AccountOption) => a.code === linkedAccountCode) : null
+      if (linked) setFilters(prev => ({ ...prev, account_id: String(linked.id) }))
     } catch (error) {
       console.error('Error loading accounts:', error)
       setAccounts([])

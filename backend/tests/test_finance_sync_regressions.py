@@ -64,6 +64,8 @@ def test_balance_sheet_balances_with_accumulated_depreciation(client, auth_heade
     assert bs['is_balanced'], bs['imbalance']
     assert bs['assets']['fixed_assets']['net_fixed_assets'] == 267_000
     assert bs['assets']['total_assets'] == 997_000
+    det = {k: {x['code']: x['balance'] for x in v} for k, v in bs['account_detail'].items()}   # klik akun -> Buku Besar
+    assert det['assets']['1-1010'] == 730_000 and det['assets']['1-2100'] == -3_000 and det['equity']['3-1000'] == 1_000_000
 
 
 def test_balance_sheet_cuts_off_at_report_date(client, auth_headers, db_session):

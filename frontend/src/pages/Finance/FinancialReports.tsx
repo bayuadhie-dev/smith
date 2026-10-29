@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
@@ -79,6 +80,7 @@ interface BalanceSheet {
     }
     total_liabilities: number
   }
+  account_detail?: { assets: CoaAccountLine[]; liabilities: CoaAccountLine[]; equity: CoaAccountLine[] }
   equity: {
     common_stock: number
     retained_earnings: number
@@ -166,6 +168,8 @@ const FinancialReports = () => {
   const [incomeMonth, setIncomeMonth] = useState(new Date().toISOString().slice(0, 7))
   const [incomeCustomFrom, setIncomeCustomFrom] = useState(toISODate(new Date(new Date().getFullYear(), 0, 1)))
   const [incomeCustomTo, setIncomeCustomTo] = useState(toISODate(new Date()))
+  const glLink = (code: string, useRange: boolean) =>
+    `/app/accounting/general-ledger?account_code=${encodeURIComponent(code)}${useRange ? `&start_date=${incomeRange.from}&end_date=${incomeRange.to}` : ''}`
   const [incomeRange, setIncomeRange] = useState<{ from: string; to: string }>(
     { from: `${new Date().getFullYear()}-01-01`, to: `${new Date().getFullYear()}-12-31` }
   )
@@ -297,8 +301,10 @@ const FinancialReports = () => {
                 {(incomeStatement.revenue?.accounts || []).map((acc) => (
                   <div key={acc.code} className="flex justify-between">
                     <span>
-                      <span className="text-gray-400 mr-2">{acc.code}</span>
-                      {acc.name}
+                      <Link to={glLink(acc.code, true)} className="hover:text-green-700 hover:underline" title="Buka di Buku Besar">
+                        <span className="text-gray-400 mr-2">{acc.code}</span>
+                        {acc.name}
+                      </Link>
                     </span>
                     <span className={acc.balance < 0 ? 'text-red-600' : ''}>
                       {acc.balance < 0 ? `(${formatRupiah(Math.abs(acc.balance))})` : formatRupiah(acc.balance)}
@@ -322,8 +328,10 @@ const FinancialReports = () => {
                 {(incomeStatement.cost_of_sales?.accounts || []).map((acc) => (
                   <div key={acc.code} className="flex justify-between">
                     <span>
-                      <span className="text-gray-400 mr-2">{acc.code}</span>
-                      {acc.name}
+                      <Link to={glLink(acc.code, true)} className="hover:text-green-700 hover:underline" title="Buka di Buku Besar">
+                        <span className="text-gray-400 mr-2">{acc.code}</span>
+                        {acc.name}
+                      </Link>
                     </span>
                     <span>{formatRupiah(acc.balance)}</span>
                   </div>
@@ -352,8 +360,10 @@ const FinancialReports = () => {
                 {(incomeStatement.operating_expenses?.selling_accounts || []).map((acc) => (
                   <div key={acc.code} className="flex justify-between">
                     <span>
-                      <span className="text-gray-400 mr-2">{acc.code}</span>
-                      {acc.name}
+                      <Link to={glLink(acc.code, true)} className="hover:text-green-700 hover:underline" title="Buka di Buku Besar">
+                        <span className="text-gray-400 mr-2">{acc.code}</span>
+                        {acc.name}
+                      </Link>
                     </span>
                     <span>{formatRupiah(acc.balance)}</span>
                   </div>
@@ -365,8 +375,10 @@ const FinancialReports = () => {
                 {(incomeStatement.operating_expenses?.admin_accounts || []).map((acc) => (
                   <div key={acc.code} className="flex justify-between">
                     <span>
-                      <span className="text-gray-400 mr-2">{acc.code}</span>
-                      {acc.name}
+                      <Link to={glLink(acc.code, true)} className="hover:text-green-700 hover:underline" title="Buka di Buku Besar">
+                        <span className="text-gray-400 mr-2">{acc.code}</span>
+                        {acc.name}
+                      </Link>
                     </span>
                     <span>{formatRupiah(acc.balance)}</span>
                   </div>
@@ -392,8 +404,10 @@ const FinancialReports = () => {
                   {(incomeStatement.other_expenses?.accounts || []).map((acc) => (
                     <div key={acc.code} className="flex justify-between">
                       <span>
-                        <span className="text-gray-400 mr-2">{acc.code}</span>
-                        {acc.name}
+                        <Link to={glLink(acc.code, true)} className="hover:text-green-700 hover:underline" title="Buka di Buku Besar">
+                          <span className="text-gray-400 mr-2">{acc.code}</span>
+                          {acc.name}
+                        </Link>
                       </span>
                       <span>{formatRupiah(acc.balance)}</span>
                     </div>
@@ -592,6 +606,30 @@ const FinancialReports = () => {
             </div>
           </div>
         </div>
+        {balanceSheet.account_detail && (
+          <div className="card p-6">
+            <h3 className="text-lg font-semibold mb-1">Rincian per Akun</h3>
+            <p className="text-xs text-gray-500 mb-4">Klik akun untuk melihat jurnalnya di Buku Besar.</p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-sm">
+              {([['Aset', 'assets'], ['Liabilitas', 'liabilities'], ['Ekuitas', 'equity']] as const).map(([title, key]) => (
+                <div key={key}>
+                  <h4 className="font-semibold mb-2">{title}</h4>
+                  <div className="space-y-1">
+                    {(balanceSheet.account_detail?.[key] || []).length === 0 && <div className="text-gray-400 italic">-</div>}
+                    {(balanceSheet.account_detail?.[key] || []).map((acc) => (
+                      <div key={acc.code} className="flex justify-between gap-3">
+                        <Link to={glLink(acc.code, false)} className="hover:text-green-700 hover:underline" title="Buka di Buku Besar">
+                          <span className="text-gray-400 mr-2">{acc.code}</span>{acc.name}
+                        </Link>
+                        <span className={acc.balance < 0 ? 'text-red-600' : ''}>{acc.balance < 0 ? `(${formatRupiah(Math.abs(acc.balance))})` : formatRupiah(acc.balance)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     )
   }
