@@ -117,3 +117,12 @@ def test_edit_manual_journal_keeps_number_and_rejects_auto_journals(client, auth
         'amount': 50, 'bank_account_id': bank.id, 'lines': [{'account_id': a.id, 'amount': 50}]}).get_json()['payment_id']
     auto = AccountingEntry.query.filter_by(reference_type='payment', reference_id=pid).first()
     assert client.put(f'/api/finance/general-ledger/{auto.id}', headers=auth_headers, json=body(1)).status_code == 400
+
+
+def test_doc_url_covers_automatic_journal_sources():
+    from routes.finance_reports import _doc_url
+    assert _doc_url('material_issue', 7) == '/app/production/material-issues/7'
+    assert _doc_url('fg_conversion', 3) == '/app/production/fg-conversion/3'
+    assert _doc_url('inventory_destruction', 9) == '/app/waste/9/edit'
+    assert _doc_url('payroll_period', 2) == '/app/hr/payroll/periods/2/records'
+    assert _doc_url('pending_journal', None) is None and _doc_url('payment', None) is None

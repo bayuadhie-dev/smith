@@ -40,6 +40,15 @@ DOC_URLS = {
     'sales_delivery': '/app/shipping/orders/{id}',
     'asset': '/app/assets/{id}',
     'recurring_payment': '/app/finance/recurring-payments',
+    'payroll_period': '/app/hr/payroll/periods/{id}/records',
+    'payroll_payment': '/app/hr/payroll/{id}/edit',
+    'material_issue': '/app/production/material-issues/{id}',
+    'fg_conversion': '/app/production/fg-conversion/{id}',
+    'wip_conversion_to_fg': '/app/production/work-orders/{id}',
+    'inventory_destruction': '/app/waste/{id}/edit',
+    'purchase_return': '/app/purchasing/returns/{id}',
+    'production_approval': '/app/production/approvals/{id}',
+    'manual_stock_in': '/app/wms/transactions/{id}',
 }
 
 
