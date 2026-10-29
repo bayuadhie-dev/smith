@@ -1,5 +1,5 @@
 import React from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { CalendarDaysIcon } from '@heroicons/react/24/outline'
 import { DataTable, DocLink, ExportButtons, LoadState, Money, ReportShell, StatCards, Td, Th, fmtDate, idr, useReport } from './reportKit'
 
@@ -23,7 +23,7 @@ export default function CashDailyDetail() {
             <tbody>
               {data.rows.map((r: any) => (
                 <tr key={r.id} className="border-t border-gray-100 dark:border-gray-700">
-                  <Td className="whitespace-nowrap font-mono text-xs">{r.entry_number}</Td><Td className="whitespace-nowrap">{r.account_code} {r.account_name}</Td>
+                  <Td className="whitespace-nowrap font-mono text-xs">{r.entry_number}</Td><Td className="whitespace-nowrap"><Link className="hover:text-emerald-700 hover:underline" title="Buka di Buku Besar" to={`/app/accounting/general-ledger?account_code=${encodeURIComponent(r.account_code)}&start_date=${date}&end_date=${date}`}>{r.account_code} {r.account_name}</Link></Td>
                   <Td className="max-w-sm">{r.description}</Td><Td className="max-w-xs text-xs text-gray-600">{r.counter_accounts || '-'}</Td>
                   <Td><DocLink url={r.document_url}>{r.reference_number || r.reference_type || '-'}</DocLink></Td>
                   <Td right className="text-emerald-700"><Money v={r.receipt} /></Td><Td right className="text-red-600"><Money v={r.disbursement} /></Td>

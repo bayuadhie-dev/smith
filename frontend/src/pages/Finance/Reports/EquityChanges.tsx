@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { ChartBarSquareIcon } from '@heroicons/react/24/outline'
 import { DataTable, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, StatCards, Td, Th, idr, periodLabel, useReport, usePeriod } from './reportKit'
 
@@ -21,7 +22,7 @@ export default function EquityChanges() {
             <tbody>
               {data.rows.map((r: any) => (
                 <tr key={r.account_id} className="border-t border-gray-100 dark:border-gray-700">
-                  <Td className="font-mono text-xs">{r.code}</Td><Td>{r.name}</Td><Td right><Money v={r.opening} /></Td><Td right className="text-emerald-700"><Money v={r.additions} /></Td>
+                  <Td className="font-mono text-xs"><Link className="hover:text-emerald-700 hover:underline" title="Buka di Buku Besar" to={`/app/accounting/general-ledger?account_code=${encodeURIComponent(r.code)}&start_date=${p.from}&end_date=${p.to}`}>{r.code}</Link></Td><Td><Link className="hover:text-emerald-700 hover:underline" title="Buka di Buku Besar" to={`/app/accounting/general-ledger?account_code=${encodeURIComponent(r.code)}&start_date=${p.from}&end_date=${p.to}`}>{r.name}</Link></Td><Td right><Money v={r.opening} /></Td><Td right className="text-emerald-700"><Money v={r.additions} /></Td>
                   <Td right className="text-red-600"><Money v={r.deductions} /></Td><Td right className="font-semibold"><Money v={r.closing} zeroDash={false} colored /></Td>
                 </tr>
               ))}
