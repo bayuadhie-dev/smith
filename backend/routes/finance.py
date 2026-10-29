@@ -1672,6 +1672,7 @@ def get_basic_chart_of_accounts():
                 'code': a.account_code,
                 'name': a.account_name,
                 'account_type': a.account_type,
+                'parent_id': a.parent_id,
                 'balance': float(balances.get(a.id, 0) or 0),
                 'is_header': a.is_header if hasattr(a, 'is_header') else False
             } for a in accounts]

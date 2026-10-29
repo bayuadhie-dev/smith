@@ -3,6 +3,8 @@ import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { PencilIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import SearchableSelect from '../../components/SearchableSelect';
+import AccountSlotSelector from '../../components/Finance/AccountSlotSelector';
+import axiosInstance from '../../utils/axiosConfig';
 import {
   useGetProductsQuery,
   useLazyGetProductQuery,
@@ -58,7 +60,26 @@ const AKUN_FIELDS: { key: string; label: string }[] = [
 
 export default function MasterDataBarangTab() {
   const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState<'all' | Source>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | Source | 'non_inventory'>('all');
+  const [niOpen, setNiOpen] = useState(false);
+  const [niSaving, setNiSaving] = useState(false);
+  const [ni, setNi] = useState({ code: '', name: '', primary_uom: 'UNIT', akun_beban_id: null as number | null, ppn_code: '', description: '' });
+  const saveNonInventory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ni.code.trim() || !ni.name.trim()) { toast.error('Kode dan nama wajib diisi'); return; }
+    setNiSaving(true);
+    try {
+      await axiosInstance.post('/api/materials/', { ...ni, code: ni.code.trim(), name: ni.name.trim(), material_type: 'non_inventory', category: 'Non Persediaan', ppn_code: ni.ppn_code || undefined });
+      toast.success('Barang non persediaan dibuat');
+      setNiOpen(false);
+      setNi({ code: '', name: '', primary_uom: 'UNIT', akun_beban_id: null, ppn_code: '', description: '' });
+      refetchMaterials();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Gagal menyimpan');
+    } finally {
+      setNiSaving(false);
+    }
+  };
 
   const { data: productsData, isLoading: loadingProducts, refetch: refetchProducts } =
     useGetProductsQuery({ all: true });
@@ -119,7 +140,9 @@ export default function MasterDataBarangTab() {
 
   const filtered = useMemo(() => {
     let r = rows;
-    if (typeFilter !== 'all') r = r.filter((x) => x.source === typeFilter);
+    if (typeFilter === 'non_inventory') r = r.filter((x) => x.material_type === 'non_inventory');
+    else if (typeFilter === 'all') r = r.filter((x) => x.material_type !== 'non_inventory');
+    else r = r.filter((x) => x.source === typeFilter && x.material_type !== 'non_inventory');
     if (search) {
       const s = search.toLowerCase();
       r = r.filter((x) => x.code.toLowerCase().includes(s) || x.name.toLowerCase().includes(s));
@@ -222,7 +245,9 @@ export default function MasterDataBarangTab() {
           <option value="all">Semua Tipe</option>
           <option value="product">Product</option>
           <option value="material">Material</option>
+          <option value="non_inventory">Non Persediaan (jasa/biaya)</option>
         </select>
+        <button type="button" className="btn-primary whitespace-nowrap" onClick={() => setNiOpen(true)}>+ Barang Non Persediaan</button>
       </div>
 
       {isLoading ? (
@@ -505,15 +530,13 @@ export default function MasterDataBarangTab() {
                   <h3 className="font-semibold mb-3">Akun Perkiraan (Chart of Accounts)</h3>
                   <div className="grid grid-cols-2 gap-4">
                     {AKUN_FIELDS.map(({ key, label }) => (
-                      <div key={key}>
-                        <label className="block text-sm mb-1">{label}</label>
-                        <SearchableSelect
-                          options={accountOptions}
-                          value={form[key] || null}
-                          onChange={(v) => setForm({ ...form, [key]: v })}
-                          placeholder="Pilih akun..."
-                        />
-                      </div>
+                      <AccountSlotSelector
+                        key={key}
+                        slot={key}
+                        label={label}
+                        value={form[key] || null}
+                        onChange={(v) => setForm({ ...form, [key]: v })}
+                      />
                     ))}
                   </div>
                 </div>
@@ -544,6 +567,31 @@ export default function MasterDataBarangTab() {
         </div>
       )}
 
+
+      {niOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <form onSubmit={saveNonInventory} className="w-full max-w-lg space-y-4 rounded-lg bg-white p-6 dark:bg-gray-800">
+            <h3 className="text-lg font-semibold">Barang Non Persediaan</h3>
+            <p className="text-sm text-gray-500">Jasa atau biaya yang dibeli (ongkos kirim, jasa makloon, sewa, dan sebagainya). Tidak punya stok dan tidak melalui penerimaan barang; langsung dibebankan ke akun beban saat faktur pembelian.</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="mb-1 block text-sm font-medium">Kode *</label><input className="input-field" value={ni.code} onChange={(e) => setNi({ ...ni, code: e.target.value })} /></div>
+              <div><label className="mb-1 block text-sm font-medium">Satuan</label><input className="input-field" value={ni.primary_uom} onChange={(e) => setNi({ ...ni, primary_uom: e.target.value })} placeholder="TRIP, JAM, KG..." /></div>
+            </div>
+            <div><label className="mb-1 block text-sm font-medium">Nama *</label><input className="input-field" value={ni.name} onChange={(e) => setNi({ ...ni, name: e.target.value })} placeholder="mis. Jasa Ekspedisi, Jasa Makloon" /></div>
+            <AccountSlotSelector slot="akun_beban_id" label="Akun Beban" value={ni.akun_beban_id} onChange={(id) => setNi({ ...ni, akun_beban_id: id })} helpText="Kosong = akun beban default di pengaturan akun." />
+            <div>
+              <label className="mb-1 block text-sm font-medium">Kode PPN</label>
+              <select className="input-field" value={ni.ppn_code} onChange={(e) => setNi({ ...ni, ppn_code: e.target.value })}>
+                <option value="">Tanpa PPN</option><option value="Y">Y - 11%</option><option value="A">A - 1,1%</option><option value="B">B - 1,2%</option><option value="L">L - 12%</option>
+              </select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button type="button" className="btn-secondary" onClick={() => setNiOpen(false)}>Batal</button>
+              <button type="submit" className="btn-primary disabled:opacity-50" disabled={niSaving}>{niSaving ? 'Menyimpan...' : 'Simpan'}</button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

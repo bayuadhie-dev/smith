@@ -25,7 +25,11 @@ purchasing_bp = Blueprint('purchasing', __name__)
 def _sync_po_received(po_id):
     """Hitung ulang PurchaseOrderItem.quantity_received dari jumlah DITERIMA (accepted) di semua GRN PO ini
     (GRN yang ditolak tidak dihitung). Sumber kebenaran tetap baris GRN; kolom ini hanya salinan untuk tampilan."""
+    from utils.finance_helpers import is_non_inventory_material
     for it in PurchaseOrderItem.query.filter_by(po_id=po_id).all():
+        if is_non_inventory_material(it.material_id):
+            it.quantity_received = float(it.quantity or 0)   # jasa/biaya: dianggap terpenuhi, tidak ada GRN
+            continue
         total = db.session.query(db.func.coalesce(db.func.sum(GRNItem.quantity_accepted), 0)) \
             .join(GoodsReceivedNote, GoodsReceivedNote.id == GRNItem.grn_id) \
             .filter(GRNItem.po_item_id == it.id, GoodsReceivedNote.status != 'rejected').scalar() or 0
@@ -952,6 +956,10 @@ def create_grn():
             product_id = item_data.get('product_id')
             material_id = item_data.get('material_id')
             location_id = item_data.get('location_id')
+            from utils.finance_helpers import is_non_inventory_material
+            if is_non_inventory_material(material_id):
+                db.session.rollback()
+                return jsonify({'error': 'Barang non persediaan (jasa/biaya) tidak melalui penerimaan barang (GRN). Cukup buat faktur pembelian.'}), 400
             quantity_received = float(item_data['quantity_received'])
             quantity_accepted = float(item_data.get('quantity_accepted', quantity_received))
             uom = item_data['uom']

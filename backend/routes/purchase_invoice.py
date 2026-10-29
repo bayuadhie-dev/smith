@@ -553,8 +553,13 @@ def create_purchase_invoice_core(data, user_id, commit=True):
         material_id = item_data.get('material_id')
 
         is_inventory_item = False
+        non_inventory_account_id = None
         if material_id:
-            is_inventory_item = True
+            from utils.finance_helpers import is_non_inventory_material, non_inventory_expense_account
+            if is_non_inventory_material(material_id):
+                non_inventory_account_id = non_inventory_expense_account(material_id)   # jasa/biaya: langsung ke beban, tanpa GR/IR
+            else:
+                is_inventory_item = True
         elif product_id:
             product = db.session.get(Product, product_id)
             if product and product.material_type in ('raw_materials', 'packaging_materials', 'chemical_materials', 'finished_goods'):
@@ -574,7 +579,9 @@ def create_purchase_invoice_core(data, user_id, commit=True):
             from models.finance import GlobalAccountDefault
             gr_ir_default = GlobalAccountDefault.query.filter_by(transaction_key='gr_ir_clearing').first()
 
-        if gr_ir_default:
+        if non_inventory_account_id:
+            debit_account_id = non_inventory_account_id
+        elif gr_ir_default:
             debit_account_id = gr_ir_default.account_id
         else:
             slot = 'akun_persediaan_id' if is_inventory_item else 'akun_beban_id'
@@ -956,6 +963,9 @@ def _compute_three_way_match(invoice):
         inv_price = float(inv_item.unit_price or 0)
         rcv_qty = grn_received.get(po_item.id, 0.0)
         acc_qty = grn_accepted.get(po_item.id, 0.0)
+        from utils.finance_helpers import is_non_inventory_material
+        if is_non_inventory_material(po_item.material_id):
+            rcv_qty = acc_qty = po_qty   # jasa/biaya tidak punya penerimaan barang (GRN)
 
         price_variance = round(inv_price - po_price, 4)
         qty_vs_grn = round(inv_qty - acc_qty, 4)   # invoice bills more than accepted?

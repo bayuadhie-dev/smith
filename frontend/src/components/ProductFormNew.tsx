@@ -819,6 +819,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                 <AccountSlotSelector
                   key={slot.key}
                   label={slot.label}
+                  slot={slot.key}
                   value={(formData as any)[slot.key] ?? null}
                   onChange={(accountId) => handleInputChange(slot.key, accountId ?? undefined)}
                 />

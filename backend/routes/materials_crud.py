@@ -275,6 +275,10 @@ def create_material():
         if material.lot_sizing_procedure not in ('EX', 'FX', 'WB', 'MB'):
             return jsonify({'error': f"lot_sizing_procedure harus salah satu dari EX/FX/WB/MB, dapat '{material.lot_sizing_procedure}'"}), 400
 
+        if material.material_type == 'non_inventory':
+            material.is_excluded_from_mrp = True   # jasa/biaya tidak punya stok, jangan ikut MRP
+            material.akun_beban_id = data.get('akun_beban_id') or None
+            material.ppn_code = data.get('ppn_code') or None
         db.session.add(material)
         db.session.commit()
         

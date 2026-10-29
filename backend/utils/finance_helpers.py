@@ -284,6 +284,22 @@ def reverse_accounting_entries(reference_type, reference_id, entry_date, user_id
     return created
 
 
+NON_INVENTORY_TYPE = 'non_inventory'   # Material.material_type for jasa/biaya (ongkos kirim, makloon, dll): tanpa stok, tanpa GRN
+
+
+def is_non_inventory_material(material_id):
+    from models.product import Material
+    m = db.session.get(Material, material_id) if material_id else None
+    return bool(m and m.material_type == NON_INVENTORY_TYPE)
+
+
+def non_inventory_expense_account(material_id):
+    """Akun beban barang non persediaan: akun beban di barangnya, atau default global 'akun_beban_id'."""
+    from models.product import Material
+    m = db.session.get(Material, material_id)
+    return m.akun_beban_id if m and m.akun_beban_id else resolve_account('akun_beban_id')
+
+
 def resolve_account(slot_name, product_id=None, category_id=None):
     """
     Resolve an account_id for a given "slot" (e.g. 'akun_hpp_id') using the
@@ -1115,6 +1131,8 @@ def _resolve_po_item_account(item_data_or_model):
 
     is_inventory_item = False
     if material_id:
+        if is_non_inventory_material(material_id):
+            return non_inventory_expense_account(material_id)
         is_inventory_item = True
     elif product_id:
         product = db.session.get(Product, product_id)
