@@ -591,12 +591,20 @@ def build_po_document_data(po):
             r = float(po.manual_exchange_rate) if (po.status == 'draft' and po.manual_exchange_rate) else rate
             kurs_text = f'Kurs 1 {ccy} = Rp {r:,.2f}'.replace(',', '_').replace('.', ',').replace('_', '.')
 
-    tax_pct = ppn_rate_for_code(po.ppn_code)
-    if po.is_taxable:
-        pct = f'{tax_pct:g}%' if tax_pct else ''
-        tax_note = f'PPN {pct} {"sudah termasuk dalam harga" if po.tax_inclusive else "belum termasuk, ditambahkan pada total"}'.replace('  ', ' ')
+    code = (po.ppn_code or (supplier.ppn_code if supplier else None) or 'Y') if po.is_taxable else None
+    tax_pct = ppn_rate_for_code(code) if code else None
+    rate_txt = f'{tax_pct:g}'.replace('.', ',') if tax_pct is not None else ''
+    inclusive = bool(po.is_taxable and po.tax_inclusive)
+    # same wording as the PO form ("Pajak (PPN)" block and its order summary)
+    if not po.is_taxable:
+        tax_note = 'Tanpa pajak'
+        subtotal_label, tax_label = 'Subtotal', 'PPN'
+    elif inclusive:
+        tax_note = f'Harga sudah termasuk pajak (PPN {code} - {rate_txt}%): PPN dipisahkan dari harga, total pembayaran tidak bertambah'
+        subtotal_label, tax_label = 'DPP (tanpa PPN)', f'PPN {rate_txt}% (termasuk)'
     else:
-        tax_note = 'Harga tanpa PPN'
+        tax_note = f'PPN {code} - {rate_txt}% ditambahkan di atas harga'
+        subtotal_label, tax_label = 'Subtotal', f'PPN {rate_txt}%'
 
     total = float(po.total_amount or 0)
     idr_text = ''
@@ -625,6 +633,8 @@ def build_po_document_data(po):
         'tax_text': money(po.tax_amount),
         'total_text': money(total),
         'tax_note': tax_note,
+        'subtotal_label': subtotal_label,
+        'tax_label': tax_label,
         'terbilang': (_terbilang(total).strip().capitalize() + ' ' + words_name.get(ccy, ccy)) if total >= 1 else f'Nol {words_name.get(ccy, ccy)}',
         'line_items': line_items,
         'company': get_company_context(),

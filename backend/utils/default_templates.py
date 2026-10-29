@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-10n'
+LAYOUT = 'v2-2026-10o'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 AUTO_NOTE_PREFIXES = ('Auto-generated', 'Migrasi otomatis')  # the font-unit migration only rescales values of auto-generated layouts
 
@@ -186,10 +186,10 @@ def build_invoice():
     o += meta_grid(104, 33, 34, 58, [('No. PO Customer', 'po_number'), ('Syarat Pembayaran', 'payment_terms'),
                                      ('Jatuh Tempo', 'due_date')], 8.67)
     o.append(TABLE('line_items', 14, 63, 182, [
-        C('no', 'No.', 9, 'center'), C('code', 'Kode', 24), C('item_name', 'Deskripsi', 43),
+        C('no', 'No.', 9, 'center'), C('code', 'Kode', 24), C('item_name', 'Deskripsi', 38),
         C('pack', 'Isi/Krt', 15, 'right', 'num'), C('quantity', 'Qty', 18, 'right', 'num'), C('uom', 'Satuan', 15),
         C('unit_price', 'Harga', 18, 'right', 'num'), C('discount_text', 'Diskon', 20, 'right'),
-        C('subtotal', 'Jumlah', 20, 'right', 'num'),
+        C('subtotal', 'Jumlah', 25, 'right', 'num'),
     ], min_rows=0, row_h=6.5, height=30, fs=9))
     o += flow(totals_block(116, 98, 40, 40, [('Subtotal', 'gross', False), ('Diskon', 'discount_total', False),
                                              ('PPN', 'tax_amount', False), ('TOTAL', 'total_amount', True),
@@ -214,9 +214,9 @@ def build_po():
           L('Kirim Ke', 105.5, 55.5, 32, 4, fs=9),
           F('delivery_address', 139.5, 54.8, 55, 10, fs=8)]
     o.append(TABLE('line_items', 14, 69, 182, [
-        C('no', 'No.', 9, 'center'), C('code', 'Kode', 24), C('item_name', 'Deskripsi', 62),
+        C('no', 'No.', 9, 'center'), C('code', 'Kode', 24), C('item_name', 'Deskripsi', 54),
         C('quantity', 'Qty', 18, 'right', 'num'), C('uom', 'Satuan', 15),
-        C('unit_price_text', 'Harga', 28, 'right'), C('subtotal_text', 'Jumlah', 26, 'right'),
+        C('unit_price_text', 'Harga', 30, 'right'), C('subtotal_text', 'Jumlah', 32, 'right'),
     ], min_rows=0, row_h=6.5, height=30, fs=9))
     o += flow(po_totals(116, 104))
     o += flow(words_box(14, 134, 182, 14))
@@ -228,15 +228,18 @@ def build_po():
 
 def po_totals(left, top, label_w=40, value_w=40, row_h=6.5):
     objs = []
-    rows = [('Subtotal', 'subtotal_text', False), ('Diskon', 'discount_text', False),
-            ('PPN', 'tax_text', False), ('TOTAL', 'total_text', True)]
+    rows = [('@subtotal_label', 'subtotal_text', False), ('Diskon', 'discount_text', False),
+            ('@tax_label', 'tax_text', False), ('TOTAL', 'total_text', True)]
     for i, (label, path, grand) in enumerate(rows):
         y = top + i * row_h
         fill = TEAL if grand else None
         color = '#ffffff' if grand else '#000000'
         objs.append(BOX(left, y, label_w, row_h, fill=fill))
         objs.append(BOX(left + label_w, y, value_w, row_h, fill=fill))
-        objs.append(L(label, left + 1.5, y + 1.2, label_w - 2, 4, fs=9.5, bold=grand, color=color))
+        if label.startswith('@'):
+            objs.append(F(label[1:], left + 1.5, y + 1.2, label_w - 2, 4, fs=9, bold=grand, color=color))
+        else:
+            objs.append(L(label, left + 1.5, y + 1.2, label_w - 2, 4, fs=9.5, bold=grand, color=color))
         objs.append(F(path, left + label_w + 1.5, y + 1.2, value_w - 3, 4, fs=9.5, bold=grand, align='right', color=color))
     return objs
 
