@@ -61,6 +61,8 @@ const AKUN_FIELDS: { key: string; label: string }[] = [
 export default function MasterDataBarangTab() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | Source | 'non_inventory'>('all');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
   const [niOpen, setNiOpen] = useState(false);
   const [niSaving, setNiSaving] = useState(false);
   const [ni, setNi] = useState({ code: '', name: '', primary_uom: 'UNIT', akun_beban_id: null as number | null, ppn_code: '', description: '' });
@@ -225,6 +227,8 @@ export default function MasterDataBarangTab() {
   };
 
   const isLoading = loadingProducts || loadingMaterials;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, totalPages);
   const isWip = editingRow?.source === 'product' && form.material_type === 'wip';
 
   return (
@@ -235,13 +239,13 @@ export default function MasterDataBarangTab() {
           placeholder="Cari kode atau nama barang..."
           className="input-field flex-1 min-w-[240px]"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
         />
         <Link to="/app/imports?kind=item" className="btn-secondary inline-flex items-center gap-2 whitespace-nowrap" title="Buka Pusat Impor & Ekspor Data">
           <ArrowUpTrayIcon className="h-5 w-5" />
           Import Excel
         </Link>
-        <select className="input-field w-auto" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as any)}>
+        <select className="input-field w-auto" value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value as any); setPage(1); }}>
           <option value="all">Semua Tipe</option>
           <option value="product">Product</option>
           <option value="material">Material</option>
@@ -273,7 +277,7 @@ export default function MasterDataBarangTab() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filtered.slice(0, 300).map((row) => (
+                {filtered.slice((safePage - 1) * pageSize, safePage * pageSize).map((row) => (
                   <tr key={`${row.source}-${row.id}`}>
                     <td className="font-medium">{row.code}</td>
                     <td>{row.name}</td>
@@ -311,11 +315,19 @@ export default function MasterDataBarangTab() {
               </tbody>
             </table>
           </div>
-          {filtered.length > 300 && (
-            <div className="p-3 text-sm text-gray-500 text-center">
-              Menampilkan 300 dari {filtered.length} item — persempit pencarian untuk melihat sisanya.
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm text-gray-600">
+            <span>
+              {filtered.length === 0 ? '0 item' : `${(safePage - 1) * pageSize + 1}-${Math.min(safePage * pageSize, filtered.length)} dari ${filtered.length} item`}
+            </span>
+            <div className="flex items-center gap-2">
+              <select className="input-field w-auto" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
+                {[25, 50, 100, 200].map((n) => <option key={n} value={n}>{n} / halaman</option>)}
+              </select>
+              <button type="button" className="btn-secondary disabled:opacity-40" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}>Sebelumnya</button>
+              <span>Halaman {safePage} dari {totalPages}</span>
+              <button type="button" className="btn-secondary disabled:opacity-40" disabled={safePage >= totalPages} onClick={() => setPage(safePage + 1)}>Berikutnya</button>
             </div>
-          )}
+          </div>
         </div>
       )}
 
