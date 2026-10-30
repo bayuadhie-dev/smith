@@ -53,6 +53,11 @@ def get_material(material_id):
                 'supplier_id': material.supplier_id,
                 'supplier': material.supplier.company_name if material.supplier else None,
                 'kelompok': material.kelompok,
+                'barcode': material.barcode, 'brand': material.brand, 'require_batch': material.require_batch, 'require_expiry': material.require_expiry,
+                'item_length_m': float(material.item_length_m) if material.item_length_m is not None else None,
+                'item_width_m': float(material.item_width_m) if material.item_width_m is not None else None,
+                'item_height_m': float(material.item_height_m) if material.item_height_m is not None else None,
+                'item_weight_kg': float(material.item_weight_kg) if material.item_weight_kg is not None else None,
                 'ppn_code': material.ppn_code,
                 'erp_approval': material.erp_approval,
                 'akun_persediaan_id': material.akun_persediaan_id,
@@ -142,6 +147,15 @@ def update_material(material_id):
             material.kelompok = data['kelompok']
         if 'ppn_code' in data:
             material.ppn_code = data['ppn_code']
+        for _f in ('barcode', 'brand'):
+            if _f in data:
+                setattr(material, _f, (str(data[_f]).strip()[:100] or None) if data[_f] not in (None, '') else None)
+        for _f in ('item_length_m', 'item_width_m', 'item_height_m', 'item_weight_kg'):
+            if _f in data:
+                setattr(material, _f, data[_f] if data[_f] not in ('', None) else None)
+        for _f in ('require_batch', 'require_expiry'):
+            if _f in data:
+                setattr(material, _f, bool(data[_f]))
         if 'erp_approval' in data:
             material.erp_approval = data['erp_approval']
         for akun_field in ('akun_persediaan_id', 'akun_penjualan_id', 'akun_retur_penjualan_id',

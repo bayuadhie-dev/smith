@@ -44,6 +44,8 @@ interface Row {
   ppn_code: string | null;
   erp_approval: boolean;
   is_active: boolean;
+  barcode?: string | null;
+  brand?: string | null;
 }
 
 const AKUN_FIELDS: { key: string; label: string }[] = [
@@ -123,6 +125,8 @@ export default function MasterDataBarangTab() {
       ppn_code: p.ppn_code,
       erp_approval: p.erp_approval,
       is_active: p.is_active,
+      barcode: p.barcode,
+      brand: p.brand,
     }));
     const materials: Row[] = (materialsData?.materials || []).map((m: any) => ({
       source: 'material',
@@ -136,6 +140,8 @@ export default function MasterDataBarangTab() {
       ppn_code: m.ppn_code,
       erp_approval: m.erp_approval,
       is_active: m.is_active,
+      barcode: m.barcode,
+      brand: m.brand,
     }));
     return [...products, ...materials];
   }, [productsData, materialsData]);
@@ -147,7 +153,7 @@ export default function MasterDataBarangTab() {
     else r = r.filter((x) => x.source === typeFilter && x.material_type !== 'non_inventory');
     if (search) {
       const s = search.toLowerCase();
-      r = r.filter((x) => x.code.toLowerCase().includes(s) || x.name.toLowerCase().includes(s));
+      r = r.filter((x) => x.code.toLowerCase().includes(s) || x.name.toLowerCase().includes(s) || (x.barcode || '').toLowerCase().includes(s) || (x.brand || '').toLowerCase().includes(s));
     }
     return r;
   }, [rows, typeFilter, search]);
@@ -201,6 +207,14 @@ export default function MasterDataBarangTab() {
         lead_time_days: form.lead_time_days,
         min_order_qty: form.min_order_qty ?? null,
         reorder_point: form.reorder_point ?? null,
+        barcode: form.barcode ?? null,
+        brand: form.brand ?? null,
+        require_batch: !!form.require_batch,
+        require_expiry: !!form.require_expiry,
+        item_length_m: form.item_length_m ?? null,
+        item_width_m: form.item_width_m ?? null,
+        item_height_m: form.item_height_m ?? null,
+        item_weight_kg: form.item_weight_kg ?? null,
       };
       for (const { key } of AKUN_FIELDS) {
         payload[key] = form[key] || null;
@@ -236,7 +250,7 @@ export default function MasterDataBarangTab() {
       <div className="flex justify-between items-center gap-4 flex-wrap">
         <input
           type="text"
-          placeholder="Cari kode atau nama barang..."
+          placeholder="Cari kode, nama, barcode, atau merek..."
           className="input-field flex-1 min-w-[240px]"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
@@ -537,6 +551,19 @@ export default function MasterDataBarangTab() {
                         />
                       </div>
                     )}
+                  </div>
+                </div>
+
+                <div className="border-t pt-4 dark:border-gray-700">
+                  <h3 className="font-semibold mb-3">Identitas &amp; Ukuran</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div><label className="block text-sm mb-1">Barcode / UPC</label><input className="input-field" value={form.barcode || ''} onChange={(e) => setForm({ ...form, barcode: e.target.value })} /></div>
+                    <div><label className="block text-sm mb-1">Merek</label><input className="input-field" value={form.brand || ''} onChange={(e) => setForm({ ...form, brand: e.target.value })} /></div>
+                    {([['item_length_m', 'Panjang (m)'], ['item_width_m', 'Lebar (m)'], ['item_height_m', 'Tinggi (m)'], ['item_weight_kg', 'Berat (kg)']] as const).map(([k, label]) => (
+                      <div key={k}><label className="block text-sm mb-1">{label}</label><NumberInput className="input-field" value={form[k] ?? ''} onChange={(e: any) => setForm({ ...form, [k]: e.target.value === '' ? null : Number(e.target.value) })} /></div>
+                    ))}
+                    <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!form.require_batch} onChange={(e) => setForm({ ...form, require_batch: e.target.checked })} /> Wajib nomor batch</label>
+                    <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!form.require_expiry} onChange={(e) => setForm({ ...form, require_expiry: e.target.checked })} /> Pakai tanggal kedaluwarsa</label>
                   </div>
                 </div>
 

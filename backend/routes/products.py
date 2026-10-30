@@ -202,6 +202,7 @@ def get_products():
                     'is_producible': p.is_producible,
                     'kelompok': p.kelompok,
                     'ppn_code': p.ppn_code,
+                    'barcode': p.barcode, 'brand': p.brand,
                     'erp_approval': p.erp_approval,
                     'packs_per_karton': p.packaging.packs_per_karton if p.packaging else None,  # From ProductPackaging
                     'created_at': p.created_at.isoformat() if p.created_at else None
@@ -290,6 +291,11 @@ def get_product(id):
             'lead_time_days': product.lead_time_days,
             'min_order_qty': float(product.min_order_qty) if product.min_order_qty is not None else None,
             'kelompok': product.kelompok,
+            'barcode': product.barcode, 'brand': product.brand, 'require_batch': product.require_batch, 'require_expiry': product.require_expiry,
+            'item_length_m': float(product.item_length_m) if product.item_length_m is not None else None,
+            'item_width_m': float(product.item_width_m) if product.item_width_m is not None else None,
+            'item_height_m': float(product.item_height_m) if product.item_height_m is not None else None,
+            'item_weight_kg': float(product.item_weight_kg) if product.item_weight_kg is not None else None,
             'ppn_code': product.ppn_code,
             'erp_approval': product.erp_approval,
             'self_life_days': product.self_life_days,
@@ -509,6 +515,15 @@ def update_product(id):
             product.kelompok = data['kelompok']
         if 'ppn_code' in data:
             product.ppn_code = data['ppn_code']
+        for _f in ('barcode', 'brand'):
+            if _f in data:
+                setattr(product, _f, (str(data[_f]).strip()[:100] or None) if data[_f] not in (None, '') else None)
+        for _f in ('item_length_m', 'item_width_m', 'item_height_m', 'item_weight_kg'):
+            if _f in data:
+                setattr(product, _f, data[_f] if data[_f] not in ('', None) else None)
+        for _f in ('require_batch', 'require_expiry'):
+            if _f in data:
+                setattr(product, _f, bool(data[_f]))
         if 'erp_approval' in data:
             product.erp_approval = data['erp_approval']
         if 'lead_time_days' in data:

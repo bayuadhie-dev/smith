@@ -34,6 +34,9 @@ COL = dict(
     kelompok=56, erp_approval=57,
     lead_time=71, self_life_retest=72,
     non_aktif=78,
+    # data tambahan (disimpan di kolom barang)
+    catatan=21, pemasok=28, batas_min=34, barcode=15, merek=29, serial=44, kadaluarsa=46,
+    panjang_m=66, lebar_m=67, tinggi_m=68, berat_kg=69, isi=70,
 )
 
 NON_INVENTORY_JENIS = ('NON', 'SVC', 'PDC')
@@ -73,12 +76,92 @@ def import_items():
     return jsonify(import_item_rows(rows)), 200
 
 
+def _num(v):
+    try:
+        f = float(v)
+        return f if f > 0 else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _txt(v, n=None):
+    s = str(v).strip() if v not in (None, '') else None
+    return s[:n] if s and n else s
+
+
+def apply_item_extras(obj, table, r, supplier_by_name, fill_only=True):
+    """Simpan kolom tambahan file Accurate ke barang. fill_only=True: hanya mengisi yang masih kosong (aman untuk barang yang sudah ada).
+    Catatan -> Produk.notes / Material.description; Pemasok Utama -> Material.supplier_id; Isi -> ProductPackaging.packs_per_karton."""
+    def put(attr, value):
+        if value in (None, ''):
+            return
+        cur = getattr(obj, attr, None)
+        if fill_only and cur not in (None, '', 0, False):
+            return
+        setattr(obj, attr, value)
+
+    put('barcode', _txt(r[COL['barcode']], 100))
+    put('brand', _txt(r[COL['merek']], 100))
+    put('item_length_m', _num(r[COL['panjang_m']]))
+    put('item_width_m', _num(r[COL['lebar_m']]))
+    put('item_height_m', _num(r[COL['tinggi_m']]))
+    put('item_weight_kg', _num(r[COL['berat_kg']]))
+    put('require_batch', True if str(r[COL['serial']] or '').strip().upper() == 'YA' else None)
+    put('require_expiry', True if str(r[COL['kadaluarsa']] or '').strip().upper() == 'YA' else None)
+    put('min_stock_level', _num(r[COL['batas_min']]))
+    put('notes' if table == 'product' else 'description', _txt(r[COL['catatan']]))
+    if table == 'material':
+        sup = supplier_by_name.get(str(r[COL['pemasok']] or '').strip().lower())
+        put('supplier_id', sup)
+    elif table == 'product':
+        isi = _num(r[COL['isi']])
+        if isi and int(isi) == isi:
+            from models.product import ProductPackaging
+            pk = ProductPackaging.query.filter_by(product_id=obj.id).first()
+            if not pk:
+                db.session.add(ProductPackaging(product_id=obj.id, packs_per_karton=int(isi)))
+            elif not pk.packs_per_karton:
+                pk.packs_per_karton = int(isi)
+
+
+def backfill_item_extras(rows, commit=True):
+    """Untuk barang yang SUDAH ada: isi kolom tambahan dari file (tidak menimpa isian yang sudah ada). Per baris dalam savepoint."""
+    from models.purchasing import Supplier
+    suppliers = {s.company_name.strip().lower(): s.id for s in Supplier.query.all()}
+    updated, not_found, errors = 0, 0, []
+    for r in rows:
+        try:
+            if len(r) <= max(COL.values()):
+                continue
+            code = str(r[COL['kode']]).strip()
+            with db.session.begin_nested():
+                obj = Product.query.filter_by(code=code).first()
+                table = 'product'
+                if not obj:
+                    obj = Material.query.filter_by(code=code).first()
+                    table = 'material'
+                if not obj:
+                    not_found += 1
+                    continue
+                apply_item_extras(obj, table, r, suppliers, fill_only=True)
+                updated += 1
+        except Exception as e:
+            errors.append(f'{r[COL["kode"]] if len(r) > COL["kode"] else "?"}: {e}')
+    if commit:
+        db.session.commit()
+    else:
+        db.session.flush()
+    return {'updated': updated, 'not_found': not_found, 'error_count': len(errors), 'errors': errors[:30]}
+
+
 def import_item_rows(rows, commit=True):
     """Create Product/Material rows from 'Barang & Jasa' export rows (header already removed).
     Each row runs in its own savepoint, so one bad row never undoes the others. Returns a summary dict."""
     accounts = {a.account_code: a.id for a in Account.query.all()}
 
     created_product, created_material, skipped_category, skipped_exists = 0, 0, 0, 0
+    from models.purchasing import Supplier
+    supplier_by_name = {s.company_name.strip().lower(): s.id for s in Supplier.query.all()}
     missing_gl_codes = set()
     errors = []
 
@@ -168,6 +251,7 @@ def import_item_rows(rows, commit=True):
                         obj.self_life_days = self_life_retest
                     db.session.add(obj)
                     db.session.flush()
+                    apply_item_extras(obj, 'product', r, supplier_by_name)
                     upsert_item_uom_conversions_from_row(
                         uom, r[COL['satuan_2']], r[COL['rasio_satuan_2']],
                         r[COL['satuan_3']], r[COL['rasio_satuan_3']], product_id=obj.id,
@@ -191,6 +275,7 @@ def import_item_rows(rows, commit=True):
                     )
                     db.session.add(obj)
                     db.session.flush()
+                    apply_item_extras(obj, 'material', r, supplier_by_name)
                     upsert_item_uom_conversions_from_row(
                         uom, r[COL['satuan_2']], r[COL['rasio_satuan_2']],
                         r[COL['satuan_3']], r[COL['rasio_satuan_3']], material_id=obj.id,

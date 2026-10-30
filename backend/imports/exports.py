@@ -289,6 +289,13 @@ def accounts(_a, _b):
             for a in Account.query.order_by(Account.account_code)]
 
 
+def _extras(o, catatan, isi, pemasok=''):
+    n = lambda v: float(v) if v is not None else ''
+    return [o.barcode or '', o.brand or '', catatan or '', pemasok, n(o.min_stock_level) if o.min_stock_level else '',
+            'YA' if o.require_batch else '', 'YA' if o.require_expiry else '', n(o.item_length_m), n(o.item_width_m), n(o.item_height_m),
+            n(o.item_weight_kg), isi if isi else '']
+
+
 @exporter('item', by_date=False)
 def items(_a, _b):
     from models.product import Material, Product
@@ -303,12 +310,12 @@ def items(_a, _b):
         rows.append([back.get(p.material_type, (p.material_type or '').upper()), p.code, p.name, 'INV', p.primary_uom or '',
                      p.secondary_uom or '', '', '', '', _f(p.cost) if p.cost else '', _f(p.min_order_qty) if p.min_order_qty else '',
                      p.ppn_code or '', *gl(p), p.kelompok or '', p.erp_approval or '', p.lead_time_days or '', p.self_life_days or '',
-                     '' if p.is_active else 'Ya'])
+                     '' if p.is_active else 'Ya', *_extras(p, p.notes, p.packaging.packs_per_karton if p.packaging else None)])
     for m in Material.query.order_by(Material.code):
         rows.append([back.get(m.material_type, (m.material_type or '').upper()), m.code, m.name, 'INV', m.primary_uom or '',
                      m.secondary_uom or '', '', '', '', _f(m.cost_per_unit) if m.cost_per_unit else '',
                      _f(m.min_order_qty) if m.min_order_qty else '', m.ppn_code or '', *gl(m), m.kelompok or '', m.erp_approval or '',
-                     m.lead_time_days or '', '', '' if m.is_active else 'Ya'])
+                     m.lead_time_days or '', '', '' if m.is_active else 'Ya', *_extras(m, m.description, None, m.supplier.company_name if m.supplier else '')])
     return rows
 
 

@@ -56,6 +56,16 @@ class Material(db.Model):
     ppn_code = db.Column(db.String(5), nullable=True)  # Excel "PPN" column: Y=11%, A=1.1%, B=1.2%, L=12% (see utils/tax_helpers.py)
     erp_approval = db.Column(db.Boolean, default=True, nullable=False)  # True: incoming batches start as quarantine (needs QC release); False: auto-released
 
+    # ===== Data tambahan dari file Barang & Jasa Accurate =====
+    barcode = db.Column(db.String(100), nullable=True, index=True)   # UPC/Barcode
+    brand = db.Column(db.String(100), nullable=True)                 # Merek Barang
+    item_length_m = db.Column(db.Numeric(10, 3), nullable=True)
+    item_width_m = db.Column(db.Numeric(10, 3), nullable=True)
+    item_height_m = db.Column(db.Numeric(10, 3), nullable=True)
+    item_weight_kg = db.Column(db.Numeric(10, 3), nullable=True)
+    require_batch = db.Column(db.Boolean, nullable=False, default=False, server_default='false')    # "Menggunakan No. Seri" (tipe batch)
+    require_expiry = db.Column(db.Boolean, nullable=False, default=False, server_default='false')   # "Pakai tanggal kadaluarsa"
+
     # Account Preferences (Barang & Jasa, per-item override), same 3-level fallback pattern as Product
     akun_persediaan_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
     akun_penjualan_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
@@ -132,6 +142,16 @@ class Product(db.Model):
     erp_approval = db.Column(db.Boolean, default=True, nullable=False)  # True: incoming batches start as quarantine (needs QC release); False: auto-released
     self_life_days = db.Column(db.Integer, nullable=True)  # shelf life for finished goods / components
     retest_period_days = db.Column(db.Integer, nullable=True)  # shorter re-test window for WIP (Barang Dalam Penyelesaian)
+
+    # ===== Data tambahan dari file Barang & Jasa Accurate =====
+    barcode = db.Column(db.String(100), nullable=True, index=True)   # UPC/Barcode
+    brand = db.Column(db.String(100), nullable=True)                 # Merek Barang
+    item_length_m = db.Column(db.Numeric(10, 3), nullable=True)
+    item_width_m = db.Column(db.Numeric(10, 3), nullable=True)
+    item_height_m = db.Column(db.Numeric(10, 3), nullable=True)
+    item_weight_kg = db.Column(db.Numeric(10, 3), nullable=True)
+    require_batch = db.Column(db.Boolean, nullable=False, default=False, server_default='false')    # "Menggunakan No. Seri" (tipe batch)
+    require_expiry = db.Column(db.Boolean, nullable=False, default=False, server_default='false')   # "Pakai tanggal kadaluarsa"
 
     # ===== Account Preferences (Barang & Jasa 9-slot, per-item override) =====
     # All nullable: 3-level fallback is item override (here) -> category default

@@ -125,6 +125,7 @@ def get_materials():
                 'is_active': m.is_active,
                 'kelompok': m.kelompok,
                 'ppn_code': m.ppn_code,
+                'barcode': m.barcode, 'brand': m.brand,
                 'erp_approval': m.erp_approval,
                 'created_at': m.created_at.isoformat() if m.created_at else None
             } for m in materials.items],

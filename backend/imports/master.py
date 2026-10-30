@@ -207,7 +207,11 @@ ITEM_COLS = [  # (field di import_item_rows.COL, judul Accurate, wajib)
     ('gl_pembelian_belum_tertagih', 'Pembelian Belum Tertagih', False), ('gl_penjualan', 'Penjualan', False),
     ('gl_diskon_penjualan', 'Diskon Penjualan', False), ('gl_retur_penjualan', 'Retur Penjualan', False),
     ('gl_retur_pembelian', 'Retur Pembelian', False), ('kelompok', 'Karakter 1', False), ('erp_approval', 'Karakter 2', False),
-    ('lead_time', 'Angka 6', False), ('self_life_retest', 'Angka 7', False), ('non_aktif', 'Non Aktif', False)]
+    ('lead_time', 'Angka 6', False), ('self_life_retest', 'Angka 7', False), ('non_aktif', 'Non Aktif', False),
+    ('barcode', 'UPC/Barcode', False), ('merek', 'Merek Barang', False), ('catatan', 'Catatan', False), ('pemasok', 'Pemasok Utama', False),
+    ('batas_min', 'Batas Minimum Stok', False), ('serial', 'Menggunakan No. Seri', False), ('kadaluarsa', 'Pakai tanggal kadaluarsa', False),
+    ('panjang_m', 'Panjang (m)', False), ('lebar_m', 'Lebar (m)', False), ('tinggi_m', 'Tinggi (m)', False), ('berat_kg', 'Berat (kg)', False),
+    ('isi', 'Isi (Opsional)', False)]
 
 
 class ItemKind(ImportKind):
@@ -217,7 +221,7 @@ class ItemKind(ImportKind):
     view_permission = create_permission = 'products.create'
     summary_columns = [('code', 'Kode Barang', 'text'), ('name', 'Nama Barang', 'text'), ('kind', 'Jenis', 'text')]
     columns = [Col(field, label, required=req) for field, label, req in ITEM_COLS]
-    sample_rows = [['BAHAN PEMBANTU', '2019900001', 'LAKBAN CONTOH 2"', 'INV', 'ROL'] + [''] * 20]
+    sample_rows = [['BAHAN PEMBANTU', '2019900001', 'LAKBAN CONTOH 2"', 'INV', 'ROL'] + [''] * 31]
     guide = ['Judul kolom sama dengan ekspor Barang & Jasa Accurate. Kategori yang diimpor: BARANG JADI, PREMIX, '
              'BARANG DALAM PENYELESAIAN, WASTE, BAHAN BAKU, BAHAN KIMIA, BAHAN PEMBANTU. LAIN-LAIN dan Umum masuk sebagai barang non persediaan (jasa/biaya), hanya yang berjenis NON, SVC, atau PDC; akun bebannya dari kolom Persediaan.',
              'Satuan #2/#3 dan rasionya dibuat sebagai konversi satuan barang.']

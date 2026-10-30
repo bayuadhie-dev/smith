@@ -90,3 +90,44 @@ def test_accurate_cost_items_import_as_non_inventory_with_expense_account(client
     assert Material.query.filter_by(code='8000000000').first().akun_penjualan_id == rev.id      # item pendapatan
     assert Material.query.filter_by(code='4010406007').first() is None and Product.query.filter_by(code='4010406007').first() is None
     assert import_item_rows(rows, commit=True)['created_material'] == 0                          # impor ulang tidak menggandakan
+
+
+def test_accurate_extra_columns_are_stored_and_backfilled_without_overwriting(client, auth_headers, db_session):
+    from models.finance import Account
+    from models.product import Material, Product, ProductPackaging
+    from models.purchasing import Supplier
+    from routes.master_data_import import COL, backfill_item_extras, import_item_rows
+    db_session.add(Supplier(code='SUP-BL', company_name='PT BEST LABEL', is_active=True))
+    db_session.commit()
+
+    def row(kategori, kode, nama, jenis, satuan, **extra):
+        r = _item_row(kategori, kode, nama, jenis, satuan=satuan)
+        for k, v in extra.items():
+            r[COL[k]] = v
+        return r
+    rows = [
+        row('BARANG JADI', 'FG-X1', 'Barang jadi X', 'INV', 'PCK', barcode='8993425280268', merek='ALFA', serial='YA', kadaluarsa='YA',
+            isi='24.000000', catatan='Catatan produk', panjang_m='0.48', berat_kg='7.35'),
+        row('BAHAN PEMBANTU', 'MAT-X1', 'Label X', 'INV', 'ROL', pemasok='PT BEST LABEL', batas_min='50000.000000', barcode='LBL-1'),
+    ]
+    res = import_item_rows(rows, commit=True)
+    assert res['created_product'] == 1 and res['created_material'] == 1 and res['error_count'] == 0, res
+    p = Product.query.filter_by(code='FG-X1').first(); m = Material.query.filter_by(code='MAT-X1').first()
+    assert p.barcode == '8993425280268' and p.brand == 'ALFA' and p.require_batch and p.require_expiry and p.notes == 'Catatan produk'
+    assert float(p.item_length_m) == 0.48 and float(p.item_weight_kg) == 7.35
+    assert ProductPackaging.query.filter_by(product_id=p.id).first().packs_per_karton == 24
+    assert m.supplier_id is not None and float(m.min_stock_level) == 50000 and m.barcode == 'LBL-1'
+
+    # backfill on existing items: fills blanks only, never overwrites what is already there
+    p.brand = 'MANUAL'; p.barcode = None; db_session.commit()
+    out = backfill_item_extras(rows, commit=True)
+    assert out['updated'] == 2 and out['error_count'] == 0
+    db_session.refresh(p)
+    assert p.brand == 'MANUAL' and p.barcode == '8993425280268'
+    # API exposes and edits them
+    got = client.get(f'/api/products/{p.id}', headers=auth_headers).get_json()
+    d = got.get('product', got)
+    assert d['barcode'] == '8993425280268' and d['require_batch'] is True
+    assert client.put(f'/api/materials/{m.id}', headers=auth_headers, json={'brand': 'ABC', 'barcode': ''}).status_code == 200
+    db_session.refresh(m)
+    assert m.brand == 'ABC' and m.barcode is None
