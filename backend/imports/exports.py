@@ -293,7 +293,7 @@ def accounts(_a, _b):
 def items(_a, _b):
     from models.product import Material, Product
     from routes.master_data_import import CATEGORY_MAP
-    back = {v[1]: k for k, v in CATEGORY_MAP.items()}
+    back = {v[1]: k for k, v in reversed(list(CATEGORY_MAP.items()))}
     codes = _acc_codes()
     gl = lambda o: [codes.get(getattr(o, f), '') for f in (  # noqa: E731
         'akun_persediaan_id', 'akun_hpp_id', 'akun_barang_terkirim_id', 'akun_pembelian_belum_tertagih_id', 'akun_penjualan_id',

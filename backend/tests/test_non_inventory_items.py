@@ -57,3 +57,36 @@ def test_po_with_service_line_still_reaches_received_and_stock_list_hides_servic
     assert po.status == 'received'
     codes = [m['code'] for m in client.get('/api/materials/inventory', headers=auth_headers).get_json().get('materials', [])]
     assert 'JASA-X' not in codes
+
+
+def _item_row(kategori, kode, nama, jenis, persediaan=None, penjualan=None, ppn='Y', satuan=None):
+    from routes.master_data_import import COL
+    r = [None] * (max(COL.values()) + 1)
+    for k, v in (('kategori', kategori), ('kode', kode), ('nama', nama), ('jenis', jenis), ('satuan', satuan), ('ppn', ppn),
+                 ('gl_persediaan', persediaan), ('gl_penjualan', penjualan), ('non_aktif', 'TIDAK'), ('harga_beli', 0)):
+        r[COL[k]] = v
+    return r
+
+
+def test_accurate_cost_items_import_as_non_inventory_with_expense_account(client, auth_headers, db_session):
+    from models.finance import Account
+    from models.product import Material, Product
+    from routes.master_data_import import import_item_rows
+    exp = Account(account_code='610103', account_name='Biaya Impor', account_type='expense', normal_balance='debit')
+    rev = Account(account_code='400005', account_name='Penjualan Lain', account_type='revenue', normal_balance='credit')
+    db_session.add_all([exp, rev]); db_session.commit()
+    rows = [
+        _item_row('LAIN-LAIN', '5100000014', 'Biaya Import (Y)', 'NON', '610103', '400005'),
+        _item_row('LAIN-LAIN', '5100000001', 'Biaya Makloon', 'SVC', '610103', '400005', ppn='Y'),
+        _item_row('LAIN-LAIN', '8000000000', 'Penjualan lain-lain', 'PDC', '610103', '400005'),
+        _item_row('Umum', '4010406007', 'POLYMORPH TRAVEL PACK', 'INV', '610103', None, satuan='PCK'),     # barang persediaan nyasar: dilewati
+        _item_row('LAIN-LAIN', '9000000001', 'Paket grup', 'GROUP (barang tipe grup tidak dapat diimport ulang)'),
+    ]
+    res = import_item_rows(rows, commit=True)
+    assert res['created_material'] == 3 and res['skipped_category'] == 2 and res['error_count'] == 0, res
+    m = Material.query.filter_by(code='5100000001').first()
+    assert m.material_type == 'non_inventory' and m.primary_uom == 'UNIT' and m.akun_beban_id == exp.id
+    assert m.akun_persediaan_id is None and m.akun_penjualan_id is None and m.is_excluded_from_mrp and m.ppn_code == 'Y'
+    assert Material.query.filter_by(code='8000000000').first().akun_penjualan_id == rev.id      # item pendapatan
+    assert Material.query.filter_by(code='4010406007').first() is None and Product.query.filter_by(code='4010406007').first() is None
+    assert import_item_rows(rows, commit=True)['created_material'] == 0                          # impor ulang tidak menggandakan

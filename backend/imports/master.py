@@ -219,12 +219,12 @@ class ItemKind(ImportKind):
     columns = [Col(field, label, required=req) for field, label, req in ITEM_COLS]
     sample_rows = [['BAHAN PEMBANTU', '2019900001', 'LAKBAN CONTOH 2"', 'INV', 'ROL'] + [''] * 20]
     guide = ['Judul kolom sama dengan ekspor Barang & Jasa Accurate. Kategori yang diimpor: BARANG JADI, PREMIX, '
-             'BARANG DALAM PENYELESAIAN, WASTE, BAHAN BAKU, BAHAN KIMIA, BAHAN PEMBANTU. LAIN-LAIN dan Umum dilewati.',
+             'BARANG DALAM PENYELESAIAN, WASTE, BAHAN BAKU, BAHAN KIMIA, BAHAN PEMBANTU. LAIN-LAIN dan Umum masuk sebagai barang non persediaan (jasa/biaya), hanya yang berjenis NON, SVC, atau PDC; akun bebannya dari kolom Persediaan.',
              'Satuan #2/#3 dan rasionya dibuat sebagai konversi satuan barang.']
 
     def build(self, key, rows):
         from models.product import Material, Product
-        from routes.master_data_import import CATEGORY_MAP, COL
+        from routes.master_data_import import CATEGORY_MAP, COL, NON_INVENTORY_JENIS
         n, rec = rows[0]
         code = clean(rec.get('kode'))
         name = clean(rec.get('nama'))
@@ -233,6 +233,8 @@ class ItemKind(ImportKind):
             raise ValueError('Kode Barang dan Nama Barang wajib diisi')
         if kategori not in CATEGORY_MAP:
             raise ValueError(f'Kategori "{kategori}" tidak diimpor (hanya: {", ".join(CATEGORY_MAP)})')
+        if CATEGORY_MAP[kategori][1] == 'non_inventory' and (clean(rec.get('jenis')) or '').upper() not in NON_INVENTORY_JENIS:
+            raise ValueError(f'Jenis "{clean(rec.get("jenis")) or ""}" pada kategori {kategori} bukan item biaya/jasa (NON/SVC/PDC), dilewati')
         if code in _seen('item_code'):
             raise ValueError(f'Kode {code} ganda di file')
         _seen('item_code').add(code)

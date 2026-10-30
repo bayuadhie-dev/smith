@@ -18,7 +18,10 @@ CATEGORY_MAP = {
     'BAHAN BAKU': ('material', 'raw_materials'),
     'BAHAN KIMIA': ('material', 'chemical_materials'),
     'BAHAN PEMBANTU': ('material', 'packaging_materials'),
-    # skipped entirely: LAIN-LAIN, Umum
+    # Item biaya/jasa Accurate (jenis NON/SVC/PDC) -> barang non persediaan (tanpa stok, langsung ke akun beban)
+    'Umum': ('material', 'non_inventory'),
+    'LAIN-LAIN': ('material', 'non_inventory'),
+    # jenis INV/GROUP di kategori LAIN-LAIN/Umum dilewati (lihat NON_INVENTORY_JENIS)
 }
 
 # Column indices (0-based), matching the standard Accurate "Barang & Jasa" export template
@@ -32,6 +35,8 @@ COL = dict(
     lead_time=71, self_life_retest=72,
     non_aktif=78,
 )
+
+NON_INVENTORY_JENIS = ('NON', 'SVC', 'PDC')
 
 AKUN_KEYS = ('gl_persediaan', 'gl_hpp', 'gl_barang_terkirim', 'gl_pembelian_belum_tertagih',
              'gl_penjualan', 'gl_diskon_penjualan', 'gl_retur_penjualan', 'gl_retur_pembelian')
@@ -88,10 +93,14 @@ def import_item_rows(rows, commit=True):
                     skipped_category += 1
                     continue
                 table, mat_type = route
+                jenis = str(r[COL['jenis']] or '').strip().upper()
+                if mat_type == 'non_inventory' and jenis not in NON_INVENTORY_JENIS:
+                    skipped_category += 1   # barang persediaan nyasar di kategori Umum, atau barang tipe grup
+                    continue
 
                 code = str(r[COL['kode']]).strip()
                 name = (r[COL['nama']] or '').strip()
-                uom = (r[COL['satuan']] or 'PCS').strip() or 'PCS'
+                uom = (r[COL['satuan']] or ('UNIT' if mat_type == 'non_inventory' else 'PCS')).strip() or ('UNIT' if mat_type == 'non_inventory' else 'PCS')
                 harga_beli = r[COL['harga_beli']] or 0
                 min_beli = r[COL['min_beli']]
                 # 0 in this column means "not actually set" in practice (743/745
@@ -134,6 +143,12 @@ def import_item_rows(rows, commit=True):
                     akun_retur_pembelian_id=akun_ids['gl_retur_pembelian'],
                 )
 
+                if mat_type == 'non_inventory':
+                    # Pada item biaya/jasa Accurate, kolom "Persediaan" memuat akun BEBAN-nya; akun lain tidak relevan
+                    # kecuali Penjualan pada item pendapatan (PDC).
+                    akun_kwargs = dict(akun_beban_id=akun_ids['gl_persediaan'],
+                                       akun_penjualan_id=akun_ids['gl_penjualan'] if jenis == 'PDC' else None)
+
                 if table == 'product':
                     if Product.query.filter_by(code=code).first():
                         skipped_exists += 1
@@ -163,7 +178,9 @@ def import_item_rows(rows, commit=True):
                         skipped_exists += 1
                         continue
                     obj = Material(
-                        code=code, name=name, material_type=mat_type, category=kategori,
+                        code=code, name=name, material_type=mat_type,
+                        category='Non Persediaan' if mat_type == 'non_inventory' else kategori,
+                        is_excluded_from_mrp=(mat_type == 'non_inventory'),
                         primary_uom=uom, cost_per_unit=harga_beli,
                         kelompok=kelompok, erp_approval=erp_approval, ppn_code=ppn_code,
                         lead_time_days=lead_time or 0,
