@@ -247,7 +247,9 @@ export default function MasterDataBarangTab() {
           <option value="material">Material</option>
           <option value="non_inventory">Non Persediaan (jasa/biaya)</option>
         </select>
-        <button type="button" className="btn-primary whitespace-nowrap" onClick={() => setNiOpen(true)}>+ Barang Non Persediaan</button>
+        <Link to="/app/products/new" className="btn-primary whitespace-nowrap">+ Produk (barang jadi/WIP)</Link>
+        <Link to="/app/warehouse/materials/new" className="btn-primary whitespace-nowrap">+ Material (bahan baku/pembantu)</Link>
+        <button type="button" className="btn-secondary whitespace-nowrap" onClick={() => setNiOpen(true)}>+ Non Persediaan (jasa/biaya)</button>
       </div>
 
       {isLoading ? (
