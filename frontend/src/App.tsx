@@ -337,7 +337,7 @@ import DocumentVerifyPage from './pages/DCC/DocumentVerifyPage'
 import ReportGenerator from './pages/Reports/ReportGenerator'
 import CustomReportBuilder from './pages/Reports/CustomReportBuilder'
 import ReportScheduler from './pages/Reports/ReportScheduler'
-import SystemOverview from './pages/Landing/SystemOverview'
+import Landing from './pages/Landing/Landing'
 import ApprovalDashboard from './pages/Approval/ApprovalDashboard'
 import ApprovalDetail from './pages/Approval/ApprovalDetail'
 import WIPLedger from './pages/Finance/WIPLedger'
@@ -1056,7 +1056,7 @@ function App() {
             {!isPublicRoute && <SessionTimeoutModal />}
             <Routes>
               {/* System Overview for non-authenticated users */}
-              <Route path="/" element={!isAuthenticated ? <SystemOverview /> : <RoleBasedRedirect />} />
+              <Route path="/" element={!isAuthenticated ? <Landing /> : <RoleBasedRedirect />} />
               <Route path="/absensi" element={<PublicAttendance />} />
               <Route path="/public/attendance" element={<PublicAttendance />} />
               <Route path="/public/leave-request" element={<StaffLeaveRequest />} />
