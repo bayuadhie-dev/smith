@@ -109,7 +109,7 @@ export default function Login() {
       }
     } catch (error: any) {
       console.error('Error getting Google OAuth URL:', error)
-      toast.error(error.response?.data?.error || 'Failed to connect to Google')
+      toast.error(error.response?.data?.error || 'Gagal terhubung ke Google')
       setGoogleLoading(false)
     }
   }
@@ -175,72 +175,23 @@ export default function Login() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#059669] via-[#047857] to-[#065f46] relative overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-white dark:bg-gray-800/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-[#F15D2C]/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-400/10 rounded-full blur-3xl"></div>
-        </div>
-        
-        {/* Grid Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
-            backgroundSize: '40px 40px'
-          }}></div>
-        </div>
-
-        {/* Content */}
-        <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-14 h-14 bg-white dark:bg-gray-800/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                <CubeIcon className="w-8 h-8 text-white" />
-              </div>
-              <span className="text-3xl font-bold text-white">{companyName}</span>
-            </div>
-            <h1 className="text-4xl xl:text-5xl font-bold text-white leading-tight mb-4">
-              Enterprise Resource
-              <br />
-              <span className="text-emerald-200">Planning System</span>
+      <div className="hidden lg:flex lg:w-1/2 bg-[#065f46] relative">
+        <div className="flex flex-col justify-between w-full px-12 xl:px-20 py-14">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white text-base font-semibold text-[#047857]">
+              {companyName.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || 'ER'}
+            </span>
+            <span className="text-lg font-semibold text-white">{companyName}</span>
+          </div>
+          <div>
+            <h1 className="text-4xl xl:text-5xl font-semibold leading-tight tracking-tight text-white">
+              Dari bahan baku<br />sampai faktur.
             </h1>
-            <p className="text-lg text-emerald-50/80 max-w-md">
-              Streamline your business operations with our comprehensive ERP solution. 
-              Manage everything from inventory to finance in one place.
+            <p className="mt-5 max-w-md text-lg leading-relaxed text-emerald-100/90">
+              Produksi, gudang, mutu, penjualan, pembelian, keuangan, dan SDM dalam satu sistem.
             </p>
           </div>
-
-          {/* Features */}
-          <div className="grid grid-cols-2 gap-4 mt-8">
-            {features.map((feature, idx) => (
-              <div 
-                key={idx}
-                className="flex items-center gap-3 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-300"
-              >
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <feature.icon className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-white font-medium">{feature.text}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Stats */}
-          <div className="flex gap-8 mt-12 pt-8 border-t border-white/20">
-            <div>
-              <p className="text-3xl font-bold text-white">99.9%</p>
-              <p className="text-emerald-200 text-sm">Uptime</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-white">24/7</p>
-              <p className="text-emerald-200 text-sm">Support</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-white">100+</p>
-              <p className="text-emerald-200 text-sm">Features</p>
-            </div>
-          </div>
+          <p className="text-sm text-emerald-100/70">Sistem ERP manufaktur</p>
         </div>
       </div>
 
@@ -250,8 +201,8 @@ export default function Login() {
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
             <div className="inline-flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl flex items-center justify-center">
-                <CubeIcon className="w-7 h-7 text-white" />
+              <div className="w-12 h-12 bg-[#047857] rounded-lg flex items-center justify-center text-base font-semibold text-white">
+                {companyName.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || 'ER'}
               </div>
               <span className="text-2xl font-bold text-slate-900 dark:text-white">{companyName}</span>
             </div>
@@ -259,7 +210,7 @@ export default function Login() {
 
           {/* Session Expired Banner */}
           {sessionMessage && (
-            <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-xl">
+            <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg">
               <div className="flex items-center gap-3">
                 <div className="flex-shrink-0">
                   <svg className="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
@@ -273,9 +224,9 @@ export default function Login() {
             </div>
           )}
 
-          {/* Account Locked Warning */}
+          {/* Akun terkunci Warning */}
           {accountLocked && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-xl">
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg">
               <div className="flex items-center gap-3">
                 <div className="flex-shrink-0">
                   <ShieldCheckIcon className="h-5 w-5 text-red-500" />
@@ -285,7 +236,7 @@ export default function Login() {
                     Account Locked
                   </p>
                   <p className="text-xs text-red-700 dark:text-red-300 mt-1">
-                    Too many failed login attempts. Please wait 5 minutes before trying again.
+                    Terlalu banyak percobaan masuk yang gagal. Tunggu 5 menit lalu coba lagi.
                   </p>
                 </div>
               </div>
@@ -294,17 +245,17 @@ export default function Login() {
 
           {/* Remaining Attempts Warning */}
           {remainingAttempts !== null && remainingAttempts <= 2 && !accountLocked && (
-            <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700 rounded-xl">
+            <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700 rounded-lg">
               <div className="flex items-center gap-3">
                 <div className="flex-shrink-0">
                   <ExclamationTriangleIcon className="h-5 w-5 text-orange-500" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
-                    Warning: {remainingAttempts} {remainingAttempts === 1 ? 'attempt' : 'attempts'} remaining
+                    Peringatan: sisa {remainingAttempts} kali percobaan
                   </p>
                   <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">
-                    Your account will be locked for 5 minutes after {remainingAttempts} more failed {remainingAttempts === 1 ? 'attempt' : 'attempts'}.
+                    Akun akan dikunci 5 menit setelah {remainingAttempts} kali gagal lagi.
                   </p>
                 </div>
               </div>
@@ -314,10 +265,10 @@ export default function Login() {
           {/* Welcome Text */}
           <div className="text-center lg:text-left mb-8">
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-              Welcome back! 👋
+              Masuk ke sistem
             </h2>
             <p className="text-slate-600 dark:text-slate-400">
-              Please enter your credentials to access your account
+              Gunakan nama pengguna dan kata sandi Anda.
             </p>
           </div>
 
@@ -326,7 +277,7 @@ export default function Login() {
             {/* Username Field */}
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Username
+                Nama pengguna
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -337,8 +288,8 @@ export default function Login() {
                   name="username"
                   type="text"
                   required
-                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-transparent transition-all"
-                  placeholder="Enter your username"
+                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-transparent transition-all"
+                  placeholder="Nama pengguna"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
@@ -348,7 +299,7 @@ export default function Login() {
             {/* Password Field */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Password
+                Kata sandi
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -359,8 +310,8 @@ export default function Login() {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-transparent transition-all"
-                  placeholder="Enter your password"
+                  className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-transparent transition-all"
+                  placeholder="Kata sandi"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -388,10 +339,10 @@ export default function Login() {
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="w-4 h-4 rounded border-slate-300 text-[#059669] focus:ring-[#059669] cursor-pointer"
                 />
-                <span className="text-sm text-slate-600 dark:text-slate-400">Remember me</span>
+                <span className="text-sm text-slate-600 dark:text-slate-400">Ingat saya</span>
               </label>
               <Link to="/forgot-password" className="text-sm font-medium text-[#059669] hover:text-emerald-700 transition-colors">
-                Forgot password?
+                Lupa kata sandi?
               </Link>
             </div>
 
@@ -399,16 +350,16 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-gradient-to-r from-[#059669] to-[#047857] hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:-translate-y-0.5"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[#059669] hover:bg-[#047857] text-white font-semibold rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                  <span>Signing in...</span>
+                  <span>Memproses...</span>
                 </>
               ) : (
                 <>
-                  <span>Sign In</span>
+                  <span>Masuk</span>
                   <ArrowRightIcon className="w-5 h-5" />
                 </>
               )}
@@ -421,7 +372,7 @@ export default function Login() {
               <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-slate-50 dark:bg-slate-900 text-slate-500">or continue with</span>
+              <span className="px-4 bg-slate-50 dark:bg-slate-900 text-slate-500">atau</span>
             </div>
           </div>
 
@@ -432,17 +383,17 @@ export default function Login() {
               type="button"
               onClick={handleGoogleLogin}
               disabled={!googleEnabled || googleLoading}
-              className={`w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:ring-offset-2 transition-all duration-300 ${(!googleEnabled || googleLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:ring-offset-2 transition-all duration-300 ${(!googleEnabled || googleLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {googleLoading ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-slate-400 border-t-transparent"></div>
-                  <span>Connecting to Google...</span>
+                  <span>Menghubungkan ke Google...</span>
                 </>
               ) : (
                 <>
                   <GoogleIcon />
-                  <span>Continue with Google</span>
+                  <span>Masuk dengan Google</span>
                 </>
               )}
             </button>
@@ -457,16 +408,16 @@ export default function Login() {
           {/* Register Link */}
           <div className="text-center mt-6">
             <p className="text-slate-600 dark:text-slate-400">
-              Don't have an account?{' '}
+              Belum punya akun?{' '}
               <Link to="/register" className="font-semibold text-[#059669] hover:text-emerald-700 transition-colors">
-                Create account
+                Daftar
               </Link>
             </p>
           </div>
 
           {/* Footer */}
           <div className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
-            © {new Date().getFullYear()} {companyName}. All rights reserved.
+            &copy; {new Date().getFullYear()} {companyName}
           </div>
         </div>
       </div>

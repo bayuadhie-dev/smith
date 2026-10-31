@@ -5,7 +5,14 @@ import {
   BanknotesIcon,
   BeakerIcon,
   BuildingStorefrontIcon,
-  CheckIcon,
+  ArrowPathIcon,
+  CloudArrowDownIcon,
+  DevicePhoneMobileIcon,
+  GlobeAltIcon,
+  LockClosedIcon,
+  MagnifyingGlassIcon,
+  PrinterIcon,
+  ChartBarIcon,
   ClipboardDocumentCheckIcon,
   CogIcon,
   CubeIcon,
@@ -25,6 +32,7 @@ const FLOW = [
   { icon: TruckIcon, title: 'Pengiriman', text: 'Surat jalan terhubung ke pesanan dan potong stok otomatis.' },
   { icon: DocumentTextIcon, title: 'Faktur', text: 'Faktur dan jurnal terbentuk dari dokumen sebelumnya.' },
   { icon: BanknotesIcon, title: 'Pembayaran', text: 'Penerimaan dan pelunasan langsung ke buku besar.' },
+  { icon: ChartBarIcon, title: 'Laporan', text: 'Neraca, laba rugi, dan stok dihitung dari transaksi yang sama.' },
 ]
 
 const MODULES = [
@@ -36,6 +44,17 @@ const MODULES = [
   { icon: BanknotesIcon, title: 'Keuangan', items: ['Jurnal, buku besar, kas dan bank', 'Neraca, laba rugi, arus kas', 'PPN dan e-Faktur', 'Impor dan ekspor data'] },
   { icon: UsersIcon, title: 'SDM', items: ['Absensi wajah dan jadwal shift', 'Cuti dan izin', 'Penggajian', 'Hak akses per peran'] },
   { icon: ShieldCheckIcon, title: 'Kontrol', items: ['Persetujuan bertingkat', 'Catatan audit perubahan data', 'Penutupan periode', 'Pencadangan terjadwal'] },
+]
+
+const FEATURES = [
+  { icon: ChartBarIcon, title: 'Laporan keuangan lengkap', text: 'Neraca, laba rugi, arus kas, buku besar, dan kartu piutang atau hutang. Setiap angka bisa diklik sampai ke jurnal dan dokumen asalnya.' },
+  { icon: ArrowPathIcon, title: 'Impor dan ekspor Excel', text: 'Masukkan ratusan transaksi sekaligus dari file Excel dengan pemeriksaan dulu, atau unduh datanya dengan rentang tanggal pilihan.' },
+  { icon: PrinterIcon, title: 'Dokumen cetak sesuai format', text: 'Invoice, PO, surat jalan, dan bukti kas dicetak dari template yang bisa dirancang sendiri, otomatis berlanjut ke halaman berikutnya.' },
+  { icon: LockClosedIcon, title: 'Hak akses dan jejak audit', text: 'Peran dan izin per menu, persetujuan bertingkat, serta catatan siapa mengubah apa dan kapan.' },
+  { icon: GlobeAltIcon, title: 'Multi mata uang', text: 'Pembelian dalam mata uang asing dengan kurs otomatis, selisih kurs tercatat saat pelunasan.' },
+  { icon: MagnifyingGlassIcon, title: 'Pencarian dan tab kerja', text: 'Cari transaksi lintas modul, buka banyak halaman dalam tab, dan lanjutkan form yang belum selesai.' },
+  { icon: DevicePhoneMobileIcon, title: 'Nyaman dipakai di HP', text: 'Absensi wajah, pantauan produksi, dan pengajuan cuti bisa dibuka dari browser ponsel tanpa pemasangan.' },
+  { icon: CloudArrowDownIcon, title: 'Data aman', text: 'Pencadangan terjadwal, penutupan periode akuntansi, dan sesi yang berakhir otomatis saat tidak dipakai.' },
 ]
 
 const PORTALS = [
@@ -71,6 +90,7 @@ const Landing: React.FC = () => {
           <nav className="hidden items-center gap-7 text-sm text-slate-600 md:flex">
             <a href="#alur" className="hover:text-emerald-700">Alur kerja</a>
             <a href="#modul" className="hover:text-emerald-700">Modul</a>
+            <a href="#kemampuan" className="hover:text-emerald-700">Kemampuan</a>
             <a href="#portal" className="hover:text-emerald-700">Portal karyawan</a>
           </nav>
           <Link to="/login" className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
@@ -100,35 +120,14 @@ const Landing: React.FC = () => {
             </div>
           </div>
 
-          {/* Contoh alur dokumen */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="mb-4 flex items-center justify-between">
-              <p className="text-sm font-semibold text-slate-900">Jejak satu pesanan</p>
-              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-500">Contoh</span>
-            </div>
-            <ol className="relative space-y-4 border-l border-slate-200 pl-6">
-              {[
-                ['Pesanan penjualan', 'SO-202611-00012', 'Dikonfirmasi'],
-                ['Perintah kerja', 'SPK-202611-00031', 'Selesai'],
-                ['Pemeriksaan mutu', 'Batch B-1104', 'Dilepas'],
-                ['Surat jalan', 'SJ-202611-00007', 'Terkirim'],
-                ['Faktur penjualan', 'INV-202611-00019', 'Lunas'],
-              ].map(([t, n, s]) => (
-                <li key={t} className="relative">
-                  <span className="absolute -left-[31px] top-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600 text-white">
-                    <CheckIcon className="h-3 w-3" strokeWidth={3} />
-                  </span>
-                  <div className="flex items-baseline justify-between gap-3">
-                    <p className="text-sm font-medium text-slate-900">{t}</p>
-                    <p className="text-xs text-emerald-700">{s}</p>
-                  </div>
-                  <p className="font-mono text-xs text-slate-500">{n}</p>
-                </li>
-              ))}
-            </ol>
-            <p className="mt-5 border-t border-slate-100 pt-4 text-xs text-slate-500">
-              Tiap langkah terhubung ke dokumen sebelumnya. Dari faktur, pengguna bisa menelusuri sampai ke pesanan dan batch produksinya.
-            </p>
+          {/* Peta area kerja */}
+          <div className="grid grid-cols-4 gap-3 self-center">
+            {MODULES.map((m) => (
+              <div key={m.title} className="flex aspect-square flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white p-2 text-center shadow-sm">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700"><m.icon className="h-6 w-6" /></span>
+                <span className="text-xs font-medium text-slate-700 sm:text-sm">{m.title}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -148,7 +147,6 @@ const Landing: React.FC = () => {
               <p className="mt-1 text-sm leading-relaxed text-slate-600">{s.text}</p>
             </li>
           ))}
-          <li className="hidden bg-slate-50 p-5 lg:block" aria-hidden="true" />
         </ol>
       </section>
 
@@ -175,8 +173,24 @@ const Landing: React.FC = () => {
         </div>
       </section>
 
+      {/* Kemampuan */}
+      <section id="kemampuan" className="mx-auto max-w-6xl px-5 py-20">
+        <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Kemampuan utama</h2>
+        <p className="mt-3 max-w-2xl text-slate-600">Hal-hal yang dipakai setiap hari oleh tim keuangan, gudang, dan produksi.</p>
+        <div className="mt-10 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+          {FEATURES.map((f) => (
+            <div key={f.title}>
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700"><f.icon className="h-5 w-5" /></span>
+              <p className="mt-4 font-semibold text-slate-900">{f.title}</p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">{f.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Portal */}
-      <section id="portal" className="mx-auto max-w-6xl px-5 py-20">
+      <section id="portal" className="border-t border-slate-200 bg-slate-50">
+        <div className="mx-auto max-w-6xl px-5 py-20">
         <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Portal karyawan</h2>
         <p className="mt-3 max-w-2xl text-slate-600">Halaman yang bisa dibuka tanpa akun, untuk keperluan sehari-hari di lantai pabrik.</p>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -190,13 +204,27 @@ const Landing: React.FC = () => {
             </Link>
           ))}
         </div>
+        </div>
+      </section>
+
+      {/* Ajakan */}
+      <section className="bg-emerald-700">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-5 py-14 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="text-2xl font-semibold text-white">Siap bekerja?</h2>
+            <p className="mt-1 text-emerald-100">Masuk dengan akun yang diberikan oleh administrator.</p>
+          </div>
+          <Link to="/login" className="inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 text-base font-medium text-emerald-800 hover:bg-emerald-50">
+            Masuk ke sistem <ArrowRightIcon className="h-5 w-5" />
+          </Link>
+        </div>
       </section>
 
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-slate-50">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {new Date().getFullYear()} {name}</p>
-          <p>Dirancang dan dikembangkan oleh Mochammad Bayu Adhie Nugroho</p>
+          <p>Sistem ERP manufaktur</p>
         </div>
       </footer>
     </div>
