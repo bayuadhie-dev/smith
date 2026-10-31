@@ -131,3 +131,23 @@ def test_accurate_extra_columns_are_stored_and_backfilled_without_overwriting(cl
     assert client.put(f'/api/materials/{m.id}', headers=auth_headers, json={'brand': 'ABC', 'barcode': ''}).status_code == 200
     db_session.refresh(m)
     assert m.brand == 'ABC' and m.barcode is None
+
+
+def test_grn_requires_batch_and_expiry_when_item_is_flagged(client, auth_headers, db_session):
+    from models.warehouse import WarehouseZone, WarehouseLocation
+    supplier, material, po, po_item = _setup_po(db_session, unit_price=1000, quantity=10)
+    material.require_batch = True; material.require_expiry = True; po.status = 'approved'
+    zone = WarehouseZone(code='Z-RB', name='Z', zone_type='all', material_type='all'); db_session.add(zone); db_session.commit()
+    loc = WarehouseLocation(zone_id=zone.id, location_code='LOC-RB', rack='R', level='L', position='P', capacity=100, capacity_uom='kg')
+    db_session.add(loc); db_session.commit()
+    base = {'po_item_id': po_item.id, 'material_id': material.id, 'quantity_ordered': 10, 'quantity_received': 10, 'uom': 'KG', 'location_id': loc.id}
+    post = lambda **extra: client.post('/api/purchasing/grn', headers=auth_headers, json={
+        'po_id': po.id, 'supplier_id': supplier.id, 'received_date': date.today().isoformat(), 'items': [{**base, **extra}]})
+    r = post()
+    assert r.status_code == 400 and 'batch' in r.get_json()['error'].lower()
+    r = post(batch_number='B-1')
+    assert r.status_code == 400 and 'kedaluwarsa' in r.get_json()['error'].lower()
+    assert post(batch_number='B-1', expiry_date='2027-12-31').status_code in (200, 201)
+    detail = client.get(f'/api/purchasing/purchase-orders/{po.id}', headers=auth_headers).get_json()
+    d = detail.get('purchase_order', detail)
+    assert d['items'][0]['require_batch'] is True and d['items'][0]['require_expiry'] is True

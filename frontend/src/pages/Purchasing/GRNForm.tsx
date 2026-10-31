@@ -23,6 +23,8 @@ interface Row {
   expiry_date: string
   notes: string
   open: boolean
+  requireBatch?: boolean
+  requireExpiry?: boolean
 }
 
 const todayISO = () => new Date().toISOString().slice(0, 10)
@@ -76,6 +78,7 @@ export default function GRNForm() {
             name: itemName(it), code: it.material_code || it.product_code, uom: it.uom || 'PCS',
             ordered: Number(it.quantity), receivedBefore: before, qty: outstanding, location_id: null,
             batch_number: '', lot_number: '', production_date: '', expiry_date: '', notes: '', open: false,
+            requireBatch: !!it.require_batch, requireExpiry: !!it.require_expiry,
           }
         }))
       })
@@ -134,6 +137,10 @@ export default function GRNForm() {
       const noLoc = active.find((r) => !r.location_id)
       if (noLoc) return setError(`Lokasi gudang wajib diisi untuk "${noLoc.name}" (tanpa lokasi stok tidak bertambah)`)
       if (active.some((r) => num(r.qty) < 0)) return setError('Jumlah diterima tidak boleh negatif')
+      const noBatch = active.find((r) => r.requireBatch && !r.batch_number.trim() && !r.lot_number.trim())
+      if (noBatch) return setError(`"${noBatch.name}" wajib memakai nomor batch/lot. Isi No. Batch.`)
+      const noExp = active.find((r) => r.requireExpiry && !r.expiry_date)
+      if (noExp) return setError(`"${noExp.name}" wajib memakai tanggal kedaluwarsa. Buka rincian baris lalu isi Tanggal Kadaluarsa.`)
     }
     setSaving(true)
     try {
@@ -285,7 +292,7 @@ export default function GRNForm() {
                           </td>
                           <td className="py-2 pr-3">
                             {isEdit ? <div className="text-sm">{r.batch_number || '-'}</div>
-                              : <input className="input-field" value={r.batch_number} onChange={(e) => update(i, { batch_number: e.target.value })} placeholder="No. batch" />}
+                              : <input className="input-field" value={r.batch_number} onChange={(e) => update(i, { batch_number: e.target.value })} placeholder={r.requireBatch ? 'No. batch (wajib)' : 'No. batch'} />}
                           </td>
                           <td className="py-2">
                             <button type="button" onClick={() => update(i, { open: !r.open })} className="p-1 text-gray-500 hover:text-gray-800" title="Lot, tanggal, catatan">
@@ -299,7 +306,7 @@ export default function GRNForm() {
                               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                                 <div><label className="block text-xs text-gray-500 mb-1">No. Lot</label><input className="input-field" value={r.lot_number} onChange={(e) => update(i, { lot_number: e.target.value })} /></div>
                                 <div><label className="block text-xs text-gray-500 mb-1">Tanggal Produksi</label><input type="date" className="input-field" value={r.production_date} onChange={(e) => update(i, { production_date: e.target.value })} /></div>
-                                <div><label className="block text-xs text-gray-500 mb-1">Tanggal Kadaluarsa</label><input type="date" className="input-field" value={r.expiry_date} onChange={(e) => update(i, { expiry_date: e.target.value })} /></div>
+                                <div><label className="block text-xs text-gray-500 mb-1">Tanggal Kadaluarsa{r.requireExpiry ? ' *' : ''}</label><input type="date" className="input-field" value={r.expiry_date} onChange={(e) => update(i, { expiry_date: e.target.value })} /></div>
                                 <div><label className="block text-xs text-gray-500 mb-1">Catatan Baris</label><input className="input-field" value={r.notes} onChange={(e) => update(i, { notes: e.target.value })} /></div>
                               </div>
                             </td>
