@@ -691,7 +691,6 @@ def get_purchase_order(id):
                 'quantity_received': float(i.quantity_received or 0),
                 'quantity_invoiced': float(i.quantity_invoiced or 0),
                 'schedules': [sc.to_dict() for sc in i.schedules],
-                'require_batch': bool(getattr((i.material or i.product), 'require_batch', False)) if (i.material or i.product) else False,
                 'require_expiry': bool(getattr((i.material or i.product), 'require_expiry', False)) if (i.material or i.product) else False,
             } for i in po.items]
         }), 200
@@ -964,13 +963,11 @@ def create_grn():
                 return jsonify({'error': 'Barang non persediaan (jasa/biaya) tidak melalui penerimaan barang (GRN). Cukup buat faktur pembelian.'}), 400
             quantity_received = float(item_data['quantity_received'])
             quantity_accepted = float(item_data.get('quantity_accepted', quantity_received))
-            # Barang bertanda wajib batch / wajib kedaluwarsa (dari master barang) harus lengkap saat diterima
+            # Hanya barang bertanda "Pakai tanggal kadaluarsa" (master barang) yang wajib tanggal kedaluwarsa saat diterima.
+            # Nomor batch TIDAK diwajibkan di penerimaan: batch dipakai di pengiriman (FIFO).
             _item_obj = db.session.get(Material, material_id) if material_id else (db.session.get(Product, product_id) if product_id else None)
             if _item_obj is not None and quantity_accepted > 0:
                 _label = f'{_item_obj.code} - {_item_obj.name}'
-                if getattr(_item_obj, 'require_batch', False) and not (str(item_data.get('batch_number') or '').strip() or str(item_data.get('lot_number') or '').strip()):
-                    db.session.rollback()
-                    return jsonify({'error': f'{_label} wajib memakai nomor batch/lot. Isi No. Batch sebelum menerima.'}), 400
                 if getattr(_item_obj, 'require_expiry', False) and not item_data.get('expiry_date'):
                     db.session.rollback()
                     return jsonify({'error': f'{_label} wajib memakai tanggal kedaluwarsa. Isi Tanggal Kadaluarsa sebelum menerima.'}), 400
