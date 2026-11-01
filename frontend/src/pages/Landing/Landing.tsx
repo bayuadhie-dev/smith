@@ -1,71 +1,54 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  ArrowRightIcon,
-  BanknotesIcon,
-  BeakerIcon,
-  BuildingStorefrontIcon,
-  ArrowPathIcon,
-  CloudArrowDownIcon,
-  DevicePhoneMobileIcon,
-  GlobeAltIcon,
-  LockClosedIcon,
-  MagnifyingGlassIcon,
-  PrinterIcon,
-  ChartBarIcon,
-  ClipboardDocumentCheckIcon,
-  CogIcon,
-  CubeIcon,
-  DocumentTextIcon,
-  ShieldCheckIcon,
-  ShoppingBagIcon,
-  TruckIcon,
-  UsersIcon,
-} from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
-
-const FLOW = [
-  { icon: ClipboardDocumentCheckIcon, title: 'Pesanan', text: 'Sales order dari pelanggan, lengkap dengan diskon bertingkat.' },
-  { icon: CogIcon, title: 'Produksi', text: 'SPK, batch, hasil per mesin dan shift, serta downtime.' },
-  { icon: BeakerIcon, title: 'Mutu', text: 'Inspeksi, release, dan karantina sebelum barang boleh dikirim.' },
-  { icon: CubeIcon, title: 'Gudang', text: 'Stok per lokasi dan batch, keluar dengan urutan FIFO.' },
-  { icon: TruckIcon, title: 'Pengiriman', text: 'Surat jalan terhubung ke pesanan dan potong stok otomatis.' },
-  { icon: DocumentTextIcon, title: 'Faktur', text: 'Faktur dan jurnal terbentuk dari dokumen sebelumnya.' },
-  { icon: BanknotesIcon, title: 'Pembayaran', text: 'Penerimaan dan pelunasan langsung ke buku besar.' },
-  { icon: ChartBarIcon, title: 'Laporan', text: 'Neraca, laba rugi, dan stok dihitung dari transaksi yang sama.' },
-]
-
-const MODULES = [
-  { icon: CogIcon, title: 'Produksi', items: ['SPK dan jadwal batch', 'Input hasil per mesin dan shift', 'Packing list dan konversi barang jadi', 'OEE, downtime, dan monitoring TV'] },
-  { icon: CubeIcon, title: 'Gudang', items: ['Stok per lokasi dan batch', 'Pengeluaran FIFO', 'Stok opname dan transfer', 'Masa kedaluwarsa barang'] },
-  { icon: BeakerIcon, title: 'Mutu', items: ['Inspeksi dan release batch', 'Karantina otomatis', 'Sertifikat analisis (COA)', 'Pengendalian dokumen (DCC)'] },
-  { icon: BuildingStorefrontIcon, title: 'Penjualan', items: ['Quotation dan sales order', 'Surat jalan dan faktur', 'Retur dan nota kredit', 'Peramalan dan perencanaan'] },
-  { icon: ShoppingBagIcon, title: 'Pembelian', items: ['Permintaan dan pesanan pembelian', 'Penerimaan barang (GRN)', 'Faktur dan pencocokan 3 arah', 'Mata uang asing dan kurs otomatis'] },
-  { icon: BanknotesIcon, title: 'Keuangan', items: ['Jurnal, buku besar, kas dan bank', 'Neraca, laba rugi, arus kas', 'PPN dan e-Faktur', 'Impor dan ekspor data'] },
-  { icon: UsersIcon, title: 'SDM', items: ['Absensi wajah dan jadwal shift', 'Cuti dan izin', 'Penggajian', 'Hak akses per peran'] },
-  { icon: ShieldCheckIcon, title: 'Kontrol', items: ['Persetujuan bertingkat', 'Catatan audit perubahan data', 'Penutupan periode', 'Pencadangan terjadwal'] },
-]
-
-const FEATURES = [
-  { icon: ChartBarIcon, title: 'Laporan keuangan lengkap', text: 'Neraca, laba rugi, arus kas, buku besar, dan kartu piutang atau hutang. Setiap angka bisa diklik sampai ke jurnal dan dokumen asalnya.' },
-  { icon: ArrowPathIcon, title: 'Impor dan ekspor Excel', text: 'Masukkan ratusan transaksi sekaligus dari file Excel dengan pemeriksaan dulu, atau unduh datanya dengan rentang tanggal pilihan.' },
-  { icon: PrinterIcon, title: 'Dokumen cetak sesuai format', text: 'Invoice, PO, surat jalan, dan bukti kas dicetak dari template yang bisa dirancang sendiri, otomatis berlanjut ke halaman berikutnya.' },
-  { icon: LockClosedIcon, title: 'Hak akses dan jejak audit', text: 'Peran dan izin per menu, persetujuan bertingkat, serta catatan siapa mengubah apa dan kapan.' },
-  { icon: GlobeAltIcon, title: 'Multi mata uang', text: 'Pembelian dalam mata uang asing dengan kurs otomatis, selisih kurs tercatat saat pelunasan.' },
-  { icon: MagnifyingGlassIcon, title: 'Pencarian dan tab kerja', text: 'Cari transaksi lintas modul, buka banyak halaman dalam tab, dan lanjutkan form yang belum selesai.' },
-  { icon: DevicePhoneMobileIcon, title: 'Nyaman dipakai di HP', text: 'Absensi wajah, pantauan produksi, dan pengajuan cuti bisa dibuka dari browser ponsel tanpa pemasangan.' },
-  { icon: CloudArrowDownIcon, title: 'Data aman', text: 'Pencadangan terjadwal, penutupan periode akuntansi, dan sesi yang berakhir otomatis saat tidak dipakai.' },
-]
-
-const PORTALS = [
-  { title: 'Layar TV Produksi', text: 'Pantauan produksi, pengiriman, dan roster untuk ruang kerja. Tanpa login.', href: '/tv/overview' },
-  { title: 'Absensi', text: 'Masuk dan pulang dengan verifikasi wajah dan lokasi.', href: '/absensi' },
-  { title: 'Pendaftaran Wajah', text: 'Pendaftaran data wajah karyawan untuk absensi.', href: '/public/face-registration' },
-  { title: 'Pengajuan Cuti dan Izin', text: 'Formulir online untuk karyawan.', href: '/public/leave-request' },
-]
 
 const initials = (name: string) =>
   name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || 'ER'
+
+const SHOWCASE = [
+  {
+    id: 'telusur',
+    title: 'Setiap angka bisa ditelusuri',
+    text: 'Di neraca saldo, klik sebuah akun untuk membuka buku besarnya. Dari baris jurnal, klik nomor transaksinya untuk membuka dokumen aslinya: faktur, pembayaran, surat jalan, atau perintah kerja. Tidak ada angka yang berdiri sendiri.',
+    note: 'Neraca saldo, dengan pengecekan debit dan kredit otomatis.',
+    img: '/landing/neraca-saldo.jpg',
+    w: 1012, h: 568,
+  },
+  {
+    id: 'kas',
+    title: 'Kas dan bank per hari',
+    text: 'Penerimaan, pengeluaran, dan saldo setiap hari ada di satu tabel. Klik satu tanggal untuk melihat tiap transaksinya beserta akun lawannya. Semua laporan bisa diunduh ke Excel atau PDF dan dicetak.',
+    note: 'Rekap kas harian, per rekening.',
+    img: '/landing/kas-harian.jpg',
+    w: 1012, h: 568,
+  },
+  {
+    id: 'piutang',
+    title: 'Piutang per pelanggan, lengkap dengan retur',
+    text: 'Faktur, retur, penerimaan, dan saldo berjalan tiap pelanggan dalam satu kartu. Aktivitas terakhir langsung terlihat, jadi tagihan yang mulai tertinggal mudah ditemukan.',
+    note: 'Kartu piutang per pelanggan.',
+    img: '/landing/kartu-piutang.jpg',
+    w: 1012, h: 568,
+  },
+]
+
+const AREAS = [
+  ['Produksi', 'Perintah kerja dan jadwal batch, hasil per mesin dan shift, packing list, konversi barang jadi, OEE, downtime, dan layar TV di lantai pabrik.'],
+  ['Gudang', 'Stok per lokasi dan batch, pengeluaran dengan urutan FIFO, stok opname, transfer, dan masa kedaluwarsa barang.'],
+  ['Mutu', 'Inspeksi dan pelepasan batch, karantina otomatis, sertifikat analisis, dan pengendalian dokumen.'],
+  ['Penjualan', 'Quotation, pesanan dengan diskon bertingkat, surat jalan, faktur, retur, dan nota kredit.'],
+  ['Pembelian', 'Permintaan dan pesanan pembelian, penerimaan barang, faktur dengan pencocokan tiga arah, dan pembelian dalam mata uang asing dengan kurs otomatis.'],
+  ['Keuangan', 'Jurnal, buku besar, kas dan bank, PPN dan e-Faktur, penutupan periode, serta impor dan ekspor data dari Excel.'],
+  ['SDM', 'Absensi dengan verifikasi wajah dan lokasi, jadwal shift, cuti dan izin, serta penggajian.'],
+  ['Kontrol', 'Hak akses per peran, persetujuan bertingkat, catatan perubahan data, dan pencadangan terjadwal.'],
+]
+
+const PORTALS = [
+  ['Layar TV produksi', '/tv/overview'],
+  ['Absensi', '/absensi'],
+  ['Pendaftaran wajah', '/public/face-registration'],
+  ['Pengajuan cuti dan izin', '/public/leave-request'],
+]
 
 const Landing: React.FC = () => {
   const [companyName, setCompanyName] = useState('')
@@ -84,155 +67,101 @@ const Landing: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white text-slate-800 antialiased" style={{ colorScheme: 'light' }}>
-      {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <header className="border-b border-slate-200">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <a href="#atas" className="flex items-center gap-3">
             {logoUrl ? (
               <img src={logoUrl} alt={name} className="h-9 w-auto max-w-[8rem] object-contain" />
             ) : (
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-sm font-semibold text-white">{initials(name)}</span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-md bg-emerald-700 text-sm font-semibold text-white">{initials(name)}</span>
             )}
-            <span className="text-sm font-semibold leading-tight text-slate-900 sm:text-base">{name}</span>
+            <span className="text-sm font-semibold text-slate-900 sm:text-base">{name}</span>
           </a>
-          <nav className="hidden items-center gap-7 text-sm text-slate-600 md:flex">
-            <a href="#alur" className="hover:text-emerald-700">Alur kerja</a>
-            <a href="#modul" className="hover:text-emerald-700">Modul</a>
-            <a href="#kemampuan" className="hover:text-emerald-700">Kemampuan</a>
-            <a href="#portal" className="hover:text-emerald-700">Portal karyawan</a>
+          <nav className="flex items-center gap-6 text-sm">
+            <a href="#cakupan" className="hidden text-slate-600 hover:text-slate-900 sm:inline">Cakupan</a>
+            <a href="#portal" className="hidden text-slate-600 hover:text-slate-900 sm:inline">Portal karyawan</a>
+            <Link to="/login" className="rounded-md bg-emerald-700 px-4 py-2 font-medium text-white hover:bg-emerald-800">Masuk</Link>
           </nav>
-          <Link to="/login" className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
-            Masuk <ArrowRightIcon className="h-4 w-4" />
-          </Link>
         </div>
       </header>
 
-      {/* Hero */}
-      <section id="atas" className="border-b border-slate-200 bg-slate-50">
-        <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 md:grid-cols-2 md:py-24">
-          <div className="flex flex-col justify-center">
-            <p className="mb-4 text-sm font-medium text-emerald-700">Sistem ERP manufaktur</p>
-            <h1 className="text-4xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-5xl">
-              Dari bahan baku sampai faktur, dalam satu sistem.
-            </h1>
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-600">
-              Produksi, gudang, mutu, penjualan, pembelian, keuangan, dan SDM memakai data yang sama, sehingga satu dokumen tidak perlu diketik dua kali.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/login" className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-3 text-base font-medium text-white hover:bg-emerald-700">
-                Masuk ke sistem <ArrowRightIcon className="h-5 w-5" />
-              </Link>
-              <a href="#portal" className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-6 py-3 text-base font-medium text-slate-700 hover:border-slate-400">
-                Portal karyawan
-              </a>
+      <main id="atas">
+        <section className="mx-auto max-w-6xl px-5 pb-6 pt-14 md:pt-20">
+          <h1 className="max-w-3xl text-4xl font-semibold leading-[1.15] tracking-tight text-slate-900 sm:text-5xl">
+            Produksi, gudang, dan pembukuan pabrik di satu aplikasi.
+          </h1>
+          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-slate-600">
+            Dokumen yang sudah dibuat di satu bagian dipakai lagi oleh bagian berikutnya, jadi pesanan, produksi, pengiriman, faktur, dan jurnal tidak perlu diketik ulang.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link to="/login" className="rounded-md bg-emerald-700 px-6 py-3 font-medium text-white hover:bg-emerald-800">Masuk ke sistem</Link>
+            <a href="#portal" className="text-sm font-medium text-emerald-800 hover:underline">Absensi dan layar TV tanpa login</a>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-5 pb-16 pt-8">
+          <img
+            src={SHOWCASE[0].img}
+            width={SHOWCASE[0].w}
+            height={SHOWCASE[0].h}
+            alt="Tampilan neraca saldo"
+            className="w-full rounded-lg border border-slate-200 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.35)]"
+          />
+          <p className="mt-3 text-sm text-slate-500">Contoh tampilan memakai data fiktif.</p>
+        </section>
+
+        <section className="border-t border-slate-200">
+          <div className="mx-auto max-w-6xl space-y-20 px-5 py-20">
+            <div className="max-w-2xl border-l-2 border-emerald-700 pl-5">
+              <h2 className="text-lg font-semibold text-slate-900">{SHOWCASE[0].title}</h2>
+              <p className="mt-2 leading-relaxed text-slate-600">{SHOWCASE[0].text}</p>
             </div>
-          </div>
-
-          {/* Peta area kerja */}
-          <div className="grid grid-cols-4 gap-3 self-center">
-            {MODULES.map((m) => (
-              <div key={m.title} className="flex aspect-square flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white p-2 text-center shadow-sm">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700"><m.icon className="h-6 w-6" /></span>
-                <span className="text-xs font-medium text-slate-700 sm:text-sm">{m.title}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Alur */}
-      <section id="alur" className="mx-auto max-w-6xl px-5 py-20">
-        <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Satu alur, tanpa input ulang</h2>
-        <p className="mt-3 max-w-2xl text-slate-600">Setiap tahap mengambil data dari tahap sebelumnya, dan jurnal akuntansi terbentuk dari dokumen yang sama.</p>
-        <ol className="mt-10 grid gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200 sm:grid-cols-2 lg:grid-cols-4">
-          {FLOW.map((s, i) => (
-            <li key={s.title} className="bg-white p-5">
-              <div className="mb-3 flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700"><s.icon className="h-5 w-5" /></span>
-                <span className="text-xs font-medium text-slate-400">{String(i + 1).padStart(2, '0')}</span>
-              </div>
-              <p className="font-medium text-slate-900">{s.title}</p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-600">{s.text}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* Modul */}
-      <section id="modul" className="border-y border-slate-200 bg-slate-50">
-        <div className="mx-auto max-w-6xl px-5 py-20">
-          <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Modul</h2>
-          <p className="mt-3 max-w-2xl text-slate-600">Dikelompokkan menurut bagian pabrik. Hak akses diatur per peran, jadi tiap orang hanya melihat bagiannya.</p>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {MODULES.map((m) => (
-              <div key={m.title} className="rounded-xl border border-slate-200 bg-white p-5">
-                <div className="mb-3 flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700"><m.icon className="h-5 w-5" /></span>
-                  <p className="font-semibold text-slate-900">{m.title}</p>
+            {SHOWCASE.slice(1).map((s, i) => (
+              <div key={s.id} className="grid items-center gap-10 md:grid-cols-5">
+                <div className={`md:col-span-2 ${i % 2 === 1 ? 'md:order-2' : ''}`}>
+                  <h2 className="text-2xl font-semibold tracking-tight text-slate-900">{s.title}</h2>
+                  <p className="mt-4 leading-relaxed text-slate-600">{s.text}</p>
                 </div>
-                <ul className="space-y-1.5 text-sm text-slate-600">
-                  {m.items.map((it) => (
-                    <li key={it} className="flex gap-2"><span className="mt-2 h-1 w-1 flex-none rounded-full bg-emerald-600" />{it}</li>
-                  ))}
-                </ul>
+                <figure className={`md:col-span-3 ${i % 2 === 1 ? 'md:order-1' : ''}`}>
+                  <img src={s.img} width={s.w} height={s.h} alt={s.note} loading="lazy" className="w-full rounded-lg border border-slate-200 shadow-[0_16px_40px_-24px_rgba(15,23,42,0.3)]" />
+                  <figcaption className="mt-2 text-sm text-slate-500">{s.note}</figcaption>
+                </figure>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Kemampuan */}
-      <section id="kemampuan" className="mx-auto max-w-6xl px-5 py-20">
-        <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Kemampuan utama</h2>
-        <p className="mt-3 max-w-2xl text-slate-600">Hal-hal yang dipakai setiap hari oleh tim keuangan, gudang, dan produksi.</p>
-        <div className="mt-10 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map((f) => (
-            <div key={f.title}>
-              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700"><f.icon className="h-5 w-5" /></span>
-              <p className="mt-4 font-semibold text-slate-900">{f.title}</p>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">{f.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Portal */}
-      <section id="portal" className="border-t border-slate-200 bg-slate-50">
-        <div className="mx-auto max-w-6xl px-5 py-20">
-        <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Portal karyawan</h2>
-        <p className="mt-3 max-w-2xl text-slate-600">Halaman yang bisa dibuka tanpa akun, untuk keperluan sehari-hari di lantai pabrik.</p>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {PORTALS.map((p) => (
-            <Link key={p.title} to={p.href} className="group rounded-xl border border-slate-200 p-5 transition hover:border-emerald-600">
-              <p className="font-semibold text-slate-900">{p.title}</p>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">{p.text}</p>
-              <p className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-emerald-700">
-                Buka <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
-              </p>
-            </Link>
-          ))}
-        </div>
-        </div>
-      </section>
-
-      {/* Ajakan */}
-      <section className="bg-emerald-700">
-        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-5 py-14 sm:flex-row sm:items-center">
-          <div>
-            <h2 className="text-2xl font-semibold text-white">Siap bekerja?</h2>
-            <p className="mt-1 text-emerald-100">Masuk dengan akun yang diberikan oleh administrator.</p>
+        <section id="cakupan" className="border-t border-slate-200 bg-slate-50">
+          <div className="mx-auto max-w-6xl px-5 py-20">
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Yang dicakup</h2>
+            <dl className="mt-10 grid gap-x-12 gap-y-8 md:grid-cols-2">
+              {AREAS.map(([t, d]) => (
+                <div key={t} className="grid grid-cols-[6.5rem_1fr] gap-4 border-t border-slate-200 pt-4">
+                  <dt className="font-semibold text-slate-900">{t}</dt>
+                  <dd className="text-sm leading-relaxed text-slate-600">{d}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-          <Link to="/login" className="inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 text-base font-medium text-emerald-800 hover:bg-emerald-50">
-            Masuk ke sistem <ArrowRightIcon className="h-5 w-5" />
-          </Link>
-        </div>
-      </section>
+        </section>
 
-      {/* Footer */}
+        <section id="portal" className="border-t border-slate-200">
+          <div className="mx-auto max-w-6xl px-5 py-16">
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Portal karyawan</h2>
+            <p className="mt-3 max-w-2xl text-slate-600">Halaman yang bisa dibuka tanpa akun untuk keperluan harian di lantai pabrik.</p>
+            <ul className="mt-6 flex flex-wrap gap-x-8 gap-y-3">
+              {PORTALS.map(([t, href]) => (
+                <li key={t}><Link to={href} className="font-medium text-emerald-800 underline-offset-4 hover:underline">{t}</Link></li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      </main>
+
       <footer className="border-t border-slate-200 bg-slate-50">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-8 text-sm text-slate-500 sm:flex-row sm:justify-between">
           <p>&copy; {new Date().getFullYear()} {name}</p>
-          <p>Sistem ERP manufaktur</p>
+          <Link to="/login" className="hover:text-slate-800">Masuk</Link>
         </div>
       </footer>
     </div>
