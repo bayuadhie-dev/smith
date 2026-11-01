@@ -403,13 +403,13 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
               name: 'Buku Besar', icon: DocumentTextIcon, isSubMenu: true, subChildren: [
                 { name: 'Chart of Accounts', href: '/app/accounting/chart-of-accounts' },
                 { name: 'General Ledger', href: '/app/accounting/general-ledger' },
-                { name: 'Journal Entry', href: '/app/accounting/journal' },
+                { name: 'Jurnal Umum', href: '/app/accounting/journal' },
               ]
             },
             {
               name: 'Piutang & Hutang', icon: ArrowsRightLeftIcon, isSubMenu: true, subChildren: [
-                { name: 'Accounts Receivable', href: '/app/accounting/receivable' },
-                { name: 'Accounts Payable', href: '/app/accounting/payable' },
+                { name: 'Piutang Usaha', href: '/app/accounting/receivable' },
+                { name: 'Utang Usaha', href: '/app/accounting/payable' },
               ]
             },
             { name: 'Bank Reconciliation', href: '/app/accounting/bank-reconciliation', icon: ArrowsRightLeftIcon },

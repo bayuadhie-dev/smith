@@ -1306,84 +1306,89 @@ def get_unpaid_invoices():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ============ ACCOUNTS RECEIVABLE ============
+# ============ ACCOUNTS RECEIVABLE / PAYABLE ============
+def _open_invoices_response(kind):
+    """Daftar faktur yang belum lunas (piutang = 'sales', utang = 'purchase').
+    Faktur draft dan batal tidak dihitung: belum menjadi tagihan sah."""
+    from models.purchasing import Supplier
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 50, type=int), 200)
+    search = (request.args.get('search') or '').strip()
+    status = request.args.get('status') or ''
+    today = get_local_now().date()
+    week = today + timedelta(days=7)
+
+    live = [Invoice.invoice_type == kind, Invoice.status.notin_(['draft', 'cancelled'])]
+    open_ = live + [Invoice.balance_due > 0]
+    party = Customer if kind == 'sales' else Supplier
+    party_fk = Invoice.customer_id if kind == 'sales' else Invoice.supplier_id
+
+    q = Invoice.query.outerjoin(party, party.id == party_fk).filter(*open_)
+    if search:
+        like = f'%{search}%'
+        q = q.filter(db.or_(Invoice.invoice_number.ilike(like), party.company_name.ilike(like)))
+    if status == 'overdue':
+        q = q.filter(Invoice.due_date < today)
+    elif status == 'partial':
+        q = q.filter(Invoice.paid_amount > 0)
+    elif status == 'outstanding':
+        q = q.filter(Invoice.paid_amount <= 0)
+    page_q = q.order_by(Invoice.due_date.asc().nullslast(), Invoice.id.asc()).paginate(page=page, per_page=per_page, error_out=False)
+
+    def agg(*conds):
+        return db.session.query(func.count(Invoice.id), func.coalesce(func.sum(Invoice.balance_due), 0)).filter(*open_, *conds).one()
+    all_n, all_sum = agg()
+    over_n, over_sum = agg(Invoice.due_date < today)
+    week_n, week_sum = agg(Invoice.due_date >= today, Invoice.due_date <= week)
+    billed, paid = db.session.query(func.coalesce(func.sum(Invoice.total_amount), 0), func.coalesce(func.sum(Invoice.paid_amount), 0)).filter(*live).one()
+
+    name_key = 'customer_name' if kind == 'sales' else 'supplier_name'
+    rows = []
+    for i in page_q.items:
+        p = i.customer if kind == 'sales' else i.supplier
+        rows.append({
+            'id': i.id, 'invoice_number': i.invoice_number,
+            name_key: p.company_name if p else '-',
+            'invoice_date': i.invoice_date.isoformat(),
+            'due_date': i.due_date.isoformat() if i.due_date else None,
+            'total_amount': float(i.total_amount or 0), 'paid_amount': float(i.paid_amount or 0),
+            'balance_due': float(i.balance_due or 0),
+            'days_overdue': (today - i.due_date).days if i.due_date and today > i.due_date else 0,
+            'status': i.status,
+        })
+    total_key = 'total_outstanding' if kind == 'sales' else 'total_payable'
+    return jsonify({
+        'receivables' if kind == 'sales' else 'payables': rows,
+        'total': page_q.total, 'pages': page_q.pages,
+        total_key: float(all_sum),
+        'summary': {
+            'open_count': int(all_n), 'open_amount': float(all_sum),
+            'overdue_count': int(over_n), 'overdue_amount': float(over_sum),
+            'due_week_count': int(week_n), 'due_week_amount': float(week_sum),
+            'paid_percent': round(float(paid) / float(billed) * 100, 1) if billed else None,
+        },
+    }), 200
+
+
 @finance_bp.route('/accounts-receivable', methods=['GET'])
 @jwt_required()
 @require_permission('finance.view')
 def get_accounts_receivable():
     try:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
-        
-        # Get outstanding invoices (AR)
-        ar_invoices = Invoice.query.filter(
-            Invoice.invoice_type == 'sales',
-            Invoice.balance_due > 0
-        ).order_by(Invoice.due_date.asc()).paginate(page=page, per_page=per_page, error_out=False)
-        
-        total_outstanding = db.session.query(func.sum(Invoice.balance_due)).filter(
-            Invoice.invoice_type == 'sales',
-            Invoice.balance_due > 0
-        ).scalar() or 0
-        
-        return jsonify({
-            'receivables': [{
-                'id': i.id,
-                'invoice_number': i.invoice_number,
-                'customer_name': getattr(i.customer, 'company_name', 'N/A') if i.customer else 'N/A',
-                'invoice_date': i.invoice_date.isoformat(),
-                'due_date': i.due_date.isoformat() if i.due_date else None,
-                'total_amount': float(i.total_amount),
-                'paid_amount': float(i.paid_amount),
-                'balance_due': float(i.balance_due),
-                'days_overdue': (get_local_now().date() - i.due_date).days if i.due_date and get_local_now().date() > i.due_date else 0,
-                'status': i.status
-            } for i in ar_invoices.items],
-            'total': ar_invoices.total,
-            'pages': ar_invoices.pages,
-            'total_outstanding': float(total_outstanding)
-        }), 200
+        return _open_invoices_response('sales')
     except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-# ============ ACCOUNTS PAYABLE ============
+
 @finance_bp.route('/accounts-payable', methods=['GET'])
 @jwt_required()
 @require_permission('finance.view')
 def get_accounts_payable():
     try:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
-        
-        # Get outstanding purchase invoices (AP)
-        ap_invoices = Invoice.query.filter(
-            Invoice.invoice_type == 'purchase',
-            Invoice.balance_due > 0
-        ).order_by(Invoice.due_date.asc()).paginate(page=page, per_page=per_page, error_out=False)
-        
-        total_payable = db.session.query(func.sum(Invoice.balance_due)).filter(
-            Invoice.invoice_type == 'purchase',
-            Invoice.balance_due > 0
-        ).scalar() or 0
-        
-        return jsonify({
-            'payables': [{
-                'id': i.id,
-                'invoice_number': i.invoice_number,
-                'supplier_name': getattr(i.supplier, 'company_name', 'N/A') if i.supplier else 'N/A',
-                'invoice_date': i.invoice_date.isoformat(),
-                'due_date': i.due_date.isoformat() if i.due_date else None,
-                'total_amount': float(i.total_amount),
-                'paid_amount': float(i.paid_amount),
-                'balance_due': float(i.balance_due),
-                'days_overdue': (get_local_now().date() - i.due_date).days if i.due_date and get_local_now().date() > i.due_date else 0,
-                'status': i.status
-            } for i in ap_invoices.items],
-            'total': ap_invoices.total,
-            'pages': ap_invoices.pages,
-            'total_payable': float(total_payable)
-        }), 200
+        return _open_invoices_response('purchase')
     except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 # ============ GENERAL LEDGER ============

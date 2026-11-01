@@ -1,3 +1,4 @@
+import { PageHeader, KpiStrip } from '../../components/ui/PageKit'
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../utils/axiosConfig';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -277,7 +278,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3">Loading accounting data...</span>
+        <span className="ml-3">Memuat data akuntansi...</span>
       </div>
     );
   }
@@ -286,29 +287,19 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
     <div className="p-6 space-y-6">
       {/* Header - accounts tab gets its own full header from the embedded ChartOfAccounts */}
       {activeTab === 'journal' && (
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{title}</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage chart of accounts and journal entries</p>
-        </div>
-        {activeTab === 'journal' && (
-          <div className="flex space-x-3">
-            <button className="btn-secondary" onClick={loadData} title="Muat ulang">
-              <ArrowPathIcon className="h-4 w-4" />
-            </button>
-            <Link to="/app/imports?kind=manual_journal" className="btn-secondary inline-flex items-center">
-              Import
-            </Link>
-            <button
-              onClick={() => setShowAddJournalModal(true)}
-              className="btn-primary"
-            >
-              <PlusIcon className="h-4 w-4 mr-2" />
-              New Entry
-            </button>
-          </div>
-        )}
-      </div>
+        <PageHeader
+          title={title}
+          subtitle="Jurnal manual dan jurnal otomatis dari transaksi"
+          actions={
+            <>
+              <button className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200" onClick={loadData} title="Muat ulang">
+                <ArrowPathIcon className="h-4 w-4" />
+              </button>
+              <Link to="/app/imports?kind=manual_journal" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Impor</Link>
+              <button onClick={() => setShowAddJournalModal(true)} className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Jurnal baru</button>
+            </>
+          }
+        />
       )}
 
       {/* Tabs */}
@@ -318,23 +309,21 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
             onClick={() => setActiveTab('accounts')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'accounts'
-                ? 'border-blue-500 text-blue-600'
+                ? 'border-emerald-600 text-emerald-700'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            <BanknotesIcon className="h-5 w-5 inline mr-2" />
-            Chart of Accounts
+            Daftar Akun
           </button>
           <button
             onClick={() => setActiveTab('journal')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'journal'
-                ? 'border-blue-500 text-blue-600'
+                ? 'border-emerald-600 text-emerald-700'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            <DocumentTextIcon className="h-5 w-5 inline mr-2" />
-            Journal Entries
+            Jurnal
           </button>
         </nav>
       </div>
@@ -347,7 +336,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
               <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search journal entries..."
+                placeholder="Cari nomor atau deskripsi jurnal"
                 className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -361,10 +350,10 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
             >
-              <option value="all">All {t('common.status')}</option>
-              <option value="posted">Posted</option>
+              <option value="all">Semua status</option>
+              <option value="posted">Terposting</option>
               <option value="draft">Draft</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="cancelled">Dibatalkan</option>
             </select>
             <label className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 ml-3">
               <input type="checkbox" checked={showVoided} onChange={(e) => { setShowVoided(e.target.checked); setJournalPage(1); }} />
@@ -384,18 +373,19 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Entry Number
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">
+                  No. jurnal
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.description')}</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">Tanggal</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">Deskripsi</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">
+                  Total debit
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Created By
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">
+                  Dibuat oleh
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -424,7 +414,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                       <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-600" title="Transaksi ini sudah dibatalkan; dinetralkan oleh jurnal pembalik">Dibatalkan</span>
                     ) : (
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(entry.status)}`}>
-                        {entry.status}
+                        {entry.status === 'posted' ? 'Terposting' : entry.status === 'draft' ? 'Draft' : entry.status === 'cancelled' ? 'Dibatalkan' : entry.status}
                       </span>
                     )}
                   </td>
@@ -481,72 +471,21 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
           )}
           {filteredJournalEntries.length === 0 && (
             <div className="text-center py-8">
-              <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">No journal entries found</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada jurnal.</p>
             </div>
           )}
         </div>
       )}
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <BanknotesIcon className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Assets</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatRupiah(accounts.filter(a => a.type === 'asset').reduce((sum, a) => sum + a.balance, 0))}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="bg-red-100 p-3 rounded-lg">
-              <BanknotesIcon className="h-6 w-6 text-red-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Liabilities</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatRupiah(accounts.filter(a => a.type === 'liability').reduce((sum, a) => sum + a.balance, 0))}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="bg-green-100 p-3 rounded-lg">
-              <BanknotesIcon className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Equity</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatRupiah(accounts.filter(a => a.type === 'equity').reduce((sum, a) => sum + a.balance, 0))}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="bg-purple-100 p-3 rounded-lg">
-              <DocumentTextIcon className="h-6 w-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Journal Entries</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{journalSummary ? journalSummary.journals : journalEntries.length}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {journalSummary ? `${formatRupiah(journalSummary.total_debit)} total debit` : 'posted'}{journalSummary && journalSummary.hidden ? ` · ${journalSummary.hidden} jurnal pembalik/dibatalkan tidak dihitung` : ''}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      {activeTab === 'journal' && (
+        <KpiStrip
+          items={[
+            { label: 'Jumlah jurnal', value: (journalSummary ? journalSummary.journals : journalEntries.length).toLocaleString('id-ID') },
+            { label: 'Total debit', value: formatRupiah(journalSummary ? journalSummary.total_debit : 0) },
+            { label: 'Jurnal pembalik atau batal', value: (journalSummary?.hidden || 0).toLocaleString('id-ID'), hint: 'tidak ikut dihitung' },
+          ]}
+        />
+      )}
 
       {(journalDetail || loadingJournalDetail) && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60]">
@@ -648,7 +587,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
             <div className="flex justify-between items-center p-6 border-b">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{editingJournalId ? 'Ubah Jurnal Manual' : 'New Journal Entry'}</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{editingJournalId ? 'Ubah Jurnal Manual' : 'Jurnal Baru'}</h3>
               <button 
                 onClick={handleCloseJournalModal}
                 className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
@@ -835,7 +774,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                   type="submit" 
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
-                  {editingJournalId ? 'Simpan Perubahan' : 'Create Journal Entry'}
+                  {editingJournalId ? 'Simpan Perubahan' : 'Simpan Jurnal'}
                 </button>
               </div>
             </form>

@@ -6,7 +6,7 @@ import AccountingManagement from './AccountingManagement';
 // (composition, not duplicated logic) but always opens on the journal tab
 // with its own page title, distinct from the general /accounting landing page.
 const JournalEntryPage: React.FC = () => {
-  return <AccountingManagement initialTab="journal" title="Journal Entry" />;
+  return <AccountingManagement initialTab="journal" title="Jurnal Umum" />;
 };
 
 export default JournalEntryPage;
