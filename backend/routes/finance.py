@@ -896,7 +896,8 @@ def create_payment_core(data, user_id, commit=True):
                 released[a.invoice_id] = released.get(a.invoice_id, Decimal('0')) + Decimal(str(a.amount))
 
         manual_number = (data.get('payment_number') or '').strip()
-        if manual_number and Payment.query.filter_by(payment_number=manual_number).first():
+        keep_number = old_payment.payment_number if old_payment else None
+        if manual_number and manual_number != keep_number and Payment.query.filter_by(payment_number=manual_number).first():
             return jsonify({'error': f'Nomor bukti {manual_number} sudah dipakai'}), 400
 
         # Resolve invoices; all must share direction and party.
@@ -950,6 +951,12 @@ def create_payment_core(data, user_id, commit=True):
             if err:
                 return err
             db.session.flush()
+            # Transaksi pengganti mempertahankan nomor bukti lama; yang di-void diberi akhiran -V<n> agar nomor tetap unik.
+            if not manual_number or manual_number == keep_number:
+                manual_number = keep_number
+                n = Payment.query.filter(Payment.payment_number.like(f'{keep_number}-V%')).count() + 1
+                old_payment.payment_number = f'{keep_number}-V{n}'
+                db.session.flush()
             for inv in invoices:
                 db.session.refresh(inv)
 

@@ -374,7 +374,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                 <input
                   type="text"
                   className={inputCls}
-                  placeholder={editId ? 'Nomor baru otomatis (transaksi lama di-void)' : (nextNumber ? `${nextNumber} (otomatis)` : 'Otomatis')}
+                  placeholder={editId ? 'Nomor lama dipertahankan' : (nextNumber ? `${nextNumber} (otomatis)` : 'Otomatis')}
                   value={paymentNumber}
                   onChange={(e) => setPaymentNumber(e.target.value)}
                 />
