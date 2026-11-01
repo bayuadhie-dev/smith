@@ -1,3 +1,5 @@
+import { PageHeader, KpiStrip, QuickLinks } from '../../components/ui/PageKit'
+import { formatRupiah } from '../../utils/currencyUtils'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -113,133 +115,40 @@ const [alertFilter, setAlertFilter] = useState('active')
   // intentionally left as-is - only this landing dashboard is in scope.
   return (
     <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard Gudang</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Advanced inventory analytics and optimization</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            to="/app/warehouse/inventory"
-            className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-white"
-          >
-            <CubeIcon className="h-4 w-4" />
-            Inventori
-          </Link>
-          <Link
-            to="/app/warehouse/inventory/add-product"
-            className="px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow flex items-center gap-2 text-sm font-medium"
-          >
-            <CubeIcon className="h-4 w-4" />
-            Tambah Produk
-          </Link>
-          <Link
-            to="/app/warehouse/stock-input"
-            className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-white"
-          >
-            <BuildingStorefrontIcon className="h-4 w-4" />
-            Input Material
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Dashboard Gudang"
+        subtitle="Stok, lokasi, dan peringatan gudang"
+        actions={
+          <>
+            <Link to="/app/warehouse/inventory" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Inventori</Link>
+            <Link to="/app/warehouse/stock-input" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Input Material</Link>
+            <Link to="/app/warehouse/inventory/add-product" className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Tambah Produk</Link>
+          </>
+        }
+      />
 
-      {/* Summary Cards - bento: Total Products spans 2 cols (primary metric) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <CubeIcon className="w-5 h-5" />
-            </div>
-            <p className="text-sm opacity-90">Total Products</p>
-          </div>
-          <p className="text-3xl font-bold">{summary.total_products || 0}</p>
-          <p className="text-xs opacity-75 mt-1">Across all locations</p>
-        </div>
+      <KpiStrip
+        items={[
+          { label: 'Total produk', value: (summary.total_products || 0).toLocaleString('id-ID'), hint: 'di semua lokasi' },
+          { label: 'Nilai persediaan', value: formatRupiah(summary.total_value || 0) },
+          { label: 'Pemakaian lokasi', value: `${summary.location_utilization || 0}%`, hint: 'kapasitas terpakai' },
+          { label: 'Peringatan aktif', value: summary.active_alerts || 0, tone: summary.active_alerts > 0 ? 'bad' : null, hint: summary.critical_alerts > 0 ? `${summary.critical_alerts} kritis` : 'perlu perhatian' },
+        ]}
+      />
 
-        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <ChartBarIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Total Value</p>
-          <p className="text-2xl font-bold">${(summary.total_value || 0).toLocaleString()}</p>
-          <p className="text-xs opacity-75 mt-1">Inventory valuation</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <BuildingStorefrontIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Storage Utilization</p>
-          <p className="text-2xl font-bold">{summary.location_utilization || 0}%</p>
-          <p className="text-xs opacity-75 mt-1">Location capacity used</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <ExclamationTriangleIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Active Alerts</p>
-          <p className="text-2xl font-bold">{summary.active_alerts || 0}</p>
-          <p className="text-xs opacity-75 mt-1">
-            {summary.critical_alerts > 0 ? `${summary.critical_alerts} critical` : 'Require attention'}
-          </p>
-        </div>
-      </div>
-
-      {/* KeyIcon Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Low Stock Items</h3>
-            <ExclamationTriangleIcon className="h-6 w-6 text-orange-500" />
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-orange-600">{summary.low_stock_items || 0}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Below reorder point</p>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Expiring Soon</h3>
-            <ClockIcon className="h-6 w-6 text-yellow-500" />
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-yellow-600">{summary.expiring_soon || 0}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Next 30 days</p>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Total Locations</h3>
-            <BuildingStorefrontIcon className="h-6 w-6 text-blue-500" />
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-blue-600">
-              {summary.total_locations || locations.length || 0}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {locations.filter(l => l.is_available !== false).length} available
-            </p>
-          </div>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          { label: 'Barang di bawah minimum', value: summary.low_stock_items || 0, tone: summary.low_stock_items > 0 ? 'warn' : null, hint: 'di bawah titik pesan ulang' },
+          { label: 'Hampir kedaluwarsa', value: summary.expiring_soon || 0, tone: summary.expiring_soon > 0 ? 'warn' : null, hint: '30 hari ke depan' },
+          { label: 'Total lokasi', value: summary.total_locations || locations.length || 0, hint: `${locations.filter(l => l.is_available !== false).length} tersedia` },
+        ]}
+      />
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Movement Analysis */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Stock Movements (Last 7 Days)</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Mutasi stok 7 hari terakhir</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -263,8 +172,8 @@ const [alertFilter, setAlertFilter] = useState('active')
         </div>
 
         {/* ABC Analysis */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">ABC Analysis</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Analisis ABC</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={abcChartData}>
@@ -280,13 +189,13 @@ const [alertFilter, setAlertFilter] = useState('active')
       </div>
 
       {/* Warehouse Management Section */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Warehouse Management</h3>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Pengelolaan gudang</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Zones Management */}
           <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium text-gray-900 dark:text-white">Zones</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">Zona</h4>
               <Link to="/app/warehouse/zones" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm">
               </Link>
             </div>
@@ -318,7 +227,7 @@ const [alertFilter, setAlertFilter] = useState('active')
           {/* Locations Management */}
           <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium text-gray-900 dark:text-white">Locations</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">Lokasi</h4>
               <Link to="/app/warehouse/locations" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm">
               </Link>
             </div>
@@ -352,7 +261,7 @@ const [alertFilter, setAlertFilter] = useState('active')
           {/* Inventory Management */}
           <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium text-gray-900 dark:text-white">Inventory</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">Inventori</h4>
               <Link to="/app/warehouse/inventory" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm">
               </Link>
             </div>
@@ -388,9 +297,9 @@ const [alertFilter, setAlertFilter] = useState('active')
       {/* Recent Activity & Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Movements */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Movements</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Mutasi terbaru</h3>
             <Link to="/app/warehouse/movements" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm">
               View All
             </Link>
@@ -419,9 +328,9 @@ const [alertFilter, setAlertFilter] = useState('active')
         </div>
 
         {/* Active Alerts */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Active Alerts</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Peringatan aktif</h3>
             <Link to="/app/warehouse/alerts" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm">
               View All
             </Link>
@@ -465,8 +374,8 @@ const [alertFilter, setAlertFilter] = useState('active')
       </div>
 
       {/* Top Products by Value */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Products by Value</h3>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Produk dengan nilai tertinggi</h3>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
@@ -502,31 +411,17 @@ const [alertFilter, setAlertFilter] = useState('active')
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {[
-            { to: '/app/warehouse/analytics', icon: ChartBarIcon, label: 'Analytics', gradient: 'from-sky-500 to-sky-600' },
-            { to: '/app/warehouse/abc-analysis', icon: CubeIcon, label: 'ABC Analysis', gradient: 'from-emerald-500 to-emerald-600' },
-            { to: '/app/production/mrp-run', icon: ExclamationTriangleIcon, label: 'MRP Run (Reorder Point)', gradient: 'from-[#F15D2C] to-[#C73E1D]' },
-            { to: '/app/warehouse/zones', icon: BuildingStorefrontIcon, label: 'Zones', gradient: 'from-violet-500 to-violet-600' },
-            { to: '/app/warehouse/locations', icon: Cog6ToothIcon, label: 'Locations', gradient: 'from-indigo-500 to-indigo-600' },
-            { to: '/app/warehouse/inventory', icon: CubeIcon, label: 'Inventory', gradient: 'from-teal-500 to-teal-600' },
-          ].map((action) => (
-            <Link
-              key={action.to}
-              to={action.to}
-              className="flex flex-col items-center text-center p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group"
-            >
-              <div className={`bg-gradient-to-br ${action.gradient} p-3 rounded-xl mb-2 group-hover:scale-110 transition-transform`}>
-                <action.icon className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{action.label}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
+      <QuickLinks
+        title="Pintasan"
+        links={[
+          { to: '/app/warehouse/analytics', label: 'Analitik gudang' },
+          { to: '/app/warehouse/abc-analysis', label: 'Analisis ABC' },
+          { to: '/app/production/mrp-run', label: 'MRP Run (titik pesan ulang)' },
+          { to: '/app/warehouse/zones', label: 'Zona' },
+          { to: '/app/warehouse/locations', label: 'Lokasi' },
+          { to: '/app/warehouse/inventory', label: 'Inventori' },
+        ]}
+      />
     </div>
   )
 }
