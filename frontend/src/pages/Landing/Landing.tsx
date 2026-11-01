@@ -15,6 +15,22 @@ const SHOWCASE = [
     w: 1012, h: 568,
   },
   {
+    id: 'produksi',
+    title: 'Perintah kerja dari rencana sampai selesai',
+    text: 'Setiap SPK menunjukkan produk, mesin, jumlah shift, dan capaian terhadap target. Operator mengisi hasil langsung dari lantai produksi, dan angkanya terbaca di daftar ini tanpa menunggu rekap.',
+    note: 'Daftar SPK dengan progres per perintah kerja.',
+    img: '/landing/produksi.jpg',
+    w: 1012, h: 523,
+  },
+  {
+    id: 'gudang',
+    title: 'Stok per lokasi, batch, dan kedaluwarsa',
+    text: 'Bahan baku, barang jadi, dan barang setengah jadi tercatat per lokasi rak dan nomor batch. Stok yang sudah dipesan, yang masih tersedia, dan yang menipis terlihat sekaligus.',
+    note: 'Stok per gudang dengan batch dan tanggal kedaluwarsa.',
+    img: '/landing/gudang.jpg',
+    w: 1012, h: 456,
+  },
+  {
     id: 'kas',
     title: 'Kas dan bank per hari',
     text: 'Penerimaan, pengeluaran, dan saldo setiap hari ada di satu tabel. Klik satu tanggal untuk melihat tiap transaksinya beserta akun lawannya. Semua laporan bisa diunduh ke Excel atau PDF dan dicetak.',
