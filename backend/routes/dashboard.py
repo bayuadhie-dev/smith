@@ -645,5 +645,74 @@ def get_module_summaries():
         if r is not None:
             modules.append({'key': 'maintenance', 'title': 'Perawatan', 'href': '/app/maintenance', 'items': r})
 
-    return jsonify({'success': True, 'modules': modules, 'actions': actions,
-                    'generated_at': get_local_now().isoformat()}), 200
+    trends = {}
+    start14 = today - timedelta(days=13)
+    days14 = [start14 + timedelta(days=i) for i in range(14)]
+
+    def _series(rows):
+        m = {str(d): float(v or 0) for d, v in rows}
+        return [{'date': d.isoformat(), 'value': m.get(str(d), 0.0)} for d in days14]
+
+    if can('production'):
+        def t_output():
+            from models.production import ProductionRecord
+            rows = db.session.query(func.date(ProductionRecord.production_date), func.sum(ProductionRecord.quantity_good)).filter(
+                func.date(ProductionRecord.production_date) >= start14).group_by(func.date(ProductionRecord.production_date)).all()
+            return _series(rows)
+        trends['output'] = _safe(t_output)
+
+    if can('sales'):
+        def t_sales():
+            rows = db.session.query(SalesOrder.order_date, func.sum(SalesOrder.total_amount)).filter(
+                SalesOrder.order_date >= start14, SalesOrder.status.notin_(['draft', 'cancelled'])).group_by(SalesOrder.order_date).all()
+            return _series(rows)
+        trends['sales'] = _safe(t_sales)
+
+    headline = []
+    if can('sales'):
+        def h_sales():
+            prev_start = (month_start - timedelta(days=1)).replace(day=1)
+            cur = num(db.session.query(func.sum(SalesOrder.total_amount)).filter(
+                SalesOrder.order_date >= month_start, SalesOrder.status.notin_(['draft', 'cancelled'])).scalar())
+            prev = num(db.session.query(func.sum(SalesOrder.total_amount)).filter(
+                SalesOrder.order_date >= prev_start, SalesOrder.order_date < month_start,
+                SalesOrder.status.notin_(['draft', 'cancelled'])).scalar())
+            delta = round((cur - prev) / prev * 100, 1) if prev else None
+            return {'key': 'omzet', 'label': 'Pesanan penjualan bulan ini', 'value': cur, 'format': 'currency',
+                    'delta': delta, 'delta_label': 'dibanding bulan lalu'}
+        r = _safe(h_sales)
+        if r:
+            headline.append(r)
+    if can('production'):
+        def h_output():
+            from models.production import ProductionRecord
+            cur = num(db.session.query(func.sum(ProductionRecord.quantity_good)).filter(
+                func.date(ProductionRecord.production_date) == today).scalar())
+            prev = num(db.session.query(func.sum(ProductionRecord.quantity_good)).filter(
+                func.date(ProductionRecord.production_date) == today - timedelta(days=1)).scalar())
+            delta = round((cur - prev) / prev * 100, 1) if prev else None
+            return {'key': 'output', 'label': 'Output produksi hari ini', 'value': cur, 'format': 'number',
+                    'delta': delta, 'delta_label': 'dibanding kemarin'}
+        r = _safe(h_output)
+        if r:
+            headline.append(r)
+    if can('finance'):
+        def h_kas():
+            from utils.finance_helpers import get_cash_balance_as_of
+            return {'key': 'kas', 'label': 'Saldo kas dan bank', 'value': num(get_cash_balance_as_of(today)), 'format': 'currency',
+                    'delta': None, 'delta_label': None}
+        r = _safe(h_kas)
+        if r:
+            headline.append(r)
+        def h_ar():
+            v = num(db.session.query(func.sum(Invoice.balance_due)).filter(
+                Invoice.invoice_type == 'sales', Invoice.balance_due > 0, Invoice.due_date < today,
+                Invoice.status.notin_(['draft', 'cancelled'])).scalar())
+            return {'key': 'ar_jt', 'label': 'Piutang lewat jatuh tempo', 'value': v, 'format': 'currency',
+                    'delta': None, 'delta_label': None, 'tone': 'bad' if v else None}
+        r = _safe(h_ar)
+        if r:
+            headline.append(r)
+
+    return jsonify({'success': True, 'modules': modules, 'actions': actions, 'headline': headline,
+                    'trends': trends, 'generated_at': get_local_now().isoformat()}), 200
