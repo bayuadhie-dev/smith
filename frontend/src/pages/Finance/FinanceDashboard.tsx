@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { formatRupiah } from '../../utils/currencyUtils';
+import { PageHeader, KpiStrip, QuickLinks } from '../../components/ui/PageKit';
 import {
   BanknotesIcon,
   BookOpenIcon,
@@ -141,68 +142,22 @@ const FinanceDashboard: React.FC = () => {
   // intentionally left as-is - only this landing dashboard is in scope.
   return (
     <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard Keuangan</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Financial overview and key performance indicators</p>
-        </div>
-      </div>
+      <PageHeader title="Dashboard Keuangan" subtitle="Ringkasan keuangan dan indikator utama" />
 
-      {/* KPI Cards - bento: Total Revenue spans 2 cols (primary metric) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <CurrencyDollarIcon className="w-5 h-5" />
-            </div>
-            <p className="text-sm opacity-90">Total Revenue</p>
-          </div>
-          <p className="text-3xl font-bold">{formatRupiah(kpis.total_revenue)}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <ChartBarIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Net Profit</p>
-          <p className="text-2xl font-bold">{formatRupiah(kpis.net_profit)}</p>
-        </div>
-
-        <div className={`bg-gradient-to-br ${kpis.cash_balance > 0 ? 'from-violet-500 to-violet-600' : 'from-red-500 to-red-600'} rounded-xl p-4 text-white shadow-lg`}>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <BanknotesIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Cash Balance</p>
-          <p className="text-2xl font-bold">{formatRupiah(kpis.cash_balance)}</p>
-          <div className="flex items-center gap-1 mt-1">
-            <CheckCircleIcon className="h-3.5 w-3.5" />
-            <span className="text-xs opacity-90">{kpis.cash_balance > 0 ? 'Positif' : 'Negatif'}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <CalculatorIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Profit Margin</p>
-          <p className="text-2xl font-bold">{formatPercent(kpis.profit_margin)}</p>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          { label: 'Total pendapatan', value: formatRupiah(kpis.total_revenue) },
+          { label: 'Laba bersih', value: formatRupiah(kpis.net_profit), tone: kpis.net_profit < 0 ? 'bad' : null },
+          { label: 'Saldo kas dan bank', value: formatRupiah(kpis.cash_balance), tone: kpis.cash_balance < 0 ? 'bad' : null, hint: kpis.cash_balance > 0 ? 'positif' : 'negatif' },
+          { label: 'Margin laba', value: formatPercent(kpis.profit_margin) },
+        ]}
+      />
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Cash Flow Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cash Flow Trend</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Tren arus kas</h3>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={cashFlowData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -220,9 +175,9 @@ const FinanceDashboard: React.FC = () => {
           </ResponsiveContainer>
         </div>
 
-        {/* Expense Breakdown */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Expense Breakdown</h3>
+        {/* Rincian beban */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Rincian beban</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -246,8 +201,8 @@ const FinanceDashboard: React.FC = () => {
       </div>
 
       {/* Revenue & Profit Chart */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Revenue & Profit Trend</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Tren pendapatan dan laba</h3>
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={revenueData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -265,84 +220,24 @@ const FinanceDashboard: React.FC = () => {
         </ResponsiveContainer>
       </div>
 
-      {/* Financial Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Accounts Receivable</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatRupiah(kpis.accounts_receivable)}</p>
-            </div>
-            <CreditCardIcon className="h-8 w-8 text-blue-600" />
-          </div>
-          <div className="mt-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Average collection: 32 days</span>
-          </div>
-        </div>
+      <KpiStrip
+        items={[
+          { label: 'Piutang usaha', value: formatRupiah(kpis.accounts_receivable) },
+          { label: 'Utang usaha', value: formatRupiah(kpis.accounts_payable) },
+          { label: 'Modal kerja', value: formatRupiah(kpis.working_capital), tone: kpis.working_capital < 0 ? 'bad' : null },
+          { label: 'Total beban', value: formatRupiah(kpis.total_expenses), hint: kpis.total_revenue > 0 ? `${Math.round((kpis.total_expenses / kpis.total_revenue) * 100)}% dari pendapatan` : undefined },
+        ]}
+      />
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Accounts Payable</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatRupiah(kpis.accounts_payable)}</p>
-            </div>
-            <BanknotesIcon className="h-8 w-8 text-red-600" />
-          </div>
-          <div className="mt-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Average payment: 28 days</span>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Working Capital</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatRupiah(kpis.working_capital)}</p>
-            </div>
-            <ChartPieIcon className="h-8 w-8 text-green-600" />
-          </div>
-          <div className="mt-2">
-            <span className="text-sm text-green-600">Ratio: 2.7x</span>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Expenses</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{formatRupiah(kpis.total_expenses)}</p>
-            </div>
-            <CalculatorIcon className="h-8 w-8 text-orange-600" />
-          </div>
-          <div className="mt-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">76% of revenue</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { to: '/app/finance/accounting', icon: BookOpenIcon, label: 'Accounting', gradient: 'from-[#059669] to-[#047857]' },
-            { to: '/app/finance/budget', icon: CalculatorIcon, label: 'Budget Planning', gradient: 'from-teal-500 to-teal-600' },
-            { to: '/app/finance/cash-flow', icon: BanknotesIcon, label: 'Cash Flow', gradient: 'from-violet-500 to-violet-600' },
-            { to: '/app/finance/reports', icon: DocumentTextIcon, label: 'Reports', gradient: 'from-[#F15D2C] to-[#C73E1D]' },
-          ].map((action) => (
-            <Link
-              key={action.to}
-              to={action.to}
-              className="flex flex-col items-center text-center p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group"
-            >
-              <div className={`bg-gradient-to-br ${action.gradient} p-3 rounded-xl mb-2 group-hover:scale-110 transition-transform`}>
-                <action.icon className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{action.label}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
+      <QuickLinks
+        title="Pintasan"
+        links={[
+          { to: '/app/finance/accounting', label: 'Akuntansi' },
+          { to: '/app/finance/budget', label: 'Perencanaan anggaran' },
+          { to: '/app/finance/cash-flow', label: 'Arus kas' },
+          { to: '/app/finance/reports', label: 'Laporan' },
+        ]}
+      />
     </div>
   );
 };

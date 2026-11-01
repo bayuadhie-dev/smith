@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import api from '../../utils/axiosConfig';
+import { PageHeader, KpiStrip, QuickLinks } from '../../components/ui/PageKit';
 import {
   ArrowPathIcon as Activity,
   ArrowDownTrayIcon,
@@ -120,7 +121,7 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
         console.log('Trends endpoint not available');
       }
 
-      // Fetch Equipment Performance
+      // Fetch Kinerja mesin
       try {
         const performanceResponse = await api.get('/api/maintenance/analytics/equipment-performance');
         setEquipmentPerformance(performanceResponse.data.equipment || []);
@@ -168,7 +169,7 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
       return 'N/A';
     }
     if (hours < 24) {
-      return `${hours.toFixed(1)} hours`;
+      return `${hours.toFixed(1)} jam`;
     }
     const days = Math.floor(hours / 24);
     const remainingHours = hours % 24;
@@ -187,99 +188,47 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Maintenance</h1>
-          <p className="text-gray-600 dark:text-gray-300">Monitor equipment performance and maintenance activities</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <select
-            value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="7">Last 7 days</option>
-            <option value="30">Last 30 days</option>
-            <option value="90">Last 90 days</option>
-            <option value="365">Last year</option>
-          </select>
-          <button
-            onClick={fetchDashboardData}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
-          >
-            <RefreshCw className="h-4 w-4 inline mr-2" />
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Dashboard Perawatan"
+        subtitle="Kinerja mesin dan aktivitas perawatan"
+        actions={
+          <>
+            <select
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+            >
+              <option value="7">7 hari terakhir</option>
+              <option value="30">30 hari terakhir</option>
+              <option value="90">90 hari terakhir</option>
+              <option value="365">1 tahun terakhir</option>
+            </select>
+            <button
+              onClick={fetchDashboardData}
+              className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Muat ulang
+            </button>
+          </>
+        }
+      />
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total SPK</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{kpis.total_work_orders || 0}</p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Wrench className="h-6 w-6 text-blue-600" />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center">
-            <span className="text-sm text-gray-600 dark:text-gray-300">
-              {kpis.pending_work_orders || 0} pending, {kpis.completed_work_orders || 0} completed
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Equipment Uptime</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{(kpis.equipment_uptime || 0).toFixed(1)}%</p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <Activity className="h-6 w-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">MTTR</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatDuration(kpis.mttr || 0)}</p>
-            </div>
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <ClockIcon className="h-6 w-6 text-orange-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Monthly Cost</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(kpis.total_cost_this_month || 0)}</p>
-            </div>
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <CurrencyDollarIcon className="h-6 w-6 text-purple-600" />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center">
-            <span className="text-sm text-gray-600 dark:text-gray-300">
-              {(kpis.preventive_percentage || 0).toFixed(1)}% preventive
-            </span>
-          </div>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          { label: 'Total SPK', value: (kpis.total_work_orders || 0).toLocaleString('id-ID'), hint: `${kpis.pending_work_orders || 0} menunggu, ${kpis.completed_work_orders || 0} selesai` },
+          { label: 'Ketersediaan mesin', value: `${(kpis.equipment_uptime || 0).toFixed(1)}%` },
+          { label: 'MTTR (rata-rata waktu perbaikan)', value: formatDuration(kpis.mttr || 0) },
+          { label: 'Biaya bulan ini', value: formatCurrency(kpis.total_cost_this_month || 0), hint: `${(kpis.preventive_percentage || 0).toFixed(1)}% preventif` },
+        ]}
+      />
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Maintenance Trends */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        {/* Tren perawatan */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Maintenance Trends</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Tren perawatan</h3>
             <ChartBarIcon className="h-5 w-5 text-gray-400" />
           </div>
           <ResponsiveContainer width="100%" height={300}>
@@ -296,10 +245,10 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
           </ResponsiveContainer>
         </div>
 
-        {/* Cost Analysis */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        {/* Analisis biaya */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Cost Analysis</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Analisis biaya</h3>
             <ArrowTrendingUpIcon className="h-5 w-5 text-gray-400" />
           </div>
           <ResponsiveContainer width="100%" height={300}>
@@ -317,18 +266,18 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
 
       {/* Alerts and SPK */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Active Alerts */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        {/* Peringatan aktif */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Active Alerts</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Peringatan aktif</h3>
             <AlertTriangle className="h-5 w-5 text-gray-400" />
           </div>
           <div className="space-y-4">
             {alerts.length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <CheckCircle className="mx-auto h-12 w-12 text-green-400 mb-4" />
-                <p>No active alerts</p>
-                <p className="text-sm">All systems running normally</p>
+                <p>Tidak ada peringatan aktif</p>
+                <p className="text-sm">Semua mesin berjalan normal</p>
               </div>
             ) : (
               alerts.slice(0, 5).map((alert) => (
@@ -349,18 +298,18 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
           </div>
         </div>
 
-        {/* Recent SPK */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        {/* SPK terbaru */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent SPK</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">SPK terbaru</h3>
             <Settings className="h-5 w-5 text-gray-400" />
           </div>
           <div className="space-y-4">
             {workOrders.length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <p>No SPK</p>
-                <p className="text-sm">Create your first SPK</p>
+                <p>Belum ada SPK</p>
+                <p className="text-sm">Buat SPK pertama</p>
               </div>
             ) : (
               workOrders.slice(0, 5).map((order) => (
@@ -390,10 +339,10 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
         </div>
       </div>
 
-      {/* Equipment Performance */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      {/* Kinerja mesin */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Equipment Performance</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Kinerja mesin</h3>
           <div className="flex items-center gap-2">
             <button className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200">
               Export Report
@@ -416,7 +365,7 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Last Maintenance
+                  Perawatan terakhir
                 </th>
               </tr>
             </thead>
@@ -425,7 +374,7 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                     <Activity className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    <p>No equipment performance data available</p>
+                    <p>Belum ada data kinerja mesin</p>
                   </td>
                 </tr>
               ) : (
@@ -465,28 +414,15 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
-            <Plus className="h-5 w-5 text-gray-400 mr-2" />
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Schedule Maintenance</span>
-          </button>
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">
-            <CheckCircle className="h-5 w-5 text-gray-400 mr-2" />
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Complete SPK</span>
-          </button>
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors">
-            <AlertTriangle className="h-5 w-5 text-gray-400 mr-2" />
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Report Issue</span>
-          </button>
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors">
-            <ChartBarIcon className="h-5 w-5 text-gray-400 mr-2" />
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">View Analytics</span>
-          </button>
-        </div>
-      </div>
+      <QuickLinks
+        title="Pintasan"
+        links={[
+          { to: '/app/maintenance/new', label: 'Jadwalkan perawatan' },
+          { to: '/app/maintenance/records', label: 'Daftar perawatan' },
+          { to: '/app/maintenance/schedules', label: 'Jadwal perawatan' },
+          { to: '/app/maintenance/analytics', label: 'Analitik perawatan' },
+        ]}
+      />
     </div>
   );
 };

@@ -1,20 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import {
-  AcademicCapIcon,
-  ArrowTrendingUpIcon,
-  BellIcon,
-  ChartBarIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  DocumentTextIcon,
-  ExclamationTriangleIcon,
-  EyeIcon,
-  KeyIcon,
-  BuildingStorefrontIcon,
-  ArrowRightIcon
-} from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon, BellIcon } from '@heroicons/react/24/outline';
+import { PageHeader, KpiStrip, QuickLinks, Panel } from '../../components/ui/PageKit';
 import axiosInstance from '../../utils/axiosConfig';
 interface QualityDashboardData {
   summary: {
@@ -135,69 +123,37 @@ export default function QualityDashboardEnhanced() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <ExclamationTriangleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Error Loading Dashboard</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Dashboard gagal dimuat</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
           <button onClick={fetchDashboardData} className="btn-primary">
+            Coba lagi
           </button>
         </div>
       </div>
     );
   }
 
-  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
-  // #9 of 17). Sub-pages (Pending QC, Inspections, Alerts, etc) are
-  // intentionally left as-is - only this landing dashboard is in scope.
+  const severityLabel: { [key: string]: string } = { critical: 'kritis', high: 'tinggi', medium: 'sedang', low: 'rendah' };
+
   return (
     <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard Quality</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Enhanced quality analytics and monitoring</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="text-xs text-gray-500 dark:text-gray-400 mr-1">
-            Last updated: {dashboardData ? new Date(dashboardData.last_updated).toLocaleTimeString() : ''}
-          </div>
-          <Link to="/app/quality/to-warehouse" className="btn-primary inline-flex items-center gap-2">
-            <BuildingStorefrontIcon className="h-5 w-5" />
-            Transfer ke Warehouse
-          </Link>
-          <button onClick={fetchDashboardData} className="btn-secondary">
-            Refresh
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Dashboard Mutu"
+        subtitle={`Pemantauan mutu${dashboardData ? ` · diperbarui ${new Date(dashboardData.last_updated).toLocaleTimeString('id-ID')}` : ''}`}
+        actions={
+          <>
+            <button onClick={fetchDashboardData} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Muat ulang</button>
+            <Link to="/app/quality/to-warehouse" className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Transfer ke Gudang</Link>
+          </>
+        }
+      />
 
-      {/* Quick Actions - bento gradient tiles */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[
-          { to: '/app/quality/pending-qc', label1: 'Pending QC', label2: 'SPK', icon: ClockIcon, gradient: 'from-[#059669] to-[#047857]' },
-          { to: '/app/quality/to-warehouse', label1: 'QC Selesai', label2: 'Transfer ke Warehouse', icon: BuildingStorefrontIcon, gradient: 'from-teal-500 to-teal-600' },
-          { to: '/app/quality/tests/new', label1: 'Buat', label2: 'QC Test Baru', icon: DocumentTextIcon, gradient: 'from-violet-500 to-violet-600' },
-          { to: '/app/shipping/orders/from-qc', label1: 'Siap Kirim', label2: 'Buat Shipping', icon: ArrowRightIcon, gradient: 'from-[#F15D2C] to-[#C73E1D]' },
-        ].map((action) => (
-          <Link key={action.to} to={action.to} className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{action.label1}</p>
-                <p className="text-base font-semibold text-gray-900 dark:text-white">{action.label2}</p>
-              </div>
-              <div className={`bg-gradient-to-br ${action.gradient} p-2.5 rounded-xl flex-shrink-0`}>
-                <action.icon className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {/* Critical Alerts */}
       {dashboardData?.summary.critical_alerts > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="flex items-center mb-3">
             <BellIcon className="h-5 w-5 text-red-500 mr-2" />
-            <h3 className="text-lg font-semibold text-red-800">
-              {dashboardData.summary.critical_alerts} Critical Quality Alert{dashboardData.summary.critical_alerts > 1 ? 's' : ''}
+            <h3 className="text-sm font-semibold text-red-800">
+              {dashboardData.summary.critical_alerts} peringatan mutu kritis
             </h3>
           </div>
           <div className="space-y-2">
@@ -208,13 +164,14 @@ export default function QualityDashboardEnhanced() {
                     <span className="font-medium">{alert.title}</span>
                     <p className="text-sm mt-1">{alert.message}</p>
                     {alert.product_name && (
-                      <p className="text-xs mt-1">Product: {alert.product_name}</p>
+                      <p className="text-xs mt-1">Produk: {alert.product_name}</p>
                     )}
                   </div>
                   <button
                     onClick={() => acknowledgeAlert(alert.id)}
                     className="btn-sm btn-secondary"
                   >
+                    Konfirmasi
                   </button>
                 </div>
               </div>
@@ -223,142 +180,81 @@ export default function QualityDashboardEnhanced() {
         </div>
       )}
 
-      {/* Key Metrics - bento: Pass Rate spans 2 cols (primary metric) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <CheckCircleIcon className="w-5 h-5" />
-            </div>
-            <p className="text-sm opacity-90">Pass Rate (This Week)</p>
-          </div>
-          <p className="text-3xl font-bold">{dashboardData?.summary.pass_rate || 0}%</p>
-          <p className="text-xs opacity-75 mt-1">{dashboardData?.summary.inspections_this_week || 0} inspections</p>
-        </div>
+      <KpiStrip
+        items={[
+          { label: 'Tingkat lolos minggu ini', value: `${dashboardData?.summary.pass_rate || 0}%`, hint: `${dashboardData?.summary.inspections_this_week || 0} inspeksi` },
+          { label: 'Inspeksi hari ini', value: dashboardData?.summary.inspections_today || 0 },
+          { label: 'Peringatan aktif', value: dashboardData?.summary.active_alerts || 0, tone: (dashboardData?.summary.active_alerts || 0) > 0 ? 'warn' : null, hint: `${dashboardData?.summary.critical_alerts || 0} kritis` },
+          { label: 'CAPA terbuka', value: dashboardData?.summary.open_capas || 0, tone: (dashboardData?.summary.overdue_capas || 0) > 0 ? 'bad' : null, hint: `${dashboardData?.summary.overdue_capas || 0} lewat tenggat` },
+        ]}
+      />
 
-        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <DocumentTextIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Inspections Today</p>
-          <p className="text-2xl font-bold">{dashboardData?.summary.inspections_today || 0}</p>
-        </div>
+      <QuickLinks
+        title="Pintasan"
+        links={[
+          { to: '/app/quality/pending-qc', label: 'SPK menunggu QC' },
+          { to: '/app/quality/to-warehouse', label: 'QC selesai: transfer ke gudang' },
+          { to: '/app/quality/tests/new', label: 'Buat uji QC baru' },
+          { to: '/app/shipping/orders/from-qc', label: 'Siap kirim: buat pengiriman' },
+          { to: '/app/quality/inspections/new', label: 'Inspeksi baru' },
+          { to: '/app/quality-enhanced/alerts', label: `Peringatan mutu${dashboardData?.summary.active_alerts ? ` (${dashboardData.summary.active_alerts})` : ''}` },
+          { to: '/app/quality-enhanced/analytics', label: 'Analitik mutu' },
+          { to: '/app/quality-enhanced/audits', label: 'Audit mutu' },
+        ]}
+      />
 
-        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <ExclamationTriangleIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Active Alerts</p>
-          <p className="text-2xl font-bold">{dashboardData?.summary.active_alerts || 0}</p>
-          <p className="text-xs opacity-75 mt-1">{dashboardData?.summary.critical_alerts || 0} critical</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <ClockIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Open CAPAs</p>
-          <p className="text-2xl font-bold">{dashboardData?.summary.open_capas || 0}</p>
-          <p className="text-xs opacity-75 mt-1">{dashboardData?.summary.overdue_capas || 0} overdue</p>
-        </div>
-      </div>
-
-      {/* Pass Rate Trend Chart */}
       {dashboardData?.trends.pass_rate && dashboardData.trends.pass_rate.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pass Rate Trend (Last 7 Days)</h3>
-          <div className="h-64">
+        <Panel title="Tren tingkat lolos, 7 hari terakhir">
+          <div className="h-64 p-4">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={dashboardData.trends.pass_rate}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="date" 
+                <XAxis
+                  dataKey="date"
                   tickFormatter={(value) => new Date(value).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
                 />
                 <YAxis domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
-                <Tooltip 
-                  formatter={(value: number) => [`${value}%`, 'Pass Rate']}
+                <Tooltip
+                  formatter={(value: number) => [`${value}%`, 'Tingkat lolos']}
                   labelFormatter={(label) => new Date(label).toLocaleDateString('id-ID')}
                 />
                 <Line type="monotone" dataKey="pass_rate" stroke="#10B981" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </Panel>
       )}
 
-      {/* Machine Performance */}
       {dashboardData?.machine_performance && dashboardData.machine_performance.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Machine Quality Performance</h3>
-          <div className="space-y-4">
+        <Panel title="Mutu per mesin">
+          <ul className="divide-y divide-gray-100 dark:divide-gray-700">
             {dashboardData.machine_performance.map((machine, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <li key={index} className="flex items-center justify-between px-4 py-3">
                 <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">{machine.machine}</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{machine.total_inspections} inspections</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{machine.machine}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{machine.total_inspections} inspeksi</p>
                 </div>
-                <div className="text-right">
-                  <p className={`text-lg font-semibold ${getPassRateColor(machine.pass_rate)}`}>
-                    {machine.pass_rate}%
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Pass Rate</p>
-                </div>
-              </div>
+                <p className={`text-base font-semibold tabular-nums ${getPassRateColor(machine.pass_rate)}`}>{machine.pass_rate}%</p>
+              </li>
             ))}
-          </div>
-        </div>
+          </ul>
+        </Panel>
       )}
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { to: '/app/quality/inspections/new', icon: DocumentTextIcon, title: 'New Inspection', desc: 'Create quality inspection record', gradient: 'from-[#059669] to-[#047857]' },
-          { to: '/app/quality-enhanced/alerts', icon: BellIcon, title: 'Quality Alerts', desc: 'Manage quality alerts and issues', gradient: 'from-teal-500 to-teal-600', badge: dashboardData?.summary.active_alerts || 0 },
-          { to: '/app/quality-enhanced/analytics', icon: ChartBarIcon, title: 'Analytics', desc: 'Quality metrics and trends', gradient: 'from-violet-500 to-violet-600' },
-          { to: '/app/quality-enhanced/audits', icon: AcademicCapIcon, title: 'Quality Audits', desc: 'Audit planning and management', gradient: 'from-[#F15D2C] to-[#C73E1D]' },
-        ].map((action) => (
-          <Link key={action.to} to={action.to} className="group bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className={`bg-gradient-to-br ${action.gradient} p-2.5 rounded-xl group-hover:scale-110 transition-transform`}>
-                <action.icon className="h-6 w-6 text-white" />
-              </div>
-              {action.badge !== undefined && (
-                <span className="text-xs px-2 py-1 bg-red-100 text-red-800 rounded-full">{action.badge}</span>
-              )}
-            </div>
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">{action.title}</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{action.desc}</p>
-          </Link>
-        ))}
-      </div>
-
-      {/* Recent Alerts Summary */}
       {alerts.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Quality Alerts</h3>
-            <Link to="/app/quality-enhanced/alerts" className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 text-sm font-medium">
-              View All
-            </Link>
-          </div>
-          <div className="space-y-3">
+        <Panel
+          title="Peringatan mutu terbaru"
+          action={<Link to="/app/quality-enhanced/alerts" className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400">Lihat semua</Link>}
+        >
+          <ul className="divide-y divide-gray-100 dark:divide-gray-700">
             {alerts.slice(0, 5).map((alert) => (
-              <div key={alert.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <li key={alert.id} className="flex items-center justify-between px-4 py-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 text-xs rounded-full ${getSeverityColor(alert.severity)}`}>
-                      {alert.severity}
+                    <span className={`px-2 py-0.5 text-xs rounded-full ${getSeverityColor(alert.severity)}`}>
+                      {severityLabel[alert.severity] || alert.severity}
                     </span>
-                    <span className="font-medium text-gray-900 dark:text-white">{alert.title}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{alert.title}</span>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{alert.message}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -370,12 +266,13 @@ export default function QualityDashboardEnhanced() {
                     onClick={() => acknowledgeAlert(alert.id)}
                     className="btn-sm btn-secondary ml-4"
                   >
+                    Konfirmasi
                   </button>
                 )}
-              </div>
+              </li>
             ))}
-          </div>
-        </div>
+          </ul>
+        </Panel>
       )}
     </div>
   );

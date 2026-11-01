@@ -16,6 +16,8 @@ import {
   useGetContractsQuery,
   useGetQuotesQuery
 } from '../../services/api';
+import { PageHeader, KpiStrip, QuickLinks } from '../../components/ui/PageKit';
+import { formatRupiah } from '../../utils/currencyUtils';
 
 export default function Purchasing() {
   const [activeTab, setActiveTab] = useState('overview')
@@ -78,7 +80,7 @@ export default function Purchasing() {
             id: po.id,
             type: 'purchase_order',
             title: po.po_number,
-            description: `Purchase Order - ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(po.total_amount || 0)}`,
+            description: `Pesanan pembelian - ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(po.total_amount || 0)}`,
             supplier: po.supplier?.name || 'Supplier',
             amount: po.total_amount || 0,
             priority: po.priority || 'normal'
@@ -90,17 +92,17 @@ export default function Purchasing() {
   }, [purchaseOrdersData]);
 
   const tabs = [
-    { id: 'overview', name: 'Overview', icon: ChartBarIcon },
-    { id: 'suppliers', name: 'Suppliers', icon: BuildingOfficeIcon },
-    { id: 'purchase-orders', name: 'Purchase Orders', icon: DocumentTextIcon },
-    { id: 'quotes', name: 'Quotes & RFQs', icon: BanknotesIcon },
-    { id: 'contracts', name: 'Contracts', icon: ClipboardDocumentListIcon },
-    { id: 'price-comparison', name: 'Price Analysis', icon: ChartBarIcon },
+    { id: 'overview', name: 'Ringkasan', icon: ChartBarIcon },
+    { id: 'suppliers', name: 'Supplier', icon: BuildingOfficeIcon },
+    { id: 'purchase-orders', name: 'Pesanan Pembelian', icon: DocumentTextIcon },
+    { id: 'quotes', name: 'Penawaran & RFQ', icon: BanknotesIcon },
+    { id: 'contracts', name: 'Kontrak', icon: ClipboardDocumentListIcon },
+    { id: 'price-comparison', name: 'Analisis Harga', icon: ChartBarIcon },
   ]
 
   const stats = [
     {
-      name: 'Active Suppliers',
+      name: 'Supplier aktif',
       value: suppliersData?.total || 0,
       icon: UsersIcon,
       gradient: 'from-[#059669] to-[#047857]',
@@ -108,21 +110,21 @@ export default function Purchasing() {
       span: true,
     },
     {
-      name: 'Purchase Orders',
+      name: 'Pesanan Pembelian',
       value: purchaseOrdersData?.total || 0,
       icon: DocumentTextIcon,
       gradient: 'from-teal-500 to-teal-600',
       link: '/app/purchasing/purchase-orders'
     },
     {
-      name: 'Active Contracts',
+      name: 'Kontrak aktif',
       value: contractsData?.contracts?.filter((c: any) => c.status === 'active').length || 0,
       icon: ClipboardDocumentListIcon,
       gradient: 'from-violet-500 to-violet-600',
       link: '/app/purchasing/contracts'
     },
     {
-      name: 'Pending Quotes',
+      name: 'Penawaran menunggu',
       value: quotesData?.quotes?.filter((q: any) => q.status === 'submitted').length || 0,
       icon: BanknotesIcon,
       gradient: 'from-[#F15D2C] to-[#C73E1D]',
@@ -135,36 +137,17 @@ export default function Purchasing() {
   // intentionally left as-is - only this landing dashboard is in scope.
   return (
     <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard Pembelian</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Comprehensive procurement and supplier management system</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            to="/app/purchasing/suppliers/new"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white font-medium rounded-lg hover:shadow-lg transition-shadow text-sm"
-          >
-            <BuildingOfficeIcon className="h-4 w-4" />
-            Tambah Supplier
-          </Link>
-          <Link
-            to="/app/purchasing/price-comparison"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium text-gray-700 dark:text-white"
-          >
-            <ChartBarIcon className="h-4 w-4" />
-            Price Analysis
-          </Link>
-          <Link
-            to="/app/purchasing/purchase-orders/new"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium text-gray-700 dark:text-white"
-          >
-            <DocumentTextIcon className="h-4 w-4" />
-            Create PO
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Dashboard Pembelian"
+        subtitle="Pemasok, permintaan, pesanan, dan kontrak pembelian"
+        actions={
+          <>
+            <Link to="/app/purchasing/price-comparison" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Analisis Harga</Link>
+            <Link to="/app/purchasing/suppliers/new" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Tambah Supplier</Link>
+            <Link to="/app/purchasing/purchase-orders/new" className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Buat PO</Link>
+          </>
+        }
+      />
 
       {/* Navigation Tabs */}
       <div className="border-b border-gray-200 dark:border-gray-700">
@@ -192,33 +175,15 @@ export default function Purchasing() {
       {/* Overview Tab Content */}
       {activeTab === 'overview' && (
         <div className="space-y-4">
-          {/* Stats Cards - bento: Active Suppliers spans 2 cols (primary metric) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            {stats.map((stat) => {
-              const Icon = stat.icon
-              return (
-                <Link
-                  key={stat.name}
-                  to={stat.link}
-                  className={`${stat.span ? 'xl:col-span-2' : ''} bg-gradient-to-br ${stat.gradient} rounded-xl p-4 text-white shadow-lg hover:shadow-xl transition-shadow`}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="p-2 bg-white/20 rounded-lg">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <p className="text-sm opacity-90">{stat.name}</p>
-                  </div>
-                  <p className={stat.span ? 'text-3xl font-bold' : 'text-2xl font-bold'}>{stat.value}</p>
-                </Link>
-              )
-            })}
-          </div>
+          <KpiStrip
+            items={stats.map((st) => ({ label: st.name, value: Number(st.value).toLocaleString('id-ID'), to: st.link }))}
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Recent Activities */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent Activities</h3>
+            {/* Aktivitas terbaru */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Aktivitas terbaru</h3>
               </div>
               <div className="p-6">
                 <div className="space-y-4">
@@ -241,15 +206,15 @@ export default function Purchasing() {
               </div>
             </div>
 
-            {/* Pending Approvals */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Pending Approvals</h3>
+            {/* Menunggu persetujuan */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Menunggu persetujuan</h3>
               </div>
               <div className="p-6">
                 <div className="space-y-4">
                   {pendingApprovals.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
+                    <div key={item.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-md">
                       <div className="flex items-center space-x-3">
                         <ClockIcon className="h-5 w-5 text-yellow-600" />
                         <div>
@@ -260,7 +225,7 @@ export default function Purchasing() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
-                          ${item.amount.toLocaleString()}
+                          {formatRupiah(item.amount)}
                         </p>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           item.priority === 'high' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
@@ -276,58 +241,41 @@ export default function Purchasing() {
                     to="/app/purchasing/purchase-orders?status=pending_approval"
                     className="text-sm text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 font-medium"
                   >
-                    View all pending approvals →
+                    Lihat semua yang menunggu →
                   </Link>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { to: '/app/purchasing/suppliers/new', icon: BuildingOfficeIcon, title: 'Add Supplier', desc: 'Register new supplier', gradient: 'from-[#059669] to-[#047857]' },
-                { to: '/app/purchasing/rfqs/new', icon: DocumentTextIcon, title: 'Create RFQ', desc: 'Request for quotation', gradient: 'from-teal-500 to-teal-600' },
-                { to: '/app/purchasing/contracts/new', icon: ClipboardDocumentListIcon, title: 'New Contract', desc: 'Create supplier contract', gradient: 'from-violet-500 to-violet-600' },
-                { to: '/app/purchasing/requisitions/new', icon: ClipboardDocumentListIcon, title: 'Buat PR', desc: 'Purchase Requisition', gradient: 'from-amber-500 to-amber-600' },
-                { to: '/app/purchasing/price-comparison', icon: ChartBarIcon, title: 'Price Analysis', desc: 'Compare supplier prices', gradient: 'from-[#F15D2C] to-[#C73E1D]' },
-              ].map((action) => (
-                <Link
-                  key={action.to}
-                  to={action.to}
-                  className="flex items-center gap-3 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group"
-                >
-                  <div className={`bg-gradient-to-br ${action.gradient} p-2.5 rounded-xl flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                    <action.icon className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">{action.title}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{action.desc}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
+          <QuickLinks
+            title="Pintasan"
+            links={[
+              { to: '/app/purchasing/suppliers/new', label: 'Tambah supplier' },
+              { to: '/app/purchasing/rfqs/new', label: 'Buat RFQ' },
+              { to: '/app/purchasing/contracts/new', label: 'Kontrak baru' },
+              { to: '/app/purchasing/requisitions/new', label: 'Buat permintaan pembelian (PR)' },
+              { to: '/app/purchasing/price-comparison', label: 'Analisis harga' },
+            ]}
+          />
         </div>
       )}
 
       {/* Other tab contents would be rendered here based on activeTab */}
       {activeTab === 'suppliers' && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="text-center">
             <BuildingOfficeIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Supplier Management</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Pengelolaan supplier</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              This section will show the SupplierList component
+              Buka halaman lengkapnya lewat tombol di bawah.
             </p>
             <div className="mt-6">
               <Link
                 to="/app/purchasing/suppliers"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white font-medium rounded-lg hover:shadow-lg transition-shadow"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-700 text-white font-medium rounded-md hover:bg-emerald-800 text-sm"
               >
-                View All Suppliers
+                Lihat semua supplier
               </Link>
             </div>
           </div>
@@ -335,19 +283,19 @@ export default function Purchasing() {
       )}
 
       {activeTab === 'purchase-orders' && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="text-center">
             <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Purchase Order Management</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Pengelolaan pesanan pembelian</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              This section will show the PurchaseOrderList component
+              Buka halaman lengkapnya lewat tombol di bawah.
             </p>
             <div className="mt-6">
               <Link
                 to="/app/purchasing/purchase-orders"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white font-medium rounded-lg hover:shadow-lg transition-shadow"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-700 text-white font-medium rounded-md hover:bg-emerald-800 text-sm"
               >
-                View All Purchase Orders
+                Lihat semua pesanan pembelian
               </Link>
             </div>
           </div>
@@ -355,19 +303,19 @@ export default function Purchasing() {
       )}
 
       {activeTab === 'contracts' && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="text-center">
             <ClipboardDocumentListIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Contract Management</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Pengelolaan kontrak</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              This section will show the ContractList component
+              Buka halaman lengkapnya lewat tombol di bawah.
             </p>
             <div className="mt-6">
               <Link
                 to="/app/purchasing/contracts"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white font-medium rounded-lg hover:shadow-lg transition-shadow"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-700 text-white font-medium rounded-md hover:bg-emerald-800 text-sm"
               >
-                View All Contracts
+                Lihat semua kontrak
               </Link>
             </div>
           </div>
@@ -375,19 +323,19 @@ export default function Purchasing() {
       )}
 
       {activeTab === 'price-comparison' && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="text-center">
             <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Price Analysis</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Analisis harga</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              This section will show the PriceComparison component
+              Buka halaman lengkapnya lewat tombol di bawah.
             </p>
             <div className="mt-6">
               <Link
                 to="/app/purchasing/price-comparison"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white font-medium rounded-lg hover:shadow-lg transition-shadow"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-700 text-white font-medium rounded-md hover:bg-emerald-800 text-sm"
               >
-                Start Price Analysis
+                Mulai analisis harga
               </Link>
             </div>
           </div>

@@ -10,6 +10,7 @@ export interface KpiItem {
   hint?: ReactNode
   tone?: KpiTone
   to?: string
+  onClick?: () => void
 }
 
 const toneClass = (tone?: KpiTone) =>
@@ -39,6 +40,11 @@ export const KpiStrip = ({ items }: { items: KpiItem[] }) => (
         </>
       )
       const cls = `block p-4 ${i % 2 === 1 ? 'border-l' : ''} ${i > 0 ? 'lg:border-l' : ''} ${i > 1 ? 'border-t lg:border-t-0' : ''} border-gray-200 dark:border-gray-700`
+      if (it.onClick) {
+        return (
+          <button key={it.label} type="button" onClick={it.onClick} className={`${cls} w-full text-left hover:bg-gray-50 dark:hover:bg-gray-700/40`}>{body}</button>
+        )
+      }
       return it.to ? (
         <Link key={it.label} to={it.to} className={`${cls} hover:bg-gray-50 dark:hover:bg-gray-700/40`}>{body}</Link>
       ) : (

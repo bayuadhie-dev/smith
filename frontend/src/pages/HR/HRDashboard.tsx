@@ -23,6 +23,7 @@ import {
   ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig'
+import { PageHeader, KpiStrip, QuickLinks } from '../../components/ui/PageKit'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
 
 export default function HRDashboard() {
@@ -65,7 +66,7 @@ export default function HRDashboard() {
   // Quick Stats - gradients (2026-10-07 Axion bento restyle, tier-1 #8 of 17)
   const quickStats = [
     {
-      name: 'Total Karyawan',
+      name: 'Karyawan aktif',
       value: activeEmployees,
       icon: UserGroupIcon,
       gradient: 'from-[#059669] to-[#047857]',
@@ -80,14 +81,14 @@ export default function HRDashboard() {
       subtext: `${presentToday} hadir`
     },
     {
-      name: 'Cuti Pending',
+      name: 'Cuti menunggu',
       value: pendingLeaves,
       icon: CalendarDaysIcon,
       gradient: 'from-[#F15D2C] to-[#C73E1D]',
       subtext: 'Menunggu approval'
     },
     {
-      name: 'Training Aktif',
+      name: 'Pelatihan aktif',
       value: ongoingTrainings,
       icon: AcademicCapIcon,
       gradient: 'from-violet-500 to-violet-600',
@@ -111,7 +112,7 @@ export default function HRDashboard() {
       icon: ClockIcon,
       href: '/app/hr/attendance',
       gradient: 'from-teal-500 to-teal-600',
-      stats: 'Real-time tracking'
+      stats: 'Pantau langsung'
     },
     {
       title: 'Manajemen Cuti',
@@ -127,7 +128,7 @@ export default function HRDashboard() {
       icon: BanknotesIcon,
       href: '/app/hr/payroll',
       gradient: 'from-emerald-500 to-emerald-600',
-      stats: 'Kalkulasi otomatis'
+      stats: 'Hitung otomatis'
     },
     {
       title: 'Training',
@@ -143,7 +144,7 @@ export default function HRDashboard() {
       icon: ClipboardDocumentListIcon,
       href: '/app/hr/roster',
       gradient: 'from-pink-500 to-pink-600',
-      stats: 'Drag & drop roster'
+      stats: 'Atur dengan seret'
     },
     {
       title: 'Departemen',
@@ -159,7 +160,7 @@ export default function HRDashboard() {
       icon: ChartBarIcon,
       href: '/app/hr/reports',
       gradient: 'from-[#F15D2C] to-[#C73E1D]',
-      stats: 'Export Excel/PDF'
+      stats: 'Ekspor Excel/PDF'
     }
   ]
 
@@ -168,103 +169,52 @@ export default function HRDashboard() {
   // intentionally left as-is - only this landing dashboard is in scope.
   return (
     <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard HR</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Kelola sumber daya manusia perusahaan</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-          <button
-            onClick={() => window.location.reload()}
-            className="btn-secondary flex items-center gap-2"
-          >
-            <ArrowPathIcon className="h-4 w-4" />
-            Refresh
-          </button>
-        </div>
-      </div>
-
-      {/* Quick Stats - bento: Total Karyawan spans 2 cols (primary metric) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {quickStats.map((stat, index) => (
-          <div
-            key={index}
-            className={`${stat.span ? 'xl:col-span-2' : ''} bg-gradient-to-br ${stat.gradient} rounded-xl p-4 text-white shadow-lg`}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 bg-white/20 rounded-lg">
-                <stat.icon className="w-5 h-5" />
-              </div>
-              <p className="text-sm opacity-90">{stat.name}</p>
-            </div>
-            <p className={stat.span ? 'text-3xl font-bold' : 'text-2xl font-bold'}>{stat.value}</p>
-            <p className="text-xs opacity-75 mt-1">{stat.subtext}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* HR Modules */}
-      <div>
-        <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">Modul HR</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {moduleCards.map((module, index) => (
-            <Link
-              key={index}
-              to={module.href}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5 group"
+      <PageHeader
+        title="Dashboard SDM"
+        subtitle="Kelola sumber daya manusia perusahaan"
+        actions={
+          <>
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+            />
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
             >
-              <div className="flex items-start space-x-4">
-                <div className={`bg-gradient-to-br ${module.gradient} p-3 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0`}>
-                  <module.icon className="h-6 w-6 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-base font-semibold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                    {module.title}
-                  </h4>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{module.description}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{module.stats}</p>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
+              <ArrowPathIcon className="h-4 w-4" />
+              Muat ulang
+            </button>
+          </>
+        }
+      />
 
-      {/* Quick Actions */}
-      <div className="card p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Aksi Cepat</h3>
-        <div className="flex flex-wrap gap-3">
-          <Link to="/app/hr/employees/new" className="btn-primary flex items-center gap-2">
-            <UserPlusIcon className="h-4 w-4" />
-            Tambah Karyawan
-          </Link>
-          <Link to="/app/hr/attendance" className="btn-secondary flex items-center gap-2">
-            <ClockIcon className="h-4 w-4" />
-            Rekam Absensi
-          </Link>
-          <Link to="/app/hr/staff-leave" className="btn-secondary flex items-center gap-2">
-            <CalendarDaysIcon className="h-4 w-4" />
-            Approval Cuti
-          </Link>
-          <Link to="/app/hr/payroll" className="btn-secondary flex items-center gap-2">
-            <BanknotesIcon className="h-4 w-4" />
-            Proses Payroll
-          </Link>
-        </div>
-      </div>
+      <KpiStrip
+        items={quickStats.map((st) => ({ label: st.name, value: st.value, hint: st.subtext }))}
+      />
+
+      <QuickLinks
+        title="Modul SDM"
+        links={moduleCards.map((m) => ({ to: m.href, label: `${m.title} - ${m.stats}` }))}
+      />
+
+      <QuickLinks
+        title="Aksi cepat"
+        links={[
+          { to: '/app/hr/employees/new', label: 'Tambah karyawan' },
+          { to: '/app/hr/attendance', label: 'Rekam absensi' },
+          { to: '/app/hr/staff-leave', label: 'Persetujuan cuti' },
+          { to: '/app/hr/payroll', label: 'Proses payroll' },
+        ]}
+      />
 
       {/* Recent Activity & Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Attendance */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Today's Attendance</h2>
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Absensi hari ini</h2>
           <div className="space-y-3">
             {attendanceData?.attendances?.slice(0, 5).map((attendance: any) => (
               <div key={attendance.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
@@ -298,9 +248,9 @@ export default function HRDashboard() {
           </div>
         </div>
 
-        {/* Alerts & Notifications */}
+        {/* Peringatan dan notifikasi */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Alerts & Notifications</h2>
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Peringatan dan notifikasi</h2>
           <div className="space-y-3">
             {/* Pending Leave Approvals */}
             {pendingLeaves > 0 && (
@@ -369,7 +319,7 @@ export default function HRDashboard() {
         {/* Attendance Trend */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Attendance Overview</h2>
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Ringkasan absensi</h2>
             <ChartBarIcon className="w-5 h-5 text-gray-400" />
           </div>
           <div className="space-y-4">
@@ -403,7 +353,7 @@ export default function HRDashboard() {
         {/* Department Distribution */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Employee Distribution</h2>
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Sebaran karyawan</h2>
             <ChartBarIcon className="w-5 h-5 text-gray-400" />
           </div>
           <div className="space-y-3">

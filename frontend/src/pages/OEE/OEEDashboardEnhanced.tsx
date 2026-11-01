@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react'
+import { PageHeader, KpiStrip } from '../../components/ui/PageKit'
 import { Link } from 'react-router-dom';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Area, AreaChart, CartesianGrid } from 'recharts';
 import { format, parseISO } from 'date-fns'
@@ -293,28 +294,27 @@ export default function OEEDashboardEnhanced() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl shadow-lg"><ChartBarIcon className="h-8 w-8 text-white" /></div>
-            OEE Monitoring
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-2 ml-14 text-sm">Overall Equipment Effectiveness dengan Root Cause Analysis Otomatis</p>
-        </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <select className="px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800" value={selectedMachine || ''} onChange={(e) => setSelectedMachine(e.target.value ? Number(e.target.value) : null)}>
-            <option value="">All Machines</option>
-            {machinePerformance.map((m: any) => <option key={m.machine_id} value={m.machine_id}>{m.machine_name}</option>)}
-          </select>
-          <select className="px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800" value={dateRange} onChange={(e) => setDateRange(Number(e.target.value))}>
-            <option value={7}>Last 7 days</option><option value={30}>Last 30 days</option><option value={90}>Last 90 days</option>
-          </select>
-          <button onClick={() => refetch()} className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"><ArrowPathIcon className="h-5 w-5" />Refresh</button>
-        </div>
+      <div className="mb-6">
+        <PageHeader
+          title="Monitoring OEE"
+          subtitle="Efektivitas mesin dan analisis penyebab downtime"
+          actions={
+            <>
+              <select className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200" value={selectedMachine || ''} onChange={(e) => setSelectedMachine(e.target.value ? Number(e.target.value) : null)}>
+                <option value="">Semua mesin</option>
+                {machinePerformance.map((m: any) => <option key={m.machine_id} value={m.machine_id}>{m.machine_name}</option>)}
+              </select>
+              <select className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200" value={dateRange} onChange={(e) => setDateRange(Number(e.target.value))}>
+                <option value={7}>7 hari terakhir</option><option value={30}>30 hari terakhir</option><option value={90}>90 hari terakhir</option>
+              </select>
+              <button onClick={() => refetch()} className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"><ArrowPathIcon className="h-4 w-4" />Muat ulang</button>
+            </>
+          }
+        />
       </div>
 
       {!hasData ? (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-12 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-12 text-center">
           <DocumentChartBarIcon className="h-16 w-16 text-blue-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Belum Ada Data Produksi</h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6">Data OEE dan RCA akan muncul setelah ada input produksi dari SPK.</p>
@@ -340,60 +340,21 @@ export default function OEEDashboardEnhanced() {
 
           {activeTab === 'overview' && (
             <>
-              {/* Stats Cards - bento: Average OEE spans 2 cols (primary metric) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
-                <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm opacity-90">Average OEE</p>
-                      <p className="text-4xl font-bold mt-1">{(summary.avg_oee || 0).toFixed(1)}%</p>
-                      <p className="text-xs opacity-75">Target: ≥ 85%</p>
-                    </div>
-                    <div className="relative"><CircularProgress value={summary.avg_oee || 0} color="green" /><ChartBarIcon className="h-5 w-5 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" /></div>
-                  </div>
-                </div>
-                <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs opacity-90">Efisiensi</p>
-                      <p className="text-2xl font-bold mt-1">{(summary.avg_availability || 0).toFixed(1)}%</p>
-                      <p className="text-xs opacity-75">Target: ≥ 60%</p>
-                    </div>
-                    <BoltIcon className="h-8 w-8 opacity-75" />
-                  </div>
-                </div>
-                <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs opacity-90">Quality</p>
-                      <p className="text-2xl font-bold mt-1">{(summary.avg_quality || 0).toFixed(1)}%</p>
-                      <p className="text-xs opacity-75">Target: ≥ 95%</p>
-                    </div>
-                    <CheckCircleIcon className="h-8 w-8 opacity-75" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-                <div
-                  className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
-                  onClick={() => setActiveTab('rca')}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs opacity-90">RCA Status</p>
-                      <p className="text-xl font-bold mt-1">{rcaSummary.criticalCount > 0 ? `${rcaSummary.criticalCount} Critical` : rcaSummary.highCount > 0 ? `${rcaSummary.highCount} High` : 'Good'}</p>
-                      <p className="text-xs opacity-75">{rcaSummary.totalRecommendations} rekomendasi</p>
-                    </div>
-                    <MagnifyingGlassIcon className="h-8 w-8 opacity-75" />
-                  </div>
-                </div>
+              <div className="mb-6">
+                <KpiStrip
+                  items={[
+                    { label: 'OEE rata-rata', value: `${(summary.avg_oee || 0).toFixed(1)}%`, hint: 'target ≥ 85%' },
+                    { label: 'Efisiensi', value: `${(summary.avg_availability || 0).toFixed(1)}%`, hint: 'target ≥ 60%' },
+                    { label: 'Kualitas', value: `${(summary.avg_quality || 0).toFixed(1)}%`, hint: 'target ≥ 95%' },
+                    { label: 'Status RCA (klik untuk detail)', value: rcaSummary.criticalCount > 0 ? `${rcaSummary.criticalCount} kritis` : rcaSummary.highCount > 0 ? `${rcaSummary.highCount} tinggi` : 'Baik', tone: rcaSummary.criticalCount > 0 ? 'bad' : rcaSummary.highCount > 0 ? 'warn' : 'good', hint: `${rcaSummary.totalRecommendations} rekomendasi`, onClick: () => setActiveTab('rca') },
+                  ]}
+                />
               </div>
 
               {/* Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2"><ArrowTrendingUpIcon className="h-5 w-5 text-blue-500" />OEE Trend</h3>
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2"><ArrowTrendingUpIcon className="h-5 w-5 text-blue-500" />Tren OEE</h3>
                   {trendData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={280}>
                       <AreaChart data={trendData}>
@@ -407,8 +368,8 @@ export default function OEEDashboardEnhanced() {
                     </ResponsiveContainer>
                   ) : <div className="h-64 flex items-center justify-center text-gray-400">No trend data</div>}
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2"><ClockIcon className="h-5 w-5 text-orange-500" />Downtime per Kategori {totalDowntime > 0 && <span className="text-sm font-normal text-gray-500 dark:text-gray-400">(Total: {formatMinutes(totalDowntime)})</span>}</h3>
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2"><ClockIcon className="h-5 w-5 text-orange-500" />Downtime per Kategori {totalDowntime > 0 && <span className="text-sm font-normal text-gray-500 dark:text-gray-400">(Total: {formatMinutes(totalDowntime)})</span>}</h3>
                   {downtimeAnalysis.length > 0 ? (
                     <div className="flex items-center gap-6">
                       <ResponsiveContainer width="50%" height={220}>
@@ -424,9 +385,9 @@ export default function OEEDashboardEnhanced() {
 
               {/* Quick RCA Preview */}
               {rcaAnalysis.length > 0 && (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5">
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2"><LightBulbIcon className="h-5 w-5 text-yellow-500" />Quick RCA Insights</h3>
+                    <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2"><LightBulbIcon className="h-5 w-5 text-yellow-500" />Ringkasan RCA</h3>
                     <button onClick={() => setActiveTab('rca')} className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">Lihat Detail RCA <ArrowRightIcon className="h-4 w-4" /></button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -477,9 +438,9 @@ export default function OEEDashboardEnhanced() {
               </div>
 
               {/* Downtime Records Table */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="p-5 border-b flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                     <ClockIcon className="h-5 w-5 text-orange-500" />
                     Detail Downtime Records
                   </h3>
@@ -551,9 +512,9 @@ export default function OEEDashboardEnhanced() {
               </div>
 
               {/* Edit Production Records */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="p-5 border-b">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                     <WrenchScrewdriverIcon className="h-5 w-5 text-blue-500" />
                     Edit Kategori Downtime per Shift
                   </h3>
@@ -608,8 +569,8 @@ export default function OEEDashboardEnhanced() {
 
               {/* Downtime by Category Chart */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
                     <ChartPieIcon className="h-5 w-5 text-purple-500" />
                     Distribusi Downtime
                   </h3>
@@ -640,8 +601,8 @@ export default function OEEDashboardEnhanced() {
                   )}
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border p-5">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+                  <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
                     <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
                     Limit vs Actual
                   </h3>
@@ -682,8 +643,8 @@ export default function OEEDashboardEnhanced() {
                 <div className={`bg-white rounded-xl p-4 border-2 ${rcaSummary.overallHealth === 'critical' ? 'border-red-300' : rcaSummary.overallHealth === 'warning' ? 'border-orange-300' : 'border-green-300'}`}>
                   <div className="flex items-center gap-3"><ShieldCheckIcon className={`h-8 w-8 ${rcaSummary.overallHealth === 'critical' ? 'text-red-600' : rcaSummary.overallHealth === 'warning' ? 'text-orange-600' : 'text-green-600'}`} /><div><p className="text-sm text-gray-500 dark:text-gray-400">Overall Status</p><p className={`font-bold ${rcaSummary.overallHealth === 'critical' ? 'text-red-600' : rcaSummary.overallHealth === 'warning' ? 'text-orange-600' : 'text-green-600'}`}>{rcaSummary.overallHealth === 'critical' ? 'Perlu Tindakan Segera' : rcaSummary.overallHealth === 'warning' ? 'Perlu Perhatian' : 'Baik'}</p></div></div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border"><div className="flex items-center gap-3"><FireIcon className="h-8 w-8 text-red-600" /><div><p className="text-sm text-gray-500 dark:text-gray-400">Critical Issues</p><p className="text-lg font-bold text-red-600">{rcaSummary.criticalCount}</p></div></div></div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border"><div className="flex items-center gap-3"><ExclamationCircleIcon className="h-8 w-8 text-orange-600" /><div><p className="text-sm text-gray-500 dark:text-gray-400">High Priority</p><p className="text-lg font-bold text-orange-600">{rcaSummary.highCount}</p></div></div></div>
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border"><div className="flex items-center gap-3"><FireIcon className="h-8 w-8 text-red-600" /><div><p className="text-sm text-gray-500 dark:text-gray-400">Masalah kritis</p><p className="text-lg font-bold text-red-600">{rcaSummary.criticalCount}</p></div></div></div>
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border"><div className="flex items-center gap-3"><ExclamationCircleIcon className="h-8 w-8 text-orange-600" /><div><p className="text-sm text-gray-500 dark:text-gray-400">Prioritas tinggi</p><p className="text-lg font-bold text-orange-600">{rcaSummary.highCount}</p></div></div></div>
                 <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border"><div className="flex items-center gap-3"><ClipboardDocumentCheckIcon className="h-8 w-8 text-blue-600" /><div><p className="text-sm text-gray-500 dark:text-gray-400">Total Rekomendasi</p><p className="text-lg font-bold text-blue-600">{rcaSummary.totalRecommendations}</p></div></div></div>
               </div>
 
@@ -694,7 +655,7 @@ export default function OEEDashboardEnhanced() {
                   const Icon = config?.icon || CogIcon;
                   const isExpanded = selectedRCACategory === rca.category;
                   return (
-                    <div key={i} className={`bg-white rounded-2xl shadow-sm border-2 overflow-hidden ${rca.severity === 'critical' ? 'border-red-300' : rca.severity === 'high' ? 'border-orange-300' : rca.severity === 'medium' ? 'border-yellow-300' : 'border-gray-200'}`}>
+                    <div key={i} className={`bg-white rounded-lg border border-gray-200 dark:border-gray-700-2 overflow-hidden ${rca.severity === 'critical' ? 'border-red-300' : rca.severity === 'high' ? 'border-orange-300' : rca.severity === 'medium' ? 'border-yellow-300' : 'border-gray-200'}`}>
                       <div className={`p-5 cursor-pointer ${rca.severity === 'critical' ? 'bg-red-50' : rca.severity === 'high' ? 'bg-orange-50' : rca.severity === 'medium' ? 'bg-yellow-50' : 'bg-gray-50'}`} onClick={() => setSelectedRCACategory(isExpanded ? null : rca.category)}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
@@ -741,7 +702,7 @@ export default function OEEDashboardEnhanced() {
           )}
 
           {activeTab === 'machines' && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="px-6 py-4 border-b bg-gray-50 dark:bg-gray-900"><h3 className="font-semibold">Machine Performance</h3></div>
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -764,7 +725,7 @@ export default function OEEDashboardEnhanced() {
           )}
 
           {activeTab === 'alerts' && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="px-6 py-4 border-b bg-gray-50 dark:bg-gray-900 flex justify-between items-center">
                 <h3 className="font-semibold">Alerts</h3>
                 <select className="px-3 py-1.5 border rounded-lg text-sm" value={alertFilter} onChange={(e) => setAlertFilter(e.target.value)}><option value="active">Active</option><option value="acknowledged">Acknowledged</option><option value="resolved">Resolved</option></select>
@@ -801,7 +762,7 @@ export default function OEEDashboardEnhanced() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Edit Kategori Downtime</h3>
+              <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Edit Kategori Downtime</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {editingRecord.production_date ? format(parseISO(editingRecord.production_date), 'dd MMM yyyy', { locale: idLocale }) : ''} - {editingRecord.machine_name}
               </p>
