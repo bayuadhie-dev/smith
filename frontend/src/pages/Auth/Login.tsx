@@ -35,6 +35,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [companyName, setCompanyName] = useState('ERP System')
+  const [logoUrl, setLogoUrl] = useState('')
   const [googleEnabled, setGoogleEnabled] = useState(false)
   const [sessionMessage, setSessionMessage] = useState<string | null>(null)
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null)
@@ -70,6 +71,9 @@ export default function Login() {
       const response = await axiosInstance.get('/api/settings/company/public')
       if (response.data && response.data.name) {
         setCompanyName(response.data.name)
+      }
+      if (response.data?.logoUrl) {
+        setLogoUrl(`${axiosInstance.defaults.baseURL || ''}${response.data.logoUrl}`)
       }
     } catch (error) {
       console.error('Error loading company settings:', error)
@@ -178,9 +182,15 @@ export default function Login() {
       <div className="hidden lg:flex lg:w-1/2 bg-[#065f46] relative">
         <div className="flex flex-col justify-between w-full px-12 xl:px-20 py-14">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white text-base font-semibold text-[#047857]">
-              {companyName.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || 'ER'}
-            </span>
+            {logoUrl ? (
+              <span className="flex h-12 items-center rounded-lg bg-white px-2">
+                <img src={logoUrl} alt={companyName} className="h-9 w-auto max-w-[9rem] object-contain" />
+              </span>
+            ) : (
+              <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white text-base font-semibold text-[#047857]">
+                {companyName.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || 'ER'}
+              </span>
+            )}
             <span className="text-lg font-semibold text-white">{companyName}</span>
           </div>
           <div>
@@ -201,9 +211,13 @@ export default function Login() {
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
             <div className="inline-flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-[#047857] rounded-lg flex items-center justify-center text-base font-semibold text-white">
-                {companyName.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || 'ER'}
-              </div>
+              {logoUrl ? (
+                <img src={logoUrl} alt={companyName} className="h-12 w-auto max-w-[9rem] object-contain" />
+              ) : (
+                <div className="w-12 h-12 bg-[#047857] rounded-lg flex items-center justify-center text-base font-semibold text-white">
+                  {companyName.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || 'ER'}
+                </div>
+              )}
               <span className="text-2xl font-bold text-slate-900 dark:text-white">{companyName}</span>
             </div>
           </div>

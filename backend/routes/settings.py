@@ -159,7 +159,8 @@ def get_company_public_info():
         
         return jsonify({
             'name': profile.company_name,
-            'industry': profile.industry or 'Manufacturing'
+            'industry': profile.industry or 'Manufacturing',
+            'logoUrl': f'/uploads/company/{os.path.basename(profile.logo_path)}' if profile.logo_path and not profile.logo_path.startswith('data:') else None,
         }), 200
     except Exception as e:
         return jsonify({

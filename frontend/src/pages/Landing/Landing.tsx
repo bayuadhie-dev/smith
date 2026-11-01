@@ -69,10 +69,14 @@ const initials = (name: string) =>
 
 const Landing: React.FC = () => {
   const [companyName, setCompanyName] = useState('')
+  const [logoUrl, setLogoUrl] = useState('')
 
   useEffect(() => {
     axiosInstance.get('/api/settings/company/public')
-      .then((r) => { if (r.data?.name) setCompanyName(r.data.name) })
+      .then((r) => {
+        if (r.data?.name) setCompanyName(r.data.name)
+        if (r.data?.logoUrl) setLogoUrl(`${axiosInstance.defaults.baseURL || ''}${r.data.logoUrl}`)
+      })
       .catch(() => undefined)
   }, [])
 
@@ -84,7 +88,11 @@ const Landing: React.FC = () => {
       <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <a href="#atas" className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-sm font-semibold text-white">{initials(name)}</span>
+            {logoUrl ? (
+              <img src={logoUrl} alt={name} className="h-9 w-auto max-w-[8rem] object-contain" />
+            ) : (
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-sm font-semibold text-white">{initials(name)}</span>
+            )}
             <span className="text-sm font-semibold leading-tight text-slate-900 sm:text-base">{name}</span>
           </a>
           <nav className="hidden items-center gap-7 text-sm text-slate-600 md:flex">
