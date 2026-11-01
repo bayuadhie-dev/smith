@@ -19,7 +19,7 @@ import ResetPassword from './pages/Auth/ResetPassword'
 import OAuthCallback from './pages/Auth/OAuthCallback'
 import CompleteProfile from './pages/Auth/CompleteProfile'
 import Dashboard from './pages/Dashboard/Dashboard'
-import DashboardEnhanced from './pages/Dashboard/DashboardEnhanced'
+import DashboardModules from './pages/Dashboard/DashboardModules'
 import GlobalSearchPage from './pages/Search/GlobalSearchPage'
 import ProductList from './pages/Products/ProductList'
 import NonwovenCalculator from './pages/Products/NonwovenCalculator'
@@ -431,7 +431,7 @@ const ProductFormNewWrapper = () => {
 function AppChildRoutes() {
   return (
     <Routes>
-                <Route index element={<DashboardEnhanced />} />
+                <Route index element={<DashboardModules />} />
 
                 {/* Old Dashboard */}
                 <Route path="dashboard-old" element={<Dashboard />} />
@@ -1179,7 +1179,7 @@ function App() {
               } />
 
               <Route path="/app" element={isAuthenticated ? <Layout /> : <Navigate to="/" />}>
-                <Route index element={<DashboardEnhanced />} />
+                <Route index element={<DashboardModules />} />
                 <Route path="*" element={<AppChildRoutes />} />
               </Route>
               <Route path="*" element={<NotFound />} />

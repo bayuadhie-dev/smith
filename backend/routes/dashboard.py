@@ -464,3 +464,186 @@ def get_executive_dashboard():
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# Ringkasan per modul untuk dashboard utama
+# ---------------------------------------------------------------------------
+def _module_perms(user):
+    from utils.auth_decorators import _get_user_permissions
+    if getattr(user, 'is_super_admin', False):
+        return None
+    return _get_user_permissions(user)
+
+
+def _safe(fn):
+    """Jalankan satu blok hitungan di savepoint; gagal => None, modul lain tidak ikut mati."""
+    try:
+        with db.session.begin_nested():
+            return fn()
+    except Exception as e:
+        print(f"dashboard/modules: {fn.__name__} gagal: {e}")
+        return None
+
+
+@dashboard_bp.route('/modules', methods=['GET'])
+@jwt_required()
+def get_module_summaries():
+    from flask_jwt_extended import get_jwt_identity
+    user = db.session.get(User, get_jwt_identity())
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    perms = _module_perms(user)
+
+    def can(module):
+        return perms is None or f'{module}.view' in perms
+
+    today = get_local_now().date()
+    month_start = today.replace(day=1)
+    soon = today + timedelta(days=30)
+    num = lambda v: float(v or 0)
+    modules, actions = [], []
+
+    def item(key, label, value, fmt='number', tone=None):
+        return {'key': key, 'label': label, 'value': value, 'format': fmt, 'tone': tone}
+
+    def action(key, label, count, href, tone='warn'):
+        if count:
+            actions.append({'key': key, 'label': label, 'count': int(count), 'href': href, 'tone': tone})
+
+    if can('production'):
+        def produksi():
+            wo_run = WorkOrder.query.filter(WorkOrder.status == 'in_progress').count()
+            wo_plan = WorkOrder.query.filter(WorkOrder.status.in_(['planned', 'released'])).count()
+            from models.production import ProductionRecord
+            out = db.session.query(func.sum(ProductionRecord.quantity_good)).filter(
+                func.date(ProductionRecord.production_date) == today).scalar()
+            mesin_jalan = Machine.query.filter(Machine.is_active.is_(True), Machine.status == 'running').count()
+            mesin_rusak = Machine.query.filter(Machine.is_active.is_(True), Machine.status == 'breakdown').count()
+            return [item('wo_run', 'SPK berjalan', wo_run), item('wo_plan', 'SPK menunggu', wo_plan),
+                    item('output', 'Output hari ini', num(out)), item('mesin', 'Mesin jalan', mesin_jalan),
+                    item('rusak', 'Mesin rusak', mesin_rusak, tone='bad' if mesin_rusak else None)]
+        r = _safe(produksi)
+        if r is not None:
+            modules.append({'key': 'production', 'title': 'Produksi', 'href': '/app/production', 'items': r})
+
+    if can('warehouse'):
+        def gudang():
+            from models.product import Product as _P, Material as _M
+            v_prod = db.session.query(func.sum(Inventory.quantity_on_hand * _P.cost)).join(
+                _P, Inventory.product_id == _P.id).filter(Inventory.is_active.is_(True), Inventory.quantity_on_hand > 0).scalar()
+            v_mat = db.session.query(func.sum(Inventory.quantity_on_hand * _M.cost_per_unit)).join(
+                _M, Inventory.material_id == _M.id).filter(Inventory.is_active.is_(True), Inventory.quantity_on_hand > 0).scalar()
+            nilai = num(v_prod) + num(v_mat)
+            rendah = Inventory.query.filter(Inventory.is_active.is_(True), Inventory.min_stock_level > 0,
+                                            Inventory.quantity_on_hand <= Inventory.min_stock_level).count()
+            exp = Inventory.query.filter(Inventory.is_active.is_(True), Inventory.quantity_on_hand > 0,
+                                         Inventory.expiry_date.isnot(None), Inventory.expiry_date <= soon).count()
+            karantina = Inventory.query.filter(Inventory.is_active.is_(True), Inventory.quantity_on_hand > 0,
+                                               Inventory.stock_status == 'quarantine').count()
+            action('stok_rendah', 'Barang di bawah stok minimum', rendah, '/app/warehouse/stock-summary')
+            action('kedaluwarsa', 'Barang kedaluwarsa dalam 30 hari', exp, '/app/warehouse/stock-summary')
+            return [item('nilai', 'Nilai persediaan', num(nilai), 'currency'),
+                    item('rendah', 'Di bawah minimum', rendah, tone='warn' if rendah else None),
+                    item('exp', 'Hampir kedaluwarsa', exp, tone='warn' if exp else None),
+                    item('karantina', 'Batch karantina', karantina)]
+        r = _safe(gudang)
+        if r is not None:
+            modules.append({'key': 'warehouse', 'title': 'Gudang', 'href': '/app/warehouse', 'items': r})
+
+    if can('sales'):
+        def penjualan():
+            omzet = db.session.query(func.sum(SalesOrder.total_amount)).filter(
+                SalesOrder.order_date >= month_start, SalesOrder.status.notin_(['draft', 'cancelled'])).scalar()
+            so_open = SalesOrder.query.filter(SalesOrder.status.in_(['confirmed', 'in_production', 'ready_to_ship', 'partial'])).count()
+            jt = db.session.query(func.sum(Invoice.balance_due)).filter(
+                Invoice.invoice_type == 'sales', Invoice.balance_due > 0, Invoice.due_date < today,
+                Invoice.status.notin_(['draft', 'cancelled'])).scalar()
+            jt_n = Invoice.query.filter(Invoice.invoice_type == 'sales', Invoice.balance_due > 0,
+                                        Invoice.due_date < today, Invoice.status.notin_(['draft', 'cancelled'])).count()
+            action('piutang_jt', 'Faktur penjualan lewat jatuh tempo', jt_n, '/app/sales/invoices')
+            return [item('omzet', 'Pesanan bulan ini', num(omzet), 'currency'), item('so_open', 'Pesanan terbuka', so_open),
+                    item('piutang_jt', 'Piutang lewat jatuh tempo', num(jt), 'currency', 'bad' if jt else None)]
+        r = _safe(penjualan)
+        if r is not None:
+            modules.append({'key': 'sales', 'title': 'Penjualan', 'href': '/app/sales', 'items': r})
+
+    if can('purchasing'):
+        def pembelian():
+            from models.purchasing import PurchaseRequisition
+            pr = PurchaseRequisition.query.filter(PurchaseRequisition.status == 'submitted').count()
+            po = PurchaseOrder.query.filter(PurchaseOrder.status == 'pending_approval').count()
+            po_open = PurchaseOrder.query.filter(PurchaseOrder.status.in_(['sent', 'confirmed', 'partial'])).count()
+            hutang = db.session.query(func.sum(Invoice.balance_due)).filter(
+                Invoice.invoice_type == 'purchase', Invoice.balance_due > 0, Invoice.due_date < today,
+                Invoice.status.notin_(['draft', 'cancelled'])).scalar()
+            action('pr_approve', 'Permintaan pembelian menunggu persetujuan', pr, '/app/purchasing/requisitions')
+            action('po_approve', 'PO menunggu persetujuan', po, '/app/purchasing/orders')
+            return [item('pr', 'PR menunggu approve', pr, tone='warn' if pr else None),
+                    item('po', 'PO menunggu approve', po, tone='warn' if po else None),
+                    item('po_open', 'PO belum diterima', po_open),
+                    item('hutang', 'Utang lewat jatuh tempo', num(hutang), 'currency', 'bad' if hutang else None)]
+        r = _safe(pembelian)
+        if r is not None:
+            modules.append({'key': 'purchasing', 'title': 'Pembelian', 'href': '/app/purchasing', 'items': r})
+
+    if can('finance'):
+        def keuangan():
+            from utils.finance_helpers import get_cash_balance_as_of
+            kas = get_cash_balance_as_of(today)
+            ar = db.session.query(func.sum(Invoice.balance_due)).filter(
+                Invoice.invoice_type == 'sales', Invoice.balance_due > 0, Invoice.status.notin_(['draft', 'cancelled'])).scalar()
+            ap = db.session.query(func.sum(Invoice.balance_due)).filter(
+                Invoice.invoice_type == 'purchase', Invoice.balance_due > 0, Invoice.status.notin_(['draft', 'cancelled'])).scalar()
+            return [item('kas', 'Saldo kas dan bank', num(kas), 'currency', 'bad' if num(kas) < 0 else None),
+                    item('ar', 'Piutang usaha', num(ar), 'currency'), item('ap', 'Utang usaha', num(ap), 'currency')]
+        r = _safe(keuangan)
+        if r is not None:
+            modules.append({'key': 'finance', 'title': 'Keuangan', 'href': '/app/finance', 'items': r})
+
+    if can('quality'):
+        def mutu():
+            from models.quality import QualityInspection
+            hari = QualityInspection.query.filter(func.date(QualityInspection.inspection_date) == today).count()
+            tunggu = QualityInspection.query.filter(QualityInspection.status.in_(['pending', 'in_progress'])).count()
+            bulan = QualityInspection.query.filter(QualityInspection.inspection_date >= month_start,
+                                                   QualityInspection.status == 'completed')
+            total = bulan.count()
+            lolos = bulan.filter(QualityInspection.result.in_(['accepted', 'passed'])).count()
+            rate = round(lolos / total * 100, 1) if total else None
+            action('qc_pending', 'Inspeksi mutu belum selesai', tunggu, '/app/quality/inspections')
+            return [item('hari', 'Inspeksi hari ini', hari), item('tunggu', 'Belum selesai', tunggu, tone='warn' if tunggu else None),
+                    item('rate', 'Lolos bulan ini', rate, 'percent')]
+        r = _safe(mutu)
+        if r is not None:
+            modules.append({'key': 'quality', 'title': 'Mutu', 'href': '/app/quality', 'items': r})
+
+    if can('hr'):
+        def sdm():
+            from models.hr import Attendance
+            aktif = Employee.query.filter(Employee.status == 'active').count()
+            hadir = Attendance.query.filter(Attendance.attendance_date == today,
+                                            Attendance.status.in_(['present', 'late', 'half_day'])).count()
+            telat = Attendance.query.filter(Attendance.attendance_date == today, Attendance.status == 'late').count()
+            return [item('aktif', 'Karyawan aktif', aktif), item('hadir', 'Hadir hari ini', hadir),
+                    item('telat', 'Terlambat hari ini', telat, tone='warn' if telat else None)]
+        r = _safe(sdm)
+        if r is not None:
+            modules.append({'key': 'hr', 'title': 'SDM', 'href': '/app/hr', 'items': r})
+
+    if can('maintenance'):
+        def perawatan():
+            from models.maintenance import MaintenanceRecord
+            jalan = MaintenanceRecord.query.filter(MaintenanceRecord.status == 'in_progress').count()
+            lewat = MaintenanceRecord.query.filter(MaintenanceRecord.status == 'scheduled',
+                                                   func.date(MaintenanceRecord.maintenance_date) < today).count()
+            rusak = Machine.query.filter(Machine.is_active.is_(True), Machine.status == 'breakdown').count()
+            action('pm_lewat', 'Jadwal perawatan lewat tanggal', lewat, '/app/maintenance/records', 'bad')
+            return [item('rusak', 'Mesin rusak', rusak, tone='bad' if rusak else None),
+                    item('jalan', 'Perawatan berjalan', jalan), item('lewat', 'Jadwal lewat tanggal', lewat, tone='warn' if lewat else None)]
+        r = _safe(perawatan)
+        if r is not None:
+            modules.append({'key': 'maintenance', 'title': 'Perawatan', 'href': '/app/maintenance', 'items': r})
+
+    return jsonify({'success': True, 'modules': modules, 'actions': actions,
+                    'generated_at': get_local_now().isoformat()}), 200
