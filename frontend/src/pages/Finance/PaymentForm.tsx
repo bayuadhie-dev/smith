@@ -5,13 +5,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
-import {
-  BanknotesIcon,
-  CalendarDaysIcon,
-  CreditCardIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { PageHeader, Panel } from '../../components/ui/PageKit'
 
 interface Party {
   id: number;
@@ -38,7 +34,7 @@ interface ContraAccount {
   name: string;
 }
 
-const FORM_TITLES: Record<string, [string, string]> = {"kas_in": ["Penerimaan Kas/Bank", "Uang masuk non-faktur: bunga bank, setoran modal, pendapatan lain"], "kas_out": ["Pembayaran Kas/Bank", "Uang keluar non-faktur: biaya admin bank, biaya operasional, dll"], "ar": ["Penerimaan Penjualan (Piutang)", "Terima pembayaran customer untuk melunasi satu atau lebih faktur penjualan"], "ap": ["Pembayaran Pembelian (Hutang)", "Bayar supplier untuk melunasi satu atau lebih faktur pembelian"]};
+const FORM_TITLES: Record<string, [string, string]> = {"kas_in": ["Penerimaan Kas/Bank", "Uang masuk non-faktur: bunga bank, setoran modal, pendapatan lain"], "kas_out": ["Pembayaran Kas/Bank", "Uang keluar non-faktur: biaya admin bank, biaya operasional, dll"], "ar": ["Penerimaan Penjualan (Piutang)", "Terima pembayaran pelanggan untuk melunasi satu atau lebih faktur penjualan"], "ap": ["Pembayaran Pembelian (Utang)", "Bayar pemasok untuk melunasi satu atau lebih faktur pembelian"]};
 
 type FormKind = 'kas_in' | 'kas_out' | 'ar' | 'ap';
 
@@ -332,395 +328,235 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   }
 
 
+  const inputCls = 'w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white'
+  const labelCls = 'mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200'
+  const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
+  const partyWord = mode === 'ap' ? 'Pemasok' : 'Pelanggan'
+  const checkedCount = Object.keys(alloc).filter((k) => Number(alloc[Number(k)]) !== 0).length
+  const reason = !canSubmit && !submitting
+    ? (!formData.bank_account_id ? 'Pilih akun kas/bank dulu.' : !hasDetail ? (isStandalone ? 'Isi nilai rincian akun.' : 'Centang faktur yang dilunasi.') : overAllocated.length > 0 ? 'Nilai melebihi sisa tagihan.' : !formData.payment_date ? 'Isi tanggal.' : '')
+    : ''
+
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{editId ? 'Ubah ' : ''}{FORM_TITLES[effectiveKind][0]}</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">{FORM_TITLES[effectiveKind][1]}</p>
-        </div>
-        <button 
-          onClick={handleCancel}
-          className="btn-secondary inline-flex items-center gap-2"
-        >
-          <XMarkIcon className="h-5 w-5" />{t('common.cancel')}</button>
-      </div>
+    <div className="space-y-4 p-6">
+      <PageHeader
+        title={`${editId ? 'Ubah ' : ''}${FORM_TITLES[effectiveKind][0]}`}
+        subtitle={FORM_TITLES[effectiveKind][1]}
+        actions={<button type="button" onClick={handleCancel} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Batal</button>}
+      />
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 text-sm">
-          {error}
-        </div>
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">{error}</div>
       )}
 
-      {/* Payment Form */}
-      <div className="card p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Bukti</label>
-              <input
-                type="text"
-                className="input w-full"
-                placeholder={editId ? 'Nomor baru otomatis (transaksi lama di-void)' : (nextNumber ? `${nextNumber} (otomatis)` : 'Otomatis')}
-                value={paymentNumber}
-                onChange={(e) => setPaymentNumber(e.target.value)}
-              />
-              <p className="text-xs text-gray-500 mt-1">Kosongkan untuk nomor otomatis, atau isi nomor sendiri.</p>
-            </div>
-            <div className="hidden md:block" />
-            {isStandalone && (
-              <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Bank Account
-              </label>
-              <SearchableSelect
-                options={cashBankAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name }))}
-                value={formData.bank_account_id ? Number(formData.bank_account_id) : null}
-                onChange={(v) => setFormData({ ...formData, bank_account_id: v ? String(v) : '' })}
-                placeholder="Pilih akun Kas/Bank"
-                required
-              />
+      <form onSubmit={handleSubmit} className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0 space-y-4">
+          <Panel title={isStandalone ? 'Data transaksi' : `${partyWord} dan tanggal`}>
+            <div className="grid gap-4 p-4 md:grid-cols-2">
+              {!isStandalone && (
+                <div className="md:col-span-2">
+                  <label className={labelCls}>{partyWord}</label>
+                  <SearchableSelect
+                    options={parties.map((p) => ({ id: p.id, name: p.name }))}
+                    value={formData.party_id ? Number(formData.party_id) : null}
+                    onChange={(v) => setFormData({ ...formData, party_id: v ? String(v) : '' })}
+                    placeholder={`Pilih ${partyWord.toLowerCase()}`}
+                    required
+                  />
+                </div>
+              )}
+              <div>
+                <label className={labelCls}>Tanggal</label>
+                <input type="date" className={inputCls} value={formData.payment_date} onChange={(e) => setFormData({ ...formData, payment_date: e.target.value })} required />
               </div>
-            )}
-            {!isStandalone && (
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  {mode === 'ap' ? 'Supplier' : 'Customer'}
-                </label>
+              <div>
+                <label className={labelCls}>No. bukti</label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  placeholder={editId ? 'Nomor baru otomatis (transaksi lama di-void)' : (nextNumber ? `${nextNumber} (otomatis)` : 'Otomatis')}
+                  value={paymentNumber}
+                  onChange={(e) => setPaymentNumber(e.target.value)}
+                />
+                <p className="mt-1 text-xs text-gray-500">Kosongkan untuk nomor otomatis.</p>
+              </div>
+              {isStandalone && (
+                <div className="md:col-span-2">
+                  <label className={labelCls}>{cashDirection === 'in' ? 'Diterima dari' : 'Dibayarkan kepada'}</label>
+                  <input
+                    type="text"
+                    className={inputCls}
+                    maxLength={200}
+                    placeholder={cashDirection === 'in' ? 'Nama pemberi (opsional)' : 'Nama penerima pembayaran (opsional)'}
+                    value={formData.paid_to}
+                    onChange={(e) => setFormData({ ...formData, paid_to: e.target.value })}
+                  />
+                </div>
+              )}
+            </div>
+          </Panel>
+
+          <Panel title="Rekening dan metode">
+            <div className="grid gap-4 p-4 md:grid-cols-3">
+              <div className="md:col-span-1">
+                <label className={labelCls}>Akun kas/bank</label>
                 <SearchableSelect
-                  options={parties.map((p) => ({ id: p.id, name: p.name }))}
-                  value={formData.party_id ? Number(formData.party_id) : null}
-                  onChange={(v) => setFormData({ ...formData, party_id: v ? String(v) : '' })}
-                  placeholder={`Pilih ${mode === 'ap' ? 'supplier' : 'customer'}`}
+                  options={cashBankAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name }))}
+                  value={formData.bank_account_id ? Number(formData.bank_account_id) : null}
+                  onChange={(v) => setFormData({ ...formData, bank_account_id: v ? String(v) : '' })}
+                  placeholder="Pilih akun"
                   required
                 />
               </div>
-            )}
-
-            {!isStandalone && formData.party_id && (
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Faktur yang dilunasi (centang satu atau lebih)
-                </label>
-                <div className="flex gap-2 mb-2">
-                  <NumberInput currency
-                    className="input w-56"
-                    placeholder="Nilai pembayaran (opsional)"
-                    value={distributeAmount}
-                    onChange={(e) => setDistributeAmount(e.target.value)}
-                  />
-                  <button type="button" className="btn-secondary text-sm" onClick={distribute}>
-                    Distribusikan ke faktur terlama
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-secondary text-sm"
-                    onClick={() => setAlloc(Object.fromEntries(invoices.map((i) => [i.id, String(i.balance_due)])))}
-                  >
-                    Lunasi semua
-                  </button>
-                </div>
-                {loadingInvoices && <p className="text-sm text-gray-500">Memuat...</p>}
-                {!loadingInvoices && invoices.length === 0 && (
-                  <p className="text-sm text-gray-500">Tidak ada faktur belum lunas untuk pihak ini.</p>
-                )}
-                {invoices.length > 0 && (
-                  <div className="overflow-x-auto border rounded-lg">
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-50 dark:bg-gray-700 text-left">
-                        <tr>
-                          <th className="p-2 w-10"></th>
-                          <th className="p-2">No. Faktur</th>
-                          <th className="p-2">Jatuh Tempo</th>
-                          <th className="p-2 text-right">Total</th>
-                          <th className="p-2 text-right">Sisa</th>
-                          <th className="p-2 text-right w-44">Dibayar</th>
-                          <th className="p-2 text-right">Sisa Setelah</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {invoices.map((inv) => {
-                          const checked = inv.id in alloc;
-                          return (
-                            <tr key={inv.id} className="border-t">
-                              <td className="p-2">
-                                <input type="checkbox" checked={checked} onChange={(e) => toggleInvoice(inv, e.target.checked)} />
-                              </td>
-                              <td className="p-2">{inv.invoice_number}</td>
-                              <td className="p-2">{inv.due_date || '-'}</td>
-                              <td className="p-2 text-right">Rp{inv.total_amount.toLocaleString('id-ID')}</td>
-                              <td className="p-2 text-right">Rp{inv.balance_due.toLocaleString('id-ID')}</td>
-                              <td className="p-2">
-                                <NumberInput
-                                  className="input w-full text-right"
-                                  disabled={!checked}
-                                  value={alloc[inv.id] ?? ''}
-                                  onChange={(e) => setAlloc((a) => ({ ...a, [inv.id]: e.target.value }))}
-                                />
-                                {(Number(alloc[inv.id]) || 0) > inv.balance_due + 0.01 && (
-                                  <p className="text-xs text-red-600 mt-1">Melebihi sisa faktur</p>
-                                )}
-                                {(Number(alloc[inv.id]) || 0) < 0 && -(Number(alloc[inv.id]) || 0) > paidOf(inv) + 0.01 && (
-                                  <p className="text-xs text-red-600 mt-1">Melebihi yang sudah dibayar</p>
-                                )}
-                              </td>
-                              <td className="p-2 text-right">
-                                Rp{(inv.balance_due - (Number(alloc[inv.id]) || 0)).toLocaleString('id-ID')}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+              <div>
+                <label className={labelCls}>Metode</label>
+                <select className={inputCls} value={formData.payment_method} onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })} required>
+                  <option value="cash">Tunai</option>
+                  <option value="bank_transfer">Transfer bank</option>
+                  <option value="check">Cek / giro</option>
+                  <option value="credit_card">Kartu kredit</option>
+                </select>
               </div>
-            )}
+              <div>
+                <label className={labelCls}>No. referensi</label>
+                <input type="text" className={inputCls} placeholder="No. transfer atau cek (opsional)" value={formData.reference_number} onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })} />
+              </div>
+            </div>
+          </Panel>
 
-            {isStandalone && (
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Rincian Akun (satu nilai kas bisa dibagi ke beberapa akun)
-                </label>
-                <div className="space-y-2">
-                  {lines.map((l, idx) => (
-                    <div key={idx} className="grid grid-cols-12 gap-2">
-                      <div className="col-span-5">
-                        <SearchableSelect
-                          options={contraAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name }))}
-                          value={l.account_id ? Number(l.account_id) : null}
-                          onChange={(v) => updateLine(idx, { account_id: v ? String(v) : '' })}
-                          placeholder="Pilih akun (mis. Beban Bunga, Pendapatan Lain-lain)"
-                        />
-                      </div>
-                      <input
-                        type="text"
-                        className="input col-span-4"
-                        placeholder="Keterangan baris (opsional)"
-                        value={l.description}
-                        onChange={(e) => updateLine(idx, { description: e.target.value })}
-                      />
-                      <NumberInput currency
-                        className="input col-span-2 text-right"
-                        placeholder="Nilai"
-                        value={l.amount}
-                        onChange={(e) => updateLine(idx, { amount: e.target.value })}
-                      />
-                      <button
-                        type="button"
-                        className="col-span-1 text-red-600 disabled:opacity-30"
-                        disabled={lines.length === 1}
-                        onClick={() => setLines((ls) => ls.filter((_, i) => i !== idx))}
-                      >
-                        <XMarkIcon className="h-5 w-5 mx-auto" />
-                      </button>
-                    </div>
-                  ))}
+          {!isStandalone && formData.party_id && (
+            <Panel
+              title="Faktur yang dilunasi"
+              action={
+                <button type="button" className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400" onClick={() => setAlloc(Object.fromEntries(invoices.map((i) => [i.id, String(i.balance_due)])))}>
+                  Lunasi semua
+                </button>
+              }
+            >
+              <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 p-3 dark:border-gray-700">
+                <NumberInput currency className={`${inputCls} !w-52`} placeholder="Nilai pembayaran" value={distributeAmount} onChange={(e) => setDistributeAmount(e.target.value)} />
+                <button type="button" className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200" onClick={distribute}>
+                  Bagikan ke faktur terlama
+                </button>
+              </div>
+              {loadingInvoices && <p className="p-4 text-sm text-gray-500">Memuat faktur...</p>}
+              {!loadingInvoices && invoices.length === 0 && (
+                <p className="p-4 text-sm text-gray-500">Tidak ada faktur belum lunas untuk {partyWord.toLowerCase()} ini.</p>
+              )}
+              {invoices.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 text-left text-xs font-medium text-gray-500 dark:bg-gray-900 dark:text-gray-400">
+                      <tr>
+                        <th className="w-10 px-3 py-2"></th>
+                        <th className="px-3 py-2">No. faktur</th>
+                        <th className="px-3 py-2">Jatuh tempo</th>
+                        <th className="px-3 py-2 text-right">Sisa tagihan</th>
+                        <th className="w-44 px-3 py-2 text-right">Dibayar</th>
+                        <th className="px-3 py-2 text-right">Sisa setelah</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                      {invoices.map((inv) => {
+                        const checked = inv.id in alloc;
+                        return (
+                          <tr key={inv.id} className={checked ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : ''}>
+                            <td className="px-3 py-2"><input type="checkbox" checked={checked} onChange={(e) => toggleInvoice(inv, e.target.checked)} /></td>
+                            <td className="whitespace-nowrap px-3 py-2 font-medium text-gray-900 dark:text-white">{inv.invoice_number}</td>
+                            <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-300">{inv.due_date || '-'}</td>
+                            <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">{rp(inv.balance_due)}</td>
+                            <td className="px-3 py-2">
+                              <NumberInput className={`${inputCls} text-right`} disabled={!checked} value={alloc[inv.id] ?? ''} onChange={(e) => setAlloc((a) => ({ ...a, [inv.id]: e.target.value }))} />
+                              {(Number(alloc[inv.id]) || 0) > inv.balance_due + 0.01 && <p className="mt-1 text-xs text-red-600">Melebihi sisa faktur</p>}
+                              {(Number(alloc[inv.id]) || 0) < 0 && -(Number(alloc[inv.id]) || 0) > paidOf(inv) + 0.01 && <p className="mt-1 text-xs text-red-600">Melebihi yang sudah dibayar</p>}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-gray-600 dark:text-gray-300">{rp(inv.balance_due - (Number(alloc[inv.id]) || 0))}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-                <button
-                  type="button"
-                  className="btn-secondary mt-2 text-sm"
-                  onClick={() => setLines((ls) => [...ls, { account_id: '', amount: '', description: '' }])}
-                >
+              )}
+            </Panel>
+          )}
+
+          {isStandalone && (
+            <Panel title="Rincian akun">
+              <div className="space-y-2 p-4">
+                <p className="text-xs text-gray-500">Satu nilai kas bisa dibagi ke beberapa akun. Nilai negatif dipakai sebagai pengurang.</p>
+                {lines.map((l, idx) => (
+                  <div key={idx} className="grid grid-cols-12 gap-2">
+                    <div className="col-span-12 md:col-span-5">
+                      <SearchableSelect
+                        options={contraAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name }))}
+                        value={l.account_id ? Number(l.account_id) : null}
+                        onChange={(v) => updateLine(idx, { account_id: v ? String(v) : '' })}
+                        placeholder="Pilih akun (mis. Beban Bunga)"
+                      />
+                    </div>
+                    <input type="text" className={`${inputCls} col-span-7 md:col-span-4`} placeholder="Keterangan baris (opsional)" value={l.description} onChange={(e) => updateLine(idx, { description: e.target.value })} />
+                    <NumberInput currency className={`${inputCls} col-span-4 text-right md:col-span-2`} placeholder="Nilai" value={l.amount} onChange={(e) => updateLine(idx, { amount: e.target.value })} />
+                    <button type="button" className="col-span-1 text-gray-400 hover:text-red-600 disabled:opacity-30" disabled={lines.length === 1} onClick={() => setLines((ls) => ls.filter((_, i) => i !== idx))} title="Hapus baris">
+                      <XMarkIcon className="mx-auto h-5 w-5" />
+                    </button>
+                  </div>
+                ))}
+                <button type="button" className="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400" onClick={() => setLines((ls) => [...ls, { account_id: '', amount: '', description: '' }])}>
                   + Tambah baris akun
                 </button>
-                <p className="text-xs text-gray-500 mt-1">
-                  {cashDirection === 'in'
-                    ? 'Jurnal: Debit Kas/Bank (total), Kredit tiap akun di atas.'
-                    : 'Jurnal: Debit tiap akun di atas, Kredit Kas/Bank (total).'}
-                </p>
               </div>
-            )}
+            </Panel>
+          )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Total (IDR)
-              </label>
-              <input
-                type="text"
-                className="input w-full bg-gray-50 font-semibold"
-                readOnly
-                value={`Rp ${totalAmount.toLocaleString('id-ID')}`}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                {isStandalone ? 'Jumlah dari semua baris rincian.' : 'Jumlah dari semua faktur yang dicentang.'}
-              </p>
+          <Panel title="Keterangan">
+            <div className="p-4">
+              <textarea className={inputCls} rows={3} placeholder="Catatan untuk transaksi ini (opsional)" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Payment Date
-              </label>
-              <input
-                type="date"
-                className="input w-full"
-                value={formData.payment_date}
-                onChange={(e) => setFormData({...formData, payment_date: e.target.value})}
-                required
-              />
-            </div>
-
-            {isStandalone ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  {cashDirection === 'in' ? 'Diterima dari' : 'Dibayarkan kepada'}
-                </label>
-                <input
-                  type="text"
-                  className="input w-full"
-                  maxLength={200}
-                  placeholder={cashDirection === 'in' ? 'Nama pemberi (opsional)' : 'Nama penerima pembayaran (opsional)'}
-                  value={formData.paid_to}
-                  onChange={(e) => setFormData({ ...formData, paid_to: e.target.value })}
-                />
-              </div>
-            ) : (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Bank Account
-              </label>
-              <SearchableSelect
-                options={cashBankAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name }))}
-                value={formData.bank_account_id ? Number(formData.bank_account_id) : null}
-                onChange={(v) => setFormData({ ...formData, bank_account_id: v ? String(v) : '' })}
-                placeholder="Pilih akun Kas/Bank"
-                required
-              />
-            </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Metode Pembayaran
-              </label>
-              <select
-                className="input w-full"
-                value={formData.payment_method}
-                onChange={(e) => setFormData({...formData, payment_method: e.target.value})}
-                required
-              >
-                <option value="cash">Cash</option>
-                <option value="bank_transfer">Bank Transfer</option>
-                <option value="check">Check</option>
-                <option value="credit_card">Credit Card</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                No. Referensi
-              </label>
-              <input
-                type="text"
-                className="input w-full"
-                placeholder="No. transfer / cek (opsional)"
-                value={formData.reference_number}
-                onChange={(e) => setFormData({...formData, reference_number: e.target.value})}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.description')}</label>
-            <textarea
-              className="input w-full"
-              rows={3}
-              placeholder="Payment description..."
-              value={formData.notes}
-              onChange={(e) => setFormData({...formData, notes: e.target.value})}
-            />
-          </div>
+          </Panel>
 
           {journalPreview.length > 0 && (
-            <div className="border rounded-lg overflow-hidden">
-              <div className="bg-gray-50 dark:bg-gray-700 px-4 py-2 text-sm font-semibold">Pratinjau Jurnal</div>
+            <Panel title="Pratinjau jurnal">
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs uppercase text-gray-500">
-                    <th className="px-4 py-1">Akun</th>
-                    <th className="px-4 py-1 text-right">Debit</th>
-                    <th className="px-4 py-1 text-right">Kredit</th>
-                  </tr>
+                <thead className="bg-gray-50 text-left text-xs font-medium text-gray-500 dark:bg-gray-900 dark:text-gray-400">
+                  <tr><th className="px-4 py-2">Akun</th><th className="px-4 py-2 text-right">Debit</th><th className="px-4 py-2 text-right">Kredit</th></tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {journalPreview.map((j, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="px-4 py-1">{j.account}</td>
-                      <td className="px-4 py-1 text-right">{j.debit ? `Rp${j.debit.toLocaleString('id-ID')}` : ''}</td>
-                      <td className="px-4 py-1 text-right">{j.credit ? `Rp${j.credit.toLocaleString('id-ID')}` : ''}</td>
+                    <tr key={i}>
+                      <td className="px-4 py-2">{j.account}</td>
+                      <td className="px-4 py-2 text-right tabular-nums">{j.debit ? rp(j.debit) : ''}</td>
+                      <td className="px-4 py-2 text-right tabular-nums">{j.credit ? rp(j.credit) : ''}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
+            </Panel>
           )}
-
-          {/* Form Actions */}
-          <div className="flex justify-end items-center gap-4 pt-6 border-t">
-            {!canSubmit && !submitting && (
-              <span className="text-sm text-amber-700 mr-auto">
-                {!formData.bank_account_id ? 'Pilih akun Kas/Bank dulu.' : !hasDetail ? 'Isi nilai rincian (tidak boleh 0 semua).' : overAllocated.length > 0 ? 'Nilai melebihi sisa tagihan.' : !formData.payment_date ? 'Isi tanggal.' : ''}
-              </span>
-            )}
-            <button 
-              type="button"
-              onClick={handleCancel}
-              className="btn-secondary"
-            >{t('common.cancel')}</button>
-            <button 
-              type="submit"
-              disabled={submitting || !canSubmit}
-              className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
-            >
-              <CreditCardIcon className="h-5 w-5" />
-              {submitting ? 'Menyimpan...' : 'Simpan'}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Payment Summary */}
-      <div className="card p-6">
-        <h3 className="text-lg font-semibold mb-4">💰 Payment Summary</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <div className="flex items-center">
-              <BanknotesIcon className="h-8 w-8 text-blue-600 mr-3" />
-              <div>
-                <p className="text-sm text-blue-600">Amount to Pay</p>
-                <p className="text-xl font-bold text-blue-800">
-                  {`Rp ${totalAmount.toLocaleString('id-ID')}`}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-green-50 p-4 rounded-lg">
-            <div className="flex items-center">
-              <CalendarDaysIcon className="h-8 w-8 text-green-600 mr-3" />
-              <div>
-                <p className="text-sm text-green-600">Payment Date</p>
-                <p className="text-xl font-bold text-green-800">
-                  {formData.payment_date || 'Not set'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-purple-50 p-4 rounded-lg">
-            <div className="flex items-center">
-              <CreditCardIcon className="h-8 w-8 text-purple-600 mr-3" />
-              <div>
-                <p className="text-sm text-purple-600">Bank Account</p>
-                <p className="text-xl font-bold text-purple-800">
-                  {cashBankAccounts.find(a => a.id === Number(formData.bank_account_id))?.name || 'Not selected'}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
+
+        <aside className="lg:sticky lg:top-4">
+          <Panel title="Ringkasan">
+            <dl className="space-y-3 p-4 text-sm">
+              <div>
+                <dt className="text-xs text-gray-500 dark:text-gray-400">{isReceiptKind ? 'Total diterima' : 'Total dibayar'}</dt>
+                <dd className="mt-0.5 text-2xl font-semibold tabular-nums text-gray-900 dark:text-white">{rp(totalAmount)}</dd>
+              </div>
+              {!isStandalone && (
+                <div className="flex justify-between"><dt className="text-gray-500 dark:text-gray-400">Faktur dipilih</dt><dd className="font-medium">{checkedCount}</dd></div>
+              )}
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Tanggal</dt><dd className="font-medium">{formData.payment_date || '-'}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Akun kas/bank</dt><dd className="truncate text-right font-medium">{bankName ? `${bankName.code} ${bankName.name}` : '-'}</dd></div>
+            </dl>
+            <div className="space-y-2 border-t border-gray-200 p-4 dark:border-gray-700">
+              {reason && <p className="text-sm text-amber-700 dark:text-amber-400">{reason}</p>}
+              <button type="submit" disabled={submitting || !canSubmit} className="w-full rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">
+                {submitting ? 'Menyimpan...' : 'Simpan'}
+              </button>
+            </div>
+          </Panel>
+        </aside>
+      </form>
     </div>
   )
 }
