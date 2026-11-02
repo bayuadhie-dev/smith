@@ -52,6 +52,7 @@ class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     employee_number = db.Column(db.String(50), unique=True, nullable=False, index=True)
     nik = db.Column(db.String(50), nullable=True, index=True)
+    fingerprint_id = db.Column(db.String(50), nullable=True, unique=True, index=True)  # ID pengguna di mesin fingerprint
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True, unique=True)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)

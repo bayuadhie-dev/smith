@@ -1,0 +1,48 @@
+from models import Employee
+
+
+def _emp(db_session, num, first, last):
+    e = Employee(employee_number=num, first_name=first, last_name=last, full_name=f'{first} {last}', status='active',
+                 hire_date=__import__('datetime').date(2024, 1, 1))
+    db_session.add(e)
+    return e
+
+
+def test_import_suggest_accept_and_manual_map(client, auth_headers, db_session):
+    a = _emp(db_session, 'E1', 'Budi', 'Santoso')
+    b = _emp(db_session, 'E2', 'Siti', 'Rahayu')
+    c = _emp(db_session, 'E3', 'Agus', 'Wijaya')
+    db_session.commit()
+    r = client.post('/api/hr/fingerprint/users/import', headers=auth_headers, json={'users': [
+        {'user_id': '11', 'name': 'BUDI SANTOSO'}, {'user_id': '12', 'name': 'Santoso Budi'},
+        {'user_id': '13', 'name': 'Siti Rahayuu'}, {'user_id': '14', 'name': 'Orang Lain'}]})
+    assert r.status_code == 200 and r.get_json()['created'] == 4
+    d = client.get('/api/hr/fingerprint/users', headers=auth_headers).get_json()
+    by = {u['device_user_id']: u for u in d['users']}
+    assert by['11']['suggestion']['kind'] == 'exact' and by['11']['suggestion']['id'] == a.id
+    assert by['13']['suggestion']['kind'] == 'similar' and by['13']['suggestion']['id'] == b.id
+    assert by['14']['status'] == 'none' and d['summary']['mapped'] == 0
+
+    ok = client.post('/api/hr/fingerprint/users/accept-exact', headers=auth_headers).get_json()
+    assert ok['mapped'] == 1  # hanya satu yang bisa dipetakan: ID 11 (12 bersaing ke karyawan yang sama)
+    d = client.get('/api/hr/fingerprint/users', headers=auth_headers).get_json()
+    by = {u['device_user_id']: u for u in d['users']}
+    assert by['11']['status'] == 'mapped' and by['11']['employee']['id'] == a.id
+    assert d['summary']['mapped'] == 1 and d['summary']['employees_without_id'] == 2
+
+    # karyawan yang sudah dipetakan tidak bisa dipakai dua kali
+    bad = client.put(f"/api/hr/fingerprint/users/{by['12']['id']}/map", headers=auth_headers, json={'employee_id': a.id})
+    assert bad.status_code == 400
+    good = client.put(f"/api/hr/fingerprint/users/{by['13']['id']}/map", headers=auth_headers, json={'employee_id': b.id})
+    assert good.status_code == 200
+    db_session.expire_all()
+    assert db_session.get(Employee, b.id).fingerprint_id == '13'
+    # lepas
+    client.put(f"/api/hr/fingerprint/users/{by['13']['id']}/map", headers=auth_headers, json={'employee_id': None})
+    db_session.expire_all()
+    assert db_session.get(Employee, b.id).fingerprint_id is None
+    # import ulang tidak menghapus pemetaan
+    client.post('/api/hr/fingerprint/users/import', headers=auth_headers, json={'users': [{'user_id': '11', 'name': 'Budi Santoso', 'log_count': 40}]})
+    db_session.expire_all()
+    assert db_session.get(Employee, a.id).fingerprint_id == '11'
+    assert client.get('/api/hr/fingerprint/users?filter=mapped', headers=auth_headers).get_json()['users'][0]['log_count'] == 40
