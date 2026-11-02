@@ -54,3 +54,17 @@ class SparePartRequestItem(db.Model):
 
     request = db.relationship('SparePartRequest', back_populates='items')
     spare_part = db.relationship('SparePart')
+
+
+class MaintenanceSchedulePart(db.Model):
+    """Sparepart yang dibutuhkan setiap kali jadwal preventive jatuh tempo."""
+    __tablename__ = 'maintenance_schedule_parts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    schedule_id = db.Column(db.Integer, db.ForeignKey('maintenance_schedules.id', ondelete='CASCADE'), nullable=False, index=True)
+    spare_part_id = db.Column(db.Integer, db.ForeignKey('spare_parts.id'), nullable=False)
+    qty = db.Column(db.Numeric(15, 2), nullable=False, default=1)
+
+    spare_part = db.relationship('SparePart')
+
+    __table_args__ = (db.UniqueConstraint('schedule_id', 'spare_part_id', name='uq_schedule_spare_part'),)

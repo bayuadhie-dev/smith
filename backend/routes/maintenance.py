@@ -22,50 +22,202 @@ ROOT_CAUSE_REQUIRED_TYPES = ('corrective', 'breakdown', 'emergency')
 
 maintenance_bp = Blueprint('maintenance', __name__)
 
+FREQUENCIES = ('daily', 'weekly', 'monthly', 'quarterly', 'yearly')
+MAINT_TYPES = ('preventive', 'corrective', 'predictive')
+
+
+def _parse_date(v):
+    return datetime.fromisoformat(str(v)[:10]).date()
+
+
+def _schedule_dict(s, today):
+    from models import MaintenanceSchedulePart
+    parts = MaintenanceSchedulePart.query.filter_by(schedule_id=s.id).all()
+    days = (s.next_maintenance_date - today).days if s.next_maintenance_date else None
+    return {
+        'id': s.id, 'schedule_number': s.schedule_number,
+        'machine_id': s.machine_id, 'machine_code': s.machine.code, 'machine_name': s.machine.name,
+        'maintenance_type': s.maintenance_type, 'frequency': s.frequency, 'frequency_value': s.frequency_value,
+        'last_maintenance_date': s.last_maintenance_date.isoformat() if s.last_maintenance_date else None,
+        'next_maintenance_date': s.next_maintenance_date.isoformat() if s.next_maintenance_date else None,
+        'days_until_due': days, 'overdue': days is not None and days < 0,
+        'estimated_duration_hours': float(s.estimated_duration_hours) if s.estimated_duration_hours is not None else None,
+        'assigned_to': s.assigned_to, 'notes': s.notes, 'maintenance_checklist': s.maintenance_checklist,
+        'is_active': s.is_active,
+        'parts': [{'spare_part_id': p.spare_part_id, 'part_number': p.spare_part.part_number,
+                   'part_name': p.spare_part.part_name, 'uom': p.spare_part.uom, 'qty': float(p.qty),
+                   'current_stock': float(p.spare_part.current_stock or 0)} for p in parts],
+    }
+
+
+def _set_schedule_parts(schedule, parts):
+    from models import MaintenanceSchedulePart, SparePart
+    MaintenanceSchedulePart.query.filter_by(schedule_id=schedule.id).delete()
+    seen = set()
+    for it in parts or []:
+        sp = db.session.get(SparePart, it.get('spare_part_id') or 0)
+        qty = float(it.get('qty') or 0)
+        if not sp or qty <= 0 or sp.id in seen:
+            raise ValueError('Sparepart jadwal tidak valid (tidak ditemukan, jumlah 0, atau dobel)')
+        seen.add(sp.id)
+        db.session.add(MaintenanceSchedulePart(schedule_id=schedule.id, spare_part_id=sp.id, qty=qty))
+
+
+def _apply_schedule_fields(s, data, creating=False):
+    if 'maintenance_type' in data or creating:
+        if data.get('maintenance_type') not in MAINT_TYPES:
+            raise ValueError('Jenis perawatan tidak valid')
+        s.maintenance_type = data['maintenance_type']
+    if 'frequency' in data or creating:
+        if data.get('frequency') not in FREQUENCIES:
+            raise ValueError('Frekuensi tidak valid')
+        s.frequency = data['frequency']
+    if 'frequency_value' in data or creating:
+        v = int(data.get('frequency_value') or 0)
+        if v < 1:
+            raise ValueError('Interval harus minimal 1')
+        s.frequency_value = v
+    if 'next_maintenance_date' in data or creating:
+        if not data.get('next_maintenance_date'):
+            raise ValueError('Tanggal perawatan berikutnya wajib diisi')
+        s.next_maintenance_date = _parse_date(data['next_maintenance_date'])
+    if 'estimated_duration_hours' in data:
+        s.estimated_duration_hours = data['estimated_duration_hours'] if data['estimated_duration_hours'] not in ('', None) else None
+    if 'assigned_to' in data:
+        s.assigned_to = data['assigned_to'] or None
+    if 'notes' in data:
+        s.notes = data['notes']
+    if 'maintenance_checklist' in data:
+        c = data['maintenance_checklist']
+        s.maintenance_checklist = c if isinstance(c, str) or c is None else json.dumps(c)
+    if 'is_active' in data:
+        s.is_active = bool(data['is_active'])
+
+
 @maintenance_bp.route('/schedules', methods=['GET'])
 @jwt_required()
 @require_permission('maintenance.schedule')
 def get_schedules():
     try:
-        schedules = MaintenanceSchedule.query.filter_by(is_active=True).all()
+        q = MaintenanceSchedule.query
+        if request.args.get('include_inactive') != '1':
+            q = q.filter_by(is_active=True)
+        if request.args.get('machine_id'):
+            q = q.filter(MaintenanceSchedule.machine_id == int(request.args['machine_id']))
+        today = get_local_today()
+        if request.args.get('overdue') in ('1', 'true'):
+            q = q.filter(MaintenanceSchedule.next_maintenance_date < today)
+        rows = q.order_by(MaintenanceSchedule.next_maintenance_date.asc()).all()
+        items = [_schedule_dict(s, today) for s in rows]
         return jsonify({
-            'schedules': [{
-                'id': s.id,
-                'schedule_number': s.schedule_number,
-                'machine_name': s.machine.name,
-                'maintenance_type': s.maintenance_type,
-                'frequency': s.frequency,
-                'next_maintenance_date': s.next_maintenance_date.isoformat()
-            } for s in schedules]
+            'schedules': items,
+            'summary': {'total': len(items), 'overdue': sum(1 for i in items if i['overdue']),
+                        'due_7_days': sum(1 for i in items if i['days_until_due'] is not None and 0 <= i['days_until_due'] <= 7)},
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 @maintenance_bp.route('/schedules', methods=['POST'])
 @jwt_required()
 @require_permission('maintenance.schedule')
 def create_schedule():
     try:
-        data = request.get_json()
-        
-        schedule_number = generate_number('MS', MaintenanceSchedule, 'schedule_number')
-        
-        schedule = MaintenanceSchedule(
-            schedule_number=schedule_number,
-            machine_id=data['machine_id'],
-            maintenance_type=data['maintenance_type'],
-            frequency=data['frequency'],
-            frequency_value=data['frequency_value'],
-            next_maintenance_date=datetime.fromisoformat(data['next_maintenance_date']),
-            assigned_to=data.get('assigned_to')
-        )
-        
+        data = request.get_json() or {}
+        if not db.session.get(Machine, data.get('machine_id') or 0):
+            return jsonify({'error': 'Mesin tidak ditemukan'}), 400
+        schedule = MaintenanceSchedule(schedule_number=generate_number('MS', MaintenanceSchedule, 'schedule_number'),
+                                       machine_id=data['machine_id'], maintenance_type='', frequency='', frequency_value=1,
+                                       next_maintenance_date=get_local_today())
+        _apply_schedule_fields(schedule, data, creating=True)
         db.session.add(schedule)
+        db.session.flush()
+        _set_schedule_parts(schedule, data.get('parts'))
         db.session.commit()
-        return jsonify({'message': 'Schedule created', 'schedule_id': schedule.id}), 201
+        return jsonify({'message': 'Jadwal dibuat', 'schedule_id': schedule.id}), 201
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+@maintenance_bp.route('/schedules/bulk', methods=['POST'])
+@jwt_required()
+@require_permission('maintenance.schedule')
+def create_schedules_bulk():
+    """Satu pengaturan jadwal dipasang ke banyak mesin sekaligus (semua atau tidak sama sekali)."""
+    try:
+        data = request.get_json() or {}
+        machine_ids = list(dict.fromkeys(data.get('machine_ids') or []))
+        if not machine_ids:
+            return jsonify({'error': 'Pilih minimal satu mesin'}), 400
+        created = []
+        for mid in machine_ids:
+            if not db.session.get(Machine, mid):
+                raise ValueError(f'Mesin id {mid} tidak ditemukan')
+            sch = MaintenanceSchedule(schedule_number=generate_number('MS', MaintenanceSchedule, 'schedule_number'),
+                                      machine_id=mid, maintenance_type='', frequency='', frequency_value=1,
+                                      next_maintenance_date=get_local_today())
+            _apply_schedule_fields(sch, {k: v for k, v in data.items() if k != 'machine_ids'}, creating=True)
+            db.session.add(sch)
+            db.session.flush()
+            _set_schedule_parts(sch, data.get('parts'))
+            created.append(sch.id)
+        db.session.commit()
+        return jsonify({'message': f'{len(created)} jadwal dibuat', 'schedule_ids': created}), 201
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@maintenance_bp.route('/schedules/<int:schedule_id>', methods=['GET'])
+@jwt_required()
+@require_permission('maintenance.schedule')
+def get_schedule(schedule_id):
+    s = db.session.get(MaintenanceSchedule, schedule_id)
+    if not s:
+        return jsonify({'error': 'Jadwal tidak ditemukan'}), 404
+    return jsonify(_schedule_dict(s, get_local_today())), 200
+
+
+@maintenance_bp.route('/schedules/<int:schedule_id>', methods=['PUT'])
+@jwt_required()
+@require_permission('maintenance.schedule')
+def update_schedule(schedule_id):
+    try:
+        s = db.session.get(MaintenanceSchedule, schedule_id)
+        if not s:
+            return jsonify({'error': 'Jadwal tidak ditemukan'}), 404
+        data = request.get_json() or {}
+        _apply_schedule_fields(s, data)
+        if 'parts' in data:
+            _set_schedule_parts(s, data['parts'])
+        db.session.commit()
+        return jsonify({'message': 'Jadwal diperbarui'}), 200
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@maintenance_bp.route('/schedules/<int:schedule_id>', methods=['DELETE'])
+@jwt_required()
+@require_permission('maintenance.schedule')
+def deactivate_schedule(schedule_id):
+    s = db.session.get(MaintenanceSchedule, schedule_id)
+    if not s:
+        return jsonify({'error': 'Jadwal tidak ditemukan'}), 404
+    s.is_active = False
+    db.session.commit()
+    return jsonify({'message': 'Jadwal dinonaktifkan'}), 200
+
 
 @maintenance_bp.route('/records', methods=['GET'])
 @maintenance_bp.route('/records/', methods=['GET'])

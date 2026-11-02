@@ -32,7 +32,7 @@ from .hr_extended import (
 )
 from .maintenance import MaintenanceSchedule, MaintenanceRecord, MaintenanceTask, EquipmentHistory
 from .asset_management import Asset, DepreciationSchedule, AssetTransfer, AssetValuation, SparePart, SparePartMovement
-from .spare_part_ext import MachineSparePart, SparePartRequest, SparePartRequestItem
+from .spare_part_ext import MachineSparePart, SparePartRequest, SparePartRequestItem, MaintenanceSchedulePart
 from .rd import ResearchProject, Experiment, ProductDevelopment, RDMaterial, ResearchReport, Prototype, ProductTestResult
 from .rnd import (
     RNDProject, RNDFormula, RNDFormulaItem, RNDExperiment, 
@@ -144,7 +144,7 @@ __all__ = [
     # Maintenance models
     'MaintenanceSchedule', 'MaintenanceRecord', 'MaintenanceTask', 'EquipmentHistory',
     # Asset Management models
-    'Asset', 'DepreciationSchedule', 'AssetTransfer', 'AssetValuation', 'SparePart', 'SparePartMovement', 'MachineSparePart', 'SparePartRequest', 'SparePartRequestItem',
+    'Asset', 'DepreciationSchedule', 'AssetTransfer', 'AssetValuation', 'SparePart', 'SparePartMovement', 'MachineSparePart', 'SparePartRequest', 'SparePartRequestItem', 'MaintenanceSchedulePart',
     # R&D models (legacy)
     'ResearchProject', 'Experiment', 'ProductDevelopment', 'RDMaterial', 'ResearchReport', 'Prototype', 'ProductTestResult',
     # RND models (new)

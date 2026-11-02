@@ -52,6 +52,19 @@ def generate_maintenance_record_from_schedule(schedule, user_id=None):
         notes=f'Generated from schedule {schedule.schedule_number}',
     )
     db.session.add(record)
+    db.session.flush()
+
+    # Sparepart yang dibutuhkan jadwal ini diajukan otomatis; kepala maintenance tinggal menyetujui.
+    from models import MaintenanceSchedulePart, SparePartRequest, SparePartRequestItem
+    needs = MaintenanceSchedulePart.query.filter_by(schedule_id=schedule.id).all()
+    if needs:
+        req = SparePartRequest(
+            request_number=generate_number('SPR', SparePartRequest, 'request_number'),
+            machine_id=schedule.machine_id, maintenance_record_id=record.id, status='pending',
+            notes=f'Otomatis dari jadwal {schedule.schedule_number}', requested_by=schedule.assigned_to or user_id)
+        for n in needs:
+            req.items.append(SparePartRequestItem(spare_part_id=n.spare_part_id, qty_requested=n.qty))
+        db.session.add(req)
 
     schedule.last_maintenance_date = schedule.next_maintenance_date
 
