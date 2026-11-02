@@ -159,82 +159,8 @@ def update_work_order(work_order_id):
         return jsonify({'error': str(e)}), 500
 
 # Parts Request Management Endpoints
-@maintenance_extended_bp.route('/parts-requests', methods=['GET'])
-@jwt_required()
-@require_permission('maintenance.view')
-def get_parts_requests():
-    try:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
-        
-        # Mock data for now - will be replaced with actual model
-        parts_requests = []
-        
-        return jsonify({
-            'parts_requests': parts_requests,
-            'total': 0,
-            'pages': 0,
-            'current_page': 1
-        }), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+# Permintaan sparepart sekarang di routes/spare_parts.py (/api/spare-parts/requests).
 
-@maintenance_extended_bp.route('/parts-requests', methods=['POST'])
-@jwt_required()
-@require_permission('maintenance.create')
-def create_parts_request():
-    try:
-        data = request.get_json()
-        user_id = int(get_jwt_identity())
-        
-        # Mock response for now - will be replaced with actual implementation
-        request_number = generate_number('PR', MaintenanceRecord, 'record_number')
-        
-        return jsonify({
-            'message': 'Parts request created successfully',
-            'request_id': 1,
-            'request_number': request_number
-        }), 201
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@maintenance_extended_bp.route('/parts-requests/<int:request_id>', methods=['GET'])
-@jwt_required()
-@require_permission('maintenance.view')
-def get_parts_request(request_id):
-    try:
-        # Mock response for now
-        return jsonify({
-            'parts_request': {
-                'id': request_id,
-                'request_number': f'PR-{request_id:06d}',
-                'machine_id': 1,
-                'requested_by': 1,
-                'request_date': get_local_now().isoformat(),
-                'urgency': 'medium',
-                'work_order_id': None,
-                'parts': [],
-                'justification': '',
-                'notes': '',
-                'status': 'pending'
-            }
-        }), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@maintenance_extended_bp.route('/parts-requests/<int:request_id>', methods=['PUT'])
-@jwt_required()
-@require_permission('maintenance.edit')
-def update_parts_request(request_id):
-    try:
-        data = request.get_json()
-        
-        # Mock response for now
-        return jsonify({'message': 'Parts request updated successfully'}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-# Analytics Endpoints
 @maintenance_extended_bp.route('/analytics', methods=['GET'])
 @jwt_required()
 @require_permission('maintenance.view')
