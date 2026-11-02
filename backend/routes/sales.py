@@ -275,6 +275,8 @@ def get_customer(id):
             # Business information
             'credit_limit': float(customer.credit_limit) if customer.credit_limit else 0,
             'payment_terms_days': getattr(customer, 'payment_terms_days', 30),
+            'payment_terms': 'COD' if not getattr(customer, 'payment_terms_days', 30) else f"Net {getattr(customer, 'payment_terms_days', 30)}",
+            'tax_number': getattr(customer, 'tax_id', ''),
             'customer_type': getattr(customer, 'customer_type', 'retail'),
             'industry': getattr(customer, 'industry', ''),
             'notes': getattr(customer, 'notes', ''),
@@ -323,6 +325,8 @@ def update_customer(id):
             customer.website = data['website']
         if 'tax_id' in data:
             customer.tax_id = data['tax_id']
+        elif 'tax_number' in data:
+            customer.tax_id = data['tax_number']
         
         # Address fields - map frontend fields to backend model
         if 'address' in data:
@@ -363,6 +367,9 @@ def update_customer(id):
             customer.credit_limit = float(data['credit_limit'])
         if 'payment_terms_days' in data:
             customer.payment_terms_days = int(data['payment_terms_days'])
+        elif data.get('payment_terms'):
+            pt = str(data['payment_terms'])
+            customer.payment_terms_days = 0 if pt == 'COD' else int(''.join(ch for ch in pt if ch.isdigit()) or 30)
         if 'customer_type' in data:
             customer.customer_type = data['customer_type']
         if 'industry' in data:

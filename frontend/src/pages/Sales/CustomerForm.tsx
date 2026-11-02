@@ -65,7 +65,7 @@ const CustomerForm = () => {
     try {
       setLoadingData(true)
       const response = await axiosInstance.get(`/api/sales/customers/${id}`)
-      const customer = response.data.customer
+      const customer = response.data.customer ?? response.data
       
       // Populate form fields
       Object.keys(customer).forEach((key) => {
