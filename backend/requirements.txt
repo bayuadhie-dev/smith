@@ -124,3 +124,5 @@ pikepdf==10.17.0  # utils/dcc_pdf.py (lock DCC PDFs)
 pywebpush==2.5.0  # utils/send_notification.py (web push)
 resend==2.50.0  # utils/email_service.py (EMAIL_PROVIDER=resend)
 google-api-python-client==2.201.0  # backup_database.py (Google Drive upload)
+
+pyzk>=0.9

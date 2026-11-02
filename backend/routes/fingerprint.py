@@ -188,21 +188,8 @@ def import_logs():
                          'status': l.get('status'), 'punch': l.get('punch'), 'source_device': src})
         except (KeyError, ValueError):
             continue
-    if rows:
-        lo = min(r['punched_at'] for r in rows)
-        hi = max(r['punched_at'] for r in rows)
-        existing = set(db.session.query(FingerprintLog.device_user_id, FingerprintLog.punched_at).filter(
-            FingerprintLog.punched_at >= lo, FingerprintLog.punched_at <= hi).all())
-    else:
-        existing = set()
-    fresh, seen = [], set(existing)
-    for r in rows:
-        k = (r['device_user_id'], r['punched_at'])
-        if k not in seen:
-            seen.add(k)
-            fresh.append(r)
-    for i in range(0, len(fresh), 2000):
-        db.session.bulk_insert_mappings(FingerprintLog, fresh[i:i + 2000])
-    inserted = len(fresh)
+    from utils.fingerprint_sync import insert_new_logs, refresh_user_stats
+    inserted = insert_new_logs(rows)
+    refresh_user_stats()
     db.session.commit()
     return jsonify({'message': f'{inserted} log baru', 'received': len(rows), 'inserted': inserted, 'skipped': len(rows) - inserted}), 200
