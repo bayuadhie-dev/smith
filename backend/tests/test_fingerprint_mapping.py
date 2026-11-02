@@ -89,3 +89,18 @@ def test_attendance_rules(client, auth_headers, db_session):
     assert client.get('/api/hr/fingerprint/attendance?date_from=2026-10-05&date_to=2027-03-31', headers=auth_headers).status_code == 400
     x = client.get('/api/hr/fingerprint/attendance/export?date_from=2026-10-05&date_to=2026-10-10', headers=auth_headers)
     assert x.status_code == 200 and 'spreadsheetml' in x.content_type
+
+
+def test_ingest_requires_token_and_is_idempotent(client, db_session, monkeypatch):
+    from models import FingerprintLog, FingerprintUser
+    body = {'source_device': 'K20', 'users': [{'user_id': '5', 'name': 'Uji Ingest'}],
+            'logs': [{'user_id': '5', 'timestamp': '2026-10-01T07:00:00', 'status': 1, 'punch': 0}]}
+    monkeypatch.delenv('FINGERPRINT_INGEST_TOKEN', raising=False)
+    assert client.post('/api/hr/fingerprint/ingest', json=body, headers={'X-Ingest-Token': ''}).status_code == 401
+    monkeypatch.setenv('FINGERPRINT_INGEST_TOKEN', 'rahasia-uji')
+    assert client.post('/api/hr/fingerprint/ingest', json=body, headers={'X-Ingest-Token': 'salah'}).status_code == 401
+    r = client.post('/api/hr/fingerprint/ingest', json=body, headers={'X-Ingest-Token': 'rahasia-uji'})
+    assert r.status_code == 200 and r.get_json()['logs_inserted'] == 1 and r.get_json()['users_created'] == 1
+    r = client.post('/api/hr/fingerprint/ingest', json=body, headers={'X-Ingest-Token': 'rahasia-uji'})
+    assert r.get_json()['logs_inserted'] == 0 and r.get_json()['users_created'] == 0
+    assert FingerprintLog.query.count() == 1 and FingerprintUser.query.first().log_count == 1

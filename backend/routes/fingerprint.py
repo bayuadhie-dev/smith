@@ -261,3 +261,30 @@ def attendance_export():
     buf.seek(0)
     return send_file(buf, as_attachment=True, download_name=f'absensi-fingerprint-{df}-{dt}.xlsx',
                      mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+
+@fingerprint_bp.route('/ingest', methods=['POST'])
+def ingest():
+    """Terima data dari pengumpul di jaringan mesin (server lain), tanpa login user.
+    Dijaga token khusus FINGERPRINT_INGEST_TOKEN (header X-Ingest-Token); kosong = ditolak.
+    Body: {source_device?, users:[{user_id,name,privilege?,card?}], logs:[{user_id,timestamp,status?,punch?}]}."""
+    import os
+    import hmac
+    from utils.fingerprint_sync import insert_new_logs, refresh_user_stats, upsert_users
+    expected = os.getenv('FINGERPRINT_INGEST_TOKEN', '')
+    provided = request.headers.get('X-Ingest-Token', '')
+    if not expected or not hmac.compare_digest(expected, provided):
+        return jsonify({'error': 'Unauthorized'}), 401
+    body = request.get_json() or {}
+    created, updated = upsert_users(body.get('users') or [])
+    rows = []
+    for l in body.get('logs') or []:
+        try:
+            rows.append({'device_user_id': str(l['user_id']).strip(), 'punched_at': datetime.fromisoformat(l['timestamp']),
+                         'status': l.get('status'), 'punch': l.get('punch'), 'source_device': body.get('source_device')})
+        except (KeyError, ValueError):
+            continue
+    inserted = insert_new_logs(rows)
+    refresh_user_stats()
+    db.session.commit()
+    return jsonify({'users_created': created, 'users_updated': updated, 'logs_received': len(rows), 'logs_inserted': inserted}), 200

@@ -11,6 +11,10 @@ Cron (server kantor), tiap hari 05.30:
 
 Host/port mesin: argumen --host/--port atau variabel FINGERPRINT_HOST / FINGERPRINT_PORT
 (bawaan 192.168.0.85:4370). Butuh paket pyzk.
+
+Mesin ini dipakai bersama Falmaco dan Fengsheng. Untuk meneruskan data ke server lain (mis. VPS Fengsheng, yang tidak bisa
+menjangkau jaringan mesin) pakai --push https://api.fsnindonesia.com dan simpan token di ~/.fingerprint_push_token
+(sama dengan FINGERPRINT_INGEST_TOKEN di server tujuan).
 """
 import argparse
 import fcntl
@@ -27,7 +31,25 @@ from models import db, FingerprintLog
 from utils.fingerprint_sync import insert_new_logs, refresh_user_stats, upsert_users
 
 
-def run(host, port, timeout, full):
+def push(url, token, users, rows, serial):
+    import requests
+    ep = url.rstrip('/') + '/api/hr/fingerprint/ingest'
+    hdr = {'X-Ingest-Token': token}
+    payload_users = [{'user_id': u.user_id, 'name': u.name, 'privilege': u.privilege, 'card': u.card} for u in users]
+    total = 0
+    first = True
+    for i in range(0, max(len(rows), 1), 5000):
+        chunk = rows[i:i + 5000]
+        body = {'source_device': f'K20 {serial}', 'users': payload_users if first else [],
+                'logs': [{'user_id': r['device_user_id'], 'timestamp': r['punched_at'].isoformat(), 'status': r['status'], 'punch': r['punch']} for r in chunk]}
+        r = requests.post(ep, json=body, headers=hdr, timeout=120)
+        r.raise_for_status()
+        total += r.json().get('logs_inserted', 0)
+        first = False
+    return total
+
+
+def run(host, port, timeout, full, pushes):
     from zk import ZK
 
     lock = open('/tmp/pull_fingerprint.lock', 'w')
@@ -71,6 +93,13 @@ def run(host, port, timeout, full):
             db.session.rollback()
             print(f"[{datetime.now():%Y-%m-%d %H:%M}] GAGAL menyimpan - {type(e).__name__}: {e}")
             return 3
+        for url in pushes:
+            try:
+                tok = os.getenv('FINGERPRINT_PUSH_TOKEN') or open(os.path.expanduser('~/.fingerprint_push_token')).read().strip()
+                n = push(url, tok, users, rows, serial)
+                print(f"[{datetime.now():%Y-%m-%d %H:%M}] Push ke {url}: {n} log baru")
+            except Exception as e:
+                print(f"[{datetime.now():%Y-%m-%d %H:%M}] Push ke {url} GAGAL - {type(e).__name__}: {e}")
         print(f"[{datetime.now():%Y-%m-%d %H:%M}] OK: pengguna alat {len(users)} (baru {created}), log di alat {len(logs)}, "
               f"diperiksa {len(rows)}, log baru {inserted}, {time.time() - t0:.0f} dtk.")
     return 0
@@ -82,5 +111,6 @@ if __name__ == '__main__':
     ap.add_argument('--port', type=int, default=int(os.getenv('FINGERPRINT_PORT', '4370')))
     ap.add_argument('--timeout', type=int, default=30)
     ap.add_argument('--full', action='store_true', help='periksa semua log di alat, bukan hanya yang baru')
+    ap.add_argument('--push', action='append', default=[], help='URL server lain yang ikut menerima data (boleh berulang)')
     a = ap.parse_args()
-    sys.exit(run(a.host, a.port, a.timeout, a.full))
+    sys.exit(run(a.host, a.port, a.timeout, a.full, a.push))

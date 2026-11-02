@@ -75,7 +75,7 @@ const FingerprintAttendance = () => {
   const [from, setFrom] = useState(initial.from)
   const [to, setTo] = useState(initial.to)
   const [employeeId, setEmployeeId] = useState<number | null>(null)
-  const [includeUnmapped, setIncludeUnmapped] = useState(false)
+  const [includeUnmapped, setIncludeUnmapped] = useState(true)
   const [data, setData] = useState<Data | null>(null)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'people' | 'days'>('people')
@@ -170,7 +170,7 @@ const FingerprintAttendance = () => {
         </div>
         <label className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
           <input type="checkbox" checked={includeUnmapped} onChange={(e) => setIncludeUnmapped(e.target.checked)} />
-          Sertakan ID yang belum dipetakan
+          Tampilkan juga ID yang belum dipetakan ke karyawan
         </label>
       </div>
 
@@ -251,7 +251,11 @@ const FingerprintAttendance = () => {
                   <tr key={p.device_user_id} onClick={() => goDaily(p)} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/40">
                     <td className="px-4 py-2.5 text-sm">
                       <div className="font-medium text-gray-900 dark:text-white">{name(p.employee, p.device_name, p.device_user_id)}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{p.employee?.employee_number || `ID alat ${p.device_user_id}`}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {p.employee ? `${p.employee.employee_number} · ID alat ${p.device_user_id}${p.device_name && p.device_name !== p.employee.name ? ` · di alat: ${p.device_name}` : ''}` : (
+                          <>ID alat {p.device_user_id} · <span className="rounded bg-gray-100 px-1.5 py-0.5 font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">belum dipetakan</span></>
+                        )}
+                      </div>
                       {p.id_inactive && (
                         <div className="mt-1 flex flex-wrap items-center gap-2">
                           <span title="ID alat mungkin salah atau karyawan berhenti — cek di Pemetaan Fingerprint" className="inline-flex rounded bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
@@ -314,7 +318,7 @@ const FingerprintAttendance = () => {
                 {pageRows.map((d) => (
                   <tr key={`${d.device_user_id}-${d.date}`} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
                     <td className="whitespace-nowrap px-4 py-2.5 text-sm"><span className="text-gray-900 dark:text-white">{fmtDate(d.date)}</span> <span className="text-xs text-gray-500">{d.weekday}</span></td>
-                    <td className="px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200">{name(d.employee, d.device_name, d.device_user_id)}</td>
+                    <td className="px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200">{name(d.employee, d.device_name, d.device_user_id)}{!d.employee && <span className="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">belum dipetakan</span>}</td>
                     <td className="px-4 py-2.5 text-sm tabular-nums">{d.first || '-'}</td>
                     <td className="px-4 py-2.5 text-sm tabular-nums">{d.last && d.punches > 1 ? d.last : '-'}</td>
                     <td className="px-4 py-2.5 text-right text-sm tabular-nums">{d.punches || '-'}</td>
