@@ -130,7 +130,7 @@ const [alertFilter, setAlertFilter] = useState('active')
       <KpiStrip
         items={[
           { label: 'Total produk', value: (summary.total_products || 0).toLocaleString('id-ID'), hint: 'di semua lokasi' },
-          { label: 'Nilai persediaan', value: formatRupiah(summary.total_value || 0) },
+          { label: 'Nilai stok fisik', value: formatRupiah(summary.total_value || 0), hint: 'jumlah stok × harga master' },
           { label: 'Pemakaian lokasi', value: `${summary.location_utilization || 0}%`, hint: 'kapasitas terpakai' },
           { label: 'Peringatan aktif', value: summary.active_alerts || 0, tone: summary.active_alerts > 0 ? 'bad' : null, hint: summary.critical_alerts > 0 ? `${summary.critical_alerts} kritis` : 'perlu perhatian' },
         ]}

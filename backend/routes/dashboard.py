@@ -543,7 +543,7 @@ def get_module_summaries():
                                                Inventory.stock_status == 'quarantine').count()
             action('stok_rendah', 'Barang di bawah stok minimum', rendah, '/app/warehouse/stock-summary')
             action('kedaluwarsa', 'Barang kedaluwarsa dalam 30 hari', exp, '/app/warehouse/stock-summary')
-            return [item('nilai', 'Nilai persediaan', num(nilai), 'currency'),
+            return [item('nilai', 'Nilai stok fisik', num(nilai), 'currency'),
                     item('rendah', 'Di bawah minimum', rendah, tone='warn' if rendah else None),
                     item('exp', 'Hampir kedaluwarsa', exp, tone='warn' if exp else None),
                     item('karantina', 'Batch karantina', karantina)]
