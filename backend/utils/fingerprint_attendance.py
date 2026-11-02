@@ -117,6 +117,11 @@ def compute(date_from, date_to, employee_id=None, include_unmapped=False, today=
             s['diff_minutes'] -= r['target_minutes']
         elif r['status'] == 'tidak_lengkap':
             s['incomplete'] += 1
+    last_seen = {u.device_user_id: u.last_log_at for u in FingerprintUser.query.all()}
+    for s_ in summary.values():
+        ll = last_seen.get(s_['device_user_id'])
+        s_['last_log_at'] = ll.isoformat() if ll else None
+        s_['id_inactive'] = bool(ll is None or (today - ll.date()).days > 14)
     people = sorted(summary.values(), key=lambda s: ((s['employee'] or {}).get('name') or s['device_name'] or ''))
     holidays = [d.isoformat() for d in all_dates if d.weekday() in RULES['workdays'] and d < today and is_holiday(d)]
     return {'rules': RULES, 'days': days, 'people': people, 'holidays': holidays,

@@ -426,6 +426,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           permission: 'hr',
           children: [
             { name: 'Dashboard', href: '/app/hr/dashboard', icon: PresentationChartLineIcon },
+            { name: 'Pemetaan Fingerprint', href: '/app/hr/fingerprint-mapping', icon: UserGroupIcon },
+            { name: 'Log Absensi Fingerprint', href: '/app/hr/fingerprint-attendance', icon: ClockIcon },
             {
               name: 'Master Data Karyawan', icon: UserGroupIcon, isSubMenu: true, permission: 'employees', subChildren: [
                 { name: 'Karyawan', href: '/app/hr/employees' },
