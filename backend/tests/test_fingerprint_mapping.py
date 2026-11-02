@@ -46,3 +46,16 @@ def test_import_suggest_accept_and_manual_map(client, auth_headers, db_session):
     db_session.expire_all()
     assert db_session.get(Employee, a.id).fingerprint_id == '11'
     assert client.get('/api/hr/fingerprint/users?filter=mapped', headers=auth_headers).get_json()['users'][0]['log_count'] == 40
+
+
+def test_logs_import_is_idempotent(client, auth_headers, db_session):
+    from models import FingerprintLog
+    body = {'source_device': 'K20', 'logs': [
+        {'user_id': '11', 'timestamp': '2026-10-01T07:00:01', 'status': 1, 'punch': 0},
+        {'user_id': '11', 'timestamp': '2026-10-01T16:01:00', 'status': 1, 'punch': 1},
+        {'user_id': '12', 'timestamp': '2026-10-01T07:05:00', 'status': 3, 'punch': 0}]}
+    r1 = client.post('/api/hr/fingerprint/logs/import', headers=auth_headers, json=body).get_json()
+    assert r1['inserted'] == 3
+    r2 = client.post('/api/hr/fingerprint/logs/import', headers=auth_headers, json=body).get_json()
+    assert r2['inserted'] == 0 and r2['skipped'] == 3
+    assert FingerprintLog.query.count() == 3

@@ -5,7 +5,7 @@ from difflib import SequenceMatcher
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 
-from models import db, Employee, FingerprintUser
+from models import db, Employee, FingerprintUser, FingerprintLog
 from utils.auth_decorators import require_permission
 
 fingerprint_bp = Blueprint('fingerprint', __name__)
@@ -168,3 +168,41 @@ def import_users():
             u.last_log_at = datetime.fromisoformat(it['last_log_at'])
     db.session.commit()
     return jsonify({'message': f'{created} baru, {updated} diperbarui', 'created': created, 'updated': updated}), 200
+
+
+@fingerprint_bp.route('/logs/import', methods=['POST'])
+@jwt_required()
+@require_permission('hr.edit')
+def import_logs():
+    """Simpan cap mentah. Body: {source_device?, logs:[{user_id, timestamp(ISO), status?, punch?}]}.
+    Idempotent: pasangan (user, waktu) yang sudah ada dilewati."""
+    body = request.get_json() or {}
+    logs = body.get('logs') or []
+    if not logs:
+        return jsonify({'error': 'Daftar log kosong'}), 400
+    src = body.get('source_device')
+    rows = []
+    for l in logs:
+        try:
+            rows.append({'device_user_id': str(l['user_id']).strip(), 'punched_at': datetime.fromisoformat(l['timestamp']),
+                         'status': l.get('status'), 'punch': l.get('punch'), 'source_device': src})
+        except (KeyError, ValueError):
+            continue
+    if rows:
+        lo = min(r['punched_at'] for r in rows)
+        hi = max(r['punched_at'] for r in rows)
+        existing = set(db.session.query(FingerprintLog.device_user_id, FingerprintLog.punched_at).filter(
+            FingerprintLog.punched_at >= lo, FingerprintLog.punched_at <= hi).all())
+    else:
+        existing = set()
+    fresh, seen = [], set(existing)
+    for r in rows:
+        k = (r['device_user_id'], r['punched_at'])
+        if k not in seen:
+            seen.add(k)
+            fresh.append(r)
+    for i in range(0, len(fresh), 2000):
+        db.session.bulk_insert_mappings(FingerprintLog, fresh[i:i + 2000])
+    inserted = len(fresh)
+    db.session.commit()
+    return jsonify({'message': f'{inserted} log baru', 'received': len(rows), 'inserted': inserted, 'skipped': len(rows) - inserted}), 200
