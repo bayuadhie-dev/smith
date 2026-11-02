@@ -272,7 +272,6 @@ import Departments from './pages/HR/Departments'
 import PositionManagement from './pages/HR/PositionManagement'
 import HRReports from './pages/HR/Reports'
 import MaintenanceList from './pages/Maintenance/MaintenanceList'
-import MaintenanceWorkOrderForm from './pages/Maintenance/MaintenanceWorkOrderForm'
 import MaintenancePartsForm from './pages/Maintenance/MaintenancePartsForm'
 import MachineParts from './pages/Maintenance/MachineParts'
 import SparePartRequests from './pages/Maintenance/SparePartRequests'
@@ -878,8 +877,8 @@ function AppChildRoutes() {
                 <Route path="maintenance/new" element={<MaintenanceForm />} />
                 <Route path="maintenance/request/new" element={<MaintenanceRequestForm />} />
                 <Route path="maintenance/request/:id/edit" element={<MaintenanceRequestForm />} />
-                <Route path="maintenance/work-orders/new" element={<MaintenanceWorkOrderForm />} />
-                <Route path="maintenance/work-orders/:id/edit" element={<MaintenanceWorkOrderForm />} />
+                <Route path="maintenance/work-orders/new" element={<Navigate to="/app/maintenance/new" replace />} />
+                <Route path="maintenance/work-orders/:id/edit" element={<Navigate to="/app/maintenance/records" replace />} />
                 <Route path="maintenance/parts-requests/new" element={<MaintenancePartsForm />} />
                 <Route path="maintenance/parts-requests/:id/edit" element={<Navigate to="/app/maintenance/spare-part-requests" replace />} />
                 <Route path="maintenance/spare-part-requests" element={<SparePartRequests />} />

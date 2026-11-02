@@ -82,3 +82,50 @@ def generate_maintenance_record_from_schedule(schedule, user_id=None):
     schedule.next_maintenance_date = next_date
 
     return record
+
+
+def parse_parts_used(raw):
+    import json
+    if not raw:
+        return []
+    try:
+        data = json.loads(raw) if isinstance(raw, str) else raw
+    except ValueError:
+        return []
+    return data if isinstance(data, list) else []
+
+
+def consume_spare_parts_on_completion(record, parts_raw, user_id):
+    """Kurangi stok sparepart (gudang sparepart, bukan gudang utama) untuk pemakaian pada catatan perawatan.
+
+    Sparepart yang sudah dikeluarkan lewat permintaan yang disetujui untuk catatan ini tidak dipotong dua kali:
+    hanya selisih (dipakai - sudah dikeluarkan) yang dikeluarkan sekarang. Stok tidak cukup => ValueError,
+    dan penyelesaian catatan dibatalkan oleh pemanggil."""
+    from decimal import Decimal
+    from sqlalchemy import func
+    from models import SparePart, SparePartRequest, SparePartRequestItem
+    from routes.spare_parts import _move
+
+    used = {}
+    for it in parse_parts_used(parts_raw):
+        sid = it.get('spare_part_id')
+        if sid:
+            used[int(sid)] = used.get(int(sid), Decimal('0')) + Decimal(str(it.get('quantity') or 0))
+    if not used:
+        return []
+    issued = dict(
+        db.session.query(SparePartRequestItem.spare_part_id, func.coalesce(func.sum(SparePartRequestItem.qty_issued), 0))
+        .join(SparePartRequest, SparePartRequest.id == SparePartRequestItem.request_id)
+        .filter(SparePartRequest.maintenance_record_id == record.id, SparePartRequest.status == 'approved')
+        .group_by(SparePartRequestItem.spare_part_id).all())
+    movements = []
+    for sid, qty in used.items():
+        extra = qty - Decimal(str(issued.get(sid, 0)))
+        if extra <= 0:
+            continue
+        part = db.session.query(SparePart).filter_by(id=sid).with_for_update().first()
+        if not part:
+            raise ValueError(f'Sparepart id {sid} tidak ditemukan')
+        movements.append(_move(part, 'out', extra, user_id, notes=f'Dipakai pada {record.record_number}',
+                               maintenance_record_id=record.id))
+    return movements

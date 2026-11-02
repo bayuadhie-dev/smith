@@ -6,7 +6,7 @@ from models.production import Machine
 from models.hr import Employee
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import func, desc
 from utils.timezone import get_local_now, get_local_today
 
@@ -148,9 +148,9 @@ def update_work_order(work_order_id):
         if 'notes' in data:
             work_order.notes = data['notes']
         if 'status' in data:
-            work_order.status = data['status']
             if data['status'] == 'completed':
-                work_order.end_time = get_local_now()
+                return jsonify({'error': 'Selesaikan SPK lewat catatan perawatan (PATCH /api/maintenance/records/<id>) agar root cause, downtime, dan stok sparepart ikut diproses'}), 400
+            work_order.status = data['status']
         
         db.session.commit()
         return jsonify({'message': 'Work order updated successfully'}), 200
@@ -167,10 +167,14 @@ def _compute_maintenance_analytics(date_from=None, date_to=None, machine_id=None
         # Base query
         query = MaintenanceRecord.query
         
+        # Rentang memakai tanggal pekerjaan (maintenance_date), dan tanggal akhir inklusif sampai akhir hari.
         if date_from:
-            query = query.filter(MaintenanceRecord.created_at >= datetime.fromisoformat(date_from))
+            query = query.filter(MaintenanceRecord.maintenance_date >= datetime.fromisoformat(date_from))
         if date_to:
-            query = query.filter(MaintenanceRecord.created_at <= datetime.fromisoformat(date_to))
+            end = datetime.fromisoformat(date_to)
+            if len(date_to) <= 10:
+                end = end + timedelta(days=1)
+            query = query.filter(MaintenanceRecord.maintenance_date < end)
         if machine_id:
             query = query.filter(MaintenanceRecord.machine_id == machine_id)
         if maintenance_type:
@@ -181,7 +185,7 @@ def _compute_maintenance_analytics(date_from=None, date_to=None, machine_id=None
         # Calculate summary metrics
         total_work_orders = len(records)
         completed_work_orders = len([r for r in records if r.status == 'completed'])
-        pending_work_orders = len([r for r in records if r.status == 'pending'])
+        pending_work_orders = len([r for r in records if r.status in ('pending', 'scheduled')])
         total_cost = sum([r.cost or 0 for r in records])
 
         # Calculate MTTR (Mean Time To Repair).

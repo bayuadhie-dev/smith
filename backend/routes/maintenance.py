@@ -9,7 +9,7 @@ from models.production import Machine
 from models.hr import Employee
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number
-from utils.maintenance_helpers import resolve_asset_for_machine, generate_maintenance_record_from_schedule
+from utils.maintenance_helpers import resolve_asset_for_machine, generate_maintenance_record_from_schedule, consume_spare_parts_on_completion, parse_parts_used
 from utils.helpers import get_setting_value
 from datetime import datetime
 from sqlalchemy import func, desc
@@ -473,6 +473,10 @@ def update_maintenance_record(record_id):
                         dt.duration_minutes = int(duration_mins)
                     dt.action_taken = f'Maintenance completed: {record.work_performed or "N/A"}'
                 
+                # Sparepart bergudang sendiri (spare_parts): potong selisih dari yang sudah dikeluarkan lewat permintaan.
+                consume_spare_parts_on_completion(record, data.get('parts_used') if 'parts_used' in data else record.parts_used,
+                                                  int(get_jwt_identity()))
+
                 # ============= INVENTORY INTEGRATION (A-008) =============
                 # Deduct spare parts from inventory when maintenance is completed
                 if record.parts_used:
@@ -480,7 +484,7 @@ def update_maintenance_record(record_id):
                         from models import Inventory
                         from utils.inventory_helpers import record_inventory_transaction
                         import json
-                        parts = json.loads(record.parts_used)
+                        parts = [x for x in parse_parts_used(record.parts_used) if not x.get('spare_part_id')]
                         
                         for part in parts:
                             # Handling both {id: X, quantity: Y} and {material_id: X, quantity: Y} formats
@@ -541,6 +545,19 @@ def update_maintenance_record(record_id):
         if 'notes' in data:
             record.notes = data['notes']
             
+        if 'required_parts' in data and 'parts_used' not in data:
+            import json
+            record.parts_used = json.dumps(data['required_parts'])
+
+        if 'tasks' in data and record.status != 'completed':
+            MaintenanceTask.query.filter_by(record_id=record.id).delete()
+            for task in data['tasks'] or []:
+                db.session.add(MaintenanceTask(
+                    record_id=record.id,
+                    task_description=task.get('task_name', task.get('task_description', '')),
+                    notes=task.get('description'),
+                    status=task.get('status', 'pending')))
+
         if 'parts_used' in data:
             import json
             record.parts_used = json.dumps(data['parts_used'])
@@ -560,6 +577,9 @@ def update_maintenance_record(record_id):
             print(f"Redis cache invalidation error (continuing): {cache_error}")
             
         return jsonify(success_response('api.success')), 200
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -586,6 +606,9 @@ def get_maintenance_record(record_id):
                 'problem_description': record.problem_description,
                 'work_performed': record.work_performed,
                 'parts_used': record.parts_used,
+                'required_parts': parse_parts_used(record.parts_used),
+                'tasks': [{'id': t.id, 'task_name': t.task_description, 'description': t.notes, 'status': t.status}
+                          for t in MaintenanceTask.query.filter_by(record_id=record.id).order_by(MaintenanceTask.id).all()],
                 'cost': float(record.cost) if record.cost else 0,
                 'performed_by': record.performed_by,
                 'performed_by_name': record.performed_by_user.full_name if record.performed_by_user else None,

@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { Plus, Trash2 } from 'lucide-react';
 import { PageHeader, Panel } from '../../components/ui/PageKit';
 import NumberInput from '../../components/ui/NumberInput'
+import SearchableSelect from '../../components/SearchableSelect'
 
 interface Machine {
   id: number;
@@ -28,8 +29,18 @@ interface MaintenanceTask {
   status: string;
 }
 
+interface SparePartOption {
+  id: number;
+  part_number: string;
+  part_name: string;
+  uom: string;
+  current_stock: number;
+  unit_cost: number | null;
+}
+
 interface MaintenancePart {
   id?: number;
+  spare_part_id?: number | null;
   part_name: string;
   quantity: number;
   unit_cost: number;
@@ -53,6 +64,7 @@ interface FormData {
 }
 
 const MaintenanceForm: React.FC = () => {
+  const [spareParts, setSpareParts] = useState<SparePartOption[]>([]);
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
@@ -96,6 +108,7 @@ const MaintenanceForm: React.FC = () => {
   ];
 
   useEffect(() => {
+    api.get('/api/spare-parts', { params: { per_page: 200 } }).then((r) => setSpareParts(r.data.spare_parts || [])).catch(() => setSpareParts([]));
     fetchMachines();
     fetchEmployees();
     if (isEdit) {
@@ -191,7 +204,7 @@ const MaintenanceForm: React.FC = () => {
   const addPart = () => {
     setFormData(prev => ({
       ...prev,
-      required_parts: [...prev.required_parts, { part_name: '', quantity: 1, unit_cost: 0, supplier: '' }]
+      required_parts: [...prev.required_parts, { spare_part_id: null, part_name: '', quantity: 1, unit_cost: 0, supplier: '' }]
     }));
   };
 
@@ -356,10 +369,28 @@ const MaintenanceForm: React.FC = () => {
               <div className="divide-y divide-gray-100 dark:divide-gray-700">
                 {formData.required_parts.map((part, index) => (
                   <div key={index} className="grid grid-cols-12 items-center gap-2 p-3">
-                    <input type="text" placeholder="Nama sparepart" value={part.part_name} onChange={(e) => updatePart(index, 'part_name', e.target.value)} className={`${inputCls} col-span-12 md:col-span-4`} />
-                    <NumberInput placeholder="Jumlah" value={part.quantity} onChange={(e) => updatePart(index, 'quantity', parseInt(e.target.value) || 0)} min="1" className={`${inputCls} col-span-4 text-right md:col-span-2`} />
-                    <NumberInput currency placeholder="Harga satuan" value={part.unit_cost} onChange={(e) => updatePart(index, 'unit_cost', parseFloat(e.target.value) || 0)} min="0" className={`${inputCls} col-span-8 text-right md:col-span-2`} />
-                    <input type="text" placeholder="Pemasok" value={part.supplier} onChange={(e) => updatePart(index, 'supplier', e.target.value)} className={`${inputCls} col-span-11 md:col-span-3`} />
+                    <div className="col-span-12 md:col-span-5">
+                      <SearchableSelect
+                        options={spareParts.map((sp) => ({ id: sp.id, code: sp.part_number, name: sp.part_name }))}
+                        value={part.spare_part_id || null}
+                        onChange={(v) => {
+                          const sp = spareParts.find((x) => x.id === Number(v));
+                          setFormData(prev => ({
+                            ...prev,
+                            required_parts: prev.required_parts.map((p, i) => i === index
+                              ? { ...p, spare_part_id: sp ? sp.id : null, part_name: sp ? sp.part_name : '', unit_cost: sp?.unit_cost ?? p.unit_cost }
+                              : p)
+                          }));
+                        }}
+                        placeholder="Pilih sparepart dari gudang sparepart"
+                      />
+                      {part.spare_part_id ? (() => {
+                        const sp = spareParts.find((x) => x.id === part.spare_part_id);
+                        return sp ? <p className={`mt-1 text-xs ${sp.current_stock < part.quantity ? 'text-red-600' : 'text-gray-500'}`}>Stok gudang: {sp.current_stock.toLocaleString('id-ID')} {sp.uom}{sp.current_stock < part.quantity ? ' (kurang)' : ''}</p> : null;
+                      })() : null}
+                    </div>
+                    <NumberInput placeholder="Jumlah" value={part.quantity} onChange={(e) => updatePart(index, 'quantity', parseFloat(e.target.value) || 0)} min="1" className={`${inputCls} col-span-5 text-right md:col-span-2`} />
+                    <NumberInput currency placeholder="Harga satuan" value={part.unit_cost} onChange={(e) => updatePart(index, 'unit_cost', parseFloat(e.target.value) || 0)} min="0" className={`${inputCls} col-span-6 text-right md:col-span-4`} />
                     <button type="button" onClick={() => removePart(index)} className="col-span-1 text-gray-400 hover:text-red-600" title="Hapus sparepart"><Trash2 className="mx-auto h-4 w-4" /></button>
                   </div>
                 ))}
