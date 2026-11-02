@@ -193,3 +193,71 @@ def import_logs():
     refresh_user_stats()
     db.session.commit()
     return jsonify({'message': f'{inserted} log baru', 'received': len(rows), 'inserted': inserted, 'skipped': len(rows) - inserted}), 200
+
+
+def _range_args():
+    from datetime import date as _d, timedelta as _td
+    today = datetime.now().date()
+    try:
+        df = _d.fromisoformat(request.args['date_from']) if request.args.get('date_from') else today.replace(day=1)
+        dt = _d.fromisoformat(request.args['date_to']) if request.args.get('date_to') else today
+    except ValueError:
+        return None, None, ({'error': 'Format tanggal tidak valid (YYYY-MM-DD)'}, 400)
+    if dt < df:
+        return None, None, ({'error': 'Tanggal akhir lebih awal dari tanggal awal'}, 400)
+    if (dt - df).days > 92:
+        return None, None, ({'error': 'Rentang maksimal 93 hari'}, 400)
+    return df, dt, None
+
+
+@fingerprint_bp.route('/attendance', methods=['GET'])
+@jwt_required()
+@require_permission('hr.view')
+def attendance():
+    from utils.fingerprint_attendance import compute
+    df, dt, err = _range_args()
+    if err:
+        return jsonify(err[0]), err[1]
+    data = compute(df, dt, employee_id=request.args.get('employee_id'),
+                   include_unmapped=request.args.get('include_unmapped') in ('1', 'true'))
+    last = db.session.query(db.func.max(FingerprintLog.punched_at)).scalar()
+    data['last_log_at'] = last.isoformat() if last else None
+    data['period'] = {'date_from': df.isoformat(), 'date_to': dt.isoformat()}
+    return jsonify(data), 200
+
+
+@fingerprint_bp.route('/attendance/export', methods=['GET'])
+@jwt_required()
+@require_permission('hr.view')
+def attendance_export():
+    import io
+    import openpyxl
+    from flask import send_file
+    from utils.fingerprint_attendance import compute
+    df, dt, err = _range_args()
+    if err:
+        return jsonify(err[0]), err[1]
+    data = compute(df, dt, employee_id=request.args.get('employee_id'),
+                   include_unmapped=request.args.get('include_unmapped') in ('1', 'true'))
+    hm = lambda m: '' if m is None else f"{'-' if m < 0 else ''}{abs(m) // 60}:{abs(m) % 60:02d}"
+    label = {'hadir': 'Hadir', 'tidak_lengkap': 'Cap tidak lengkap', 'tidak_ada_cap': 'Tidak ada cap', 'libur': 'Libur', 'belum': 'Belum'}
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'Ringkasan'
+    ws.append(['Karyawan', 'ID alat', 'Hari kerja', 'Hadir', 'Tidak ada cap', 'Cap tidak lengkap', 'Jam kerja bersih', 'Target jam', 'Selisih jam'])
+    for p in data['people']:
+        ws.append([(p['employee'] or {}).get('name') or p['device_name'], p['device_user_id'], p['work_days'], p['present'], p['absent'],
+                   p['incomplete'], hm(p['net_minutes']), hm(p['target_minutes']), hm(p['diff_minutes'])])
+    wd = wb.create_sheet('Harian')
+    wd.append(['Tanggal', 'Hari', 'Karyawan', 'ID alat', 'Masuk', 'Pulang', 'Jumlah cap', 'Jam bersih', 'Target', 'Selisih', 'Status'])
+    for r in sorted(data['days'], key=lambda x: (x['date'], (x['employee'] or {}).get('name') or '')):
+        wd.append([r['date'], r['weekday'], (r['employee'] or {}).get('name') or r['device_name'], r['device_user_id'], r['first'], r['last'],
+                   r['punches'], hm(r['net_minutes']), hm(r['target_minutes']), hm(r['diff_minutes']), label.get(r['status'], r['status'])])
+    for sh in (ws, wd):
+        for col in sh.columns:
+            sh.column_dimensions[col[0].column_letter].width = min(34, max(10, max(len(str(c.value or '')) for c in col) + 2))
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return send_file(buf, as_attachment=True, download_name=f'absensi-fingerprint-{df}-{dt}.xlsx',
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')

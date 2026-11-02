@@ -59,3 +59,33 @@ def test_logs_import_is_idempotent(client, auth_headers, db_session):
     r2 = client.post('/api/hr/fingerprint/logs/import', headers=auth_headers, json=body).get_json()
     assert r2['inserted'] == 0 and r2['skipped'] == 3
     assert FingerprintLog.query.count() == 3
+
+
+def test_attendance_rules(client, auth_headers, db_session):
+    from datetime import date
+    e1 = _emp(db_session, 'A1', 'Rina', 'Lestari'); e1.fingerprint_id = '21'
+    e2 = _emp(db_session, 'A2', 'Tono', 'Wijaya'); e2.fingerprint_id = '22'
+    db_session.commit()
+    logs = [  # Senin 2026-10-05
+        ('21', '2026-10-05T07:00:05'), ('21', '2026-10-05T07:00:40'), ('21', '2026-10-05T16:05:00'),   # 9h05 span -> 8h05 net, dedupe ketukan ganda
+        ('22', '2026-10-05T08:10:00'),                                                                  # satu cap
+        ('21', '2026-10-06T07:00:00'), ('21', '2026-10-06T14:00:00'),                                  # 7h span -> 6h net -> kurang 2h
+        ('22', '2026-10-06T07:00:00'), ('22', '2026-10-06T18:30:00'),                                  # 11h30 -> 10h30 -> lembur 2h30
+        ('21', '2026-10-10T08:00:00'), ('21', '2026-10-10T12:00:00')]                                  # Sabtu: target 0, 4h = lembur
+    client.post('/api/hr/fingerprint/logs/import', headers=auth_headers, json={'logs': [{'user_id': u, 'timestamp': t} for u, t in logs]})
+    r = client.get('/api/hr/fingerprint/attendance?date_from=2026-10-05&date_to=2026-10-10', headers=auth_headers)
+    assert r.status_code == 200, r.get_json()
+    d = r.get_json()
+    day = {(x['device_user_id'], x['date']): x for x in d['days']}
+    a = day[('21', '2026-10-05')]
+    assert a['punches'] == 2 and a['status'] == 'hadir' and a['net_minutes'] == 484 and a['diff_minutes'] == 0
+    assert day[('22', '2026-10-05')]['status'] == 'tidak_lengkap'
+    assert day[('21', '2026-10-06')]['diff_minutes'] == -120
+    assert day[('22', '2026-10-06')]['diff_minutes'] == 150
+    assert day[('21', '2026-10-10')]['net_minutes'] == 240 and day[('21', '2026-10-10')]['diff_minutes'] == 240
+    assert day[('22', '2026-10-07')]['status'] == 'libur'  # tidak ada cap dari siapa pun -> libur
+    ppl = {p['device_user_id']: p for p in d['people']}
+    assert ppl['21']['present'] == 3 and ppl['21']['diff_minutes'] == 0 - 120 + 240
+    assert client.get('/api/hr/fingerprint/attendance?date_from=2026-10-05&date_to=2027-03-31', headers=auth_headers).status_code == 400
+    x = client.get('/api/hr/fingerprint/attendance/export?date_from=2026-10-05&date_to=2026-10-10', headers=auth_headers)
+    assert x.status_code == 200 and 'spreadsheetml' in x.content_type
