@@ -43,6 +43,23 @@ export default defineConfig({
           clientPort: Number(process.env.VITE_HMR_CLIENT_PORT) || 443,
         }
       : true,
+    // Opt-in (VITE_WARMUP=1, set only on the VPS): pre-transform the most used
+    // modules at dev-server start so the first browser load is not a cold one.
+    ...(process.env.VITE_WARMUP
+      ? {
+          warmup: {
+            clientFiles: [
+              './src/main.tsx',
+              './src/App.tsx',
+              './src/pages/Landing/Landing.tsx',
+              './src/pages/Auth/Login.tsx',
+              './src/pages/Dashboard/DashboardModules.tsx',
+              './src/components/Layout/**/*.tsx',
+              './src/components/ui/*.tsx',
+            ],
+          },
+        }
+      : {}),
     proxy: {
       '/api': {
         target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:5000',
