@@ -6,6 +6,7 @@ Hasilnya selalu USULAN: yang memutuskan tetap manusia (HRD), kecuali pemetaan ma
 """
 import re
 from difflib import SequenceMatcher
+from functools import lru_cache
 
 # Ejaan umum yang beragam untuk kata yang sama.
 CANON = {
@@ -18,7 +19,16 @@ CANON = {
 STOP = {'bin', 'binti', 'bn', 'dan', 'al', 'el'}
 
 
+@lru_cache(maxsize=4096)
+def _tokens_cached(name):
+    return tuple(_tokens(name))
+
+
 def tokens(name):
+    return list(_tokens_cached(name))
+
+
+def _tokens(name):
     out = []
     for t in re.split(r'[^a-z]+', (name or '').lower()):
         if not t or t in STOP:
@@ -28,7 +38,12 @@ def tokens(name):
 
 
 def _sim(a, b):
-    return SequenceMatcher(None, a, b).ratio()
+    if not a or not b or a[0] != b[0]:
+        return 0.0
+    sm = SequenceMatcher(None, a, b)
+    if sm.real_quick_ratio() < 0.8 or sm.quick_ratio() < 0.8:
+        return 0.0
+    return sm.ratio()
 
 
 def _tok_match(a, b):
@@ -46,6 +61,7 @@ def _tok_match(a, b):
     return 0.0
 
 
+@lru_cache(maxsize=65536)
 def score(device_name, employee_name):
     """Return (skor 0..1, alasan)."""
     d, e = tokens(device_name), tokens(employee_name)
