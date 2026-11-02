@@ -1,20 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useLanguage } from '../../contexts/LanguageContext';
-import {
-  CheckIcon as Save,
-  ClockIcon,
-  CogIcon as Settings,
-  CubeIcon,
-  CurrencyDollarIcon,
-  DocumentTextIcon,
-  ExclamationTriangleIcon as AlertTriangle,
-  PlusIcon as Plus,
-  TrashIcon as Trash2,
-  XMarkIcon as X
-
-} from '@heroicons/react/24/outline';
+import { XMarkIcon as X } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { PageHeader, Panel } from '../../components/ui/PageKit'
 interface WorkOrderFormData {
   work_order_number: string;
   title: string;
@@ -49,8 +37,6 @@ interface WorkOrderTask {
 }
 
 const MaintenanceWorkOrderForm: React.FC = () => {
-  const { t } = useLanguage();
-
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
@@ -179,10 +165,10 @@ const MaintenanceWorkOrderForm: React.FC = () => {
         navigate('/app/maintenance/work-orders');
       } else {
         const errorData = await response.json();
-        setError(errorData.message || 'Failed to save SPK');
+        setError(errorData.message || 'Gagal menyimpan SPK');
       }
     } catch (error) {
-      setError('Network error occurred');
+      setError('Terjadi gangguan jaringan');
     } finally {
       setLoading(false);
     }
@@ -251,374 +237,204 @@ const MaintenanceWorkOrderForm: React.FC = () => {
     return partsCost + formData.estimated_cost;
   };
 
+  const priorityLabelId: Record<string, string> = { low: 'Rendah', medium: 'Sedang', high: 'Tinggi', critical: 'Kritis' };
+  const typeLabelId: Record<string, string> = {
+    preventive: 'Perawatan preventif', corrective: 'Perawatan korektif', emergency: 'Perbaikan darurat',
+    inspection: 'Inspeksi', calibration: 'Kalibrasi'
+  };
+  const inputCls = 'w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white';
+  const labelCls = 'mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200';
+  const rp = (n: number) => `Rp ${(n || 0).toLocaleString('id-ID')}`;
+  const parts = formData.parts_required || [];
+  const tasks = formData.tasks || [];
+  const partsCost = parts.reduce((sum, part) => sum + (part.quantity * part.unit_cost), 0);
+  const machine = machines.find(m => m.id === formData.machine_id);
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {isEdit ? 'Edit SPK' : 'Create SPK'}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">Manage maintenance SPK and tasks</p>
-        </div>
-      </div>
+    <div className="space-y-4 p-6">
+      <PageHeader
+        title={isEdit ? 'Ubah SPK Perawatan' : 'SPK Perawatan Baru'}
+        subtitle="Kelola SPK perawatan beserta sparepart dan tugasnya"
+        actions={
+          <button type="button" onClick={() => navigate('/app/maintenance/work-orders')} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
+            Batal
+          </button>
+        }
+      />
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-              <AlertTriangle className="h-5 w-5" />
-              <span>{error}</span>
-            </div>
-          )}
+      {error && (
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">{error}</div>
+      )}
 
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-              <Settings className="inline h-4 w-4 mr-1" />
-              Basic Information
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0 space-y-4">
+          <Panel title="Data umum">
+            <div className="grid gap-4 p-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  SPK Number
-                </label>
-                <input
-                  type="text"
-                  value={formData.work_order_number}
-                  onChange={(e) => setFormData(prev => ({ ...prev, work_order_number: e.target.value }))}
-                  placeholder="Auto-generated if empty"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+                <label className={labelCls}>No. SPK</label>
+                <input type="text" value={formData.work_order_number} onChange={(e) => setFormData(prev => ({ ...prev, work_order_number: e.target.value }))} placeholder="Otomatis jika dikosongkan" className={inputCls} />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Priority *
-                </label>
-                <select
-                  value={formData.priority}
-                  onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
+                <label className={labelCls}>Prioritas *</label>
+                <select value={formData.priority} onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))} required className={inputCls}>
                   {priorities.map(priority => (
-                    <option key={priority.value} value={priority.value}>
-                      {priority.label}
-                    </option>
+                    <option key={priority.value} value={priority.value}>{priorityLabelId[priority.value] || priority.label}</option>
                   ))}
                 </select>
               </div>
-
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Title *
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  required
-                  placeholder="Brief description of the SPK"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+                <label className={labelCls}>Judul *</label>
+                <input type="text" value={formData.title} onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))} required placeholder="Ringkasan singkat SPK" className={inputCls} />
               </div>
-
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Description *
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  required
-                  rows={3}
-                  placeholder="Detailed description of the maintenance work required"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+                <label className={labelCls}>Deskripsi *</label>
+                <textarea value={formData.description} onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))} required rows={3} placeholder="Uraian pekerjaan perawatan yang diperlukan" className={inputCls} />
               </div>
             </div>
-          </div>
+          </Panel>
 
-          {/* Assignment & Scheduling */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-              Assignment & Scheduling
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Panel title="Mesin dan penanggung jawab">
+            <div className="grid gap-4 p-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Machine *
-                </label>
-                <select
-                  value={formData.machine_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, machine_id: parseInt(e.target.value) }))}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select Machine</option>
-                  {machines.map(machine => (
-                    <option key={machine.id} value={machine.id}>
-                      {machine.name} - {machine.code}
-                    </option>
+                <label className={labelCls}>Mesin *</label>
+                <select value={formData.machine_id} onChange={(e) => setFormData(prev => ({ ...prev, machine_id: parseInt(e.target.value) }))} required className={inputCls}>
+                  <option value="">Pilih mesin</option>
+                  {machines.map(m => (
+                    <option key={m.id} value={m.id}>{m.name} - {m.code}</option>
                   ))}
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Maintenance Type *
-                </label>
-                <select
-                  value={formData.maintenance_type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, maintenance_type: e.target.value }))}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
+                <label className={labelCls}>Jenis perawatan *</label>
+                <select value={formData.maintenance_type} onChange={(e) => setFormData(prev => ({ ...prev, maintenance_type: e.target.value }))} required className={inputCls}>
                   {maintenanceTypes.map(type => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
+                    <option key={type.value} value={type.value}>{typeLabelId[type.value] || type.label}</option>
                   ))}
                 </select>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Assigned Technician *
-                </label>
-                <select
-                  value={formData.assigned_to}
-                  onChange={(e) => setFormData(prev => ({ ...prev, assigned_to: parseInt(e.target.value) }))}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select Technician</option>
+              <div className="md:col-span-2">
+                <label className={labelCls}>Teknisi penanggung jawab *</label>
+                <select value={formData.assigned_to} onChange={(e) => setFormData(prev => ({ ...prev, assigned_to: parseInt(e.target.value) }))} required className={inputCls}>
+                  <option value="">Pilih teknisi</option>
                   {technicians.map(tech => (
-                    <option key={tech.id} value={tech.id}>
-                      {tech.full_name} - {tech.position}
-                    </option>
+                    <option key={tech.id} value={tech.id}>{tech.full_name} - {tech.position}</option>
                   ))}
                 </select>
               </div>
+            </div>
+          </Panel>
 
+          <Panel title="Jadwal dan biaya">
+            <div className="grid gap-4 p-4 md:grid-cols-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Scheduled Date *
-                </label>
-                <input
-                  type="date"
-                  value={formData.scheduled_date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, scheduled_date: e.target.value }))}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+                <label className={labelCls}>Tanggal pelaksanaan *</label>
+                <input type="date" value={formData.scheduled_date} onChange={(e) => setFormData(prev => ({ ...prev, scheduled_date: e.target.value }))} required className={inputCls} />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Estimated Hours
-                </label>
-                <NumberInput
-                  value={formData.estimated_hours}
-                  onChange={(e) => setFormData(prev => ({ ...prev, estimated_hours: parseFloat(e.target.value) || 0 }))}
-                  min="0"
-                  step="0.5"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+                <label className={labelCls}>Estimasi jam</label>
+                <NumberInput value={formData.estimated_hours} onChange={(e) => setFormData(prev => ({ ...prev, estimated_hours: parseFloat(e.target.value) || 0 }))} min="0" step="0.5" className={inputCls} />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Estimated Labor Cost
-                </label>
-                <NumberInput currency
-                  value={formData.estimated_cost}
-                  onChange={(e) => setFormData(prev => ({ ...prev, estimated_cost: parseFloat(e.target.value) || 0 }))}
-                  min="0"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+                <label className={labelCls}>Estimasi biaya tenaga kerja</label>
+                <NumberInput currency value={formData.estimated_cost} onChange={(e) => setFormData(prev => ({ ...prev, estimated_cost: parseFloat(e.target.value) || 0 }))} min="0" className={inputCls} />
               </div>
             </div>
-          </div>
+          </Panel>
 
-          {/* Parts Required */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                <CubeIcon className="inline h-4 w-4 mr-1" />
-                Parts Required
-              </h3>
-              <button
-                type="button"
-                onClick={addPart}
-                className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
-                <Plus className="inline h-4 w-4 mr-1" />
-                Add Part
+          <Panel
+            title="Sparepart dibutuhkan"
+            action={<button type="button" onClick={addPart} className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400">+ Tambah sparepart</button>}
+          >
+            {parts.length === 0 ? (
+              <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Belum ada sparepart.</p>
+            ) : (
+              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                {parts.map((part, index) => (
+                  <div key={index} className="grid gap-3 p-4 md:grid-cols-[1.5fr_0.7fr_1fr_1fr_auto]">
+                    <div>
+                      <label className={labelCls}>Nama sparepart</label>
+                      <input type="text" value={part.part_name} onChange={(e) => updatePart(index, 'part_name', e.target.value)} className={inputCls} />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Jumlah</label>
+                      <NumberInput value={part.quantity} onChange={(e) => updatePart(index, 'quantity', parseInt(e.target.value) || 0)} min="1" className={inputCls} />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Harga satuan</label>
+                      <NumberInput currency value={part.unit_cost} onChange={(e) => updatePart(index, 'unit_cost', parseFloat(e.target.value) || 0)} min="0" className={inputCls} />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Pemasok</label>
+                      <input type="text" value={part.supplier} onChange={(e) => updatePart(index, 'supplier', e.target.value)} className={inputCls} />
+                    </div>
+                    <div className="flex items-end">
+                      <button type="button" onClick={() => removePart(index)} className="rounded-md px-2 py-2 text-sm text-gray-400 hover:text-red-600" title="Hapus baris">
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Panel>
+
+          <Panel
+            title="Tugas"
+            action={<button type="button" onClick={addTask} className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400">+ Tambah tugas</button>}
+          >
+            {tasks.length === 0 ? (
+              <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Belum ada tugas.</p>
+            ) : (
+              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                {tasks.map((task, index) => (
+                  <div key={index} className="grid gap-3 p-4 md:grid-cols-[2fr_1fr_auto]">
+                    <div>
+                      <label className={labelCls}>Uraian tugas</label>
+                      <input type="text" value={task.task_description} onChange={(e) => updateTask(index, 'task_description', e.target.value)} className={inputCls} />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Estimasi waktu (jam)</label>
+                      <NumberInput value={task.estimated_time} onChange={(e) => updateTask(index, 'estimated_time', parseFloat(e.target.value) || 0)} min="0" step="0.5" className={inputCls} />
+                    </div>
+                    <div className="flex items-end">
+                      <button type="button" onClick={() => removeTask(index)} className="rounded-md px-2 py-2 text-sm text-gray-400 hover:text-red-600" title="Hapus baris">
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Panel>
+
+          <Panel title="Catatan tambahan">
+            <div className="p-4">
+              <textarea value={formData.notes} onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))} rows={3} placeholder="Catatan atau instruksi khusus" className={inputCls} />
+            </div>
+          </Panel>
+        </div>
+
+        <aside className="lg:sticky lg:top-4">
+          <Panel title="Ringkasan">
+            <dl className="space-y-3 p-4 text-sm">
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Mesin</dt><dd className="truncate text-right font-medium">{machine ? `${machine.code} ${machine.name}` : '-'}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Prioritas</dt><dd className="font-medium">{priorityLabelId[formData.priority] || formData.priority}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Tanggal</dt><dd className="font-medium">{formData.scheduled_date || '-'}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Biaya tenaga kerja</dt><dd className="font-medium tabular-nums">{rp(formData.estimated_cost)}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Biaya sparepart</dt><dd className="font-medium tabular-nums">{rp(partsCost)}</dd></div>
+              <div className="border-t border-gray-100 pt-3 dark:border-gray-700">
+                <dt className="text-xs text-gray-500 dark:text-gray-400">Total biaya</dt>
+                <dd className="mt-0.5 text-xl font-semibold tabular-nums text-gray-900 dark:text-white">{rp(calculateTotalCost())}</dd>
+              </div>
+            </dl>
+            <div className="border-t border-gray-200 p-4 dark:border-gray-700">
+              <button type="submit" disabled={loading} className="w-full rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">
+                {loading ? 'Menyimpan...' : isEdit ? 'Simpan perubahan' : 'Buat SPK'}
               </button>
             </div>
-
-            {formData.parts_required.map((part, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Part Name</label>
-                  <input
-                    type="text"
-                    value={part.part_name}
-                    onChange={(e) => updatePart(index, 'part_name', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.quantity')}</label>
-                  <NumberInput
-                    value={part.quantity}
-                    onChange={(e) => updatePart(index, 'quantity', parseInt(e.target.value) || 0)}
-                    min="1"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('products.bom.unit_cost')}</label>
-                  <NumberInput currency
-                    value={part.unit_cost}
-                    onChange={(e) => updatePart(index, 'unit_cost', parseFloat(e.target.value) || 0)}
-                    min="0"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Supplier</label>
-                  <input
-                    type="text"
-                    value={part.supplier}
-                    onChange={(e) => updatePart(index, 'supplier', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div className="flex items-end">
-                  <button
-                    type="button"
-                    onClick={() => removePart(index)}
-                    className="p-2 text-red-600 hover:text-red-800"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Tasks */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                <DocumentTextIcon className="inline h-4 w-4 mr-1" />
-              </h3>
-              <button
-                type="button"
-                onClick={addTask}
-                className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
-                <Plus className="inline h-4 w-4 mr-1" />
-                Add Task
-              </button>
-            </div>
-
-            {formData.tasks.map((task, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Task Description</label>
-                  <input
-                    type="text"
-                    value={task.task_description}
-                    onChange={(e) => updateTask(index, 'task_description', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Est. Time (hrs)</label>
-                  <NumberInput
-                    value={task.estimated_time}
-                    onChange={(e) => updateTask(index, 'estimated_time', parseFloat(e.target.value) || 0)}
-                    min="0"
-                    step="0.5"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div className="flex items-end">
-                  <button
-                    type="button"
-                    onClick={() => removeTask(index)}
-                    className="p-2 text-red-600 hover:text-red-800"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Cost Summary */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-blue-900 mb-2">Cost Summary</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <span className="text-blue-700">Labor Cost:</span>
-                <span className="font-medium text-blue-900 ml-2">
-                  Rp {formData.estimated_cost.toLocaleString()}
-                </span>
-              </div>
-              <div>
-                <span className="text-blue-700">Parts Cost:</span>
-                <span className="font-medium text-blue-900 ml-2">
-                  Rp {formData.parts_required.reduce((sum, part) => sum + (part.quantity * part.unit_cost), 0).toLocaleString()}
-                </span>
-              </div>
-              <div>
-                <span className="text-blue-700">Total Cost:</span>
-                <span className="font-bold text-blue-900 ml-2">
-                  Rp {calculateTotalCost().toLocaleString()}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              Additional Notes
-            </label>
-            <textarea
-              value={formData.notes}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              rows={3}
-              placeholder="Any additional notes or special instructions"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              onClick={() => navigate('/app/maintenance/work-orders')}
-              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-            >
-              <X className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-            >
-              <Save className="inline h-4 w-4 mr-2" />
-              {loading ? 'Saving...' : isEdit ? 'Update SPK' : 'Create SPK'}
-            </button>
-          </div>
-        </form>
-      </div>
+          </Panel>
+        </aside>
+      </form>
     </div>
   );
 };

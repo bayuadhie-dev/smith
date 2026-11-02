@@ -1,13 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  WrenchScrewdriverIcon, ExclamationTriangleIcon, CheckCircleIcon,
-  ClockIcon, XCircleIcon, ArrowPathIcon, FunnelIcon,
-  ChevronDownIcon, ChevronUpIcon, CogIcon
-} from '@heroicons/react/24/outline';
+import { ArrowPathIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { showError } from '../../components/ui';
+import { PageHeader, KpiStrip, Panel } from '../../components/ui/PageKit';
 
 interface CorrectiveAction {
   id: number;
@@ -27,7 +23,7 @@ interface CorrectiveAction {
 }
 
 const PRIORITY_CONFIG: Record<string, { label: string; color: string; sortOrder: number }> = {
-  urgent: { label: 'URGENT', color: 'bg-red-600 text-white', sortOrder: 1 },
+  urgent: { label: 'Mendesak', color: 'bg-red-600 text-white', sortOrder: 1 },
   high: { label: 'Tinggi', color: 'bg-orange-500 text-white', sortOrder: 2 },
   normal: { label: 'Normal', color: 'bg-blue-500 text-white', sortOrder: 3 },
   low: { label: 'Rendah', color: 'bg-gray-400 text-white', sortOrder: 4 },
@@ -56,8 +52,9 @@ const REPAIR_STATUS_OPTIONS = [
   { value: 'deferred', label: 'Ditunda', color: 'bg-gray-100 text-gray-800' },
 ];
 
+const filterCls = 'rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white';
+
 const ChecklistNGItems: React.FC = () => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<NGItem[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>('');
@@ -146,167 +143,110 @@ const ChecklistNGItems: React.FC = () => {
 
   if (loading && items.length === 0) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-64 items-center justify-center">
         <LoadingSpinner />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-orange-50 p-4">
-      <div className="max-w-7xl mx-auto space-y-4">
-        {/* Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border overflow-hidden">
-          <div className="bg-gradient-to-r from-orange-600 to-red-600 px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-white dark:bg-gray-800/20 rounded-lg">
-                  <WrenchScrewdriverIcon className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-white">Checklist NG Items</h1>
-                  <p className="text-orange-100 text-sm">Item yang perlu diperbaiki dari Pre-Shift Checklist</p>
-                </div>
-              </div>
-              <button onClick={fetchData} className="p-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg transition">
-                <ArrowPathIcon className={`w-5 h-5 text-white ${loading ? 'animate-spin' : ''}`} />
-              </button>
-            </div>
-          </div>
+    <div className="space-y-4 p-6">
+      <PageHeader
+        title="Item NG Checklist"
+        subtitle="Item yang perlu diperbaiki dari Pre-Shift Checklist"
+        actions={
+          <button onClick={fetchData} className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
+            <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Muat ulang
+          </button>
+        }
+      />
 
-          {/* Filters */}
-          <div className="px-6 py-3 bg-orange-50 border-b flex flex-wrap items-center gap-3">
-            <div className="flex items-center space-x-2">
-              <FunnelIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-              <span className="text-sm text-gray-600 dark:text-gray-300">Filter:</span>
-            </div>
-            <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-              className="px-2 py-1 border rounded text-sm" />
-            <span className="text-gray-400">-</span>
-            <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-              className="px-2 py-1 border rounded text-sm" />
-            <select value={filterMachine} onChange={e => setFilterMachine(e.target.value ? Number(e.target.value) : '')}
-              className="px-2 py-1 border rounded text-sm">
-              <option value="">Semua Mesin</option>
-              {machines.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-            </select>
-            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-              className="px-2 py-1 border rounded text-sm">
-              <option value="">Semua Status</option>
-              {REPAIR_STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </div>
+      <KpiStrip
+        items={[
+          { label: 'Total NG', value: stats.total },
+          { label: 'Menunggu', value: stats.pending, tone: stats.pending > 0 ? 'warn' : null },
+          { label: 'Dikerjakan', value: stats.inProgress },
+          { label: 'Selesai', value: stats.completed, tone: stats.completed > 0 ? 'good' : null },
+          { label: 'Tidak bisa diperbaiki', value: stats.cannotRepair, tone: stats.cannotRepair > 0 ? 'bad' : null },
+        ]}
+      />
 
-          {/* Stats */}
-          <div className="px-6 py-3 flex items-center space-x-6 text-sm">
-            <div className="flex items-center space-x-2">
-              <ExclamationTriangleIcon className="w-5 h-5 text-orange-500" />
-              <span><strong>{stats.total}</strong> Total NG</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <ClockIcon className="w-5 h-5 text-yellow-500" />
-              <span><strong>{stats.pending}</strong> Menunggu</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <CogIcon className="w-5 h-5 text-blue-500" />
-              <span><strong>{stats.inProgress}</strong> Dikerjakan</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="w-5 h-5 text-green-500" />
-              <span><strong>{stats.completed}</strong> Selesai</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <XCircleIcon className="w-5 h-5 text-red-500" />
-              <span><strong>{stats.cannotRepair}</strong> Tidak Bisa</span>
-            </div>
-          </div>
-        </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className={filterCls} />
+        <span className="text-gray-400">-</span>
+        <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className={filterCls} />
+        <select value={filterMachine} onChange={e => setFilterMachine(e.target.value ? Number(e.target.value) : '')} className={filterCls}>
+          <option value="">Semua mesin</option>
+          {machines.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+        </select>
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={filterCls}>
+          <option value="">Semua status</option>
+          {REPAIR_STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      </div>
 
-        {/* NG Items List */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border overflow-hidden">
-          {items.length === 0 ? (
-            <div className="text-center py-12">
-              <CheckCircleIcon className="w-12 h-12 text-green-400 mx-auto mb-3" />
-              <p className="text-gray-500 dark:text-gray-400">Tidak ada item NG dalam periode ini</p>
-            </div>
-          ) : (
-            <div className="divide-y">
-              {items.map(item => (
-                <div key={item.answer_id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                  {/* Summary Row */}
-                  <div 
-                    className="px-4 py-3 flex items-center justify-between cursor-pointer"
-                    onClick={() => setExpandedItem(expandedItem === item.answer_id ? null : item.answer_id)}
-                  >
-                    <div className="flex items-center space-x-4 flex-1">
-                      <div className="flex-shrink-0">
-                        {expandedItem === item.answer_id ? (
-                          <ChevronUpIcon className="w-5 h-5 text-gray-400" />
-                        ) : (
-                          <ChevronDownIcon className="w-5 h-5 text-gray-400" />
+      <Panel title="Daftar item NG">
+        {items.length === 0 ? (
+          <p className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Tidak ada item NG dalam periode ini.</p>
+        ) : (
+          <div className="divide-y divide-gray-100 dark:divide-gray-700">
+            {items.map(item => (
+              <div key={item.answer_id}>
+                <div
+                  className="flex cursor-pointer items-start justify-between gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/40"
+                  onClick={() => setExpandedItem(expandedItem === item.answer_id ? null : item.answer_id)}
+                >
+                  <div className="flex min-w-0 flex-1 items-start gap-3">
+                    {expandedItem === item.answer_id ? (
+                      <ChevronUpIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
+                    ) : (
+                      <ChevronDownIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium text-gray-900 dark:text-white">{item.item_name}</span>
+                        <span className="text-xs text-gray-400">{item.item_category}</span>
+                        {item.corrective_action?.priority && item.corrective_action.priority !== 'normal' && (
+                          <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${PRIORITY_CONFIG[item.corrective_action.priority]?.color || 'bg-gray-400 text-white'}`}>
+                            {PRIORITY_CONFIG[item.corrective_action.priority]?.label || item.corrective_action.priority}
+                          </span>
                         )}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 flex-wrap">
-                          <span className="font-semibold text-gray-900 dark:text-white">{item.item_name}</span>
-                          <span className="text-xs text-gray-400">[{item.item_category}]</span>
-                          {/* Priority Badge */}
-                          {item.corrective_action?.priority && item.corrective_action.priority !== 'normal' && (
-                            <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${PRIORITY_CONFIG[item.corrective_action.priority]?.color || 'bg-gray-400 text-white'}`}>
-                              {PRIORITY_CONFIG[item.corrective_action.priority]?.label || item.corrective_action.priority}
-                            </span>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {item.machine_name} · {formatDate(item.tanggal)} · Shift {item.shift}
+                      </div>
+                      {item.catatan && (
+                        <div className="mt-1 text-sm text-red-600 dark:text-red-400">Catatan operator: {item.catatan}</div>
+                      )}
+                      {item.corrective_action?.supervisor_note && (
+                        <div className="mt-1.5 rounded border-l-2 border-amber-500 bg-amber-50 px-3 py-1.5 text-sm dark:bg-amber-900/20">
+                          <span className="font-medium text-amber-800 dark:text-amber-300">Catatan supervisor:</span>
+                          <span className="ml-1 text-amber-700 dark:text-amber-200">{item.corrective_action.supervisor_note}</span>
+                          {item.corrective_action.supervisor_name && (
+                            <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">- {item.corrective_action.supervisor_name}</span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {item.machine_name} • {formatDate(item.tanggal)} • Shift {item.shift}
-                        </div>
-                        {item.catatan && (
-                          <div className="text-sm text-red-600 mt-1">
-                            Catatan Operator: {item.catatan}
-                          </div>
-                        )}
-                        {/* Supervisor Note - Important highlight */}
-                        {item.corrective_action?.supervisor_note && (
-                          <div className="mt-1 p-2 bg-amber-50 border border-amber-200 rounded text-sm">
-                            <div className="flex items-start space-x-2">
-                              <ExclamationTriangleIcon className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                              <div>
-                                <span className="font-medium text-amber-800">Catatan Supervisor:</span>
-                                <span className="text-amber-700 ml-1">{item.corrective_action.supervisor_note}</span>
-                                {item.corrective_action.supervisor_name && (
-                                  <span className="text-gray-500 dark:text-gray-400 text-xs ml-2">- {item.corrective_action.supervisor_name}</span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {/* Priority indicator for sorting visibility */}
-                      {item.corrective_action?.priority === 'urgent' && (
-                        <span className="animate-pulse text-red-600 text-xs font-bold">⚠</span>
                       )}
-                      {getStatusBadge(item.corrective_action?.repair_status || 'pending')}
                     </div>
                   </div>
-
-                  {/* Expanded Detail */}
-                  {expandedItem === item.answer_id && (
-                    <div className="px-4 py-4 bg-gray-50 dark:bg-gray-900 border-t">
-                      <CorrectiveActionForm 
-                        item={item} 
-                        onSave={(data) => handleUpdateCorrectiveAction(item.answer_id, data)}
-                        saving={saving}
-                      />
-                    </div>
-                  )}
+                  <div className="flex-shrink-0">{getStatusBadge(item.corrective_action?.repair_status || 'pending')}</div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+
+                {expandedItem === item.answer_id && (
+                  <div className="border-t border-gray-100 bg-gray-50 px-4 py-4 dark:border-gray-700 dark:bg-gray-900">
+                    <CorrectiveActionForm
+                      item={item}
+                      onSave={(data) => handleUpdateCorrectiveAction(item.answer_id, data)}
+                      saving={saving}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </Panel>
     </div>
   );
 };
@@ -343,7 +283,7 @@ const CorrectiveActionForm: React.FC<CorrectiveActionFormProps> = ({ item, onSav
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Status Perbaikan</label>
           <select value={status} onChange={e => setStatus(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-orange-500">
+            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
             {REPAIR_STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </div>
@@ -353,7 +293,7 @@ const CorrectiveActionForm: React.FC<CorrectiveActionFormProps> = ({ item, onSav
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Ditunda Sampai</label>
             <input type="date" value={deferredUntil} onChange={e => setDeferredUntil(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-orange-500" />
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
           </div>
         )}
       </div>
@@ -362,7 +302,7 @@ const CorrectiveActionForm: React.FC<CorrectiveActionFormProps> = ({ item, onSav
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Catatan Perbaikan</label>
         <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
-          className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-orange-500"
+          className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
           placeholder="Jelaskan tindakan perbaikan yang dilakukan..." />
       </div>
 
@@ -381,7 +321,7 @@ const CorrectiveActionForm: React.FC<CorrectiveActionFormProps> = ({ item, onSav
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Alasan Ditunda *</label>
           <textarea value={deferredReason} onChange={e => setDeferredReason(e.target.value)} rows={2} required
-            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
             placeholder="Jelaskan alasan mengapa ditunda..." />
         </div>
       )}
@@ -397,7 +337,7 @@ const CorrectiveActionForm: React.FC<CorrectiveActionFormProps> = ({ item, onSav
 
       <div className="flex justify-end">
         <button type="submit" disabled={saving}
-          className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium transition disabled:opacity-50">
+          className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-md text-sm font-medium transition disabled:opacity-50">
           {saving ? 'Menyimpan...' : 'Simpan'}
         </button>
       </div>

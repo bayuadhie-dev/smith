@@ -1,22 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
-import {
-  WrenchScrewdriverIcon,
-  PlusIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  EyeIcon,
-  PencilIcon,
-  TrashIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  ExclamationTriangleIcon,
-  ArrowPathIcon
-} from '@heroicons/react/24/outline';
+import { Search, Eye, Pencil, Trash2, Play, CheckCircle2 } from 'lucide-react';
+import { PageHeader, KpiStrip, Panel } from '../../components/ui/PageKit';
 
 interface MaintenanceRecord {
   id: number;
@@ -52,9 +40,22 @@ const ROOT_CAUSE_CATEGORIES = [
   { value: 'other', label: 'Lainnya' },
 ];
 
+const STATUS_LABEL: Record<string, string> = {
+  scheduled: 'Terjadwal', in_progress: 'Berjalan', completed: 'Selesai', cancelled: 'Dibatalkan',
+};
+const TYPE_LABEL: Record<string, string> = {
+  preventive: 'Preventif', corrective: 'Korektif', predictive: 'Prediktif', breakdown: 'Kerusakan',
+  emergency: 'Darurat', inspection: 'Inspeksi', calibration: 'Kalibrasi', overhaul: 'Overhaul',
+};
+const STATUS_BADGE: Record<string, string> = {
+  completed: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+  in_progress: 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300',
+  scheduled: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+  cancelled: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
+};
+
 const MaintenanceList: React.FC = () => {
-  const { t } = useLanguage();
-  const navigate = useNavigate();
+    const navigate = useNavigate();
   const [records, setRecords] = useState<MaintenanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [completingRecord, setCompletingRecord] = useState<MaintenanceRecord | null>(null);
@@ -77,7 +78,7 @@ const MaintenanceList: React.FC = () => {
       setRecords(response.data.records || []);
     } catch (error) {
       console.error('Error fetching maintenance records:', error);
-      toast.error('Failed to load maintenance records');
+      toast.error('Catatan perawatan gagal dimuat');
     } finally {
       setLoading(false);
     }
@@ -86,11 +87,11 @@ const MaintenanceList: React.FC = () => {
   const handleStatusChange = async (recordId: number, newStatus: string) => {
     try {
       await api.patch(`/api/maintenance/records/${recordId}`, { status: newStatus });
-      toast.success(`Status updated to ${newStatus}`);
+      toast.success(`Status diubah menjadi ${STATUS_LABEL[newStatus] || newStatus}`);
       fetchRecords();
     } catch (error) {
       console.error('Error updating status:', error);
-      toast.error('Failed to update status');
+      toast.error('Status gagal diubah');
     }
   };
 
@@ -110,7 +111,7 @@ const MaintenanceList: React.FC = () => {
   const submitCompleteWithRootCause = async () => {
     if (!completingRecord) return;
     if (!rootCauseForm.root_cause.trim()) {
-      toast.error('Root cause wajib diisi');
+      toast.error('Penyebab dasar wajib diisi');
       return;
     }
     setSubmittingComplete(true);
@@ -131,44 +132,15 @@ const MaintenanceList: React.FC = () => {
   };
 
   const handleDelete = async (recordId: number) => {
-    if (!(await confirmDialog('Are you sure you want to delete this maintenance record?'))) return;
+    if (!(await confirmDialog('Hapus catatan perawatan ini?'))) return;
     
     try {
       await api.delete(`/api/maintenance/records/${recordId}`);
-      toast.success('Maintenance record deleted');
+      toast.success('Catatan perawatan dihapus');
       fetchRecords();
     } catch (error) {
       console.error('Error deleting record:', error);
-      toast.error('Failed to delete record');
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-      case 'in_progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'scheduled': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-      case 'cancelled': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'critical': return 'text-red-600 bg-red-50';
-      case 'high': return 'text-orange-600 bg-orange-50';
-      case 'medium': return 'text-yellow-600 bg-yellow-50';
-      case 'low': return 'text-green-600 bg-green-50';
-      default: return 'text-gray-600 bg-gray-50';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed': return <CheckCircleIcon className="w-4 h-4" />;
-      case 'in_progress': return <ArrowPathIcon className="w-4 h-4 animate-spin" />;
-      case 'scheduled': return <ClockIcon className="w-4 h-4" />;
-      default: return <ExclamationTriangleIcon className="w-4 h-4" />;
+      toast.error('Catatan gagal dihapus');
     }
   };
 
@@ -195,298 +167,173 @@ const MaintenanceList: React.FC = () => {
   // Get unique maintenance types for filter
   const maintenanceTypes = [...new Set(records.map(r => r.maintenance_type))];
 
+  const stats = {
+    total: records.length,
+    scheduled: records.filter(r => r.status === 'scheduled').length,
+    running: records.filter(r => r.status === 'in_progress').length,
+    cost: records.filter(r => r.status === 'completed').reduce((sum, r) => sum + (r.cost || 0), 0),
+  };
+  const inputCls = 'w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white';
+  const th = 'px-4 py-2.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400';
+
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <div className="p-6 text-sm text-gray-500">Memuat catatan perawatan...</div>;
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {t('maintenance.list') || 'Maintenance Records'}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {t('maintenance.list_desc') || 'View and manage all maintenance SPK'}
-          </p>
+    <div className="space-y-4 p-6">
+      <PageHeader
+        title="Catatan Perawatan"
+        subtitle="SPK perawatan mesin: terjadwal, berjalan, dan selesai"
+        actions={
+          <Link to="/app/maintenance/new" className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">
+            SPK perawatan baru
+          </Link>
+        }
+      />
+
+      <KpiStrip
+        items={[
+          { label: 'Total catatan', value: stats.total.toLocaleString('id-ID') },
+          { label: 'Terjadwal', value: stats.scheduled.toLocaleString('id-ID') },
+          { label: 'Sedang berjalan', value: stats.running.toLocaleString('id-ID'), tone: stats.running > 0 ? 'warn' : null },
+          { label: 'Biaya perawatan selesai', value: `Rp ${stats.cost.toLocaleString('id-ID')}` },
+        ]}
+      />
+
+      <div className="flex flex-col gap-2 md:flex-row">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Cari nomor SPK, mesin, atau jenis"
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+            className={`${inputCls} pl-9`}
+          />
         </div>
-        <Link
-          to="/app/maintenance/new"
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <PlusIcon className="w-5 h-5" />
-          <span>New SPK</span>
-        </Link>
+        <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }} className={`${inputCls} md:w-44`}>
+          <option value="all">Semua status</option>
+          <option value="scheduled">Terjadwal</option>
+          <option value="in_progress">Berjalan</option>
+          <option value="completed">Selesai</option>
+          <option value="cancelled">Dibatalkan</option>
+        </select>
+        <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }} className={`${inputCls} md:w-44`}>
+          <option value="all">Semua jenis</option>
+          {maintenanceTypes.map(type => (
+            <option key={type} value={type}>{TYPE_LABEL[type] || type}</option>
+          ))}
+        </select>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by record number, machine, or type..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-
-          {/* Status Filter */}
-          <div className="flex items-center gap-2">
-            <FunnelIcon className="w-5 h-5 text-gray-400" />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            >
-              <option value="all">All Status</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="in_progress">In Progress</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </div>
-
-          {/* Type Filter */}
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-          >
-            <option value="all">All Types</option>
-            {maintenanceTypes.map(type => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Records Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900/50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  SPK
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Machine
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Cost
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Actions
-                </th>
+      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-900">
+            <tr>
+              <th className={th}>No. SPK</th>
+              <th className={th}>Mesin</th>
+              <th className={th}>Jenis</th>
+              <th className={th}>Tanggal</th>
+              <th className={th}>Status</th>
+              <th className={`${th} text-right`}>Biaya</th>
+              <th className={`${th} text-right`}>Aksi</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+            {paginatedRecords.map((record) => (
+              <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                <td className="whitespace-nowrap px-4 py-2.5 text-sm font-medium">
+                  <Link to={`/app/maintenance/${record.id}`} className="text-emerald-700 hover:underline dark:text-emerald-400">{record.record_number}</Link>
+                </td>
+                <td className="px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200">{record.machine_name}</td>
+                <td className="whitespace-nowrap px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300">{TYPE_LABEL[record.maintenance_type] || record.maintenance_type.replace('_', ' ')}</td>
+                <td className="whitespace-nowrap px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300">{new Date(record.maintenance_date).toLocaleDateString('id-ID')}</td>
+                <td className="whitespace-nowrap px-4 py-2.5">
+                  <span className={`inline-flex rounded px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[record.status] || STATUS_BADGE.cancelled}`}>
+                    {STATUS_LABEL[record.status] || record.status.replace('_', ' ')}
+                  </span>
+                </td>
+                <td className="whitespace-nowrap px-4 py-2.5 text-right text-sm tabular-nums text-gray-800 dark:text-gray-200">Rp {record.cost.toLocaleString('id-ID')}</td>
+                <td className="whitespace-nowrap px-4 py-2.5">
+                  <div className="flex items-center justify-end gap-1">
+                    <Link to={`/app/maintenance/${record.id}`} className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700" title="Lihat detail"><Eye className="h-4 w-4" /></Link>
+                    <Link to={`/app/maintenance/${record.id}/edit`} className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700" title="Ubah"><Pencil className="h-4 w-4" /></Link>
+                    {record.status === 'scheduled' && (
+                      <button onClick={() => handleStatusChange(record.id, 'in_progress')} className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-emerald-700 dark:hover:bg-gray-700" title="Mulai pekerjaan"><Play className="h-4 w-4" /></button>
+                    )}
+                    {record.status === 'in_progress' && (
+                      <button onClick={() => handleMarkComplete(record)} className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-emerald-700 dark:hover:bg-gray-700" title="Tandai selesai"><CheckCircle2 className="h-4 w-4" /></button>
+                    )}
+                    <button onClick={() => handleDelete(record.id)} className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-red-600 dark:hover:bg-gray-700" title="Hapus"><Trash2 className="h-4 w-4" /></button>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {paginatedRecords.map((record) => (
-                <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <WrenchScrewdriverIcon className="w-5 h-5 text-gray-400 mr-2" />
-                      <Link
-                        to={`/app/maintenance/${record.id}`}
-                        className="text-blue-600 hover:text-blue-700 font-medium"
-                      >
-                        {record.record_number}
-                      </Link>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-900 dark:text-white">{record.machine_name}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-500 dark:text-gray-400 capitalize">
-                      {record.maintenance_type.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(record.maintenance_date).toLocaleDateString('id-ID')}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(record.status)}`}>
-                      {getStatusIcon(record.status)}
-                      {record.status.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-900 dark:text-white">
-                      Rp {record.cost.toLocaleString('id-ID')}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Link
-                        to={`/app/maintenance/${record.id}`}
-                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
-                        title="View Details"
-                      >
-                        <EyeIcon className="w-5 h-5" />
-                      </Link>
-                      <Link
-                        to={`/app/maintenance/${record.id}/edit`}
-                        className="p-1 text-gray-400 hover:text-yellow-600 transition-colors"
-                        title="Edit"
-                      >
-                        <PencilIcon className="w-5 h-5" />
-                      </Link>
-                      {record.status === 'scheduled' && (
-                        <button
-                          onClick={() => handleStatusChange(record.id, 'in_progress')}
-                          className="p-1 text-gray-400 hover:text-green-600 transition-colors"
-                          title="Start Work"
-                        >
-                          <ArrowPathIcon className="w-5 h-5" />
-                        </button>
-                      )}
-                      {record.status === 'in_progress' && (
-                        <button
-                          onClick={() => handleMarkComplete(record)}
-                          className="p-1 text-gray-400 hover:text-green-600 transition-colors"
-                          title="Mark Complete"
-                        >
-                          <CheckCircleIcon className="w-5 h-5" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDelete(record.id)}
-                        className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-                        title="Delete"
-                      >
-                        <TrashIcon className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {paginatedRecords.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
-                    <WrenchScrewdriverIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 dark:text-gray-400">No maintenance records found</p>
-                    <Link
-                      to="/app/maintenance/new"
-                      className="inline-flex items-center gap-2 mt-4 text-blue-600 hover:text-blue-700"
-                    >
-                      <PlusIcon className="w-4 h-4" />
-                      Create your first SPK
-                    </Link>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredRecords.length)} of {filteredRecords.length} records
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                Previous
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-3 py-1 rounded-lg ${
-                    currentPage === page
-                      ? 'bg-blue-600 text-white'
-                      : 'border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              <button
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+            ))}
+            {paginatedRecords.length === 0 && (
+              <tr>
+                <td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                  {records.length === 0 ? 'Belum ada catatan perawatan.' : 'Tidak ada catatan yang cocok dengan filter.'}
+                  {records.length === 0 && (
+                    <div className="mt-2"><Link to="/app/maintenance/new" className="font-medium text-emerald-700 hover:underline dark:text-emerald-400">Buat SPK perawatan pertama</Link></div>
+                  )}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {/* Root cause modal - hanya muncul untuk corrective/breakdown/emergency (2026-09-28) */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
+          <span>Menampilkan {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, filteredRecords.length)} dari {filteredRecords.length} catatan</span>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="rounded-md border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-600">Sebelumnya</button>
+            <span>Halaman {currentPage} dari {totalPages}</span>
+            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="rounded-md border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-600">Berikutnya</button>
+          </div>
+        </div>
+      )}
+
       {completingRecord && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Selesaikan {completingRecord.record_number}</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Isi root cause dulu - wajib untuk tipe "{completingRecord.maintenance_type}".
-            </p>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Kategori Root Cause</label>
-                <select
-                  value={rootCauseForm.root_cause_category}
-                  onChange={(e) => setRootCauseForm(prev => ({ ...prev, root_cause_category: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
-                >
-                  <option value="">Pilih kategori (opsional)...</option>
-                  {ROOT_CAUSE_CATEGORIES.map(c => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
-                  ))}
-                </select>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md">
+            <Panel title={`Selesaikan ${completingRecord.record_number}`}>
+              <div className="space-y-4 p-4">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Penyebab dasar wajib diisi untuk jenis "{TYPE_LABEL[completingRecord.maintenance_type] || completingRecord.maintenance_type}".
+                </p>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">Kategori penyebab</label>
+                  <select
+                    value={rootCauseForm.root_cause_category}
+                    onChange={(e) => setRootCauseForm(prev => ({ ...prev, root_cause_category: e.target.value }))}
+                    className={inputCls}
+                  >
+                    <option value="">Pilih kategori (opsional)</option>
+                    {ROOT_CAUSE_CATEGORIES.map(c => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">Penyebab dasar *</label>
+                  <textarea
+                    value={rootCauseForm.root_cause}
+                    onChange={(e) => setRootCauseForm(prev => ({ ...prev, root_cause: e.target.value }))}
+                    rows={3}
+                    placeholder="Penyebab dasar kerusakan, bukan sekadar gejala"
+                    className={inputCls}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => setCompletingRecord(null)} className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200">Batal</button>
+                  <button onClick={submitCompleteWithRootCause} disabled={submittingComplete} className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">
+                    {submittingComplete ? 'Menyimpan...' : 'Tandai selesai'}
+                  </button>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Root Cause *</label>
-                <textarea
-                  value={rootCauseForm.root_cause}
-                  onChange={(e) => setRootCauseForm(prev => ({ ...prev, root_cause: e.target.value }))}
-                  rows={3}
-                  placeholder="Penyebab dasar kerusakan, bukan sekadar gejala..."
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 mt-5">
-              <button
-                onClick={() => setCompletingRecord(null)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-              >
-                Batal
-              </button>
-              <button
-                onClick={submitCompleteWithRootCause}
-                disabled={submittingComplete}
-                className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg disabled:bg-gray-400"
-              >
-                {submittingComplete ? 'Menyimpan...' : 'Tandai Selesai'}
-              </button>
-            </div>
+            </Panel>
           </div>
         </div>
       )}

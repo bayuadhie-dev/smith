@@ -1,21 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
-import {
-  WrenchScrewdriverIcon,
-  ArrowLeftIcon,
-  PlusIcon,
-  TrashIcon,
-  CalendarDaysIcon,
-  ClockIcon,
-  CurrencyDollarIcon,
-  DocumentTextIcon,
-  Cog6ToothIcon,
-  UserIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline';
+import { Plus, Trash2 } from 'lucide-react';
+import { PageHeader, Panel } from '../../components/ui/PageKit';
 import NumberInput from '../../components/ui/NumberInput'
 
 interface Machine {
@@ -65,7 +53,6 @@ interface FormData {
 }
 
 const MaintenanceForm: React.FC = () => {
-  const { t } = useLanguage();
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
@@ -92,20 +79,20 @@ const MaintenanceForm: React.FC = () => {
   });
 
   const maintenanceTypes = [
-    { value: 'preventive', label: 'Preventive Maintenance' },
-    { value: 'corrective', label: 'Corrective Maintenance' },
-    { value: 'predictive', label: 'Predictive Maintenance' },
-    { value: 'breakdown', label: 'Breakdown Repair' },
-    { value: 'inspection', label: 'Inspection' },
-    { value: 'calibration', label: 'Calibration' },
+    { value: 'preventive', label: 'Preventif (terjadwal)' },
+    { value: 'corrective', label: 'Korektif (perbaikan)' },
+    { value: 'predictive', label: 'Prediktif' },
+    { value: 'breakdown', label: 'Perbaikan kerusakan' },
+    { value: 'inspection', label: 'Inspeksi' },
+    { value: 'calibration', label: 'Kalibrasi' },
     { value: 'overhaul', label: 'Overhaul' }
   ];
 
   const priorities = [
-    { value: 'low', label: 'Low', color: 'text-green-600' },
-    { value: 'medium', label: 'Medium', color: 'text-yellow-600' },
-    { value: 'high', label: 'High', color: 'text-orange-600' },
-    { value: 'critical', label: 'Critical', color: 'text-red-600' }
+    { value: 'low', label: 'Rendah', color: 'text-green-600' },
+    { value: 'medium', label: 'Sedang', color: 'text-yellow-600' },
+    { value: 'high', label: 'Tinggi', color: 'text-orange-600' },
+    { value: 'critical', label: 'Kritis', color: 'text-red-600' }
   ];
 
   useEffect(() => {
@@ -226,7 +213,7 @@ const MaintenanceForm: React.FC = () => {
     e.preventDefault();
     
     if (!formData.machine_id) {
-      toast.error('Please select a machine');
+      toast.error('Pilih mesin dulu');
       return;
     }
 
@@ -243,401 +230,169 @@ const MaintenanceForm: React.FC = () => {
 
       if (isEdit) {
         await api.patch(`/api/maintenance/records/${id}`, payload);
-        toast.success('Maintenance record updated successfully');
+        toast.success('Catatan perawatan diperbarui');
       } else {
         await api.post('/api/maintenance/maintenance', payload);
-        toast.success('Maintenance SPK created successfully');
+        toast.success('SPK perawatan dibuat');
       }
-      navigate('/app/maintenance/list');
+      navigate('/app/maintenance/records');
     } catch (error: any) {
       console.error('Error saving maintenance:', error);
-      toast.error(error.response?.data?.error || 'Failed to save maintenance record');
+      toast.error(error.response?.data?.error || 'Catatan perawatan gagal disimpan');
     } finally {
       setSaving(false);
     }
   };
 
+  const inputCls = 'w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white';
+  const labelCls = 'mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200';
+  const partsTotal = formData.required_parts.reduce((sum, p) => sum + (Number(p.quantity) || 0) * (Number(p.unit_cost) || 0), 0);
+  const tasksHours = formData.tasks.reduce((sum, tk) => sum + (Number(tk.estimated_time_hours) || 0), 0);
+  const typeLabel = maintenanceTypes.find(x => x.value === formData.maintenance_type)?.label || formData.maintenance_type;
+  const priorityLabel = priorities.find(x => x.value === formData.priority)?.label || formData.priority;
+  const machineLabel = machines.find(m => m.id === Number(formData.machine_id));
+
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <div className="p-6 text-sm text-gray-500">Memuat data...</div>;
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Link
-          to="/app/maintenance/list"
-          className="p-2 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition-colors"
-        >
-          <ArrowLeftIcon className="w-5 h-5 text-gray-500" />
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {isEdit ? 'Edit Maintenance Record' : 'New Maintenance SPK'}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {isEdit ? 'Update maintenance details' : 'Schedule a new maintenance task'}
-          </p>
-        </div>
-      </div>
+    <div className="space-y-4 p-6">
+      <PageHeader
+        title={isEdit ? 'Ubah SPK Perawatan' : 'SPK Perawatan Baru'}
+        subtitle={isEdit ? 'Perbarui rincian pekerjaan perawatan' : 'Jadwalkan pekerjaan perawatan mesin'}
+        actions={<Link to="/app/maintenance/records" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Kembali ke daftar</Link>}
+      />
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Information */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <Cog6ToothIcon className="w-5 h-5 text-blue-600" />
-            Basic Information
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Machine */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Machine <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="machine_id"
-                value={formData.machine_id}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              >
-                <option value="">Select Machine</option>
-                {machines.map(machine => (
-                  <option key={machine.id} value={machine.id}>
-                    {machine.code} - {machine.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Maintenance Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Maintenance Type <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="maintenance_type"
-                value={formData.maintenance_type}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              >
-                {maintenanceTypes.map(type => (
-                  <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Scheduled Date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Scheduled Date <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <CalendarDaysIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="date"
-                  name="scheduled_date"
-                  value={formData.scheduled_date}
-                  onChange={handleChange}
-                  required
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-            </div>
-
-            {/* Estimated Duration */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Estimated Duration (hours)
-              </label>
-              <div className="relative">
-                <ClockIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <NumberInput
-                  name="estimated_duration_hours"
-                  value={formData.estimated_duration_hours}
-                  onChange={handleNumberChange}
-                  min="0.5"
-                  step="0.5"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-            </div>
-
-            {/* Priority */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Priority
-              </label>
-              <select
-                name="priority"
-                value={formData.priority}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              >
-                {priorities.map(p => (
-                  <option key={p.value} value={p.value}>{p.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Assigned To */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Assigned To
-              </label>
-              <div className="relative">
-                <UserIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <select
-                  name="assigned_to"
-                  value={formData.assigned_to}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                >
-                  <option value="">Select Technician</option>
-                  {employees.map(emp => (
-                    <option key={emp.id} value={emp.id}>
-                      {emp.employee_id} - {emp.full_name}
-                    </option>
+      <form onSubmit={handleSubmit} className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0 space-y-4">
+          <Panel title="Data pekerjaan">
+            <div className="grid gap-4 p-4 md:grid-cols-2">
+              <div>
+                <label className={labelCls}>Mesin <span className="text-red-500">*</span></label>
+                <select name="machine_id" value={formData.machine_id} onChange={handleChange} required className={inputCls}>
+                  <option value="">Pilih mesin</option>
+                  {machines.map(machine => (
+                    <option key={machine.id} value={machine.id}>{machine.code} - {machine.name}</option>
                   ))}
                 </select>
               </div>
-            </div>
-
-            {/* Cost Estimate */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Cost Estimate (Rp)
-              </label>
-              <div className="relative">
-                <CurrencyDollarIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <NumberInput currency
-                  name="cost_estimate"
-                  value={formData.cost_estimate}
-                  onChange={handleNumberChange}
-                  min="0"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                />
+              <div>
+                <label className={labelCls}>Jenis perawatan <span className="text-red-500">*</span></label>
+                <select name="maintenance_type" value={formData.maintenance_type} onChange={handleChange} required className={inputCls}>
+                  {maintenanceTypes.map(type => (
+                    <option key={type.value} value={type.value}>{type.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Tanggal rencana <span className="text-red-500">*</span></label>
+                <input type="date" name="scheduled_date" value={formData.scheduled_date} onChange={handleChange} required className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Estimasi durasi (jam)</label>
+                <NumberInput name="estimated_duration_hours" value={formData.estimated_duration_hours} onChange={handleNumberChange} min="0.5" step="0.5" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Prioritas</label>
+                <select name="priority" value={formData.priority} onChange={handleChange} className={inputCls}>
+                  {priorities.map(p => (
+                    <option key={p.value} value={p.value}>{p.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Teknisi</label>
+                <select name="assigned_to" value={formData.assigned_to} onChange={handleChange} className={inputCls}>
+                  <option value="">Pilih teknisi</option>
+                  {employees.map(emp => (
+                    <option key={emp.id} value={emp.id}>{emp.employee_id} - {emp.full_name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Perkiraan biaya (Rp)</label>
+                <NumberInput currency name="cost_estimate" value={formData.cost_estimate} onChange={handleNumberChange} min="0" className={inputCls} />
+              </div>
+              <div className="md:col-span-2">
+                <label className={labelCls}>Deskripsi atau masalah</label>
+                <textarea name="description" value={formData.description} onChange={handleChange} rows={3} placeholder="Jelaskan pekerjaan atau masalah yang ditemukan" className={inputCls} />
+              </div>
+              <div className="md:col-span-2">
+                <label className={labelCls}>Persyaratan keselamatan</label>
+                <textarea name="safety_requirements" value={formData.safety_requirements} onChange={handleChange} rows={2} placeholder="Tindakan pengamanan atau APD yang diperlukan" className={inputCls} />
               </div>
             </div>
-          </div>
+          </Panel>
 
-          {/* Description */}
-          <div className="mt-6">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Description / Problem
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={3}
-              placeholder="Describe the maintenance task or problem..."
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-
-          {/* Safety Requirements */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              <span className="flex items-center gap-2">
-                <ExclamationTriangleIcon className="w-4 h-4 text-yellow-500" />
-                Safety Requirements
-              </span>
-            </label>
-            <textarea
-              name="safety_requirements"
-              value={formData.safety_requirements}
-              onChange={handleChange}
-              rows={2}
-              placeholder="List any safety precautions or PPE required..."
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-        </div>
-
-        {/* Tasks */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <DocumentTextIcon className="w-5 h-5 text-green-600" />
-              Maintenance Tasks
-            </h2>
-            <button
-              type="button"
-              onClick={addTask}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
-            >
-              <PlusIcon className="w-4 h-4" />
-              Add Task
-            </button>
-          </div>
-
-          {formData.tasks.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-              No tasks added. Click "Add Task" to add maintenance tasks.
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {formData.tasks.map((task, index) => (
-                <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                  <div className="flex justify-between items-start mb-3">
-                    <span className="text-sm font-medium text-gray-500">Task #{index + 1}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeTask(index)}
-                      className="p-1 text-red-500 hover:bg-red-50 rounded"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <input
-                      type="text"
-                      placeholder="Task Name"
-                      value={task.task_name}
-                      onChange={(e) => updateTask(index, 'task_name', e.target.value)}
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Description"
-                      value={task.description}
-                      onChange={(e) => updateTask(index, 'description', e.target.value)}
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
-                    />
-                    <NumberInput
-                      placeholder="Est. Hours"
-                      value={task.estimated_time_hours}
-                      onChange={(e) => updateTask(index, 'estimated_time_hours', parseFloat(e.target.value) || 0)}
-                      min="0"
-                      step="0.5"
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Required Parts */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <WrenchScrewdriverIcon className="w-5 h-5 text-purple-600" />
-              Required Parts
-            </h2>
-            <button
-              type="button"
-              onClick={addPart}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors"
-            >
-              <PlusIcon className="w-4 h-4" />
-              Add Part
-            </button>
-          </div>
-
-          {formData.required_parts.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-              No parts added. Click "Add Part" to add required spare parts.
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {formData.required_parts.map((part, index) => (
-                <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                  <div className="flex justify-between items-start mb-3">
-                    <span className="text-sm font-medium text-gray-500">Part #{index + 1}</span>
-                    <button
-                      type="button"
-                      onClick={() => removePart(index)}
-                      className="p-1 text-red-500 hover:bg-red-50 rounded"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <input
-                      type="text"
-                      placeholder="Part Name"
-                      value={part.part_name}
-                      onChange={(e) => updatePart(index, 'part_name', e.target.value)}
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
-                    />
-                    <NumberInput
-                      placeholder="Quantity"
-                      value={part.quantity}
-                      onChange={(e) => updatePart(index, 'quantity', parseInt(e.target.value) || 0)}
-                      min="1"
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
-                    />
-                    <NumberInput currency
-                      placeholder="Unit Cost"
-                      value={part.unit_cost}
-                      onChange={(e) => updatePart(index, 'unit_cost', parseFloat(e.target.value) || 0)}
-                      min="0"
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Supplier"
-                      value={part.supplier}
-                      onChange={(e) => updatePart(index, 'supplier', e.target.value)}
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Notes */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Additional Notes
-          </h2>
-          <textarea
-            name="notes"
-            value={formData.notes}
-            onChange={handleChange}
-            rows={3}
-            placeholder="Any additional notes or instructions..."
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-          />
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-4">
-          <Link
-            to="/app/maintenance/list"
-            className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700 transition-colors"
+          <Panel
+            title="Langkah pekerjaan"
+            action={<button type="button" onClick={addTask} className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400"><Plus className="h-3.5 w-3.5" /> Tambah langkah</button>}
           >
-            Cancel
-          </Link>
-          <button
-            type="submit"
-            disabled={saving}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {saving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Saving...
-              </>
+            {formData.tasks.length === 0 ? (
+              <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Belum ada langkah. Pilih "Tambah langkah" untuk merinci pekerjaan.</p>
             ) : (
-              <>
-                <WrenchScrewdriverIcon className="w-5 h-5" />
-                {isEdit ? 'Update Record' : 'Create SPK'}
-              </>
+              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                {formData.tasks.map((task, index) => (
+                  <div key={index} className="grid grid-cols-12 items-center gap-2 p-3">
+                    <span className="col-span-12 text-xs font-medium text-gray-500 md:col-span-1">#{index + 1}</span>
+                    <input type="text" placeholder="Nama langkah" value={task.task_name} onChange={(e) => updateTask(index, 'task_name', e.target.value)} className={`${inputCls} col-span-12 md:col-span-4`} />
+                    <input type="text" placeholder="Keterangan" value={task.description} onChange={(e) => updateTask(index, 'description', e.target.value)} className={`${inputCls} col-span-8 md:col-span-4`} />
+                    <NumberInput placeholder="Jam" value={task.estimated_time_hours} onChange={(e) => updateTask(index, 'estimated_time_hours', parseFloat(e.target.value) || 0)} min="0" step="0.5" className={`${inputCls} col-span-3 text-right md:col-span-2`} />
+                    <button type="button" onClick={() => removeTask(index)} className="col-span-1 text-gray-400 hover:text-red-600" title="Hapus langkah"><Trash2 className="mx-auto h-4 w-4" /></button>
+                  </div>
+                ))}
+              </div>
             )}
-          </button>
+          </Panel>
+
+          <Panel
+            title="Sparepart yang dibutuhkan"
+            action={<button type="button" onClick={addPart} className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400"><Plus className="h-3.5 w-3.5" /> Tambah sparepart</button>}
+          >
+            {formData.required_parts.length === 0 ? (
+              <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Belum ada sparepart. Pilih "Tambah sparepart" untuk mencatat kebutuhannya.</p>
+            ) : (
+              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                {formData.required_parts.map((part, index) => (
+                  <div key={index} className="grid grid-cols-12 items-center gap-2 p-3">
+                    <input type="text" placeholder="Nama sparepart" value={part.part_name} onChange={(e) => updatePart(index, 'part_name', e.target.value)} className={`${inputCls} col-span-12 md:col-span-4`} />
+                    <NumberInput placeholder="Jumlah" value={part.quantity} onChange={(e) => updatePart(index, 'quantity', parseInt(e.target.value) || 0)} min="1" className={`${inputCls} col-span-4 text-right md:col-span-2`} />
+                    <NumberInput currency placeholder="Harga satuan" value={part.unit_cost} onChange={(e) => updatePart(index, 'unit_cost', parseFloat(e.target.value) || 0)} min="0" className={`${inputCls} col-span-8 text-right md:col-span-2`} />
+                    <input type="text" placeholder="Pemasok" value={part.supplier} onChange={(e) => updatePart(index, 'supplier', e.target.value)} className={`${inputCls} col-span-11 md:col-span-3`} />
+                    <button type="button" onClick={() => removePart(index)} className="col-span-1 text-gray-400 hover:text-red-600" title="Hapus sparepart"><Trash2 className="mx-auto h-4 w-4" /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Panel>
+
+          <Panel title="Catatan tambahan">
+            <div className="p-4">
+              <textarea name="notes" value={formData.notes} onChange={handleChange} rows={3} placeholder="Catatan atau instruksi tambahan" className={inputCls} />
+            </div>
+          </Panel>
         </div>
+
+        <aside className="lg:sticky lg:top-4">
+          <Panel title="Ringkasan">
+            <dl className="space-y-3 p-4 text-sm">
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Mesin</dt><dd className="truncate text-right font-medium">{machineLabel ? `${machineLabel.code} ${machineLabel.name}` : '-'}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Jenis</dt><dd className="text-right font-medium">{typeLabel}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Prioritas</dt><dd className="font-medium">{priorityLabel}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Tanggal</dt><dd className="font-medium">{formData.scheduled_date || '-'}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Langkah</dt><dd className="font-medium">{formData.tasks.length}{tasksHours > 0 ? ` (${tasksHours} jam)` : ''}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Nilai sparepart</dt><dd className="font-medium tabular-nums">Rp {partsTotal.toLocaleString('id-ID')}</dd></div>
+            </dl>
+            <div className="space-y-2 border-t border-gray-200 p-4 dark:border-gray-700">
+              {!formData.machine_id && <p className="text-sm text-amber-700 dark:text-amber-400">Pilih mesin dulu.</p>}
+              <button type="submit" disabled={saving} className="w-full rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">
+                {saving ? 'Menyimpan...' : isEdit ? 'Simpan perubahan' : 'Buat SPK'}
+              </button>
+              <Link to="/app/maintenance/records" className="block w-full rounded-md border border-gray-300 px-4 py-2 text-center text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200">Batal</Link>
+            </div>
+          </Panel>
+        </aside>
       </form>
     </div>
   );

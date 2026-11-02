@@ -161,17 +161,9 @@ def update_work_order(work_order_id):
 # Parts Request Management Endpoints
 # Permintaan sparepart sekarang di routes/spare_parts.py (/api/spare-parts/requests).
 
-@maintenance_extended_bp.route('/analytics', methods=['GET'])
-@jwt_required()
-@require_permission('maintenance.view')
-def get_maintenance_analytics():
-    try:
-        date_from = request.args.get('date_from')
-        date_to = request.args.get('date_to')
-        machine_id = request.args.get('machine_id')
-        maintenance_type = request.args.get('maintenance_type')
-        report_type = request.args.get('report_type', 'overview')
-        
+def _compute_maintenance_analytics(date_from=None, date_to=None, machine_id=None, maintenance_type=None):
+    """Satu sumber angka untuk GET /analytics dan /analytics/export."""
+    if True:
         # Base query
         query = MaintenanceRecord.query
         
@@ -310,7 +302,7 @@ def get_maintenance_analytics():
 
         total_duration_hours = float(sum([float(r.duration_hours or 0) for r in records]))
 
-        return jsonify({
+        return {
             'summary': {
                 'total_work_orders': total_work_orders,
                 'completed_work_orders': completed_work_orders,
@@ -340,7 +332,17 @@ def get_maintenance_analytics():
                 'labor_cost_ratio': 0,
                 'schedule_compliance': 0
             }
-        }), 200
+        }
+
+
+@maintenance_extended_bp.route('/analytics', methods=['GET'])
+@jwt_required()
+@require_permission('maintenance.view')
+def get_maintenance_analytics():
+    try:
+        return jsonify(_compute_maintenance_analytics(
+            request.args.get('date_from'), request.args.get('date_to'),
+            request.args.get('machine_id'), request.args.get('maintenance_type'))), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -349,12 +351,62 @@ def get_maintenance_analytics():
 @require_permission('maintenance.view')
 def export_maintenance_analytics():
     try:
-        format_type = request.args.get('format', 'excel')
-        
-        # Mock response - actual implementation would generate file
-        return jsonify({
-            'message': f'Analytics export in {format_type} format would be generated here',
-            'download_url': f'/downloads/maintenance_analytics.{format_type}'
-        }), 200
+        format_type = (request.args.get('format') or 'excel').lower()
+        if format_type not in ('excel', 'xlsx'):
+            return jsonify({'error': 'Format ekspor belum didukung. Gunakan format=excel.'}), 400
+
+        import io
+        import openpyxl
+        from openpyxl.styles import Font
+        from flask import send_file
+
+        data = _compute_maintenance_analytics(
+            request.args.get('date_from'), request.args.get('date_to'),
+            request.args.get('machine_id'), request.args.get('maintenance_type'))
+
+        wb = openpyxl.Workbook()
+
+        def sheet(title, header, rows, first=False):
+            ws = wb.active if first else wb.create_sheet()
+            ws.title = title
+            ws.append(header)
+            for c in ws[1]:
+                c.font = Font(bold=True)
+            for r in rows:
+                ws.append(r)
+            for col in ws.columns:
+                ws.column_dimensions[col[0].column_letter].width = min(max(len(str(c.value or '')) for c in col) + 2, 48)
+
+        sm, kp, ch = data['summary'], data['kpis'], data['charts']
+        sheet('Ringkasan', ['Indikator', 'Nilai'], [
+            ['Periode dari', request.args.get('date_from') or '-'],
+            ['Periode sampai', request.args.get('date_to') or '-'],
+            ['Total perintah kerja', sm['total_work_orders']],
+            ['Selesai', sm['completed_work_orders']],
+            ['Menunggu', sm['pending_work_orders']],
+            ['Total biaya', float(sm['total_cost'] or 0)],
+            ['MTTR (jam)', sm['mttr']],
+            ['MTBF (jam)', sm['mtbf']],
+            ['Ketersediaan (%)', sm['availability_rate']],
+            ['Rasio preventive (%)', round(kp['preventive_ratio'], 1)],
+            ['Rasio darurat (%)', round(kp['emergency_ratio'], 1)],
+            ['Biaya per jam', round(kp['cost_per_hour'], 2)],
+        ], first=True)
+        sheet('Per Jenis', ['Jenis', 'Jumlah'], [[x['name'], x['value']] for x in ch['maintenance_by_type']])
+        sheet('Tren Bulanan', ['Bulan', 'Perintah kerja', 'Biaya', 'MTTR (jam)'],
+              [[x['month'], x['work_orders'], x['cost'], x['mttr']] for x in ch['monthly_trends']])
+        sheet('Per Mesin', ['Mesin', 'Ketersediaan (%)', 'Jumlah perawatan', 'Biaya'],
+              [[x['machine'], x['availability'], x['mttr'], x['cost']] for x in ch['machine_performance']])
+        sheet('Biaya', ['Kategori', 'Jumlah', 'Persen'],
+              [[x['category'], x['amount'], x['percentage']] for x in ch['cost_breakdown']])
+        sheet('Downtime', ['Penyebab', 'Jam', 'Kejadian'],
+              [[x['reason'], x['hours'], x['frequency']] for x in ch['downtime_analysis']])
+
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        return send_file(buf, as_attachment=True,
+                         download_name=f"maintenance-analitik-{get_local_now().strftime('%Y%m%d')}.xlsx",
+                         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     except Exception as e:
         return jsonify({'error': str(e)}), 500

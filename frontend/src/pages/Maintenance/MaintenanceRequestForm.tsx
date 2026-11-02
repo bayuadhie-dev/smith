@@ -1,21 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useLanguage } from '../../contexts/LanguageContext';
-import {
-  CalendarIcon as Calendar,
-  CheckIcon as Save,
-  ClockIcon,
-  CogIcon as Settings,
-  CubeIcon,
-  CurrencyDollarIcon,
-  DocumentTextIcon,
-  ExclamationTriangleIcon as AlertTriangle,
-  UserIcon as User,
-  WrenchIcon as Wrench,
-  XMarkIcon as X
-
-} from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { PageHeader, Panel } from '../../components/ui/PageKit'
 interface Machine {
   id: number;
   name: string;
@@ -55,8 +41,6 @@ interface RequiredPart {
 }
 
 const MaintenanceRequestForm: React.FC = () => {
-  const { t } = useLanguage();
-
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
@@ -168,13 +152,13 @@ const MaintenanceRequestForm: React.FC = () => {
 
     // Validation
     if (formData.machine_id === 0) {
-      setError('Please select a machine');
+      setError('Pilih mesin terlebih dahulu');
       setLoading(false);
       return;
     }
 
     if (!formData.description.trim()) {
-      setError('Please provide a description');
+      setError('Deskripsi wajib diisi');
       setLoading(false);
       return;
     }
@@ -199,10 +183,10 @@ const MaintenanceRequestForm: React.FC = () => {
         navigate('/app/maintenance/records');
       } else {
         const errorData = await response.json();
-        setError(errorData.message || 'Failed to save maintenance request');
+        setError(errorData.message || 'Gagal menyimpan permintaan perawatan');
       }
     } catch (error) {
-      setError('Network error occurred');
+      setError('Terjadi gangguan jaringan');
     } finally {
       setLoading(false);
     }
@@ -297,250 +281,140 @@ const MaintenanceRequestForm: React.FC = () => {
     return formData.cost_estimate + partsCost;
   };
 
+  const typeLabels: Record<string, string> = {
+    preventive: 'Preventif',
+    corrective: 'Korektif',
+    emergency: 'Darurat',
+    predictive: 'Prediktif',
+    condition_based: 'Berdasarkan kondisi'
+  };
+  const priorityLabels: Record<string, string> = { low: 'Rendah', medium: 'Sedang', high: 'Tinggi', critical: 'Kritis' };
+  const inputCls = 'w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white';
+  const labelCls = 'mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200';
+  const machine = machines.find(m => m.id === Number(formData.machine_id));
+  const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`;
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {isEdit ? 'Edit Maintenance Request' : 'New Maintenance Request'}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {isEdit ? 'Update maintenance request details' : 'Schedule new maintenance work'}
-          </p>
-        </div>
-        <div className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(formData.priority)}`}>
-          {formData.priority.toUpperCase()} PRIORITY
-        </div>
-      </div>
+    <div className="space-y-4 p-6">
+      <PageHeader
+        title={isEdit ? 'Ubah Permintaan Perawatan' : 'Permintaan Perawatan Baru'}
+        subtitle={isEdit ? 'Perbarui rincian permintaan perawatan' : 'Jadwalkan pekerjaan perawatan mesin'}
+        actions={
+          <button type="button" onClick={() => navigate('/app/maintenance/records')} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
+            Batal
+          </button>
+        }
+      />
 
-      {/* Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-              <AlertTriangle className="h-5 w-5" />
-              <span>{error}</span>
-            </div>
-          )}
+      {error && (
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">{error}</div>
+      )}
 
-          {/* Basic Information */}
-          <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-              <Settings className="inline h-4 w-4 mr-1" />
-              Basic Information
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form onSubmit={handleSubmit} className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0 space-y-4">
+          <Panel title="Data umum">
+            <div className="grid gap-4 p-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  <CubeIcon className="inline h-4 w-4 mr-1" />
-                  Machine *
-                </label>
-                <select
-                  name="machine_id"
-                  value={formData.machine_id}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select Machine</option>
-                  {machines.map(machine => (
-                    <option key={machine.id} value={machine.id}>
-                      {machine.code} - {machine.name}
-                    </option>
+                <label className={labelCls}>Mesin *</label>
+                <select name="machine_id" value={formData.machine_id} onChange={handleInputChange} required className={inputCls}>
+                  <option value="">Pilih mesin</option>
+                  {machines.map(m => (
+                    <option key={m.id} value={m.id}>{m.code} - {m.name}</option>
                   ))}
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  <Wrench className="inline h-4 w-4 mr-1" />
-                  Maintenance Type *
-                </label>
-                <select
-                  name="maintenance_type"
-                  value={formData.maintenance_type}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
+                <label className={labelCls}>Jenis perawatan *</label>
+                <select name="maintenance_type" value={formData.maintenance_type} onChange={handleInputChange} required className={inputCls}>
                   {maintenanceTypes.map(type => (
-                    <option key={type} value={type}>
-                      {type.replace('_', ' ').toUpperCase()}
-                    </option>
+                    <option key={type} value={type}>{typeLabels[type] || type}</option>
                   ))}
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  <AlertTriangle className="inline h-4 w-4 mr-1" />
-                  Priority *
-                </label>
-                <select
-                  name="priority"
-                  value={formData.priority}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
+                <label className={labelCls}>Prioritas *</label>
+                <select name="priority" value={formData.priority} onChange={handleInputChange} required className={inputCls}>
                   {priorities.map(priority => (
-                    <option key={priority} value={priority}>
-                      {priority.toUpperCase()}
-                    </option>
+                    <option key={priority} value={priority}>{priorityLabels[priority] || priority}</option>
                   ))}
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  <Calendar className="inline h-4 w-4 mr-1" />
-                  Scheduled Date *
-                </label>
-                <input
-                  type="date"
-                  name="scheduled_date"
-                  value={formData.scheduled_date}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  <ClockIcon className="inline h-4 w-4 mr-1" />
-                  Estimated Duration (hours)
-                </label>
-                <NumberInput
-                  name="estimated_duration_hours"
-                  value={formData.estimated_duration_hours}
-                  onChange={handleInputChange}
-                  min="0.5"
-                  step="0.5"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  <User className="inline h-4 w-4 mr-1" />
-                  Assigned To
-                </label>
-                <input
-                  type="text"
-                  name="assigned_to"
-                  value={formData.assigned_to}
-                  onChange={handleInputChange}
-                  placeholder="Technician name"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+                <label className={labelCls}>Penanggung jawab</label>
+                <input type="text" name="assigned_to" value={formData.assigned_to} onChange={handleInputChange} placeholder="Nama teknisi" className={inputCls} />
               </div>
             </div>
+          </Panel>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                <DocumentTextIcon className="inline h-4 w-4 mr-1" />
-                Description *
-              </label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                required
-                rows={3}
-                placeholder="Describe the maintenance work to be performed..."
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-
-          {/* Cost Estimate */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-              <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
-              Cost Estimate
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Panel title="Jadwal">
+            <div className="grid gap-4 p-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Labor Cost Estimate
-                </label>
-                <NumberInput currency
-                  name="cost_estimate"
-                  value={formData.cost_estimate}
-                  onChange={handleInputChange}
-                  min="0"
-                  step="1000"
-                  placeholder="0"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+                <label className={labelCls}>Tanggal pelaksanaan *</label>
+                <input type="date" name="scheduled_date" value={formData.scheduled_date} onChange={handleInputChange} required className={inputCls} />
               </div>
+              <div>
+                <label className={labelCls}>Estimasi durasi (jam)</label>
+                <NumberInput name="estimated_duration_hours" value={formData.estimated_duration_hours} onChange={handleInputChange} min="0.5" step="0.5" className={inputCls} />
+              </div>
+            </div>
+          </Panel>
 
-              <div className="flex items-end">
-                <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    Total Estimated Cost
-                  </label>
-                  <div className="px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 font-medium">
-                    Rp {getTotalEstimatedCost().toLocaleString('id-ID')}
-                  </div>
+          <Panel title="Uraian pekerjaan">
+            <div className="space-y-4 p-4">
+              <div>
+                <label className={labelCls}>Deskripsi *</label>
+                <textarea name="description" value={formData.description} onChange={handleInputChange} required rows={3} placeholder="Jelaskan pekerjaan perawatan yang akan dilakukan" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Persyaratan keselamatan</label>
+                <textarea name="safety_requirements" value={formData.safety_requirements} onChange={handleInputChange} rows={2} placeholder="Tuliskan langkah dan syarat keselamatan kerja" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Catatan tambahan</label>
+                <textarea name="notes" value={formData.notes} onChange={handleInputChange} rows={2} placeholder="Informasi lain yang perlu dicatat" className={inputCls} />
+              </div>
+            </div>
+          </Panel>
+
+          <Panel title="Estimasi biaya">
+            <div className="grid gap-4 p-4 md:grid-cols-2">
+              <div>
+                <label className={labelCls}>Estimasi biaya tenaga kerja</label>
+                <NumberInput currency name="cost_estimate" value={formData.cost_estimate} onChange={handleInputChange} min="0" step="1000" placeholder="0" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Total estimasi biaya</label>
+                <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium tabular-nums text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+                  {rp(getTotalEstimatedCost())}
                 </div>
               </div>
             </div>
-          </div>
+          </Panel>
+        </div>
 
-          {/* Safety Requirements */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              Safety Requirements
-            </label>
-            <textarea
-              name="safety_requirements"
-              value={formData.safety_requirements}
-              onChange={handleInputChange}
-              rows={2}
-              placeholder="List safety precautions and requirements..."
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              Additional Notes
-            </label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleInputChange}
-              rows={2}
-              placeholder="Any additional information..."
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              onClick={() => navigate('/app/maintenance/records')}
-              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-            >
-              <X className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Save className="inline h-4 w-4 mr-2" />
-              {loading ? 'Saving...' : isEdit ? 'Update Request' : 'Create Request'}
-            </button>
-          </div>
-        </form>
-      </div>
+        <aside className="lg:sticky lg:top-4">
+          <Panel title="Ringkasan">
+            <dl className="space-y-3 p-4 text-sm">
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Mesin</dt><dd className="truncate text-right font-medium">{machine ? `${machine.code} ${machine.name}` : '-'}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Jenis</dt><dd className="font-medium">{typeLabels[formData.maintenance_type] || formData.maintenance_type}</dd></div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-gray-500 dark:text-gray-400">Prioritas</dt>
+                <dd><span className={`inline-flex rounded border px-2 py-0.5 text-xs font-medium ${getPriorityColor(formData.priority)}`}>{priorityLabels[formData.priority] || formData.priority}</span></dd>
+              </div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Tanggal</dt><dd className="font-medium">{formData.scheduled_date || '-'}</dd></div>
+              <div>
+                <dt className="text-xs text-gray-500 dark:text-gray-400">Total estimasi biaya</dt>
+                <dd className="mt-0.5 text-xl font-semibold tabular-nums text-gray-900 dark:text-white">{rp(getTotalEstimatedCost())}</dd>
+              </div>
+            </dl>
+            <div className="border-t border-gray-200 p-4 dark:border-gray-700">
+              <button type="submit" disabled={loading} className="w-full rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">
+                {loading ? 'Menyimpan...' : isEdit ? 'Simpan perubahan' : 'Buat permintaan'}
+              </button>
+            </div>
+          </Panel>
+        </aside>
+      </form>
     </div>
   );
 };
