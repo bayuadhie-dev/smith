@@ -508,8 +508,11 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Dashboard', href: '/app/maintenance', icon: PresentationChartLineIcon },
             { name: 'SPK', description: 'Surat Perintah Kerja (Work Order) Maintenance', href: '/app/maintenance/records', icon: ClipboardDocumentListIcon },
             { name: 'Jadwal', href: '/app/maintenance/schedules', icon: CalendarDaysIcon },
+            { name: 'Gudang Sparepart', href: '/app/maintenance/spare-parts', icon: CubeIcon },
             { name: 'Checklist Barang Reject (NG)', href: '/app/maintenance/checklist-ng', icon: ExclamationTriangleIcon },
             { name: 'New Request', href: '/app/maintenance/request/new', icon: ClipboardDocumentCheckIcon },
+            { name: 'Sparepart per Mesin', href: '/app/maintenance/machine-parts', icon: CogIcon },
+            { name: 'Permintaan Sparepart', href: '/app/maintenance/spare-part-requests', icon: ClipboardDocumentListIcon },
             { name: 'Analytics', href: '/app/maintenance/analytics', icon: ChartPieIcon },
           ]
         },

@@ -274,11 +274,15 @@ import HRReports from './pages/HR/Reports'
 import MaintenanceList from './pages/Maintenance/MaintenanceList'
 import MaintenanceWorkOrderForm from './pages/Maintenance/MaintenanceWorkOrderForm'
 import MaintenancePartsForm from './pages/Maintenance/MaintenancePartsForm'
+import MachineParts from './pages/Maintenance/MachineParts'
+import SparePartRequests from './pages/Maintenance/SparePartRequests'
 import MaintenanceAnalyticsForm from './pages/Maintenance/MaintenanceAnalyticsForm'
 import MaintenanceDashboardEnhanced from './pages/Maintenance/MaintenanceDashboardEnhanced'
 import MaintenanceSchedule from './pages/Maintenance/MaintenanceSchedule'
 import MaintenanceForm from './pages/Maintenance/MaintenanceForm'
 import MaintenanceRequestForm from './pages/Maintenance/MaintenanceRequestForm'
+import SparePartStock from './pages/Maintenance/SparePartStock'
+import SparePartDetail from './pages/Maintenance/SparePartDetail'
 import ChecklistNGItems from './pages/Maintenance/ChecklistNGItems'
 import { WMSDashboard, StockByWorkOrder, StockByWODetail, MaterialConsumptionPage, TransactionsPage, TransactionDetail, PickListPage, TransferOrderPage, CycleCountPage, BatchTraceability } from './pages/WMS'
 import AssetDashboard from './pages/AssetManagement/AssetDashboard'
@@ -877,8 +881,12 @@ function AppChildRoutes() {
                 <Route path="maintenance/work-orders/new" element={<MaintenanceWorkOrderForm />} />
                 <Route path="maintenance/work-orders/:id/edit" element={<MaintenanceWorkOrderForm />} />
                 <Route path="maintenance/parts-requests/new" element={<MaintenancePartsForm />} />
-                <Route path="maintenance/parts-requests/:id/edit" element={<MaintenancePartsForm />} />
+                <Route path="maintenance/parts-requests/:id/edit" element={<Navigate to="/app/maintenance/spare-part-requests" replace />} />
+                <Route path="maintenance/spare-part-requests" element={<SparePartRequests />} />
+                <Route path="maintenance/machine-parts" element={<MachineParts />} />
                 <Route path="maintenance/analytics" element={<MaintenanceAnalyticsForm />} />
+                <Route path="maintenance/spare-parts" element={<SparePartStock />} />
+                <Route path="maintenance/spare-parts/:id" element={<SparePartDetail />} />
                 <Route path="maintenance/:id" element={<MaintenanceForm />} />
                 <Route path="maintenance/:id/edit" element={<MaintenanceForm />} />
                 <Route path="maintenance/checklist-ng" element={<ChecklistNGItems />} />

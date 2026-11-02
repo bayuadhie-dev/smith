@@ -1,592 +1,119 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useLanguage } from '../../contexts/LanguageContext';
-import {
-  ExclamationTriangleIcon as AlertTriangle,
-  CheckIcon as Save,
-  CubeIcon,
-  CurrencyDollarIcon,
-  DocumentTextIcon,
-  PlusIcon as Plus,
-  TrashIcon as Trash2,
-  XMarkIcon as X
-} from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import axiosInstance from '../../utils/axiosConfig'
+import SearchableSelect from '../../components/SearchableSelect'
 import NumberInput from '../../components/ui/NumberInput'
-interface PartsFormData {
-  request_number: string;
-  machine_id: number;
-  requested_by: number;
-  request_date: string;
-  urgency: string;
-  work_order_id: number;
-  parts: PartItem[];
-  justification: string;
-  notes: string;
-  status: string;
-}
+import { PageHeader, Panel } from '../../components/ui/PageKit'
+import { showError, showSuccess } from '../../components/ui'
 
-interface PartItem {
-  id?: number;
-  part_name: string;
-  part_number: string;
-  quantity_requested: number;
-  quantity_approved: number;
-  unit_cost: number;
-  supplier: string;
-  description: string;
-  is_critical: boolean;
-}
+interface PartOption { id: number; code: string; name: string; uom: string; stock: number }
+interface MachineOption { id: number; code: string; name: string }
+interface Line { spare_part_id: number | null; qty: string; notes: string }
 
-const MaintenancePartsForm: React.FC = () => {
-  const { t } = useLanguage();
+const inputCls = 'w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white'
+const labelCls = 'mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200'
 
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const isEdit = Boolean(id);
-
-  const [formData, setFormData] = useState<PartsFormData>({
-    request_number: '',
-    machine_id: 0,
-    requested_by: 0,
-    request_date: new Date().toISOString().split('T')[0],
-    urgency: 'medium',
-    work_order_id: 0,
-    parts: [],
-    justification: '',
-    notes: '',
-    status: 'pending'
-  });
-
-  const [machines, setMachines] = useState<any[]>([]);
-  const [employees, setEmployees] = useState<any[]>([]);
-  const [workOrders, setWorkOrders] = useState<any[]>([]);
-  const [availableParts, setAvailableParts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const urgencyLevels = [
-    { value: 'low', label: 'Low', color: 'bg-blue-100 text-blue-800' },
-    { value: 'medium', label: 'Medium', color: 'bg-yellow-100 text-yellow-800' },
-    { value: 'high', label: 'High', color: 'bg-orange-100 text-orange-800' },
-    { value: 'critical', label: 'Critical', color: 'bg-red-100 text-red-800' }
-  ];
+const MaintenancePartsForm = () => {
+  const navigate = useNavigate()
+  const { id } = useParams()
+  const [parts, setParts] = useState<PartOption[]>([])
+  const [machines, setMachines] = useState<MachineOption[]>([])
+  const [machineId, setMachineId] = useState<number | null>(null)
+  const [notes, setNotes] = useState('')
+  const [lines, setLines] = useState<Line[]>([{ spare_part_id: null, qty: '', notes: '' }])
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    fetchMachines();
-    fetchEmployees();
-    fetchWorkOrders();
-    fetchAvailableParts();
-    if (isEdit && id) {
-      fetchPartsRequest();
-    }
-  }, [id]);
+    // Permintaan tidak bisa diedit; hanya dibatalkan dari daftar.
+    if (id) navigate('/app/maintenance/spare-part-requests', { replace: true })
+  }, [id, navigate])
 
-  const fetchMachines = async () => {
+  useEffect(() => {
+    axiosInstance.get('/api/spare-parts', { params: { per_page: 200 } })
+      .then((res) => setParts((res.data.spare_parts || []).map((p: any) => ({ id: p.id, code: p.part_number, name: p.part_name, uom: p.uom, stock: p.current_stock }))))
+      .catch((e) => showError(e.response?.data?.error || 'Daftar sparepart gagal dimuat.'))
+    axiosInstance.get('/api/production/machines')
+      .then((res) => setMachines((res.data.machines || []).map((m: any) => ({ id: m.id, code: m.code, name: m.name }))))
+      .catch(() => setMachines([]))
+  }, [])
+
+  const partOf = (pid: number | null) => parts.find((p) => p.id === pid)
+  const setLine = (i: number, patch: Partial<Line>) => setLines((ls) => ls.map((l, idx) => (idx === i ? { ...l, ...patch } : l)))
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const items = lines.filter((l) => l.spare_part_id || Number(l.qty))
+    if (items.length === 0) { showError('Pilih minimal satu sparepart.'); return }
+    if (items.some((l) => !l.spare_part_id || !(Number(l.qty) > 0))) { showError('Setiap baris harus punya sparepart dan jumlah lebih dari 0.'); return }
+    const ids = items.map((l) => l.spare_part_id)
+    if (new Set(ids).size !== ids.length) { showError('Satu sparepart tidak boleh dipilih dua kali.'); return }
+    setSaving(true)
     try {
-      const response = await fetch('/api/production/machines', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setMachines(data.machines || []);
-      }
-    } catch (error) {
-      console.error('Failed to fetch machines:', error);
-    }
-  };
-
-  const fetchEmployees = async () => {
-    try {
-      const response = await fetch('/api/hr/employees', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setEmployees(data.employees || []);
-      }
-    } catch (error) {
-      console.error('Failed to fetch employees:', error);
-    }
-  };
-
-  const fetchWorkOrders = async () => {
-    try {
-      const response = await fetch('/api/maintenance/work-orders?status=pending,in_progress', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setWorkOrders(data.work_orders || []);
-      }
-    } catch (error) {
-      console.error('Failed to fetch SPK:', error);
-    }
-  };
-
-  const fetchAvailableParts = async () => {
-    try {
-      const response = await fetch('/api/assets/spare-parts', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setAvailableParts(data.spare_parts || []);
-      }
-    } catch (error) {
-      console.error('Failed to fetch parts:', error);
-    }
-  };
-
-  const fetchPartsRequest = async () => {
-    try {
-      const response = await fetch(`/api/maintenance/parts-requests/${id}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setFormData(data.parts_request);
-      }
-    } catch (error) {
-      console.error('Failed to fetch parts request:', error);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    if (formData.parts.length === 0) {
-      setError('Please add at least one part to the request');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const url = isEdit ? `/api/maintenance/parts-requests/${id}` : '/api/maintenance/parts-requests';
-      const method = isEdit ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        navigate('/app/maintenance/parts-requests');
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to save parts request');
-      }
-    } catch (error) {
-      setError('Network error occurred');
+      const res = await axiosInstance.post('/api/spare-parts/requests', {
+        machine_id: machineId || undefined,
+        notes: notes.trim() || undefined,
+        items: items.map((l) => ({ spare_part_id: l.spare_part_id, qty_requested: Number(l.qty), notes: l.notes || undefined })),
+      })
+      showSuccess(`Permintaan ${res.data.request_number} dibuat.`)
+      navigate('/app/maintenance/spare-part-requests')
+    } catch (err: any) {
+      showError(err.response?.data?.error || 'Gagal menyimpan permintaan.')
     } finally {
-      setLoading(false);
+      setSaving(false)
     }
-  };
-
-  const addPart = () => {
-    setFormData(prev => ({
-      ...prev,
-      parts: [...prev.parts, {
-        part_name: '',
-        part_number: '',
-        quantity_requested: 1,
-        quantity_approved: 0,
-        unit_cost: 0,
-        supplier: '',
-        description: '',
-        is_critical: false
-      }]
-    }));
-  };
-
-  const removePart = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      parts: prev.parts.filter((_, i) => i !== index)
-    }));
-  };
-
-  const updatePart = (index: number, field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      parts: prev.parts.map((part, i) => 
-        i === index ? { ...part, [field]: value } : part
-      )
-    }));
-  };
-
-  const selectFromInventory = (index: number, selectedPart: any) => {
-    updatePart(index, 'part_name', selectedPart.part_name);
-    updatePart(index, 'part_number', selectedPart.part_number);
-    updatePart(index, 'unit_cost', selectedPart.unit_cost);
-  };
-
-  const calculateTotalCost = () => {
-    return formData.parts.reduce((sum, part) => 
-      sum + (part.quantity_requested * part.unit_cost), 0
-    );
-  };
-
-  const getUrgencyColor = (urgency: string) => {
-    const level = urgencyLevels.find(l => l.value === urgency);
-    return level ? level.color : 'bg-gray-100 text-gray-800';
-  };
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {isEdit ? 'Edit Parts Request' : 'Create Parts Request'}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">Request maintenance parts and supplies</p>
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-              <AlertTriangle className="h-5 w-5" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {/* Request Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-              <DocumentTextIcon className="inline h-4 w-4 mr-1" />
-              Request Information
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Request Number
-                </label>
-                <input
-                  type="text"
-                  value={formData.request_number}
-                  onChange={(e) => setFormData(prev => ({ ...prev, request_number: e.target.value }))}
-                  placeholder="Auto-generated if empty"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Request Date *
-                </label>
-                <input
-                  type="date"
-                  value={formData.request_date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, request_date: e.target.value }))}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Machine *
-                </label>
-                <select
-                  value={formData.machine_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, machine_id: parseInt(e.target.value) }))}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select Machine</option>
-                  {machines.map(machine => (
-                    <option key={machine.id} value={machine.id}>
-                      {machine.name} - {machine.code}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Requested By *
-                </label>
-                <select
-                  value={formData.requested_by}
-                  onChange={(e) => setFormData(prev => ({ ...prev, requested_by: parseInt(e.target.value) }))}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select Employee</option>
-                  {employees.map(emp => (
-                    <option key={emp.id} value={emp.id}>
-                      {emp.full_name} - {emp.department}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Urgency *
-                </label>
-                <select
-                  value={formData.urgency}
-                  onChange={(e) => setFormData(prev => ({ ...prev, urgency: e.target.value }))}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {urgencyLevels.map(level => (
-                    <option key={level.value} value={level.value}>
-                      {level.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Related SPK
-                </label>
-                <select
-                  value={formData.work_order_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, work_order_id: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select SPK (Optional)</option>
-                  {workOrders.map(wo => (
-                    <option key={wo.id} value={wo.id}>
-                      {wo.work_order_number} - {wo.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
+    <div className="space-y-4 p-6">
+      <PageHeader
+        title="Permintaan Sparepart Baru"
+        subtitle="Setelah dikirim, permintaan menunggu persetujuan kepala maintenance. Permintaan tidak bisa diedit, hanya dibatalkan."
+        actions={<button type="button" onClick={() => navigate('/app/maintenance/spare-part-requests')} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Batal</button>}
+      />
+      <form onSubmit={submit} className="space-y-4">
+        <Panel title="Keterangan">
+          <div className="grid gap-4 p-4 md:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Justification *
-              </label>
-              <textarea
-                value={formData.justification}
-                onChange={(e) => setFormData(prev => ({ ...prev, justification: e.target.value }))}
-                required
-                rows={3}
-                placeholder="Explain why these parts are needed"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+              <label className={labelCls}>Mesin (opsional)</label>
+              <SearchableSelect options={machines} value={machineId} onChange={(v) => setMachineId(v ? Number(v) : null)} placeholder="Cari kode atau nama mesin" />
+            </div>
+            <div>
+              <label className={labelCls}>Catatan</label>
+              <input type="text" className={inputCls} placeholder="Keperluan, nomor SPK, dll (opsional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
             </div>
           </div>
+        </Panel>
 
-          {/* Parts List */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                <CubeIcon className="inline h-4 w-4 mr-1" />
-                Parts Required
-              </h3>
-              <button
-                type="button"
-                onClick={addPart}
-                className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
-                <Plus className="inline h-4 w-4 mr-1" />
-                Add Part
-              </button>
-            </div>
-
-            {formData.parts.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                <CubeIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <p>No parts added yet. Click "Add Part" to get started.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {formData.parts.map((part, index) => (
-                  <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-gray-900 dark:text-white">Part #{index + 1}</h4>
-                      <div className="flex items-center gap-2">
-                        <label className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={part.is_critical}
-                            onChange={(e) => updatePart(index, 'is_critical', e.target.checked)}
-                            className="rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500"
-                          />
-                          <span className="ml-2 text-sm text-red-600">Critical</span>
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => removePart(index)}
-                          className="p-1 text-red-600 hover:text-red-800"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                          Part Name *
-                        </label>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={part.part_name}
-                            onChange={(e) => updatePart(index, 'part_name', e.target.value)}
-                            required
-                            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          />
-                          <select
-                            onChange={(e) => {
-                              const selectedPart = availableParts.find(p => p.id === parseInt(e.target.value));
-                              if (selectedPart) selectFromInventory(index, selectedPart);
-                            }}
-                            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          >
-                            <option value="">Select from inventory</option>
-                            {availableParts.map(p => (
-                              <option key={p.id} value={p.id}>{p.part_number} - {p.part_name}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                          Part Number
-                        </label>
-                        <input
-                          type="text"
-                          value={part.part_number}
-                          onChange={(e) => updatePart(index, 'part_number', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                        </label>
-                        <input
-                          type="text"
-                          value={part.supplier}
-                          onChange={(e) => updatePart(index, 'supplier', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                          Quantity Requested *
-                        </label>
-                        <NumberInput
-                          value={part.quantity_requested}
-                          onChange={(e) => updatePart(index, 'quantity_requested', parseInt(e.target.value) || 0)}
-                          required
-                          min="1"
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('products.bom.unit_cost')}</label>
-                        <NumberInput currency
-                          value={part.unit_cost}
-                          onChange={(e) => updatePart(index, 'unit_cost', parseFloat(e.target.value) || 0)}
-                          min="0"
-                          step="0.01"
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('products.bom.total_cost')}</label>
-                        <input
-                          type="text"
-                          value={`Rp ${(part.quantity_requested * part.unit_cost).toLocaleString()}`}
-                          readOnly
-                          className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.description')}</label>
-                      <textarea
-                        value={part.description}
-                        onChange={(e) => updatePart(index, 'description', e.target.value)}
-                        rows={2}
-                        placeholder="Additional details about this part"
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
+        <Panel title="Sparepart yang diminta">
+          <div className="space-y-3 p-4">
+            {lines.map((l, i) => {
+              const p = partOf(l.spare_part_id)
+              const short = p && Number(l.qty) > p.stock
+              return (
+                <div key={i} className="grid grid-cols-12 items-start gap-2">
+                  <div className="col-span-12 md:col-span-6">
+                    <SearchableSelect options={parts} value={l.spare_part_id} onChange={(v) => setLine(i, { spare_part_id: v ? Number(v) : null })} placeholder="Cari kode atau nama sparepart" />
+                    {p && <p className={`mt-1 text-xs ${short ? 'text-red-600' : 'text-gray-500'}`}>Stok tersedia {p.stock.toLocaleString('id-ID')} {p.uom}{short ? '. Jumlah melebihi stok.' : ''}</p>}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Cost Summary */}
-          {formData.parts.length > 0 && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CurrencyDollarIcon className="h-5 w-5 text-blue-600" />
-                  <h4 className="text-sm font-medium text-blue-900">Cost Summary</h4>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-blue-700">Total Estimated Cost</div>
-                  <div className="text-lg font-bold text-blue-900">
-                    Rp {calculateTotalCost().toLocaleString()}
+                  <div className="col-span-5 md:col-span-2">
+                    <NumberInput className={`${inputCls} text-right`} placeholder="Jumlah" value={l.qty} onChange={(e) => setLine(i, { qty: e.target.value })} />
                   </div>
+                  <input type="text" className={`${inputCls} col-span-6 md:col-span-3`} placeholder="Keterangan (opsional)" value={l.notes} onChange={(e) => setLine(i, { notes: e.target.value })} />
+                  <button type="button" disabled={lines.length === 1} onClick={() => setLines((ls) => ls.filter((_, idx) => idx !== i))} className="col-span-1 pt-2 text-sm text-gray-400 hover:text-red-600 disabled:opacity-30" title="Hapus baris">Hapus</button>
                 </div>
-              </div>
-              <div className="mt-2 text-sm text-blue-700">
-                {formData.parts.filter(p => p.is_critical).length} critical parts, {formData.parts.length} total parts
-              </div>
-            </div>
-          )}
-
-          {/* Additional Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              Additional Notes
-            </label>
-            <textarea
-              value={formData.notes}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              rows={3}
-              placeholder="Any additional information or special requirements"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+              )
+            })}
+            <button type="button" onClick={() => setLines((ls) => [...ls, { spare_part_id: null, qty: '', notes: '' }])} className="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">+ Tambah baris</button>
           </div>
+        </Panel>
 
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              onClick={() => navigate('/app/maintenance/parts-requests')}
-              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-            >
-              <X className="inline h-4 w-4 mr-2" />{t('common.cancel')}</button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-            >
-              <Save className="inline h-4 w-4 mr-2" />
-              {loading ? 'Saving...' : isEdit ? 'Update Request' : 'Submit Request'}
-            </button>
-          </div>
-        </form>
-      </div>
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={() => navigate('/app/maintenance/spare-part-requests')} className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 dark:border-gray-600 dark:text-gray-200">Batal</button>
+          <button type="submit" disabled={saving} className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">{saving ? 'Mengirim...' : 'Kirim permintaan'}</button>
+        </div>
+      </form>
     </div>
-  );
-};
+  )
+}
 
-export default MaintenancePartsForm;
+export default MaintenancePartsForm

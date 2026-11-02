@@ -19,6 +19,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig';
 import { showError } from '../../components/ui';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import MachinePartsPanel from '../../components/Maintenance/MachinePartsPanel';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface Machine {
@@ -104,7 +105,7 @@ const MachineDetail: React.FC = () => {
   const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([]);
   const [downtimeRecords, setDowntimeRecords] = useState<DowntimeRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'controller'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'controller' | 'spareparts'>('overview');
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -286,7 +287,8 @@ const MachineDetail: React.FC = () => {
         <nav className="flex gap-8">
           {[
             { id: 'overview', label: 'Overview', icon: CubeIcon },
-            { id: 'controller', label: 'Controller', icon: ChartBarIcon }
+            { id: 'controller', label: 'Controller', icon: ChartBarIcon },
+            { id: 'spareparts', label: 'Sparepart', icon: CubeIcon }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -394,6 +396,9 @@ const MachineDetail: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Sparepart Tab */}
+      {activeTab === 'spareparts' && id && <MachinePartsPanel machineId={id} />}
 
       {/* Controller Tab - Daily Efficiency Report */}
       {activeTab === 'controller' && (
