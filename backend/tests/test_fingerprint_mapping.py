@@ -24,7 +24,11 @@ def test_import_suggest_accept_and_manual_map(client, auth_headers, db_session):
     assert by['14']['status'] == 'none' and d['summary']['mapped'] == 0
 
     ok = client.post('/api/hr/fingerprint/users/accept-exact', headers=auth_headers).get_json()
-    assert ok['mapped'] == 1  # hanya satu yang bisa dipetakan: ID 11 (12 bersaing ke karyawan yang sama)
+    assert ok['mapped'] == 0  # ID 11 dan 12 bersaing untuk karyawan yang sama: tidak dipetakan otomatis, HRD yang memutuskan
+    d = client.get('/api/hr/fingerprint/users', headers=auth_headers).get_json()
+    by = {u['device_user_id']: u for u in d['users']}
+    assert by['11']['suggestion']['unique'] is False
+    assert client.put(f"/api/hr/fingerprint/users/{by['11']['id']}/map", headers=auth_headers, json={'employee_id': a.id}).status_code == 200
     d = client.get('/api/hr/fingerprint/users', headers=auth_headers).get_json()
     by = {u['device_user_id']: u for u in d['users']}
     assert by['11']['status'] == 'mapped' and by['11']['employee']['id'] == a.id
@@ -104,3 +108,26 @@ def test_ingest_requires_token_and_is_idempotent(client, db_session, monkeypatch
     r = client.post('/api/hr/fingerprint/ingest', json=body, headers={'X-Ingest-Token': 'rahasia-uji'})
     assert r.get_json()['logs_inserted'] == 0 and r.get_json()['users_created'] == 0
     assert FingerprintLog.query.count() == 1 and FingerprintUser.query.first().log_count == 1
+
+
+def test_matcher_handles_truncation_abbreviation_and_nicknames():
+    from utils.fingerprint_matching import score
+    assert score('Muhamad Rama S', 'MUHAMAD RAMA SUNDJAYA')[0] >= 0.92
+    assert score('Mohammad Bayu', 'MOCHAMMAD BAYU ADHIE NUGROHO')[0] >= 0.92
+    assert score('Santoso Budi', 'Budi Santoso')[0] >= 0.92
+    assert score('Dian Nurrohman', 'Dian Nurohman')[0] >= 0.75
+    assert 0.5 <= score('Anto', 'ANTONIUS TRI TJAHYONO')[0] < 0.75
+    assert score('Kurniawan', 'KURNIAWAN NUGRAHA')[0] < 0.75   # satu kata saja: tidak otomatis
+    assert score('Wono Susanto', 'Sugiarto')[0] == 0
+
+
+def test_accept_confident_maps_only_unique_high_scores(client, auth_headers, db_session):
+    a = _emp(db_session, 'M1', 'Rama', 'Sundjaya')
+    _emp(db_session, 'M2', 'Kurniawan', 'Nugraha')
+    db_session.commit()
+    client.post('/api/hr/fingerprint/users/import', headers=auth_headers, json={'users': [
+        {'user_id': '77', 'name': 'Rama Sundja'}, {'user_id': '78', 'name': 'Kurniawan'}]})
+    r = client.post('/api/hr/fingerprint/users/accept-exact', headers=auth_headers).get_json()
+    assert r['mapped'] == 1
+    db_session.expire_all()
+    assert db_session.get(Employee, a.id).fingerprint_id == '77'

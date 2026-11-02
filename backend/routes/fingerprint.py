@@ -52,14 +52,21 @@ def _mapped_by_device_id():
 @jwt_required()
 @require_permission('hr.view')
 def list_users():
+    from utils.fingerprint_matching import assign, best_for_employee, best_for_device_user
     mapped = _mapped_by_device_id()
     free = [e for e in Employee.query.filter(Employee.status == 'active', Employee.fingerprint_id.is_(None)).all()]
+    all_users = FingerprintUser.query.order_by(FingerprintUser.name).all()
+    free_users = [u for u in all_users if u.device_user_id not in mapped]
+    by_user, by_emp = assign(free_users, free)
     search = (request.args.get('search') or '').strip().lower()
     flt = request.args.get('filter') or ''
     rows = []
-    for u in FingerprintUser.query.order_by(FingerprintUser.name).all():
+    for u in all_users:
         emp = mapped.get(u.device_user_id)
-        sug, kind = (None, None) if emp else _suggest(u.name, free)
+        a = None if emp else by_user.get(u.id)
+        kind = None
+        if a:
+            kind = 'exact' if a['confidence'] == 'tinggi' else 'similar'
         status = 'mapped' if emp else (kind or 'none')
         if search and search not in f'{u.name} {u.device_user_id} {emp.full_name if emp else ""}'.lower():
             continue
@@ -69,24 +76,41 @@ def list_users():
             continue
         if flt in ('exact', 'similar', 'none') and status != flt:
             continue
+        alts = []
+        if not emp:
+            alts = [{'id': c['employee'].id, 'name': c['employee'].full_name, 'employee_number': c['employee'].employee_number,
+                     'score': c['score'], 'reason': c['reason'], 'confidence': c['confidence']}
+                    for c in best_for_device_user(u.name, free)]
         rows.append({
             'id': u.id, 'device_user_id': u.device_user_id, 'name': u.name, 'log_count': u.log_count,
             'last_log_at': u.last_log_at.isoformat() if u.last_log_at else None,
             'status': status,
             'employee': {'id': emp.id, 'name': emp.full_name, 'employee_number': emp.employee_number} if emp else None,
-            'suggestion': {'id': sug.id, 'name': sug.full_name, 'employee_number': sug.employee_number, 'kind': kind} if sug else None,
+            'suggestion': ({'id': a['employee'].id, 'name': a['employee'].full_name, 'employee_number': a['employee'].employee_number,
+                            'kind': kind, 'score': a['score'], 'reason': a['reason'], 'confidence': a['confidence'], 'unique': a['unique']} if a else None),
+            'candidates': alts,
         })
-    all_users = FingerprintUser.query.count()
-    unmapped_emps = Employee.query.filter(Employee.status == 'active', Employee.fingerprint_id.is_(None)).order_by(Employee.full_name).all()
+    unmapped_emps = sorted(free, key=lambda e: e.full_name or '')
+    emp_rows = []
+    for e in unmapped_emps:
+        top = best_for_employee(e.full_name, free_users)
+        emp_rows.append({
+            'id': e.id, 'name': e.full_name, 'employee_number': e.employee_number,
+            'candidates': [{'device_user_id': c['user'].device_user_id, 'user_row_id': c['user'].id, 'name': c['user'].name,
+                            'score': c['score'], 'reason': c['reason'], 'confidence': c['confidence'],
+                            'log_count': c['user'].log_count,
+                            'last_log_at': c['user'].last_log_at.isoformat() if c['user'].last_log_at else None} for c in top],
+        })
     return jsonify({
         'users': rows,
         'summary': {
-            'device_users': all_users,
-            'mapped': sum(1 for u in FingerprintUser.query.all() if u.device_user_id in mapped),
+            'device_users': len(all_users),
+            'mapped': sum(1 for u in all_users if u.device_user_id in mapped),
             'active_employees': Employee.query.filter(Employee.status == 'active').count(),
             'employees_without_id': len(unmapped_emps),
+            'confident_pending': sum(1 for v in by_user.values() if v['confidence'] == 'tinggi' and v['unique']),
         },
-        'employees_without_id': [{'id': e.id, 'name': e.full_name, 'employee_number': e.employee_number} for e in unmapped_emps],
+        'employees_without_id': emp_rows,
     }), 200
 
 
@@ -118,18 +142,17 @@ def map_user(uid):
 @jwt_required()
 @require_permission('hr.edit')
 def accept_exact():
-    """Petakan semua pengguna alat yang namanya sama persis dengan satu karyawan aktif."""
+    """Petakan semua usulan berkeyakinan tinggi (skor >= 0.92) yang unik (tidak bersaing dengan kandidat lain)."""
+    from utils.fingerprint_matching import assign
     mapped = _mapped_by_device_id()
     free = Employee.query.filter(Employee.status == 'active', Employee.fingerprint_id.is_(None)).all()
+    free_users = [u for u in FingerprintUser.query.all() if u.device_user_id not in mapped]
+    by_user, _ = assign(free_users, free)
     n = 0
-    for u in FingerprintUser.query.order_by(FingerprintUser.id).all():
-        if u.device_user_id in mapped:
-            continue
-        emp, kind = _suggest(u.name, free)
-        if emp is not None and kind == 'exact':
-            emp.fingerprint_id = u.device_user_id
-            free = [e for e in free if e.id != emp.id]
-            mapped[u.device_user_id] = emp
+    byid = {u.id: u for u in free_users}
+    for uid, a in by_user.items():
+        if a['confidence'] == 'tinggi' and a['unique']:
+            a['employee'].fingerprint_id = byid[uid].device_user_id
             n += 1
     db.session.commit()
     return jsonify({'message': f'{n} pengguna dipetakan', 'mapped': n}), 200

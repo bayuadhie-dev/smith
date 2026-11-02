@@ -95,6 +95,9 @@ def score(device_name, employee_name):
         if len(d) >= 2 and avg < 0.99:
             reason = 'mirip (ejaan atau singkatan berbeda)'
         return round(sc, 3), reason
+    # nama panggilan: satu kata di mesin adalah awal dari salah satu kata nama lengkap (mis. 'Anto' -> 'Antonius')
+    if len(d) == 1 and len(d[0]) >= 4 and any(x.startswith(d[0]) and len(x) > len(d[0]) for x in e):
+        return 0.55, 'kemungkinan nama panggilan (awal salah satu kata)'
     # ejaan berbeda tipis di seluruh nama
     whole = _sim(joined_d, joined_e)
     if whole >= 0.88:
@@ -129,3 +132,32 @@ def best_for_device_user(device_name, employees, limit=3):
             res.append({'employee': e, 'score': sc, 'reason': why, 'confidence': confidence(sc)})
     res.sort(key=lambda r: -r['score'])
     return res[:limit]
+
+
+def assign(device_users, employees, min_score=0.5):
+    """Tetapkan usulan satu-satu (satu karyawan hanya untuk satu ID alat) secara serakah dari skor tertinggi.
+    Return (by_user, by_employee) berisi dict {id: {'score','reason','confidence','other','unique'}}, dengan
+    'unique' True bila skor kedua terbaik (untuk sisi yang sama) berjarak >= 0.1."""
+    pairs = []
+    for u in device_users:
+        for e in employees:
+            sc, why = score(u.name, e.full_name)
+            if sc >= min_score:
+                pairs.append((sc, u.log_count or 0, u, e, why))
+    pairs.sort(key=lambda t: (-t[0], -t[1]))
+    top_by_user, top_by_emp = {}, {}
+    for sc, n, u, e, why in pairs:
+        top_by_user.setdefault(u.id, []).append(sc)
+        top_by_emp.setdefault(e.id, []).append(sc)
+    used_u, used_e, by_user, by_emp = set(), set(), {}, {}
+    for sc, n, u, e, why in pairs:
+        if u.id in used_u or e.id in used_e:
+            continue
+        used_u.add(u.id)
+        used_e.add(e.id)
+        su, se = sorted(top_by_user[u.id], reverse=True), sorted(top_by_emp[e.id], reverse=True)
+        unique = (len(su) < 2 or su[0] - su[1] >= 0.1) and (len(se) < 2 or se[0] - se[1] >= 0.1)
+        item = {'score': sc, 'reason': why, 'confidence': confidence(sc), 'unique': unique}
+        by_user[u.id] = {**item, 'employee': e}
+        by_emp[e.id] = {**item, 'user': u}
+    return by_user, by_emp
