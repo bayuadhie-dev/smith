@@ -244,6 +244,7 @@ import WorkRosterWeekly from './pages/HR/WorkRosterWeekly'
 import HRDashboard from './pages/HR/HRDashboard'
 import FingerprintMapping from './pages/HR/FingerprintMapping'
 import FingerprintAttendance from './pages/HR/FingerprintAttendance'
+import AttendanceSchedules from './pages/HR/AttendanceSchedules'
 import PayrollList from './pages/HR/PayrollList'
 import PayrollPeriodForm from './pages/HR/PayrollPeriodForm'
 import PayrollRecordList from './pages/HR/PayrollRecordList'
@@ -810,6 +811,7 @@ function AppChildRoutes() {
                 <Route path="hr/dashboard" element={<HRDashboard />} />
                 <Route path="hr/fingerprint-mapping" element={<FingerprintMapping />} />
                 <Route path="hr/fingerprint-attendance" element={<FingerprintAttendance />} />
+                <Route path="hr/attendance-schedules" element={<AttendanceSchedules />} />
                 <Route path="hr/employees" element={<EmployeeList />} />
                 <Route path="hr/employees/new" element={<EmployeeForm />} />
                 <Route path="hr/employees/:id" element={<EmployeeForm />} />
