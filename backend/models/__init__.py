@@ -32,7 +32,7 @@ from .hr_extended import (
 )
 from .maintenance import MaintenanceSchedule, MaintenanceRecord, MaintenanceTask, EquipmentHistory
 from .asset_management import Asset, DepreciationSchedule, AssetTransfer, AssetValuation, SparePart, SparePartMovement
-from .fingerprint import FingerprintUser, FingerprintLog
+from .fingerprint import FingerprintUser, FingerprintLog, AttendanceSchedule, AttendanceAdjustment
 from .spare_part_ext import MachineSparePart, SparePartRequest, SparePartRequestItem, MaintenanceSchedulePart
 from .rd import ResearchProject, Experiment, ProductDevelopment, RDMaterial, ResearchReport, Prototype, ProductTestResult
 from .rnd import (
@@ -145,7 +145,7 @@ __all__ = [
     # Maintenance models
     'MaintenanceSchedule', 'MaintenanceRecord', 'MaintenanceTask', 'EquipmentHistory',
     # Asset Management models
-    'Asset', 'DepreciationSchedule', 'AssetTransfer', 'AssetValuation', 'SparePart', 'SparePartMovement', 'FingerprintUser', 'FingerprintLog', 'MachineSparePart', 'SparePartRequest', 'SparePartRequestItem', 'MaintenanceSchedulePart',
+    'Asset', 'DepreciationSchedule', 'AssetTransfer', 'AssetValuation', 'SparePart', 'SparePartMovement', 'FingerprintUser', 'FingerprintLog', 'AttendanceSchedule', 'AttendanceAdjustment', 'MachineSparePart', 'SparePartRequest', 'SparePartRequestItem', 'MaintenanceSchedulePart',
     # R&D models (legacy)
     'ResearchProject', 'Experiment', 'ProductDevelopment', 'RDMaterial', 'ResearchReport', 'Prototype', 'ProductTestResult',
     # RND models (new)

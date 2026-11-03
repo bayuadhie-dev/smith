@@ -263,19 +263,37 @@ def attendance_export():
     data = compute(df, dt, employee_id=request.args.get('employee_id'),
                    include_unmapped=request.args.get('include_unmapped') in ('1', 'true'))
     hm = lambda m: '' if m is None else f"{'-' if m < 0 else ''}{abs(m) // 60}:{abs(m) % 60:02d}"
-    label = {'hadir': 'Hadir', 'tidak_lengkap': 'Cap tidak lengkap', 'tidak_ada_cap': 'Tidak ada cap', 'libur': 'Libur', 'belum': 'Belum'}
+    label = {'hadir': 'Hadir', 'tidak_lengkap': 'Cap tidak lengkap', 'tidak_ada_cap': 'Tidak ada cap', 'libur': 'Libur', 'belum': 'Belum', 'izin': 'Izin sah'}
+    nm = lambda r: (r['employee'] or {}).get('name') or r['device_name']
+    status_text = lambda r: (label.get(r['status'], r['status']) + (f" - {r['adjustment_label']}" if r.get('adjustment_label') and r['status'] in ('izin', 'libur') else '')
+                             + (' | terlambat' if r['late_minutes'] else '') + (' | pulang cepat' + (' (izin)' if r['early_excused'] else ' (tanpa surat)') if r['early_minutes'] else ''))
+    people_rows = [[nm(p), p['device_user_id'], p['schedule'] or '-', p['work_days'], p['present'], p['excused_days'], p['absent'], p['incomplete'],
+                    f"{p['late_count']}x / {p['late_minutes']} mnt" if p['late_count'] else '-',
+                    f"{p['early_count']}x ({p['early_unexcused_count']} tanpa surat)" if p['early_count'] else '-',
+                    hm(p['net_minutes']), hm(p['target_minutes']), hm(p['diff_minutes'])] for p in data['people']]
+    people_head = ['Karyawan', 'ID alat', 'Jadwal', 'Hari kerja', 'Hadir', 'Izin sah', 'Tidak ada cap', 'Cap tidak lengkap', 'Terlambat', 'Pulang cepat', 'Jam bersih', 'Target', 'Selisih']
+    day_rows_sorted = sorted(data['days'], key=lambda x: (x['date'], nm(x) or ''))
+    day_head = ['Tanggal', 'Hari', 'Karyawan', 'ID alat', 'Masuk', 'Pulang', 'Cap', 'Jam bersih', 'Target', 'Selisih', 'Terlambat (mnt)', 'Pulang cepat (mnt)', 'Status']
+    day_rows = [[r['date'], r['weekday'], nm(r), r['device_user_id'], r['first'], r['last'] if r['punches'] > 1 else '', r['punches'], hm(r['net_minutes']),
+                 hm(r['target_minutes']), hm(r['diff_minutes']), r['late_minutes'] or '', r['early_minutes'] or '', status_text(r)] for r in day_rows_sorted]
+    period = f"{df.strftime('%d/%m/%Y')} sampai {dt.strftime('%d/%m/%Y')}"
+    if (request.args.get('format') or '').lower() == 'pdf':
+        from routes.finance_reports import _xlsx
+        if request.args.get('employee_id') or request.args.get('detail') == '1':
+            who = nm(data['days'][0]) if data['days'] else ''
+            return _xlsx('Rincian Absensi' + (f' - {who}' if who else ''), day_head, [r for r in day_rows if r[0] and r[12] not in ('Libur', 'Belum')] or day_rows,
+                         f'rincian-absensi-{df}-{dt}.pdf', f'Periode {period}')
+        return _xlsx('Rekap Absensi Fingerprint', people_head, people_rows, f'rekap-absensi-{df}-{dt}.pdf', f'Periode {period}')
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = 'Ringkasan'
-    ws.append(['Karyawan', 'ID alat', 'Hari kerja', 'Hadir', 'Tidak ada cap', 'Cap tidak lengkap', 'Jam kerja bersih', 'Target jam', 'Selisih jam'])
-    for p in data['people']:
-        ws.append([(p['employee'] or {}).get('name') or p['device_name'], p['device_user_id'], p['work_days'], p['present'], p['absent'],
-                   p['incomplete'], hm(p['net_minutes']), hm(p['target_minutes']), hm(p['diff_minutes'])])
+    ws.append(people_head)
+    for r in people_rows:
+        ws.append(r)
     wd = wb.create_sheet('Harian')
-    wd.append(['Tanggal', 'Hari', 'Karyawan', 'ID alat', 'Masuk', 'Pulang', 'Jumlah cap', 'Jam bersih', 'Target', 'Selisih', 'Status'])
-    for r in sorted(data['days'], key=lambda x: (x['date'], (x['employee'] or {}).get('name') or '')):
-        wd.append([r['date'], r['weekday'], (r['employee'] or {}).get('name') or r['device_name'], r['device_user_id'], r['first'], r['last'],
-                   r['punches'], hm(r['net_minutes']), hm(r['target_minutes']), hm(r['diff_minutes']), label.get(r['status'], r['status'])])
+    wd.append(day_head)
+    for r in day_rows:
+        wd.append(r)
     for sh in (ws, wd):
         for col in sh.columns:
             sh.column_dimensions[col[0].column_letter].width = min(34, max(10, max(len(str(c.value or '')) for c in col) + 2))
@@ -311,3 +329,296 @@ def ingest():
     refresh_user_stats()
     db.session.commit()
     return jsonify({'users_created': created, 'users_updated': updated, 'logs_received': len(rows), 'logs_inserted': inserted}), 200
+
+
+# ---------------------------------------------------------------- jadwal kerja
+def _sched_dict(sc, assigned=None):
+    return {'id': sc.id, 'name': sc.name, 'days': sc.days or {}, 'late_tolerance_minutes': sc.late_tolerance_minutes,
+            'early_tolerance_minutes': sc.early_tolerance_minutes, 'is_default': sc.is_default, 'is_active': sc.is_active,
+            'notes': sc.notes, 'assigned': assigned}
+
+
+def _clean_days(raw):
+    import re as _re
+    out = {}
+    for k, v in (raw or {}).items():
+        if str(k) not in '0123456' or not v:
+            continue
+        st, en = str(v.get('start') or ''), str(v.get('end') or '')
+        if not (_re.fullmatch(r'\d{1,2}:\d{2}', st) and _re.fullmatch(r'\d{1,2}:\d{2}', en)):
+            raise ValueError('Jam harus berformat JJ:MM')
+        h1, m1 = map(int, st.split(':'))
+        h2, m2 = map(int, en.split(':'))
+        if h1 > 23 or h2 > 23 or m1 > 59 or m2 > 59:
+            raise ValueError('Jam tidak valid')
+        if h2 * 60 + m2 <= h1 * 60 + m1:
+            raise ValueError('Jam pulang harus setelah jam masuk (jadwal lintas tengah malam belum didukung)')
+        brk = int(v.get('break') or 0)
+        if brk < 0 or brk > 180:
+            raise ValueError('Istirahat harus 0 sampai 180 menit')
+        out[str(k)] = {'start': f'{h1:02d}:{m1:02d}', 'end': f'{h2:02d}:{m2:02d}', 'break': brk}
+    if not out:
+        raise ValueError('Pilih minimal satu hari kerja')
+    return out
+
+
+@fingerprint_bp.route('/schedules', methods=['GET'])
+@jwt_required()
+@require_permission('hr.view')
+def list_schedules():
+    from models import AttendanceSchedule
+    counts = dict(db.session.query(FingerprintUser.schedule_id, db.func.count(FingerprintUser.id)).group_by(FingerprintUser.schedule_id).all())
+    rows = AttendanceSchedule.query.order_by(AttendanceSchedule.id).all()
+    return jsonify({'schedules': [_sched_dict(sc, counts.get(sc.id, 0)) for sc in rows], 'unassigned': counts.get(None, 0)}), 200
+
+
+@fingerprint_bp.route('/schedules', methods=['POST'])
+@jwt_required()
+@require_permission('hr.edit')
+def create_schedule():
+    from models import AttendanceSchedule
+    d = request.get_json() or {}
+    try:
+        name = (d.get('name') or '').strip()
+        if not name:
+            return jsonify({'error': 'Nama jadwal wajib diisi'}), 400
+        if AttendanceSchedule.query.filter_by(name=name).first():
+            return jsonify({'error': 'Nama jadwal sudah dipakai'}), 400
+        sc = AttendanceSchedule(name=name, days=_clean_days(d.get('days')), notes=d.get('notes'),
+                                late_tolerance_minutes=int(d.get('late_tolerance_minutes', 10)),
+                                early_tolerance_minutes=int(d.get('early_tolerance_minutes', 10)))
+        db.session.add(sc)
+        db.session.commit()
+        return jsonify({'message': 'Jadwal dibuat', 'id': sc.id}), 201
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
+
+@fingerprint_bp.route('/schedules/<int:sid>', methods=['PUT'])
+@jwt_required()
+@require_permission('hr.edit')
+def update_schedule(sid):
+    from models import AttendanceSchedule
+    sc = db.session.get(AttendanceSchedule, sid)
+    if not sc:
+        return jsonify({'error': 'Jadwal tidak ditemukan'}), 404
+    d = request.get_json() or {}
+    try:
+        if 'name' in d:
+            nm = (d['name'] or '').strip()
+            if not nm:
+                return jsonify({'error': 'Nama jadwal wajib diisi'}), 400
+            if nm != sc.name and AttendanceSchedule.query.filter_by(name=nm).first():
+                return jsonify({'error': 'Nama jadwal sudah dipakai'}), 400
+            sc.name = nm
+        if 'days' in d:
+            sc.days = _clean_days(d['days'])
+        for f in ('late_tolerance_minutes', 'early_tolerance_minutes'):
+            if f in d:
+                v = int(d[f])
+                if v < 0 or v > 120:
+                    return jsonify({'error': 'Toleransi harus 0 sampai 120 menit'}), 400
+                setattr(sc, f, v)
+        if 'notes' in d:
+            sc.notes = d['notes']
+        if d.get('is_default'):
+            AttendanceSchedule.query.update({'is_default': False})
+            sc.is_default = True
+        if 'is_active' in d:
+            if not d['is_active'] and sc.is_default:
+                return jsonify({'error': 'Jadwal bawaan tidak bisa dinonaktifkan. Jadikan jadwal lain sebagai bawaan dulu.'}), 400
+            sc.is_active = bool(d['is_active'])
+        db.session.commit()
+        return jsonify({'message': 'Jadwal diperbarui'}), 200
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
+
+@fingerprint_bp.route('/schedules/assign', methods=['POST'])
+@jwt_required()
+@require_permission('hr.edit')
+def assign_schedule():
+    from models import AttendanceSchedule
+    d = request.get_json() or {}
+    sid = d.get('schedule_id')
+    ids = [str(x) for x in (d.get('device_user_ids') or [])]
+    if sid is not None and not db.session.get(AttendanceSchedule, sid):
+        return jsonify({'error': 'Jadwal tidak ditemukan'}), 404
+    if not ids:
+        return jsonify({'error': 'Pilih minimal satu pengguna'}), 400
+    n = FingerprintUser.query.filter(FingerprintUser.device_user_id.in_(ids)).update({'schedule_id': sid}, synchronize_session=False)
+    db.session.commit()
+    return jsonify({'message': f'{n} pengguna diatur', 'updated': n}), 200
+
+
+@fingerprint_bp.route('/schedules/people', methods=['GET'])
+@jwt_required()
+@require_permission('hr.view')
+def schedule_people():
+    """Daftar pengguna alat yang masih cap + jadwal sekarang + saran jadwal dari kebiasaan jam cap 60 hari terakhir."""
+    from collections import defaultdict
+    from datetime import timedelta
+    from statistics import median
+    from models import AttendanceSchedule
+    from utils.fingerprint_attendance import day_config
+    since = datetime.now() - timedelta(days=60)
+    logs = db.session.query(FingerprintLog.device_user_id, FingerprintLog.punched_at).filter(FingerprintLog.punched_at >= since).all()
+    by = defaultdict(lambda: defaultdict(list))
+    for uid, t in logs:
+        by[uid][t.date()].append(t)
+    scheds = AttendanceSchedule.query.filter_by(is_active=True).all()
+    emp_by_dev = {e.fingerprint_id: e for e in Employee.query.filter(Employee.fingerprint_id.isnot(None)).all()}
+    users = {u.device_user_id: u for u in FingerprintUser.query.all()}
+    rows = []
+    for uid, daymap in by.items():
+        firsts = [min(ts).hour * 60 + min(ts).minute for dt, ts in daymap.items() if dt.weekday() < 5 and len(ts) >= 2]
+        lasts = [max(ts).hour * 60 + max(ts).minute for dt, ts in daymap.items() if dt.weekday() < 5 and len(ts) >= 2]
+        u = users.get(uid)
+        if not u:
+            continue
+        sug = None
+        if len(firsts) >= 5:
+            mf = median(firsts)
+            best = None
+            for sc in scheds:
+                cfg = day_config(sc, 1)
+                if cfg and cfg['start'] is not None:
+                    gap = abs(cfg['start'] - mf)
+                    if best is None or gap < best[0]:
+                        best = (gap, sc)
+            sug = best[1].id if best and best[0] <= 90 else None
+        e = emp_by_dev.get(uid)
+        hm = lambda m: None if m is None else f'{int(m) // 60:02d}:{int(m) % 60:02d}'
+        rows.append({'device_user_id': uid, 'name': u.name, 'employee_name': e.full_name if e else None, 'schedule_id': u.schedule_id,
+                     'active_days': len(daymap), 'median_first': hm(median(firsts)) if firsts else None,
+                     'median_last': hm(median(lasts)) if lasts else None, 'suggested_schedule_id': sug})
+    rows.sort(key=lambda r: ((r['employee_name'] or r['name'] or '').lower()))
+    return jsonify({'people': rows}), 200
+
+
+# ---------------------------------------------------------------- keterangan manual
+ADJ_TYPES = ('cuti', 'sakit', 'izin', 'dinas', 'lupa_cap', 'izin_pulang_cepat', 'izin_terlambat', 'libur_khusus')
+
+
+def _adj_dict(a):
+    from utils.fingerprint_attendance import ADJ_LABEL
+    emp = db.session.get(Employee, a.employee_id) if a.employee_id else None
+    return {'id': a.id, 'device_user_id': a.device_user_id, 'employee': ({'id': emp.id, 'name': emp.full_name} if emp else None),
+            'date_from': a.date_from.isoformat(), 'date_to': a.date_to.isoformat(), 'type': a.adj_type, 'label': ADJ_LABEL.get(a.adj_type, a.adj_type),
+            'letter_number': a.letter_number, 'note': a.note,
+            'corrected_in': a.corrected_in.strftime('%H:%M') if a.corrected_in else None,
+            'corrected_out': a.corrected_out.strftime('%H:%M') if a.corrected_out else None,
+            'created_at': a.created_at.isoformat() if a.created_at else None}
+
+
+@fingerprint_bp.route('/adjustments', methods=['GET'])
+@jwt_required()
+@require_permission('hr.view')
+def list_adjustments():
+    from models import AttendanceAdjustment
+    df, dt, err = _range_args()
+    if err:
+        return jsonify(err[0]), err[1]
+    q = AttendanceAdjustment.query.filter(AttendanceAdjustment.date_from <= dt, AttendanceAdjustment.date_to >= df)
+    if request.args.get('device_user_id'):
+        q = q.filter(AttendanceAdjustment.device_user_id == request.args['device_user_id'])
+    if request.args.get('employee_id'):
+        q = q.filter(AttendanceAdjustment.employee_id == int(request.args['employee_id']))
+    return jsonify({'adjustments': [_adj_dict(a) for a in q.order_by(AttendanceAdjustment.date_from.desc()).all()]}), 200
+
+
+@fingerprint_bp.route('/adjustments', methods=['POST'])
+@jwt_required()
+@require_permission('hr.edit')
+def create_adjustment():
+    from datetime import date as _d, time as _t
+    from flask_jwt_extended import get_jwt_identity
+    from models import AttendanceAdjustment
+    d = request.get_json() or {}
+    try:
+        ty = d.get('adj_type')
+        if ty not in ADJ_TYPES:
+            return jsonify({'error': 'Jenis keterangan tidak valid'}), 400
+        df = _d.fromisoformat(d['date_from'])
+        dt = _d.fromisoformat(d.get('date_to') or d['date_from'])
+        if dt < df or (dt - df).days > 60:
+            return jsonify({'error': 'Rentang tanggal tidak valid (maksimal 61 hari)'}), 400
+        dev = str(d['device_user_id']).strip() if d.get('device_user_id') else None
+        emp_id = d.get('employee_id') or None
+        if emp_id:
+            emp = db.session.get(Employee, int(emp_id))
+            if not emp:
+                return jsonify({'error': 'Karyawan tidak ditemukan'}), 404
+            dev = dev or emp.fingerprint_id
+        if ty != 'libur_khusus' and not (dev or emp_id):
+            return jsonify({'error': 'Pilih karyawan atau ID alat'}), 400
+        if ty == 'izin_pulang_cepat' and not (d.get('letter_number') or '').strip():
+            return jsonify({'error': 'Izin pulang cepat wajib disertai nomor surat izin dari HRD'}), 400
+        cin = _t.fromisoformat(d['corrected_in']) if d.get('corrected_in') else None
+        cout = _t.fromisoformat(d['corrected_out']) if d.get('corrected_out') else None
+        if ty == 'lupa_cap' and not (cin or cout):
+            return jsonify({'error': 'Isi jam masuk atau jam pulang yang dikoreksi'}), 400
+        if ty == 'libur_khusus':
+            dev, emp_id = None, None
+        a = AttendanceAdjustment(device_user_id=dev, employee_id=int(emp_id) if emp_id else None, date_from=df, date_to=dt, adj_type=ty,
+                                 letter_number=(d.get('letter_number') or '').strip() or None, note=d.get('note'),
+                                 corrected_in=cin, corrected_out=cout, created_by=int(get_jwt_identity()))
+        db.session.add(a)
+        db.session.commit()
+        return jsonify({'message': 'Keterangan disimpan', 'adjustment': _adj_dict(a)}), 201
+    except (KeyError, ValueError) as e:
+        db.session.rollback()
+        return jsonify({'error': f'Data tidak valid: {e}'}), 400
+
+
+@fingerprint_bp.route('/adjustments/<int:aid>', methods=['DELETE'])
+@jwt_required()
+@require_permission('hr.edit')
+def delete_adjustment(aid):
+    from models import AttendanceAdjustment
+    a = db.session.get(AttendanceAdjustment, aid)
+    if not a:
+        return jsonify({'error': 'Keterangan tidak ditemukan'}), 404
+    db.session.delete(a)
+    db.session.commit()
+    return jsonify({'message': 'Keterangan dihapus'}), 200
+
+
+# ---------------------------------------------------------------- rincian hari
+@fingerprint_bp.route('/attendance/day', methods=['GET'])
+@jwt_required()
+@require_permission('hr.view')
+def attendance_day():
+    from datetime import date as _d
+    from utils.fingerprint_attendance import compute, _dedupe
+    try:
+        day = _d.fromisoformat(request.args['date'])
+        dev = str(request.args['device_user_id'])
+    except (KeyError, ValueError):
+        return jsonify({'error': 'Parameter date dan device_user_id wajib'}), 400
+    data = compute(day, day, device_user_id=dev, include_unmapped=True)
+    row = next((r for r in data['days'] if r['device_user_id'] == dev), None)
+    raw = FingerprintLog.query.filter(
+        FingerprintLog.device_user_id == dev, FingerprintLog.punched_at >= datetime.combine(day, datetime.min.time()),
+        FingerprintLog.punched_at < datetime.combine(day, datetime.min.time()).replace(hour=23, minute=59, second=59)).order_by(FingerprintLog.punched_at).all()
+    kept = {t for t in _dedupe([l.punched_at for l in raw])}
+    punches = [{'time': l.punched_at.strftime('%H:%M:%S'), 'status': l.status, 'punch': l.punch, 'counted': l.punched_at in kept} for l in raw]
+    explain = []
+    if row:
+        if row['sched_start'] and row['sched_end']:
+            explain.append(f"Jadwal {row['schedule']}: {row['sched_start']} sampai {row['sched_end']}, target {row['target_minutes'] // 60}:{row['target_minutes'] % 60:02d} jam.")
+        elif row['schedule']:
+            explain.append(f"Jadwal {row['schedule']}: hari ini bukan hari kerja.")
+        else:
+            explain.append('Belum ada jadwal untuk orang ini, dipakai aturan umum 8 jam Senin sampai Jumat.')
+        if row['punches']:
+            explain.append(f"Cap dihitung {row['punches']} (ketukan ganda dalam 2 menit digabung): masuk {row['first']}" + (f", pulang {row['last']}." if row['punches'] > 1 else '. Tidak ada cap pulang, jadi status cap tidak lengkap.'))
+        if row['late_minutes']:
+            explain.append(f"Terlambat {row['late_minutes']} menit (melewati toleransi).")
+        if row['early_minutes']:
+            explain.append(f"Pulang {row['early_minutes']} menit lebih awal" + (' dengan izin pulang cepat bernomor surat.' if row['early_excused'] else '. Belum ada surat izin pulang cepat dari HRD.'))
+        for a in row['adjustments']:
+            explain.append(f"Keterangan: {a['label']}" + (f" (surat {a['letter_number']})" if a['letter_number'] else '') + (f": {a['note']}" if a['note'] else '') + '.')
+    return jsonify({'row': row, 'punches': punches, 'explain': explain}), 200
