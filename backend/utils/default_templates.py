@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-10p'
+LAYOUT = 'v2-2026-10q'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 AUTO_NOTE_PREFIXES = ('Auto-generated', 'Migrasi otomatis')  # the font-unit migration only rescales values of auto-generated layouts
 
@@ -152,10 +152,8 @@ def notes_line(left, top, width, h=12):
     return [L('Catatan:', left, top, 18, 4, fs=9, bold=True), F('notes', left + 18, top, width - 18, h, fs=9)]
 
 
-def signatures(left, width, top, labels, caption_paths=None, captions=None, sig_paths=None):
-    """labels: list of static texts or ('field', path). 3 or 2 columns.
-    sig_paths: {kolom: 'signature.created_by'} -> gambar tanda tangan digital di atas garis + nama/tanggal di bawah
-    (kosong bila belum ada tanda tangan digital, jadi ruang tanda tangan basah tetap tersedia)."""
+def signatures(left, width, top, labels, caption_paths=None, captions=None):
+    """labels: list of static texts or ('field', path). 3 or 2 columns."""
     n = len(labels)
     w = width / n
     objs = []
@@ -165,10 +163,6 @@ def signatures(left, width, top, labels, caption_paths=None, captions=None, sig_
             objs.append(F(label[1], x, top, w, 5, fs=9.5, align='center'))
         else:
             objs.append(L(label, x, top, w, 5 + 4.6 * label.count('\n'), fs=9.5, align='center'))
-        sp = (sig_paths or {}).get(i)
-        if sp:
-            objs.append(IMG(sp + '.image', x + w * 0.2, top + 7, w * 0.6, 18))
-            objs.append(F(sp + '.stamp', x, top + 31.5, w, 3.5, fs=7.5, align='center', color=MUTED))
         objs.append(LINE(x + w * 0.15, top + 26, w * 0.7, stroke_width=1))
         cap = (caption_paths or {}).get(i)
         static_cap = (captions or {}).get(i)
@@ -202,7 +196,7 @@ def build_invoice():
                                              ('Sudah Dibayar', 'paid_amount', False), ('Sisa Tagihan', 'balance_due', True)]))
     o += flow(words_box(14, 141, 182, 14))
     o += flow(notes_line(14, 159, 182, 24))
-    o += flow(signatures(14, 182, 188, ['Diterima oleh,', 'Hormat kami,'], {1: 'company.name'}, sig_paths={1: 'signature.created_by'}))
+    o += flow(signatures(14, 182, 188, ['Diterima oleh,', 'Hormat kami,'], {1: 'company.name'}))
     return o, 'A4', 'portrait', None, None
 
 
@@ -228,8 +222,7 @@ def build_po():
     o += flow(words_box(14, 134, 182, 14))
     o += flow([F('tax_note', 14, 150, 182, 8, fs=8.5, color=MUTED)])
     o += flow(notes_line(14, 159, 182, 24))
-    o += flow(signatures(14, 182, 188, ['Dibuat oleh,', 'Disetujui oleh,'], captions={0: ' ', 1: ' '},
-                           sig_paths={0: 'signature.created_by', 1: 'signature.approved_by'}))
+    o += flow(signatures(14, 182, 188, ['Dibuat oleh,', 'Disetujui oleh,'], captions={0: ' ', 1: ' '}))
     return o, 'A4', 'portrait', None, None
 
 
@@ -269,7 +262,7 @@ def build_surat_jalan():
                F('total_quantity', 157.5, 99.5, 37, 4, fs=9.5, bold=True, align='right', fmt='num')])
     o += flow(notes_line(14, 109, 182))
     o += flow([L('Barang diterima dalam keadaan baik dan jumlah sesuai.', 14, 122, 182, 4, fs=8, color=MUTED)])
-    o += flow(signatures(14, 182, 130, ['Disiapkan oleh,', 'Sopir,', 'Diterima oleh,'], sig_paths={0: 'signature.created_by'}))
+    o += flow(signatures(14, 182, 130, ['Disiapkan oleh,', 'Sopir,', 'Diterima oleh,']))
     return o, 'A4', 'portrait', None, None
 
 

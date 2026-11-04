@@ -360,7 +360,6 @@ import Settings from './pages/Settings/Settings'
 import AdvancedSystemConfig from './pages/Settings/AdvancedSystemConfig'
 import UserRoleManagement from './pages/Settings/UserRoleManagement'
 import AuditTrail from './pages/Settings/AuditTrail'
-import MySignature from './pages/Settings/MySignature'
 import BackupRestore from './pages/Settings/BackupRestore'
 import EmailSettings from './pages/Settings/EmailSettings'
 import KPITargetSettings from './pages/Settings/KPITargetSettings'
@@ -972,7 +971,6 @@ function AppChildRoutes() {
                 <Route path="settings/system-config" element={<AdminRoute><AdvancedSystemConfig /></AdminRoute>} />
                 <Route path="settings/user-roles" element={<AdminRoute><UserRoleManagement /></AdminRoute>} />
                 <Route path="settings/audit-trail" element={<AdminRoute><AuditTrail /></AdminRoute>} />
-                <Route path="settings/my-signature" element={<MySignature />} />
                 <Route path="settings/backup-restore" element={<AdminRoute><BackupRestore /></AdminRoute>} />
                 <Route path="settings/email" element={<AdminRoute><EmailSettings /></AdminRoute>} />
                 <Route path="settings/kpi-targets" element={<AdminRoute><KPITargetSettings /></AdminRoute>} />

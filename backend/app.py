@@ -422,7 +422,6 @@ def create_app(config_class=Config):
     from routes.maintenance_extended import maintenance_extended_bp
     from routes.spare_parts import spare_parts_bp
     from routes.fingerprint import fingerprint_bp
-    from routes.signatures import signatures_bp
 
     from routes.rnd import rnd_bp
 
@@ -624,7 +623,6 @@ def create_app(config_class=Config):
     app.register_blueprint(maintenance_extended_bp, url_prefix='/api/maintenance')
     app.register_blueprint(spare_parts_bp, url_prefix='/api/spare-parts')
     app.register_blueprint(fingerprint_bp, url_prefix='/api/hr/fingerprint')
-    app.register_blueprint(signatures_bp, url_prefix='/api/signatures')
 
     app.register_blueprint(rnd_bp)  # New RND module with /api/rnd prefix
 
