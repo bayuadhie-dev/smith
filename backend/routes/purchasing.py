@@ -573,6 +573,7 @@ def create_purchase_order_core(data, user_id, po_number=None):
             quantity=item_data['quantity'],
             uom=item_data.get('uom', 'PCS'),  # Default to PCS if not provided
             description=(item_data.get('description') or None),
+            notes=(item_data.get('notes') or None),
             unit_price=item_data['unit_price'],
             total_price=item_total
         )
@@ -697,6 +698,7 @@ def get_purchase_order(id):
                 'material_code': i.material.code if i.material else None,
                 'material_name': i.material.name if i.material else None,
                 'description': i.description,
+                'notes': i.notes,
                 'is_non_inventory': bool(i.material and i.material.material_type == 'non_inventory'),
                 'quantity': float(i.quantity),
                 'uom': i.uom,
@@ -812,6 +814,7 @@ def update_purchase_order(id):
                         quantity=item_data['quantity'],
                         uom=item_data.get('uom', 'PCS'),
                         description=(item_data.get('description') or None),
+                        notes=(item_data.get('notes') or None),
                         unit_price=item_data['unit_price'],
                         total_price=item_total
                     )

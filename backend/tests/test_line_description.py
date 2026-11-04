@@ -30,3 +30,17 @@ def test_po_line_description_saved_updated_and_printed(client, auth_headers, db_
     from models.document_management import Document
     doc = Document.query.filter_by(reference_type='purchase_order', reference_id=pid).first()
     assert doc.document_data['line_items'][0]['item_name'] == 'Seal baru' and 'Seal baru' in doc.html_content
+
+
+def test_po_line_notes_and_net_terms(client, auth_headers, db_session, test_product):
+    from models.purchasing import Supplier
+    sup = Supplier(code='SUP-NET', company_name='PT Net', payment_terms_days=30)
+    db_session.add(sup); db_session.commit()
+    body = {'supplier_id': sup.id, 'order_date': '2026-11-04', 'payment_terms': 'NET_45', 'delivery_address': 'Jl. Pabrik 1',
+            'items': [{'product_id': test_product.id, 'quantity': 2, 'unit_price': 1000, 'uom': 'PCS', 'description': 'Karbon rotary joint', 'notes': 'Ganti seal sisi kiri'}]}
+    r = client.post('/api/purchasing/purchase-orders', headers=auth_headers, json=body)
+    assert r.status_code == 201, r.get_json()
+    po = client.get(f"/api/purchasing/purchase-orders/{r.get_json()['po_id'] if 'po_id' in r.get_json() else r.get_json().get('id')}", headers=auth_headers).get_json()
+    assert po['payment_terms'] == 'NET_45'
+    it = po['items'][0]
+    assert it['description'] == 'Karbon rotary joint' and it['notes'] == 'Ganti seal sisi kiri'

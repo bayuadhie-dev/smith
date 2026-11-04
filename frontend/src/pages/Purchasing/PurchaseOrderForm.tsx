@@ -41,6 +41,7 @@ interface PurchaseOrderFormData {
     unit_price: number
     uom: string
     description?: string
+    notes?: string
   }[]
 }
 
@@ -82,7 +83,7 @@ const navigate = useNavigate()
       is_taxable: false,
       tax_inclusive: false,
       ppn_code: '',
-      items: [{ product_id: null, material_id: null, quantity: 1, unit_price: 0, uom: 'PCS', description: '' }]
+      items: [{ product_id: null, material_id: null, quantity: 1, unit_price: 0, uom: 'PCS', description: '', notes: '' }]
     }
   })
 
@@ -90,6 +91,17 @@ const navigate = useNavigate()
     control,
     name: 'items'
   })
+
+  // Alamat penerima bawaan = alamat perusahaan di pengaturan; hanya untuk PO baru dan hanya bila masih kosong.
+  useEffect(() => {
+    if (isEdit) return
+    axiosInstance.get('/api/settings/company').then((r) => {
+      const c = r.data || {}
+      const addr = [c.address, c.city, c.country].filter((x: any) => x && String(x).trim()).join(', ')
+      if (addr && !(watch('delivery_address') || '').trim()) setValue('delivery_address', addr, { shouldDirty: false })
+    }).catch(() => undefined)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit])
 
   const watchedItems = watch('items')
   const watchedCurrency = watch('currency') || 'IDR'
@@ -126,7 +138,8 @@ const navigate = useNavigate()
           quantity: item.quantity,
           unit_price: item.unit_price,
           uom: item.uom || 'PCS',
-          description: item.description || ''
+          description: item.description || '',
+          notes: item.notes || ''
         }))
       })
     }
@@ -211,6 +224,7 @@ const navigate = useNavigate()
           unit_price: parseFloat(item.unit_price.toString()),
           uom: item.uom,
           description: (item.description || '').trim() || undefined,
+          notes: (item.notes || '').trim() || undefined,
           ...(item.product_id ? { product_id: parseInt(item.product_id.toString()) } : {}),
           ...(item.material_id ? { material_id: parseInt(item.material_id.toString()) } : {})
         }))
@@ -237,7 +251,7 @@ const navigate = useNavigate()
   }
 
   const addItem = () => {
-    append({ product_id: null, material_id: null, quantity: 1, unit_price: 0, uom: 'PCS', description: '' })
+    append({ product_id: null, material_id: null, quantity: 1, unit_price: 0, uom: 'PCS', description: '', notes: '' })
   }
 
   const getProductById = (productId: number) => {
@@ -376,15 +390,18 @@ const navigate = useNavigate()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Payment Terms
+                Termin Pembayaran
               </label>
               <select {...register('payment_terms')} className="input-field">
-                <option value="">Select payment terms</option>
+                <option value="">Pilih termin pembayaran</option>
+                <option value="COD">Tunai saat barang diterima (COD)</option>
+                <option value="NET_7">NET 7</option>
+                <option value="NET_14">NET 14</option>
                 <option value="NET_30">NET 30</option>
+                <option value="NET_45">NET 45</option>
                 <option value="NET_60">NET 60</option>
                 <option value="NET_90">NET 90</option>
-                <option value="COD">Cash on Delivery</option>
-                <option value="ADVANCE">Advance Payment</option>
+                <option value="ADVANCE">Bayar di muka</option>
               </select>
             </div>
 
@@ -472,8 +489,8 @@ const navigate = useNavigate()
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Kirim Ke (alamat pengiriman)</label>
-              <textarea {...register('delivery_address')} rows={2} className="input-field" placeholder="Alamat gudang / lokasi penerimaan barang" />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Alamat Penerima (kirim ke)</label>
+              <textarea {...register('delivery_address')} rows={2} className="input-field" placeholder="Terisi alamat perusahaan dari Pengaturan; ubah bila barang dikirim ke gudang lain" />
             </div>
 
             <div className="md:col-span-2">
@@ -549,12 +566,22 @@ const navigate = useNavigate()
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Keterangan</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Nama</label>
                       <input
                         type="text"
                         className="input w-full"
                         placeholder="Terisi nama barang, bisa diubah (mis. nama sparepart)"
                         {...register(`items.${index}.description` as const)}
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Keterangan</label>
+                      <input
+                        type="text"
+                        className="input w-full"
+                        placeholder="Catatan tambahan untuk baris ini (opsional)"
+                        {...register(`items.${index}.notes` as const)}
                       />
                     </div>
 

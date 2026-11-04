@@ -566,7 +566,7 @@ def build_po_document_data(po):
         line_items.append({
             'no': len(line_items) + 1,
             'code': (item.product.code if item.product else (getattr(item.material, 'code', '') if item.material else '')),
-            'item_name': item.description or (item.product.name if item.product else (item.material.name if item.material else '')),
+            'item_name': (item.description or (item.product.name if item.product else (item.material.name if item.material else ''))) + (('\n' + item.notes.strip()) if (item.notes or '').strip() else ''),
             'quantity': float(item.quantity),
             'uom': item.uom or '',
             'unit_price_text': money(item.unit_price),
