@@ -20,7 +20,10 @@ interface Line {
   qty: number | string
   price: number | string
   ppn_code: string
+  description: string
 }
+
+interface OpenDP { id: number; dp_number: string; po_number: string | null; remaining: number }
 
 const todayISO = () => new Date().toISOString().slice(0, 10)
 const addDays = (iso: string, days: number) => {
@@ -44,6 +47,8 @@ export default function PurchaseInvoiceForm() {
   const [dueDate, setDueDate] = useState('')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
+  const [openDps, setOpenDps] = useState<OpenDP[]>([])
+  const [dpUse, setDpUse] = useState<Record<number, string>>({})
 
   useEffect(() => {
     axiosInstance.get('/api/purchasing/suppliers', { params: { per_page: 1000 } })
@@ -74,6 +79,7 @@ export default function PurchaseInvoiceForm() {
           return {
             po_item_id: it.id,
             name: it.material_name || it.product_name || it.description || '(tanpa nama)',
+            description: (it.description || '').trim() || it.material_name || it.product_name || '',
             code: it.material_code || it.product_code,
             uom: it.uom,
             ordered: Number(it.quantity),
@@ -91,6 +97,14 @@ export default function PurchaseInvoiceForm() {
       .catch(() => showError('Gagal memuat PO'))
   }, [poId])
 
+  useEffect(() => {
+    setDpUse({})
+    if (!supplierId) { setOpenDps([]); return }
+    axiosInstance.get('/api/purchasing/down-payments', { params: { supplier_id: supplierId, open: 1, per_page: 100 } })
+      .then((r) => setOpenDps((r.data.down_payments || []).map((d: any) => ({ id: d.id, dp_number: d.dp_number, po_number: d.po_number, remaining: Number(d.remaining || 0) }))))
+      .catch(() => setOpenDps([]))
+  }, [supplierId])
+
   const currency = po?.currency || 'IDR'
   const inclusiveNote = Boolean(po?.is_taxable && po?.tax_inclusive)
 
@@ -105,6 +119,8 @@ export default function PurchaseInvoiceForm() {
     return { dpp, tax, total: dpp + tax }
   }, [lines])
 
+  const dpTotal = Object.values(dpUse).reduce((a, v) => a + (Number(v) || 0), 0)
+
   const update = (i: number, patch: Partial<Line>) => setLines((ls) => ls.map((l, idx) => (idx === i ? { ...l, ...patch } : l)))
 
   const submit = async (e: React.FormEvent) => {
@@ -115,6 +131,11 @@ export default function PurchaseInvoiceForm() {
     if (items.length === 0) return showError('Isi jumlah tagihan minimal satu baris')
     const over = items.find((l) => Number(l.qty) > l.ordered - l.invoiced + 1e-9)
     if (over) return showError(`${over.name}: jumlah melebihi sisa yang belum ditagih (${over.ordered - over.invoiced})`)
+    for (const d of openDps) {
+      const v = Number(dpUse[d.id] || 0)
+      if (v < 0 || v > d.remaining + 0.005) return showError(`Uang muka ${d.dp_number}: jumlah melebihi sisa (${d.remaining.toLocaleString('id-ID')})`)
+    }
+    if (dpTotal > totals.total + 0.005) return showError('Total uang muka yang dipakai melebihi total tagihan')
     setSaving(true)
     try {
       const res = await axiosInstance.post('/api/purchasing/purchase-invoices', {
@@ -125,10 +146,22 @@ export default function PurchaseInvoiceForm() {
         invoice_date: invoiceDate,
         due_date: dueDate || null,
         notes: notes || null,
-        items: items.map((l) => ({ po_item_id: l.po_item_id, quantity: Number(l.qty), unit_price: Number(l.price), ppn_code: l.ppn_code || '' })),
+        items: items.map((l) => ({ po_item_id: l.po_item_id, quantity: Number(l.qty), unit_price: Number(l.price), ppn_code: l.ppn_code || '', description: (l.description || '').trim() || undefined })),
       })
       showSuccess(res.data?.message || 'Faktur pembelian dibuat')
       const id = res.data?.invoice?.id
+      if (id) {
+        for (const d of openDps) {
+          const amt = Number(dpUse[d.id] || 0)
+          if (amt <= 0) continue
+          try {
+            await axiosInstance.post(`/api/purchasing/down-payments/${d.id}/allocate`, { invoice_id: id, amount: amt })
+            showSuccess(`Uang muka ${d.dp_number} dialokasikan ${formatCurrencyAmount(amt, 'IDR')}`)
+          } catch (e: any) {
+            showError(`Faktur tersimpan, tetapi alokasi uang muka ${d.dp_number} gagal: ${e?.response?.data?.error || 'kesalahan tidak dikenal'}. Alokasikan ulang dari halaman Uang Muka Pembelian.`)
+          }
+        }
+      }
       navigate(id ? `/app/purchasing/invoices/${id}/match` : '/app/purchasing/invoices')
     } catch (err: any) {
       showError(err?.response?.data?.error || 'Gagal menyimpan faktur pembelian')
@@ -206,6 +239,7 @@ export default function PurchaseInvoiceForm() {
                 <thead>
                   <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700">
                     <th className="pb-2 pr-3">Item</th>
+                    <th className="pb-2 pr-3 min-w-[12rem]">Keterangan</th>
                     <th className="pb-2 pr-3 text-right">Dipesan</th>
                     <th className="pb-2 pr-3 text-right">Diterima</th>
                     <th className="pb-2 pr-3 text-right">Sudah Ditagih</th>
@@ -223,6 +257,9 @@ export default function PurchaseInvoiceForm() {
                         <td className="py-2 pr-3">
                           <div className="font-medium text-gray-900 dark:text-white">{l.name}</div>
                           {l.code && <div className="text-xs text-gray-400">{l.code}</div>}
+                        </td>
+                        <td className="py-2 pr-3">
+                          <input className="input-field" value={l.description} onChange={(e) => update(i, { description: e.target.value })} placeholder="Keterangan baris" />
                         </td>
                         <td className="py-2 pr-3 text-right tabular-nums">{l.ordered.toLocaleString('id-ID')} {l.uom}</td>
                         <td className={`py-2 pr-3 text-right tabular-nums ${l.received < l.ordered ? 'text-amber-600' : ''}`}>{l.received.toLocaleString('id-ID')}</td>
@@ -250,11 +287,40 @@ export default function PurchaseInvoiceForm() {
               </table>
             </div>
             <p className="text-xs text-gray-500">Qty tagih terisi dari barang yang sudah diterima dan belum ditagih. Menagih lebih dari yang diterima akan ditandai selisih saat pencocokan 3 arah.</p>
+            {openDps.length > 0 && currency === 'IDR' && (
+              <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Pakai uang muka</h3>
+                  <Link to="/app/purchasing/down-payments" className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400">Buka daftar uang muka</Link>
+                </div>
+                <p className="mt-1 text-xs text-gray-500">Pemasok ini punya uang muka yang belum terpakai. Alokasi dijalankan sesudah faktur tersimpan dan mengurangi sisa tagihan.</p>
+                <div className="mt-3 space-y-2">
+                  {openDps.map((d) => (
+                    <div key={d.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                      <div className="text-gray-800 dark:text-gray-200">
+                        <span className="font-medium">{d.dp_number}</span>
+                        <span className="ml-2 text-xs text-gray-500">{d.po_number ? `PO ${d.po_number}` : 'tanpa PO'} · sisa {formatCurrencyAmount(d.remaining, 'IDR')}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <NumberInput currency className="input-field w-40 text-right" value={(dpUse[d.id] ?? '') as any} onChange={(e: any) => setDpUse((m) => ({ ...m, [d.id]: e.target.value }))} placeholder="Jumlah dipakai" />
+                        <button type="button" className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400" onClick={() => setDpUse((m) => ({ ...m, [d.id]: String(Math.max(0, Math.min(d.remaining, totals.total - (dpTotal - (Number(m[d.id]) || 0))))) }))}>Pakai maksimal</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="flex justify-end">
               <div className="w-80 space-y-1 text-sm">
                 <div className="flex justify-between text-gray-600 dark:text-gray-300"><span>DPP</span><span>{formatCurrencyAmount(totals.dpp, currency)}</span></div>
                 <div className="flex justify-between text-gray-600 dark:text-gray-300"><span>PPN</span><span>{formatCurrencyAmount(totals.tax, currency)}</span></div>
                 <div className="flex justify-between text-lg font-semibold"><span>Total Tagihan</span><span>{formatCurrencyAmount(totals.total, currency)}</span></div>
+                {dpTotal > 0 && (
+                  <>
+                    <div className="flex justify-between text-gray-600 dark:text-gray-300"><span>Uang muka dipakai</span><span>- {formatCurrencyAmount(dpTotal, 'IDR')}</span></div>
+                    <div className="flex justify-between font-medium"><span>Sisa setelah uang muka</span><span>{formatCurrencyAmount(Math.max(0, totals.total - dpTotal), currency)}</span></div>
+                  </>
+                )}
               </div>
             </div>
           </div>
