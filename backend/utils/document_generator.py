@@ -626,6 +626,7 @@ def build_po_document_data(po):
         'supplier_address': ', '.join(x for x in [supplier.address, supplier.city, supplier.country] if x) if supplier else '',
         'supplier_contact': contact,
         'supplier_tax_id': f'NPWP/Tax ID: {supplier.tax_id}' if supplier and supplier.tax_id else '',
+        'supplier_tax_address': (supplier.tax_address or '') if supplier else '',
         'delivery_address': po.delivery_address or '',
         'payment_terms': po.payment_terms or '',
         'notes': po.notes or '',

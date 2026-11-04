@@ -164,6 +164,7 @@ def get_suppliers():
                 'email': s.email,
                 'phone': s.phone,
                 'address': s.address,
+                'tax_address': s.tax_address,
                 'city': s.city,
                 'country': s.country,
                 'supplier_type': s.supplier_type,
@@ -211,12 +212,17 @@ def create_supplier():
         data = request.get_json()
         
         # Generate supplier code if not provided
-        supplier_code = data.get('code')
+        supplier_code = (data.get('code') or '').strip()
         if not supplier_code:
             # Generate code like SUP-001, SUP-002, etc.
             last_supplier = Supplier.query.order_by(Supplier.id.desc()).first()
             next_num = (last_supplier.id + 1) if last_supplier else 1
             supplier_code = f"SUP-{next_num:03d}"
+            while Supplier.query.filter_by(code=supplier_code).first():
+                next_num += 1
+                supplier_code = f"SUP-{next_num:03d}"
+        elif Supplier.query.filter_by(code=supplier_code).first():
+            return jsonify({'error': f'Nomor pemasok {supplier_code} sudah dipakai'}), 400
         
         supplier = Supplier(
             code=supplier_code,
@@ -225,6 +231,7 @@ def create_supplier():
             email=data.get('email'),
             phone=data.get('phone'),
             address=data.get('address'),
+            tax_address=(data.get('tax_address') or None),
             city=data.get('city'),
             postal_code=data.get('postal_code'),
             country=data.get('country', 'Indonesia'),
@@ -273,6 +280,7 @@ def get_supplier(id):
             'email': supplier.email,
             'phone': supplier.phone,
             'address': supplier.address,
+            'tax_address': supplier.tax_address,
             'city': supplier.city,
             'postal_code': supplier.postal_code,
             'country': supplier.country,
@@ -337,6 +345,10 @@ def update_supplier(id):
         # Update supplier fields
         if 'name' in data:
             supplier.company_name = data['name']
+        if (data.get('code') or '').strip() and data['code'].strip() != supplier.code:
+            if Supplier.query.filter(Supplier.code == data['code'].strip(), Supplier.id != supplier.id).first():
+                return jsonify({'error': f"Nomor pemasok {data['code'].strip()} sudah dipakai"}), 400
+            supplier.code = data['code'].strip()
         if 'company_name' in data:
             supplier.company_name = data['company_name']
         if 'contact_person' in data:
@@ -347,6 +359,8 @@ def update_supplier(id):
             supplier.phone = data['phone']
         if 'address' in data:
             supplier.address = data['address']
+        if 'tax_address' in data:
+            supplier.tax_address = data['tax_address'] or None
         if 'city' in data:
             supplier.city = data['city']
         if 'postal_code' in data:

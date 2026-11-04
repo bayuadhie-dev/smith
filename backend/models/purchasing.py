@@ -14,7 +14,8 @@ class Supplier(db.Model):
     fax = db.Column(db.String(50), nullable=True)
     website = db.Column(db.String(200), nullable=True)
     tax_id = db.Column(db.String(100), nullable=True)
-    address = db.Column(db.Text, nullable=True)
+    address = db.Column(db.Text, nullable=True)  # alamat perusahaan
+    tax_address = db.Column(db.Text, nullable=True)  # alamat pajak (sesuai NPWP/faktur pajak)
     city = db.Column(db.String(100), nullable=True)
     state = db.Column(db.String(100), nullable=True)
     country = db.Column(db.String(100), nullable=True)

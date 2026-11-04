@@ -10,11 +10,13 @@ import {
 } from '../../services/api' 
 import NumberInput from '../../components/ui/NumberInput'
 interface SupplierFormData {
+  code: string
   name: string
   contact_person: string
   email: string
   phone: string
   address: string
+  tax_address: string
   city: string
   postal_code: string
   country: string
@@ -37,13 +39,15 @@ const { id } = useParams()
   const [createSupplier, { isLoading: isCreating }] = useCreateSupplierMutation()
   const [updateSupplier, { isLoading: isUpdating }] = useUpdateSupplierMutation()
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<SupplierFormData>({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<SupplierFormData>({
     defaultValues: {
+      code: '',
       name: '',
       contact_person: '',
       email: '',
       phone: '',
       address: '',
+      tax_address: '',
       city: '',
       postal_code: '',
       country: 'Indonesia',
@@ -59,11 +63,13 @@ const { id } = useParams()
   useEffect(() => {
     if (supplier) {
       reset({
+        code: supplier.code || '',
         name: supplier.name || '',
         contact_person: supplier.contact_person || '',
         email: supplier.email || '',
         phone: supplier.phone || '',
         address: supplier.address || '',
+        tax_address: supplier.tax_address || '',
         city: supplier.city || '',
         postal_code: supplier.postal_code || '',
         country: supplier.country || 'Indonesia',
@@ -81,14 +87,14 @@ const { id } = useParams()
     try {
       if (isEdit && id) {
         await updateSupplier({ id, ...data }).unwrap()
-        toast.success('Supplier updated successfully!')
+        toast.success('Pemasok diperbarui')
       } else {
         await createSupplier(data).unwrap()
-        toast.success('Supplier created successfully!')
+        toast.success('Pemasok dibuat')
       }
       navigate('/app/purchasing/suppliers')
     } catch (error: any) {
-      toast.error(error?.data?.message || 'Failed to save supplier')
+      toast.error(error?.data?.error || error?.data?.message || 'Gagal menyimpan pemasok')
     }
   }
 
@@ -104,25 +110,38 @@ const { id } = useParams()
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {isEdit ? 'Edit Supplier' : 'Add New Supplier'}
+          {isEdit ? 'Ubah Pemasok' : 'Pemasok Baru'}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          {isEdit ? 'Update supplier information' : 'Create a new supplier record'}
+          {isEdit ? 'Perbarui data pemasok' : 'Tambah data pemasok baru'}
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Basic Information</h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Informasi Dasar</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Supplier Name *
+                Nomor Pemasok
               </label>
               <input
                 type="text"
-                {...register('name', { required: 'Supplier name is required' })}
+                {...register('code')}
+                placeholder={isEdit ? '' : 'Kosongkan untuk nomor otomatis (SUP-001, ...)'}
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Isi sendiri bila pemasok sudah punya nomor di Accurate atau sistem lain, supaya tidak ganda.</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Nama Pemasok *
+              </label>
+              <input
+                type="text"
+                {...register('name', { required: 'Nama pemasok wajib diisi' })}
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               {errors.name && (
@@ -132,7 +151,7 @@ const { id } = useParams()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Contact Person
+                Nama Kontak
               </label>
               <input
                 type="text"
@@ -143,6 +162,7 @@ const { id } = useParams()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Email
               </label>
               <input
                 type="email"
@@ -161,6 +181,7 @@ const { id } = useParams()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Telepon
               </label>
               <input
                 type="text"
@@ -172,22 +193,47 @@ const { id } = useParams()
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Address Information</h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Alamat</h2>
           
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Alamat Perusahaan
               </label>
               <textarea
                 {...register('address')}
                 rows={3}
+                placeholder="Alamat kantor atau pabrik pemasok"
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+            </div>
+
+            <div>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Alamat Pajak
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setValue('tax_address', watch('address') || '', { shouldDirty: true })}
+                  className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400"
+                >
+                  Samakan dengan alamat perusahaan
+                </button>
+              </div>
+              <textarea
+                {...register('tax_address')}
+                rows={3}
+                placeholder="Alamat sesuai NPWP / faktur pajak"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Dipakai untuk faktur pajak dan dokumen pajak. Boleh berbeda dari alamat perusahaan.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Kota
                 </label>
                 <input
                   type="text"
@@ -198,7 +244,7 @@ const { id } = useParams()
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Postal Code
+                  Kode Pos
                 </label>
                 <input
                   type="text"
@@ -209,6 +255,7 @@ const { id } = useParams()
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Negara
                 </label>
                 <input
                   type="text"
@@ -221,12 +268,12 @@ const { id } = useParams()
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Business Information</h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Informasi Bisnis</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Tax ID / NPWP
+                NPWP
               </label>
               <input
                 type="text"
@@ -237,19 +284,19 @@ const { id } = useParams()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Payment Terms (Days)
+                Termin Pembayaran (hari)
               </label>
               <select
                 {...register('payment_terms')}
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="0">Cash on Delivery</option>
-                <option value="7">7 Days</option>
-                <option value="14">14 Days</option>
-                <option value="30">30 Days</option>
-                <option value="45">45 Days</option>
-                <option value="60">60 Days</option>
-                <option value="90">90 Days</option>
+                <option value="0">Tunai (COD)</option>
+                <option value="7">7 hari</option>
+                <option value="14">14 hari</option>
+                <option value="30">30 hari</option>
+                <option value="45">45 hari</option>
+                <option value="60">60 hari</option>
+                <option value="90">90 hari</option>
               </select>
             </div>
 
@@ -271,7 +318,7 @@ const { id } = useParams()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Credit Limit
+                Batas Kredit
               </label>
               <NumberInput
                 step="0.01"
@@ -287,19 +334,20 @@ const { id } = useParams()
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <label className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                Active Supplier
+                Pemasok aktif
               </label>
             </div>
           </div>
 
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                
             </label>
             <textarea
               {...register('notes')}
               rows={3}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Additional notes about this supplier..."
+              placeholder="Catatan tambahan tentang pemasok"
             />
           </div>
         </div>
@@ -315,7 +363,7 @@ const { id } = useParams()
             disabled={isCreating || isUpdating}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isCreating || isUpdating ? 'Saving...' : (isEdit ? 'Update Supplier' : 'Create Supplier')}
+            {isCreating || isUpdating ? 'Menyimpan...' : (isEdit ? 'Simpan Perubahan' : 'Simpan Pemasok')}
           </button>
         </div>
       </form>
