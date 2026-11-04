@@ -17,3 +17,15 @@ def test_supplier_number_and_two_addresses(client, auth_headers, db_session):
     assert d['tax_address'] == 'Alamat pajak baru' and d['code'] == 'SUP-MANUAL-2' and d['address'] == 'Jl. Kantor No. 1, Bandung'
     clash = client.put(f"/api/purchasing/suppliers/{auto.get_json()['supplier_id']}", headers=auth_headers, json={'code': 'SUP-MANUAL-2'})
     assert clash.status_code == 400
+
+
+def test_supplier_mobile_roundtrip(client, auth_headers, db_session):
+    r = client.post('/api/purchasing/suppliers', headers=auth_headers, json={'name': 'PT HP', 'contact_person': 'Budi', 'phone': '022123', 'mobile': '0812345678', 'payment_terms': '14'})
+    assert r.status_code == 201
+    sid = r.get_json()['supplier_id']
+    d = client.get(f'/api/purchasing/suppliers/{sid}', headers=auth_headers).get_json()
+    assert d['mobile'] == '0812345678' and d['contact_person'] == 'Budi' and d['payment_terms'] == '14'
+    client.put(f'/api/purchasing/suppliers/{sid}', headers=auth_headers, json={'mobile': '0899'})
+    assert client.get(f'/api/purchasing/suppliers/{sid}', headers=auth_headers).get_json()['mobile'] == '0899'
+    lst = client.get('/api/purchasing/suppliers', headers=auth_headers).get_json()['suppliers']
+    assert any(s.get('mobile') == '0899' for s in lst)

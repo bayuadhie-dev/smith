@@ -15,6 +15,7 @@ interface SupplierFormData {
   contact_person: string
   email: string
   phone: string
+  mobile: string
   address: string
   tax_address: string
   city: string
@@ -46,6 +47,7 @@ const { id } = useParams()
       contact_person: '',
       email: '',
       phone: '',
+      mobile: '',
       address: '',
       tax_address: '',
       city: '',
@@ -68,6 +70,7 @@ const { id } = useParams()
         contact_person: supplier.contact_person || '',
         email: supplier.email || '',
         phone: supplier.phone || '',
+        mobile: supplier.mobile || '',
         address: supplier.address || '',
         tax_address: supplier.tax_address || '',
         city: supplier.city || '',
@@ -181,11 +184,24 @@ const { id } = useParams()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Telepon
+                Telepon Kantor
               </label>
               <input
                 type="text"
                 {...register('phone')}
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                No. HP / WhatsApp
+              </label>
+              <input
+                type="text"
+                inputMode="tel"
+                {...register('mobile')}
+                placeholder="08xxxxxxxxxx"
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>

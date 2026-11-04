@@ -185,6 +185,18 @@ const navigate = useNavigate()
     }
   }, [watchedTaxable, watchedSupplier, watchedPpn, suppliers])
 
+  // Termin dari master pemasok: saat pemasok dipilih di PO baru, termin ikut (hari -> NET_n / COD); tetap bisa diubah.
+  useEffect(() => {
+    if (isEdit || !watchedSupplier) return
+    const sup = (suppliers?.suppliers || []).find((x: any) => x.id === Number(watchedSupplier))
+    if (!sup || sup.payment_terms === undefined || sup.payment_terms === null || sup.payment_terms === '') return
+    const days = parseInt(String(sup.payment_terms), 10)
+    if (Number.isNaN(days)) return
+    const code = days === 0 ? 'COD' : `NET_${days}`
+    const allowed = ['COD', 'NET_7', 'NET_14', 'NET_30', 'NET_45', 'NET_60', 'NET_90']
+    setValue('payment_terms', allowed.includes(code) ? code : '', { shouldDirty: true })
+  }, [watchedSupplier, suppliers, isEdit])
+
   const taxSummary = () => {
     const gross = calculateTotal()
     const rate = watchedTaxable ? (PPN_RATES[watchedPpn] ?? 0) : 0

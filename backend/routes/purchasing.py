@@ -163,6 +163,7 @@ def get_suppliers():
                 'contact_person': s.contact_person,
                 'email': s.email,
                 'phone': s.phone,
+                'mobile': s.mobile,
                 'address': s.address,
                 'tax_address': s.tax_address,
                 'city': s.city,
@@ -230,6 +231,7 @@ def create_supplier():
             contact_person=data.get('contact_person'),
             email=data.get('email'),
             phone=data.get('phone'),
+            mobile=data.get('mobile'),
             address=data.get('address'),
             tax_address=(data.get('tax_address') or None),
             city=data.get('city'),
@@ -279,6 +281,7 @@ def get_supplier(id):
             'contact_person': supplier.contact_person,
             'email': supplier.email,
             'phone': supplier.phone,
+            'mobile': supplier.mobile,
             'address': supplier.address,
             'tax_address': supplier.tax_address,
             'city': supplier.city,
@@ -357,6 +360,8 @@ def update_supplier(id):
             supplier.email = data['email']
         if 'phone' in data:
             supplier.phone = data['phone']
+        if 'mobile' in data:
+            supplier.mobile = data['mobile']
         if 'address' in data:
             supplier.address = data['address']
         if 'tax_address' in data:
