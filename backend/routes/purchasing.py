@@ -423,7 +423,7 @@ def delete_supplier(id):
 
 @purchasing_bp.route('/purchase-orders', methods=['GET'])
 @jwt_required()
-@require_permission('purchase_orders.view')
+@require_permission('purchase_orders.view', 'purchasing.view', 'warehouse.view')
 def get_purchase_orders():
     try:
         page = request.args.get('page', 1, type=int)
@@ -451,9 +451,10 @@ def get_purchase_orders():
                 'id': po.id,
                 'po_number': po.po_number,
                 'supplier_id': po.supplier_id,
-                'supplier_name': po.supplier.company_name,
+                'supplier_name': po.supplier.company_name if po.supplier else None,
                 'order_date': po.order_date.isoformat(),
                 'status': po.status,
+                'notes': po.notes,
                 'priority': po.priority,
                 'total_amount': float(po.total_amount),
                 'currency': po.currency,
@@ -557,6 +558,7 @@ def create_purchase_order_core(data, user_id, po_number=None):
             material_id=item_data.get('material_id'),
             quantity=item_data['quantity'],
             uom=item_data.get('uom', 'PCS'),  # Default to PCS if not provided
+            description=(item_data.get('description') or None),
             unit_price=item_data['unit_price'],
             total_price=item_total
         )
@@ -634,7 +636,7 @@ def create_purchase_order():
 
 @purchasing_bp.route('/purchase-orders/<int:id>', methods=['GET'])
 @jwt_required()
-@require_permission('purchase_orders.view')
+@require_permission('purchase_orders.view', 'purchasing.view', 'warehouse.view')
 def get_purchase_order(id):
     try:
         po = db.session.get(PurchaseOrder, id)
@@ -645,10 +647,7 @@ def get_purchase_order(id):
             'id': po.id,
             'po_number': po.po_number,
             'supplier_id': po.supplier_id,
-            'supplier': {
-                'id': po.supplier.id,
-                'company_name': po.supplier.company_name
-            },
+            'supplier': ({'id': po.supplier.id, 'company_name': po.supplier.company_name} if po.supplier else None),
             'order_date': po.order_date.isoformat(),
             'required_date': po.required_date.isoformat() if po.required_date else None,
             'expected_date': po.expected_date.isoformat() if po.expected_date else None,
@@ -684,6 +683,7 @@ def get_purchase_order(id):
                 'material_code': i.material.code if i.material else None,
                 'material_name': i.material.name if i.material else None,
                 'description': i.description,
+                'is_non_inventory': bool(i.material and i.material.material_type == 'non_inventory'),
                 'quantity': float(i.quantity),
                 'uom': i.uom,
                 'unit_price': float(i.unit_price),
@@ -797,6 +797,7 @@ def update_purchase_order(id):
                         material_id=item_data.get('material_id'),
                         quantity=item_data['quantity'],
                         uom=item_data.get('uom', 'PCS'),
+                        description=(item_data.get('description') or None),
                         unit_price=item_data['unit_price'],
                         total_price=item_total
                     )
@@ -893,7 +894,7 @@ def get_grns():
             'grns': [{
                 'id': g.id,
                 'grn_number': g.grn_number,
-                'po_number': g.purchase_order.po_number,
+                'po_number': g.purchase_order.po_number if g.purchase_order else None,
                 'supplier_name': g.supplier.company_name,
                 'receipt_date': g.receipt_date.isoformat(),
                 'status': g.status
@@ -904,7 +905,7 @@ def get_grns():
 
 @purchasing_bp.route('/grn', methods=['POST'])
 @jwt_required()
-@require_permission('purchasing.create')
+@require_permission('purchasing.create', 'warehouse.create')
 def create_grn():
     try:
         data = request.get_json()
@@ -916,27 +917,42 @@ def create_grn():
         # cost and the GR/IR journal must be IDR, using the rate locked at
         # submit_for_approval. A foreign-currency PO still in draft has no
         # locked rate yet, so it can't be received.
-        grn_po = db.session.get(PurchaseOrder, data['po_id'])
-        if not grn_po:
+        grn_po = db.session.get(PurchaseOrder, data['po_id']) if data.get('po_id') else None
+        if data.get('po_id') and not grn_po:
             return jsonify({'error': 'Purchase Order tidak ditemukan'}), 404
-        if grn_po.status in ('draft', 'pending_approval', 'rejected', 'cancelled'):
-            reason = {
-                'draft': 'masih draft (belum di-submit untuk approval)',
-                'pending_approval': 'masih menunggu approval',
-                'rejected': 'ditolak',
-                'cancelled': 'dibatalkan',
-            }[grn_po.status]
-            return jsonify({'error': f'PO {grn_po.po_number} {reason}. Barang baru bisa diterima setelah PO disetujui.'}), 400
-        po_rate = float(grn_po.exchange_rate or 1)
-        
+        if grn_po is not None:
+            if grn_po.status in ('draft', 'pending_approval', 'rejected', 'cancelled'):
+                reason = {
+                    'draft': 'masih draft (belum di-submit untuk approval)',
+                    'pending_approval': 'masih menunggu approval',
+                    'rejected': 'ditolak',
+                    'cancelled': 'dibatalkan',
+                }[grn_po.status]
+                return jsonify({'error': f'PO {grn_po.po_number} {reason}. Barang baru bisa diterima setelah PO disetujui.'}), 400
+            if data.get('supplier_id') and int(data['supplier_id']) != grn_po.supplier_id:
+                return jsonify({'error': 'Pemasok tidak sama dengan pemasok pada PO'}), 400
+        supplier_id = data.get('supplier_id') or (grn_po.supplier_id if grn_po else None)
+        if not supplier_id:
+            return jsonify({'error': 'Pilih pemasok terlebih dahulu'}), 400
+        if not data.get('items'):
+            return jsonify({'error': 'Tambahkan minimal satu baris barang'}), 400
+        po_rate = float(grn_po.exchange_rate or 1) if grn_po else 1.0
+        receipt_dt = get_local_now()
+        if data.get('receipt_date'):
+            try:
+                receipt_dt = datetime.strptime(str(data['receipt_date'])[:10], '%Y-%m-%d')
+            except ValueError:
+                return jsonify({'error': 'Tanggal penerimaan tidak valid'}), 400
+
         grn = GoodsReceivedNote(
             grn_number=grn_number,
-            po_id=data['po_id'],
-            supplier_id=data['supplier_id'],
-            receipt_date=get_local_now(),
+            po_id=grn_po.id if grn_po else None,
+            supplier_id=supplier_id,
+            receipt_date=receipt_dt,
             delivery_note_number=data.get('delivery_note_number'),
             vehicle_number=data.get('vehicle_number'),
             driver_name=data.get('driver_name'),
+            notes=(data.get('notes') or None),
             status='pending',
             received_by=user_id
         )
@@ -958,9 +974,10 @@ def create_grn():
             material_id = item_data.get('material_id')
             location_id = item_data.get('location_id')
             from utils.finance_helpers import is_non_inventory_material
-            if is_non_inventory_material(material_id):
-                db.session.rollback()
-                return jsonify({'error': 'Barang non persediaan (jasa/biaya) tidak melalui penerimaan barang (GRN). Cukup buat faktur pembelian.'}), 400
+            # Jasa/biaya (non persediaan) boleh dicatat diterima tanpa gudang: tidak ada mutasi stok maupun jurnal GR/IR.
+            is_service = bool(material_id) and is_non_inventory_material(material_id)
+            if is_service:
+                location_id = None
             quantity_received = float(item_data['quantity_received'])
             quantity_accepted = float(item_data.get('quantity_accepted', quantity_received))
             # Hanya barang bertanda "Pakai tanggal kadaluarsa" (master barang) yang wajib tanggal kedaluwarsa saat diterima.
@@ -973,13 +990,17 @@ def create_grn():
                     return jsonify({'error': f'{_label} wajib memakai tanggal kedaluwarsa. Isi Tanggal Kadaluarsa sebelum menerima.'}), 400
             uom = item_data['uom']
             batch_number = item_data.get('batch_number')
+            stocked = bool(product_id or material_id) and not is_service
+            if stocked and quantity_accepted > 0 and not location_id:
+                db.session.rollback()
+                return jsonify({'error': f'Pilih gudang untuk {(_item_obj.code + " - " + _item_obj.name) if _item_obj is not None else "barang"} sebelum disimpan.'}), 400
 
             grn_item = GRNItem(
                 grn_id=grn.id,
-                po_item_id=item_data['po_item_id'],
+                po_item_id=item_data.get('po_item_id') or None,
                 product_id=product_id,
                 material_id=material_id,
-                quantity_ordered=item_data['quantity_ordered'],
+                quantity_ordered=item_data.get('quantity_ordered') if item_data.get('quantity_ordered') is not None else quantity_received,
                 quantity_received=quantity_received,
                 quantity_accepted=quantity_accepted,
                 uom=uom,
@@ -992,7 +1013,7 @@ def create_grn():
             )
             db.session.add(grn_item)
 
-            if location_id and (product_id or material_id):
+            if location_id and stocked:
                 # Process inventory update
                 inv_query = Inventory.query.filter_by(location_id=location_id)
                 if product_id:
@@ -1038,8 +1059,12 @@ def create_grn():
                 # as the primary cost source for FIFO deduction/COGS, so a
                 # receipt with no unit_cost here silently falls through to a
                 # less accurate material/product-level fallback cost.
-                po_item = db.session.get(PurchaseOrderItem, item_data['po_item_id'])
+                po_item = db.session.get(PurchaseOrderItem, item_data['po_item_id']) if item_data.get('po_item_id') else None
                 receipt_unit_cost = (float(po_item.unit_price) * po_rate) if po_item and po_item.unit_price else None
+                if receipt_unit_cost is None and not po_item:
+                    # penerimaan tanpa PO: nilai dari harga yang diisi, atau harga pokok master barang
+                    _c = item_data.get('unit_price') or (getattr(_item_obj, 'cost_per_unit', None) if material_id else getattr(_item_obj, 'cost', None))
+                    receipt_unit_cost = float(_c) if _c else None
 
                 # Record movement
                 movement = record_inventory_transaction(
@@ -1070,8 +1095,8 @@ def create_grn():
                 # an invoice never receive goods via GRN in the first
                 # place), so this reuses the same "is it inventory" gate as
                 # the stock movement above (product_id/material_id present).
-                if po_item and quantity_accepted > 0:
-                    line_amount = quantity_accepted * float(po_item.unit_price or 0) * po_rate
+                if quantity_accepted > 0 and (po_item or receipt_unit_cost):
+                    line_amount = (quantity_accepted * float(po_item.unit_price or 0) * po_rate) if po_item else (quantity_accepted * float(receipt_unit_cost or 0))
                     if line_amount > 0:
                         debit_slot = 'akun_persediaan_id'
                         try:
@@ -1134,7 +1159,7 @@ def create_grn():
         # forever after the first receipt, and the GRN form's PO picker
         # (filtered by status=confirmed,partial) could never find anything.
         # Fixed 2026-09-11.
-        po = db.session.get(PurchaseOrder, data['po_id'])
+        po = grn_po
         if po and po.status in ('approved', 'partial'):
             from utils.finance_helpers import is_non_inventory_material
             # jasa/biaya tidak punya penerimaan barang, jadi tidak ikut dihitung agar PO tetap bisa berstatus 'received'
@@ -1151,7 +1176,8 @@ def create_grn():
                     po.status = 'partial'
 
         db.session.flush()
-        _sync_po_received(data['po_id'])
+        if grn_po:
+            _sync_po_received(grn_po.id)
         db.session.commit()
 
         try:
@@ -1570,7 +1596,8 @@ def inspect_grn(grn_id):
             grn.quality_status = 'partial'
 
         db.session.flush()
-        _sync_po_received(grn.po_id)
+        if grn.po_id:
+            _sync_po_received(grn.po_id)
         db.session.commit()
         return jsonify({
             'message': f'Inspeksi selesai — diterima: {total_accepted}, ditolak: {total_rejected}',
@@ -1630,7 +1657,7 @@ def update_grn(grn_id):
             Invoice.purchase_order_id == grn.po_id,
             Invoice.invoice_type == 'purchase',
             Invoice.status != 'cancelled'
-        ).first()
+        ).first() if grn.po_id else None
         if invoiced:
             return jsonify({'error': 'GRN tidak bisa diubah karena sudah ada Faktur Pembelian terkait PO ini'}), 400
 
@@ -1662,7 +1689,8 @@ def update_grn(grn_id):
                     grn_item.expiry_date = datetime.strptime(item_data['expiry_date'], '%Y-%m-%d').date()
 
         db.session.flush()
-        _sync_po_received(grn.po_id)
+        if grn.po_id:
+            _sync_po_received(grn.po_id)
         db.session.commit()
         return jsonify({'message': 'GRN updated', 'grn_id': grn.id}), 200
     except Exception as e:

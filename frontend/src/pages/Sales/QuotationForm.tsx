@@ -185,6 +185,9 @@ const QuotationForm = () => {
   const handleProductChange = (itemIndex: number, productId: number) => {
     const product = products.find(p => p.id === productId)
     if (product) {
+      const prevName = (products.find(p => p.id === watchedItems[itemIndex]?.product_id)?.name || '').trim()
+      const curDesc = (watchedItems[itemIndex]?.description || '').trim()
+      if (!curDesc || curDesc === prevName) setValue(`items.${itemIndex}.description`, product.name)
       setValue(`items.${itemIndex}.product_name`, product.name)
       setValue(`items.${itemIndex}.unit_price`, product.price)
       setValue(`items.${itemIndex}.uom`, product.primary_uom)
@@ -455,12 +458,12 @@ const QuotationForm = () => {
                 </div>
 
                 <div className="mt-3">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.description')}</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Keterangan</label>
                   <textarea
                     {...register(`items.${index}.description` as const)}
                     rows={2}
                     className="input"
-                    placeholder="Additional item description..."
+                    placeholder="Terisi nama barang, bisa diubah"
                   />
                 </div>
               </div>

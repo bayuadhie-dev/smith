@@ -154,7 +154,7 @@ class GoodsReceivedNote(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     grn_number = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    po_id = db.Column(db.Integer, db.ForeignKey('purchase_orders.id'), nullable=False)
+    po_id = db.Column(db.Integer, db.ForeignKey('purchase_orders.id'), nullable=True)  # penerimaan boleh tanpa PO
     supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=False)
     receipt_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     delivery_note_number = db.Column(db.String(100), nullable=True)
@@ -183,7 +183,7 @@ class GRNItem(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     grn_id = db.Column(db.Integer, db.ForeignKey('goods_received_notes.id', ondelete='CASCADE'), nullable=False)
-    po_item_id = db.Column(db.Integer, db.ForeignKey('purchase_order_items.id'), nullable=False)
+    po_item_id = db.Column(db.Integer, db.ForeignKey('purchase_order_items.id'), nullable=True)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
     material_id = db.Column(db.Integer, db.ForeignKey('materials.id'), nullable=True)
     quantity_ordered = db.Column(db.Numeric(15, 2), nullable=False)

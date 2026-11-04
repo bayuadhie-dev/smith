@@ -36,6 +36,7 @@ interface SalesOrderFormData {
     discount_percent?: number
     discount_tiers?: string
     uom?: string
+    description?: string
   }[]
 }
 
@@ -116,7 +117,7 @@ const navigate = useNavigate()
       priority: 'normal',
       shipping_cost: 0,
       shipping_ppn_code: 'Y',
-      items: [{ product_id: 0, quantity: 1, unit_price: 0, discount_percent: 0, discount_tiers: '', uom: 'PCS' }]
+      items: [{ product_id: 0, quantity: 1, unit_price: 0, discount_percent: 0, discount_tiers: '', uom: 'PCS', description: '' }]
     }
   })
 
@@ -137,7 +138,8 @@ const navigate = useNavigate()
           unit_price: item.unit_price,
           discount_percent: item.discount_percent || 0,
           discount_tiers: item.discount_tiers || '',
-          uom: item.uom || 'PCS'
+          uom: item.uom || 'PCS',
+          description: item.description || ''
         }))
       })
     }
@@ -322,6 +324,7 @@ const navigate = useNavigate()
         quantity: parseFloat(item.quantity.toString()),
         unit_price: parseFloat(item.unit_price.toString()),
         uom: item.uom || undefined,
+        description: (item.description || '').trim() || undefined,
         discount_tiers: item.discount_tiers && String(item.discount_tiers).trim() ? String(item.discount_tiers).trim() : undefined,
         discount_percent: effectiveDiscount(item.discount_tiers, item.discount_percent)
       }))
@@ -415,7 +418,7 @@ const navigate = useNavigate()
   }
 
   const addItem = () => {
-    append({ product_id: 0, quantity: 1, unit_price: 0, discount_percent: 0, discount_tiers: '', uom: 'PCS' })
+    append({ product_id: 0, quantity: 1, unit_price: 0, discount_percent: 0, discount_tiers: '', uom: 'PCS', description: '' })
   }
 
   const getProductById = (productId: number | string) => {
@@ -631,6 +634,9 @@ const navigate = useNavigate()
                           setValue(`items.${index}.product_id`, value as any, { shouldValidate: true })
                           if (value) {
                             const bp: any = bomProducts.find((x: any) => x.product_id === value)
+                            const prevName = (getProductById(watchedItems[index]?.product_id)?.product_name || '').trim()
+                            const curDesc = (watchedItems[index]?.description || '').trim()
+                            if (!curDesc || curDesc === prevName) setValue(`items.${index}.description`, bp?.product_name || '', { shouldDirty: true })
                             if (bp?.primary_uom) setValue(`items.${index}.uom`, bp.primary_uom, { shouldDirty: true })
                             handleProductPricing(index, value as number)
                           }
@@ -638,6 +644,16 @@ const navigate = useNavigate()
                         placeholder="Select product"
                         className="w-full"
                         required
+                      />
+                    </div>
+
+                    <div className="md:col-span-6">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Keterangan</label>
+                      <input
+                        type="text"
+                        className="input-field"
+                        placeholder="Terisi nama barang, bisa diubah"
+                        {...register(`items.${index}.description` as const)}
                       />
                     </div>
 

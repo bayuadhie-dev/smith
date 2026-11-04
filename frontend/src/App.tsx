@@ -108,6 +108,9 @@ import PRForm from './pages/Purchasing/PRForm'
 import PRDetail from './pages/Purchasing/PRDetail'
 import GRNList from './pages/Purchasing/GRNList'
 import GRNDetail from './pages/Purchasing/GRNDetail'
+import DownPaymentList from './pages/Purchasing/DownPaymentList'
+import DownPaymentForm from './pages/Purchasing/DownPaymentForm'
+import DownPaymentDetail from './pages/Purchasing/DownPaymentDetail'
 import PurchaseInvoiceList from './pages/Purchasing/InvoiceList'
 import InvoiceMatching from './pages/Purchasing/InvoiceMatching'
 import PurchaseReturnList from './pages/Purchasing/PurchaseReturnList'
@@ -357,6 +360,7 @@ import Settings from './pages/Settings/Settings'
 import AdvancedSystemConfig from './pages/Settings/AdvancedSystemConfig'
 import UserRoleManagement from './pages/Settings/UserRoleManagement'
 import AuditTrail from './pages/Settings/AuditTrail'
+import MySignature from './pages/Settings/MySignature'
 import BackupRestore from './pages/Settings/BackupRestore'
 import EmailSettings from './pages/Settings/EmailSettings'
 import KPITargetSettings from './pages/Settings/KPITargetSettings'
@@ -587,6 +591,9 @@ function AppChildRoutes() {
                 <Route path="purchasing/contracts/:id" element={<ContractForm />} />
                 <Route path="purchasing/contracts/:id/edit" element={<ContractForm />} />
                 <Route path="purchasing/price-comparison" element={<PriceComparison />} />
+                <Route path="purchasing/down-payments" element={<DownPaymentList />} />
+                <Route path="purchasing/down-payments/new" element={<DownPaymentForm />} />
+                <Route path="purchasing/down-payments/:id" element={<DownPaymentDetail />} />
                 <Route path="purchasing/invoices" element={<PurchaseInvoiceList />} />
                 <Route path="purchasing/invoices/new" element={<PurchaseInvoiceForm />} />
                 <Route path="purchasing/invoices/:id/match" element={<InvoiceMatching />} />
@@ -965,6 +972,7 @@ function AppChildRoutes() {
                 <Route path="settings/system-config" element={<AdminRoute><AdvancedSystemConfig /></AdminRoute>} />
                 <Route path="settings/user-roles" element={<AdminRoute><UserRoleManagement /></AdminRoute>} />
                 <Route path="settings/audit-trail" element={<AdminRoute><AuditTrail /></AdminRoute>} />
+                <Route path="settings/my-signature" element={<MySignature />} />
                 <Route path="settings/backup-restore" element={<AdminRoute><BackupRestore /></AdminRoute>} />
                 <Route path="settings/email" element={<AdminRoute><EmailSettings /></AdminRoute>} />
                 <Route path="settings/kpi-targets" element={<AdminRoute><KPITargetSettings /></AdminRoute>} />

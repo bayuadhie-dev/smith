@@ -198,6 +198,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Purchase Orders', href: '/app/purchasing/orders', icon: ArchiveBoxIcon, permission: 'purchase_orders' },
             { name: 'Goods Receipt (GRN)', href: '/app/purchasing/grn', icon: DocumentCheckIcon },
             { name: 'Invoice & 3-Way Match', href: '/app/purchasing/invoices', icon: ScaleIcon },
+            { name: 'Uang Muka Pembelian', href: '/app/purchasing/down-payments', icon: BanknotesIcon },
             { name: 'Retur Pembelian', href: '/app/purchasing/returns', icon: ArrowUturnLeftIcon },
             { name: 'Contracts', href: '/app/purchasing/contracts', icon: BookOpenIcon },
             { name: 'Price Comparison', href: '/app/purchasing/price-comparison', icon: ChartBarIcon },

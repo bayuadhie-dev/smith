@@ -438,6 +438,8 @@ def generate_invoice_document(invoice_id, user_id):
         'line_items': line_items,
         'company': get_company_context(),
     }
+    from utils.signatures import add_signatures
+    add_signatures(document_data, invoice.created_by_user, invoice.created_at)
 
     document = Document(
         document_number=doc_number,
@@ -502,7 +504,8 @@ def generate_surat_jalan_from_shipping_order(shipping_id, user_id):
             'quantity': g['qty'],
             'uom': it.uom,
             'batch_text': ', '.join(f"{b} ({_format_value(q, 'num')})" for b, q in g['batches']),
-            'description': (so_item.description if so_item and so_item.description else '') or '',
+            # Keterangan baris hanya dicetak bila berbeda dari nama barang (bawaannya sama dengan nama barang).
+            'description': ((so_item.description or '').strip() if so_item and (so_item.description or '').strip() != (prod.name if prod else '').strip() else ''),
         })
     d = so_ship.shipping_date.strftime('%d-%m-%Y') if so_ship.shipping_date else ''
     document_data = {
@@ -522,6 +525,8 @@ def generate_surat_jalan_from_shipping_order(shipping_id, user_id):
         'vehicle_number': so_ship.vehicle_number or '',
         'company': get_company_context(),
     }
+    from utils.signatures import add_signatures
+    add_signatures(document_data, so_ship.prepared_by_user, so_ship.created_at if hasattr(so_ship, 'created_at') else None)
     document = Document(
         document_number=doc_number,
         document_title=f'Surat Jalan {so_ship.shipping_number}',
@@ -639,6 +644,9 @@ def build_po_document_data(po):
         'line_items': line_items,
         'company': get_company_context(),
     }
+    from utils.signatures import add_signatures
+    approved = po.approved_by_user if (po.approved_by and po.status not in ('draft', 'pending_approval', 'rejected')) else None
+    add_signatures(document_data, po.created_by_user, po.created_at, approved, po.approved_at)
     return document_data
 
 

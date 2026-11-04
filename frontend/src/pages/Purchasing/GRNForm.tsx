@@ -7,7 +7,9 @@ import NumberInput from '../../components/ui/NumberInput'
 import { showError, showSuccess } from '../../components/ui/Toast'
 
 interface Row {
-  po_item_id: number
+  key: string
+  po_item_id: number | null
+  is_service?: boolean
   product_id: number | null
   material_id: number | null
   name: string
@@ -38,6 +40,11 @@ export default function GRNForm() {
   const [locations, setLocations] = useState<any[]>([])
   const [po, setPo] = useState<any>(null)
   const [poId, setPoId] = useState<number | null>(params.get('po_id') ? Number(params.get('po_id')) : null)
+  const [supplierId, setSupplierId] = useState<number | null>(params.get('supplier_id') ? Number(params.get('supplier_id')) : null)
+  const [suppliers, setSuppliers] = useState<any[]>([])
+  const [materials, setMaterials] = useState<any[]>([])
+  const [notesTouched, setNotesTouched] = useState(false)
+  const [loadError, setLoadError] = useState('')
   const [grnNumber, setGrnNumber] = useState('')
   const [receiptDate, setReceiptDate] = useState(todayISO())
   const [deliveryNote, setDeliveryNote] = useState('')
@@ -52,36 +59,77 @@ export default function GRNForm() {
   useEffect(() => {
     axiosInstance.get('/api/warehouse/locations', { params: { per_page: 1000 } })
       .then((r) => setLocations(r.data.locations || []))
-      .catch(() => showError('Gagal memuat daftar lokasi gudang'))
+      .catch((e) => {
+        if (e?.response?.status === 403) showError('Akun ini belum punya izin melihat gudang. Hubungi admin untuk memberi izin Gudang (lihat).')
+        else showError('Gagal memuat daftar lokasi gudang')
+      })
     if (!isEdit) {
-      axiosInstance.get('/api/purchasing/purchase-orders', { params: { status: 'approved,partial', per_page: 200 } })
-        .then((r) => setOrders(r.data.purchase_orders || []))
-        .catch(() => showError('Gagal memuat daftar PO'))
+      axiosInstance.get('/api/purchasing/suppliers', { params: { per_page: 1000 } })
+        .then((r) => setSuppliers(r.data.suppliers || []))
+        .catch(() => showError('Gagal memuat daftar pemasok'))
+      axiosInstance.get('/api/materials/', { params: { per_page: 2000 } })
+        .then((r) => setMaterials(r.data.materials || []))
+        .catch(() => setMaterials([]))
     }
   }, [isEdit])
 
+  // PO yang bisa diterima: hanya milik pemasok terpilih.
+  useEffect(() => {
+    if (isEdit) return
+    if (!supplierId) { setOrders([]); return }
+    setLoadError('')
+    axiosInstance.get('/api/purchasing/purchase-orders', { params: { status: 'approved,partial', supplier_id: supplierId, per_page: 200 } })
+      .then((r) => setOrders(r.data.purchase_orders || []))
+      .catch((e) => {
+        setOrders([])
+        const msg = e?.response?.status === 403
+          ? 'Akun ini belum punya izin melihat Purchase Order. Hubungi admin untuk memberi izin Pembelian (lihat).'
+          : (e?.response?.data?.error || 'Gagal memuat daftar PO')
+        setLoadError(msg); showError(msg)
+      })
+  }, [supplierId, isEdit])
+
+  // Datang dari PO (?po_id=): pemasok ikut terisi otomatis.
+  useEffect(() => {
+    if (isEdit || !poId || supplierId) return
+    axiosInstance.get(`/api/purchasing/purchase-orders/${poId}`)
+      .then((r) => { const sid = r.data?.supplier_id ?? r.data?.supplier?.id; if (sid) setSupplierId(sid) })
+      .catch(() => undefined)
+  }, [poId, isEdit, supplierId])
+
   const itemName = (it: any) => it.material_name || it.product_name || it.description || '(tanpa nama)'
 
-  // Penerimaan baru: baris diturunkan dari PO, jumlah awal = sisa yang belum diterima.
+  const rowsFromPo = (data: any): Row[] => (data.items || []).map((it: any): Row => {
+    const before = Number(it.quantity_received || 0)
+    const outstanding = Math.max(0, Number(it.quantity) - before)
+    const service = !!it.is_non_inventory
+    return {
+      key: `po-${it.id}`, po_item_id: it.id, is_service: service, product_id: it.product_id ?? null, material_id: it.material_id ?? null,
+      name: itemName(it), code: it.material_code || it.product_code, uom: it.uom || 'PCS',
+      ordered: Number(it.quantity), receivedBefore: before, qty: service ? Number(it.quantity) : outstanding, location_id: null,
+      batch_number: '', lot_number: '', production_date: '', expiry_date: '', notes: '', open: false,
+      requireExpiry: !!it.require_expiry,
+    }
+  })
+
+  // Penerimaan baru dari PO: baris diturunkan dari PO, jumlah awal = sisa yang belum diterima, catatan ikut dari PO.
   useEffect(() => {
-    if (isEdit || !poId) { if (!isEdit) { setPo(null); setRows([]) } return }
+    if (isEdit) return
+    if (!poId) { setPo(null); setRows((rs) => rs.filter((r) => r.po_item_id === null)); return }
     axiosInstance.get(`/api/purchasing/purchase-orders/${poId}`)
       .then((r) => {
         const data = r.data
         setPo(data)
-        setRows((data.items || []).map((it: any): Row => {
-          const before = Number(it.quantity_received || 0)
-          const outstanding = Math.max(0, Number(it.quantity) - before)
-          return {
-            po_item_id: it.id, product_id: it.product_id ?? null, material_id: it.material_id ?? null,
-            name: itemName(it), code: it.material_code || it.product_code, uom: it.uom || 'PCS',
-            ordered: Number(it.quantity), receivedBefore: before, qty: outstanding, location_id: null,
-            batch_number: '', lot_number: '', production_date: '', expiry_date: '', notes: '', open: false,
-            requireExpiry: !!it.require_expiry,
-          }
-        }))
+        setRows((rs) => [...rowsFromPo(data), ...rs.filter((x) => x.po_item_id === null)])
+        if (!notesTouched && data.notes) setNotes(data.notes)
       })
-      .catch(() => showError('Gagal memuat PO'))
+      .catch((e) => {
+        const msg = e?.response?.status === 403
+          ? 'Akun ini belum punya izin melihat Purchase Order. Hubungi admin untuk memberi izin Pembelian (lihat).'
+          : (e?.response?.data?.error || 'Gagal memuat PO')
+        showError(msg)
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [poId, isEdit])
 
   // Koreksi: muat GRN yang ada.
@@ -98,13 +146,13 @@ export default function GRNForm() {
         setDriver(g.driver_name || '')
         setNotes(g.notes || '')
         let poData: any = null
-        try { poData = (await axiosInstance.get(`/api/purchasing/purchase-orders/${g.po_id}`)).data } catch { /* nama barang tetap tampil dari GRN */ }
+        try { if (g.po_id) poData = (await axiosInstance.get(`/api/purchasing/purchase-orders/${g.po_id}`)).data } catch { /* nama barang tetap tampil dari GRN */ }
         setPo(poData)
         const byId: Record<number, any> = {}
         ;(poData?.items || []).forEach((it: any) => { byId[it.id] = it })
         setRows((g.items || []).map((it: any): Row => ({
-          po_item_id: it.po_item_id, product_id: it.product_id ?? null, material_id: it.material_id ?? null,
-          name: it.material_name || it.product_name || (byId[it.po_item_id] ? itemName(byId[it.po_item_id]) : `Item #${it.po_item_id}`),
+          key: `g-${it.id}`, po_item_id: it.po_item_id ?? null, product_id: it.product_id ?? null, material_id: it.material_id ?? null,
+          name: it.material_name || it.product_name || (it.po_item_id && byId[it.po_item_id] ? itemName(byId[it.po_item_id]) : (it.item_name || `Item #${it.id}`)),
           code: it.material_code || it.product_code, uom: it.uom, ordered: Number(it.quantity_ordered || 0),
           receivedBefore: 0, qty: Number(it.quantity_received || 0), location_id: it.location_id ?? null,
           batch_number: it.batch_number || '', lot_number: it.lot_number || '',
@@ -124,16 +172,28 @@ export default function GRNForm() {
   const applyBulk = (loc: number | null) => { setBulkLocation(loc); if (loc) setRows((rs) => rs.map((r) => (num(r.qty) > 0 ? { ...r, location_id: loc } : r))) }
 
   const totalQty = rows.reduce((s, r) => s + num(r.qty), 0)
-  const supplierName = po?.supplier?.company_name || orders.find((o) => o.id === poId)?.supplier_name || ''
+  const supplierName = po?.supplier?.company_name || suppliers.find((x) => x.id === supplierId)?.company_name || orders.find((o) => o.id === poId)?.supplier_name || ''
+  const materialOptions = useMemo(() => materials.filter((m) => m.is_active !== false).map((m) => ({ id: m.id, name: `${m.code} - ${m.name}` })), [materials])
+  const addManualRow = (matId: number | null) => {
+    const m = materials.find((x) => x.id === matId)
+    if (!m) return
+    setRows((rs) => [...rs, {
+      key: `m-${m.id}-${Date.now()}`, po_item_id: null, is_service: m.material_type === 'non_inventory', product_id: null, material_id: m.id,
+      name: m.name, code: m.code, uom: m.unit_of_measure || 'PCS', ordered: 0, receivedBefore: 0, qty: 1, location_id: null,
+      batch_number: '', lot_number: '', production_date: '', expiry_date: '', notes: '', open: false,
+    }])
+  }
+  const removeRow = (i: number) => setRows((rs) => rs.filter((_, idx) => idx !== i))
+  const needsWarehouse = (r: Row) => !r.is_service && (r.product_id !== null || r.material_id !== null)
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    if (!poId) return setError('Pilih Purchase Order terlebih dahulu')
+    if (!isEdit && !supplierId) return setError('Pilih pemasok terlebih dahulu')
     const active = rows.filter((r) => num(r.qty) > 0)
     if (!isEdit) {
       if (active.length === 0) return setError('Isi jumlah diterima minimal satu baris')
-      const noLoc = active.find((r) => !r.location_id)
+      const noLoc = active.find((r) => needsWarehouse(r) && !r.location_id)
       if (noLoc) return setError(`Lokasi gudang wajib diisi untuk "${noLoc.name}" (tanpa lokasi stok tidak bertambah)`)
       if (active.some((r) => num(r.qty) < 0)) return setError('Jumlah diterima tidak boleh negatif')
       const noExp = active.find((r) => r.requireExpiry && !r.expiry_date)
@@ -152,11 +212,11 @@ export default function GRNForm() {
         showSuccess('GRN diperbarui')
       } else {
         await axiosInstance.post('/api/purchasing/grn', {
-          po_id: poId, supplier_id: po?.supplier_id ?? po?.supplier?.id, receipt_date: receiptDate,
+          po_id: poId, supplier_id: supplierId, receipt_date: receiptDate,
           delivery_note_number: deliveryNote || null, vehicle_number: vehicle || null, driver_name: driver || null, notes: notes || null,
           items: active.map((r) => ({
-            po_item_id: r.po_item_id, product_id: r.product_id, material_id: r.material_id, quantity_ordered: r.ordered,
-            quantity_received: num(r.qty), quantity_accepted: num(r.qty), uom: r.uom, location_id: r.location_id,
+            po_item_id: r.po_item_id, product_id: r.product_id, material_id: r.material_id, quantity_ordered: r.po_item_id ? r.ordered : num(r.qty),
+            quantity_received: num(r.qty), quantity_accepted: num(r.qty), uom: r.uom, location_id: r.is_service ? null : r.location_id,
             batch_number: r.batch_number || null, lot_number: r.lot_number || null,
             production_date: r.production_date || null, expiry_date: r.expiry_date || null, notes: r.notes || null,
           })),
@@ -178,7 +238,7 @@ export default function GRNForm() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{isEdit ? `Koreksi GRN ${grnNumber}` : 'Penerimaan Barang (GRN)'}</h1>
           <p className="text-sm text-gray-500">
-            {isEdit ? 'Hanya data pengiriman, lot, tanggal, dan catatan yang bisa dikoreksi. Jumlah dikoreksi lewat Inspeksi.' : 'Catat barang yang datang berdasarkan PO. Stok bertambah saat disimpan dan jurnal GR/IR diposting.'}
+            {isEdit ? 'Hanya data pengiriman, lot, tanggal, dan catatan yang bisa dikoreksi. Jumlah dikoreksi lewat Inspeksi.' : 'Pilih pemasok, lalu ambil dari PO atau tambahkan barang manual. Stok bertambah saat disimpan; jasa tidak perlu gudang.'}
           </p>
         </div>
       </div>
@@ -193,23 +253,33 @@ export default function GRNForm() {
       <form onSubmit={submit} className="space-y-6">
         <div className="card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Purchase Order *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Pemasok *</label>
             {isEdit ? (
-              <div className="input-field bg-gray-50 dark:bg-gray-900">{po?.po_number || `PO #${poId}`}</div>
+              <div className="input-field bg-gray-50 dark:bg-gray-900">{supplierName || '-'}</div>
             ) : (
               <SearchableSelect
-                options={orders.map((o) => ({ id: o.id, name: `${o.po_number} - ${o.supplier_name} (${o.status})` }))}
-                value={poId}
-                onChange={(v) => setPoId(v ? Number(v) : null)}
-                placeholder="Cari nomor PO atau pemasok"
+                options={suppliers.map((x) => ({ id: x.id, name: x.company_name }))}
+                value={supplierId}
+                onChange={(v) => { setSupplierId(v ? Number(v) : null); setPoId(null) }}
+                placeholder="Pilih pemasok dulu"
                 className="w-full"
               />
             )}
-            {!isEdit && <p className="mt-1 text-xs text-gray-500">Hanya PO yang sudah disetujui atau diterima sebagian.</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Pemasok</label>
-            <div className="input-field bg-gray-50 dark:bg-gray-900">{supplierName || '-'}</div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Ambil dari Purchase Order (opsional)</label>
+            {isEdit ? (
+              <div className="input-field bg-gray-50 dark:bg-gray-900">{po?.po_number || (poId ? `PO #${poId}` : 'Tanpa PO')}</div>
+            ) : (
+              <SearchableSelect
+                options={orders.map((o) => ({ id: o.id, name: `${o.po_number} (${o.status === 'partial' ? 'sebagian' : 'disetujui'})` }))}
+                value={poId}
+                onChange={(v) => { setNotesTouched(false); setPoId(v ? Number(v) : null) }}
+                placeholder={supplierId ? (orders.length ? 'Pilih PO pemasok ini' : 'Tidak ada PO yang bisa diterima') : 'Pilih pemasok dulu'}
+                className="w-full"
+              />
+            )}
+            {!isEdit && <p className="mt-1 text-xs text-gray-500">{loadError || 'Kosongkan bila barang datang tanpa PO, lalu tambahkan barang di bawah.'}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Tanggal Terima *</label>
@@ -229,17 +299,17 @@ export default function GRNForm() {
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Catatan</label>
-            <textarea className="input-field" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Catatan umum penerimaan" />
+            <textarea className="input-field" rows={2} value={notes} onChange={(e) => { setNotesTouched(true); setNotes(e.target.value) }} placeholder="Catatan umum penerimaan" />
           </div>
         </div>
 
-        {rows.length > 0 && (
+        {(rows.length > 0 || (!isEdit && supplierId)) && (
           <div className="card p-6 space-y-4">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <h2 className="text-lg font-medium text-gray-900 dark:text-white">Barang Diterima</h2>
               {!isEdit && (
                 <div className="w-full sm:w-80">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Terapkan lokasi gudang ke semua baris</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Terapkan lokasi gudang ke semua baris barang</label>
                   <SearchableSelect options={locationOptions} value={bulkLocation} onChange={(v) => applyBulk(v ? Number(v) : null)} placeholder="Pilih lokasi" className="w-full" />
                 </div>
               )}
@@ -252,7 +322,7 @@ export default function GRNForm() {
                     {!isEdit && <th className="pb-2 pr-3 text-right">Dipesan</th>}
                     {!isEdit && <th className="pb-2 pr-3 text-right">Sudah Diterima</th>}
                     <th className="pb-2 pr-3 text-right w-36">{isEdit ? 'Diterima' : 'Diterima Sekarang'}</th>
-                    <th className="pb-2 pr-3 w-64">Lokasi Gudang *</th>
+                    <th className="pb-2 pr-3 w-64">Lokasi Gudang</th>
                     <th className="pb-2 pr-3 w-40">Batch</th>
                     <th className="pb-2 w-10"></th>
                   </tr>
@@ -260,16 +330,16 @@ export default function GRNForm() {
                 <tbody>
                   {rows.map((r, i) => {
                     const outstanding = Math.max(0, r.ordered - r.receivedBefore)
-                    const over = !isEdit && num(r.qty) > outstanding + 1e-9
+                    const over = !isEdit && r.po_item_id !== null && num(r.qty) > outstanding + 1e-9
                     return (
-                      <Fragment key={r.po_item_id}>
+                      <Fragment key={r.key}>
                         <tr className="border-b border-gray-100 dark:border-gray-700 align-top">
                           <td className="py-2 pr-3">
                             <div className="font-medium text-gray-900 dark:text-white">{r.name}</div>
                             {r.code && <div className="text-xs text-gray-400">{r.code}</div>}
                           </td>
-                          {!isEdit && <td className="py-2 pr-3 text-right tabular-nums">{r.ordered.toLocaleString('id-ID')} {r.uom}</td>}
-                          {!isEdit && <td className="py-2 pr-3 text-right tabular-nums">{r.receivedBefore.toLocaleString('id-ID')}</td>}
+                          {!isEdit && <td className="py-2 pr-3 text-right tabular-nums">{r.po_item_id ? `${r.ordered.toLocaleString('id-ID')} ${r.uom}` : r.uom}</td>}
+                          {!isEdit && <td className="py-2 pr-3 text-right tabular-nums">{r.po_item_id ? r.receivedBefore.toLocaleString('id-ID') : '-'}</td>}
                           <td className="py-2 pr-3">
                             {isEdit ? (
                               <div className="text-right tabular-nums">{num(r.qty).toLocaleString('id-ID')} {r.uom}</div>
@@ -283,6 +353,8 @@ export default function GRNForm() {
                           <td className="py-2 pr-3">
                             {isEdit ? (
                               <div className="text-sm">{locationOptions.find((l) => l.id === r.location_id)?.name || '-'}</div>
+                            ) : r.is_service ? (
+                              <div className="text-xs text-gray-500">Jasa, tidak masuk gudang</div>
                             ) : (
                               <SearchableSelect options={locationOptions} value={r.location_id} onChange={(v) => update(i, { location_id: v ? Number(v) : null })} placeholder="Pilih lokasi" className="w-full" />
                             )}
@@ -291,14 +363,15 @@ export default function GRNForm() {
                             {isEdit ? <div className="text-sm">{r.batch_number || '-'}</div>
                               : <input className="input-field" value={r.batch_number} onChange={(e) => update(i, { batch_number: e.target.value })} placeholder="No. batch" />}
                           </td>
-                          <td className="py-2">
+                          <td className="py-2 whitespace-nowrap">
+                            {!isEdit && r.po_item_id === null && <button type="button" onClick={() => removeRow(i)} className="p-1 text-xs text-red-600 hover:underline" title="Hapus baris">Hapus</button>}
                             <button type="button" onClick={() => update(i, { open: !r.open })} className="p-1 text-gray-500 hover:text-gray-800" title="Lot, tanggal, catatan">
                               {r.open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
                             </button>
                           </td>
                         </tr>
                         {r.open && (
-                          <tr key={`${r.po_item_id}-d`} className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
+                          <tr key={`${r.key}-d`} className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
                             <td colSpan={7} className="p-3">
                               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                                 <div><label className="block text-xs text-gray-500 mb-1">No. Lot</label><input className="input-field" value={r.lot_number} onChange={(e) => update(i, { lot_number: e.target.value })} /></div>
@@ -316,6 +389,12 @@ export default function GRNForm() {
               </table>
             </div>
             {!isEdit && (
+              <div className="w-full sm:w-96">
+                <label className="block text-xs font-medium text-gray-500 mb-1">Tambah barang manual (tanpa PO)</label>
+                <SearchableSelect options={materialOptions} value={null} onChange={(v) => addManualRow(v ? Number(v) : null)} placeholder="Cari kode atau nama barang" className="w-full" />
+              </div>
+            )}
+            {!isEdit && (
               <p className="text-xs text-gray-500">
                 Jumlah terisi otomatis sesuai sisa PO. Kosongkan (0) untuk baris yang belum datang. Barang yang ternyata cacat ditolak lewat Inspeksi setelah GRN disimpan.
               </p>
@@ -328,7 +407,7 @@ export default function GRNForm() {
 
         <div className="flex justify-end gap-3">
           <Link to="/app/purchasing/grn" className="btn-secondary">Batal</Link>
-          <button type="submit" disabled={saving || !poId} className="btn-primary disabled:opacity-50">{saving ? 'Menyimpan...' : isEdit ? 'Simpan Koreksi' : 'Simpan Penerimaan'}</button>
+          <button type="submit" disabled={saving || (!isEdit && !supplierId)} className="btn-primary disabled:opacity-50">{saving ? 'Menyimpan...' : isEdit ? 'Simpan Koreksi' : 'Simpan Penerimaan'}</button>
         </div>
       </form>
     </div>

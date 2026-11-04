@@ -20,11 +20,11 @@ def test_non_inventory_material_posts_to_its_expense_account_without_grn(client,
     item = PurchaseOrderItem(po_id=po.id, line_number=2, material_id=svc.id, description='Ongkir', quantity=2, uom='TRIP', unit_price=250000, total_price=500000)
     db_session.add(item); db_session.commit()
 
-    # GRN is refused for services
+    # GRN for services is accepted (no warehouse, no stock) since 2026-11-03
     grn = client.post('/api/purchasing/grn', headers=auth_headers, json={
         'po_id': po.id, 'supplier_id': supplier.id, 'received_date': date.today().isoformat(),
         'items': [{'po_item_id': item.id, 'material_id': svc.id, 'quantity_ordered': 2, 'quantity_received': 2, 'uom': 'TRIP'}]})
-    assert grn.status_code == 400 and 'non persediaan' in grn.get_json()['error'].lower()
+    assert grn.status_code == 201, grn.get_json()
 
     inv = client.post('/api/purchasing/purchase-invoices', headers=auth_headers, json={
         'po_id': po.id, 'supplier_id': supplier.id, 'invoice_date': date.today().isoformat(), 'due_date': date.today().isoformat(),

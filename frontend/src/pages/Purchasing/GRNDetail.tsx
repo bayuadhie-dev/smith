@@ -196,7 +196,7 @@ export default function GRNDetail() {
           )}
           {grn.status === 'approved' && (
             <Link
-              to={`/app/purchasing/invoices/new?po_id=${grn.po_id}`}
+              to={grn.po_id ? `/app/purchasing/invoices/new?po_id=${grn.po_id}` : `/app/purchasing/invoices/new?supplier_id=${grn.supplier_id}`}
               className="flex items-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-lg hover:bg-emerald-700 text-sm font-medium"
             >
               Buat Faktur Pembelian
@@ -217,7 +217,7 @@ export default function GRNDetail() {
       {/* Info cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'No. PO', value: grn.po_number },
+          { label: 'No. PO', value: grn.po_number || 'Tanpa PO' },
           { label: 'Supplier', value: grn.supplier_name },
           { label: 'Tgl Terima', value: grn.receipt_date ? new Date(grn.receipt_date).toLocaleDateString('id-ID') : '—' },
           { label: 'Diterima oleh', value: grn.received_by_name || '—' },

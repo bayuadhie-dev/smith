@@ -40,6 +40,7 @@ interface PurchaseOrderFormData {
     quantity: number
     unit_price: number
     uom: string
+    description?: string
   }[]
 }
 
@@ -81,7 +82,7 @@ const navigate = useNavigate()
       is_taxable: false,
       tax_inclusive: false,
       ppn_code: '',
-      items: [{ product_id: null, material_id: null, quantity: 1, unit_price: 0, uom: 'PCS' }]
+      items: [{ product_id: null, material_id: null, quantity: 1, unit_price: 0, uom: 'PCS', description: '' }]
     }
   })
 
@@ -124,7 +125,8 @@ const navigate = useNavigate()
           material_id: item.material_id ?? null,
           quantity: item.quantity,
           unit_price: item.unit_price,
-          uom: item.uom || 'PCS'
+          uom: item.uom || 'PCS',
+          description: item.description || ''
         }))
       })
     }
@@ -208,6 +210,7 @@ const navigate = useNavigate()
           quantity: parseFloat(item.quantity.toString()),
           unit_price: parseFloat(item.unit_price.toString()),
           uom: item.uom,
+          description: (item.description || '').trim() || undefined,
           ...(item.product_id ? { product_id: parseInt(item.product_id.toString()) } : {}),
           ...(item.material_id ? { material_id: parseInt(item.material_id.toString()) } : {})
         }))
@@ -234,7 +237,7 @@ const navigate = useNavigate()
   }
 
   const addItem = () => {
-    append({ product_id: null, material_id: null, quantity: 1, unit_price: 0, uom: 'PCS' })
+    append({ product_id: null, material_id: null, quantity: 1, unit_price: 0, uom: 'PCS', description: '' })
   }
 
   const getProductById = (productId: number) => {
@@ -513,7 +516,7 @@ const navigate = useNavigate()
 
               return (
                 <div key={field.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-start">
+                  <div className="grid grid-cols-1 md:grid-cols-8 gap-4 items-start">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                         Product *
@@ -535,10 +538,23 @@ const navigate = useNavigate()
                           const picked: any = kind === 'p' ? getProductById(parsedId as any) : getMaterialById(parsedId as any)
                           const pickedUom = kind === 'p' ? picked?.primary_uom : picked?.unit_of_measure
                           if (pickedUom) setValue(`items.${index}.uom`, pickedUom, { shouldDirty: true })
+                          const prevPicked: any = watchedItems[index]?.product_id ? getProductById(watchedItems[index].product_id as any) : getMaterialById(watchedItems[index]?.material_id as any)
+                          const curDesc = (watchedItems[index]?.description || '').trim()
+                          if (!curDesc || curDesc === (prevPicked?.name || '').trim()) setValue(`items.${index}.description`, picked?.name || '', { shouldDirty: true })
                         }}
                         placeholder="Select product or material"
                         disabled={hasGrn}
                         required
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Keterangan</label>
+                      <input
+                        type="text"
+                        className="input w-full"
+                        placeholder="Terisi nama barang, bisa diubah (mis. nama sparepart)"
+                        {...register(`items.${index}.description` as const)}
                       />
                     </div>
 

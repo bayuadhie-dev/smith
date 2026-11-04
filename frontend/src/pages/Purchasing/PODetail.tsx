@@ -9,6 +9,7 @@ import {
 import { formatRupiah, formatCurrencyAmount } from '../../utils/currencyUtils';
 import DocumentGenerateButton from '../../components/DocumentGenerateButton';
 import { scheduleStatuses } from '../../components/POScheduleEditor';
+import { usePermissions } from '../../contexts/PermissionContext';
 
 const SCHEDULE_BADGE: Record<string, { label: string; color: string }> = {
   done:    { label: 'Sudah datang', color: 'bg-emerald-100 text-emerald-700' },
@@ -32,6 +33,12 @@ export default function PODetail() {
   const { id } = useParams<{ id: string }>();
   const [po, setPo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { hasPermission, isSuperAdmin } = usePermissions();
+  const [dp, setDp] = useState<{ paid: number; allocated: number; remaining: number } | null>(null);
+  useEffect(() => {
+    if (!id) return;
+    axiosInstance.get(`/api/purchasing/down-payments/by-po/${id}`).then((r) => setDp({ paid: r.data.paid, allocated: r.data.allocated, remaining: r.data.remaining })).catch(() => setDp(null));
+  }, [id]);
 
   const [materialModal, setMaterialModal] = useState<{ open: boolean; loading: boolean; data: any; itemName: string }>({
     open: false, loading: false, data: null, itemName: '',
@@ -122,6 +129,22 @@ export default function PODetail() {
         </Link>
         </div>
       </div>
+
+      {['approved', 'confirmed', 'sent', 'partial'].includes(po.status) && (isSuperAdmin || hasPermission('purchasing.create')) && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-semibold text-gray-900 dark:text-white mr-2">Proses PO ini</span>
+          <Link to={`/app/purchasing/grn/new?po_id=${po.id}&supplier_id=${po.supplier_id ?? po.supplier?.id ?? ''}`} className="px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">Buat Penerimaan (GRN)</Link>
+          <Link to={`/app/purchasing/invoices/new?po_id=${po.id}`} className="px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">Buat Faktur Pembelian</Link>
+          {!isForeign && (
+            <Link to={`/app/purchasing/down-payments/new?po_id=${po.id}`} className="px-3 py-1.5 text-sm rounded-md bg-emerald-700 text-white hover:bg-emerald-800">Bayar Uang Muka</Link>
+          )}
+          {dp && dp.paid > 0 && (
+            <Link to={`/app/purchasing/down-payments?po_id=${po.id}`} className="ml-auto text-sm text-emerald-700 dark:text-emerald-400 hover:underline">
+              Uang muka: dibayar {formatRupiah(dp.paid)} · terpakai {formatRupiah(dp.allocated)} · sisa {formatRupiah(dp.remaining)}
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* Informasi Umum */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-5">

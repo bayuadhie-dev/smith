@@ -71,7 +71,7 @@ export default function SalesInvoiceFormNew() {
       setCustomerId(o.customer_id)
       if (o.payment_terms && TERMS[o.payment_terms] !== undefined) setTerms(o.payment_terms)
       setLines((o.items || []).map((i: any) => ({
-        product_id: i.product_id, code: i.product_code, description: i.product_name || i.description || '',
+        product_id: i.product_id, code: i.product_code, description: i.description || i.product_name || '',
         uom: i.uom, quantity: String(i.quantity), unit_price: String(i.unit_price),
         tiers: i.discount_tiers || (i.discount_percent ? String(i.discount_percent) : ''),
       })))
@@ -91,7 +91,12 @@ export default function SalesInvoiceFormNew() {
   const setLine = (i: number, patch: Partial<Line>) => setLines((ls) => ls.map((l, idx) => (idx === i ? { ...l, ...patch } : l)))
   const pickProduct = (i: number, pid: number | string | null) => {
     const p = products.find((x) => x.id === pid)
-    if (p) setLine(i, { product_id: p.id, code: p.code, description: p.name, uom: p.uom, unit_price: String(p.price || '') })
+    if (p) {
+      const prev = products.find((x) => x.id === lines[i]?.product_id)
+      const cur = (lines[i]?.description || '').trim()
+      const keep = cur && cur !== (prev?.name || '').trim()
+      setLine(i, { product_id: p.id, code: p.code, description: keep ? lines[i].description : p.name, uom: p.uom, unit_price: String(p.price || '') })
+    }
   }
 
   const totals = useMemo(() => {
@@ -203,7 +208,7 @@ export default function SalesInvoiceFormNew() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs uppercase text-gray-500 border-b">
-                  <th className="py-2 pr-2">No.</th><th className="pr-2 w-64">Kode / Barang</th><th className="pr-2">Deskripsi</th>
+                  <th className="py-2 pr-2">No.</th><th className="pr-2 w-64">Kode / Barang</th><th className="pr-2">Keterangan</th>
                   <th className="pr-2 w-28 text-right">Qty</th><th className="pr-2 w-24">Satuan</th><th className="pr-2 w-36 text-right">Harga</th>
                   <th className="pr-2 w-28">Diskon % (10+5)</th><th className="pr-2 w-36 text-right">Jumlah</th><th />
                 </tr>
