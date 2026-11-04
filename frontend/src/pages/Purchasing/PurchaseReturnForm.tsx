@@ -1,3 +1,4 @@
+import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -27,6 +28,7 @@ const RETURN_TYPES = [
 
 export default function PurchaseReturnForm() {
   const navigate = useNavigate();
+  const [attFiles, setAttFiles] = useState<File[]>([])
 
   const [invoiceSearch, setInvoiceSearch] = useState('');
   const [invoiceOptions, setInvoiceOptions] = useState<any[]>([]);
@@ -145,6 +147,7 @@ export default function PurchaseReturnForm() {
       });
 
       toast.success(res.data.message || 'Retur pembelian berhasil dibuat');
+      await uploadAttachments('purchase_return', res.data.return?.id, attFiles);
       navigate(`/app/purchasing/returns/${res.data.return?.id}`);
     } catch (err: any) {
       toast.error(err?.response?.data?.error || 'Gagal membuat retur pembelian');
@@ -167,6 +170,8 @@ export default function PurchaseReturnForm() {
           <p className="text-sm text-gray-500 mt-0.5">Pilih Purchase Invoice, lalu item yang mau diretur</p>
         </div>
       </div>
+
+      <PendingAttachments files={attFiles} onChange={setAttFiles} />
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-5 space-y-3">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Purchase Invoice</label>

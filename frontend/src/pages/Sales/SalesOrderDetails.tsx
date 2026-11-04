@@ -1,3 +1,4 @@
+import AttachmentsPanel from '../../components/AttachmentsPanel'
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -466,6 +467,7 @@ const SalesOrderDetails: React.FC = () => {
         />
       )}
 
+      <AttachmentsPanel entityType="sales_order" entityId={id} />
     </div>
   );
 };

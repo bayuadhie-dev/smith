@@ -1,3 +1,4 @@
+import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -133,7 +134,9 @@ export default function PODetail() {
       {['approved', 'confirmed', 'sent', 'partial'].includes(po.status) && (isSuperAdmin || hasPermission('purchasing.create')) && (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex flex-wrap items-center gap-2">
           <span className="text-sm font-semibold text-gray-900 dark:text-white mr-2">Proses PO ini</span>
-          <Link to={`/app/purchasing/grn/new?po_id=${po.id}&supplier_id=${po.supplier_id ?? po.supplier?.id ?? ''}`} className="px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">Buat Penerimaan (GRN)</Link>
+          {(po.items || []).some((it: any) => !it.is_non_inventory && Number(it.quantity) > Number(it.quantity_received || 0)) && (
+            <Link to={`/app/purchasing/grn/new?po_id=${po.id}&supplier_id=${po.supplier_id ?? po.supplier?.id ?? ''}`} className="px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">Buat Penerimaan (GRN)</Link>
+          )}
           <Link to={`/app/purchasing/invoices/new?po_id=${po.id}`} className="px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">Buat Faktur Pembelian</Link>
           {!isForeign && (
             <Link to={`/app/purchasing/down-payments/new?po_id=${po.id}`} className="px-3 py-1.5 text-sm rounded-md bg-emerald-700 text-white hover:bg-emerald-800">Bayar Uang Muka</Link>
@@ -347,6 +350,7 @@ export default function PODetail() {
           </div>
         )}
       </AccessibleModal>
+      <AttachmentsPanel entityType="purchase_order" entityId={id} />
     </div>
   );
 }

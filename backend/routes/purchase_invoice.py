@@ -386,7 +386,7 @@ def create_purchase_invoice_core(data, user_id, commit=True):
     Kesalahan input -> InvoiceInputError."""
 
     # Generate invoice number
-    invoice_number = generate_number_v2('purchase_invoice', 'PI', Invoice, 'invoice_number')
+    invoice_number = generate_number_v2('purchase_invoice', 'PI', Invoice, 'invoice_number', style='dashed')
 
     # Get PO to validate
     po = db.session.get(PurchaseOrder, data.get('po_id'))

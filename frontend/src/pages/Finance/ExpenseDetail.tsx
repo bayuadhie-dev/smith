@@ -1,3 +1,4 @@
+import AttachmentsPanel from '../../components/AttachmentsPanel'
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -198,6 +199,7 @@ const ExpenseDetail: React.FC = () => {
           )}
         </div>
       </div>
+      <AttachmentsPanel entityType="expense" entityId={id} />
     </div>
   );
 };

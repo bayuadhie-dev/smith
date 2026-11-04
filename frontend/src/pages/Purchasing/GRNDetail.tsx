@@ -1,3 +1,4 @@
+import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -194,6 +195,7 @@ export default function GRNDetail() {
               Simpan Inspeksi
             </button>
           )}
+          <Link to={`/app/purchasing/grn/${grn.id}/edit`} className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">Ubah</Link>
           {grn.status === 'approved' && (
             <Link
               to={grn.po_id ? `/app/purchasing/invoices/new?po_id=${grn.po_id}` : `/app/purchasing/invoices/new?supplier_id=${grn.supplier_id}`}
@@ -217,7 +219,7 @@ export default function GRNDetail() {
       {/* Info cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'No. PO', value: grn.po_number || 'Tanpa PO' },
+          { label: 'No. PO', value: grn.po_id ? <Link to={`/app/purchasing/purchase-orders/${grn.po_id}`} className="text-blue-600 hover:underline">{grn.po_number}</Link> : 'Tanpa PO' },
           { label: 'Supplier', value: grn.supplier_name },
           { label: 'Tgl Terima', value: grn.receipt_date ? new Date(grn.receipt_date).toLocaleDateString('id-ID') : '—' },
           { label: 'Diterima oleh', value: grn.received_by_name || '—' },
@@ -358,6 +360,7 @@ export default function GRNDetail() {
           <div className="pt-2 text-xs text-gray-500 whitespace-pre-line">{grn.notes}</div>
         )}
       </div>
+      <AttachmentsPanel entityType="grn" entityId={id} />
     </div>
   );
 }

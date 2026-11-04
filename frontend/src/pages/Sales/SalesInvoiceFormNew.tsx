@@ -1,3 +1,4 @@
+import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
@@ -29,6 +30,7 @@ const blank = (): Line => ({ product_id: null, code: '', description: '', uom: '
 
 export default function SalesInvoiceFormNew() {
   const navigate = useNavigate()
+  const [attFiles, setAttFiles] = useState<File[]>([])
   const [params] = useSearchParams()
   const [customers, setCustomers] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
@@ -118,7 +120,7 @@ export default function SalesInvoiceFormNew() {
     if (items.length === 0) { toast.error('Isi minimal satu barang'); return }
     setSaving(true)
     try {
-      await axiosInstance.post('/api/finance/invoices', {
+      const created = await axiosInstance.post('/api/finance/invoices', {
         invoice_type: 'sales',
         customer_id: Number(customerId),
         sales_order_id: soId ? Number(soId) : undefined,
@@ -134,6 +136,7 @@ export default function SalesInvoiceFormNew() {
           discount_tiers: l.tiers.trim() || undefined,
         })),
       })
+      await uploadAttachments('sales_invoice', created.data?.invoice_id, attFiles)
       toast.success('Faktur penjualan dibuat')
       navigate('/app/finance/invoices')
     } catch (err: any) {
@@ -152,6 +155,7 @@ export default function SalesInvoiceFormNew() {
         <p className="text-gray-600 dark:text-gray-300">Isian di bawah sama dengan yang tercetak di dokumen Invoice. Faktur pembelian ada di menu Purchasing.</p>
       </div>
       <form onSubmit={submit} className="space-y-6">
+<PendingAttachments files={attFiles} onChange={setAttFiles} />
         <div className="card p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2">Ditagihkan Kepada (Pelanggan) *</label>

@@ -1,3 +1,4 @@
+import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosConfig'
@@ -113,6 +114,7 @@ export default function DownPaymentDetail() {
         </div>
       </Panel>
       {dp.notes && <p className="text-sm text-gray-600 dark:text-gray-300">Catatan: {dp.notes}</p>}
+      <AttachmentsPanel entityType="purchase_down_payment" entityId={id} />
     </div>
   )
 }

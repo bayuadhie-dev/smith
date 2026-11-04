@@ -1,3 +1,4 @@
+import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -51,6 +52,7 @@ export default function PurchaseOrderForm() {
     const { t } = useLanguage();
 
 const navigate = useNavigate()
+  const [attFiles, setAttFiles] = useState<File[]>([])
   const { id } = useParams<{ id: string }>()
   const isEdit = Boolean(id)
   const [isLoading, setIsLoading] = useState(false)
@@ -251,7 +253,8 @@ const navigate = useNavigate()
         await updatePO({ id, ...payload }).unwrap()
         toast.success('Purchase Order updated successfully!')
       } else {
-        await createPO(payload).unwrap()
+        const created: any = await createPO(payload).unwrap()
+        await uploadAttachments('purchase_order', created?.po_id, attFiles)
         toast.success('Purchase Order created successfully!')
       }
       navigate('/app/purchasing/purchase-orders')
@@ -328,6 +331,7 @@ const navigate = useNavigate()
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+{!isEdit && <PendingAttachments files={attFiles} onChange={setAttFiles} />}
         {/* Header Information */}
         <div className="card p-6">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Order Information</h3>

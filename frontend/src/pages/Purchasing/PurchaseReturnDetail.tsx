@@ -1,3 +1,4 @@
+import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -207,6 +208,7 @@ export default function PurchaseReturnDetail() {
           </tbody>
         </table>
       </div>
+      <AttachmentsPanel entityType="purchase_return" entityId={id} />
     </div>
   );
 }

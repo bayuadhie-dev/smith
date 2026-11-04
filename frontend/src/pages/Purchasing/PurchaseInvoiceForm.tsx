@@ -1,3 +1,4 @@
+import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
@@ -34,6 +35,7 @@ const addDays = (iso: string, days: number) => {
 
 export default function PurchaseInvoiceForm() {
   const navigate = useNavigate()
+  const [attFiles, setAttFiles] = useState<File[]>([])
   const [params] = useSearchParams()
   const [suppliers, setSuppliers] = useState<any[]>([])
   const [supplierId, setSupplierId] = useState<number | null>(null)
@@ -150,6 +152,7 @@ export default function PurchaseInvoiceForm() {
       })
       showSuccess(res.data?.message || 'Faktur pembelian dibuat')
       const id = res.data?.invoice?.id
+      await uploadAttachments('purchase_invoice', id, attFiles)
       if (id) {
         for (const d of openDps) {
           const amt = Number(dpUse[d.id] || 0)
@@ -181,6 +184,7 @@ export default function PurchaseInvoiceForm() {
       </div>
 
       <form onSubmit={submit} className="space-y-6">
+<PendingAttachments files={attFiles} onChange={setAttFiles} />
         <div className="card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Pemasok *</label>

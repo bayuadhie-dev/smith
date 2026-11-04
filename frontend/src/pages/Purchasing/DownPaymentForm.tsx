@@ -1,3 +1,4 @@
+import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosConfig'
@@ -13,6 +14,7 @@ const labelCls = 'mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-
 
 export default function DownPaymentForm() {
   const navigate = useNavigate()
+  const [attFiles, setAttFiles] = useState<File[]>([])
   const [params] = useSearchParams()
   const [supplierId, setSupplierId] = useState<number | null>(null)
   const [poId, setPoId] = useState<number | null>(params.get('po_id') ? Number(params.get('po_id')) : null)
@@ -55,6 +57,7 @@ export default function DownPaymentForm() {
     try {
       const r = await axiosInstance.post('/api/purchasing/down-payments', { po_id: poId || undefined, supplier_id: supplierId, bank_account_id: bankId, amount: Number(amount), dp_date: date, payment_method: method, reference_number: reference || undefined, notes: notes || undefined })
       showSuccess(`Uang muka ${r.data.dp_number} dicatat.`)
+      await uploadAttachments('purchase_down_payment', r.data.id, attFiles)
       navigate(`/app/purchasing/down-payments/${r.data.id}`)
     } catch (err: any) {
       const m = err.response?.data?.error || 'Uang muka gagal disimpan'
@@ -68,6 +71,7 @@ export default function DownPaymentForm() {
         actions={<Link to="/app/purchasing/down-payments" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Batal</Link>} />
       {error && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">{error}</div>}
       <form onSubmit={submit} className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+<div className="lg:col-span-full"><PendingAttachments files={attFiles} onChange={setAttFiles} /></div>
         <div className="space-y-4">
           <Panel title="Pemasok dan PO">
             <div className="grid gap-4 p-4 md:grid-cols-2">

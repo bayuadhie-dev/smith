@@ -1,3 +1,4 @@
+import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -38,6 +39,7 @@ export default function PRForm() {
   const { id } = useParams<{ id: string }>();
   const isNew = !id || id === 'new';
   const navigate = useNavigate();
+  const [attFiles, setAttFiles] = useState<File[]>([])
 
   const [pr, setPr] = useState<any>(null);
   const [loading, setLoading] = useState(!isNew);
@@ -135,6 +137,7 @@ export default function PRForm() {
       };
       if (isNew) {
         const res = await axiosInstance.post('/api/purchasing/purchase-requisitions', payload);
+        await uploadAttachments('purchase_request', res.data.id, attFiles);
         toast.success('PR berhasil dibuat');
         navigate(`/app/purchasing/requisitions/${res.data.id}`);
       } else {
@@ -304,6 +307,8 @@ export default function PRForm() {
           <strong>Alasan Penolakan:</strong> {pr.rejection_reason}
         </div>
       )}
+
+      {isNew && <PendingAttachments files={attFiles} onChange={setAttFiles} />}
 
       {/* Form */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 space-y-4">

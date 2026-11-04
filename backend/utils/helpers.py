@@ -6,8 +6,9 @@ import string
 from datetime import datetime
 
 
-def generate_number(prefix, model=None, field_name='number'):
-    """Generate sequential number for entities"""
+def generate_number(prefix, model=None, field_name='number', style='compact'):
+    """Generate sequential number for entities.
+    style='compact': PREFIX-YYYYMM-00001 (bawaan). style='dashed': PREFIX-YYYY-MM-0001 (BPB-2026-11-0001, PI-2026-11-0001)."""
     if model is None:
         # Fallback to old behavior for backward compatibility
         length = field_name if isinstance(field_name, int) else 6
@@ -57,7 +58,7 @@ def generate_number(prefix, model=None, field_name='number'):
     # constraint on the very first insert.
     if counter.last_seq == 0:
         field = getattr(model, field_name)
-        like_pattern = f"{prefix}-{period}-%"
+        like_pattern = f"{prefix}-{year}-{month}-%" if style == 'dashed' else f"{prefix}-{period}-%"
         existing_numbers = db.session.query(field).filter(field.like(like_pattern)).all()
         for (value,) in existing_numbers:
             try:
@@ -71,10 +72,12 @@ def generate_number(prefix, model=None, field_name='number'):
     new_seq = counter.last_seq
     db.session.flush()
 
+    if style == 'dashed':
+        return f"{prefix}-{year}-{month}-{new_seq:04d}"
     return f"{prefix}-{period}-{new_seq:05d}"
 
 
-def peek_number(prefix, model, field_name):
+def peek_number(prefix, model, field_name, style='compact'):
     """Next number generate_number() WOULD return, without consuming it
     (for form previews; the real number is only assigned on save)."""
     from models import db
@@ -84,15 +87,18 @@ def peek_number(prefix, model, field_name):
     last = counter.last_seq if counter else 0
     if last == 0:
         field = getattr(model, field_name)
-        for (value,) in db.session.query(field).filter(field.like(f"{prefix}-{period}-%")).all():
+        pat = f"{prefix}-{period[:4]}-{period[4:]}-%" if style == 'dashed' else f"{prefix}-{period}-%"
+        for (value,) in db.session.query(field).filter(field.like(pat)).all():
             try:
                 last = max(last, int(value.split('-')[-1]))
             except (ValueError, AttributeError):
                 continue
+    if style == 'dashed':
+        return f"{prefix}-{period[:4]}-{period[4:]}-{last + 1:04d}"
     return f"{prefix}-{period}-{last + 1:05d}"
 
 
-def generate_number_v2(sequence_key, default_prefix, model=None, field_name='number'):
+def generate_number_v2(sequence_key, default_prefix, model=None, field_name='number', style='compact'):
     """
     Same numbering scheme as generate_number() ({prefix}-{year}{month}-{seq}),
     but the prefix can be overridden via the NumberSequence table (editable
@@ -122,7 +128,7 @@ def generate_number_v2(sequence_key, default_prefix, model=None, field_name='num
     seq_config = NumberSequence.query.filter_by(sequence_key=sequence_key).first()
     prefix = seq_config.prefix if seq_config else default_prefix
 
-    return generate_number(prefix, model=model, field_name=field_name)
+    return generate_number(prefix, model=model, field_name=field_name, style=style)
 
 
 def generate_code(prefix: str = "", length: int = 8) -> str:

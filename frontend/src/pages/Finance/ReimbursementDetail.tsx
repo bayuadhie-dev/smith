@@ -1,3 +1,4 @@
+import AttachmentsPanel from '../../components/AttachmentsPanel'
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -127,6 +128,7 @@ const ReimbursementDetail: React.FC = () => {
           </tbody>
         </table>
       )}
+      <AttachmentsPanel entityType="reimbursement" entityId={id} />
     </div>
   );
 };

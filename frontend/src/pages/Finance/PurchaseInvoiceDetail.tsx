@@ -1,3 +1,4 @@
+import AttachmentsPanel from '../../components/AttachmentsPanel'
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -197,6 +198,7 @@ const PurchaseInvoiceDetail: React.FC = () => {
           </tbody>
         </table>
       )}
+      <AttachmentsPanel entityType="purchase_invoice" entityId={id} />
     </div>
   );
 };

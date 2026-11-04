@@ -259,6 +259,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
                     </span>
                   </button>
                 </th>
+                <th className="px-4 py-2 text-left font-semibold">No. Referensi</th>
                 <th className="px-4 py-2 text-right" aria-sort={sort?.key === 'amount' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
                   <button type="button" onClick={() => toggleSort('amount')} className="inline-flex w-full items-center gap-1 justify-end font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
                     Nilai
@@ -282,7 +283,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
             <tbody>
               {sortedRows.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-gray-400">
+                  <td colSpan={8} className="px-4 py-6 text-center text-gray-400">
                     Tidak ada {isReceipt ? 'penerimaan' : 'pembayaran'} {search.trim() ? 'yang cocok dengan pencarian' : 'pada periode ini'}.
                   </td>
                 </tr>
@@ -308,6 +309,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
                     )}
                     {r.notes || r.reference_number || (r.invoice_numbers?.length ? '' : '-')}
                   </td>
+                  <td className="px-4 py-2">{r.reference_number || '-'}</td>
                   <td className="px-4 py-2 text-right">{formatRupiah(r.amount)}</td>
                   <td className="px-4 py-2 text-center">
                     <span
@@ -329,6 +331,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
             <tfoot className="bg-gray-50 font-semibold border-t-2">
               <tr>
                 <td className="px-4 py-2" colSpan={5}>TOTAL ({isReceipt ? 'tidak termasuk yang dibatalkan' : 'tidak termasuk yang dibatalkan'})</td>
+                <td></td>
                 <td className="px-4 py-2 text-right">{formatRupiah(total)}</td>
                 <td></td>
               </tr>

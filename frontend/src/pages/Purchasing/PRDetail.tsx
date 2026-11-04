@@ -1,3 +1,4 @@
+import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -377,6 +378,7 @@ export default function PRDetail() {
           </div>
         )}
       </AccessibleModal>
+      <AttachmentsPanel entityType="purchase_request" entityId={id} />
     </div>
   );
 }

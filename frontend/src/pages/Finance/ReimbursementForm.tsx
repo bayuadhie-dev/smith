@@ -1,3 +1,4 @@
+import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, X, AlertCircle } from 'lucide-react';
@@ -17,6 +18,7 @@ interface ApprovedExpense {
 
 const ReimbursementForm: React.FC = () => {
   const navigate = useNavigate();
+  const [attFiles, setAttFiles] = useState<File[]>([])
 
   const [expenses, setExpenses] = useState<ApprovedExpense[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -93,7 +95,7 @@ const ReimbursementForm: React.FC = () => {
 
     try {
       setSubmitting(true);
-      await axiosInstance.post('/api/expenses/reimbursements', {
+      const created = await axiosInstance.post('/api/expenses/reimbursements', {
         expense_ids: selectedIds,
         payment_method: form.payment_method,
         bank_name: form.bank_name || null,
@@ -103,6 +105,7 @@ const ReimbursementForm: React.FC = () => {
         period_end: form.period_end || null,
         notes: form.notes || null,
       });
+      await uploadAttachments('reimbursement', created.data?.reimbursement?.id, attFiles);
       toast.success('Reimbursement berhasil dibuat');
       navigate('/app/finance/reimbursements');
     } catch (error: any) {
@@ -127,6 +130,7 @@ const ReimbursementForm: React.FC = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+<PendingAttachments files={attFiles} onChange={setAttFiles} />
         {/* Approved Expense Selection */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">

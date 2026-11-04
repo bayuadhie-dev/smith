@@ -1,3 +1,4 @@
+import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -90,6 +91,7 @@ export default function SalesOrderForm() {
     const { t } = useLanguage();
 
 const navigate = useNavigate()
+  const [attFiles, setAttFiles] = useState<File[]>([])
   const { id } = useParams<{ id: string }>()
   const isEdit = Boolean(id)
   const [isLoading, setIsLoading] = useState(false)
@@ -408,6 +410,7 @@ const navigate = useNavigate()
         }
       }
       
+      await uploadAttachments('sales_order', (result as any).order_id, attFiles)
       toast.success(`Sales Order ${result.order_number || ''} berhasil dibuat`)
       navigate('/app/sales/orders')
     } catch (error: any) {
@@ -483,6 +486,7 @@ const navigate = useNavigate()
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+{!isEdit && <PendingAttachments files={attFiles} onChange={setAttFiles} />}
         {/* Header Information */}
         <div className="card p-6">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Order Information</h3>

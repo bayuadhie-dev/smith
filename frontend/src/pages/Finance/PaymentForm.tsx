@@ -1,3 +1,4 @@
+import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import React, { useState, useEffect, useRef } from 'react'
 import SearchableSelect from '../../components/SearchableSelect';
 import { useDraftState } from '../../workspace/drafts';
@@ -41,6 +42,7 @@ type FormKind = 'kas_in' | 'kas_out' | 'ar' | 'ap';
 const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   const { t } = useLanguage();
   const navigate = useNavigate()
+  const [attFiles, setAttFiles] = useState<File[]>([])
   const [searchParams] = useSearchParams()
   const prefillInvoiceId = searchParams.get('invoice_id')
   const prefillApplied = useRef(false)
@@ -315,6 +317,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
         paid_to: isStandalone ? (formData.paid_to.trim() || undefined) : undefined,
         bank_account_id: Number(formData.bank_account_id),
       });
+      await uploadAttachments('payment', res.data?.payment_id, attFiles);
       navigate(res.data?.payment_id ? `/app/finance/payments/${res.data.payment_id}` : '/app/finance/pembayaran');
     } catch (err: any) {
       fail(err.response?.data?.error || 'Gagal menyimpan pembayaran. Silakan coba lagi.');
@@ -350,6 +353,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
       )}
 
       <form onSubmit={handleSubmit} className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+<div className="lg:col-span-full"><PendingAttachments files={attFiles} onChange={setAttFiles} /></div>
         <div className="min-w-0 space-y-4">
           <Panel title={isStandalone ? 'Data transaksi' : `${partyWord} dan tanggal`}>
             <div className="grid gap-4 p-4 md:grid-cols-2">

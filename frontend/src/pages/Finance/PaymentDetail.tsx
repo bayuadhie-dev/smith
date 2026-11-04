@@ -1,3 +1,4 @@
+import AttachmentsPanel from '../../components/AttachmentsPanel'
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -329,6 +330,7 @@ export default function PaymentDetail() {
           </div>
         )}
       </div>
+      <AttachmentsPanel entityType="payment" entityId={id} />
     </div>
   );
 }

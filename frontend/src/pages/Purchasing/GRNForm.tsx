@@ -1,3 +1,4 @@
+import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeftIcon, ChevronDownIcon, ChevronUpIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
@@ -33,6 +34,7 @@ const num = (v: unknown) => (v === '' || v === null || v === undefined ? 0 : Num
 
 export default function GRNForm() {
   const navigate = useNavigate()
+  const [attFiles, setAttFiles] = useState<File[]>([])
   const { id } = useParams()
   const isEdit = Boolean(id)
   const [params] = useSearchParams()
@@ -46,6 +48,8 @@ export default function GRNForm() {
   const [notesTouched, setNotesTouched] = useState(false)
   const [loadError, setLoadError] = useState('')
   const [grnNumber, setGrnNumber] = useState('')
+  const [manualNumber, setManualNumber] = useState('')
+  const [nextNumber, setNextNumber] = useState('')
   const [receiptDate, setReceiptDate] = useState(todayISO())
   const [deliveryNote, setDeliveryNote] = useState('')
   const [vehicle, setVehicle] = useState('')
@@ -73,12 +77,17 @@ export default function GRNForm() {
     }
   }, [isEdit])
 
-  // PO yang bisa diterima: hanya milik pemasok terpilih.
+  useEffect(() => {
+    if (isEdit) return
+    axiosInstance.get('/api/purchasing/grn/next-number').then((r) => setNextNumber(r.data?.next_number || '')).catch(() => setNextNumber(''))
+  }, [isEdit])
+
+  // PO yang bisa diterima: hanya milik pemasok terpilih dan masih punya sisa penerimaan.
   useEffect(() => {
     if (isEdit) return
     if (!supplierId) { setOrders([]); return }
     setLoadError('')
-    axiosInstance.get('/api/purchasing/purchase-orders', { params: { status: 'approved,partial', supplier_id: supplierId, per_page: 200 } })
+    axiosInstance.get('/api/purchasing/purchase-orders', { params: { status: 'approved,partial', supplier_id: supplierId, receivable: 1, per_page: 200 } })
       .then((r) => setOrders(r.data.purchase_orders || []))
       .catch((e) => {
         setOrders([])
@@ -97,17 +106,18 @@ export default function GRNForm() {
       .catch(() => undefined)
   }, [poId, isEdit, supplierId])
 
-  const itemName = (it: any) => it.material_name || it.product_name || it.description || '(tanpa nama)'
+  const itemName = (it: any) => it.description || it.material_name || it.product_name || '(tanpa nama)'
+  const masterName = (it: any) => it.material_name || it.product_name || ''
 
-  const rowsFromPo = (data: any): Row[] => (data.items || []).map((it: any): Row => {
+  const rowsFromPo = (data: any): Row[] => (data.items || []).filter((it: any) => !it.is_non_inventory).map((it: any): Row => {
     const before = Number(it.quantity_received || 0)
     const outstanding = Math.max(0, Number(it.quantity) - before)
     const service = !!it.is_non_inventory
     return {
       key: `po-${it.id}`, po_item_id: it.id, is_service: service, product_id: it.product_id ?? null, material_id: it.material_id ?? null,
-      name: itemName(it), code: it.material_code || it.product_code, uom: it.uom || 'PCS',
+      name: itemName(it), code: [it.material_code || it.product_code, masterName(it) && masterName(it) !== itemName(it) ? masterName(it) : ''].filter(Boolean).join(' · '), uom: it.uom || 'PCS',
       ordered: Number(it.quantity), receivedBefore: before, qty: service ? Number(it.quantity) : outstanding, location_id: null,
-      batch_number: '', lot_number: '', production_date: '', expiry_date: '', notes: '', open: false,
+      batch_number: '', lot_number: '', production_date: '', expiry_date: '', notes: it.notes || '', open: false,
       requireExpiry: !!it.require_expiry,
     }
   })
@@ -211,8 +221,8 @@ export default function GRNForm() {
         })
         showSuccess('GRN diperbarui')
       } else {
-        await axiosInstance.post('/api/purchasing/grn', {
-          po_id: poId, supplier_id: supplierId, receipt_date: receiptDate,
+        const created = await axiosInstance.post('/api/purchasing/grn', {
+          po_id: poId, supplier_id: supplierId, receipt_date: receiptDate, grn_number: manualNumber.trim() || undefined,
           delivery_note_number: deliveryNote || null, vehicle_number: vehicle || null, driver_name: driver || null, notes: notes || null,
           items: active.map((r) => ({
             po_item_id: r.po_item_id, product_id: r.product_id, material_id: r.material_id, quantity_ordered: r.po_item_id ? r.ordered : num(r.qty),
@@ -221,6 +231,7 @@ export default function GRNForm() {
             production_date: r.production_date || null, expiry_date: r.expiry_date || null, notes: r.notes || null,
           })),
         })
+        await uploadAttachments('grn', created.data?.grn_id, attFiles)
         showSuccess('Penerimaan barang dicatat dan stok bertambah')
       }
       navigate('/app/purchasing/grn')
@@ -238,7 +249,7 @@ export default function GRNForm() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{isEdit ? `Koreksi GRN ${grnNumber}` : 'Penerimaan Barang (GRN)'}</h1>
           <p className="text-sm text-gray-500">
-            {isEdit ? 'Hanya data pengiriman, lot, tanggal, dan catatan yang bisa dikoreksi. Jumlah dikoreksi lewat Inspeksi.' : 'Pilih pemasok, lalu ambil dari PO atau tambahkan barang manual. Stok bertambah saat disimpan; jasa tidak perlu gudang.'}
+            {isEdit ? 'Data pengiriman, lot, tanggal, dan catatan bisa diubah (juga setelah disetujui). Jumlah dan gudang terkunci setelah disetujui atau difaktur.' : 'Pilih pemasok, lalu ambil dari PO atau tambahkan barang manual. Stok bertambah saat disimpan; jasa tidak perlu gudang.'}
           </p>
         </div>
       </div>
@@ -251,7 +262,17 @@ export default function GRNForm() {
       )}
 
       <form onSubmit={submit} className="space-y-6">
+<PendingAttachments files={attFiles} onChange={setAttFiles} />
         <div className="card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Nomor Penerimaan</label>
+            {isEdit ? (
+              <div className="input-field bg-gray-50 dark:bg-gray-900">{grnNumber || '-'}</div>
+            ) : (
+              <input className="input-field" value={manualNumber} onChange={(e) => setManualNumber(e.target.value)} placeholder={nextNumber ? `${nextNumber} (otomatis)` : 'Otomatis'} />
+            )}
+            {!isEdit && <p className="mt-1 text-xs text-gray-500">Kosongkan untuk nomor otomatis (BPB-tahun-bulan-urut), atau isi nomor sendiri.</p>}
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Pemasok *</label>
             {isEdit ? (
@@ -318,10 +339,11 @@ export default function GRNForm() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700">
-                    <th className="pb-2 pr-3">Item</th>
+                    <th className="pb-2 pr-3">Nama</th>
                     {!isEdit && <th className="pb-2 pr-3 text-right">Dipesan</th>}
                     {!isEdit && <th className="pb-2 pr-3 text-right">Sudah Diterima</th>}
                     <th className="pb-2 pr-3 text-right w-36">{isEdit ? 'Diterima' : 'Diterima Sekarang'}</th>
+                    <th className="pb-2 pr-3 w-56">Keterangan</th>
                     <th className="pb-2 pr-3 w-64">Lokasi Gudang</th>
                     <th className="pb-2 pr-3 w-40">Batch</th>
                     <th className="pb-2 w-10"></th>
@@ -351,6 +373,9 @@ export default function GRNForm() {
                             )}
                           </td>
                           <td className="py-2 pr-3">
+                            <input className="input-field" value={r.notes} onChange={(e) => update(i, { notes: e.target.value })} placeholder="Catatan baris (opsional)" />
+                          </td>
+                          <td className="py-2 pr-3">
                             {isEdit ? (
                               <div className="text-sm">{locationOptions.find((l) => l.id === r.location_id)?.name || '-'}</div>
                             ) : r.is_service ? (
@@ -372,12 +397,11 @@ export default function GRNForm() {
                         </tr>
                         {r.open && (
                           <tr key={`${r.key}-d`} className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
-                            <td colSpan={7} className="p-3">
-                              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                            <td colSpan={8} className="p-3">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <div><label className="block text-xs text-gray-500 mb-1">No. Lot</label><input className="input-field" value={r.lot_number} onChange={(e) => update(i, { lot_number: e.target.value })} /></div>
                                 <div><label className="block text-xs text-gray-500 mb-1">Tanggal Produksi</label><input type="date" className="input-field" value={r.production_date} onChange={(e) => update(i, { production_date: e.target.value })} /></div>
                                 <div><label className="block text-xs text-gray-500 mb-1">Tanggal Kadaluarsa{r.requireExpiry ? ' *' : ''}</label><input type="date" className="input-field" value={r.expiry_date} onChange={(e) => update(i, { expiry_date: e.target.value })} /></div>
-                                <div><label className="block text-xs text-gray-500 mb-1">Catatan Baris</label><input className="input-field" value={r.notes} onChange={(e) => update(i, { notes: e.target.value })} /></div>
                               </div>
                             </td>
                           </tr>

@@ -460,6 +460,13 @@ def get_purchase_orders():
         if status:
             statuses = [s.strip() for s in status.split(',') if s.strip()]
             query = query.filter(PurchaseOrder.status.in_(statuses))
+        if request.args.get('receivable') in ('1', 'true'):
+            # Hanya PO yang masih punya barang (bukan jasa) yang belum diterima penuh.
+            from models.product import Material as _Mat
+            outstanding = db.session.query(PurchaseOrderItem.po_id).outerjoin(_Mat, PurchaseOrderItem.material_id == _Mat.id).filter(
+                PurchaseOrderItem.quantity > db.func.coalesce(PurchaseOrderItem.quantity_received, 0),
+                db.or_(PurchaseOrderItem.material_id.is_(None), _Mat.material_type != 'non_inventory'))
+            query = query.filter(PurchaseOrder.id.in_(outstanding.subquery().select()))
         if priority:
             query = query.filter(PurchaseOrder.priority == priority)
 
@@ -925,6 +932,14 @@ def get_grns():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@purchasing_bp.route('/grn/next-number', methods=['GET'])
+@jwt_required()
+@require_permission('purchasing.view', 'warehouse.view')
+def grn_next_number():
+    from utils.helpers import peek_number
+    return jsonify({'next_number': peek_number('BPB', GoodsReceivedNote, 'grn_number', style='dashed')}), 200
+
+
 @purchasing_bp.route('/grn', methods=['POST'])
 @jwt_required()
 @require_permission('purchasing.create', 'warehouse.create')
@@ -933,7 +948,13 @@ def create_grn():
         data = request.get_json()
         user_id = get_jwt_identity()
         
-        grn_number = generate_number_v2('grn', 'GRN', GoodsReceivedNote, 'grn_number')
+        manual_grn = (data.get('grn_number') or '').strip()
+        if manual_grn:
+            if GoodsReceivedNote.query.filter_by(grn_number=manual_grn).first():
+                return jsonify({'error': f'Nomor penerimaan {manual_grn} sudah dipakai'}), 400
+            grn_number = manual_grn
+        else:
+            grn_number = generate_number_v2('grn', 'BPB', GoodsReceivedNote, 'grn_number', style='dashed')
 
         # Multi-currency (2026-10-19): PO prices are in po.currency; stock
         # cost and the GR/IR journal must be IDR, using the rate locked at
@@ -1672,18 +1693,28 @@ def update_grn(grn_id):
         if not grn:
             return jsonify({'error': 'GRN not found'}), 404
 
-        if grn.status == 'approved':
-            return jsonify({'error': 'GRN sudah final (approved), tidak bisa diubah'}), 400
+        locked = grn.status == 'approved'
 
         invoiced = Invoice.query.filter(
             Invoice.purchase_order_id == grn.po_id,
             Invoice.invoice_type == 'purchase',
             Invoice.status != 'cancelled'
         ).first() if grn.po_id else None
-        if invoiced:
-            return jsonify({'error': 'GRN tidak bisa diubah karena sudah ada Faktur Pembelian terkait PO ini'}), 400
-
         data = request.get_json() or {}
+        if invoiced and not locked:
+            locked = True
+        stock_fields = {'quantity_received', 'quantity_accepted', 'quantity_rejected', 'location_id'}
+        if locked:
+            # GRN approved / sudah difaktur: stok & jurnal sudah terposting, hanya data non-keuangan yang boleh diubah
+            for item_data in data.get('items') or []:
+                gi = {i.po_item_id: i for i in grn.items}.get(item_data.get('po_item_id'))
+                if not gi:
+                    continue
+                for f in stock_fields:
+                    if f in item_data and item_data[f] is not None and str(item_data[f]) != str(getattr(gi, f)) \
+                            and not (f != 'location_id' and float(item_data[f]) == float(getattr(gi, f) or 0)) \
+                            and not (f == 'location_id' and getattr(gi, f) == item_data[f]):
+                        return jsonify({'error': 'Jumlah/gudang tidak bisa diubah karena GRN sudah disetujui atau difaktur. Ubah catatan, batch, lot, tanggal, atau buat retur.'}), 400
 
         header_fields = ['receipt_date', 'delivery_note_number', 'vehicle_number', 'driver_name', 'notes']
         for field in header_fields:
@@ -1703,6 +1734,8 @@ def update_grn(grn_id):
                     continue
                 for f in ['quantity_received', 'quantity_accepted', 'quantity_rejected',
                           'batch_number', 'lot_number', 'location_id', 'notes']:
+                    if locked and f in stock_fields:
+                        continue
                     if f in item_data:
                         setattr(grn_item, f, item_data[f])
                 if 'production_date' in item_data and item_data['production_date']:
