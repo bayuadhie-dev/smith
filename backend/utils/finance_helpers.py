@@ -1491,3 +1491,17 @@ def post_manual_stock_inflow_journal(movement, user_id, product_id=None, materia
         movement.accounting_entry_number = entries[0].entry_number.rsplit('-', 1)[0]
         movement.accounting_entry_status = 'posted'
     return entries
+
+
+def hide_voided_pairs(query):
+    """Sembunyikan transaksi yang dibatalkan dari daftar/ekspor jurnal: jurnal asli dan jurnal pembalik 'void_*'-nya
+    saling menghapus (net nol), jadi keduanya dikeluarkan bersama dan saldo tetap seimbang."""
+    from models.finance import AccountingEntry
+    voided = {}
+    for rt, rid in db.session.query(AccountingEntry.reference_type, AccountingEntry.reference_id).filter(
+            AccountingEntry.reference_type.like('void\\_%', escape='\\'), AccountingEntry.reference_id.isnot(None)).distinct():
+        voided.setdefault(rt[5:], set()).add(rid)
+    query = query.filter(~AccountingEntry.reference_type.like('void\\_%', escape='\\') | AccountingEntry.reference_type.is_(None))
+    for orig_type, ids in voided.items():
+        query = query.filter(db.not_(db.and_(AccountingEntry.reference_type == orig_type, AccountingEntry.reference_id.in_(ids))))
+    return query

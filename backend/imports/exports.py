@@ -194,7 +194,8 @@ for _t in ('receipt', 'payment'):
 # ---------------------------------------------------------------- jurnal & stok
 @exporter('manual_journal')
 def journal(date_from, date_to):
-    q = AccountingEntry.query.filter(AccountingEntry.status == 'posted')
+    from utils.finance_helpers import hide_voided_pairs
+    q = hide_voided_pairs(AccountingEntry.query.filter(AccountingEntry.status == 'posted'))
     rows = []
     for e in _between(AccountingEntry.entry_date, date_from, date_to, q).order_by(AccountingEntry.entry_date, AccountingEntry.entry_number):
         number = e.entry_number.rsplit('-', 1)[0] if e.entry_number else ''
