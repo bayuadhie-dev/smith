@@ -207,10 +207,25 @@ MODULE_LABELS = {
 }
 
 
-def _module_label(reference_type):
-    if not reference_type:
+def _module_label(e, ctx):
+    """Jenis transaksi asal jurnal. Pembayaran dan faktur dibedakan lebih rinci (pembelian/penjualan/kas-bank)."""
+    rt = e.reference_type
+    if not rt:
         return 'Jurnal Umum (manual)'
-    return MODULE_LABELS.get(reference_type) or reference_type.replace('_', ' ').capitalize()
+    if rt == 'payment' and e.reference_id:
+        p = ctx['payments'].get(e.reference_id)
+        if p is not None:
+            standalone = p.invoice_id is None and not p.allocations
+            if p.customer_id and not standalone:
+                return 'Penerimaan Penjualan (Piutang)'
+            if p.supplier_id and not standalone:
+                return 'Pembayaran Pembelian (Hutang)'
+            return 'Penerimaan Kas/Bank' if p.payment_type in ('receipt', 'received') else 'Pembayaran Kas/Bank'
+    if rt == 'invoice' and e.reference_id:
+        inv = ctx['invoices'].get(e.reference_id)
+        if inv is not None:
+            return 'Faktur Penjualan' if inv.invoice_type == 'sales' else 'Faktur Pembelian'
+    return MODULE_LABELS.get(rt) or rt.replace('_', ' ').capitalize()
 
 
 @exporter('manual_journal')
@@ -218,10 +233,15 @@ def journal(date_from, date_to):
     from utils.finance_helpers import hide_voided_pairs
     q = hide_voided_pairs(AccountingEntry.query.filter(AccountingEntry.status == 'posted'))
     rows = []
-    for e in _between(AccountingEntry.entry_date, date_from, date_to, q).order_by(AccountingEntry.entry_date, AccountingEntry.entry_number):
+    entries = _between(AccountingEntry.entry_date, date_from, date_to, q).order_by(AccountingEntry.entry_date, AccountingEntry.entry_number).all()
+    pay_ids = {e.reference_id for e in entries if e.reference_type == 'payment' and e.reference_id}
+    inv_ids = {e.reference_id for e in entries if e.reference_type == 'invoice' and e.reference_id}
+    ctx = {'payments': {p.id: p for p in Payment.query.options(selectinload(Payment.allocations)).filter(Payment.id.in_(pay_ids)).all()} if pay_ids else {},
+           'invoices': {i.id: i for i in Invoice.query.filter(Invoice.id.in_(inv_ids)).all()} if inv_ids else {}}
+    for e in entries:
         number = e.entry_number.rsplit('-', 1)[0] if e.entry_number else ''
         rows.append([number, _d(e.entry_date), e.account_code or '', _f(e.debit_amount) if e.debit_amount else '',
-                     _f(e.credit_amount) if e.credit_amount else '', e.description or '', e.reference_number or '', _module_label(e.reference_type)])
+                     _f(e.credit_amount) if e.credit_amount else '', e.description or '', e.reference_number or '', _module_label(e, ctx)])
     return rows
 
 
