@@ -85,6 +85,21 @@ class EmailService:
             'from_email': self.from_email
         }
     
+    def _logo_file(self):
+        """(bytes, subtype) logo lokal dari Profil Perusahaan, atau None."""
+        path = (self._company().get('logo') or '').strip()
+        if not path or path.startswith(('http://', 'https://')):
+            return None
+        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        full = path if os.path.isabs(path) else os.path.join(base, path.lstrip('/'))
+        try:
+            with open(full, 'rb') as fh:
+                data = fh.read()
+        except OSError:
+            return None
+        ext = full.rsplit('.', 1)[-1].lower()
+        return data, {'jpg': 'jpeg', 'jpeg': 'jpeg', 'png': 'png', 'gif': 'gif', 'webp': 'webp'}.get(ext, 'png')
+
     def send_email(
         self,
         to: str | List[str],
@@ -132,7 +147,8 @@ class EmailService:
         """Send email via Gmail SMTP"""
         try:
             # Create message
-            msg = MIMEMultipart('alternative')
+            logo = self._logo_file() if 'cid:company-logo' in html else None
+            msg = MIMEMultipart('related' if logo else 'alternative')
             msg['Subject'] = subject
             msg['From'] = f'{self.company_name} <{self.gmail_address}>'
             
@@ -150,9 +166,17 @@ class EmailService:
                 all_recipients.extend(bcc)
             
             # Attach text and HTML
+            body = MIMEMultipart('alternative') if logo else msg
             if text:
-                msg.attach(MIMEText(text, 'plain'))
-            msg.attach(MIMEText(html, 'html'))
+                body.attach(MIMEText(text, 'plain'))
+            body.attach(MIMEText(html, 'html'))
+            if logo:
+                from email.mime.image import MIMEImage
+                msg.attach(body)
+                img = MIMEImage(logo[0], _subtype=logo[1])
+                img.add_header('Content-ID', '<company-logo>')
+                img.add_header('Content-Disposition', 'inline', filename='logo')
+                msg.attach(img)
             
             # Send via Gmail SMTP
             with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
@@ -196,6 +220,11 @@ class EmailService:
             if bcc:
                 params['bcc'] = bcc
             
+            logo = self._logo_file() if 'cid:company-logo' in html else None
+            if logo:
+                import base64
+                params['attachments'] = [{'filename': 'logo', 'content': base64.b64encode(logo[0]).decode(), 'content_id': 'company-logo'}]
+
             response = resend.Emails.send(params)
             return {'success': True, 'id': response.get('id'), 'provider': 'resend'}
             
@@ -209,7 +238,12 @@ class EmailService:
         c = self._company()
         name = c.get('name') or self._env_company_name
         logo = (c.get('logo') or '').strip()
-        logo_html = f'<img src="{logo}" alt="" style="max-height:48px;margin-bottom:8px;"><br>' if logo.startswith(('http://', 'https://')) else ''
+        if logo.startswith(('http://', 'https://')):
+            logo_html = f'<img src="{logo}" alt="" style="max-height:44px;margin-bottom:8px;background:#ffffff;padding:4px 6px;border-radius:3px;"><br>'
+        elif self._logo_file():
+            logo_html = '<img src="cid:company-logo" alt="" style="max-height:44px;margin-bottom:8px;background:#ffffff;padding:4px 6px;border-radius:3px;"><br>'
+        else:
+            logo_html = ''
         address = (c.get('full_address') or '').replace('\n', ', ')
         contact = ' | '.join(x for x in [c.get('phone'), c.get('email'), c.get('website')] if x)
         footer_info = ''.join(f'<p style="margin:2px 0;">{x}</p>' for x in [address, contact] if x)
