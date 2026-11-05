@@ -347,10 +347,11 @@ def _ledger(account, date_from, date_to):
     sign = 1 if account.normal_balance == 'debit' else -1
     opening_net = _f(db.session.query(func.coalesce(func.sum(AccountingEntry.debit_amount - AccountingEntry.credit_amount), 0)).filter(
         AccountingEntry.account_id.in_(ids), AccountingEntry.status == 'posted', AccountingEntry.entry_date < date_from).scalar())
-    q = AccountingEntry.query.filter(
+    from utils.finance_helpers import hide_voided_pairs
+    q = hide_voided_pairs(AccountingEntry.query.filter(
         AccountingEntry.account_id.in_(ids), AccountingEntry.status == 'posted',
         AccountingEntry.entry_date >= date_from, AccountingEntry.entry_date <= date_to,
-    ).order_by(AccountingEntry.entry_date, AccountingEntry.id)
+    )).order_by(AccountingEntry.entry_date, AccountingEntry.id)
     total = q.count()
     entries = q.limit(5000).all()
     balance = opening_net
@@ -465,8 +466,9 @@ def cash_daily_detail():
     if request.args.get('account_id'):
         accs = [a for a in accs if str(a.id) == request.args['account_id']]
     ids = [a.id for a in accs]
-    lines = AccountingEntry.query.filter(AccountingEntry.account_id.in_(ids), AccountingEntry.status == 'posted',
-                                         AccountingEntry.entry_date == day).order_by(AccountingEntry.id).all() if ids else []
+    from utils.finance_helpers import hide_voided_pairs
+    lines = hide_voided_pairs(AccountingEntry.query.filter(AccountingEntry.account_id.in_(ids), AccountingEntry.status == 'posted',
+                                         AccountingEntry.entry_date == day)).order_by(AccountingEntry.id).all() if ids else []
     bases = {e.entry_number.rsplit('-', 1)[0] for e in lines if e.entry_number}
     counters = {}
     if bases:
