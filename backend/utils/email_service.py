@@ -38,6 +38,13 @@ class EmailService:
         self.gmail_address = os.getenv('GMAIL_ADDRESS')
         self.gmail_password = os.getenv('GMAIL_APP_PASSWORD')
         
+        # SMTP umum (Zoho, Brevo, hosting email, dll.)
+        self.smtp_host = os.getenv('SMTP_HOST', 'smtp.zoho.com')
+        self.smtp_port = int(os.getenv('SMTP_PORT', '465') or 465)
+        self.smtp_user = os.getenv('SMTP_USER')
+        self.smtp_password = os.getenv('SMTP_PASSWORD')
+        self.smtp_from = os.getenv('SMTP_FROM') or self.smtp_user
+
         # Resend config
         self.resend_api_key = os.getenv('RESEND_API_KEY')
         self.resend_from = os.getenv('EMAIL_FROM', 'onboarding@resend.dev')
@@ -67,12 +74,16 @@ class EmailService:
     def from_email(self) -> str:
         if self.provider == 'gmail':
             return self.gmail_address or ''
+        if self.provider == 'smtp':
+            return self.smtp_from or ''
         return self.resend_from
     
     def is_configured(self) -> bool:
         """Check if email service is properly configured"""
         if self.provider == 'gmail':
             return bool(self.gmail_address and self.gmail_password)
+        elif self.provider == 'smtp':
+            return bool(self.smtp_host and self.smtp_user and self.smtp_password)
         elif self.provider == 'resend':
             return bool(self.resend_api_key)
         return False
@@ -128,7 +139,7 @@ class EmailService:
         if not self.is_configured():
             return {'error': f'Email service not configured. Set {self.provider.upper()} credentials in .env'}
         
-        if self.provider == 'gmail':
+        if self.provider in ('gmail', 'smtp'):
             return self._send_gmail(to, subject, html, text, cc, bcc)
         elif self.provider == 'resend':
             return self._send_resend(to, subject, html, text, reply_to, cc, bcc)
@@ -150,7 +161,9 @@ class EmailService:
             logo = self._logo_file() if 'cid:company-logo' in html else None
             msg = MIMEMultipart('related' if logo else 'alternative')
             msg['Subject'] = subject
-            msg['From'] = f'{self.company_name} <{self.gmail_address}>'
+            smtp = self.provider == 'smtp'
+            sender = self.smtp_from if smtp else self.gmail_address
+            msg['From'] = f'{self.company_name} <{sender}>'
             
             # Handle recipients
             recipients = [to] if isinstance(to, str) else to
@@ -179,14 +192,22 @@ class EmailService:
                 msg.attach(img)
             
             # Send via Gmail SMTP
-            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-                server.login(self.gmail_address, self.gmail_password)
-                server.sendmail(self.gmail_address, all_recipients, msg.as_string())
-            
-            return {'success': True, 'provider': 'gmail'}
+            host, port = (self.smtp_host, self.smtp_port) if smtp else ('smtp.gmail.com', 465)
+            login_user = self.smtp_user if smtp else self.gmail_address
+            login_pass = self.smtp_password if smtp else self.gmail_password
+            if port == 465:
+                server = smtplib.SMTP_SSL(host, port, timeout=30)
+            else:
+                server = smtplib.SMTP(host, port, timeout=30)
+                server.starttls()
+            with server:
+                server.login(login_user, login_pass)
+                server.sendmail(sender, all_recipients, msg.as_string())
+
+            return {'success': True, 'provider': self.provider}
             
         except smtplib.SMTPAuthenticationError:
-            return {'error': 'Gmail authentication failed. Check your App Password.'}
+            return {'error': 'Login email gagal. Periksa username dan sandi aplikasi.'}
         except Exception as e:
             return {'error': str(e)}
     
