@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-11b'
+LAYOUT = 'v2-2026-11c'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 AUTO_NOTE_PREFIXES = ('Auto-generated', 'Migrasi otomatis')  # the font-unit migration only rescales values of auto-generated layouts
 
@@ -150,7 +150,7 @@ def words_box(left, top, width, h=9):
 
 def notes_side(left, top, width, h):
     """Catatan di samping blok TOTAL: font kecil, bisa beberapa kalimat."""
-    return [L('Catatan:', left, top, width, 3.5, fs=7.5, bold=True), F('notes', left, top + 3.8, width, h - 3.8, fs=7.5)]
+    return [L('Catatan:', left, top, width, 3.5, fs=7.5, bold=True), F('notes', left, top + 3.8, width, h - 3.8, fs=7)]
 
 
 def notes_line(left, top, width, h=12):
@@ -333,8 +333,8 @@ def build_kwitansi():
     o += flow([BOX(110, 98, 40, 7, fill=CELL), BOX(150, 98, 50, 7, fill=CELL),
                L('TOTAL', 111.5, 99.5, 36, 4, fs=9.5, bold=True),
                F('amount', 151.5, 99.5, 47, 4, fs=9.5, bold=True, align='right', fmt='rp')])
-    o += flow(notes_side(10, 98, 96, 14))
-    o += flow(signatures(10, 190, 114, [('field', 'sign_1'), ('field', 'sign_2'), ('field', 'sign_3')], gap=16))
+    o += flow(notes_side(10, 98, 96, 19))
+    o += flow(signatures(10, 190, 118, [('field', 'sign_1'), ('field', 'sign_2'), ('field', 'sign_3')], gap=9))
     return o, 'A5', 'landscape', 210, 148
 
 

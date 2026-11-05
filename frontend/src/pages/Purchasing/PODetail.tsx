@@ -275,7 +275,7 @@ export default function PODetail() {
                 {po.items.flatMap((item: any) => {
                   const scs = item.schedules || [];
                   const st = scheduleStatuses(scs, item.quantity_received || 0);
-                  const name = item.material_name || item.product_name || item.description || '(tanpa nama)';
+                  const name = item.description || item.material_name || item.product_name || '(tanpa nama)';
                   return scs.map((sc: any, i: number) => (
                     <tr key={`${item.id}-${sc.id}`}>
                       <td className="py-2 pr-3 font-medium text-gray-900 dark:text-white">{i === 0 ? name : ''}</td>

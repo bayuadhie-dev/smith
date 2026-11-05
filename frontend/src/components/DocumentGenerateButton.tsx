@@ -178,11 +178,18 @@ export default function DocumentGenerateButton({
           <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl my-8" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
               <h3 className="font-semibold text-gray-900">Preview Dokumen</h3>
+              <button
+                onClick={() => { const f = document.getElementById('doc-preview-frame') as HTMLIFrameElement | null; f?.contentWindow?.focus(); f?.contentWindow?.print() }}
+                className="ml-auto mr-3 px-3 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Cetak
+              </button>
               <button onClick={() => setPreviewHtml(null)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">
                 &times;
               </button>
             </div>
             <iframe
+              id="doc-preview-frame"
               title="Document preview"
               srcDoc={previewHtml}
               className="w-full"

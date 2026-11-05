@@ -514,6 +514,10 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
               <>
                 <div className="grid grid-cols-2 gap-3 text-sm mb-4 bg-gray-50 dark:bg-gray-900 rounded-md p-4">
                   <div>
+                    <div className="text-gray-500 dark:text-gray-400">No. Jurnal</div>
+                    <div className="font-mono font-medium text-gray-900 dark:text-white">{journalDetail.entry_number || String(journalDetail.lines?.[0]?.entry_number || '').replace(/-\d+$/, '')}</div>
+                  </div>
+                  <div>
                     <div className="text-gray-500 dark:text-gray-400">Tanggal</div>
                     <div className="font-medium text-gray-900 dark:text-white">
                       {journalDetail.entry_date
@@ -540,16 +544,16 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                      <th className="py-2">No. Baris</th>
+                      <th className="py-2">#</th>
                       <th className="py-2">Akun</th>
                       <th className="py-2 text-right">Debit</th>
                       <th className="py-2 text-right">Kredit</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {journalDetail.lines.map((line: any) => (
+                    {journalDetail.lines.map((line: any, idx: number) => (
                       <tr key={line.id} className="border-b border-gray-100 dark:border-gray-800">
-                        <td className="py-2 font-mono text-xs">{line.entry_number}</td>
+                        <td className="py-2 font-mono text-xs">{idx + 1}</td>
                         <td className="py-2">
                           {line.account_code} - {line.account_name}
                         </td>
