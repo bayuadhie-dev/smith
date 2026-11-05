@@ -192,6 +192,27 @@ for _t in ('receipt', 'payment'):
 
 
 # ---------------------------------------------------------------- jurnal & stok
+MODULE_LABELS = {
+    'payment': 'Pembayaran / Penerimaan Kas-Bank', 'sales_invoice': 'Faktur Penjualan', 'invoice': 'Faktur',
+    'purchase_invoice': 'Faktur Pembelian', 'credit_memo_refund': 'Nota Kredit', 'manual_journal': 'Jurnal Umum (manual)',
+    'work_order': 'Produksi (SPK)', 'work_order_ready_to_close': 'Produksi (SPK)', 'work_order_ipqc': 'Produksi (SPK)',
+    'wip_conversion_to_fg': 'Produksi (WIP ke FG)', 'fg_conversion': 'Konversi Barang Jadi', 'material_issue': 'Pengeluaran Material',
+    'sales_order': 'Pesanan Penjualan', 'purchase_order': 'Pesanan Pembelian', 'goods_received_note': 'Penerimaan Barang (GRN)',
+    'grn': 'Penerimaan Barang (GRN)', 'purchase_return': 'Retur Pembelian', 'customer_return': 'Retur Penjualan',
+    'sales_delivery': 'Pengiriman', 'stock_opname': 'Stok Opname', 'inventory_adjustment': 'Penyesuaian Stok',
+    'inventory_destruction': 'Pemusnahan Persediaan', 'manual_stock_in': 'Stok Masuk Manual', 'asset': 'Aset Tetap',
+    'depreciation': 'Penyusutan Aset', 'recurring_payment': 'Pembayaran Berulang', 'payroll_period': 'Penggajian',
+    'payroll_payment': 'Pembayaran Gaji', 'expense': 'Biaya', 'reimbursement': 'Reimburse', 'opening_balance': 'Saldo Awal',
+    'purchase_down_payment': 'Uang Muka Pembelian', 'production_approval': 'Persetujuan Produksi',
+}
+
+
+def _module_label(reference_type):
+    if not reference_type:
+        return 'Jurnal Umum (manual)'
+    return MODULE_LABELS.get(reference_type) or reference_type.replace('_', ' ').capitalize()
+
+
 @exporter('manual_journal')
 def journal(date_from, date_to):
     from utils.finance_helpers import hide_voided_pairs
@@ -200,7 +221,7 @@ def journal(date_from, date_to):
     for e in _between(AccountingEntry.entry_date, date_from, date_to, q).order_by(AccountingEntry.entry_date, AccountingEntry.entry_number):
         number = e.entry_number.rsplit('-', 1)[0] if e.entry_number else ''
         rows.append([number, _d(e.entry_date), e.account_code or '', _f(e.debit_amount) if e.debit_amount else '',
-                     _f(e.credit_amount) if e.credit_amount else '', e.description or '', e.reference_number or ''])
+                     _f(e.credit_amount) if e.credit_amount else '', e.description or '', e.reference_number or '', _module_label(e.reference_type)])
     return rows
 
 

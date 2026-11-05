@@ -72,12 +72,13 @@ class ManualJournalImport(ImportKind):
     columns = [Col('no_jurnal', 'No. Jurnal', aliases=['no jurnal', 'nomor jurnal', 'referensi']),
                Col('tanggal', 'Tanggal', required=True), Col('kode_akun', 'Kode Akun', required=True, aliases=['akun', 'kode akun perkiraan']),
                Col('debit', 'Debit'), Col('kredit', 'Kredit', aliases=['credit']),
-               Col('ket_baris', 'Keterangan Baris', aliases=['keterangan baris']), Col('ket_jurnal', 'Keterangan Jurnal', aliases=['keterangan jurnal', 'keterangan'])]
+               Col('ket_baris', 'Keterangan Baris', aliases=['keterangan baris']), Col('ket_jurnal', 'Keterangan Jurnal', aliases=['keterangan jurnal']),
+               Col('modul', 'Keterangan', aliases=['asal modul'])]
     guide = ['Setiap jurnal harus seimbang (total Debit = total Kredit) dan minimal 2 baris.',
              'Satu baris diisi salah satu: Debit atau Kredit. Akun induk tidak boleh dijurnal. Periode yang sudah ditutup ditolak.',
              'No. Jurnal dipakai sebagai nomor referensi dan tidak boleh sama dengan jurnal yang sudah ada.']
-    sample_rows = [['JU-001', '2026-10-01', '600101', 1500000, '', 'Biaya admin', 'Biaya admin bank Oktober'],
-                   ['JU-001', '2026-10-01', '100101', '', 1500000, '', '']]
+    sample_rows = [['JU-001', '2026-10-01', '600101', 1500000, '', 'Biaya admin', 'Biaya admin bank Oktober', ''],
+                   ['JU-001', '2026-10-01', '100101', '', 1500000, '', '', '']]
 
     def build(self, key, rows):
         ref = None if key.startswith('__row') else key
