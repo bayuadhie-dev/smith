@@ -460,6 +460,8 @@ def get_purchase_orders():
         if status:
             statuses = [s.strip() for s in status.split(',') if s.strip()]
             query = query.filter(PurchaseOrder.status.in_(statuses))
+        else:
+            query = query.filter(PurchaseOrder.status != 'cancelled')
         if request.args.get('receivable') in ('1', 'true'):
             # Hanya PO yang masih punya barang (bukan jasa) yang belum diterima penuh.
             from models.product import Material as _Mat

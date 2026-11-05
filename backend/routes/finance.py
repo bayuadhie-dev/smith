@@ -103,6 +103,8 @@ def get_invoices():
         if invoice_type:
             query = query.filter_by(invoice_type=invoice_type)
         
+        if request.args.get('status') != 'cancelled' and request.args.get('include_cancelled') not in ('1', 'true'):
+            query = query.filter(Invoice.status != 'cancelled')
         invoices = query.order_by(Invoice.invoice_date.desc()).paginate(page=page, per_page=per_page)
         
         return jsonify({
@@ -715,7 +717,8 @@ def get_payments():
         if date_to:
             query = query.filter(Payment.payment_date <= date_to)
 
-        query = query.filter(db.or_(Payment.void_reason.is_(None), Payment.void_reason != 'Diubah menjadi transaksi baru'))
+        if request.args.get('include_cancelled') not in ('1', 'true'):
+            query = query.filter(Payment.status != 'cancelled')
         payments = query.order_by(Payment.payment_date.desc(), Payment.id.desc()).all()
 
         def party_name(p):

@@ -9,7 +9,7 @@ from datetime import datetime
 
 def generate_number(prefix, model=None, field_name='number', style='compact'):
     """Generate sequential number for entities.
-    style='compact': PREFIX-YYYYMM-00001 (bawaan). style='dashed': PREFIX-YYYY-MM-0001 (PI-2026-11-0001); style='slash': PREFIX-YY/MM/0001 (BPB-26/11/0001)."""
+    style='compact': PREFIX-YYYYMM-00001 (bawaan). style='dashed': PREFIX-YYYY-MM-0001 (PI-2026-11-001); style='slash': PREFIX-YY/MM/0001 (BPB-26/11/001)."""
     if model is None:
         # Fallback to old behavior for backward compatibility
         length = field_name if isinstance(field_name, int) else 6
@@ -75,9 +75,9 @@ def generate_number(prefix, model=None, field_name='number', style='compact'):
     db.session.flush()
 
     if style == 'slash':
-        return f"{prefix}-{year[2:]}/{month}/{new_seq:04d}"
+        return f"{prefix}-{year[2:]}/{month}/{new_seq:03d}"
     if style == 'dashed':
-        return f"{prefix}-{year}-{month}-{new_seq:04d}"
+        return f"{prefix}-{year}-{month}-{new_seq:03d}"
     return f"{prefix}-{period}-{new_seq:05d}"
 
 
@@ -99,9 +99,9 @@ def peek_number(prefix, model, field_name, style='compact'):
             except (ValueError, AttributeError):
                 continue
     if style == 'slash':
-        return f"{prefix}-{period[2:4]}/{period[4:]}/{last + 1:04d}"
+        return f"{prefix}-{period[2:4]}/{period[4:]}/{last + 1:03d}"
     if style == 'dashed':
-        return f"{prefix}-{period[:4]}-{period[4:]}-{last + 1:04d}"
+        return f"{prefix}-{period[:4]}-{period[4:]}-{last + 1:03d}"
     return f"{prefix}-{period}-{last + 1:05d}"
 
 
