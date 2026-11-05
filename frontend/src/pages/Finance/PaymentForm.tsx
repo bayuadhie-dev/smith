@@ -80,7 +80,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   const [paymentNumber, setPaymentNumber] = useDraftState('paymentNumber', '');
   const [nextNumber, setNextNumber] = useState('');
   const [alloc, setAlloc] = useDraftState<Record<number, string>>('alloc', {});
-  const [lines, setLines] = useDraftState<{ account_id: string; amount: string; description: string }[]>('lines', [
+  const [lines, setLines] = useDraftState<{ account_id: string; amount: string; description: string; party_type?: string; party_id?: string }[]>('lines', [
     { account_id: '', amount: '', description: '' },
   ]);
 
@@ -118,6 +118,15 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
       })));
     }).catch(() => setParties([]));
   }, [mode]);
+
+  const [advSuppliers, setAdvSuppliers] = useState<{ id: number; name: string }[]>([]);
+  const [advCustomers, setAdvCustomers] = useState<{ id: number; name: string }[]>([]);
+  useEffect(() => {
+    if (mode !== 'kas') return;
+    axiosInstance.get('/api/purchasing/suppliers', { params: { per_page: 1000 } }).then((r) => setAdvSuppliers((r.data.suppliers || []).map((p: any) => ({ id: p.id, name: p.company_name || p.name })))).catch(() => {});
+    axiosInstance.get('/api/sales/customers', { params: { per_page: 1000 } }).then((r) => setAdvCustomers((r.data.customers || []).map((p: any) => ({ id: p.id, name: p.company_name || p.name })))).catch(() => {});
+  }, [mode]);
+  const isAdvanceAccount = (id: string) => /uang\s*muka|panjar|deposit/i.test(accName(id));
 
   useEffect(() => {
     axiosInstance.get('/api/finance/chart-of-accounts').then((res) => {
@@ -186,7 +195,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
         bank_account_id: d.bank_account_id ? String(d.bank_account_id) : '',
       });
       if (d.lines?.length) {
-        setLines(d.lines.map((l: any) => ({ account_id: String(l.account_id), amount: String(l.amount), description: l.description || '' })));
+        setLines(d.lines.map((l: any) => ({ account_id: String(l.account_id), amount: String(l.amount), description: l.description || '', party_type: l.party_type || '', party_id: l.party_id ? String(l.party_id) : '' })));
       }
     }).catch(() => setError('Gagal memuat transaksi yang akan diubah.'));
   }, [editId]);
@@ -236,7 +245,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     setAlloc(next);
   };
 
-  const updateLine = (idx: number, patch: Partial<{ account_id: string; amount: string; description: string }>) =>
+  const updateLine = (idx: number, patch: Partial<{ account_id: string; amount: string; description: string; party_type: string; party_id: string }>) =>
     setLines((ls) => ls.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
 
   const paidOf = (i: { total_amount: number; balance_due: number }) => Math.max(0, i.total_amount - i.balance_due);
@@ -284,7 +293,8 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
       .map(([id, v]) => ({ invoice_id: Number(id), amount: Number(v) }));
     const cleanLines = lines
       .filter((l) => l.account_id || Number(l.amount))
-      .map((l) => ({ account_id: Number(l.account_id), amount: Number(l.amount), description: l.description || undefined }));
+      .map((l) => ({ account_id: Number(l.account_id), amount: Number(l.amount), description: l.description || undefined,
+        party_type: l.party_id ? (l.party_type || 'supplier') : undefined, party_id: l.party_id ? Number(l.party_id) : undefined }));
 
     if (!isStandalone && allocations.length === 0) {
       fail('Centang minimal satu faktur yang akan dilunasi.');
@@ -500,6 +510,22 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                       />
                     </div>
                     <input type="text" className={`${inputCls} col-span-7 md:col-span-4`} placeholder="Keterangan baris (opsional)" value={l.description} onChange={(e) => updateLine(idx, { description: e.target.value })} />
+                    {l.account_id && isAdvanceAccount(l.account_id) && (
+                      <div className="col-span-12 grid grid-cols-12 gap-2 rounded-md bg-gray-50 p-2 dark:bg-gray-700/40">
+                        <select className={`${inputCls} col-span-4 md:col-span-3`} value={l.party_type || 'supplier'} onChange={(e) => updateLine(idx, { party_type: e.target.value, party_id: '' })}>
+                          <option value="supplier">Pemasok</option>
+                          <option value="customer">Pelanggan</option>
+                        </select>
+                        <div className="col-span-8 md:col-span-9">
+                          <SearchableSelect
+                            options={(l.party_type === 'customer' ? advCustomers : advSuppliers).map((p) => ({ id: p.id, name: p.name }))}
+                            value={l.party_id ? Number(l.party_id) : null}
+                            onChange={(v) => updateLine(idx, { party_id: v ? String(v) : '', party_type: l.party_type || 'supplier' })}
+                            placeholder={`Uang muka untuk ${l.party_type === 'customer' ? 'pelanggan' : 'pemasok'} siapa?`}
+                          />
+                        </div>
+                      </div>
+                    )}
                     <NumberInput currency className={`${inputCls} col-span-4 text-right md:col-span-2`} placeholder="Nilai" value={l.amount} onChange={(e) => updateLine(idx, { amount: e.target.value })} />
                     <button type="button" className="col-span-1 text-gray-400 hover:text-red-600 disabled:opacity-30" disabled={lines.length === 1} onClick={() => setLines((ls) => ls.filter((_, i) => i !== idx))} title="Hapus baris">
                       <XMarkIcon className="mx-auto h-5 w-5" />

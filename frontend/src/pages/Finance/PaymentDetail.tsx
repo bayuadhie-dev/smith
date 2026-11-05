@@ -46,7 +46,7 @@ interface PaymentDetailData {
   voided_at: string | null;
   void_reason: string | null;
   allocations: { invoice_id: number; invoice_number: string | null; invoice_total_amount: number | null; amount: number }[];
-  lines: { account_id?: number; account_code: string | null; account_name: string | null; amount: number; description: string | null }[];
+  lines: { account_id?: number; account_code: string | null; account_name: string | null; amount: number; description: string | null; party_type?: string | null; party_name?: string | null }[];
   gl_entries: GLEntry[];
 }
 
@@ -242,7 +242,7 @@ export default function PaymentDetail() {
                 {payment.lines.map((l, i) => (
                   <tr key={i}>
                     <td className="py-1">{l.account_code} - {l.account_name}</td>
-                    <td className="py-1">{l.description || '-'}</td>
+                    <td className="py-1">{l.description || '-'}{l.party_name && <div className="text-xs text-gray-500">{l.party_type === 'customer' ? 'Pelanggan' : 'Pemasok'}: {l.party_name}</div>}</td>
                     <td className="py-1 text-right font-medium">{formatRupiah(l.amount)}</td>
                   </tr>
                 ))}

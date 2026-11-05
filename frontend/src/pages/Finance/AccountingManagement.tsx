@@ -1,3 +1,4 @@
+import SearchableSelect from '../../components/SearchableSelect'
 import { PageHeader, KpiStrip } from '../../components/ui/PageKit'
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../utils/axiosConfig';
@@ -664,19 +665,12 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Account *
                           </label>
-                          <select 
-                            className="input w-full text-sm"
-                            value={line.account_id}
-                            onChange={(e) => updateJournalLine(index, 'account_id', e.target.value)}
-                            required
-                          >
-                            <option value="">Select account</option>
-                            {accounts.map(account => (
-                              <option key={account.id} value={account.id}>
-                                {account.code} - {account.name}
-                              </option>
-                            ))}
-                          </select>
+                          <SearchableSelect
+                            options={accounts.map((account: any) => ({ id: account.id, name: `${account.code} - ${account.name}` }))}
+                            value={line.account_id ? Number(line.account_id) : null}
+                            onChange={(v: any) => updateJournalLine(index, 'account_id', v ? String(v) : '')}
+                            placeholder="Cari akun (kode atau nama)"
+                          />
                         </div>
 
                         <div className="col-span-3">

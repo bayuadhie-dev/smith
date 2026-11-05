@@ -228,6 +228,8 @@ class PaymentLine(db.Model):
     account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=False)
     amount = db.Column(db.Numeric(15, 2), nullable=False)
     description = db.Column(db.String(255), nullable=True)
+    party_type = db.Column(db.String(20), nullable=True)  # supplier / customer (mis. uang muka)
+    party_id = db.Column(db.Integer, nullable=True)
 
     payment = db.relationship('Payment', back_populates='lines')
 

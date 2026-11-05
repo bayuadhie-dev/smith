@@ -819,6 +819,15 @@ def _record_payment_edit_history(old_payment, new_payment, old_snapshot, data, u
     db.session.flush()
 
 
+def _line_party_name(line):
+    if not line.party_type or not line.party_id:
+        return None
+    from models.purchasing import Supplier
+    from models.sales import Customer
+    p = db.session.get(Supplier if line.party_type == 'supplier' else Customer, line.party_id)
+    return p.company_name if p else None
+
+
 def _void_payment_core(payment, user_id, reason):
     """Shared by void_payment() and the edit ("Ubah") flow. Returns
     (error_response, status) when it refuses, else None. Does not commit."""
@@ -1088,7 +1097,18 @@ def create_payment_core(data, user_id, commit=True):
             for l in lines_in:
                 amt = float(Decimal(str(l['amount'])))
                 desc = l.get('description') or payment.notes or f'{"Penerimaan" if is_receipt else "Pembayaran"} - {payment.payment_number}'
-                db.session.add(PaymentLine(payment_id=payment.id, account_id=l['account_id'], amount=amt, description=l.get('description')))
+                ptype, pid, pname = None, None, None
+                if l.get('party_type') in ('supplier', 'customer') and l.get('party_id'):
+                    from models.purchasing import Supplier
+                    from models.sales import Customer
+                    party = db.session.get(Supplier if l['party_type'] == 'supplier' else Customer, int(l['party_id']))
+                    if not party:
+                        db.session.rollback()
+                        return jsonify({'error': 'Pemasok/pelanggan pada rincian akun tidak ditemukan'}), 400
+                    ptype, pid, pname = l['party_type'], party.id, party.company_name
+                    desc = f'{desc} - {pname}'
+                db.session.add(PaymentLine(payment_id=payment.id, account_id=l['account_id'], amount=amt, description=l.get('description'),
+                                           party_type=ptype, party_id=pid))
                 if is_receipt:
                     dr, cr = (0, amt) if amt > 0 else (-amt, 0)
                 else:
@@ -1294,6 +1314,9 @@ def get_payment_detail(id):
                 'account_name': (db.session.get(Account, l.account_id).account_name if db.session.get(Account, l.account_id) else None),
                 'amount': float(l.amount),
                 'description': l.description,
+                'party_type': l.party_type,
+                'party_id': l.party_id,
+                'party_name': _line_party_name(l),
             } for l in payment.lines],
             'gl_entries': [{
                 'id': e.id,
