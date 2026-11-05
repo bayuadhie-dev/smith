@@ -31,7 +31,7 @@ class EmailService:
     
     def __init__(self):
         self.provider = os.getenv('EMAIL_PROVIDER', 'gmail').lower()
-        self.company_name = os.getenv('COMPANY_NAME', 'ERP System')
+        self._env_company_name = os.getenv('COMPANY_NAME', 'ERP System')
         self.app_url = os.getenv('APP_URL', 'http://localhost:3000')
         
         # Gmail config
@@ -46,6 +46,23 @@ class EmailService:
             import resend
             resend.api_key = self.resend_api_key
     
+    def _company(self) -> Dict[str, Any]:
+        """Data dari Profil Perusahaan (Pengaturan); kolom kosong tidak diisi dengan data perusahaan lain."""
+        try:
+            from models.settings import CompanyProfile
+            p = CompanyProfile.query.first()
+            if p and p.company_name:
+                addr = ', '.join(x for x in [p.address, p.city, p.state] if x)
+                return {'name': p.company_name, 'full_address': addr, 'phone': p.phone or '',
+                        'email': p.email or '', 'website': p.website or '', 'logo': p.logo_path or ''}
+        except Exception:
+            pass
+        return {'name': self._env_company_name, 'full_address': '', 'phone': '', 'email': '', 'website': '', 'logo': ''}
+
+    @property
+    def company_name(self) -> str:
+        return self._company().get('name') or self._env_company_name
+
     @property
     def from_email(self) -> str:
         if self.provider == 'gmail':
@@ -188,453 +205,198 @@ class EmailService:
     # ==================== EMAIL TEMPLATES ====================
     
     def _base_template(self, content: str, title: str = '') -> str:
-        """Base HTML email template"""
-        return f'''
-<!DOCTYPE html>
-<html>
+        """Template email dasar: nama, logo (bila URL), alamat dan kontak diambil dari Profil Perusahaan."""
+        c = self._company()
+        name = c.get('name') or self._env_company_name
+        logo = (c.get('logo') or '').strip()
+        logo_html = f'<img src="{logo}" alt="" style="max-height:48px;margin-bottom:8px;"><br>' if logo.startswith(('http://', 'https://')) else ''
+        address = (c.get('full_address') or '').replace('\n', ', ')
+        contact = ' | '.join(x for x in [c.get('phone'), c.get('email'), c.get('website')] if x)
+        footer_info = ''.join(f'<p style="margin:2px 0;">{x}</p>' for x in [address, contact] if x)
+        return f"""<!DOCTYPE html>
+<html lang="id">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title>
-    <style>
-        body {{
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-        }}
-        .container {{
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }}
-        .card {{
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 30px;
-            margin: 20px 0;
-        }}
-        .header {{
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #3b82f6;
-            margin-bottom: 20px;
-        }}
-        .header h1 {{
-            color: #3b82f6;
-            margin: 0;
-            font-size: 24px;
-        }}
-        .content {{
-            padding: 20px 0;
-        }}
-        .button {{
-            display: inline-block;
-            background: #3b82f6;
-            color: #ffffff !important;
-            padding: 12px 30px;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            margin: 10px 0;
-        }}
-        .button:hover {{
-            background: #2563eb;
-        }}
-        .button-success {{
-            background: #10b981;
-        }}
-        .button-warning {{
-            background: #f59e0b;
-        }}
-        .button-danger {{
-            background: #ef4444;
-        }}
-        .info-box {{
-            background: #eff6ff;
-            border-left: 4px solid #3b82f6;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 0 6px 6px 0;
-        }}
-        .warning-box {{
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 0 6px 6px 0;
-        }}
-        .success-box {{
-            background: #d1fae5;
-            border-left: 4px solid #10b981;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 0 6px 6px 0;
-        }}
-        .footer {{
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            margin-top: 20px;
-            color: #6b7280;
-            font-size: 12px;
-        }}
-        .data-table {{
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-        }}
-        .data-table th, .data-table td {{
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }}
-        .data-table th {{
-            background: #f9fafb;
-            font-weight: 600;
-        }}
-        .badge {{
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }}
-        .badge-success {{ background: #d1fae5; color: #065f46; }}
-        .badge-warning {{ background: #fef3c7; color: #92400e; }}
-        .badge-danger {{ background: #fee2e2; color: #991b1b; }}
-        .badge-info {{ background: #dbeafe; color: #1e40af; }}
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title}</title>
+<style>
+body {{ font-family: Arial, 'Helvetica Neue', sans-serif; line-height: 1.55; color: #1f2937; margin: 0; padding: 0; background: #f3f5f6; }}
+.container {{ max-width: 600px; margin: 0 auto; padding: 16px; }}
+.card {{ background: #ffffff; border: 1px solid #d9e0e3; border-radius: 4px; padding: 0; margin: 12px 0; }}
+.header {{ padding: 18px 24px; background: #1f4e5a; color: #ffffff; border-radius: 4px 4px 0 0; }}
+.header h1 {{ margin: 0; font-size: 18px; font-weight: 700; color: #ffffff; }}
+.content {{ padding: 22px 24px; font-size: 14px; }}
+.content h2 {{ margin: 0 0 12px; font-size: 17px; color: #1f4e5a; }}
+.button {{ display: inline-block; background: #1f4e5a; color: #ffffff !important; padding: 10px 22px; text-decoration: none; border-radius: 4px; font-weight: 600; margin: 8px 0; }}
+.button-success {{ background: #1f4e5a; }}
+.button-warning {{ background: #8a5a00; }}
+.button-danger {{ background: #a12b2b; }}
+.info-box {{ background: #e8eff1; border-left: 3px solid #1f4e5a; padding: 12px 14px; margin: 14px 0; }}
+.warning-box {{ background: #fdf3dc; border-left: 3px solid #b7791f; padding: 12px 14px; margin: 14px 0; }}
+.success-box {{ background: #e3f1e8; border-left: 3px solid #2f7a4d; padding: 12px 14px; margin: 14px 0; }}
+.footer {{ padding: 14px 24px; border-top: 1px solid #e5e9eb; color: #6b7780; font-size: 12px; text-align: center; }}
+.data-table {{ width: 100%; border-collapse: collapse; margin: 12px 0; }}
+.data-table th, .data-table td {{ padding: 8px 10px; text-align: left; border-bottom: 1px solid #e5e9eb; }}
+.data-table th {{ background: #f3f6f7; font-weight: 600; }}
+.badge {{ display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; background: #e8eff1; color: #1f4e5a; }}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <div class="header">
-                <h1>{self.company_name}</h1>
-            </div>
-            <div class="content">
-                {content}
-            </div>
-            <div class="footer">
-                <p>&copy; {datetime.now().year} {self.company_name}. All rights reserved.</p>
-                <p>This is an automated message. Please do not reply directly to this email.</p>
-            </div>
-        </div>
-    </div>
+<div class="container"><div class="card">
+<div class="header">{logo_html}<h1>{name}</h1></div>
+<div class="content">{content}</div>
+<div class="footer">
+{footer_info}
+<p style="margin:8px 0 0;">Email ini dikirim otomatis oleh sistem, mohon tidak membalas langsung.</p>
+</div>
+</div></div>
 </body>
-</html>
-'''
-    
-    # ==================== NOTIFICATION METHODS ====================
-    
-    def send_welcome_email(self, to: str, username: str, full_name: str) -> Dict[str, Any]:
-        """Send welcome email to new user"""
-        content = f'''
-<h2>Welcome, {full_name}! 🎉</h2>
-<p>Your account has been successfully created.</p>
+</html>"""
 
+    # ==================== NOTIFICATION METHODS ====================
+
+    def send_welcome_email(self, to: str, username: str, full_name: str) -> Dict[str, Any]:
+        content = f"""
+<h2>Selamat datang, {full_name}</h2>
+<p>Akun Anda sudah dibuat.</p>
 <div class="info-box">
-    <strong>Account Details:</strong><br>
+    <strong>Data akun</strong><br>
     Username: <code>{username}</code><br>
     Email: <code>{to}</code>
 </div>
+<p>Silakan masuk ke sistem melalui tombol berikut:</p>
+<p style="text-align: center;"><a href="{self.app_url}/login" class="button">Masuk ke sistem</a></p>
+<p>Jika ada pertanyaan, hubungi administrator sistem.</p>
+"""
+        return self.send_email(to=to, subject=f'Selamat datang di {self.company_name}', html=self._base_template(content, 'Selamat datang'))
 
-<p>You can now log in to access the ERP system:</p>
-
-<p style="text-align: center;">
-    <a href="{self.app_url}/login" class="button">Login to ERP</a>
-</p>
-
-<p>If you have any questions, please contact your system administrator.</p>
-'''
-        return self.send_email(
-            to=to,
-            subject=f'Welcome to {self.company_name}!',
-            html=self._base_template(content, 'Welcome')
-        )
-    
     def send_password_reset(self, to: str, reset_token: str, full_name: str) -> Dict[str, Any]:
-        """Send password reset email"""
         reset_url = f"{self.app_url}/reset-password?token={reset_token}"
-        content = f'''
-<h2>Password Reset Request</h2>
-<p>Hi {full_name},</p>
-<p>We received a request to reset your password. Click the button below to create a new password:</p>
-
-<p style="text-align: center;">
-    <a href="{reset_url}" class="button">Reset Password</a>
-</p>
-
+        content = f"""
+<h2>Permintaan reset password</h2>
+<p>Halo {full_name},</p>
+<p>Kami menerima permintaan untuk mengatur ulang password Anda. Klik tombol berikut untuk membuat password baru:</p>
+<p style="text-align: center;"><a href="{reset_url}" class="button">Reset password</a></p>
 <div class="warning-box">
-    <strong>⚠️ Important:</strong><br>
-    This link will expire in 1 hour. If you didn't request this, please ignore this email.
+    <strong>Perhatian:</strong> tautan ini berlaku 1 jam. Jika Anda tidak meminta reset, abaikan email ini.
 </div>
+<p>Jika tombol tidak berfungsi, salin tautan ini ke browser:</p>
+<p style="word-break: break-all; color: #6b7780; font-size: 12px;">{reset_url}</p>
+"""
+        return self.send_email(to=to, subject=f'Reset password - {self.company_name}', html=self._base_template(content, 'Reset password'))
 
-<p>If the button doesn't work, copy and paste this link into your browser:</p>
-<p style="word-break: break-all; color: #6b7280; font-size: 12px;">{reset_url}</p>
-'''
-        return self.send_email(
-            to=to,
-            subject=f'Password Reset - {self.company_name}',
-            html=self._base_template(content, 'Password Reset')
-        )
-    
     def send_password_changed(self, to: str, full_name: str) -> Dict[str, Any]:
-        """Send password changed confirmation"""
-        content = f'''
-<h2>Password Changed Successfully</h2>
-<p>Hi {full_name},</p>
+        content = f"""
+<h2>Password berhasil diubah</h2>
+<p>Halo {full_name},</p>
+<div class="success-box">Password Anda sudah diubah.</div>
+<p>Jika bukan Anda yang melakukannya, segera hubungi administrator.</p>
+<p style="text-align: center;"><a href="{self.app_url}/login" class="button">Masuk ke sistem</a></p>
+"""
+        return self.send_email(to=to, subject=f'Password diubah - {self.company_name}', html=self._base_template(content, 'Password diubah'))
 
-<div class="success-box">
-    ✅ Your password has been successfully changed.
-</div>
-
-<p>If you did not make this change, please contact your administrator immediately.</p>
-
-<p style="text-align: center;">
-    <a href="{self.app_url}/login" class="button">Login to ERP</a>
-</p>
-'''
-        return self.send_email(
-            to=to,
-            subject=f'Password Changed - {self.company_name}',
-            html=self._base_template(content, 'Password Changed')
-        )
-    
-    def send_low_stock_alert(
-        self, 
-        to: str | List[str], 
-        items: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
-        """Send low stock alert email"""
+    def send_low_stock_alert(self, to: str | List[str], items: List[Dict[str, Any]]) -> Dict[str, Any]:
         items_html = ''
         for item in items:
-            items_html += f'''
+            items_html += f"""
 <tr>
-    <td>{item.get('name', 'N/A')}</td>
-    <td>{item.get('sku', 'N/A')}</td>
-    <td style="color: #ef4444; font-weight: bold;">{item.get('current_stock', 0)}</td>
+    <td>{item.get('name', '-')}</td>
+    <td>{item.get('sku', '-')}</td>
+    <td style="color: #a12b2b; font-weight: bold;">{item.get('current_stock', 0)}</td>
     <td>{item.get('min_stock', 0)}</td>
 </tr>
-'''
-        
-        content = f'''
-<h2>⚠️ Low Stock Alert</h2>
-<p>The following items are running low on stock and need attention:</p>
-
+"""
+        content = f"""
+<h2>Peringatan stok menipis</h2>
+<p>Barang berikut stoknya sudah di bawah batas minimum:</p>
 <table class="data-table">
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th>SKU</th>
-            <th>Current Stock</th>
-            <th>Min Stock</th>
-        </tr>
-    </thead>
-    <tbody>
-        {items_html}
-    </tbody>
+    <thead><tr><th>Barang</th><th>Kode</th><th>Stok saat ini</th><th>Stok minimum</th></tr></thead>
+    <tbody>{items_html}</tbody>
 </table>
+<p style="text-align: center;"><a href="{self.app_url}/app/warehouse" class="button button-warning">Lihat persediaan</a></p>
+"""
+        return self.send_email(to=to, subject=f'Stok menipis - {self.company_name}', html=self._base_template(content, 'Stok menipis'))
 
-<p style="text-align: center;">
-    <a href="{self.app_url}/app/warehouse" class="button button-warning">View Inventory</a>
-</p>
-'''
-        return self.send_email(
-            to=to,
-            subject=f'⚠️ Low Stock Alert - {self.company_name}',
-            html=self._base_template(content, 'Low Stock Alert')
-        )
-    
-    def send_order_confirmation(
-        self,
-        to: str,
-        order_number: str,
-        customer_name: str,
-        items: List[Dict[str, Any]],
-        total: float
-    ) -> Dict[str, Any]:
-        """Send order confirmation email"""
+    def send_order_confirmation(self, to: str, order_number: str, customer_name: str,
+                                items: List[Dict[str, Any]], total: float) -> Dict[str, Any]:
         items_html = ''
         for item in items:
-            items_html += f'''
+            items_html += f"""
 <tr>
-    <td>{item.get('name', 'N/A')}</td>
+    <td>{item.get('name', '-')}</td>
     <td style="text-align: center;">{item.get('quantity', 0)}</td>
     <td style="text-align: right;">Rp {item.get('price', 0):,.0f}</td>
     <td style="text-align: right;">Rp {item.get('subtotal', 0):,.0f}</td>
 </tr>
-'''
-        
-        content = f'''
-<h2>Order Confirmation</h2>
-<p>Dear {customer_name},</p>
-<p>Thank you for your order! Here are the details:</p>
-
+"""
+        content = f"""
+<h2>Konfirmasi pesanan</h2>
+<p>Yth. {customer_name},</p>
+<p>Terima kasih atas pesanan Anda. Berikut rinciannya:</p>
 <div class="info-box">
-    <strong>Order Number:</strong> {order_number}<br>
-    <strong>Date:</strong> {datetime.now().strftime('%d %B %Y, %H:%M')}
+    <strong>No. pesanan:</strong> {order_number}<br>
+    <strong>Tanggal:</strong> {datetime.now().strftime('%d/%m/%Y %H:%M')}
 </div>
-
 <table class="data-table">
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th style="text-align: center;">Qty</th>
-            <th style="text-align: right;">Price</th>
-            <th style="text-align: right;">Subtotal</th>
-        </tr>
-    </thead>
+    <thead><tr><th>Barang</th><th style="text-align: center;">Jumlah</th><th style="text-align: right;">Harga</th><th style="text-align: right;">Subtotal</th></tr></thead>
     <tbody>
         {items_html}
-        <tr style="font-weight: bold; background: #f9fafb;">
-            <td colspan="3" style="text-align: right;">Total:</td>
+        <tr style="font-weight: bold; background: #f3f6f7;">
+            <td colspan="3" style="text-align: right;">Total</td>
             <td style="text-align: right;">Rp {total:,.0f}</td>
         </tr>
     </tbody>
 </table>
+<p style="text-align: center;"><a href="{self.app_url}/app/sales/orders/{order_number}" class="button">Lihat pesanan</a></p>
+"""
+        return self.send_email(to=to, subject=f'Konfirmasi pesanan {order_number} - {self.company_name}', html=self._base_template(content, 'Konfirmasi pesanan'))
 
-<p style="text-align: center;">
-    <a href="{self.app_url}/app/sales/orders/{order_number}" class="button button-success">View Order</a>
-</p>
-'''
-        return self.send_email(
-            to=to,
-            subject=f'Order Confirmation #{order_number} - {self.company_name}',
-            html=self._base_template(content, 'Order Confirmation')
-        )
-    
-    def send_production_complete(
-        self,
-        to: str | List[str],
-        work_order: str,
-        product_name: str,
-        quantity: int,
-        completed_by: str
-    ) -> Dict[str, Any]:
-        """Send production completion notification"""
-        content = f'''
-<h2>✅ Production Completed</h2>
-
-<div class="success-box">
-    Work Order <strong>{work_order}</strong> has been completed successfully!
-</div>
-
+    def send_production_complete(self, to: str | List[str], work_order: str, product_name: str,
+                                 quantity: int, completed_by: str) -> Dict[str, Any]:
+        content = f"""
+<h2>Produksi selesai</h2>
+<div class="success-box">SPK <strong>{work_order}</strong> sudah selesai.</div>
 <table class="data-table">
-    <tr>
-        <th>Product</th>
-        <td>{product_name}</td>
-    </tr>
-    <tr>
-        <th>Quantity</th>
-        <td>{quantity:,} units</td>
-    </tr>
-    <tr>
-        <th>Completed By</th>
-        <td>{completed_by}</td>
-    </tr>
-    <tr>
-        <th>Completed At</th>
-        <td>{datetime.now().strftime('%d %B %Y, %H:%M')}</td>
-    </tr>
+    <tr><th>Produk</th><td>{product_name}</td></tr>
+    <tr><th>Jumlah</th><td>{quantity:,}</td></tr>
+    <tr><th>Diselesaikan oleh</th><td>{completed_by}</td></tr>
+    <tr><th>Waktu selesai</th><td>{datetime.now().strftime('%d/%m/%Y %H:%M')}</td></tr>
 </table>
+<p style="text-align: center;"><a href="{self.app_url}/app/production/work-orders/{work_order}" class="button">Lihat detail</a></p>
+"""
+        return self.send_email(to=to, subject=f'Produksi selesai: {work_order} - {self.company_name}', html=self._base_template(content, 'Produksi selesai'))
 
-<p style="text-align: center;">
-    <a href="{self.app_url}/app/production/work-orders/{work_order}" class="button button-success">View Details</a>
-</p>
-'''
-        return self.send_email(
-            to=to,
-            subject=f'✅ Production Complete: {work_order} - {self.company_name}',
-            html=self._base_template(content, 'Production Complete')
-        )
-    
-    def send_approval_request(
-        self,
-        to: str,
-        approver_name: str,
-        request_type: str,
-        request_number: str,
-        requester: str,
-        description: str,
-        amount: Optional[float] = None
-    ) -> Dict[str, Any]:
-        """Send approval request notification"""
-        amount_html = f'<tr><th>Amount</th><td>Rp {amount:,.0f}</td></tr>' if amount else ''
-        
-        content = f'''
-<h2>🔔 Approval Required</h2>
-<p>Hi {approver_name},</p>
-<p>A new {request_type} requires your approval:</p>
-
+    def send_approval_request(self, to: str, approver_name: str, request_type: str, request_number: str,
+                              requester: str, description: str, amount: Optional[float] = None) -> Dict[str, Any]:
+        amount_html = f'<tr><th>Nilai</th><td>Rp {amount:,.0f}</td></tr>' if amount else ''
+        content = f"""
+<h2>Perlu persetujuan</h2>
+<p>Halo {approver_name},</p>
+<p>Ada {request_type} baru yang menunggu persetujuan Anda:</p>
 <table class="data-table">
-    <tr>
-        <th>Request Number</th>
-        <td><strong>{request_number}</strong></td>
-    </tr>
-    <tr>
-        <th>Type</th>
-        <td><span class="badge badge-info">{request_type}</span></td>
-    </tr>
-    <tr>
-        <th>Requested By</th>
-        <td>{requester}</td>
-    </tr>
-    <tr>
-        <th>Description</th>
-        <td>{description}</td>
-    </tr>
+    <tr><th>No. dokumen</th><td><strong>{request_number}</strong></td></tr>
+    <tr><th>Jenis</th><td><span class="badge">{request_type}</span></td></tr>
+    <tr><th>Diajukan oleh</th><td>{requester}</td></tr>
+    <tr><th>Keterangan</th><td>{description}</td></tr>
     {amount_html}
 </table>
+<p style="text-align: center;"><a href="{self.app_url}/app/approvals" class="button">Tinjau dan setujui</a></p>
+"""
+        return self.send_email(to=to, subject=f'Perlu persetujuan: {request_type} {request_number} - {self.company_name}', html=self._base_template(content, 'Perlu persetujuan'))
 
-<p style="text-align: center;">
-    <a href="{self.app_url}/app/approvals" class="button">Review & Approve</a>
-</p>
-'''
-        return self.send_email(
-            to=to,
-            subject=f'🔔 Approval Required: {request_type} #{request_number}',
-            html=self._base_template(content, 'Approval Request')
-        )
-    
-    def send_custom_notification(
-        self,
-        to: str | List[str],
-        subject: str,
-        title: str,
-        message: str,
-        button_text: Optional[str] = None,
-        button_url: Optional[str] = None,
-        box_type: str = 'info'  # info, warning, success
-    ) -> Dict[str, Any]:
-        """Send custom notification email"""
+    def send_custom_notification(self, to: str | List[str], subject: str, title: str, message: str,
+                                 button_text: Optional[str] = None, button_url: Optional[str] = None,
+                                 box_type: str = 'info') -> Dict[str, Any]:
         box_class = f'{box_type}-box'
-        
         button_html = ''
         if button_text and button_url:
-            button_html = f'''
-<p style="text-align: center;">
-    <a href="{button_url}" class="button">{ button_text}</a>
-</p>
-'''
-        
-        content = f'''
+            button_html = f'<p style="text-align: center;"><a href="{button_url}" class="button">{button_text}</a></p>'
+        content = f"""
 <h2>{title}</h2>
-
-<div class="{box_class}">
-    {message}
-</div>
-
+<div class="{box_class}">{message}</div>
 {button_html}
-'''
-        return self.send_email(
-            to=to,
-            subject=subject,
-            html=self._base_template(content, title)
-        )
+"""
+        return self.send_email(to=to, subject=subject, html=self._base_template(content, title))
 
 
 # Singleton instance
