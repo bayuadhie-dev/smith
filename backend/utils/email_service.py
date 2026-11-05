@@ -52,7 +52,7 @@ class EmailService:
             from models.settings import CompanyProfile
             p = CompanyProfile.query.first()
             if p and p.company_name:
-                addr = ', '.join(x for x in [p.address, p.city, p.state] if x)
+                addr = p.address or ', '.join(x for x in [p.city, p.state] if x)
                 return {'name': p.company_name, 'full_address': addr, 'phone': p.phone or '',
                         'email': p.email or '', 'website': p.website or '', 'logo': p.logo_path or ''}
         except Exception:
