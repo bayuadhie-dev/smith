@@ -353,7 +353,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
       )}
 
       <form onSubmit={handleSubmit} className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
-<div className="lg:col-span-full"><PendingAttachments files={attFiles} onChange={setAttFiles} /></div>
+<div className="lg:col-span-full"><PendingAttachments files={attFiles} onChange={setAttFiles} entityType="payment" entityId={editId || undefined} /></div>
         <div className="min-w-0 space-y-4">
           <Panel title={isStandalone ? 'Data transaksi' : `${partyWord} dan tanggal`}>
             <div className="grid gap-4 p-4 md:grid-cols-2">

@@ -1,3 +1,4 @@
+import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -379,6 +380,7 @@ export default function PRDetail() {
         )}
       </AccessibleModal>
       <AttachmentsPanel entityType="purchase_request" entityId={id} />
+      <RiwayatPanel table="purchase_requisitions" id={id} />
     </div>
   );
 }

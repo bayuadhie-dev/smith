@@ -1,3 +1,4 @@
+import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -331,6 +332,7 @@ export default function PaymentDetail() {
         )}
       </div>
       <AttachmentsPanel entityType="payment" entityId={id} />
+      <RiwayatPanel table="payments" id={id} />
     </div>
   );
 }

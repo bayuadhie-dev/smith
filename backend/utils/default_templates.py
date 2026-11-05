@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-10q'
+LAYOUT = 'v2-2026-11b'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 AUTO_NOTE_PREFIXES = ('Auto-generated', 'Migrasi otomatis')  # the font-unit migration only rescales values of auto-generated layouts
 
@@ -148,11 +148,16 @@ def words_box(left, top, width, h=9):
     ]
 
 
+def notes_side(left, top, width, h):
+    """Catatan di samping blok TOTAL: font kecil, bisa beberapa kalimat."""
+    return [L('Catatan:', left, top, width, 3.5, fs=7.5, bold=True), F('notes', left, top + 3.8, width, h - 3.8, fs=7.5)]
+
+
 def notes_line(left, top, width, h=12):
     return [L('Catatan:', left, top, 18, 4, fs=9, bold=True), F('notes', left + 18, top, width - 18, h, fs=9)]
 
 
-def signatures(left, width, top, labels, caption_paths=None, captions=None):
+def signatures(left, width, top, labels, caption_paths=None, captions=None, gap=26):
     """labels: list of static texts or ('field', path). 3 or 2 columns."""
     n = len(labels)
     w = width / n
@@ -163,15 +168,15 @@ def signatures(left, width, top, labels, caption_paths=None, captions=None):
             objs.append(F(label[1], x, top, w, 5, fs=9.5, align='center'))
         else:
             objs.append(L(label, x, top, w, 5 + 4.6 * label.count('\n'), fs=9.5, align='center'))
-        objs.append(LINE(x + w * 0.15, top + 26, w * 0.7, stroke_width=1))
+        objs.append(LINE(x + w * 0.15, top + gap, w * 0.7, stroke_width=1))
         cap = (caption_paths or {}).get(i)
         static_cap = (captions or {}).get(i)
         if static_cap:
-            objs.append(L(static_cap, x, top + 27.3, w, 4, fs=9.5, bold=True, align='center'))
+            objs.append(L(static_cap, x, top + gap + 1.3, w, 4, fs=9.5, bold=True, align='center'))
         elif cap:
-            objs.append(F(cap, x, top + 27.3, w, 4, fs=8, align='center', color=MUTED))
+            objs.append(F(cap, x, top + gap + 1.3, w, 4, fs=8, align='center', color=MUTED))
         else:
-            objs.append(L('Nama jelas & tanda tangan', x, top + 27.3, w, 4, fs=8, align='center', color=MUTED))
+            objs.append(L('Nama jelas & tanda tangan', x, top + gap + 1.3, w, 4, fs=8, align='center', color=MUTED))
     return objs
 
 
@@ -195,7 +200,7 @@ def build_invoice():
                                              ('PPN', 'tax_amount', False), ('TOTAL', 'total_amount', True),
                                              ('Sudah Dibayar', 'paid_amount', False), ('Sisa Tagihan', 'balance_due', True)]))
     o += flow(words_box(14, 141, 182, 14))
-    o += flow(notes_line(14, 159, 182, 24))
+    o += flow(notes_side(14, 98, 98, 39))
     o += flow(signatures(14, 182, 188, ['Diterima oleh,', 'Hormat kami,'], {1: 'company.name'}))
     return o, 'A4', 'portrait', None, None
 
@@ -209,19 +214,19 @@ def build_po():
           F('supplier_contact', 16, 55, 86, 4, fs=8.5, color=MUTED),
           F('supplier_tax_id', 16, 59.5, 86, 4, fs=8.5, color=MUTED)]
     o += meta_grid(104, 33, 34, 58, [('Dibutuhkan', 'required_date'), ('Estimasi Kedatangan', 'expected_date'),
-                                     ('Syarat Pembayaran', 'payment_terms')], 7)
-    o += [BOX(104, 54, 34, 11, fill=CELL), BOX(138, 54, 58, 11),
-          L('Kirim Ke', 105.5, 55.5, 32, 4, fs=9),
-          F('delivery_address', 139.5, 54.8, 55, 10, fs=8)]
-    o.append(TABLE('line_items', 14, 69, 182, [
+                                     ('Syarat Pembayaran', 'payment_terms')], 10.67)
+    o += [BOX(14, 66, 34, 9, fill=CELL), BOX(48, 66, 148, 9),
+          L('Kirim Ke', 15.5, 68.5, 32, 4, fs=9),
+          F('delivery_address', 49.5, 66.8, 145, 8, fs=8)]
+    o.append(TABLE('line_items', 14, 77, 182, [
         C('no', 'No.', 9, 'center'), C('code', 'Kode', 24), C('item_name', 'Deskripsi', 54),
         C('quantity', 'Qty', 18, 'right', 'num'), C('uom', 'Satuan', 15),
         C('unit_price_text', 'Harga', 30, 'right'), C('subtotal_text', 'Jumlah', 32, 'right'),
     ], min_rows=0, row_h=6.5, height=30, fs=9))
-    o += flow(po_totals(116, 104))
-    o += flow(words_box(14, 134, 182, 14))
-    o += flow([F('tax_note', 14, 150, 182, 8, fs=8.5, color=MUTED)])
-    o += flow(notes_line(14, 159, 182, 24))
+    o += flow(po_totals(116, 112))
+    o += flow(notes_side(14, 112, 98, 26))
+    o += flow(words_box(14, 142, 182, 14))
+    o += flow([F('tax_note', 14, 158, 182, 8, fs=8.5, color=MUTED)])
     o += flow(signatures(14, 182, 188, ['Dibuat oleh,', 'Disetujui oleh,'], captions={0: ' ', 1: ' '}))
     return o, 'A4', 'portrait', None, None
 
@@ -316,21 +321,20 @@ def build_kwitansi():
     # title is dynamic (penerimaan / pembayaran): replace the static label with a field
     o = [x for x in o if not (x.get('elementType') == 'label' and x.get('text') == 'BUKTI')]
     o.insert(4, F('title', 118, 7, 82, 7, fs=15, bold=True, align='right'))
-    o += meta_grid(10, 30, 38, 57, [('__dyn__', 'party_name'), ('Metode', 'payment_method')], 7)
-    o += meta_grid(105, 30, 32, 63, [('Kas/Bank', 'bank_account'), ('No. Referensi', 'reference_number')], 7)
-    # first label cell is dynamic (Diterima dari / Dibayarkan kepada)
-    o = [x for x in o if not (x.get('elementType') == 'label' and x.get('text') == '__dyn__')]
-    o.append(F('party_label', 11.5, 32, 35, 4, fs=9))
-    o += words_box(10, 46, 190)
-    o.append(TABLE('detail_rows', 10, 57, 190, [
+    o += [BOX(10, 30, 95, 24),
+          F('party_label', 12, 31, 91, 4, fs=7.5, color=MUTED),
+          F('party_name', 12, 35.5, 91, 17, fs=10, bold=True)]
+    o += meta_grid(107, 30, 30, 63, [('Metode', 'payment_method'), ('Kas/Bank', 'bank_account'), ('No. Referensi', 'reference_number')], 8)
+    o += words_box(10, 56, 190)
+    o.append(TABLE('detail_rows', 10, 67, 190, [
         C('no', 'No.', 10, 'center'), C('uraian', 'Uraian', 72), C('keterangan', 'Keterangan', 58),
         C('nilai', 'Nilai', 50, 'right', 'rp'),
     ], min_rows=0, row_h=6.5, height=30, fs=9))
-    o += flow([BOX(110, 88, 40, 7, fill=CELL), BOX(150, 88, 50, 7, fill=CELL),
-               L('TOTAL', 111.5, 89.5, 36, 4, fs=9.5, bold=True),
-               F('amount', 151.5, 89.5, 47, 4, fs=9.5, bold=True, align='right', fmt='rp')])
-    o += flow(notes_line(10, 98, 190))
-    o += flow(signatures(10, 190, 106, [('field', 'sign_1'), ('field', 'sign_2'), ('field', 'sign_3')]))
+    o += flow([BOX(110, 98, 40, 7, fill=CELL), BOX(150, 98, 50, 7, fill=CELL),
+               L('TOTAL', 111.5, 99.5, 36, 4, fs=9.5, bold=True),
+               F('amount', 151.5, 99.5, 47, 4, fs=9.5, bold=True, align='right', fmt='rp')])
+    o += flow(notes_side(10, 98, 96, 14))
+    o += flow(signatures(10, 190, 114, [('field', 'sign_1'), ('field', 'sign_2'), ('field', 'sign_3')], gap=16))
     return o, 'A5', 'landscape', 210, 148
 
 

@@ -806,6 +806,14 @@ def update_purchase_order(id):
             if date_field in data and data[date_field]:
                 setattr(po, date_field, datetime.fromisoformat(data[date_field]))
 
+        if has_grn and data.get('item_text'):
+            by_id = {i.id: i for i in po.items}
+            for row in data['item_text']:
+                it = by_id.get(row.get('id'))
+                if it:
+                    it.description = (row.get('description') or None)
+                    it.notes = (row.get('notes') or None)
+
         if 'items' in data or 'supplier_id' in data:
             if has_grn:
                 return jsonify({'error': 'Purchase Order sudah memiliki Penerimaan Barang (GRN), item dan supplier tidak bisa diubah'}), 400
@@ -937,7 +945,7 @@ def get_grns():
 @require_permission('purchasing.view', 'warehouse.view')
 def grn_next_number():
     from utils.helpers import peek_number
-    return jsonify({'next_number': peek_number('BPB', GoodsReceivedNote, 'grn_number', style='dashed')}), 200
+    return jsonify({'next_number': peek_number('BPB', GoodsReceivedNote, 'grn_number', style='slash')}), 200
 
 
 @purchasing_bp.route('/grn', methods=['POST'])
@@ -954,7 +962,7 @@ def create_grn():
                 return jsonify({'error': f'Nomor penerimaan {manual_grn} sudah dipakai'}), 400
             grn_number = manual_grn
         else:
-            grn_number = generate_number_v2('grn', 'BPB', GoodsReceivedNote, 'grn_number', style='dashed')
+            grn_number = generate_number_v2('grn', 'BPB', GoodsReceivedNote, 'grn_number', style='slash')
 
         # Multi-currency (2026-10-19): PO prices are in po.currency; stock
         # cost and the GR/IR journal must be IDR, using the rate locked at
@@ -1272,10 +1280,11 @@ def get_grn(grn_id):
                 'product_id': item.product_id,
                 'material_id': item.material_id,
                 'item_name': (
-                    item.product.name if item.product else
-                    (item.material.name if item.material else
-                     (item.po_item.description if item.po_item and item.po_item.description else f'Item #{item.id}'))
+                    (item.po_item.description if item.po_item and item.po_item.description else None) or
+                    (item.product.name if item.product else None) or
+                    (item.material.name if item.material else None) or f'Item #{item.id}'
                 ),
+                'master_name': (item.product.name if item.product else (item.material.name if item.material else None)),
                 'quantity_ordered': float(item.quantity_ordered),
                 'quantity_received': float(item.quantity_received),
                 'quantity_accepted': float(item.quantity_accepted or 0),

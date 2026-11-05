@@ -142,6 +142,7 @@ export default function PRForm() {
         navigate(`/app/purchasing/requisitions/${res.data.id}`);
       } else {
         await axiosInstance.put(`/api/purchasing/purchase-requisitions/${id}`, payload);
+        await uploadAttachments('purchase_request', id, attFiles);
         toast.success('PR berhasil disimpan');
         navigate(0);
       }
@@ -308,7 +309,7 @@ export default function PRForm() {
         </div>
       )}
 
-      {isNew && <PendingAttachments files={attFiles} onChange={setAttFiles} />}
+      <PendingAttachments files={attFiles} onChange={setAttFiles} entityType="purchase_request" entityId={isNew ? undefined : id} />
 
       {/* Form */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 space-y-4">

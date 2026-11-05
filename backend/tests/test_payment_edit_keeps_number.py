@@ -28,3 +28,14 @@ def test_edit_keeps_payment_number_and_voids_old(client, auth_headers, db_sessio
     assert r3.status_code == 201, r3.get_json()
     assert r3.get_json()['payment_number'] == 'PAY-KEEP-1'
     assert Payment.query.filter_by(payment_number='PAY-KEEP-1-V2').count() == 1
+
+
+def test_edit_records_history_and_hides_replaced(client, auth_headers, db_session):
+    from tests.test_finance_sync_regressions import _acc, _bank
+    bank = _bank(db_session); a = _acc(db_session, '9-1000')
+    old_id = _post(client, auth_headers, bank, a, 500, payment_number='PAY-HIST-1').get_json()['payment_id']
+    new_id = _post(client, auth_headers, bank, a, 700, replace_payment_id=old_id, reference_number='REK-123').get_json()['payment_id']
+    h = client.get(f'/api/history?table=payments&id={new_id}', headers=auth_headers).get_json()['history']
+    assert h and any(c['field'] == 'Jumlah' and c['new'] == 700 for c in h[0]['changes'])
+    ids = [p['id'] for p in client.get('/api/finance/payments', headers=auth_headers).get_json()['payments']]
+    assert new_id in ids and old_id not in ids

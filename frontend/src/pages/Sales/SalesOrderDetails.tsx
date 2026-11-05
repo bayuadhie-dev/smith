@@ -1,3 +1,4 @@
+import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
@@ -468,6 +469,7 @@ const SalesOrderDetails: React.FC = () => {
       )}
 
       <AttachmentsPanel entityType="sales_order" entityId={id} />
+      <RiwayatPanel table="sales_orders" id={id} />
     </div>
   );
 };

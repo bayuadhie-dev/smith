@@ -1,3 +1,4 @@
+import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -206,7 +207,8 @@ export default function PODetail() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {po.items.map((item: any) => {
-                const name = item.material_name || item.product_name || item.description || '(tanpa nama)';
+                const master = item.material_name || item.product_name;
+                const name = item.description || master || '(tanpa nama)';
                 const code = item.material_code || item.product_code;
                 return (
                   <tr
@@ -220,7 +222,8 @@ export default function PODetail() {
                         {item.material_id && <CubeIcon className="h-3.5 w-3.5 text-[#059669] flex-shrink-0" />}
                         {name}
                       </span>
-                      {code && <p className="text-xs text-gray-400 dark:text-gray-500 ml-5">{code}</p>}
+                      {(code || (master && master !== name)) && <p className="text-xs text-gray-400 dark:text-gray-500 ml-5">{[code, master !== name ? master : ''].filter(Boolean).join(' · ')}</p>}
+                      {item.notes && <p className="text-xs text-gray-500 ml-5 italic">Ket: {item.notes}</p>}
                     </td>
                     <td className="py-2 pr-3 text-right tabular-nums">{item.quantity.toLocaleString('id-ID')}</td>
                     <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{item.uom}</td>
@@ -351,6 +354,7 @@ export default function PODetail() {
         )}
       </AccessibleModal>
       <AttachmentsPanel entityType="purchase_order" entityId={id} />
+      <RiwayatPanel table="purchase_orders" id={id} />
     </div>
   );
 }

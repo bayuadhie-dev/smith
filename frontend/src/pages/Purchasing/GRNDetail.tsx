@@ -1,3 +1,4 @@
+import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
@@ -25,6 +26,8 @@ const QC_CONFIG: Record<string, { label: string; color: string }> = {
 interface InspectItem {
   id: number;
   item_name: string;
+  master_name?: string | null;
+  notes?: string | null;
   quantity_ordered: number;
   quantity_received: number;
   quantity_accepted: string;
@@ -55,6 +58,8 @@ export default function GRNDetail() {
         data.items.map((item: any) => ({
           id: item.id,
           item_name: item.item_name,
+          master_name: item.master_name,
+          notes: item.notes,
           quantity_ordered: item.quantity_ordered,
           quantity_received: item.quantity_received,
           quantity_accepted: String(item.quantity_accepted > 0 ? item.quantity_accepted : item.quantity_received),
@@ -289,6 +294,8 @@ export default function GRNDetail() {
               <div key={item.id} className={`grid grid-cols-12 gap-2 items-start p-2 rounded-lg ${rowColor}`}>
                 <div className="col-span-3">
                   <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{item.item_name}</p>
+                  {item.master_name && item.master_name !== item.item_name && <p className="text-xs text-gray-400">{item.master_name}</p>}
+                  {item.notes && <p className="text-xs text-gray-500 italic">Ket: {item.notes}</p>}
                   {item.batch_number && (
                     <p className="text-xs text-gray-400">Batch: {item.batch_number}</p>
                   )}
@@ -361,6 +368,7 @@ export default function GRNDetail() {
         )}
       </div>
       <AttachmentsPanel entityType="grn" entityId={id} />
+      <RiwayatPanel table="goods_received_notes" id={id} />
     </div>
   );
 }

@@ -343,6 +343,7 @@ const navigate = useNavigate()
             shipping_ppn_code: data.shipping_ppn_code || null,
             items: normalizedItems
           }).unwrap()
+          await uploadAttachments('sales_order', id, attFiles)
           toast.success('Sales Order updated successfully!')
           navigate('/app/sales/orders')
         } catch (error: any) {
@@ -486,7 +487,7 @@ const navigate = useNavigate()
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-{!isEdit && <PendingAttachments files={attFiles} onChange={setAttFiles} />}
+<PendingAttachments files={attFiles} onChange={setAttFiles} entityType="sales_order" entityId={isEdit ? id : undefined} />
         {/* Header Information */}
         <div className="card p-6">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Order Information</h3>

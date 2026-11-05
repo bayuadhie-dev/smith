@@ -1,3 +1,4 @@
+import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -199,6 +200,7 @@ const PurchaseInvoiceDetail: React.FC = () => {
         </table>
       )}
       <AttachmentsPanel entityType="purchase_invoice" entityId={id} />
+      <RiwayatPanel table="invoices" id={id} />
     </div>
   );
 };

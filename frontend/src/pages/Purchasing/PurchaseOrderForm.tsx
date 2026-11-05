@@ -36,6 +36,7 @@ interface PurchaseOrderFormData {
   currency: string
   notes?: string
   items: {
+    id?: number
     product_id: number | null
     material_id: number | null
     quantity: number
@@ -135,6 +136,7 @@ const navigate = useNavigate()
         currency: existingPO.currency || 'IDR',
         notes: existingPO.notes || '',
         items: (existingPO.items || []).map((item: any) => ({
+          id: item.id,
           product_id: item.product_id ?? null,
           material_id: item.material_id ?? null,
           quantity: item.quantity,
@@ -239,6 +241,7 @@ const navigate = useNavigate()
           uom: item.uom,
           description: (item.description || '').trim() || undefined,
           notes: (item.notes || '').trim() || undefined,
+          ...(item.id ? { id: item.id } : {}),
           ...(item.product_id ? { product_id: parseInt(item.product_id.toString()) } : {}),
           ...(item.material_id ? { material_id: parseInt(item.material_id.toString()) } : {})
         }))
@@ -247,10 +250,12 @@ const navigate = useNavigate()
       if (isEdit) {
         if (hasGrn) {
           // Items/supplier are locked server-side once a GRN exists - only send header fields
+          payload.item_text = data.items.filter(i => i.id).map(i => ({ id: i.id, description: (i.description || '').trim(), notes: (i.notes || '').trim() }))
           delete payload.items
           delete payload.supplier_id
         }
         await updatePO({ id, ...payload }).unwrap()
+        await uploadAttachments('purchase_order', id, attFiles)
         toast.success('Purchase Order updated successfully!')
       } else {
         const created: any = await createPO(payload).unwrap()
@@ -331,7 +336,7 @@ const navigate = useNavigate()
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-{!isEdit && <PendingAttachments files={attFiles} onChange={setAttFiles} />}
+<PendingAttachments files={attFiles} onChange={setAttFiles} entityType="purchase_order" entityId={isEdit ? id : undefined} />
         {/* Header Information */}
         <div className="card p-6">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Order Information</h3>

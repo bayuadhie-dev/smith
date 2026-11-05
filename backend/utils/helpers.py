@@ -2,13 +2,14 @@
 Utility helper functions
 """
 import random
+import re
 import string
 from datetime import datetime
 
 
 def generate_number(prefix, model=None, field_name='number', style='compact'):
     """Generate sequential number for entities.
-    style='compact': PREFIX-YYYYMM-00001 (bawaan). style='dashed': PREFIX-YYYY-MM-0001 (BPB-2026-11-0001, PI-2026-11-0001)."""
+    style='compact': PREFIX-YYYYMM-00001 (bawaan). style='dashed': PREFIX-YYYY-MM-0001 (PI-2026-11-0001); style='slash': PREFIX-YY/MM/0001 (BPB-26/11/0001)."""
     if model is None:
         # Fallback to old behavior for backward compatibility
         length = field_name if isinstance(field_name, int) else 6
@@ -58,11 +59,12 @@ def generate_number(prefix, model=None, field_name='number', style='compact'):
     # constraint on the very first insert.
     if counter.last_seq == 0:
         field = getattr(model, field_name)
-        like_pattern = f"{prefix}-{year}-{month}-%" if style == 'dashed' else f"{prefix}-{period}-%"
+        like_pattern = (f"{prefix}-{year[2:]}/{month}/%" if style == 'slash' else
+                        f"{prefix}-{year}-{month}-%" if style == 'dashed' else f"{prefix}-{period}-%")
         existing_numbers = db.session.query(field).filter(field.like(like_pattern)).all()
         for (value,) in existing_numbers:
             try:
-                seq = int(value.split('-')[-1])
+                seq = int(re.split(r'[-/]', value)[-1])
                 if seq > counter.last_seq:
                     counter.last_seq = seq
             except (ValueError, AttributeError):
@@ -72,6 +74,8 @@ def generate_number(prefix, model=None, field_name='number', style='compact'):
     new_seq = counter.last_seq
     db.session.flush()
 
+    if style == 'slash':
+        return f"{prefix}-{year[2:]}/{month}/{new_seq:04d}"
     if style == 'dashed':
         return f"{prefix}-{year}-{month}-{new_seq:04d}"
     return f"{prefix}-{period}-{new_seq:05d}"
@@ -87,12 +91,15 @@ def peek_number(prefix, model, field_name, style='compact'):
     last = counter.last_seq if counter else 0
     if last == 0:
         field = getattr(model, field_name)
-        pat = f"{prefix}-{period[:4]}-{period[4:]}-%" if style == 'dashed' else f"{prefix}-{period}-%"
+        pat = (f"{prefix}-{period[2:4]}/{period[4:]}/%" if style == 'slash' else
+               f"{prefix}-{period[:4]}-{period[4:]}-%" if style == 'dashed' else f"{prefix}-{period}-%")
         for (value,) in db.session.query(field).filter(field.like(pat)).all():
             try:
-                last = max(last, int(value.split('-')[-1]))
+                last = max(last, int(re.split(r'[-/]', value)[-1]))
             except (ValueError, AttributeError):
                 continue
+    if style == 'slash':
+        return f"{prefix}-{period[2:4]}/{period[4:]}/{last + 1:04d}"
     if style == 'dashed':
         return f"{prefix}-{period[:4]}-{period[4:]}-{last + 1:04d}"
     return f"{prefix}-{period}-{last + 1:05d}"

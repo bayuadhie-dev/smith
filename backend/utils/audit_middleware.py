@@ -133,8 +133,12 @@ def track_request():
     # Get user info - fresh for each request
     user_id, is_admin = get_user_info()
     
-    # Skip if admin
+    # Skip if admin (tapi tetap catat perubahan tabel transaksi utk panel Riwayat; baris super admin tidak tampil di Audit Trail)
     if is_admin:
+        try:
+            g.history_user_id = int(get_jwt_identity())
+        except Exception:
+            pass
         return
     
     # Only track if user is logged in
@@ -316,6 +320,10 @@ def _diff_object(obj):
     }
 
 
+HISTORY_TABLES = {'payments', 'invoices', 'purchase_orders', 'goods_received_notes', 'purchase_requisitions',
+                  'purchase_returns', 'sales_orders', 'expenses', 'reimbursements', 'purchase_down_payments'}
+
+
 def _capture_before_flush(session, flush_context, instances):
     """SQLAlchemy's documented pattern for audit-logging: `before_flush` is
     the one lifecycle hook where it's safe to `session.add()` NEW objects
@@ -331,14 +339,20 @@ def _capture_before_flush(session, flush_context, instances):
     if not has_request_context():
         return
     user_id = getattr(g, 'user_id', None)
+    history_only = False
     if not user_id:
-        return  # unauthenticated, or the acting user is super_admin (excluded) - see track_request()
+        user_id = getattr(g, 'history_user_id', None)
+        history_only = True
+        if not user_id:
+            return  # unauthenticated
 
     try:
         for obj in list(session.dirty):
             if not session.is_modified(obj):
                 continue
             diff = _diff_object(obj)
+            if diff and history_only and diff['table_name'] not in HISTORY_TABLES:
+                continue
             if diff:
                 session.add(AuditLog(
                     user_id=user_id, action='update', resource_type=diff['table_name'],
@@ -350,6 +364,8 @@ def _capture_before_flush(session, flush_context, instances):
                     request_url=request.url if request else None,
                     status='success', timestamp=datetime.utcnow(),
                 ))
+        if history_only:
+            return
         # 'create' rows are finalized in after_flush: the new object's
         # primary key isn't assigned until the INSERT actually runs, which
         # hasn't happened yet at before_flush time - logging resource_id as

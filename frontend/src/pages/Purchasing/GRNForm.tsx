@@ -150,6 +150,7 @@ export default function GRNForm() {
         const g = r.data
         setGrnNumber(g.grn_number)
         setPoId(g.po_id)
+        if (g.supplier_id) setSupplierId(g.supplier_id)
         setReceiptDate(String(g.receipt_date || '').split('T')[0] || todayISO())
         setDeliveryNote(g.delivery_note_number || '')
         setVehicle(g.vehicle_number || '')
@@ -162,7 +163,7 @@ export default function GRNForm() {
         ;(poData?.items || []).forEach((it: any) => { byId[it.id] = it })
         setRows((g.items || []).map((it: any): Row => ({
           key: `g-${it.id}`, po_item_id: it.po_item_id ?? null, product_id: it.product_id ?? null, material_id: it.material_id ?? null,
-          name: it.material_name || it.product_name || (it.po_item_id && byId[it.po_item_id] ? itemName(byId[it.po_item_id]) : (it.item_name || `Item #${it.id}`)),
+          name: it.item_name || (it.po_item_id && byId[it.po_item_id] ? itemName(byId[it.po_item_id]) : (it.material_name || it.product_name || `Item #${it.id}`)),
           code: it.material_code || it.product_code, uom: it.uom, ordered: Number(it.quantity_ordered || 0),
           receivedBefore: 0, qty: Number(it.quantity_received || 0), location_id: it.location_id ?? null,
           batch_number: it.batch_number || '', lot_number: it.lot_number || '',
@@ -219,6 +220,7 @@ export default function GRNForm() {
             production_date: r.production_date || null, expiry_date: r.expiry_date || null,
           })),
         })
+        await uploadAttachments('grn', id, attFiles)
         showSuccess('GRN diperbarui')
       } else {
         const created = await axiosInstance.post('/api/purchasing/grn', {
@@ -262,7 +264,7 @@ export default function GRNForm() {
       )}
 
       <form onSubmit={submit} className="space-y-6">
-<PendingAttachments files={attFiles} onChange={setAttFiles} />
+<PendingAttachments files={attFiles} onChange={setAttFiles} entityType="grn" entityId={isEdit ? id : undefined} />
         <div className="card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Nomor Penerimaan</label>

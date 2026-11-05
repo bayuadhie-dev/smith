@@ -715,6 +715,7 @@ def get_payments():
         if date_to:
             query = query.filter(Payment.payment_date <= date_to)
 
+        query = query.filter(db.or_(Payment.void_reason.is_(None), Payment.void_reason != 'Diubah menjadi transaksi baru'))
         payments = query.order_by(Payment.payment_date.desc(), Payment.id.desc()).all()
 
         def party_name(p):
@@ -764,6 +765,55 @@ def payment_next_number():
     from utils.helpers import peek_number
     prefix = 'RCP' if request.args.get('type') == 'receipt' else 'PAY'
     return jsonify({'next_number': peek_number(prefix, Payment, 'payment_number')}), 200
+
+
+
+def _record_payment_edit_history(old_payment, new_payment, old_snapshot, data, user_id):
+    """Ubah = void + buat ulang. Riwayat dipindah ke transaksi baru supaya yang terlihat satu transaksi dengan riwayat perubahan."""
+    import json
+    from models.settings_extended import AuditLog
+    new_pd = new_payment.payment_date
+    new_snapshot = {
+        'Tanggal': new_pd.date().isoformat() if hasattr(new_pd, 'date') else str(new_pd),
+        'Jumlah': float(new_payment.amount or 0), 'Metode': new_payment.payment_method,
+        'No. Referensi': new_payment.reference_number, 'Kas/Bank': new_payment.bank_account_id,
+        'Dibayarkan kepada': new_payment.paid_to, 'Catatan': new_payment.notes,
+        'Pihak': new_payment.customer_id or new_payment.supplier_id,
+        'Faktur': sorted(f"{a['invoice_id']}:{float(Decimal(str(a['amount'])))}" for a in (data.get('allocations') or [])),
+    }
+    old_v, new_v = {}, {}
+    for k, v in old_snapshot.items():
+        if new_snapshot.get(k) != v:
+            old_v[k] = v
+            new_v[k] = new_snapshot.get(k)
+    def _pretty(k, v):
+        if k == 'Kas/Bank' and v:
+            acc = db.session.get(Account, v)
+            return f'{acc.account_code} - {acc.account_name}' if acc else v
+        if k == 'Faktur' and isinstance(v, list):
+            out = []
+            for item in v:
+                iid, amt = item.split(':')
+                inv = db.session.get(Invoice, int(iid))
+                out.append(f"{inv.invoice_number if inv else iid}: {float(amt):,.0f}")
+            return ', '.join(out) or '-'
+        if k == 'Pihak' and v:
+            from models.sales import Customer
+            from models.purchasing import Supplier
+            c = db.session.get(Customer, v) if new_payment.customer_id else db.session.get(Supplier, v)
+            return (getattr(c, 'company_name', None) or getattr(c, 'name', None) or v) if c else v
+        return v
+    old_v = {k: _pretty(k, v) for k, v in old_v.items()}
+    new_v = {k: _pretty(k, v) for k, v in new_v.items()}
+    AuditLog.query.filter_by(resource_type='payments', resource_id=str(old_payment.id)).update({'resource_id': str(new_payment.id)})
+    from models.record_attachment import RecordAttachment
+    RecordAttachment.query.filter_by(entity_type='payment', entity_id=old_payment.id).update({'entity_id': new_payment.id})
+    db.session.add(AuditLog(
+        user_id=user_id, action='update', resource_type='payments', resource_id=str(new_payment.id),
+        old_values=json.dumps(old_v, default=str), new_values=json.dumps(new_v, default=str),
+        request_method='POST', request_url=request.url, status='success', timestamp=datetime.utcnow(),
+    ))
+    db.session.flush()
 
 
 def _void_payment_core(payment, user_id, reason):
@@ -946,6 +996,16 @@ def create_payment_core(data, user_id, commit=True):
                              transaction_type='payment', sap_bucket=payment_bucket):
             return jsonify({'error': f'Periode {payment_date_parsed.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa mencatat pembayaran di periode ini.'}), 400
 
+        old_snapshot = None
+        if old_payment:
+            old_snapshot = {
+                'Tanggal': old_payment.payment_date.date().isoformat() if hasattr(old_payment.payment_date, 'date') else str(old_payment.payment_date),
+                'Jumlah': float(old_payment.amount or 0), 'Metode': old_payment.payment_method,
+                'No. Referensi': old_payment.reference_number, 'Kas/Bank': old_payment.bank_account_id,
+                'Dibayarkan kepada': old_payment.paid_to, 'Catatan': old_payment.notes,
+                'Pihak': old_payment.customer_id or old_payment.supplier_id,
+                'Faktur': sorted(f'{al.invoice_id}:{float(al.amount)}' for al in old_payment.allocations),
+            }
         if old_payment:
             err = _void_payment_core(old_payment, user_id, f'Diubah menjadi transaksi baru')
             if err:
@@ -983,6 +1043,9 @@ def create_payment_core(data, user_id, commit=True):
             payment.currency = invoices[0].currency
         db.session.add(payment)
         db.session.flush()
+
+        if old_payment and old_snapshot is not None:
+            _record_payment_edit_history(old_payment, payment, old_snapshot, data, user_id)
 
         from utils.finance_helpers import (
             resolve_accounts_receivable, resolve_accounts_payable, post_pending_journal, fx_difference_line

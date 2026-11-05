@@ -1,3 +1,4 @@
+import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -200,6 +201,7 @@ const ExpenseDetail: React.FC = () => {
         </div>
       </div>
       <AttachmentsPanel entityType="expense" entityId={id} />
+      <RiwayatPanel table="expenses" id={id} />
     </div>
   );
 };
