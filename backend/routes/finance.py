@@ -1035,6 +1035,26 @@ def create_payment_core(data, user_id, commit=True):
         # RCP- for Penerimaan, PAY- for Pembayaran (separate number series)
         payment_number = manual_number or generate_number('RCP' if payment_type == 'receipt' else 'PAY', Payment, 'payment_number')
 
+        bank_acc = db.session.get(Account, data.get('bank_account_id')) if data.get('bank_account_id') else None
+        bank_ccy = ((bank_acc.currency if bank_acc else None) or 'IDR').upper()
+        fx_rate = None
+        if bank_ccy != 'IDR':
+            if invoices:
+                if any((i.currency or 'IDR').upper() != bank_ccy for i in invoices):
+                    db.session.rollback()
+                    return jsonify({'error': f'Akun kas/bank {bank_acc.account_code} bermata uang {bank_ccy}; faktur yang dibayar harus bermata uang {bank_ccy} juga'}), 400
+            else:
+                try:
+                    fx_rate = float(data.get('exchange_rate') or 0)
+                except (TypeError, ValueError):
+                    fx_rate = 0
+                if not fx_rate:
+                    from utils.exchange_rates import get_current_rate
+                    fx_rate = get_current_rate(f'{bank_ccy}_IDR') or 0
+                if fx_rate <= 0:
+                    db.session.rollback()
+                    return jsonify({'error': f'Kurs {bank_ccy} ke IDR belum tersedia. Isi kurs pada transaksi.'}), 400
+
         payment = Payment(
             payment_number=payment_number,
             payment_date=payment_date_parsed,
@@ -1053,6 +1073,9 @@ def create_payment_core(data, user_id, commit=True):
         )
         if invoices and (invoices[0].currency or 'IDR') != 'IDR':
             payment.currency = invoices[0].currency
+        if fx_rate:
+            payment.currency = bank_ccy
+            payment.exchange_rate = fx_rate
         db.session.add(payment)
         db.session.flush()
 
@@ -1094,6 +1117,7 @@ def create_payment_core(data, user_id, commit=True):
                                   'description': f'Pelunasan hutang - {inv.invoice_number}' if ap_idr > 0 else f'Pembalikan pelunasan hutang - {inv.invoice_number}'})
             memo = f'Payment {payment.payment_number} - ' + ', '.join(i.invoice_number for i in invoices)
         else:
+            idr_signed_sum = 0.0
             for l in lines_in:
                 amt = float(Decimal(str(l['amount'])))
                 desc = l.get('description') or payment.notes or f'{"Penerimaan" if is_receipt else "Pembayaran"} - {payment.payment_number}'
@@ -1113,7 +1137,12 @@ def create_payment_core(data, user_id, commit=True):
                     dr, cr = (0, amt) if amt > 0 else (-amt, 0)
                 else:
                     dr, cr = (amt, 0) if amt > 0 else (0, -amt)
+                if fx_rate:
+                    dr, cr = round(dr * fx_rate, 2), round(cr * fx_rate, 2)
+                    idr_signed_sum += round(amt * fx_rate, 2)
                 lines.append({'account_id': l['account_id'], 'debit': dr, 'credit': cr, 'description': desc})
+            if fx_rate:
+                total = idr_signed_sum
             memo = payment.notes or f'Payment {payment.payment_number}'
 
         if invoices and payment.currency != 'IDR':
@@ -3488,6 +3517,10 @@ def get_chart_of_accounts():
                 'balance': balance,
                 'is_header': a.is_header,
                 'is_cash_bank': a.is_cash_bank,
+                'currency': a.currency or 'IDR',
+                'bank_name': a.bank_name,
+                'account_number': a.account_number,
+                'account_holder': a.account_holder,
                 'level': a.level,
                 'is_active': a.is_active,
                 'description': a.description,
@@ -3575,6 +3608,8 @@ def create_account():
             is_cash_bank=bool(data.get('is_cash_bank', False)) and not data.get('is_header', False),
             parent_id=parent_id,
             level=2 if parent_id else 1,
+            currency=(data.get('currency') or 'IDR').strip().upper()[:10],
+            **_bank_info_fields(data, bool(data.get('is_cash_bank', False)) and not data.get('is_header', False)),
         )
 
         db.session.add(new_account)
@@ -3584,6 +3619,19 @@ def create_account():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+def _bank_info_fields(data, is_cash_bank, partial=False):
+    """Informasi bank hanya berlaku untuk akun Kas/Bank; akun lain selalu dikosongkan."""
+    keys = ('bank_name', 'account_number', 'account_holder')
+    out = {}
+    for k in keys:
+        if not is_cash_bank:
+            if not partial or k in data:
+                out[k] = None
+        elif k in data or not partial:
+            out[k] = ((data.get(k) or '').strip() or None)
+    return out
+
 
 @finance_bp.route('/chart-of-accounts/<string:code>', methods=['PUT'])
 @jwt_required()
@@ -3605,6 +3653,13 @@ def update_account(code):
             account.is_active = data['is_active']
         if 'is_header' in data:
             account.is_header = data['is_header']
+        if 'currency' in data:
+            new_ccy = (data.get('currency') or 'IDR').strip().upper()[:10]
+            if new_ccy != (account.currency or 'IDR') and AccountingEntry.query.filter_by(account_code=account.account_code).first():
+                return jsonify({'error': 'Mata uang akun tidak bisa diubah karena sudah ada jurnal pada akun ini'}), 400
+            account.currency = new_ccy
+        for k, v in _bank_info_fields(data, bool(account.is_cash_bank), partial=True).items():
+            setattr(account, k, v)
         if 'parent_code' in data:
             if not data['parent_code']:
                 account.parent_id = None

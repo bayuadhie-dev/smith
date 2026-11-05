@@ -117,7 +117,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
   }
 
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
-  const EMPTY_FORM = { code: '', name: '', type: '', balance: 0, description: '', is_header: false, parent_code: '', is_cash_bank: false }
+  const EMPTY_FORM = { code: '', name: '', type: '', balance: 0, description: '', is_header: false, parent_code: '', is_cash_bank: false, currency: 'IDR', bank_name: '', account_number: '', account_holder: '' }
   const [formData, setFormData] = useState(EMPTY_FORM)
   const codeTouched = React.useRef(false)
   const [codeHint, setCodeHint] = useState('')
@@ -148,6 +148,10 @@ const [accounts, setAccounts] = useState<Account[]>([])
       is_header: !!(account as any).is_header,
       parent_code: (account as any).parent_code || '',
       is_cash_bank: !!(account as any).is_cash_bank,
+      currency: (account as any).currency || 'IDR',
+      bank_name: (account as any).bank_name || '',
+      account_number: (account as any).account_number || '',
+      account_holder: (account as any).account_holder || '',
     })
     setShowAddModal(true)
   }
@@ -615,6 +619,25 @@ const [accounts, setAccounts] = useState<Account[]>([])
                   <input type="checkbox" checked={formData.is_cash_bank} onChange={(e) => setFormData({...formData, is_cash_bank: e.target.checked})} />
                   Akun Kas/Bank (muncul di pilihan pembayaran dan rekonsiliasi bank)
                 </label>
+              )}
+
+              {!formData.is_header && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Mata uang akun</label>
+                  <select className="input w-full" value={formData.currency} onChange={(e) => setFormData({...formData, currency: e.target.value})}>
+                    {['IDR', 'USD', 'CNY', 'EUR', 'JPY', 'SGD'].map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                  {formData.currency !== 'IDR' && <p className="mt-1 text-xs text-gray-500">Transaksi di akun ini memakai kurs ke Rupiah. Mata uang tidak bisa diubah setelah ada jurnal.</p>}
+                </div>
+              )}
+
+              {formData.is_cash_bank && !formData.is_header && (
+                <div className="space-y-3 rounded-md border border-gray-200 p-3 dark:border-gray-700">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Informasi Bank</p>
+                  <input className="input w-full" placeholder="Nama bank (mis. BCA)" value={formData.bank_name} onChange={(e) => setFormData({...formData, bank_name: e.target.value})} />
+                  <input className="input w-full" placeholder="Nomor rekening" value={formData.account_number} onChange={(e) => setFormData({...formData, account_number: e.target.value})} />
+                  <input className="input w-full" placeholder="Nama pemilik rekening" value={formData.account_holder} onChange={(e) => setFormData({...formData, account_holder: e.target.value})} />
+                </div>
               )}
 
               <div>

@@ -248,6 +248,10 @@ class Account(db.Model):
     is_cash_bank = db.Column(db.Boolean, default=False)  # marks accounts selectable as payment source (Accurate-style Kas/Bank type)
     normal_balance = db.Column(db.String(10), nullable=False)  # debit, credit
     description = db.Column(db.Text, nullable=True)
+    currency = db.Column(db.String(10), nullable=False, default='IDR', server_default='IDR')
+    bank_name = db.Column(db.String(100), nullable=True)
+    account_number = db.Column(db.String(60), nullable=True)
+    account_holder = db.Column(db.String(150), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

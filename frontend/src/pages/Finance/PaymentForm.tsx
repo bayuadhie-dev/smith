@@ -27,6 +27,9 @@ interface CashBankAccount {
   id: number;
   code: string;
   name: string;
+  currency?: string;
+  bank_name?: string | null;
+  account_number?: string | null;
 }
 
 interface ContraAccount {
@@ -131,7 +134,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   useEffect(() => {
     axiosInstance.get('/api/finance/chart-of-accounts').then((res) => {
       const all = res.data.accounts || [];
-      setCashBankAccounts(all.filter((a: any) => a.is_cash_bank && !a.is_header));
+      setCashBankAccounts(all.filter((a: any) => a.is_cash_bank && !a.is_header).map((a: any) => ({ id: a.id, code: a.code, name: a.name, currency: a.currency || 'IDR', bank_name: a.bank_name, account_number: a.account_number })));
       setContraAccounts(
         all
           .filter((a: any) => !a.is_cash_bank && !a.is_header)
@@ -254,6 +257,13 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     return n > i.balance_due + 0.01 || (n < 0 && -n > paidOf(i) + 0.01);
   });
   const bankName = cashBankAccounts.find((a) => a.id === Number(formData.bank_account_id));
+  const bankCurrency = (bankName?.currency || 'IDR').toUpperCase();
+  const [fxRate, setFxRate] = useState('');
+  useEffect(() => {
+    if (bankCurrency === 'IDR') { setFxRate(''); return; }
+    axiosInstance.get('/api/purchasing/exchange-rate', { params: { currency: bankCurrency } })
+      .then((r) => { if (r.data?.rate) setFxRate((cur) => cur || String(r.data.rate)); }).catch(() => {});
+  }, [bankCurrency]);
   const accName = (id: string) => {
     const a = contraAccounts.find((c) => c.id === Number(id));
     return a ? `${a.code} - ${a.name}` : '(akun belum dipilih)';
@@ -326,6 +336,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
         notes: formData.notes || undefined,
         paid_to: isStandalone ? (formData.paid_to.trim() || undefined) : undefined,
         bank_account_id: Number(formData.bank_account_id),
+        exchange_rate: bankCurrency !== 'IDR' && isStandalone && fxRate ? Number(fxRate) : undefined,
       });
       await uploadAttachments('payment', res.data?.payment_id, attFiles);
       navigate(res.data?.payment_id ? `/app/finance/payments/${res.data.payment_id}` : '/app/finance/pembayaran');
@@ -422,6 +433,17 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                   required
                 />
               </div>
+              {bankCurrency !== 'IDR' && (
+                <div className="md:col-span-3 rounded-md bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-900/20 dark:text-amber-100">
+                  <p className="mb-2">Akun ini bermata uang <strong>{bankCurrency}</strong>. {isStandalone ? `Nilai rincian diisi dalam ${bankCurrency}; jurnal dibukukan dalam Rupiah dengan kurs di bawah.` : `Hanya faktur ${bankCurrency} yang bisa dibayar dari akun ini.`}</p>
+                  {isStandalone && (
+                    <label className="flex items-center gap-2">Kurs 1 {bankCurrency} =
+                      <NumberInput className={`${inputCls} w-40 text-right`} value={fxRate} onChange={(e) => setFxRate(e.target.value)} />
+                      Rupiah
+                    </label>
+                  )}
+                </div>
+              )}
               <div>
                 <label className={labelCls}>Metode</label>
                 <select className={inputCls} value={formData.payment_method} onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })} required>
