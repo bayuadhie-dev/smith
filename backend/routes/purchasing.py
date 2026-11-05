@@ -1986,6 +1986,9 @@ def submit_for_approval(po_id):
         po.status = 'pending_approval'
         db.session.commit()
 
+        from utils.approval_email import send_workflow_emails_async
+        send_workflow_emails_async(workflow.id)
+
         return jsonify(success_response('api.success', data={'workflow_id': workflow.id})), 200
     except Exception as e:
         db.session.rollback()

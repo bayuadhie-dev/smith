@@ -428,10 +428,13 @@ def submit_for_review(workflow_id):
 @require_permission('approval.view')
 def review_workflow(workflow_id):
     """Review workflow (Manager Production) - can edit data"""
+    return review_core(workflow_id, get_jwt_identity(), request.get_json() or {})
+
+
+def review_core(workflow_id, current_user_id, data):
+    """Logika review bersama (dipakai route aplikasi dan tautan email)."""
     try:
-        current_user_id = get_jwt_identity()
         user = db.session.get(User, current_user_id)
-        data = request.get_json()
 
         # Idempotency (2026-10-17): row-locked so a genuinely concurrent
         # duplicate request (double-click firing two XHRs, a network retry)
@@ -489,7 +492,13 @@ def review_workflow(workflow_id):
                     pending_journal.description = je_changes['description']
         
         db.session.commit()
-        
+
+        try:
+            from utils.approval_email import send_workflow_emails_async
+            send_workflow_emails_async(workflow_id)
+        except Exception:
+            pass
+
         return jsonify({'message': 'Workflow reviewed and submitted for approval'}), 200
         
     except Exception as e:
@@ -502,10 +511,13 @@ def review_workflow(workflow_id):
 @require_permission('approval.approve')
 def approve_workflow(workflow_id):
     """Approve workflow (Finance/Accounting) - creates journal entry"""
+    return approve_core(workflow_id, get_jwt_identity(), request.get_json() or {})
+
+
+def approve_core(workflow_id, current_user_id, data):
+    """Logika approve bersama (dipakai route aplikasi dan tautan email)."""
     try:
-        current_user_id = get_jwt_identity()
         user = db.session.get(User, current_user_id)
-        data = request.get_json()
 
         # Idempotency (2026-10-17): row-locked - see review_workflow()'s
         # comment. Here the stakes are higher: a double-approve without
@@ -618,10 +630,13 @@ def approve_workflow(workflow_id):
 @require_permission('approval.reject')
 def reject_workflow(workflow_id):
     """Reject workflow"""
+    return reject_core(workflow_id, get_jwt_identity(), request.get_json() or {})
+
+
+def reject_core(workflow_id, current_user_id, data):
+    """Logika reject bersama (dipakai route aplikasi dan tautan email)."""
     try:
-        current_user_id = get_jwt_identity()
         user = db.session.get(User, current_user_id)
-        data = request.get_json()
         
         # Idempotency (2026-10-17): row-locked, see review_workflow()'s comment.
         workflow = db.session.get(ApprovalWorkflow, workflow_id, with_for_update=True) or abort(404)

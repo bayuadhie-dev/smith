@@ -439,6 +439,42 @@ body {{ font-family: Arial, 'Helvetica Neue', sans-serif; line-height: 1.55; col
 """
         return self.send_email(to=to, subject=f'Perlu persetujuan: {request_type} {request_number} - {self.company_name}', html=self._base_template(content, 'Perlu persetujuan'))
 
+    def send_approval_email(self, to: str, approver_name: str, step: str, details: Dict[str, Any],
+                            action_url: str, app_url: str) -> Dict[str, Any]:
+        """Email permintaan persetujuan/peninjauan dengan rincian lengkap dan tombol Setujui/Tolak."""
+        esc = lambda x: ('' if x is None else str(x)).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        review = step == 'review'
+        info = ''.join(f'<tr><th>{esc(k)}</th><td>{esc(v)}</td></tr>' for k, v in details.get('info', []))
+        items = ''
+        for i, it in enumerate(details.get('items', []), 1):
+            sub = f'<br><span style="color:#6b7780;font-size:12px;">{esc(it["master"])}</span>' if it.get('master') else ''
+            ket = f'<br><span style="color:#6b7780;font-size:12px;">Ket: {esc(it["keterangan"])}</span>' if it.get('keterangan') else ''
+            items += (f'<tr><td>{i}</td><td>{esc(it["nama"])}{sub}{ket}</td><td style="text-align:right;">{it["qty"]:g} {esc(it["uom"])}</td>'
+                      f'<td style="text-align:right;">{esc(it["harga"])}</td><td style="text-align:right;">{esc(it["total"])}</td></tr>')
+        items_html = (f'<table class="data-table"><thead><tr><th>#</th><th>Barang</th><th style="text-align:right;">Jumlah</th>'
+                      f'<th style="text-align:right;">Harga</th><th style="text-align:right;">Total</th></tr></thead><tbody>{items}</tbody></table>') if items else ''
+        totals = ''.join(f'<tr><td style="text-align:right;border:0;">{esc(k)}</td><td style="text-align:right;border:0;width:140px;{"font-weight:bold;" if k == "Total" else ""}">{esc(v)}</td></tr>'
+                         for k, v in details.get('totals', []))
+        totals_html = f'<table style="width:100%;border-collapse:collapse;">{totals}</table>' if totals else ''
+        notes = f'<div class="info-box"><strong>Catatan:</strong><br>{esc(details["notes"])}</div>' if details.get('notes') else ''
+        yes_label = 'Teruskan ke persetujuan' if review else 'Setujui'
+        content = f"""
+<h2>{'Perlu ditinjau' if review else 'Perlu persetujuan'}: {esc(details.get('title'))} {esc(details.get('number'))}</h2>
+<p>Halo {esc(approver_name)}, berikut rincian dokumen yang menunggu {'peninjauan' if review else 'persetujuan'} Anda. Total: <strong>{esc(details.get('amount'))}</strong></p>
+<table class="data-table">{info}</table>
+{items_html}
+{totals_html}
+{notes}
+<p style="text-align:center;margin-top:18px;">
+<a href="{action_url}?aksi=setuju" class="button">{yes_label}</a>
+&nbsp;
+<a href="{action_url}?aksi=tolak" class="button button-danger">Tolak</a>
+</p>
+<p style="font-size:12px;color:#6b7780;">Tombol membuka halaman konfirmasi, dan dokumen baru diproses setelah Anda menekan konfirmasi di sana. Tautan berlaku 3 hari dan hanya untuk Anda; jangan diteruskan. Atau <a href="{app_url}">buka di ERP</a>.</p>
+"""
+        return self.send_email(to=to, subject=f'{"Tinjau" if review else "Persetujuan"}: {details.get("title")} {details.get("number")} - {self.company_name}',
+                               html=self._base_template(content, 'Persetujuan'))
+
     def send_custom_notification(self, to: str | List[str], subject: str, title: str, message: str,
                                  button_text: Optional[str] = None, button_url: Optional[str] = None,
                                  box_type: str = 'info') -> Dict[str, Any]:

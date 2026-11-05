@@ -176,3 +176,17 @@ class PendingJournalEntry(db.Model):
     
     def __repr__(self):
         return f'<PendingJournalEntry for Workflow {self.workflow_id}>'
+
+
+class ApprovalEmailToken(db.Model):
+    """Tautan approve/reject sekali pakai yang dikirim lewat email (hanya hash token yang disimpan)."""
+    __tablename__ = 'approval_email_tokens'
+
+    id = db.Column(db.Integer, primary_key=True)
+    token_hash = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    workflow_id = db.Column(db.Integer, db.ForeignKey('approval_workflows.id', ondelete='CASCADE'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    step = db.Column(db.String(20), nullable=False)  # review / approval
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)

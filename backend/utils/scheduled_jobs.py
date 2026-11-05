@@ -141,6 +141,11 @@ def check_approval_escalations(app):
                     )
                 wf.escalated_at = now
                 escalated_count += 1
+                try:
+                    from utils.approval_email import send_workflow_emails
+                    send_workflow_emails(wf.id)
+                except Exception:
+                    pass
 
         # --- 2. PRApproval (fixed 48h window) ---
         pr_cutoff = now - timedelta(hours=48)

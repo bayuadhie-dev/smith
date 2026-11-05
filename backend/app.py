@@ -438,6 +438,7 @@ def create_app(config_class=Config):
     from routes.purchase_down_payments import purchase_down_payments_bp
     from routes.record_attachments import record_attachments_bp
     from routes.record_history import record_history_bp
+    from routes.approval_email import approval_email_bp
     from routes.purchase_return import purchase_return_bp
     from routes.warehouse_enhanced import warehouse_enhanced_bp
 
@@ -543,6 +544,7 @@ def create_app(config_class=Config):
     app.register_blueprint(pr_bp, url_prefix='/api/purchasing')
 
     app.register_blueprint(purchase_invoice_bp, url_prefix='/api/purchasing')
+    app.register_blueprint(approval_email_bp, url_prefix='/api/approval-email')
     app.register_blueprint(record_history_bp, url_prefix='/api/history')
     app.register_blueprint(record_attachments_bp, url_prefix='/api/attachments')
     app.register_blueprint(purchase_down_payments_bp, url_prefix='/api/purchasing/down-payments')

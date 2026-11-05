@@ -16,6 +16,7 @@ import Login from './pages/Auth/Login'
 import Register from './pages/Auth/Register'
 import ForgotPassword from './pages/Auth/ForgotPassword'
 import ResetPassword from './pages/Auth/ResetPassword'
+import ApprovalEmail from './pages/Public/ApprovalEmail'
 import OAuthCallback from './pages/Auth/OAuthCallback'
 import CompleteProfile from './pages/Auth/CompleteProfile'
 import Dashboard from './pages/Dashboard/Dashboard'
@@ -1028,7 +1029,8 @@ function App() {
                         location.pathname === '/register' ||
                         location.pathname === '/forgot-password' ||
                         location.pathname === '/reset-password' ||
-                        location.pathname === '/absensi'
+                        location.pathname === '/absensi' ||
+                        location.pathname.startsWith('/approval-email/')
 
   // Update document title dynamically based on company settings
   useDocumentTitle()
@@ -1076,6 +1078,7 @@ function App() {
             <Routes>
               {/* System Overview for non-authenticated users */}
               <Route path="/" element={!isAuthenticated ? <Landing /> : <RoleBasedRedirect />} />
+              <Route path="/approval-email/:token" element={<ApprovalEmail />} />
               <Route path="/absensi" element={<PublicAttendance />} />
               <Route path="/public/attendance" element={<PublicAttendance />} />
               <Route path="/public/leave-request" element={<StaffLeaveRequest />} />
