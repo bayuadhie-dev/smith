@@ -285,7 +285,7 @@ export default function PurchaseInvoiceForm() {
                         <td className="py-2 pr-3">
                           <NumberInput className="input-field text-right" value={l.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />
                           {!l.extra && Number(l.qty) > l.ordered - l.invoiced + 1e-9 && (
-                            <div className="mt-1 text-xs text-amber-600">Melebihi sisa PO ({(l.ordered - l.invoiced).toLocaleString('id-ID')}); ditandai selisih saat pencocokan 3 arah.</div>
+                            <div className="mt-1 text-xs text-amber-600">Melebihi sisa PO ({Math.max(0, l.ordered - l.invoiced).toLocaleString('id-ID')}); ditandai selisih saat pencocokan 3 arah.</div>
                           )}
                         </td>
                         <td className="py-2 pr-3">
