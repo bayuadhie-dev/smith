@@ -106,6 +106,7 @@ export default function PODetail() {
           </Link>
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">{po.po_number}</h1>
+<div className="my-2"><DocActions docType="purchase_order" docId={po.id} number={po.po_number} listPath="/app/purchasing/purchase-orders" /></div>
             <div className="flex items-center gap-2 mt-0.5">
               <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusCfg?.color}`}>{statusCfg?.label}</span>
               <span className="px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700">{ccy}</span>
@@ -354,7 +355,6 @@ export default function PODetail() {
           </div>
         )}
       </AccessibleModal>
-      <div className="flex justify-end"><DocActions docType="purchase_order" docId={po.id} number={po.po_number} listPath="/app/purchasing/purchase-orders" /></div>
       <AttachmentsPanel entityType="purchase_order" entityId={id} />
       <RiwayatPanel table="purchase_orders" id={id} />
     </div>

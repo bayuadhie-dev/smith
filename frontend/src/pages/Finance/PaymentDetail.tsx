@@ -137,6 +137,7 @@ export default function PaymentDetail() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{payment.payment_number}</h1>
+<div className="my-2"><DocActions docType="payment" docId={payment.id} number={payment.payment_number} listPath="/app/finance/pembayaran" /></div>
           <p className="text-gray-600 dark:text-gray-300">
             {isReceipt ? 'Penerimaan dari Pelanggan (AR)' : 'Pembayaran ke Supplier (AP)'}
           </p>
@@ -332,7 +333,6 @@ export default function PaymentDetail() {
           </div>
         )}
       </div>
-      <div className="flex justify-end"><DocActions docType="payment" docId={payment.id} number={payment.payment_number} listPath="/app/finance/pembayaran" /></div>
       <AttachmentsPanel entityType="payment" entityId={id} />
       <RiwayatPanel table="payments" id={id} />
     </div>

@@ -55,6 +55,7 @@ export default function DownPaymentDetail() {
               onClick={async () => { if (await confirmDialog('Batalkan uang muka ini? Jurnal pembalik akan dibuat. Tidak bisa dibatalkan bila sudah dialokasikan ke faktur.')) act(() => axiosInstance.post(`/api/purchasing/down-payments/${id}/cancel`), 'Uang muka dibatalkan.') }}>Batalkan</button>
           )}
         </>} />
+      <div><DocActions docType="purchase_down_payment" docId={dp.id} number={dp.dp_number} listPath="/app/purchasing/down-payments" /></div>
       <KpiStrip items={[
         { label: 'Jumlah', value: formatRupiah(dp.amount) },
         { label: 'Sudah dialokasikan', value: formatRupiah(dp.allocated_amount) },
@@ -115,7 +116,6 @@ export default function DownPaymentDetail() {
         </div>
       </Panel>
       {dp.notes && <p className="text-sm text-gray-600 dark:text-gray-300">Catatan: {dp.notes}</p>}
-      <div className="flex justify-end"><DocActions docType="purchase_down_payment" docId={dp.id} number={dp.dp_number} listPath="/app/purchasing/down-payments" /></div>
       <AttachmentsPanel entityType="purchase_down_payment" entityId={id} />
     </div>
   )

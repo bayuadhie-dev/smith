@@ -169,6 +169,7 @@ export default function GRNDetail() {
           </Link>
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">{grn.grn_number}</h1>
+<div className="my-2"><DocActions docType="grn" docId={grn.id} number={grn.grn_number} listPath="/app/purchasing/grn" /></div>
             <div className="flex items-center gap-2 mt-0.5">
               <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusCfg.color}`}>
                 {statusCfg.label}
@@ -368,7 +369,6 @@ export default function GRNDetail() {
           <div className="pt-2 text-xs text-gray-500 whitespace-pre-line">{grn.notes}</div>
         )}
       </div>
-      <div className="flex justify-end"><DocActions docType="grn" docId={grn.id} number={grn.grn_number} listPath="/app/purchasing/grn" /></div>
       <AttachmentsPanel entityType="grn" entityId={id} />
       <RiwayatPanel table="goods_received_notes" id={id} />
     </div>
