@@ -532,6 +532,10 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                       />
                     </div>
                     <input type="text" className={`${inputCls} col-span-7 md:col-span-4`} placeholder="Keterangan baris (opsional)" value={l.description} onChange={(e) => updateLine(idx, { description: e.target.value })} />
+                    <NumberInput currency className={`${inputCls} col-span-4 text-right md:col-span-2`} placeholder="Nilai" value={l.amount} onChange={(e) => updateLine(idx, { amount: e.target.value })} />
+                    <button type="button" className="col-span-1 text-gray-400 hover:text-red-600 disabled:opacity-30" disabled={lines.length === 1} onClick={() => setLines((ls) => ls.filter((_, i) => i !== idx))} title="Hapus baris">
+                      <XMarkIcon className="mx-auto h-5 w-5" />
+                    </button>
                     {l.account_id && isAdvanceAccount(l.account_id) && (
                       <div className="col-span-12 grid grid-cols-12 gap-2 rounded-md bg-gray-50 p-2 dark:bg-gray-700/40">
                         <select className={`${inputCls} col-span-4 md:col-span-3`} value={l.party_type || 'supplier'} onChange={(e) => updateLine(idx, { party_type: e.target.value, party_id: '' })}>
@@ -548,10 +552,6 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                         </div>
                       </div>
                     )}
-                    <NumberInput currency className={`${inputCls} col-span-4 text-right md:col-span-2`} placeholder="Nilai" value={l.amount} onChange={(e) => updateLine(idx, { amount: e.target.value })} />
-                    <button type="button" className="col-span-1 text-gray-400 hover:text-red-600 disabled:opacity-30" disabled={lines.length === 1} onClick={() => setLines((ls) => ls.filter((_, i) => i !== idx))} title="Hapus baris">
-                      <XMarkIcon className="mx-auto h-5 w-5" />
-                    </button>
                   </div>
                 ))}
                 <button type="button" className="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400" onClick={() => setLines((ls) => [...ls, { account_id: '', amount: '', description: '' }])}>
