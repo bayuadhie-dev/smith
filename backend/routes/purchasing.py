@@ -637,24 +637,6 @@ def create_purchase_order():
 
         db.session.commit()
 
-        # CREATE NOTIFICATION: Purchase Order Created
-        try:
-            notification = Notification(
-                user_id=user_id,
-                notification_type='success',
-                category='purchasing',
-                title='Purchase Order Created',
-                message=f'Purchase Order {po_number} created successfully for {po.supplier.company_name if po.supplier else "supplier"}',
-                reference_type='purchase_order',
-                reference_id=po.id,
-                priority='normal',
-                action_url=f'/app/purchasing/purchase-orders/{po.id}'
-            )
-            db.session.add(notification)
-            db.session.commit()
-        except Exception as notif_error:
-            print(f"Notification creation failed: {notif_error}")
-        
         return jsonify({'message': 'PO created', 'po_id': po.id, 'po_number': po_number}), 201
     except ValueError as ve:
         db.session.rollback()

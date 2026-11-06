@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BellIcon } from '@heroicons/react/24/outline';
-import { BellIcon as BellSolidIcon } from '@heroicons/react/24/solid';
+import { CheckIcon } from '@heroicons/react/24/solid';
 import axiosInstance from '../utils/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 
@@ -115,187 +115,112 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
     }
   };
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'success':
-        return '✓';
-      case 'warning':
-        return '⚠';
-      case 'error':
-        return '✗';
-      case 'info':
-        return 'ℹ';
-      default:
-        return '•';
+  const markAllRead = async () => {
+    try {
+      await axiosInstance.put('/api/notifications/mark-all-read');
+      setNotifications((ns) => ns.map((n) => ({ ...n, is_read: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Error marking all as read:', error);
     }
   };
 
-  const getNotificationColor = (type: string) => {
-    switch (type) {
-      case 'success':
-        return 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/30';
-      case 'warning':
-        return 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-900/30';
-      case 'error':
-        return 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/30';
-      case 'info':
-        return 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/30';
-      default:
-        return 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-700';
-    }
+  const TYPE_STYLE: Record<string, { bar: string; dot: string }> = {
+    success: { bar: 'border-l-emerald-600', dot: 'bg-emerald-600' },
+    warning: { bar: 'border-l-amber-500', dot: 'bg-amber-500' },
+    error: { bar: 'border-l-red-600', dot: 'bg-red-600' },
+    info: { bar: 'border-l-sky-600', dot: 'bg-sky-600' },
   };
+  const typeStyle = (t: string) => TYPE_STYLE[t] || { bar: 'border-l-gray-300', dot: 'bg-gray-400' };
 
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case 'urgent':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
-      case 'high':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
-      case 'normal':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'low':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-    }
+  const CATEGORY_LABEL: Record<string, string> = {
+    purchasing: 'Pembelian', finance: 'Keuangan', sales: 'Penjualan', production: 'Produksi', inventory: 'Gudang',
+    quality: 'Kualitas', maintenance: 'Maintenance', hr: 'HR', system: 'Sistem',
   };
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
-    if (seconds < 60) return 'just now';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    return `${Math.floor(seconds / 86400)}d ago`;
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (seconds < 60) return 'baru saja';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} menit lalu`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} jam lalu`;
+    if (seconds < 86400 * 7) return `${Math.floor(seconds / 86400)} hari lalu`;
+    return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
   };
 
   return (
     <div className={`relative ${className}`}>
-      {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg transition-colors"
-        aria-label="Notifications"
+        className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-600 rounded-lg transition-colors"
+        aria-label="Notifikasi"
       >
-        {unreadCount > 0 ? (
-          <BellSolidIcon className="h-6 w-6 text-blue-600 dark:text-blue-400 animate-pulse" />
-        ) : (
-          <BellIcon className="h-6 w-6" />
-        )}
-        
-        {/* Unread Badge */}
+        <BellIcon className="h-6 w-6" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+          <span className="absolute -top-0.5 -right-0.5 inline-flex min-w-[1.1rem] items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-semibold leading-[1.1rem] text-white">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
 
-      {/* Dropdown Panel */}
       {isOpen && (
         <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          />
-          
-          {/* Notification Panel */}
-          <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-[600px] overflow-hidden flex flex-col">
-            {/* Header */}
-            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Notifications
-                </h3>
-                {unreadCount > 0 && (
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {unreadCount} unread
-                  </span>
-                )}
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-0 mt-2 w-[26rem] max-w-[92vw] bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-[600px] overflow-hidden flex flex-col">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Notifikasi</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{unreadCount > 0 ? `${unreadCount} belum dibaca` : 'Semua sudah dibaca'}</p>
               </div>
-            </div>
-
-            {/* Notification List */}
-            <div className="overflow-y-auto flex-1">
-              {loading ? (
-                <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
-                  <p className="mt-2">Loading...</p>
-                </div>
-              ) : notifications.length === 0 ? (
-                <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-                  <BellIcon className="h-12 w-12 mx-auto mb-2 text-gray-400 dark:text-gray-600" />
-                  <p>No notifications</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      onClick={() => handleNotificationClick(notification)}
-                      className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors ${
-                        !notification.is_read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                      }`}
-                    >
-                      <div className="flex items-start space-x-3">
-                        {/* Icon */}
-                        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${getNotificationColor(notification.notification_type)}`}>
-                          <span className="text-sm font-bold">
-                            {getNotificationIcon(notification.notification_type)}
-                          </span>
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between">
-                            <p className={`text-sm font-medium text-gray-900 dark:text-white ${!notification.is_read ? 'font-semibold' : ''}`}>
-                              {notification.title}
-                            </p>
-                            {!notification.is_read && (
-                              <span className="ml-2 w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full flex-shrink-0"></span>
-                            )}
-                          </div>
-                          
-                          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                            {notification.message}
-                          </p>
-                          
-                          <div className="mt-2 flex items-center space-x-2">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPriorityBadge(notification.priority)}`}>
-                              {notification.priority}
-                            </span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {formatTimeAgo(notification.created_at)}
-                            </span>
-                            <span className="text-xs text-gray-400 dark:text-gray-500">
-                              • {notification.category}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              {unreadCount > 0 && (
+                <button onClick={markAllRead} className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400">
+                  <CheckIcon className="h-4 w-4" /> Tandai semua dibaca
+                </button>
               )}
             </div>
 
-            {/* Footer */}
-            {notifications.length > 0 && (
-              <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50">
-                <button
-                  onClick={() => {
-                    navigate('/app/notifications');
-                    setIsOpen(false);
-                  }}
-                  className="w-full text-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
-                >
-                  View all notifications
-                </button>
-              </div>
-            )}
+            <div className="overflow-y-auto flex-1">
+              {loading ? (
+                <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</div>
+              ) : notifications.length === 0 ? (
+                <div className="p-10 text-center text-gray-500 dark:text-gray-400">
+                  <BellIcon className="h-10 w-10 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
+                  <p className="text-sm">Belum ada notifikasi</p>
+                </div>
+              ) : (
+                <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {notifications.map((n) => {
+                    const st = typeStyle(n.notification_type);
+                    return (
+                      <li
+                        key={n.id}
+                        onClick={() => handleNotificationClick(n)}
+                        className={`cursor-pointer border-l-4 ${st.bar} px-4 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 ${!n.is_read ? 'bg-emerald-50/60 dark:bg-emerald-900/10' : ''}`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <p className={`text-sm text-gray-900 dark:text-white ${!n.is_read ? 'font-semibold' : 'font-medium'}`}>{n.title}</p>
+                          {!n.is_read && <span className={`mt-1.5 h-2 w-2 flex-shrink-0 rounded-full ${st.dot}`} />}
+                        </div>
+                        <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{n.message}</p>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {formatTimeAgo(n.created_at)} · {CATEGORY_LABEL[n.category] || n.category}
+                          {(n.priority === 'high' || n.priority === 'urgent') && <span className="ml-2 font-medium text-red-600 dark:text-red-400">{n.priority === 'urgent' ? 'Mendesak' : 'Penting'}</span>}
+                        </p>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+
+            <div className="px-4 py-2.5 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <button
+                onClick={() => { navigate('/app/notifications'); setIsOpen(false); }}
+                className="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400"
+              >
+                Lihat semua notifikasi
+              </button>
+            </div>
           </div>
         </>
       )}
