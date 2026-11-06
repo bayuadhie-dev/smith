@@ -87,8 +87,10 @@ def purchase_orders(date_from, date_to):
     for o in _between(PurchaseOrder.order_date, date_from, date_to, q).order_by(PurchaseOrder.order_date, PurchaseOrder.po_number):
         for i in o.items:
             sched = ';'.join(f'{s.expected_date.isoformat()}:{float(s.quantity):g}' for s in (i.schedules or []))
-            rows.append([o.po_number, _d(o.order_date), o.supplier.code if o.supplier else '', _d(o.required_date), o.currency or 'IDR',
-                         _item_code(i), _f(i.quantity), i.uom or '', _f(i.unit_price), sched, i.description or ''])
+            master = (i.material.name if i.material else None) or (i.product.name if i.product else None) or ''
+            rows.append([o.po_number, _d(o.order_date), o.supplier.code if o.supplier else '', o.supplier.company_name if o.supplier else '',
+                         _d(o.required_date), o.currency or 'IDR', _item_code(i), i.description or master, _f(i.quantity), i.uom or '',
+                         _f(i.unit_price), sched, o.notes or ''])
     return rows
 
 

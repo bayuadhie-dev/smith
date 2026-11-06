@@ -88,7 +88,7 @@ def create_zone():
 
 @warehouse_bp.route('/locations', methods=['GET'])
 @jwt_required()
-@require_permission('warehouse.view')
+@require_permission('warehouse.view', 'purchasing.view')
 def get_locations():
     """Get all warehouse locations"""
     try:

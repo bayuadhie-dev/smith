@@ -240,6 +240,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Dashboard', href: '/app/warehouse', icon: PresentationChartLineIcon },
             {
               name: 'Transaksi', icon: ArrowsRightLeftIcon, isSubMenu: true, subChildren: [
+                { name: 'Penerimaan Barang (GRN)', href: '/app/purchasing/grn' },
                 { name: 'Permintaan Barang', href: '/app/warehouse/material-issues' },
                 { name: 'Pemindahan Barang', href: '/app/warehouse/movements' },
                 { name: 'Input Stok Manual', href: '/app/warehouse/stock-input' },

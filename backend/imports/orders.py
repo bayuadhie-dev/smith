@@ -156,7 +156,7 @@ class SalesOrderImport(ImportKind):
 class PurchaseOrderImport(ImportKind):
     key = 'purchase_order'
     label = 'Pesanan Pembelian (PO)'
-    description = 'Impor PO draft beserta item dan jadwal kedatangan. Banyak baris dengan No. Pesanan sama menjadi satu PO.'
+    description = 'Impor PO draft beserta item dan estimasi kedatangan. Banyak baris dengan No. Pesanan sama menjadi satu PO.'
     view_permission = 'purchase_orders.view'
     create_permission = 'purchase_orders.create'
     group_field = 'no_pesanan'
@@ -164,25 +164,27 @@ class PurchaseOrderImport(ImportKind):
         Col('no_pesanan', 'No. Pesanan', example='PO-IMP-001'),
         Col('tanggal', 'Tanggal', required=True),
         Col('pemasok', 'Pemasok', required=True, aliases=('supplier', 'vendor')),
+        Col('nama_pemasok', 'Nama Pemasok', aliases=('nama supplier',)),
         Col('tanggal_dibutuhkan', 'Tanggal Dibutuhkan', aliases=('required date',)),
         Col('mata_uang', 'Mata Uang', aliases=('currency',)),
         Col('kode_barang', 'Kode Barang', required=True, aliases=('kode material',)),
+        Col('nama_barang', 'Nama Barang', aliases=('nama material', 'nama item')),
         Col('qty', 'Qty', required=True, aliases=('jumlah', 'kuantitas')),
         Col('satuan', 'Satuan'),
         Col('harga', 'Harga Satuan', required=True),
-        Col('jadwal', 'Jadwal Kedatangan', aliases=('jadwal',)),
+        Col('jadwal', 'Estimasi Kedatangan', aliases=('jadwal', 'jadwal kedatangan')),
         Col('keterangan', 'Keterangan'),
     ]
     sample_rows = [
-        ['PO-IMP-001', '2026-11-02', 'SUP-001', '2026-11-30', 'IDR', 'MAT-0001', 1000, 'KG', 15000, '2026-11-10:400;2026-11-25:600', 'Dikirim bertahap'],
-        ['PO-IMP-001', '2026-11-02', 'SUP-001', '', '', 'MAT-0002', 200, '', 8000, '', ''],
-        ['', '2026-11-03', 'SUP-002', '', 'USD', 'MAT-0003', 50, '', 12.5, '', 'No. kosong = nomor otomatis'],
+        ['PO-IMP-001', '2026-11-02', 'SUP-001', '', '2026-11-30', 'IDR', 'MAT-0001', '', 1000, 'KG', 15000, '2026-11-10:400;2026-11-25:600', 'Dikirim bertahap'],
+        ['PO-IMP-001', '2026-11-02', 'SUP-001', '', '', '', 'MAT-0002', '', 200, '', 8000, '', ''],
+        ['', '2026-11-03', 'SUP-002', '', '', 'USD', 'MAT-0003', '', 50, '', 12.5, '', 'No. kosong = nomor otomatis'],
     ]
     guide = [
-        'Pemasok: kode atau nama persis seperti di master pemasok.',
+        'Pemasok: kode atau nama persis seperti di master pemasok. Kolom Nama Pemasok dan Nama Barang hanya informasi (diisi saat ekspor, diabaikan saat impor).',
         'Kode Barang: kode produk atau material (dicari di keduanya). Satuan kosong = satuan utama barang.',
         'Mata Uang kosong = IDR. Kurs dikunci saat PO diajukan untuk persetujuan, bukan saat impor.',
-        'Jadwal Kedatangan (opsional): TANGGAL:QTY dipisah titik koma, contoh 2026-11-10:400;2026-11-25:600. Total jadwal tidak boleh melebihi Qty.',
+        'Estimasi Kedatangan (opsional): TANGGAL:QTY dipisah titik koma, contoh 2026-11-10:400;2026-11-25:600. Total jadwal tidak boleh melebihi Qty.',
         'PO yang diimpor berstatus draft, tidak otomatis disetujui.',
     ]
 

@@ -925,7 +925,7 @@ def delete_purchase_order(id):
 
 @purchasing_bp.route('/grn', methods=['GET'])
 @jwt_required()
-@require_permission('purchasing.view')
+@require_permission('purchasing.view', 'warehouse.view')
 def get_grns():
     try:
         grns = GoodsReceivedNote.query.order_by(GoodsReceivedNote.receipt_date.desc()).all()
@@ -1247,7 +1247,7 @@ def create_grn():
 
 @purchasing_bp.route('/grn/<int:grn_id>', methods=['GET'])
 @jwt_required()
-@require_permission('purchasing.view')
+@require_permission('purchasing.view', 'warehouse.view')
 def get_grn(grn_id):
     try:
         grn = db.session.get(GoodsReceivedNote, grn_id)
