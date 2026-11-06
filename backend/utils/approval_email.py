@@ -135,6 +135,8 @@ def send_workflow_emails(workflow_id):
 def send_workflow_emails_async(workflow_id):
     from flask import current_app
     app = current_app._get_current_object()
+    if app.config.get('TESTING'):
+        return
 
     def run():
         with app.app_context():
