@@ -1239,6 +1239,11 @@ def create_grn():
         except Exception:
             pass  # requeue is best-effort, never blocks GRN creation
 
+        try:
+            from utils.notify_events import notify_grn_received
+            notify_grn_received(grn)
+        except Exception:
+            pass
         return jsonify({'message': 'GRN created', 'grn_id': grn.id, 'grn_number': grn_number}), 201
     except Exception as e:
         db.session.rollback()

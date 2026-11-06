@@ -247,6 +247,15 @@ def register_scheduled_jobs(app):
         id='refresh_exchange_rates',
         replace_existing=True,
     )
+    from utils.notify_events import notify_due_invoices
+    scheduler.add_job(
+        func=lambda: notify_due_invoices(app),
+        trigger='cron',
+        hour=8,
+        minute=0,
+        id='notify_due_invoices',
+        replace_existing=True,
+    )
     from datetime import datetime, timedelta
     scheduler.add_job(
         func=lambda: refresh_exchange_rates(app),

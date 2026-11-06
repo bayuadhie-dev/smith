@@ -615,6 +615,12 @@ def approve_core(workflow_id, current_user_id, data):
             except Exception:
                 pass
 
+        try:
+            from utils.notify_events import notify_workflow_result
+            notify_workflow_result(workflow_id, 'approve')
+        except Exception:
+            pass
+
         return jsonify({
             'message': 'Workflow approved and journal entry created',
             'journal_entry_id': workflow.journal_entry_id
@@ -683,6 +689,12 @@ def reject_core(workflow_id, current_user_id, data):
         
         db.session.commit()
         
+        try:
+            from utils.notify_events import notify_workflow_result
+            notify_workflow_result(workflow_id, 'reject')
+        except Exception:
+            pass
+
         return jsonify({'message': 'Workflow rejected'}), 200
         
     except Exception as e:

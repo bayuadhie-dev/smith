@@ -138,5 +138,10 @@ def send_workflow_emails_async(workflow_id):
 
     def run():
         with app.app_context():
+            try:
+                from utils.notify_events import notify_workflow_pending
+                notify_workflow_pending(workflow_id)
+            except Exception:
+                pass
             send_workflow_emails(workflow_id)
     threading.Thread(target=run, daemon=True).start()
