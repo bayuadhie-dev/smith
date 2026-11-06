@@ -11,7 +11,9 @@ import { showError, showSuccess } from '../../components/ui/Toast'
 const PPN_RATES: Record<string, number> = { Y: 11, A: 1.1, B: 1.2, L: 12 }
 
 interface Line {
-  po_item_id: number
+  po_item_id: number | null
+  extra?: boolean
+  account_id?: string
   name: string
   code?: string
   uom: string
@@ -43,6 +45,10 @@ export default function PurchaseInvoiceForm() {
   const [poId, setPoId] = useState<number | null>(params.get('po_id') ? Number(params.get('po_id')) : null)
   const [po, setPo] = useState<any>(null)
   const [lines, setLines] = useState<Line[]>([])
+  const [expenseAccounts, setExpenseAccounts] = useState<{ id: number; code: string; name: string }[]>([])
+  useEffect(() => {
+    axiosInstance.get('/api/finance/chart-of-accounts').then((r) => setExpenseAccounts((r.data.accounts || []).filter((a: any) => a.type === 'expense' && !a.is_header && a.is_active !== false).map((a: any) => ({ id: a.id, code: a.code, name: a.name })))).catch(() => {})
+  }, [])
   const [supplierInvoiceNumber, setSupplierInvoiceNumber] = useState('')
   const [supplierInvoiceDate, setSupplierInvoiceDate] = useState(todayISO())
   const [invoiceDate, setInvoiceDate] = useState(todayISO())
@@ -131,8 +137,8 @@ export default function PurchaseInvoiceForm() {
     if (!supplierInvoiceNumber.trim()) return showError('No. Faktur Pemasok wajib diisi')
     const items = lines.filter((l) => Number(l.qty) > 0)
     if (items.length === 0) return showError('Isi jumlah tagihan minimal satu baris')
-    const over = items.find((l) => Number(l.qty) > l.ordered - l.invoiced + 1e-9)
-    if (over) return showError(`${over.name}: jumlah melebihi sisa yang belum ditagih (${over.ordered - over.invoiced})`)
+    const badExtra = items.find((l) => l.extra && (!l.account_id || !(l.description || '').trim()))
+    if (badExtra) return showError('Baris tambahan wajib memilih akun dan mengisi keterangan')
     for (const d of openDps) {
       const v = Number(dpUse[d.id] || 0)
       if (v < 0 || v > d.remaining + 0.005) return showError(`Uang muka ${d.dp_number}: jumlah melebihi sisa (${d.remaining.toLocaleString('id-ID')})`)
@@ -148,7 +154,7 @@ export default function PurchaseInvoiceForm() {
         invoice_date: invoiceDate,
         due_date: dueDate || null,
         notes: notes || null,
-        items: items.map((l) => ({ po_item_id: l.po_item_id, quantity: Number(l.qty), unit_price: Number(l.price), ppn_code: l.ppn_code || '', description: (l.description || '').trim() || undefined })),
+        items: items.map((l) => ({ po_item_id: l.extra ? undefined : l.po_item_id, account_id: l.extra && l.account_id ? Number(l.account_id) : undefined, quantity: Number(l.qty), unit_price: Number(l.price), ppn_code: l.ppn_code || '', description: (l.description || '').trim() || undefined })),
       })
       showSuccess(res.data?.message || 'Faktur pembelian dibuat')
       const id = res.data?.invoice?.id
@@ -257,19 +263,30 @@ export default function PurchaseInvoiceForm() {
                   {lines.map((l, i) => {
                     const base = (Number(l.qty) || 0) * (Number(l.price) || 0)
                     return (
-                      <tr key={l.po_item_id}>
+                      <tr key={l.extra ? `x${i}` : l.po_item_id}>
                         <td className="py-2 pr-3">
-                          <div className="font-medium text-gray-900 dark:text-white">{l.name}</div>
-                          {l.code && <div className="text-xs text-gray-400">{l.code}</div>}
+                          {l.extra ? (
+                            <div className="min-w-[14rem]">
+                              <SearchableSelect options={expenseAccounts.map((a) => ({ id: a.id, name: `${a.code} - ${a.name}` }))} value={l.account_id ? Number(l.account_id) : null}
+                                onChange={(v: any) => update(i, { account_id: v ? String(v) : '' })} placeholder="Akun beban (mis. ongkos kirim)" />
+                              <button type="button" className="mt-1 text-xs text-red-600 hover:underline" onClick={() => setLines((ls) => ls.filter((_, idx) => idx !== i))}>Hapus baris</button>
+                            </div>
+                          ) : (<>
+                            <div className="font-medium text-gray-900 dark:text-white">{l.name}</div>
+                            {l.code && <div className="text-xs text-gray-400">{l.code}</div>}
+                          </>)}
                         </td>
                         <td className="py-2 pr-3">
                           <input className="input-field" value={l.description} onChange={(e) => update(i, { description: e.target.value })} placeholder="Keterangan baris" />
                         </td>
-                        <td className="py-2 pr-3 text-right tabular-nums">{l.ordered.toLocaleString('id-ID')} {l.uom}</td>
-                        <td className={`py-2 pr-3 text-right tabular-nums ${l.received < l.ordered ? 'text-amber-600' : ''}`}>{l.received.toLocaleString('id-ID')}</td>
-                        <td className="py-2 pr-3 text-right tabular-nums">{l.invoiced.toLocaleString('id-ID')}</td>
+                        <td className="py-2 pr-3 text-right tabular-nums">{l.extra ? '-' : `${l.ordered.toLocaleString('id-ID')} ${l.uom}`}</td>
+                        <td className={`py-2 pr-3 text-right tabular-nums ${!l.extra && l.received < l.ordered ? 'text-amber-600' : ''}`}>{l.extra ? '-' : l.received.toLocaleString('id-ID')}</td>
+                        <td className="py-2 pr-3 text-right tabular-nums">{l.extra ? '-' : l.invoiced.toLocaleString('id-ID')}</td>
                         <td className="py-2 pr-3">
                           <NumberInput className="input-field text-right" value={l.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />
+                          {!l.extra && Number(l.qty) > l.ordered - l.invoiced + 1e-9 && (
+                            <div className="mt-1 text-xs text-amber-600">Melebihi sisa PO ({(l.ordered - l.invoiced).toLocaleString('id-ID')}); ditandai selisih saat pencocokan 3 arah.</div>
+                          )}
                         </td>
                         <td className="py-2 pr-3">
                           <NumberInput currency className="input-field text-right" value={l.price as any} onChange={(e: any) => update(i, { price: e.target.value })} />
@@ -290,6 +307,10 @@ export default function PurchaseInvoiceForm() {
                 </tbody>
               </table>
             </div>
+            <button type="button" className="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400"
+              onClick={() => setLines((ls) => [...ls, { po_item_id: null, extra: true, name: '', uom: '', ordered: 0, received: 0, invoiced: 0, qty: 1, price: '', ppn_code: po?.is_taxable ? (po.ppn_code || 'Y') : '', description: '', account_id: '' }])}>
+              + Tambah baris di luar PO (ongkos kirim, biaya lain)
+            </button>
             <p className="text-xs text-gray-500">Qty tagih terisi dari barang yang sudah diterima dan belum ditagih. Menagih lebih dari yang diterima akan ditandai selisih saat pencocokan 3 arah.</p>
             {openDps.length > 0 && currency === 'IDR' && (
               <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">

@@ -1,3 +1,4 @@
+import DocActions from '../../components/DocActions'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
@@ -114,6 +115,7 @@ export default function DownPaymentDetail() {
         </div>
       </Panel>
       {dp.notes && <p className="text-sm text-gray-600 dark:text-gray-300">Catatan: {dp.notes}</p>}
+      <div className="flex justify-end"><DocActions docType="purchase_down_payment" docId={dp.id} number={dp.dp_number} listPath="/app/purchasing/down-payments" /></div>
       <AttachmentsPanel entityType="purchase_down_payment" entityId={id} />
     </div>
   )

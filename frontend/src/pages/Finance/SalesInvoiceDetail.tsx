@@ -1,3 +1,4 @@
+import DocActions from '../../components/DocActions'
 import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import React, { useEffect, useState } from 'react';
@@ -150,6 +151,7 @@ const SalesInvoiceDetail: React.FC = () => {
           </tbody>
         </table>
       )}
+      <div className="flex justify-end"><DocActions docType="sales_invoice" docId={data.id} number={data.invoice_number} listPath="/app/finance/invoices" /></div>
       <AttachmentsPanel entityType="sales_invoice" entityId={id} />
       <RiwayatPanel table="invoices" id={id} />
     </div>

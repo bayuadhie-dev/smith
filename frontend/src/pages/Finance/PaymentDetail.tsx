@@ -1,3 +1,4 @@
+import DocActions from '../../components/DocActions'
 import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import React, { useState, useEffect } from 'react';
@@ -331,6 +332,7 @@ export default function PaymentDetail() {
           </div>
         )}
       </div>
+      <div className="flex justify-end"><DocActions docType="payment" docId={payment.id} number={payment.payment_number} listPath="/app/finance/pembayaran" /></div>
       <AttachmentsPanel entityType="payment" entityId={id} />
       <RiwayatPanel table="payments" id={id} />
     </div>

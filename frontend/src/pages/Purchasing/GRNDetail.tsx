@@ -1,3 +1,4 @@
+import DocActions from '../../components/DocActions'
 import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useState, useEffect } from 'react';
@@ -367,6 +368,7 @@ export default function GRNDetail() {
           <div className="pt-2 text-xs text-gray-500 whitespace-pre-line">{grn.notes}</div>
         )}
       </div>
+      <div className="flex justify-end"><DocActions docType="grn" docId={grn.id} number={grn.grn_number} listPath="/app/purchasing/grn" /></div>
       <AttachmentsPanel entityType="grn" entityId={id} />
       <RiwayatPanel table="goods_received_notes" id={id} />
     </div>

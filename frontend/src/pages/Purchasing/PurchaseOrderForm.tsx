@@ -398,7 +398,6 @@ const navigate = useNavigate()
                 type="date"
                 {...register('required_date')}
                 className="input-field"
-                min={new Date().toISOString().split('T')[0]}
               />
             </div>
 

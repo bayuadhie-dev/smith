@@ -452,8 +452,12 @@ def create_purchase_invoice_core(data, user_id, commit=True):
     items_data = data.get('items', [])
     for idx, item_data in enumerate(items_data, 1):
         if not item_data.get('po_item_id'):
-            raise InvoiceInputError(f'Item {idx}: po_item_id is required. '
-                         'Every invoice line must reference a purchase order line item.')
+            # Baris tambahan di luar PO (ongkir, jasa, biaya lain): wajib akun beban dan keterangan.
+            acc = db.session.get(Account, item_data.get('account_id')) if item_data.get('account_id') else None
+            if not acc or acc.is_header or not acc.is_active:
+                raise InvoiceInputError(f'Item {idx}: baris tambahan di luar PO wajib memilih akun (bukan akun induk)')
+            if not (item_data.get('description') or '').strip():
+                raise InvoiceInputError(f'Item {idx}: baris tambahan di luar PO wajib diberi keterangan')
 
     from models.product import Product, Material
     from models.approval_workflow import PendingJournalEntry
@@ -471,7 +475,7 @@ def create_purchase_invoice_core(data, user_id, commit=True):
         # Item identity (material/product/description/uom) comes from the PO
         # line when the caller didn't send it - otherwise an inventory
         # purchase silently fell through to the EXPENSE debit below.
-        _poi = db.session.get(PurchaseOrderItem, item_data.get('po_item_id'))
+        _poi = db.session.get(PurchaseOrderItem, item_data.get('po_item_id')) if item_data.get('po_item_id') else None
         if _poi:
             if not item_data.get('material_id') and not item_data.get('product_id'):
                 item_data['material_id'] = getattr(_poi, 'material_id', None)
@@ -529,14 +533,14 @@ def create_purchase_invoice_core(data, user_id, commit=True):
         db.session.add(item)
 
         # Track quantity_invoiced on the PO line item
-        po_item = db.session.get(PurchaseOrderItem, item_data.get('po_item_id'))
+        po_item = db.session.get(PurchaseOrderItem, item_data.get('po_item_id')) if item_data.get('po_item_id') else None
         if po_item:
             po_item.quantity_invoiced = float(po_item.quantity_invoiced or 0) + float(item_data.get('quantity') or 0)
 
         # Release the matching budget commitment (reserved when the PO
         # was approved) by exactly the amount now becoming actual -
         # partial invoicing releases proportionally, not all-or-nothing.
-        if po:
+        if po and item_data.get('po_item_id'):
             from utils.finance_helpers import release_po_budget_commitment
             release_po_budget_commitment(po, items=[{
                 'product_id': item_data.get('product_id'),
@@ -554,7 +558,9 @@ def create_purchase_invoice_core(data, user_id, commit=True):
 
         is_inventory_item = False
         non_inventory_account_id = None
-        if material_id:
+        if not item_data.get('po_item_id'):
+            non_inventory_account_id = int(item_data['account_id'])   # baris tambahan: langsung ke akun pilihan
+        elif material_id:
             from utils.finance_helpers import is_non_inventory_material, non_inventory_expense_account
             if is_non_inventory_material(material_id):
                 non_inventory_account_id = non_inventory_expense_account(material_id)   # jasa/biaya: langsung ke beban, tanpa GR/IR

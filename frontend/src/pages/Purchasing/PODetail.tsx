@@ -1,3 +1,4 @@
+import DocActions from '../../components/DocActions'
 import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useState, useEffect } from 'react';
@@ -353,6 +354,7 @@ export default function PODetail() {
           </div>
         )}
       </AccessibleModal>
+      <div className="flex justify-end"><DocActions docType="purchase_order" docId={po.id} number={po.po_number} listPath="/app/purchasing/purchase-orders" /></div>
       <AttachmentsPanel entityType="purchase_order" entityId={id} />
       <RiwayatPanel table="purchase_orders" id={id} />
     </div>
