@@ -407,6 +407,7 @@ def _wrap_page(content_html, page_width_mm, page_height_mm):
             @page {{ size: {page_width_mm}mm {page_height_mm}mm; margin: 0 0 12mm 0;
                      @bottom-center {{ content: "Halaman " counter(page) " dari " counter(pages); font-family: Arial, sans-serif; font-size: 7pt; color: #888; }} }}
             @page :not(:first) {{ margin-top: 12mm; }}
+            * {{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
             body {{ margin: 0; padding: 0; font-family: Arial, sans-serif; }}
             /* height = page minus bottom margin: a full-page min-height always overflowed into a blank 2nd page */
             .tpd-page {{ position: relative; width: {page_width_mm}mm; min-height: {page_height_mm - 13}mm; }}
