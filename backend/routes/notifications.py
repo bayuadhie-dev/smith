@@ -161,10 +161,13 @@ def get_preferences():
     from utils.notify_events import EVENTS
     uid = int(get_jwt_identity())
     rows = {r.event_key: r for r in NotificationPreference.query.filter_by(user_id=uid).all()}
+    from models import User
+    from utils.notify_events import user_can_see_event
+    me = db.session.get(User, uid)
     return jsonify({'preferences': [
-        {'key': k, 'label': v[0], 'description': v[1], 'in_app_required': v[2],
+        {'key': k, 'label': v[0], 'description': v[1], 'in_app_required': v[2], 'email_supported': k == 'approval_request',
          'in_app': True if v[2] else (rows[k].in_app if k in rows else True), 'email': rows[k].email if k in rows else True}
-        for k, v in EVENTS.items()]})
+        for k, v in EVENTS.items() if user_can_see_event(me, k)]})
 
 
 @notifications_bp.route('/preferences', methods=['PUT'])
@@ -176,6 +179,10 @@ def update_preferences():
     for item in (request.get_json(silent=True) or {}).get('preferences', []):
         key = item.get('key')
         if key not in EVENTS:
+            continue
+        from models import User
+        from utils.notify_events import user_can_see_event
+        if not user_can_see_event(db.session.get(User, uid), key):
             continue
         row = NotificationPreference.query.filter_by(user_id=uid, event_key=key).first() or NotificationPreference(user_id=uid, event_key=key)
         if 'in_app' in item:

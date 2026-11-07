@@ -592,7 +592,14 @@ def update_qc_test_result(test_id):
             test.approved_at = get_local_now()
         
         db.session.commit()
-        
+
+        if test.result == 'failed':
+            try:
+                from utils.notify_events import notify_qc_failed
+                notify_qc_failed(test)
+            except Exception:
+                pass
+
         return jsonify({
             'message': 'QC test result updated',
             'test_id': test.id,

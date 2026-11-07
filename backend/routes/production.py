@@ -3303,6 +3303,12 @@ def complete_work_order(id):
         if integration_results:
             response['integration_results'] = integration_results
 
+        try:
+            from utils.notify_events import notify_wo_completed
+            notify_wo_completed(wo)
+        except Exception:
+            pass
+
         return jsonify(response), 200
     except Exception as e:
         db.session.rollback()

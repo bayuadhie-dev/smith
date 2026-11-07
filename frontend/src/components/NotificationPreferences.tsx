@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import axiosInstance from '../utils/axiosConfig'
 import toast from 'react-hot-toast'
 
-interface Pref { key: string; label: string; description: string; in_app_required: boolean; in_app: boolean; email: boolean }
+interface Pref { key: string; label: string; description: string; in_app_required: boolean; email_supported?: boolean; in_app: boolean; email: boolean }
 
 export default function NotificationPreferences() {
   const [prefs, setPrefs] = useState<Pref[]>([])
@@ -46,15 +46,15 @@ export default function NotificationPreferences() {
                 <input type="checkbox" checked={p.in_app} disabled={p.in_app_required || saving === p.key} onChange={(e) => toggle(p.key, 'in_app', e.target.checked)} title={p.in_app_required ? 'Wajib aktif' : undefined} />
               </td>
               <td className="text-center">
-                {p.key === 'approval_request' || p.key === 'invoice_due' || p.key === 'approval_result' || p.key === 'grn_received'
+                {p.email_supported
                   ? <input type="checkbox" checked={p.email} disabled={saving === p.key} onChange={(e) => toggle(p.key, 'email', e.target.checked)} />
-                  : null}
+                  : <span className="text-gray-300">-</span>}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">Permintaan persetujuan selalu muncul di lonceng. Saat ini email hanya dikirim untuk permintaan persetujuan; pilihan email untuk kejadian lain berlaku begitu fitur emailnya tersedia.</p>
+      <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">Permintaan persetujuan selalu muncul di lonceng. Email baru tersedia untuk permintaan persetujuan. Daftar di atas hanya memuat kejadian yang berkaitan dengan departemen Anda.</p>
     </div>
   )
 }

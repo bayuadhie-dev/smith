@@ -474,7 +474,13 @@ def create_leave_request():
         
         db.session.add(leave)
         db.session.commit()
-        
+
+        try:
+            from utils.notify_events import notify_leave_request
+            notify_leave_request(leave)
+        except Exception:
+            pass
+
         return jsonify({
             'message': 'Leave request created successfully',
             'leave': {

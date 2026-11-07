@@ -1394,6 +1394,12 @@ def submit_transfer_for_approval(sto_id):
         sto.status = 'pending_approval'
         db.session.commit()
 
+        try:
+            from utils.notify_events import notify_pending_async
+            notify_pending_async(workflow.id)
+        except Exception:
+            pass
+
         return jsonify({'message': 'Transfer submitted for approval', 'workflow_id': workflow.id}), 200
     except Exception as e:
         db.session.rollback()
@@ -1987,6 +1993,12 @@ def submit_adjustment_for_approval(id):
 
         adj.status = 'pending_approval'
         db.session.commit()
+
+        try:
+            from utils.notify_events import notify_pending_async
+            notify_pending_async(workflow.id)
+        except Exception:
+            pass
 
         return jsonify({'message': 'Adjustment submitted for approval', 'workflow_id': workflow.id}), 200
     except Exception as e:

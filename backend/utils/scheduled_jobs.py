@@ -247,7 +247,9 @@ def register_scheduled_jobs(app):
         id='refresh_exchange_rates',
         replace_existing=True,
     )
-    from utils.notify_events import notify_due_invoices
+    from utils.notify_events import notify_due_invoices, check_low_stock, check_batch_expiring, check_ar_overdue
+    for _fn, _id, _h, _m in ((check_low_stock, 'check_low_stock', 8, 5), (check_batch_expiring, 'check_batch_expiring', 8, 10), (check_ar_overdue, 'check_ar_overdue', 8, 15)):
+        scheduler.add_job(func=(lambda f=_fn: f(app)), trigger='cron', hour=_h, minute=_m, id=_id, replace_existing=True)
     scheduler.add_job(
         func=lambda: notify_due_invoices(app),
         trigger='cron',

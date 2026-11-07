@@ -565,7 +565,14 @@ def update_maintenance_record(record_id):
         record.updated_at = get_local_now()
         
         db.session.commit()
-        
+
+        if data.get('status') == 'in_progress' and record.maintenance_type in ('breakdown', 'emergency'):
+            try:
+                from utils.notify_events import notify_machine_breakdown
+                notify_machine_breakdown(record)
+            except Exception:
+                pass
+
         # Invalidate cache
         try:
             redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')

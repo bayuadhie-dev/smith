@@ -633,6 +633,12 @@ def update_shipping_order(order_id):
         order.updated_at = get_local_now()
         
         db.session.commit()
+        if data['status'] == 'delivered':
+            try:
+                from utils.notify_events import notify_shipment_delivered
+                notify_shipment_delivered(order)
+            except Exception:
+                pass
         return jsonify(success_response('api.success')), 200
     except Exception as e:
         db.session.rollback()

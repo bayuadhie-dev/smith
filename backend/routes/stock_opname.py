@@ -554,6 +554,12 @@ def submit_opname_for_approval(id):
 
         db.session.commit()
 
+        try:
+            from utils.notify_events import notify_pending_async
+            notify_pending_async(workflow.id)
+        except Exception:
+            pass
+
         return jsonify({'message': 'Opname submitted for approval', 'workflow_id': workflow.id}), 200
     except Exception as e:
         db.session.rollback()

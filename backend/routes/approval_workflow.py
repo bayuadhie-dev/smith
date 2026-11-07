@@ -416,6 +416,12 @@ def submit_for_review(workflow_id):
         
         db.session.commit()
         
+        try:
+            from utils.notify_events import notify_pending_async
+            notify_pending_async(workflow_id)
+        except Exception:
+            pass
+
         return jsonify({'message': 'Workflow submitted for review'}), 200
         
     except Exception as e:

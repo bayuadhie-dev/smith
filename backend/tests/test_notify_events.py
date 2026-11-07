@@ -59,3 +59,24 @@ def test_preferences_api_and_respected(client, auth_headers, db_session, test_us
     assert prefs['approval_result']['in_app'] is False and prefs['approval_request']['in_app'] is True  # wajib
     notify_workflow_result(wf.id, 'approve')
     assert Notification.query.filter(Notification.title.like('%disetujui')).count() == 0
+
+
+def test_department_visibility(app, db_session, test_user):
+    """Kejadian keuangan tidak terlihat dan tidak diterima user tanpa izin keuangan."""
+    from models import User, Notification
+    from models.user import Role, UserRole, RolePermission, Permission
+    from utils.notify_events import notify_event, user_can_see_event
+    from werkzeug.security import generate_password_hash
+    def mk(name, perm):
+        u = User(username=name, email=f'{name}@x.com', full_name=name, password_hash='x', is_active=True)
+        db_session.add(u); db_session.commit()
+        pm = Permission.query.filter_by(name=perm).first() or Permission(name=perm, resource=perm.split('.')[0], module=perm.split('.')[0], action='view', is_active=True)
+        db_session.add(pm); db_session.commit()
+        r = Role(name='R-' + name, is_active=True); db_session.add(r); db_session.commit()
+        db_session.add(RolePermission(role_id=r.id, permission_id=pm.id)); db_session.add(UserRole(user_id=u.id, role_id=r.id)); db_session.commit()
+        return u
+    fin, wh = mk('fin', 'finance.view'), mk('wh', 'warehouse.view')
+    assert user_can_see_event(fin, 'invoice_due') and not user_can_see_event(wh, 'invoice_due')
+    assert user_can_see_event(wh, 'low_stock') and not user_can_see_event(fin, 'low_stock')
+    notify_event('invoice_due', 'Faktur X jatuh tempo', 'x', ref_type='purchase_invoice', ref_id=1, extra_users=[wh.id])
+    assert Notification.query.filter_by(user_id=fin.id).count() == 1 and Notification.query.filter_by(user_id=wh.id).count() == 0
