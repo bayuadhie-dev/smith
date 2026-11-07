@@ -82,7 +82,7 @@ export default function PurchaseInvoiceForm() {
         const inclusive = Boolean(data.is_taxable && data.tax_inclusive && rate)
         setLines((data.items || []).map((it: any) => {
           const outstanding = Math.max(0, Number(it.quantity) - Number(it.quantity_invoiced || 0))
-          const toInvoice = Math.min(outstanding, Math.max(0, Number(it.quantity_received || 0) - Number(it.quantity_invoiced || 0)))
+          const toInvoice = it.is_non_inventory ? outstanding : Math.min(outstanding, Math.max(0, Number(it.quantity_received || 0) - Number(it.quantity_invoiced || 0)))
           const price = inclusive ? Math.round((Number(it.unit_price) / (1 + rate / 100)) * 100) / 100 : Number(it.unit_price)
           return {
             po_item_id: it.id,
@@ -91,7 +91,7 @@ export default function PurchaseInvoiceForm() {
             code: it.material_code || it.product_code,
             uom: it.uom,
             ordered: Number(it.quantity),
-            received: Number(it.quantity_received || 0),
+            received: it.is_non_inventory ? Number(it.quantity_invoiced || 0) : Number(it.quantity_received || 0),
             invoiced: Number(it.quantity_invoiced || 0),
             qty: toInvoice,
             price,

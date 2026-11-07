@@ -971,7 +971,7 @@ def _compute_three_way_match(invoice):
         acc_qty = grn_accepted.get(po_item.id, 0.0)
         from utils.finance_helpers import is_non_inventory_material
         if is_non_inventory_material(po_item.material_id):
-            rcv_qty = acc_qty = po_qty   # jasa/biaya tidak punya penerimaan barang (GRN)
+            rcv_qty = acc_qty = inv_qty   # jasa/biaya tidak punya GRN: kolom 'diterima' mengikuti faktur (PI), bukan PO
 
         price_variance = round(inv_price - po_price, 4)
         qty_vs_grn = round(inv_qty - acc_qty, 4)   # invoice bills more than accepted?
