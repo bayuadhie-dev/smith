@@ -1075,6 +1075,22 @@ def generate_from_work_order(work_order_id):
         return jsonify({'error': str(e)}), 500
 
 
+@document_bp.route('/generate-from-purchase-invoice/<int:invoice_id>', methods=['POST'])
+@jwt_required()
+@require_permission('documents.create')
+def generate_from_purchase_invoice(invoice_id):
+    try:
+        from utils.document_generator import generate_purchase_invoice_document
+        document = generate_purchase_invoice_document(invoice_id, get_jwt_identity())
+        return jsonify({'message': 'Faktur pembelian dibuat', 'document_id': document.id,
+                        'document_number': document.document_number}), 201
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 @document_bp.route('/generate-from-invoice/<int:invoice_id>', methods=['POST'])
 @jwt_required()
 @require_permission('documents.create')

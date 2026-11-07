@@ -231,6 +231,28 @@ def build_po():
     return o, 'A4', 'portrait', None, None
 
 
+def build_purchase_invoice():
+    o = header(14, 182, 'FAKTUR PEMBELIAN', lines=3)
+    o += [BOX(14, 33, 90, 32),
+          L('DARI PEMASOK', 16, 34, 86, 3.5, fs=7.5, color=MUTED),
+          F('supplier_name', 16, 38.5, 86, 5, fs=11, bold=True),
+          F('supplier_address', 16, 44.5, 86, 10, fs=8.5),
+          F('supplier_contact', 16, 55, 86, 4, fs=8.5, color=MUTED),
+          F('supplier_tax_id', 16, 59.5, 86, 4, fs=8.5, color=MUTED)]
+    o += meta_grid(104, 33, 34, 58, [('No. Faktur Pemasok', 'supplier_invoice_number'), ('Tgl Faktur Pemasok', 'supplier_invoice_date'),
+                                     ('Jatuh Tempo', 'due_date'), ('No. PO', 'po_number')], 8)
+    o.append(TABLE('line_items', 14, 69, 182, [
+        C('no', 'No.', 9, 'center'), C('code', 'Kode', 24), C('item_name', 'Deskripsi', 54),
+        C('quantity', 'Qty', 18, 'right', 'num'), C('uom', 'Satuan', 15),
+        C('unit_price_text', 'Harga', 30, 'right'), C('subtotal_text', 'Jumlah', 32, 'right'),
+    ], min_rows=0, row_h=6.5, height=30, fs=9))
+    o += flow(po_totals(116, 104))
+    o += flow(notes_side(14, 104, 98, 26))
+    o += flow(words_box(14, 134, 182, 14))
+    o += flow(signatures(14, 182, 160, ['Dibuat oleh,', 'Disetujui oleh,'], captions={0: ' ', 1: ' '}))
+    return o, 'A4', 'portrait', None, None
+
+
 def po_totals(left, top, label_w=40, value_w=40, row_h=6.5):
     objs = []
     rows = [('@subtotal_label', 'subtotal_text', False), ('Diskon', 'discount_text', False),
@@ -341,6 +363,7 @@ def build_kwitansi():
 DEFAULTS = {
     'invoice': ('Invoice Default', 'INVOICE_DEFAULT', build_invoice),
     'purchase_order': ('Purchase Order Default', 'PO_DEFAULT', build_po),
+    'purchase_invoice': ('Faktur Pembelian Default', 'PI_DEFAULT', build_purchase_invoice),
     'surat_jalan': ('Surat Jalan Default', 'SJ_DEFAULT', build_surat_jalan),
     'spk': ('SPK Default', 'SPK_DEFAULT', build_spk),
     'spk_batch': ('SPK Batch Default', 'SPK_BATCH_DEFAULT', build_spk_batch),

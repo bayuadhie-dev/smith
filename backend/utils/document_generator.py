@@ -644,6 +644,87 @@ def build_po_document_data(po):
     return document_data
 
 
+def generate_purchase_invoice_document(invoice_id, user_id):
+    """Printable Faktur Pembelian (purchase invoice)."""
+    from models.finance import Invoice
+
+    inv = db.session.get(Invoice, invoice_id)
+    if not inv or inv.invoice_type != 'purchase':
+        raise ValueError('Faktur pembelian tidak ditemukan')
+
+    ccy = (inv.currency or 'IDR').upper()
+    symbols = {'IDR': 'Rp', 'USD': 'US$', 'EUR': 'EUR', 'CNY': 'CNY', 'JPY': 'JPY', 'SGD': 'S$'}
+    words_name = {'IDR': 'rupiah', 'USD': 'dolar Amerika Serikat', 'EUR': 'euro', 'CNY': 'yuan', 'JPY': 'yen', 'SGD': 'dolar Singapura'}
+
+    def money(v):
+        n = float(v or 0)
+        decimals = 2 if (ccy != 'IDR' or n != int(n)) else 0
+        txt = f'{n:,.{decimals}f}'.replace(',', '_').replace('.', ',').replace('_', '.')
+        return f'{symbols.get(ccy, ccy)} {txt}'
+
+    def fmt_date(d):
+        return d.strftime('%d-%m-%Y') if d else ''
+
+    supplier = inv.supplier
+    po = inv.purchase_order
+    line_items, dpp, tax = [], 0.0, 0.0
+    for item in inv.items:
+        base = float(item.quantity or 0) * float(item.unit_price or 0) - float(item.discount_amount or 0)
+        dpp += base
+        tax += float(item.tax_amount or 0)
+        master = (item.product.name if item.product else (item.material.name if getattr(item, 'material', None) else ''))
+        line_items.append({
+            'no': len(line_items) + 1,
+            'code': (item.product.code if item.product else (getattr(item.material, 'code', '') if getattr(item, 'material', None) else '')),
+            'item_name': (item.description or master) + (('\n' + item.notes.strip()) if (item.notes or '').strip() else ''),
+            'quantity': float(item.quantity or 0), 'uom': item.uom or '',
+            'unit_price_text': money(item.unit_price), 'subtotal_text': money(base),
+        })
+    total = float(inv.total_amount or 0)
+    tax = tax or float(inv.tax_amount or 0)
+    contact = ' | '.join(x for x in [
+        f'Attn: {supplier.contact_person}' if supplier and supplier.contact_person else '',
+        f'Telp: {supplier.phone or supplier.mobile}' if supplier and (supplier.phone or supplier.mobile) else '',
+        supplier.email if supplier and supplier.email else ''] if x)
+    document_data = {
+        'document_number': inv.invoice_number,
+        'hdr_no': f'No. {inv.invoice_number}',
+        'hdr_date': f'Tanggal: {fmt_date(inv.invoice_date)}',
+        'hdr_extra': f'Mata Uang: {ccy}',
+        'document_date': fmt_date(inv.invoice_date),
+        'due_date': fmt_date(inv.due_date),
+        'supplier_invoice_number': inv.supplier_invoice_number or '',
+        'supplier_invoice_date': fmt_date(inv.supplier_invoice_date),
+        'po_number': po.po_number if po else '',
+        'supplier_name': supplier.company_name if supplier else '',
+        'supplier_address': getattr(supplier, 'address', '') or '' if supplier else '',
+        'supplier_contact': contact,
+        'supplier_tax_id': (f'NPWP: {supplier.tax_id}' if supplier and getattr(supplier, 'tax_id', None) else ''),
+        'notes': inv.notes or '',
+        'subtotal_label': 'Subtotal', 'tax_label': 'PPN',
+        'subtotal_text': money(dpp), 'discount_text': money(inv.discount_amount or 0), 'tax_text': money(tax), 'total_text': money(total),
+        'terbilang': (_terbilang(total).strip().capitalize() + ' ' + words_name.get(ccy, ccy)) if total >= 1 else f'Nol {words_name.get(ccy, ccy)}',
+        'line_items': line_items,
+        'company': get_company_context(),
+    }
+    template = ensure_default_template(user_id, 'purchase_invoice')
+    document = Document(
+        document_number=generate_number('DOC-PI', Document, 'document_number'),
+        document_title=f'Faktur Pembelian {inv.invoice_number} - {supplier.company_name if supplier else ""}',
+        document_type='purchase_invoice',
+        template_version_id=template.current_version_id,
+        document_data=document_data,
+        reference_type='purchase_invoice', reference_id=inv.id, reference_number=inv.invoice_number,
+        status='generated', created_by=user_id)
+    document.html_content = render_template_version_to_html(template.current_version, document_data)
+    db.session.add(document)
+    db.session.flush()
+    db.session.add(DocumentLog(document_id=document.id, activity_type='auto_generated',
+                               activity_description=f'Faktur pembelian {inv.invoice_number} dicetak', user_id=user_id))
+    db.session.commit()
+    return document
+
+
 def generate_purchase_order_document(po_id, user_id):
     """Printable Purchase Order."""
     from models.purchasing import PurchaseOrder

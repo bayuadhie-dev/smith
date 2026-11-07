@@ -1,4 +1,5 @@
 import DocActions from '../../components/DocActions'
+import DocumentGenerateButton from '../../components/DocumentGenerateButton'
 import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import React, { useEffect, useState } from 'react';
@@ -106,7 +107,7 @@ const PurchaseInvoiceDetail: React.FC = () => {
 
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{data.invoice_number}</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{data.supplier_name || '-'}</p>
-<div className="mb-4"><DocActions docType="purchase_invoice" docId={data.id} number={data.invoice_number} listPath="/app/purchasing/invoices" /></div>
+<div className="mb-4 flex flex-wrap items-center gap-2"><DocumentGenerateButton transactionType="purchase_invoice" transactionId={data.id} transactionNumber={data.invoice_number} label="Cetak Faktur" /><DocActions docType="purchase_invoice" docId={data.id} number={data.invoice_number} listPath="/app/purchasing/invoices" /></div>
 
       {data.on_hold && (
         <div className="mb-6 border border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800 rounded-lg p-4">

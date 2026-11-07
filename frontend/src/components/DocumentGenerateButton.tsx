@@ -4,7 +4,7 @@ import axiosInstance from '../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 
 interface DocumentGenerateButtonProps {
-  transactionType: 'sales_order' | 'work_order' | 'purchase_order' | 'invoice' | 'payment' | 'shipping_order';
+  transactionType: 'sales_order' | 'work_order' | 'purchase_order' | 'invoice' | 'purchase_invoice' | 'payment' | 'shipping_order';
   transactionId: number;
   transactionNumber: string;
   label?: string;
@@ -30,6 +30,8 @@ export default function DocumentGenerateButton({
         return { type: 'Purchase Order', endpoint: 'generate-from-purchase-order' };
       case 'invoice':
         return { type: 'Invoice', endpoint: 'generate-from-invoice' };
+      case 'purchase_invoice':
+        return { type: 'Faktur Pembelian', endpoint: 'generate-from-purchase-invoice' };
       case 'payment':
         return { type: 'Kwitansi', endpoint: 'generate-from-payment' };
       case 'shipping_order':
