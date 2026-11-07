@@ -46,3 +46,16 @@ def test_due_invoice_once_per_day(app, db_session, test_user):
     assert notify_due_invoices(app) == 1
     notify_due_invoices(app)
     assert Notification.query.filter(Notification.title.like('Faktur PI-N-1 lewat%')).count() == 1
+
+
+def test_preferences_api_and_respected(client, auth_headers, db_session, test_user, test_material):
+    from models import Notification
+    from utils.notify_events import notify_workflow_result
+    wf, po = _wf(db_session, test_user, test_material)
+    r = client.put('/api/notifications/preferences', headers=auth_headers, json={'preferences': [
+        {'key': 'approval_result', 'in_app': False, 'email': False}, {'key': 'approval_request', 'in_app': False}]})
+    assert r.status_code == 200
+    prefs = {p['key']: p for p in r.get_json()['preferences']}
+    assert prefs['approval_result']['in_app'] is False and prefs['approval_request']['in_app'] is True  # wajib
+    notify_workflow_result(wf.id, 'approve')
+    assert Notification.query.filter(Notification.title.like('%disetujui')).count() == 0

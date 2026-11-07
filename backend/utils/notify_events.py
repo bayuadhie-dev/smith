@@ -3,6 +3,24 @@ from datetime import datetime, timedelta
 
 from models import db
 
+# event_key -> (label, deskripsi, lonceng wajib?)
+EVENTS = {
+    'approval_request': ('Permintaan persetujuan', 'Dokumen menunggu peninjauan atau persetujuan Anda', True),
+    'approval_result': ('Hasil persetujuan', 'Dokumen yang Anda ajukan disetujui atau ditolak', False),
+    'grn_received': ('Barang diterima', 'Penerimaan barang baru siap difakturkan', False),
+    'invoice_due': ('Faktur jatuh tempo', 'Faktur pembelian jatuh tempo besok atau sudah lewat', False),
+}
+
+
+def pref_enabled(user_id, event_key, channel):
+    """channel: 'in_app' atau 'email'. Tanpa baris preferensi = aktif. Lonceng permintaan persetujuan selalu aktif."""
+    if channel == 'in_app' and EVENTS.get(event_key, ('', '', False))[2]:
+        return True
+    from models import NotificationPreference
+    row = NotificationPreference.query.filter_by(user_id=user_id, event_key=event_key).first()
+    return True if row is None else bool(getattr(row, channel))
+
+
 DOC_URL = {
     'purchase_order': '/app/purchasing/purchase-orders/{id}',
     'grn': '/app/purchasing/grn/{id}',
@@ -20,7 +38,7 @@ def users_with_permission(*perms):
             .filter(Permission.name.in_(perms), User.is_active.is_(True), Role.is_active.is_(True)).distinct().all())
 
 
-def _notify(user_ids, title, message, url=None, ref_type=None, ref_id=None, kind='info', priority='normal', category='purchasing', dedupe_day=False):
+def _notify(user_ids, title, message, url=None, ref_type=None, ref_id=None, kind='info', priority='normal', category='purchasing', dedupe_day=False, event_key=None):
     from utils.send_notification import send_notification
     from models import Notification
     seen = set()
@@ -28,6 +46,8 @@ def _notify(user_ids, title, message, url=None, ref_type=None, ref_id=None, kind
         if uid in seen or not uid:
             continue
         seen.add(uid)
+        if event_key and not pref_enabled(uid, event_key, 'in_app'):
+            continue
         if dedupe_day:
             start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
             if Notification.query.filter(Notification.user_id == uid, Notification.title == title, Notification.reference_type == ref_type,
@@ -56,7 +76,7 @@ def notify_workflow_pending(workflow_id):
         _notify(users, f'{"Perlu ditinjau" if step == "review" else "Perlu persetujuan"}: {label} {wf.transaction_number or wf.transaction_id}',
                 f'{label} {wf.transaction_number or ""} menunggu {"peninjauan" if step == "review" else "persetujuan"} Anda.',
                 url=_doc_url(wf.transaction_type, wf.transaction_id), ref_type=wf.transaction_type, ref_id=wf.transaction_id,
-                kind='warning', priority='high')
+                kind='warning', priority='high', event_key='approval_request')
     except Exception:
         db.session.rollback()
 
@@ -72,10 +92,10 @@ def notify_workflow_result(workflow_id, action):
         num = wf.transaction_number or wf.transaction_id
         if action == 'approve':
             _notify([wf.submitted_by], f'{label} {num} disetujui', f'{label} {num} sudah disetujui dan bisa diproses.',
-                    url=_doc_url(wf.transaction_type, wf.transaction_id), ref_type=wf.transaction_type, ref_id=wf.transaction_id, kind='success')
+                    url=_doc_url(wf.transaction_type, wf.transaction_id), ref_type=wf.transaction_type, ref_id=wf.transaction_id, kind='success', event_key='approval_result')
         else:
             _notify([wf.submitted_by], f'{label} {num} ditolak', f'{label} {num} ditolak. Alasan: {wf.rejection_reason or "-"}',
-                    url=_doc_url(wf.transaction_type, wf.transaction_id), ref_type=wf.transaction_type, ref_id=wf.transaction_id, kind='error', priority='high')
+                    url=_doc_url(wf.transaction_type, wf.transaction_id), ref_type=wf.transaction_type, ref_id=wf.transaction_id, kind='error', priority='high', event_key='approval_result')
     except Exception:
         db.session.rollback()
 
@@ -88,7 +108,7 @@ def notify_grn_received(grn):
         users = [u for u in users if u != getattr(grn, 'received_by', None)]
         _notify(users, f'Barang diterima: {grn.grn_number}',
                 f'Penerimaan {grn.grn_number}' + (f' untuk PO {grn.purchase_order.po_number}' if grn.purchase_order else '') + ' sudah dicatat.',
-                url=DOC_URL['grn'].format(id=grn.id), ref_type='grn', ref_id=grn.id, kind='info')
+                url=DOC_URL['grn'].format(id=grn.id), ref_type='grn', ref_id=grn.id, kind='info', event_key='grn_received')
     except Exception:
         db.session.rollback()
 
@@ -110,6 +130,6 @@ def notify_due_invoices(app):
             title = f'Faktur {inv.invoice_number} ' + ('lewat jatuh tempo' if overdue else 'jatuh tempo besok')
             _notify(finance, title, f'Sisa tagihan Rp {float(inv.balance_due or 0):,.0f}'.replace(',', '.') + f', jatuh tempo {inv.due_date.strftime("%d/%m/%Y")}.',
                     url=DOC_URL['purchase_invoice'].format(id=inv.id), ref_type='purchase_invoice', ref_id=inv.id,
-                    kind='error' if overdue else 'warning', priority='high' if overdue else 'normal', category='finance', dedupe_day=True)
+                    kind='error' if overdue else 'warning', priority='high' if overdue else 'normal', category='finance', dedupe_day=True, event_key='invoice_due')
             count += 1
         return count

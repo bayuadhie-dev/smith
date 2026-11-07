@@ -22,6 +22,7 @@ import {
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { useLanguage } from '../../contexts/LanguageContext';
+import NotificationPreferences from '../../components/NotificationPreferences';
 
 interface UserProfileData {
   id: number;
@@ -491,6 +492,8 @@ const UserProfile: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {isOwnProfile && <NotificationPreferences />}
 
           {/* Activity Info */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">

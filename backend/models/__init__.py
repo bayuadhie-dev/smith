@@ -53,7 +53,7 @@ from .warehouse_enhanced import (
     WarehouseAlert, WarehouseOptimization, StockMovementForecast
 )
 from .stock_opname import StockOpnameOrder, StockOpnameItem
-from .notification import Notification, SystemAlert
+from .notification import Notification, SystemAlert, NotificationPreference
 from .backup import BackupRecord
 from .integration import IntegrationLog, ThirdPartyAPI
 from .report_scheduler import ScheduledReport
@@ -147,7 +147,7 @@ __all__ = [
     # Maintenance models
     'MaintenanceSchedule', 'MaintenanceRecord', 'MaintenanceTask', 'EquipmentHistory',
     # Asset Management models
-    'Asset', 'DepreciationSchedule', 'AssetTransfer', 'AssetValuation', 'SparePart', 'SparePartMovement', 'FingerprintUser', 'FingerprintLog', 'AttendanceSchedule', 'AttendanceAdjustment', 'PurchaseDownPayment', 'RecordAttachment', 'PurchaseDownPaymentAllocation', 'MachineSparePart', 'SparePartRequest', 'SparePartRequestItem', 'MaintenanceSchedulePart',
+    'Asset', 'DepreciationSchedule', 'AssetTransfer', 'AssetValuation', 'SparePart', 'SparePartMovement', 'FingerprintUser', 'FingerprintLog', 'AttendanceSchedule', 'AttendanceAdjustment', 'PurchaseDownPayment', 'RecordAttachment', 'NotificationPreference', 'PurchaseDownPaymentAllocation', 'MachineSparePart', 'SparePartRequest', 'SparePartRequestItem', 'MaintenanceSchedulePart',
     # R&D models (legacy)
     'ResearchProject', 'Experiment', 'ProductDevelopment', 'RDMaterial', 'ResearchReport', 'Prototype', 'ProductTestResult',
     # RND models (new)

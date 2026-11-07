@@ -73,3 +73,16 @@ class SystemAlert(db.Model):
     # Relationships
     acknowledged_by_user = db.relationship('User', foreign_keys=[acknowledged_by])
     resolved_by_user = db.relationship('User', foreign_keys=[resolved_by])
+
+
+class NotificationPreference(db.Model):
+    """Preferensi notifikasi per user per jenis kejadian (lonceng dan email). Tidak ada baris = bawaan (aktif)."""
+    __tablename__ = 'notification_preferences'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    event_key = db.Column(db.String(50), nullable=False)
+    in_app = db.Column(db.Boolean, nullable=False, default=True)
+    email = db.Column(db.Boolean, nullable=False, default=True)
+
+    __table_args__ = (db.UniqueConstraint('user_id', 'event_key', name='unique_user_event_pref'),)

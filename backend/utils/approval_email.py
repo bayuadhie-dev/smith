@@ -119,7 +119,10 @@ def send_workflow_emails(workflow_id):
             return 0
         details = workflow_details(wf)
         sent = 0
+        from utils.notify_events import pref_enabled
         for user in approvers_for(wf, step):
+            if not pref_enabled(user.id, 'approval_request', 'email'):
+                continue
             raw = issue_token(wf, user, step)
             db.session.commit()
             r = svc.send_approval_email(user.email, user.full_name or user.username, step, details,

@@ -152,3 +152,36 @@ def push_unsubscribe():
     PushSubscription.query.filter_by(user_id=user_id, endpoint=endpoint).delete()
     db.session.commit()
     return jsonify({'message': 'Push subscription removed'})
+
+
+@notifications_bp.route('/preferences', methods=['GET'])
+@jwt_required()
+def get_preferences():
+    from models import NotificationPreference
+    from utils.notify_events import EVENTS
+    uid = int(get_jwt_identity())
+    rows = {r.event_key: r for r in NotificationPreference.query.filter_by(user_id=uid).all()}
+    return jsonify({'preferences': [
+        {'key': k, 'label': v[0], 'description': v[1], 'in_app_required': v[2],
+         'in_app': True if v[2] else (rows[k].in_app if k in rows else True), 'email': rows[k].email if k in rows else True}
+        for k, v in EVENTS.items()]})
+
+
+@notifications_bp.route('/preferences', methods=['PUT'])
+@jwt_required()
+def update_preferences():
+    from models import NotificationPreference
+    from utils.notify_events import EVENTS
+    uid = int(get_jwt_identity())
+    for item in (request.get_json(silent=True) or {}).get('preferences', []):
+        key = item.get('key')
+        if key not in EVENTS:
+            continue
+        row = NotificationPreference.query.filter_by(user_id=uid, event_key=key).first() or NotificationPreference(user_id=uid, event_key=key)
+        if 'in_app' in item:
+            row.in_app = True if EVENTS[key][2] else bool(item['in_app'])
+        if 'email' in item:
+            row.email = bool(item['email'])
+        db.session.add(row)
+    db.session.commit()
+    return get_preferences()
