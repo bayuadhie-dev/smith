@@ -1,3 +1,4 @@
+import { enterMovesDown } from '../../utils/enterNavigation'
 import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -189,7 +190,7 @@ export default function PurchaseInvoiceForm() {
         </div>
       </div>
 
-      <form onSubmit={submit} className="space-y-6">
+      <form onSubmit={submit} onKeyDown={enterMovesDown} className="space-y-6">
 <PendingAttachments files={attFiles} onChange={setAttFiles} />
         <div className="card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>

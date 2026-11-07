@@ -1,3 +1,4 @@
+import { enterMovesDown } from '../../utils/enterNavigation'
 import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -335,7 +336,7 @@ const navigate = useNavigate()
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} onKeyDown={enterMovesDown} className="space-y-6">
 <PendingAttachments files={attFiles} onChange={setAttFiles} entityType="purchase_order" entityId={isEdit ? id : undefined} />
         {/* Header Information */}
         <div className="card p-6">

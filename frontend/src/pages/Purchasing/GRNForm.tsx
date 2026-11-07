@@ -2,6 +2,7 @@ import { PendingAttachments, uploadAttachments } from '../../components/Attachme
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeftIcon, ChevronDownIcon, ChevronUpIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { enterMovesDown } from '../../utils/enterNavigation'
 import axiosInstance from '../../utils/axiosConfig'
 import SearchableSelect from '../../components/SearchableSelect'
 import NumberInput from '../../components/ui/NumberInput'
@@ -263,7 +264,7 @@ export default function GRNForm() {
         </div>
       )}
 
-      <form onSubmit={submit} className="space-y-6">
+      <form onSubmit={submit} onKeyDown={enterMovesDown} className="space-y-6">
 <PendingAttachments files={attFiles} onChange={setAttFiles} entityType="grn" entityId={isEdit ? id : undefined} />
         <div className="card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -369,7 +370,7 @@ export default function GRNForm() {
                               <div className="text-right tabular-nums">{num(r.qty).toLocaleString('id-ID')} {r.uom}</div>
                             ) : (
                               <>
-                                <NumberInput className="input-field text-right" value={r.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />
+                                <NumberInput data-col="qty" className="input-field text-right" value={r.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />
                                 {over && <p className="mt-1 text-xs text-amber-600">Melebihi sisa PO ({outstanding.toLocaleString('id-ID')})</p>}
                               </>
                             )}
@@ -388,7 +389,7 @@ export default function GRNForm() {
                           </td>
                           <td className="py-2 pr-3">
                             {isEdit ? <div className="text-sm">{r.batch_number || '-'}</div>
-                              : <input className="input-field" value={r.batch_number} onChange={(e) => update(i, { batch_number: e.target.value })} placeholder="No. batch" />}
+                              : <input data-col="batch" className="input-field" value={r.batch_number} onChange={(e) => update(i, { batch_number: e.target.value })} placeholder="No. batch" />}
                           </td>
                           <td className="py-2 whitespace-nowrap">
                             {!isEdit && r.po_item_id === null && <button type="button" onClick={() => removeRow(i)} className="p-1 text-xs text-red-600 hover:underline" title="Hapus baris">Hapus</button>}
@@ -401,7 +402,7 @@ export default function GRNForm() {
                           <tr key={`${r.key}-d`} className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
                             <td colSpan={8} className="p-3">
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <div><label className="block text-xs text-gray-500 mb-1">No. Lot</label><input className="input-field" value={r.lot_number} onChange={(e) => update(i, { lot_number: e.target.value })} /></div>
+                                <div><label className="block text-xs text-gray-500 mb-1">No. Lot</label><input data-col="lot" className="input-field" value={r.lot_number} onChange={(e) => update(i, { lot_number: e.target.value })} /></div>
                                 <div><label className="block text-xs text-gray-500 mb-1">Tanggal Produksi</label><input type="date" className="input-field" value={r.production_date} onChange={(e) => update(i, { production_date: e.target.value })} /></div>
                                 <div><label className="block text-xs text-gray-500 mb-1">Tanggal Kadaluarsa{r.requireExpiry ? ' *' : ''}</label><input type="date" className="input-field" value={r.expiry_date} onChange={(e) => update(i, { expiry_date: e.target.value })} /></div>
                               </div>
