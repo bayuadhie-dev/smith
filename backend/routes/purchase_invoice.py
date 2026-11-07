@@ -381,6 +381,38 @@ def create_purchase_invoice():
         return jsonify({'error': str(e)}), 500
 
 
+AUTO_GRN_NOTE = 'Otomatis dari faktur pembelian'
+
+
+def _auto_grn_for_non_inventory(invoice, po, items_data, user_id, receipt_date):
+    """Barang biaya/jasa (non-persediaan) tidak punya penerimaan fisik. Supaya PO, nomor BPB, dan pelacakan tetap
+    sejajar dengan faktur, sistem membuat GRN otomatis (tanpa gerakan stok dan tanpa jurnal) saat faktur dibuat."""
+    from models.purchasing import GoodsReceivedNote, GRNItem
+    from utils.finance_helpers import is_non_inventory_material
+    rows = []
+    for d in items_data:
+        poi = db.session.get(PurchaseOrderItem, d.get('po_item_id')) if d.get('po_item_id') else None
+        if poi and poi.material_id and is_non_inventory_material(poi.material_id) and float(d.get('quantity') or 0) > 0:
+            rows.append((poi, float(d['quantity'])))
+    if not rows:
+        return None
+    grn = GoodsReceivedNote(
+        grn_number=generate_number_v2('grn', 'BPB', GoodsReceivedNote, 'grn_number', style='slash'),
+        po_id=po.id, supplier_id=invoice.supplier_id or po.supplier_id, receipt_date=datetime.combine(receipt_date, datetime.min.time()),
+        delivery_note_number=invoice.supplier_invoice_number, status='approved', quality_status='passed',
+        notes=f'{AUTO_GRN_NOTE} {invoice.invoice_number}', received_by=user_id, approved_by=user_id, approved_at=get_local_now())
+    db.session.add(grn)
+    db.session.flush()
+    for poi, qty in rows:
+        db.session.add(GRNItem(grn_id=grn.id, po_item_id=poi.id, product_id=poi.product_id, material_id=poi.material_id,
+                               quantity_ordered=poi.quantity, quantity_received=qty, quantity_accepted=qty, quantity_rejected=0,
+                               uom=poi.uom or 'PCS', notes=f'{AUTO_GRN_NOTE} {invoice.invoice_number}'))
+    db.session.flush()
+    from routes.purchasing import _sync_po_received
+    _sync_po_received(po.id)
+    return grn
+
+
 def create_purchase_invoice_core(data, user_id, commit=True):
     """Buat faktur pembelian terkait PO + jurnal GL. commit=False dipakai Pusat Impor (savepoint dipegang pemanggil).
     Kesalahan input -> InvoiceInputError."""
@@ -608,6 +640,8 @@ def create_purchase_invoice_core(data, user_id, commit=True):
         })
         total_items_amount += line_amount
         total_debit_amount += line_amount_idr
+
+    _auto_grn_for_non_inventory(invoice, po, items_data, user_id, invoice_date_parsed)
 
     # Header total_amount had the same gap as item total_price: left
     # entirely to the caller, defaulting to 0 when omitted - an invoice

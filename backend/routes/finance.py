@@ -1265,6 +1265,18 @@ def void_invoice(id):
                     if poi:
                         poi.quantity_invoiced = max(0.0, float(poi.quantity_invoiced or 0) - float(it.quantity or 0))
 
+        if invoice.invoice_type == 'purchase' and invoice.purchase_order_id:
+            # GRN otomatis (jasa/biaya) dari faktur ini ikut dibatalkan supaya jumlah diterima PO kembali.
+            from models.purchasing import GoodsReceivedNote
+            from routes.purchasing import _sync_po_received
+            auto = GoodsReceivedNote.query.filter(GoodsReceivedNote.po_id == invoice.purchase_order_id,
+                                                  GoodsReceivedNote.notes == f'Otomatis dari faktur pembelian {invoice.invoice_number}').all()
+            for g in auto:
+                g.status = 'rejected'
+            db.session.flush()
+            if auto:
+                _sync_po_received(invoice.purchase_order_id)
+
         invoice.status = 'cancelled'
         invoice.balance_due = 0
         invoice.voided_by = user_id

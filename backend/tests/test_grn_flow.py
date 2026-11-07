@@ -63,3 +63,20 @@ def test_po_lookups_open_to_receiving_roles_and_supplier_filter(client, auth_hea
     db_session.commit()
     r = client.get(f'/api/purchasing/purchase-orders?status=approved,partial&supplier_id={a.id}', headers=auth_headers).get_json()
     assert len(r['purchase_orders']) == 2 and r['purchase_orders'][0]['notes'] == 'catatan PO'
+
+
+def test_inspection_over_delivery_is_not_negative_rejection(client, auth_headers, db_session, test_material):
+    from models.purchasing import GRNItem
+    loc, _ = _setup_warehouse(db_session)
+    sup = _sup(db_session, 'S-OVER')
+    body = {'supplier_id': sup.id, 'items': [{'material_id': test_material.id, 'quantity_received': 2400, 'quantity_accepted': 2400, 'uom': 'KG', 'location_id': loc.id}]}
+    r = client.post('/api/purchasing/grn', json=body, headers=auth_headers)
+    assert r.status_code == 201, r.get_json()
+    gid = r.get_json()['grn_id']
+    gi = GRNItem.query.filter_by(grn_id=gid).one()
+    ins = client.post(f'/api/purchasing/grn/{gid}/inspect', headers=auth_headers,
+                      json={'items': [{'id': gi.id, 'quantity_accepted': 2628.7, 'quantity_rejected': 0}]})
+    assert ins.status_code == 200, ins.get_json()
+    assert 'ditolak: 0' in ins.get_json()['message'] and '-' not in ins.get_json()['message'].split('ditolak:')[1]
+    db_session.refresh(gi)
+    assert float(gi.quantity_rejected) == 0 and float(gi.quantity_received) == 2628.7 and float(gi.quantity_accepted) == 2628.7

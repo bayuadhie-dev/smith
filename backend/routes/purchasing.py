@@ -27,9 +27,6 @@ def _sync_po_received(po_id):
     (GRN yang ditolak tidak dihitung). Sumber kebenaran tetap baris GRN; kolom ini hanya salinan untuk tampilan."""
     from utils.finance_helpers import is_non_inventory_material
     for it in PurchaseOrderItem.query.filter_by(po_id=po_id).all():
-        if is_non_inventory_material(it.material_id):
-            it.quantity_received = float(it.quantity or 0)   # jasa/biaya: dianggap terpenuhi, tidak ada GRN
-            continue
         total = db.session.query(db.func.coalesce(db.func.sum(GRNItem.quantity_accepted), 0)) \
             .join(GoodsReceivedNote, GoodsReceivedNote.id == GRNItem.grn_id) \
             .filter(GRNItem.po_item_id == it.id, GoodsReceivedNote.status != 'rejected').scalar() or 0
@@ -1520,10 +1517,14 @@ def inspect_grn(grn_id):
             new_rejected = float(item_data.get('quantity_rejected', 0))
             rejection_reason = item_data.get('rejection_reason', '')
 
-            # Clamp: accepted + rejected <= received
+            new_accepted = max(0.0, new_accepted)
+            new_rejected = max(0.0, new_rejected)
+            # Penerimaan melebihi jumlah tercatat (over-delivery): barang tetap diterima, jumlah diterima ikut naik.
+            # Bukan penolakan, jadi jumlah ditolak tidak boleh negatif.
             qty_received = float(item.quantity_received)
             if new_accepted + new_rejected > qty_received:
-                new_rejected = qty_received - new_accepted
+                qty_received = new_accepted + new_rejected
+                item.quantity_received = qty_received
 
             old_accepted = float(item.quantity_accepted or 0)
             old_rejected = float(item.quantity_rejected or 0)
