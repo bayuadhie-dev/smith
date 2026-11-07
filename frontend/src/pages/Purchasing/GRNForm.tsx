@@ -204,8 +204,14 @@ export default function GRNForm() {
     const given = list.filter((b) => r.split && r.split[b] !== undefined && r.split[b] !== '')
     const rest = list.filter((b) => !given.includes(b))
     const givenSum = given.reduce((a, b) => a + num(r.split![b]), 0)
-    const share = rest.length ? Math.max(0, total - givenSum) / rest.length : 0
-    return list.map((b, idx) => ({ batch: b, qty: given.includes(b) ? num(r.split![b]) : (idx === list.length - 1 && !given.includes(b) ? Math.round((Math.max(0, total - givenSum) - share * (rest.length - 1)) * 1000) / 1000 : Math.round(share * 1000) / 1000) }))
+    const r3 = (x: number) => Math.round(x * 1000) / 1000
+    const left = Math.max(0, total - givenSum)
+    const share = rest.length ? r3(left / rest.length) : 0
+    return list.map((b) => {
+      if (given.includes(b)) return { batch: b, qty: num(r.split![b]) }
+      const isLastRest = rest.length > 0 && b === rest[rest.length - 1]
+      return { batch: b, qty: isLastRest ? r3(left - share * (rest.length - 1)) : share }
+    })
   }
   const removeRow = (i: number) => setRows((rs) => rs.filter((_, idx) => idx !== i))
   const needsWarehouse = (r: Row) => !r.is_service && (r.product_id !== null || r.material_id !== null)
