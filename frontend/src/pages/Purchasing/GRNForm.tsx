@@ -12,6 +12,8 @@ interface Row {
   key: string
   po_item_id: number | null
   is_service?: boolean
+  split?: Record<string, string>
+  itemId?: number
   product_id: number | null
   material_id: number | null
   name: string
@@ -163,7 +165,7 @@ export default function GRNForm() {
         const byId: Record<number, any> = {}
         ;(poData?.items || []).forEach((it: any) => { byId[it.id] = it })
         setRows((g.items || []).map((it: any): Row => ({
-          key: `g-${it.id}`, po_item_id: it.po_item_id ?? null, product_id: it.product_id ?? null, material_id: it.material_id ?? null,
+          key: `g-${it.id}`, itemId: it.id, po_item_id: it.po_item_id ?? null, product_id: it.product_id ?? null, material_id: it.material_id ?? null,
           name: it.item_name || (it.po_item_id && byId[it.po_item_id] ? itemName(byId[it.po_item_id]) : (it.material_name || it.product_name || `Item #${it.id}`)),
           code: it.material_code || it.product_code, uom: it.uom, ordered: Number(it.quantity_ordered || 0),
           receivedBefore: 0, qty: Number(it.quantity_received || 0), location_id: it.location_id ?? null,
@@ -195,6 +197,16 @@ export default function GRNForm() {
       batch_number: '', lot_number: '', production_date: '', expiry_date: '', notes: '', open: false,
     }])
   }
+  const parseBatches = (v: string) => Array.from(new Set(v.split(/[,;\n]+/).map((x) => x.trim()).filter(Boolean)))
+  const batchQtys = (r: Row): { batch: string; qty: number }[] => {
+    const list = parseBatches(r.batch_number)
+    const total = num(r.qty)
+    const given = list.filter((b) => r.split && r.split[b] !== undefined && r.split[b] !== '')
+    const rest = list.filter((b) => !given.includes(b))
+    const givenSum = given.reduce((a, b) => a + num(r.split![b]), 0)
+    const share = rest.length ? Math.max(0, total - givenSum) / rest.length : 0
+    return list.map((b, idx) => ({ batch: b, qty: given.includes(b) ? num(r.split![b]) : (idx === list.length - 1 && !given.includes(b) ? Math.round((Math.max(0, total - givenSum) - share * (rest.length - 1)) * 1000) / 1000 : Math.round(share * 1000) / 1000) }))
+  }
   const removeRow = (i: number) => setRows((rs) => rs.filter((_, idx) => idx !== i))
   const needsWarehouse = (r: Row) => !r.is_service && (r.product_id !== null || r.material_id !== null)
 
@@ -211,13 +223,23 @@ export default function GRNForm() {
       const noExp = active.find((r) => r.requireExpiry && !r.expiry_date)
       if (noExp) return setError(`"${noExp.name}" wajib memakai tanggal kedaluwarsa. Buka rincian baris lalu isi Tanggal Kadaluarsa.`)
     }
+    if (!isEdit) {
+      for (const r of active) {
+        const list = parseBatches(r.batch_number)
+        if (list.some((b) => b.length > 100)) return setError(`No. batch pada "${r.name}" terlalu panjang (maksimal 100 karakter per batch). Pisahkan beberapa batch dengan koma.`)
+        if (list.length > 1) {
+          const sum = batchQtys(r).reduce((a, b) => a + b.qty, 0)
+          if (Math.abs(sum - num(r.qty)) > 0.01) return setError(`Jumlah per batch pada "${r.name}" (${sum.toLocaleString('id-ID')}) harus sama dengan jumlah diterima (${num(r.qty).toLocaleString('id-ID')}).`)
+        }
+      }
+    }
     setSaving(true)
     try {
       if (isEdit) {
         await axiosInstance.put(`/api/purchasing/grn/${id}`, {
           receipt_date: receiptDate, delivery_note_number: deliveryNote, vehicle_number: vehicle, driver_name: driver, notes,
           items: rows.map((r) => ({
-            po_item_id: r.po_item_id, lot_number: r.lot_number || null, notes: r.notes || null,
+            id: r.itemId, po_item_id: r.po_item_id, lot_number: r.lot_number || null, notes: r.notes || null,
             production_date: r.production_date || null, expiry_date: r.expiry_date || null,
           })),
         })
@@ -227,12 +249,16 @@ export default function GRNForm() {
         const created = await axiosInstance.post('/api/purchasing/grn', {
           po_id: poId, supplier_id: supplierId, receipt_date: receiptDate, grn_number: manualNumber.trim() || undefined,
           delivery_note_number: deliveryNote || null, vehicle_number: vehicle || null, driver_name: driver || null, notes: notes || null,
-          items: active.map((r) => ({
-            po_item_id: r.po_item_id, product_id: r.product_id, material_id: r.material_id, quantity_ordered: r.po_item_id ? r.ordered : num(r.qty),
-            quantity_received: num(r.qty), quantity_accepted: num(r.qty), uom: r.uom, location_id: r.is_service ? null : r.location_id,
-            batch_number: r.batch_number || null, lot_number: r.lot_number || null,
-            production_date: r.production_date || null, expiry_date: r.expiry_date || null, notes: r.notes || null,
-          })),
+          items: active.flatMap((r) => {
+            const base = {
+              po_item_id: r.po_item_id, product_id: r.product_id, material_id: r.material_id, quantity_ordered: r.po_item_id ? r.ordered : num(r.qty),
+              uom: r.uom, location_id: r.is_service ? null : r.location_id, lot_number: r.lot_number || null,
+              production_date: r.production_date || null, expiry_date: r.expiry_date || null, notes: r.notes || null,
+            }
+            const parts = parseBatches(r.batch_number)
+            if (parts.length > 1) return batchQtys(r).filter((b) => b.qty > 0).map((b) => ({ ...base, quantity_received: b.qty, quantity_accepted: b.qty, batch_number: b.batch }))
+            return [{ ...base, quantity_received: num(r.qty), quantity_accepted: num(r.qty), batch_number: parts[0] || r.batch_number.trim() || null }]
+          }),
         })
         await uploadAttachments('grn', created.data?.grn_id, attFiles)
         showSuccess('Penerimaan barang dicatat dan stok bertambah')
@@ -389,7 +415,7 @@ export default function GRNForm() {
                           </td>
                           <td className="py-2 pr-3">
                             {isEdit ? <div className="text-sm">{r.batch_number || '-'}</div>
-                              : <input data-col="batch" className="input-field" value={r.batch_number} onChange={(e) => update(i, { batch_number: e.target.value })} placeholder="No. batch" />}
+                              : <input data-col="batch" className="input-field" value={r.batch_number} onChange={(e) => update(i, { batch_number: e.target.value })} placeholder="No. batch (beberapa batch: pisahkan koma)" />}
                           </td>
                           <td className="py-2 whitespace-nowrap">
                             {!isEdit && r.po_item_id === null && <button type="button" onClick={() => removeRow(i)} className="p-1 text-xs text-red-600 hover:underline" title="Hapus baris">Hapus</button>}
@@ -398,6 +424,25 @@ export default function GRNForm() {
                             </button>
                           </td>
                         </tr>
+                        {!isEdit && parseBatches(r.batch_number).length > 1 && (
+                          <tr key={`${r.key}-s`} className="border-b border-gray-100 dark:border-gray-700 bg-amber-50/50 dark:bg-amber-900/10">
+                            <td colSpan={8} className="p-3">
+                              <p className="mb-2 text-xs text-gray-600 dark:text-gray-300">Ada {parseBatches(r.batch_number).length} batch. Isi jumlah tiap batch (bawaan dibagi rata); totalnya harus {num(r.qty).toLocaleString('id-ID')} {r.uom}. Tiap batch disimpan sebagai baris stok sendiri supaya bisa dilacak.</p>
+                              <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                                {batchQtys(r).map((b) => (
+                                  <label key={b.batch} className="text-xs text-gray-600 dark:text-gray-300">
+                                    <span className="block truncate" title={b.batch}>{b.batch}</span>
+                                    <NumberInput className="input-field text-right" value={(r.split && r.split[b.batch] !== undefined ? r.split[b.batch] : String(b.qty)) as any}
+                                      onChange={(e: any) => update(i, { split: { ...(r.split || {}), [b.batch]: e.target.value } })} />
+                                  </label>
+                                ))}
+                              </div>
+                              <p className={`mt-2 text-xs ${Math.abs(batchQtys(r).reduce((a, b) => a + b.qty, 0) - num(r.qty)) > 0.01 ? 'text-red-600' : 'text-gray-500'}`}>
+                                Total batch: {batchQtys(r).reduce((a, b) => a + b.qty, 0).toLocaleString('id-ID')} dari {num(r.qty).toLocaleString('id-ID')}
+                              </p>
+                            </td>
+                          </tr>
+                        )}
                         {r.open && (
                           <tr key={`${r.key}-d`} className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
                             <td colSpan={8} className="p-3">

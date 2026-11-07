@@ -937,6 +937,12 @@ def create_grn():
         data = request.get_json()
         user_id = get_jwt_identity()
         
+        for it_in in data.get('items') or []:
+            for fld, label in (('batch_number', 'No. batch'), ('lot_number', 'No. lot')):
+                v = (it_in.get(fld) or '').strip() if isinstance(it_in.get(fld), str) else it_in.get(fld)
+                if v and len(str(v)) > 100:
+                    return jsonify({'error': f'{label} terlalu panjang (maksimal 100 karakter). Kalau ada beberapa batch, isi per batch (satu baris per batch) atau pisahkan dengan koma di form.'}), 400
+
         manual_grn = (data.get('grn_number') or '').strip()
         if manual_grn:
             if GoodsReceivedNote.query.filter_by(grn_number=manual_grn).first():
@@ -1226,7 +1232,10 @@ def create_grn():
         return jsonify({'message': 'GRN created', 'grn_id': grn.id, 'grn_number': grn_number}), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        msg = str(e)
+        if 'StringDataRightTruncation' in msg or 'value too long' in msg:
+            return jsonify({'error': 'Ada isian yang terlalu panjang (misalnya No. batch, No. lot, atau catatan). Persingkat atau pisahkan per baris, lalu simpan lagi.'}), 400
+        return jsonify({'error': 'Penerimaan barang gagal disimpan: ' + msg.split('\n')[0][:200]}), 500
 
 
 @purchasing_bp.route('/grn/<int:grn_id>', methods=['GET'])
@@ -1726,9 +1735,10 @@ def update_grn(grn_id):
         items_data = data.get('items')
         if items_data:
             items_by_po_item = {item.po_item_id: item for item in grn.items}
+            items_by_id = {item.id: item for item in grn.items}
             for item_data in items_data:
                 po_item_id = item_data.get('po_item_id')
-                grn_item = items_by_po_item.get(po_item_id)
+                grn_item = items_by_id.get(item_data.get('id')) or items_by_po_item.get(po_item_id)
                 if not grn_item:
                     continue
                 for f in ['quantity_received', 'quantity_accepted', 'quantity_rejected',

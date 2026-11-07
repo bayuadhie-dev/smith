@@ -80,3 +80,20 @@ def test_inspection_over_delivery_is_not_negative_rejection(client, auth_headers
     assert 'ditolak: 0' in ins.get_json()['message'] and '-' not in ins.get_json()['message'].split('ditolak:')[1]
     db_session.refresh(gi)
     assert float(gi.quantity_rejected) == 0 and float(gi.quantity_received) == 2628.7 and float(gi.quantity_accepted) == 2628.7
+
+
+def test_long_batch_rejected_cleanly_and_split_batches_saved(client, auth_headers, db_session, test_material):
+    from models.purchasing import GRNItem
+    from models.warehouse import Inventory
+    loc, _ = _setup_warehouse(db_session)
+    sup = _sup(db_session, 'S-BATCH')
+    long_batch = ', '.join(f'45263 167 51{n:02d}' for n in range(9))
+    one = {'material_id': test_material.id, 'quantity_received': 100, 'quantity_accepted': 100, 'uom': 'KG', 'location_id': loc.id}
+    r = client.post('/api/purchasing/grn', json={'supplier_id': sup.id, 'items': [{**one, 'batch_number': long_batch}]}, headers=auth_headers)
+    assert r.status_code == 400 and 'terlalu panjang' in r.get_json()['error'] and 'psycopg' not in r.get_json()['error']
+    lines = [{**one, 'quantity_received': 50, 'quantity_accepted': 50, 'batch_number': f'B-{n}'} for n in (1, 2)]
+    ok = client.post('/api/purchasing/grn', json={'supplier_id': sup.id, 'items': lines}, headers=auth_headers)
+    assert ok.status_code == 201, ok.get_json()
+    gid = ok.get_json()['grn_id']
+    assert GRNItem.query.filter_by(grn_id=gid).count() == 2
+    assert Inventory.query.filter(Inventory.material_id == test_material.id, Inventory.batch_number.in_(['B-1', 'B-2'])).count() == 2
