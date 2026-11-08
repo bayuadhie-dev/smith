@@ -52,7 +52,7 @@ jobs:
       - name: Jalankan semua tes
         working-directory: backend
         env:
-          FLASK_ENV: testing
+          FLASK_ENV: development
           SECRET_KEY: ci-secret-key
           JWT_SECRET_KEY: ci-jwt-secret-key
           REDIS_URL: redis://localhost:6379/0
@@ -124,7 +124,7 @@ jobs:
         working-directory: backend
         env:
           FLASK_APP: app.py
-          FLASK_ENV: testing
+          FLASK_ENV: development
           SECRET_KEY: ci-secret-key
           JWT_SECRET_KEY: ci-jwt-secret-key
         run: |

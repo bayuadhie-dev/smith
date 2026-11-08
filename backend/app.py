@@ -160,7 +160,7 @@ def create_app(config_class=Config):
             app,
             force_https=False,  # Cloudflared handles HTTPS
             strict_transport_security=False,  # Cloudflared handles HSTS
-            session_cookie_httponly=True,
+            session_cookie_http_only=True,
             session_cookie_secure=True,
             session_cookie_samesite='Lax',
             content_security_policy={
