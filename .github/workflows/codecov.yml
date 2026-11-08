@@ -1,10 +1,9 @@
 name: Codecov
 
+# Dinonaktifkan dari push/PR (2026-11): coverage backend sekarang dikirim dari ci.yml (coverage frontend belum dikirim).
+# Tetap bisa dijalankan manual dari tab Actions.
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true

@@ -83,7 +83,7 @@ def test_item_no_duplicates_across_tables(client, auth_headers, db_session, test
     assert prev['summary']['ok'] == 1 and prev['summary']['error'] == 5
     assert Product.query.count() == p0 and Material.query.count() == m0
     errs = ' | '.join(e for t in prev['transactions'] for e in t['errors'])
-    assert 'Nama sama dengan material' in errs and 'Nama sama dengan produk' in errs and 'sudah ada' in errs and 'tidak diimpor' in errs and 'ganda di file' in errs
+    assert 'Nama sama dengan material' in errs and 'Nama sama dengan produk' in errs and 'sudah ada' in errs and 'bukan item biaya/jasa' in errs and 'ganda di file' in errs
     done = _post(client, auth_headers, 'item', _xlsx(ITEM, rows), True)
     assert done['summary']['ok'] == 1
     assert Material.query.count() == m0 + 1 and Product.query.count() == p0
