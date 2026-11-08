@@ -329,3 +329,9 @@ scripts/.baileys_auth/
 # EWS model artifacts — jangan commit, sync manual (scp/Syncthing)
 ml_models/
 ml_data/
+
+# Kode sumber frontend yang ikut tertutup aturan "lib/" dan "Public/" di atas
+!frontend/src/lib/
+!frontend/src/lib/**
+!frontend/src/pages/Public/
+!frontend/src/pages/Public/**
