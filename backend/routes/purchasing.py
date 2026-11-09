@@ -1064,6 +1064,8 @@ def create_grn():
                 quantity_accepted=quantity_accepted,
                 uom=uom,
                 item_name=((item_data.get('item_name') or '').strip()[:255] or None),
+                entered_qty=item_data.get('entered_qty'),
+                entered_uom=((item_data.get('entered_uom') or '').strip()[:20] or None),
                 batch_number=batch_number,
                 lot_number=(item_data.get('lot_number') or None),
                 production_date=datetime.strptime(item_data['production_date'][:10], '%Y-%m-%d').date() if item_data.get('production_date') else None,
@@ -1260,6 +1262,39 @@ def create_grn():
         return jsonify({'error': 'Penerimaan barang gagal disimpan: ' + msg.split('\n')[0][:200]}), 500
 
 
+@purchasing_bp.route('/uom-options', methods=['GET'])
+@jwt_required()
+@require_permission('purchasing.view', 'warehouse.view')
+def uom_options():
+    """Satuan yang boleh dipakai saat menerima barang: satuan dasar (faktor 1) + konversi material/produk
+    (mis. 1 ROL = 13.635 PCS) dihitung ke satuan dasar."""
+    from models.uom import UoMConversion, UnitOfMeasure
+    from models.product import Material, Product
+    material_id = request.args.get('material_id', type=int)
+    product_id = request.args.get('product_id', type=int)
+    item = db.session.get(Material, material_id) if material_id else (db.session.get(Product, product_id) if product_id else None)
+    if not item:
+        return jsonify({'base': None, 'options': []}), 200
+    base = item.primary_uom
+    out = {base: 1.0}
+    q = UoMConversion.query.filter(UoMConversion.is_active == True)
+    q = q.filter(db.or_(UoMConversion.material_id == material_id, UoMConversion.material_id.is_(None))) if material_id else \
+        q.filter(db.or_(UoMConversion.product_id == product_id, UoMConversion.product_id.is_(None)))
+    rows = q.all()
+    # konversi khusus barang menimpa konversi global
+    rows.sort(key=lambda r: 0 if (r.material_id or r.product_id) else 1, reverse=True)
+    for r in rows:
+        f, t = (r.from_uom.code if r.from_uom else None), (r.to_uom.code if r.to_uom else None)
+        factor = float(r.conversion_factor or 0)
+        if not f or not t or factor <= 0:
+            continue
+        if t.lower() == str(base).lower() and f not in out:
+            out[f] = factor
+        elif f.lower() == str(base).lower() and t not in out:
+            out[t] = round(1 / factor, 10)
+    return jsonify({'base': base, 'options': [{'code': k, 'factor': v} for k, v in out.items()]}), 200
+
+
 @purchasing_bp.route('/grn/<int:grn_id>', methods=['GET'])
 @jwt_required()
 @require_permission('purchasing.view', 'warehouse.view')
@@ -1309,6 +1344,8 @@ def get_grn(grn_id):
                 'quantity_accepted': float(item.quantity_accepted or 0),
                 'quantity_rejected': float(item.quantity_rejected or 0),
                 'uom': item.uom,
+                'entered_qty': float(item.entered_qty) if item.entered_qty is not None else None,
+                'entered_uom': item.entered_uom,
                 'batch_number': item.batch_number,
                 'lot_number': item.lot_number,
                 'production_date': item.production_date.isoformat() if item.production_date else None,

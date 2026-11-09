@@ -16,6 +16,8 @@ interface Row {
   split?: Record<string, string>
   qty0?: number
   group?: { id: number; batch: string; qty: number }[]
+  uomOptions?: { code: string; factor: number }[]
+  entryUom?: string
   itemId?: number
   product_id: number | null
   material_id: number | null
@@ -204,7 +206,29 @@ export default function GRNForm() {
   const update = (i: number, patch: Partial<Row>) => setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))
   const applyBulk = (loc: number | null) => { setBulkLocation(loc); if (loc) setRows((rs) => rs.map((r) => (num(r.qty) > 0 ? { ...r, location_id: loc } : r))) }
 
-  const totalQty = rows.reduce((s, r) => s + num(r.qty), 0)
+  // Satuan fleksibel (mis. ROL -> PCS): jumlah diketik dalam satuan pilihan, disimpan dalam satuan baris (satuan dasar).
+  const factorOf = (r: Row) => {
+    if (!r.entryUom || !r.uomOptions) return 1
+    const f = r.uomOptions.find((o) => o.code === r.entryUom)?.factor
+    const base = r.uomOptions.find((o) => o.code.toLowerCase() === (r.uom || '').toLowerCase())?.factor || 1
+    return f ? f / base : 1
+  }
+  const uomCache = useRef<Record<string, { code: string; factor: number }[]>>({})
+  useEffect(() => {
+    if (isEdit) return
+    rows.forEach((r, i) => {
+      if (r.uomOptions || r.is_service || (!r.material_id && !r.product_id)) return
+      const key = r.material_id ? `m${r.material_id}` : `p${r.product_id}`
+      const apply = (opts: { code: string; factor: number }[]) => setRows((rs) => rs.map((x) => (x.key === r.key ? { ...x, uomOptions: opts } : x)))
+      if (uomCache.current[key]) { apply(uomCache.current[key]); return }
+      axiosInstance.get('/api/purchasing/uom-options', { params: r.material_id ? { material_id: r.material_id } : { product_id: r.product_id } })
+        .then((res) => { uomCache.current[key] = res.data.options || []; apply(uomCache.current[key]) })
+        .catch(() => { uomCache.current[key] = []; apply([]) })
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows.map((r) => r.key).join('|')])
+
+  const totalQty = rows.reduce((s, r) => s + num(r.qty) * factorOf(r), 0)
   const supplierName = po?.supplier?.company_name || suppliers.find((x) => x.id === supplierId)?.company_name || orders.find((o) => o.id === poId)?.supplier_name || ''
   const materialOptions = useMemo(() => materials.filter((m) => m.is_active !== false).map((m) => ({ id: m.id, name: `${m.code} - ${m.name}` })), [materials])
   const addManualRow = (matId: number | null) => {
@@ -305,13 +329,16 @@ export default function GRNForm() {
           delivery_note_number: deliveryNote || null, supplier_invoice_number: supInvNo.trim() || null, vehicle_number: vehicle || null, driver_name: driver || null, notes: notes || null,
           items: active.flatMap((r) => {
             const base = {
-              item_name: r.name.trim() || null, po_item_id: r.po_item_id, product_id: r.product_id, material_id: r.material_id, quantity_ordered: r.po_item_id ? r.ordered : num(r.qty),
+              item_name: r.name.trim() || null, po_item_id: r.po_item_id, product_id: r.product_id, material_id: r.material_id, quantity_ordered: r.po_item_id ? r.ordered : num(r.qty) * factorOf(r),
               uom: r.uom, location_id: r.is_service ? null : r.location_id, lot_number: r.lot_number || null,
               production_date: r.production_date || null, expiry_date: r.expiry_date || null, notes: r.notes || null,
             }
             const parts = parseBatches(r.batch_number)
-            if (parts.length > 1) return batchQtys(r).filter((b) => b.qty > 0).map((b) => ({ ...base, quantity_received: b.qty, quantity_accepted: b.qty, batch_number: b.batch }))
-            return [{ ...base, quantity_received: num(r.qty), quantity_accepted: num(r.qty), batch_number: parts[0] || r.batch_number.trim() || null }]
+            const fx = factorOf(r)
+            const conv = (q: number) => Math.round(q * fx * 1000) / 1000
+            const ent = (q: number) => (fx !== 1 ? { entered_qty: q, entered_uom: r.entryUom } : {})
+            if (parts.length > 1) return batchQtys(r).filter((b) => b.qty > 0).map((b) => ({ ...base, quantity_received: conv(b.qty), quantity_accepted: conv(b.qty), batch_number: b.batch, ...ent(b.qty) }))
+            return [{ ...base, quantity_received: conv(num(r.qty)), quantity_accepted: conv(num(r.qty)), batch_number: parts[0] || r.batch_number.trim() || null, ...ent(num(r.qty)) }]
           }),
         })
         await uploadAttachments('grn', created.data?.grn_id, attFiles)
@@ -440,7 +467,7 @@ export default function GRNForm() {
                 <tbody>
                   {rows.map((r, i) => {
                     const outstanding = Math.max(0, r.ordered - r.receivedBefore)
-                    const over = !isEdit && r.po_item_id !== null && num(r.qty) > outstanding + 1e-9
+                    const over = !isEdit && r.po_item_id !== null && num(r.qty) * factorOf(r) > outstanding + 1e-9
                     return (
                       <Fragment key={r.key}>
                         <tr className="border-b border-gray-100 dark:border-gray-700 align-top">
@@ -460,7 +487,15 @@ export default function GRNForm() {
                               </>
                             ) : (
                               <>
-                                <NumberInput data-col="qty" className="input-field text-right" value={r.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />
+                                <div className="flex items-center gap-1">
+                                  <NumberInput data-col="qty" className="input-field text-right" value={r.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />
+                                  {(r.uomOptions?.length || 0) > 1 && (
+                                    <select className="input-field w-20 px-1" value={r.entryUom || r.uom} onChange={(e) => update(i, { entryUom: e.target.value })} title="Satuan penerimaan">
+                                      {r.uomOptions!.map((o) => <option key={o.code} value={o.code}>{o.code}</option>)}
+                                    </select>
+                                  )}
+                                </div>
+                                {factorOf(r) !== 1 && <p className="mt-1 text-right text-xs text-emerald-700">= {(num(r.qty) * factorOf(r)).toLocaleString('id-ID')} {r.uom}</p>}
                                 {over && <p className="mt-1 text-xs text-amber-600">Melebihi sisa PO ({outstanding.toLocaleString('id-ID')})</p>}
                               </>
                             )}

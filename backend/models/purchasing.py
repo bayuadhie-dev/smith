@@ -195,6 +195,8 @@ class GRNItem(db.Model):
     quantity_accepted = db.Column(db.Numeric(15, 2), default=0)
     quantity_rejected = db.Column(db.Numeric(15, 2), default=0)
     uom = db.Column(db.String(20), nullable=False)
+    entered_qty = db.Column(db.Numeric(15, 3), nullable=True)   # jumlah sebagaimana diketik (mis. 1 ROL); stok memakai satuan dasar
+    entered_uom = db.Column(db.String(20), nullable=True)
     item_name = db.Column(db.String(255), nullable=True)  # nama barang yang diedit saat penerimaan (bawaan dari PO)
     batch_number = db.Column(db.String(100), nullable=True)
     lot_number = db.Column(db.String(100), nullable=True)

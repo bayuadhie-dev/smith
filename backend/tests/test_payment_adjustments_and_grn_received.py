@@ -186,3 +186,14 @@ def test_grn_print_normal_and_batch_detail(client, auth_headers, db_session, tes
     d1 = db_session.get(Document, r1.get_json()['document_id']); d2 = db_session.get(Document, r2.get_json()['document_id'])
     assert len(d1.document_data['lines']) == 1 and d1.document_data['lines'][0]['qty'] == 7 and d1.document_data['lines'][0]['batch_text'] == '2 batch'
     assert [x['batch_text'] for x in d2.document_data['lines']] == ['B1', 'B2']
+
+
+def test_uom_options_include_roll_conversion(client, auth_headers, db_session, test_material):
+    from models.uom import UnitOfMeasure, UoMConversion
+    pcs = UnitOfMeasure(code='PCS', name='Pieces', category='count', is_active=True)
+    rol = UnitOfMeasure(code='ROL', name='Roll', category='count', is_active=True)
+    db_session.add_all([pcs, rol]); db_session.commit()
+    test_material.primary_uom = 'PCS'; db_session.commit()
+    db_session.add(UoMConversion(from_uom_id=rol.id, to_uom_id=pcs.id, conversion_factor=13635, material_id=test_material.id)); db_session.commit()
+    r = client.get(f'/api/purchasing/uom-options?material_id={test_material.id}', headers=auth_headers).get_json()
+    assert r['base'] == 'PCS' and {'code': 'ROL', 'factor': 13635.0} in r['options'] and {'code': 'PCS', 'factor': 1.0} in r['options']
