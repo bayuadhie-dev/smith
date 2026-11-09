@@ -75,8 +75,8 @@ deploy_one() {
   grn "[$name] kode sinkron di ${LOCAL:0:7}"
 
   local cur heads
-  cur=$("${ssh[@]}" "cd ~/$REMOTE_DIR/backend && . venv/bin/activate && FLASK_APP=app.py flask db current 2>/dev/null | tail -1")
-  heads=$("${ssh[@]}" "cd ~/$REMOTE_DIR/backend && . venv/bin/activate && FLASK_APP=app.py flask db heads 2>/dev/null | tail -1")
+  cur=$("${ssh[@]}" "cd ~/$REMOTE_DIR/backend && . venv/bin/activate && FLASK_APP=app.py flask db current 2>&1 | grep -E '^[0-9a-z_]{8,}' | tail -1")
+  heads=$("${ssh[@]}" "cd ~/$REMOTE_DIR/backend && . venv/bin/activate && FLASK_APP=app.py flask db heads 2>&1 | grep -E '^[0-9a-z_]{8,}' | tail -1")
   echo "[$name] migrasi sekarang: ${cur:-?}   | target (heads): ${heads:-?}"
 
   if [[ $DRY -eq 1 ]]; then ylw "[$name] --dry-run: berhenti di sini."; return 0; fi
@@ -94,7 +94,7 @@ deploy_one() {
   [[ "$status" == "healthy" ]] || { red "[$name] backend TIDAK sehat setelah restart. Cek: pm2 logs $PM2_NAME"; return 1; }
 
   local after
-  after=$("${ssh[@]}" "cd ~/$REMOTE_DIR/backend && . venv/bin/activate && FLASK_APP=app.py flask db current 2>/dev/null | tail -1")
+  after=$("${ssh[@]}" "cd ~/$REMOTE_DIR/backend && . venv/bin/activate && FLASK_APP=app.py flask db current 2>&1 | grep -E '^[0-9a-z_]{8,}' | tail -1")
   if [[ "$after" != *"(head)"* ]]; then red "[$name] database belum di versi terbaru: $after"; return 1; fi
 
   local chg

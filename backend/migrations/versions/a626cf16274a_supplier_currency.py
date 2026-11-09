@@ -1,13 +1,13 @@
 """suppliers.currency (mata uang utama pemasok; PO baru mengikuti)
 
-Revision ID: c3e5a7b9d1f4
+Revision ID: a626cf16274a
 Revises: b2d4f6a8c0e1
 Create Date: 2026-11-09
 """
 from alembic import op
 import sqlalchemy as sa
 
-revision = 'c3e5a7b9d1f4'
+revision = 'a626cf16274a'
 down_revision = 'b2d4f6a8c0e1'
 branch_labels = None
 depends_on = None
