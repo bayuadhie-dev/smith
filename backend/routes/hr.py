@@ -137,6 +137,7 @@ def get_employees():
                 'id': e.id,
                 'employee_number': e.employee_number,
                 'fingerprint_id': e.fingerprint_id,
+                'nik': e.nik,
                 'full_name': e.full_name,
                 'department': e.department.name if e.department else None,
                 'department_id': e.department_id,
