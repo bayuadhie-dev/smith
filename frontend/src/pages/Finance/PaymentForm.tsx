@@ -79,7 +79,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   const [error, setError] = useState<string | null>(null);
 
   const editId = searchParams.get('edit');
-  const editAllocRef = useRef<{ invoice_id: number; invoice_number: string | null; invoice_total_amount: number | null; amount: number }[] | null>(null);
+  const editAllocRef = useRef<{ invoice_id: number; invoice_number: string | null; invoice_total_amount: number | null; amount: number; discount?: number }[] | null>(null);
   const [paymentNumber, setPaymentNumber] = useDraftState('paymentNumber', '');
   const [nextNumber, setNextNumber] = useState('');
   const [alloc, setAlloc] = useDraftState<Record<number, string>>('alloc', {});
@@ -101,17 +101,21 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     bank_account_id: ''
   })
 
-  // Faktur dicentang dengan Dibayar 0 tetapi ada diskon (nilai negatif): diskon itulah yang melunasi faktur, kas keluar 0.
-  const effAlloc: Record<number, string> = (() => {
-    const out: Record<number, string> = { ...alloc };
+  // Diskon = total nilai negatif di "Selisih dan diskon", dibagi ke faktur yang dicentang (urut tampil), maksimal sisa tiap faktur.
+  // Faktur dilunasi = Dibayar + Diskon.
+  const discOf: Record<number, number> = (() => {
+    const out: Record<number, number> = {};
     let pool = -adj.reduce((s, l) => s + Math.min(0, Number(l.amount) || 0), 0);
     for (const inv of invoices) {
-      if (!(inv.id in alloc) || Number(alloc[inv.id]) !== 0 || pool <= 0) continue;
-      const give = Math.min(inv.balance_due, pool);
-      if (give > 0) { out[inv.id] = String(give); pool -= give; }
+      if (!(inv.id in alloc) || pool <= 0) continue;
+      const give = Math.max(0, Math.min(inv.balance_due - (Number(alloc[inv.id]) || 0), pool));
+      if (give > 0) { out[inv.id] = give; pool -= give; }
     }
     return out;
   })();
+  const effAlloc: Record<number, string> = Object.fromEntries(
+    Object.entries(alloc).map(([id, v]) => [id, String((Number(v) || 0) + (discOf[Number(id)] || 0))]),
+  );
 
   const totalAmount = isStandalone
     ? lines.reduce((s, l) => s + (Number(l.amount) || 0), 0)
@@ -175,11 +179,11 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
           // Ubah: saldo yang dipegang transaksi lama dianggap tersedia lagi.
           list = list.map((i) => {
             const o = old.find((x) => x.invoice_id === i.id);
-            return o ? { ...i, balance_due: i.balance_due + o.amount } : i;
+            return o ? { ...i, balance_due: i.balance_due + o.amount + (o.discount || 0) } : i;
           });
           old.forEach((o) => {
             if (!list.some((i) => i.id === o.invoice_id)) {
-              list.push({ id: o.invoice_id, invoice_number: o.invoice_number || `#${o.invoice_id}`, due_date: null, total_amount: o.invoice_total_amount || o.amount, balance_due: o.amount });
+              list.push({ id: o.invoice_id, invoice_number: o.invoice_number || `#${o.invoice_id}`, due_date: null, total_amount: o.invoice_total_amount || o.amount, balance_due: o.amount + (o.discount || 0) });
             }
           });
           setAlloc(Object.fromEntries(old.map((o) => [o.invoice_id, String(o.amount)])));
@@ -204,7 +208,13 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     if (!editId) return;
     axiosInstance.get(`/api/finance/payments/${editId}`).then((res) => {
       const d = res.data;
-      if (d.allocations?.length) editAllocRef.current = d.allocations;
+      if (d.allocations?.length) {
+        let pool = d.lines?.length ? -d.lines.reduce((x: number, l: any) => x + Math.min(0, Number(l.amount) || 0), 0) : 0;
+        editAllocRef.current = d.allocations.map((a: any) => {
+          const cut = Math.max(0, Math.min(a.amount, pool)); pool -= cut;
+          return { ...a, amount: a.amount - cut, discount: cut };
+        });
+      }
       setFormData({
         party_id: String(d.customer_id || d.supplier_id || ''),
         payment_date: (d.payment_date || '').slice(0, 10),
@@ -522,6 +532,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                         <th className="px-3 py-2">Jatuh tempo</th>
                         <th className="px-3 py-2 text-right">Sisa tagihan</th>
                         <th className="w-44 px-3 py-2 text-right">Dibayar</th>
+                        <th className="px-3 py-2 text-right">Diskon</th>
                         <th className="px-3 py-2 text-right">Sisa setelah</th>
                       </tr>
                     </thead>
@@ -541,6 +552,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                               {(Number(alloc[inv.id]) || 0) > inv.balance_due + 0.01 && <p className="mt-1 text-xs text-red-600">Melebihi sisa faktur</p>}
                               {(Number(alloc[inv.id]) || 0) < 0 && -(Number(alloc[inv.id]) || 0) > paidOf(inv) + 0.01 && <p className="mt-1 text-xs text-red-600">Melebihi yang sudah dibayar</p>}
                             </td>
+                            <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-gray-600 dark:text-gray-300">{discOf[inv.id] ? rp(discOf[inv.id]) : '-'}</td>
                             <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-gray-600 dark:text-gray-300">{rp(inv.balance_due - (Number(effAlloc[inv.id]) || 0))}</td>
                           </tr>
                         );
