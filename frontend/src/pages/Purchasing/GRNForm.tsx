@@ -15,6 +15,7 @@ interface Row {
   is_service?: boolean
   split?: Record<string, string>
   qty0?: number
+  group?: { id: number; batch: string; qty: number }[]
   itemId?: number
   product_id: number | null
   material_id: number | null
@@ -171,15 +172,26 @@ export default function GRNForm() {
         setPo(poData)
         const byId: Record<number, any> = {}
         ;(poData?.items || []).forEach((it: any) => { byId[it.id] = it })
-        setRows((g.items || []).map((it: any): Row => ({
-          key: `g-${it.id}`, itemId: it.id, po_item_id: it.po_item_id ?? null, product_id: it.product_id ?? null, material_id: it.material_id ?? null,
-          name: it.item_name || (it.po_item_id && byId[it.po_item_id] ? itemName(byId[it.po_item_id]) : (it.material_name || it.product_name || `Item #${it.id}`)),
-          code: it.material_code || it.product_code, uom: it.uom, ordered: Number(it.quantity_ordered || 0),
-          receivedBefore: 0, qty: Number(it.quantity_received || 0), qty0: Number(it.quantity_received || 0), location_id: it.location_id ?? null,
-          batch_number: it.batch_number || '', lot_number: it.lot_number || '',
-          production_date: it.production_date ? String(it.production_date).split('T')[0] : '',
-          expiry_date: it.expiry_date ? String(it.expiry_date).split('T')[0] : '', notes: it.notes || '', open: false,
-        })))
+        const grouped: Record<string, any[]> = {}
+        ;(g.items || []).forEach((it: any) => {
+          const k = it.po_item_id ? `po-${it.po_item_id}` : `m-${it.material_id ?? ''}-${it.product_id ?? ''}-${it.item_name ?? ''}`
+          ;(grouped[k] = grouped[k] || []).push(it)
+        })
+        setRows(Object.values(grouped).map((list: any[]): Row => {
+          const it = list[0]
+          const total = list.reduce((a: number, x: any) => a + Number(x.quantity_received || 0), 0)
+          const batches = Array.from(new Set(list.map((x: any) => x.batch_number).filter(Boolean)))
+          return {
+            key: `g-${it.id}`, itemId: it.id, po_item_id: it.po_item_id ?? null, product_id: it.product_id ?? null, material_id: it.material_id ?? null,
+            name: it.item_name || (it.po_item_id && byId[it.po_item_id] ? itemName(byId[it.po_item_id]) : (it.material_name || it.product_name || `Item #${it.id}`)),
+            code: it.material_code || it.product_code, uom: it.uom, ordered: Number(it.quantity_ordered || 0),
+            receivedBefore: 0, qty: total, qty0: total, location_id: it.location_id ?? null,
+            batch_number: batches.join(', '), lot_number: it.lot_number || '',
+            production_date: it.production_date ? String(it.production_date).split('T')[0] : '',
+            expiry_date: it.expiry_date ? String(it.expiry_date).split('T')[0] : '', notes: it.notes || '', open: false,
+            group: list.map((x: any) => ({ id: x.id, batch: x.batch_number || '', qty: Number(x.quantity_received || 0) })),
+          }
+        }))
       })
       .catch(() => showError('Gagal memuat GRN'))
   }, [id, isEdit])
@@ -223,11 +235,22 @@ export default function GRNForm() {
   const [batchEdit, setBatchEdit] = useState<{ i: number; list: { batch: string; qty: string }[] } | null>(null)
   const openBatch = (i: number) => {
     const r = rows[i]
+    if (isEdit && r.group) {
+      setBatchEdit({ i, list: r.group.map((g) => ({ batch: g.batch, qty: String(g.qty) })) })
+      return
+    }
     const cur = batchQtys(r)
     setBatchEdit({ i, list: cur.length ? cur.map((b) => ({ batch: b.batch, qty: String(b.qty) })) : [{ batch: '', qty: String(num(r.qty)) }] })
   }
   const saveBatch = () => {
     if (!batchEdit) return
+    if (isEdit && rows[batchEdit.i].group) {
+      const upd = batchEdit.list.map((b) => b.batch.trim())
+      if (upd.some((b) => b.length > 100)) return showError('Satu nomor batch maksimal 100 karakter')
+      update(batchEdit.i, { group: rows[batchEdit.i].group!.map((g, k) => ({ ...g, batch: upd[k] })), batch_number: Array.from(new Set(upd.filter(Boolean))).join(', ') })
+      setBatchEdit(null)
+      return
+    }
     const list = batchEdit.list.map((b) => ({ batch: b.batch.trim(), qty: b.qty })).filter((b) => b.batch)
     const names = list.map((b) => b.batch)
     if (new Set(names).size !== names.length) return showError('Ada nomor batch yang sama dua kali')
@@ -268,10 +291,11 @@ export default function GRNForm() {
       if (isEdit) {
         await axiosInstance.put(`/api/purchasing/grn/${id}`, {
           grn_number: grnNumber.trim() || undefined, receipt_date: receiptDate, delivery_note_number: deliveryNote, supplier_invoice_number: supInvNo, vehicle_number: vehicle, driver_name: driver, notes,
-          items: rows.map((r) => ({
-            id: r.itemId, po_item_id: r.po_item_id, item_name: r.name.trim() || null, ...(num(r.qty) !== num(r.qty0) ? { quantity_received: num(r.qty) } : {}), lot_number: r.lot_number || null, notes: r.notes || null,
+          items: rows.flatMap((r) => (r.group && r.group.length ? r.group : [{ id: r.itemId as number, batch: r.batch_number, qty: 0 }]).map((g) => ({
+            id: g.id, po_item_id: r.po_item_id, item_name: r.name.trim() || null, batch_number: g.batch.trim() || null,
+            ...((r.group?.length || 1) === 1 && num(r.qty) !== num(r.qty0) ? { quantity_received: num(r.qty) } : {}), lot_number: r.lot_number || null, notes: r.notes || null,
             production_date: r.production_date || null, expiry_date: r.expiry_date || null,
-          })),
+          }))),
         })
         await uploadAttachments('grn', id, attFiles)
         showSuccess('GRN diperbarui')
@@ -429,7 +453,9 @@ export default function GRNForm() {
                           <td className="py-2 pr-3">
                             {isEdit ? (
                               <>
-                                <NumberInput className="input-field text-right" value={r.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />
+                                {(r.group?.length || 0) > 1
+                                  ? <div className="input-field bg-gray-50 text-right dark:bg-gray-900" title="Jumlah per batch dilihat di rincian batch">{num(r.qty).toLocaleString('id-ID')}</div>
+                                  : <NumberInput className="input-field text-right" value={r.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />}
                                 <p className="mt-1 text-right text-xs text-gray-500">{r.uom}</p>
                               </>
                             ) : (
@@ -453,7 +479,6 @@ export default function GRNForm() {
                           </td>
                           <td className="py-2 pr-3">
                             {!needsWarehouse(r) ? <div className="text-xs text-gray-400">-</div>
-                              : isEdit ? <div className="text-sm">{r.batch_number || '-'}</div>
                               : (
                                 <button type="button" data-col="batch" onClick={() => openBatch(i)} className="input-field w-full text-left truncate" title={r.batch_number || 'Isi nomor batch'}>
                                   {parseBatches(r.batch_number).length === 0 ? <span className="text-gray-400">Isi batch</span>
@@ -510,6 +535,7 @@ export default function GRNForm() {
       </form>
       {batchEdit && (() => {
         const r = rows[batchEdit.i]
+        const editMode = isEdit && !!r.group
         const multi = batchEdit.list.length > 1
         const sum = batchEdit.list.reduce((a, b) => a + num(b.qty), 0)
         const setItem = (k: number, patch: Partial<{ batch: string; qty: string }>) => setBatchEdit({ ...batchEdit, list: batchEdit.list.map((b, idx) => (idx === k ? { ...b, ...patch } : b)) })
@@ -522,13 +548,13 @@ export default function GRNForm() {
                 {batchEdit.list.map((b, k) => (
                   <div key={k} className="flex items-center gap-2">
                     <input autoFocus={k === batchEdit.list.length - 1} className="input-field flex-1" value={b.batch} placeholder="No. batch" onChange={(e) => setItem(k, { batch: e.target.value })} />
-                    {multi && <NumberInput className="input-field w-32 text-right" value={b.qty as any} onChange={(e: any) => setItem(k, { qty: e.target.value })} />}
-                    {multi && <button type="button" className="text-xs text-red-600 hover:underline" onClick={() => setBatchEdit({ ...batchEdit, list: batchEdit.list.filter((_, idx) => idx !== k) })}>Hapus</button>}
+                    {multi && (editMode ? <div className="w-32 text-right text-sm tabular-nums">{num(b.qty).toLocaleString('id-ID')}</div> : <NumberInput className="input-field w-32 text-right" value={b.qty as any} onChange={(e: any) => setItem(k, { qty: e.target.value })} />)}
+                    {multi && !editMode && <button type="button" className="text-xs text-red-600 hover:underline" onClick={() => setBatchEdit({ ...batchEdit, list: batchEdit.list.filter((_, idx) => idx !== k) })}>Hapus</button>}
                   </div>
                 ))}
               </div>
-              <button type="button" className="mt-3 text-sm text-blue-600 hover:underline" onClick={() => setBatchEdit({ ...batchEdit, list: [...batchEdit.list, { batch: '', qty: '0' }] })}>+ Tambah batch</button>
-              {multi && <p className={`mt-2 text-xs ${Math.abs(sum - num(r.qty)) > 0.01 ? 'text-red-600' : 'text-gray-500'}`}>Total batch: {sum.toLocaleString('id-ID')} dari {num(r.qty).toLocaleString('id-ID')}</p>}
+              {!editMode && <button type="button" className="mt-3 text-sm text-blue-600 hover:underline" onClick={() => setBatchEdit({ ...batchEdit, list: [...batchEdit.list, { batch: '', qty: '0' }] })}>+ Tambah batch</button>}
+              {multi && !editMode && <p className={`mt-2 text-xs ${Math.abs(sum - num(r.qty)) > 0.01 ? 'text-red-600' : 'text-gray-500'}`}>Total batch: {sum.toLocaleString('id-ID')} dari {num(r.qty).toLocaleString('id-ID')}</p>}
               <div className="mt-4 flex justify-end gap-2">
                 <button type="button" className="btn-secondary" onClick={() => setBatchEdit(null)}>Batal</button>
                 <button type="button" className="btn-primary" onClick={saveBatch}>Simpan batch</button>

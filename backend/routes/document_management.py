@@ -1091,6 +1091,23 @@ def generate_from_three_way_match(invoice_id):
         return jsonify({'error': str(e)}), 500
 
 
+@document_bp.route('/generate-from-grn/<int:grn_id>', methods=['POST'])
+@jwt_required()
+@require_permission('documents.create')
+def generate_from_grn(grn_id):
+    try:
+        from utils.document_generator import generate_grn_document
+        detail = bool((request.get_json(silent=True) or {}).get('detail'))
+        document = generate_grn_document(grn_id, get_jwt_identity(), detail=detail)
+        return jsonify({'message': 'Dokumen penerimaan dibuat', 'document_id': document.id,
+                        'document_number': document.document_number}), 201
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 @document_bp.route('/generate-from-purchase-invoice/<int:invoice_id>', methods=['POST'])
 @jwt_required()
 @require_permission('documents.create')

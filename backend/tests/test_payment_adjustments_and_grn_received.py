@@ -170,3 +170,19 @@ def test_no_auto_grn_when_service_line_already_received_by_manual_grn(client, au
         'items': [{'po_item_id': poi.id, 'quantity': 1, 'unit_price': 100}]})
     assert r.status_code == 201, r.get_json()
     assert GoodsReceivedNote.query.filter_by(po_id=po.id).count() == 1
+
+
+def test_grn_print_normal_and_batch_detail(client, auth_headers, db_session, test_material):
+    from models.purchasing import GoodsReceivedNote, GRNItem, Supplier
+    sup = Supplier(code='SUP-PR', company_name='Sup Print', is_active=True); db_session.add(sup); db_session.commit()
+    g = GoodsReceivedNote(grn_number='BPB-PR-1', supplier_id=sup.id, receipt_date=date.today(), status='approved'); db_session.add(g); db_session.commit()
+    for b, q in (('B1', 3), ('B2', 4)):
+        db_session.add(GRNItem(grn_id=g.id, po_item_id=None, material_id=test_material.id, quantity_ordered=q, quantity_received=q, quantity_accepted=q, uom='KG', batch_number=b))
+    db_session.commit()
+    r1 = client.post(f'/api/documents/generate-from-grn/{g.id}', json={}, headers=auth_headers)
+    r2 = client.post(f'/api/documents/generate-from-grn/{g.id}', json={'detail': True}, headers=auth_headers)
+    assert r1.status_code == 201 and r2.status_code == 201, (r1.get_json(), r2.get_json())
+    from models.document_management import Document
+    d1 = db_session.get(Document, r1.get_json()['document_id']); d2 = db_session.get(Document, r2.get_json()['document_id'])
+    assert len(d1.document_data['lines']) == 1 and d1.document_data['lines'][0]['qty'] == 7 and d1.document_data['lines'][0]['batch_text'] == '2 batch'
+    assert [x['batch_text'] for x in d2.document_data['lines']] == ['B1', 'B2']

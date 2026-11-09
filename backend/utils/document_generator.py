@@ -791,6 +791,66 @@ def generate_three_way_match_document(invoice_id, user_id):
     return document
 
 
+def generate_grn_document(grn_id, user_id, detail=False):
+    """Cetak penerimaan barang. detail=True: satu baris per nomor batch; False: satu baris per barang (batch diringkas)."""
+    from models.purchasing import GoodsReceivedNote
+
+    grn = db.session.get(GoodsReceivedNote, grn_id)
+    if not grn:
+        raise ValueError('GRN tidak ditemukan')
+
+    def name_of(i):
+        return (i.item_name or (i.po_item.description if i.po_item and i.po_item.description else None)
+                or (i.material.name if i.material else None) or (i.product.name if i.product else None) or '')
+
+    def fmt(n):
+        n = float(n or 0)
+        return f'{n:,.3f}'.rstrip('0').rstrip('.').replace(',', '_').replace('.', ',').replace('_', '.')
+
+    groups = {}
+    for it in grn.items:
+        key = it.po_item_id or (it.material_id, it.product_id, name_of(it))
+        groups.setdefault(key, []).append(it)
+    rows, n = [], 0
+    for items in groups.values():
+        if detail:
+            for it in items:
+                n += 1
+                rows.append({'no': n, 'item_name': name_of(it), 'uom': it.uom, 'qty': float(it.quantity_received or 0), 'batch_text': it.batch_number or '-'})
+        else:
+            n += 1
+            batches = [b for b in dict.fromkeys(i.batch_number for i in items) if b]
+            rows.append({'no': n, 'item_name': name_of(items[0]), 'uom': items[0].uom, 'qty': sum(float(i.quantity_received or 0) for i in items),
+                         'batch_text': (batches[0] if len(batches) == 1 else (f'{len(batches)} batch' if batches else '-'))})
+    total = sum(r['qty'] for r in rows)
+    d = lambda x: x.strftime('%d-%m-%Y') if x else ''
+    document_data = {
+        'document_number': grn.grn_number,
+        'hdr_no': f'No. {grn.grn_number}', 'hdr_date': f'Tanggal Terima: {d(grn.receipt_date)}',
+        'hdr_extra': 'Rincian per nomor batch' if detail else '',
+        'supplier_name': grn.supplier.company_name if grn.supplier else '',
+        'summary_line': f'Status {grn.status}' + (f' | {len(rows)} baris' if rows else ''),
+        'po_number': grn.purchase_order.po_number if grn.purchase_order else 'Tanpa PO',
+        'delivery_note': grn.delivery_note_number or '-', 'supplier_invoice_number': grn.supplier_invoice_number or '-',
+        'vehicle_driver': ' / '.join(x for x in [grn.vehicle_number, grn.driver_name] if x) or '-',
+        'lines': rows, 'total_qty_text': fmt(total), 'notes': grn.notes or '',
+        'company': get_company_context(),
+    }
+    template = ensure_default_template(user_id, 'grn')
+    document = Document(
+        document_number=generate_number('DOC-GRN', Document, 'document_number'),
+        document_title=f'Penerimaan Barang {grn.grn_number}' + (' (rincian batch)' if detail else ''), document_type='grn',
+        template_version_id=template.current_version_id, document_data=document_data,
+        reference_type='grn', reference_id=grn.id, reference_number=grn.grn_number, status='generated', created_by=user_id)
+    document.html_content = render_template_version_to_html(template.current_version, document_data)
+    db.session.add(document)
+    db.session.flush()
+    db.session.add(DocumentLog(document_id=document.id, activity_type='auto_generated',
+                               activity_description=f'GRN {grn.grn_number} dicetak' + (' (rincian batch)' if detail else ''), user_id=user_id))
+    db.session.commit()
+    return document
+
+
 def generate_purchase_order_document(po_id, user_id):
     """Printable Purchase Order."""
     from models.purchasing import PurchaseOrder

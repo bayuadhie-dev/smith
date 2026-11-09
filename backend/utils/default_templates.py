@@ -296,6 +296,26 @@ def build_three_way_match():
     return o, 'A4', 'landscape', None, None
 
 
+def build_grn():
+    o = header(14, 182, 'PENERIMAAN BARANG', lines=3)
+    o += [BOX(14, 33, 90, 26),
+          L('PEMASOK', 16, 34, 86, 3.5, fs=7.5, color=MUTED),
+          F('supplier_name', 16, 38.5, 86, 5, fs=11, bold=True),
+          F('summary_line', 16, 45, 86, 9, fs=8.5, color=MUTED)]
+    o += meta_grid(104, 33, 34, 58, [('No. PO', 'po_number'), ('No. Surat Jalan', 'delivery_note'), ('No. Faktur Pemasok', 'supplier_invoice_number'),
+                                     ('Kendaraan / Sopir', 'vehicle_driver')], 6.5)
+    o.append(TABLE('lines', 14, 63, 182, [
+        C('no', 'No.', 9, 'center'), C('item_name', 'Barang', 70), C('uom', 'Sat.', 16),
+        C('qty', 'Diterima', 26, 'right', 'num'), C('batch_text', 'No. Batch', 61),
+    ], min_rows=0, row_h=6.5, height=30, fs=9))
+    o += flow([BOX(116, 98, 40, 7, fill=CELL), BOX(156, 98, 40, 7),
+               L('TOTAL DITERIMA', 117.5, 99.5, 36, 4, fs=9, bold=True),
+               F('total_qty_text', 157.5, 99.5, 37, 4, fs=9, bold=True, align='right')])
+    o += flow(notes_line(14, 109, 182))
+    o += flow(signatures(14, 182, 130, ['Diterima oleh,', 'Diperiksa oleh,', 'Pengirim,'], captions={0: ' ', 1: ' ', 2: ' '}))
+    return o, 'A4', 'portrait', None, None
+
+
 def build_surat_jalan():
     o = header(14, 182, 'SURAT JALAN')
     o += [BOX(14, 33, 90, 26),
@@ -390,6 +410,7 @@ DEFAULTS = {
     'purchase_order': ('Purchase Order Default', 'PO_DEFAULT', build_po),
     'purchase_invoice': ('Faktur Pembelian Default', 'PI_DEFAULT', build_purchase_invoice),
     'three_way_match': ('Pencocokan 3 Arah Default', 'TWM_DEFAULT', build_three_way_match),
+    'grn': ('Penerimaan Barang Default', 'GRN_DEFAULT', build_grn),
     'surat_jalan': ('Surat Jalan Default', 'SJ_DEFAULT', build_surat_jalan),
     'spk': ('SPK Default', 'SPK_DEFAULT', build_spk),
     'spk_batch': ('SPK Batch Default', 'SPK_BATCH_DEFAULT', build_spk_batch),

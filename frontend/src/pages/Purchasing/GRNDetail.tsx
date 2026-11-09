@@ -1,4 +1,5 @@
 import DocActions from '../../components/DocActions'
+import DocumentGenerateButton from '../../components/DocumentGenerateButton'
 import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useState, useEffect } from 'react';
@@ -197,6 +198,8 @@ export default function GRNDetail() {
             </button>
           )}
           <Link to={`/app/purchasing/grn/${grn.id}/edit`} className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">Ubah</Link>
+          <DocumentGenerateButton transactionType="grn" transactionId={grn.id} transactionNumber={grn.grn_number} label="Cetak" />
+          <DocumentGenerateButton transactionType="grn" transactionId={grn.id} transactionNumber={grn.grn_number} label="Cetak + rincian batch" detail />
           {grn.status === 'approved' && (
             <Link
               to={grn.po_id ? `/app/purchasing/invoices/new?po_id=${grn.po_id}` : `/app/purchasing/invoices/new?grn_id=${grn.id}`}
