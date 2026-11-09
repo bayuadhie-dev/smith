@@ -190,6 +190,14 @@ const navigate = useNavigate()
     }
   }, [watchedTaxable, watchedSupplier, watchedPpn, suppliers])
 
+  // Mata uang dari master pemasok: PO baru ke pemasok bermata uang asing otomatis memakai mata uang itu (kurs otomatis ikut).
+  useEffect(() => {
+    if (isEdit || !watchedSupplier) return
+    const sup = (suppliers?.suppliers || []).find((x: any) => x.id === Number(watchedSupplier))
+    const cur = String(sup?.currency || 'IDR').toUpperCase()
+    if ((PO_CURRENCIES as readonly string[]).includes(cur)) setValue('currency', cur, { shouldDirty: true })
+  }, [watchedSupplier, suppliers, isEdit])
+
   // Termin dari master pemasok: saat pemasok dipilih di PO baru, termin ikut (hari -> NET_n / COD); tetap bisa diubah.
   useEffect(() => {
     if (isEdit || !watchedSupplier) return
@@ -365,7 +373,7 @@ const navigate = useNavigate()
               </label>
               <input type="hidden" {...register('supplier_id', { required: 'Supplier is required' })} />
               <SearchableSelect
-                options={(suppliers?.suppliers || []).map((sp: any) => ({ id: sp.id, name: `${sp.code} - ${sp.company_name}` }))}
+                options={(suppliers?.suppliers || []).map((sp: any) => ({ id: sp.id, name: `${sp.code} - ${sp.company_name}${sp.supplier_type ? ' [' + sp.supplier_type + ']' : ''}` }))}
                 value={watch('supplier_id') ? Number(watch('supplier_id')) : null}
                 onChange={(v) => setValue('supplier_id', (v ?? '') as any, { shouldValidate: true, shouldDirty: true })}
                 placeholder="Select a supplier"

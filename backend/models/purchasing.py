@@ -25,6 +25,7 @@ class Supplier(db.Model):
     credit_limit = db.Column(db.Numeric(15, 2), default=0.0)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     supplier_type = db.Column(db.String(50), nullable=True)  # manufacturer, distributor, trader
+    currency = db.Column(db.String(10), nullable=False, default='IDR', server_default='IDR')  # mata uang utama pemasok; PO baru mengikuti
     rating = db.Column(db.String(20), nullable=True)  # A, B, C
     lead_time_days = db.Column(db.Integer, default=0)
 
