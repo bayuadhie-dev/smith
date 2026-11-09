@@ -235,3 +235,14 @@ def test_purchase_invoice_with_pph_reduces_payable_and_posts_balanced_journal(cl
     entries = AccountingEntry.query.filter_by(reference_type='purchase_invoice', reference_id=inv.id).all()
     assert round(sum(float(e.debit_amount or 0) for e in entries), 2) == round(sum(float(e.credit_amount or 0) for e in entries), 2) == 28485264.0
     assert any('PPh 22' in (e.description or '') and float(e.credit_amount) == 384936 for e in entries)
+
+
+def test_invoice_summary_list_hides_cancelled_unless_filtered(client, auth_headers, db_session):
+    from models.finance import Invoice
+    db_session.add(Invoice(invoice_number='PI-HIDE-1', invoice_type='purchase', invoice_date=date.today(), total_amount=1, balance_due=1, status='sent'))
+    db_session.add(Invoice(invoice_number='PI-HIDE-1-V1', invoice_type='purchase', invoice_date=date.today(), total_amount=1, balance_due=0, status='cancelled'))
+    db_session.commit()
+    nums = [i['invoice_number'] for i in client.get('/api/purchasing/purchase-invoices/summary', headers=auth_headers).get_json()['invoices']]
+    assert 'PI-HIDE-1' in nums and 'PI-HIDE-1-V1' not in nums
+    nums2 = [i['invoice_number'] for i in client.get('/api/purchasing/purchase-invoices/summary?status=cancelled', headers=auth_headers).get_json()['invoices']]
+    assert 'PI-HIDE-1-V1' in nums2

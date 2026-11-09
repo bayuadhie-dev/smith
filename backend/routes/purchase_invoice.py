@@ -1289,6 +1289,8 @@ def invoice_match_summary():
         q = Invoice.query.filter(Invoice.invoice_type == 'purchase')
         if status:
             q = q.filter(Invoice.status == status)
+        else:
+            q = q.filter(Invoice.status != 'cancelled')   # faktur lama hasil "Ubah" cukup terlihat di Riwayat, bukan di daftar
         if search:
             q = q.filter(Invoice.invoice_number.ilike(f'%{search}%'))
 
