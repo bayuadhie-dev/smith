@@ -1282,16 +1282,16 @@ def uom_options():
         q.filter(db.or_(UoMConversion.product_id == product_id, UoMConversion.product_id.is_(None)))
     rows = q.all()
     # konversi khusus barang menimpa konversi global
-    rows.sort(key=lambda r: 0 if (r.material_id or r.product_id) else 1, reverse=True)
-    for r in rows:
-        f, t = (r.from_uom.code if r.from_uom else None), (r.to_uom.code if r.to_uom else None)
-        factor = float(r.conversion_factor or 0)
-        if not f or not t or factor <= 0:
-            continue
-        if t.lower() == str(base).lower() and f not in out:
+    rows.sort(key=lambda r: 0 if (r.material_id or r.product_id) else 1)   # konversi khusus barang didahulukan
+    b = str(base).lower()
+    for r in rows:   # arah langsung (1 ROL = X PCS) dulu, supaya tidak kena pembulatan kebalikan
+        f, t, factor = (r.from_uom.code if r.from_uom else None), (r.to_uom.code if r.to_uom else None), float(r.conversion_factor or 0)
+        if f and t and factor > 0 and t.lower() == b and f not in out:
             out[f] = factor
-        elif f.lower() == str(base).lower() and t not in out:
-            out[t] = round(1 / factor, 10)
+    for r in rows:
+        f, t, factor = (r.from_uom.code if r.from_uom else None), (r.to_uom.code if r.to_uom else None), float(r.conversion_factor or 0)
+        if f and t and factor > 0 and f.lower() == b and t not in out:
+            out[t] = round(1 / factor, 6)
     return jsonify({'base': base, 'options': [{'code': k, 'factor': v} for k, v in out.items()]}), 200
 
 
