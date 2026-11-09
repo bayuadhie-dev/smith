@@ -64,9 +64,12 @@ export default function InvoiceMatching() {
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">Faktur Pembelian {inv.invoice_number}</h1>
             <p className="text-sm text-gray-500">{inv.supplier_name || '-'} · tanpa PO{inv.grn_id ? <> · <Link className="text-blue-600 hover:underline" to={`/app/purchasing/grn/${inv.grn_id}`}>lihat GRN</Link></> : null} · pencocokan 3 arah tidak berlaku tanpa PO</p>
           </div>
+          <div className="flex items-center gap-2">
+          <DocumentGenerateButton transactionType="purchase_invoice" transactionId={inv.id} transactionNumber={inv.invoice_number} label="Cetak" />
           {inv.status !== 'cancelled' && inv.grn_id && (
             <Link to={`/app/purchasing/invoices/new?grn_id=${inv.grn_id}&edit=${id}`} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200">Ubah faktur</Link>
           )}
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
           <div><div className="text-xs text-gray-500">No. faktur pemasok</div>{inv.supplier_invoice_number || '-'}</div>

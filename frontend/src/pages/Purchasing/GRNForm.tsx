@@ -18,6 +18,7 @@ interface Row {
   group?: { id: number; batch: string; qty: number }[]
   uomOptions?: { code: string; factor: number }[]
   entryUom?: string
+  enteredText?: string
   itemId?: number
   product_id: number | null
   material_id: number | null
@@ -192,6 +193,7 @@ export default function GRNForm() {
             production_date: it.production_date ? String(it.production_date).split('T')[0] : '',
             expiry_date: it.expiry_date ? String(it.expiry_date).split('T')[0] : '', notes: it.notes || '', open: false,
             group: list.map((x: any) => ({ id: x.id, batch: x.batch_number || '', qty: Number(x.quantity_received || 0) })),
+            enteredText: (() => { const ent = list.filter((x: any) => x.entered_uom && x.entered_qty != null); return ent.length === list.length && ent.length ? ent.map((x: any) => `${Number(x.entered_qty).toLocaleString('id-ID')} ${x.entered_uom}`).join(' + ') : '' })(),
           }
         }))
       })
@@ -483,7 +485,7 @@ export default function GRNForm() {
                                 {(r.group?.length || 0) > 1
                                   ? <div className="input-field bg-gray-50 text-right dark:bg-gray-900" title="Jumlah per batch dilihat di rincian batch">{num(r.qty).toLocaleString('id-ID')}</div>
                                   : <NumberInput className="input-field text-right" value={r.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />}
-                                <p className="mt-1 text-right text-xs text-gray-500">{r.uom}</p>
+                                <p className="mt-1 text-right text-xs text-gray-500">{r.uom}{r.enteredText ? ` (diinput ${r.enteredText})` : ''}</p>
                               </>
                             ) : (
                               <>
