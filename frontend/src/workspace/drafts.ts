@@ -135,3 +135,43 @@ export function useDraftState<T>(key: string, initial: T | (() => T), enabled = 
 
   return [value, setValue, discard]
 }
+
+/**
+ * Draft for react-hook-form forms: the whole form (incl. rows) is saved per tab and restored after a refresh.
+ * Only for new records (pass enabled=false in edit mode). Call the returned discard() after a successful save.
+ */
+export function useFormDraft(form: { watch: any; getValues: any; reset: any }, enabled: boolean, key = '__rhf'): () => void {
+  const ctx = useContext(TabContext)
+  const tabId = enabled ? ctx?.tabId : undefined
+  const base = useRef<string>()
+  const discarded = useRef(false)
+
+  useEffect(() => {
+    if (!tabId) return
+    base.current = JSON.stringify(form.getValues())
+    const saved = readDraft<any>(tabId, key)
+    if (saved !== undefined) { form.reset(saved); setDirty(tabId, key, true) }
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const sub = form.watch((vals: any) => {
+      if (discarded.current) return
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        const json = JSON.stringify(vals)
+        if (json === base.current) clearDraft(tabId, key)
+        else { writeDraft(tabId, key, vals); setDirty(tabId, key, true) }
+      }, 400)
+    })
+    return () => { clearTimeout(timer); sub.unsubscribe() }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabId, key])
+
+  return useCallback(() => {
+    discarded.current = true
+    if (tabId) clearDraft(tabId, key)
+  }, [tabId, key])
+}
+
+export function useClearTabDrafts(): () => void {
+  const ctx = useContext(TabContext)
+  return useCallback(() => { if (ctx?.tabId) clearTabDrafts(ctx.tabId) }, [ctx?.tabId])
+}

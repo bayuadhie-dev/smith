@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useDraftState, useClearTabDrafts } from '../../workspace/drafts'
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import SearchableSelect from '../../components/SearchableSelect';
@@ -54,7 +55,7 @@ const TransferForm: React.FC = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
 
-  const [formData, setFormData] = useState<TransferFormData>({
+  const [formData, setFormData] = useDraftState<TransferFormData>('formData', {
     product_id: 0,
     from_location_id: 0,
     to_location_id: 0,
@@ -67,9 +68,10 @@ const TransferForm: React.FC = () => {
     notes: '',
     priority: 'normal',
     expected_date: ''
-  });
+  }, !isEdit);
 
   const [products, setProducts] = useState<Product[]>([]);
+  const clearDrafts = useClearTabDrafts()
   const [locations, setLocations] = useState<Location[]>([]);
   const [availableQuantity, setAvailableQuantity] = useState<number>(0);
   const [loading, setLoading] = useState(false);
@@ -237,6 +239,7 @@ const TransferForm: React.FC = () => {
       });
 
       if (response.ok) {
+        clearDrafts()
         navigate('/app/warehouse/transfers');
       } else {
         const errorData = await response.json();

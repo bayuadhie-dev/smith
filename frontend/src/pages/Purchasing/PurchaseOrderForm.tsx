@@ -1,6 +1,7 @@
 import { enterMovesDown } from '../../utils/enterNavigation'
 import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import React, { useState, useEffect } from 'react'
+import { useFormDraft } from '../../workspace/drafts'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useForm, useFieldArray } from 'react-hook-form'
@@ -77,7 +78,7 @@ const navigate = useNavigate()
   const [updatePO] = useUpdatePurchaseOrderMutation()
   const { data: existingPO } = useGetPurchaseOrderQuery(id, { skip: !isEdit })
 
-  const { register, control, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<PurchaseOrderFormData>({
+  const { register, control, handleSubmit, watch, setValue, reset, getValues, formState: { errors } } = useForm<PurchaseOrderFormData>({
     defaultValues: {
       order_date: new Date().toISOString().split('T')[0],
       currency: 'IDR',
@@ -95,6 +96,7 @@ const navigate = useNavigate()
     control,
     name: 'items'
   })
+  const discardDraft = useFormDraft({ watch, getValues, reset }, !isEdit)
 
   // Alamat penerima bawaan = alamat perusahaan di pengaturan; hanya untuk PO baru dan hanya bila masih kosong.
   useEffect(() => {
@@ -271,6 +273,7 @@ const navigate = useNavigate()
         await uploadAttachments('purchase_order', created?.po_id, attFiles)
         toast.success('Purchase Order created successfully!')
       }
+      discardDraft()
       navigate('/app/purchasing/purchase-orders')
     } catch (error: any) {
       toast.error(error.data?.error || `Failed to ${isEdit ? 'update' : 'create'} purchase order`)

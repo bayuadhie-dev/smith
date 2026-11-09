@@ -1,4 +1,5 @@
 import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
+import { useDraftState, useClearTabDrafts } from '../../workspace/drafts'
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -29,15 +30,16 @@ const RETURN_TYPES = [
 export default function PurchaseReturnForm() {
   const navigate = useNavigate();
   const [attFiles, setAttFiles] = useState<File[]>([])
+  const clearDrafts = useClearTabDrafts()
 
   const [invoiceSearch, setInvoiceSearch] = useState('');
   const [invoiceOptions, setInvoiceOptions] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
-  const [lines, setLines] = useState<ReturnLine[]>([]);
-  const [returnType, setReturnType] = useState('defective');
-  const [reason, setReason] = useState('');
-  const [returnDate, setReturnDate] = useState(new Date().toISOString().slice(0, 10));
+  const [selectedInvoice, setSelectedInvoice] = useDraftState<any>('selectedInvoice', null, true);
+  const [lines, setLines] = useDraftState<ReturnLine[]>('lines', [], true);
+  const [returnType, setReturnType] = useDraftState('returnType', 'defective', true);
+  const [reason, setReason] = useDraftState('reason', '', true);
+  const [returnDate, setReturnDate] = useDraftState('returnDate', new Date().toISOString().slice(0, 10), true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -148,6 +150,7 @@ export default function PurchaseReturnForm() {
 
       toast.success(res.data.message || 'Retur pembelian berhasil dibuat');
       await uploadAttachments('purchase_return', res.data.return?.id, attFiles);
+      clearDrafts()
       navigate(`/app/purchasing/returns/${res.data.return?.id}`);
     } catch (err: any) {
       toast.error(err?.response?.data?.error || 'Gagal membuat retur pembelian');

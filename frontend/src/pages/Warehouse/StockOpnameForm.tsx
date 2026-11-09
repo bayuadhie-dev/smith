@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useDraftState, useClearTabDrafts } from '../../workspace/drafts'
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
@@ -22,16 +23,17 @@ interface User {
 export default function StockOpnameForm() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const clearDrafts = useClearTabDrafts()
   const [zones, setZones] = useState<Zone[]>([]);
   const [users, setUsers] = useState<User[]>([]);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useDraftState('formData', {
     zone_id: '',
     opname_type: 'full',
     scheduled_date: new Date().toISOString().split('T')[0],
     assigned_to: '',
     notes: '',
-  });
+  }, true);
 
   useEffect(() => {
     fetchZones();
@@ -77,6 +79,7 @@ export default function StockOpnameForm() {
 
       const response = await axiosInstance.post('/api/stock-opname/orders', payload);
       toast.success('Perintah stok opname berhasil dibuat');
+      clearDrafts()
       navigate(`/app/warehouse/stock-opname/${response.data.order.id}`);
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Gagal membuat perintah opname');

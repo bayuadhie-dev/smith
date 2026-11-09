@@ -1,5 +1,6 @@
 import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import React, { useState, useEffect } from 'react'
+import { useFormDraft } from '../../workspace/drafts'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useForm, useFieldArray } from 'react-hook-form'
@@ -113,7 +114,7 @@ const navigate = useNavigate()
       .catch(() => setUomCodes([]))
   }, [])
 
-  const { register, control, handleSubmit, watch, reset, setValue, formState: { errors } } = useForm<SalesOrderFormData>({
+  const { register, control, handleSubmit, watch, reset, setValue, getValues, formState: { errors } } = useForm<SalesOrderFormData>({
     defaultValues: {
       order_date: new Date().toISOString().split('T')[0],
       priority: 'normal',
@@ -151,6 +152,7 @@ const navigate = useNavigate()
     control,
     name: 'items'
   })
+  const discardDraft = useFormDraft({ watch, getValues, reset }, !isEdit)
 
   const watchedItems = watch('items')
 
@@ -413,6 +415,7 @@ const navigate = useNavigate()
       
       await uploadAttachments('sales_order', (result as any).order_id, attFiles)
       toast.success(`Sales Order ${result.order_number || ''} berhasil dibuat`)
+      discardDraft()
       navigate('/app/sales/orders')
     } catch (error: any) {
       toast.error(error.data?.error || 'Failed to create sales order')

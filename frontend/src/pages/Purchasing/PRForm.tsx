@@ -1,4 +1,5 @@
 import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
+import { useDraftState, useClearTabDrafts } from '../../workspace/drafts'
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -40,20 +41,21 @@ export default function PRForm() {
   const isNew = !id || id === 'new';
   const navigate = useNavigate();
   const [attFiles, setAttFiles] = useState<File[]>([])
+  const clearDrafts = useClearTabDrafts()
 
   const [pr, setPr] = useState<any>(null);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [suppliers, setSuppliers] = useState<any[]>([]);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useDraftState('formData', {
     department: '',
     required_date: '',
     purpose: '',
     priority: 'normal',
     notes: '',
-  });
-  const [items, setItems] = useState<PRItem[]>([emptyItem()]);
+  }, isNew);
+  const [items, setItems] = useDraftState<PRItem[]>('items', [emptyItem()], isNew);
 
   // For convert-to-PO modal
   const [showConvertModal, setShowConvertModal] = useState(false);
@@ -139,6 +141,7 @@ export default function PRForm() {
         const res = await axiosInstance.post('/api/purchasing/purchase-requisitions', payload);
         await uploadAttachments('purchase_request', res.data.id, attFiles);
         toast.success('PR berhasil dibuat');
+        clearDrafts()
         navigate(`/app/purchasing/requisitions/${res.data.id}`);
       } else {
         await axiosInstance.put(`/api/purchasing/purchase-requisitions/${id}`, payload);

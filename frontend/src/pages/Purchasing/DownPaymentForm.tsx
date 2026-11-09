@@ -1,4 +1,5 @@
 import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
+import { useDraftState, useClearTabDrafts } from '../../workspace/drafts'
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosConfig'
@@ -15,18 +16,19 @@ const labelCls = 'mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-
 export default function DownPaymentForm() {
   const navigate = useNavigate()
   const [attFiles, setAttFiles] = useState<File[]>([])
+  const clearDrafts = useClearTabDrafts()
   const [params] = useSearchParams()
-  const [supplierId, setSupplierId] = useState<number | null>(null)
-  const [poId, setPoId] = useState<number | null>(params.get('po_id') ? Number(params.get('po_id')) : null)
+  const [supplierId, setSupplierId] = useDraftState<number | null>('supplierId', null, true)
+  const [poId, setPoId] = useDraftState<number | null>('poId', params.get('po_id') ? Number(params.get('po_id')) : null, true)
   const [suppliers, setSuppliers] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
   const [banks, setBanks] = useState<any[]>([])
-  const [bankId, setBankId] = useState<number | null>(null)
-  const [amount, setAmount] = useState('')
-  const [date, setDate] = useState(today())
-  const [method, setMethod] = useState('bank_transfer')
-  const [reference, setReference] = useState('')
-  const [notes, setNotes] = useState('')
+  const [bankId, setBankId] = useDraftState<number | null>('bankId', null, true)
+  const [amount, setAmount] = useDraftState('amount', '', true)
+  const [date, setDate] = useDraftState('date', today(), true)
+  const [method, setMethod] = useDraftState('method', 'bank_transfer', true)
+  const [reference, setReference] = useDraftState('reference', '', true)
+  const [notes, setNotes] = useDraftState('notes', '', true)
   const [poInfo, setPoInfo] = useState<any>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -58,6 +60,7 @@ export default function DownPaymentForm() {
       const r = await axiosInstance.post('/api/purchasing/down-payments', { po_id: poId || undefined, supplier_id: supplierId, bank_account_id: bankId, amount: Number(amount), dp_date: date, payment_method: method, reference_number: reference || undefined, notes: notes || undefined })
       showSuccess(`Uang muka ${r.data.dp_number} dicatat.`)
       await uploadAttachments('purchase_down_payment', r.data.id, attFiles)
+      clearDrafts()
       navigate(`/app/purchasing/down-payments/${r.data.id}`)
     } catch (err: any) {
       const m = err.response?.data?.error || 'Uang muka gagal disimpan'

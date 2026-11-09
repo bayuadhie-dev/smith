@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useDraftState, useClearTabDrafts } from '../../workspace/drafts'
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
@@ -49,20 +50,21 @@ const AdjustmentForm: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [inventoryOptions, setInventoryOptions] = useState<InventoryRow[]>([]);
-  const [selectedInventory, setSelectedInventory] = useState<InventoryRow | null>(null);
+  const [selectedInventory, setSelectedInventory] = useDraftState<InventoryRow | null>('selectedInventory', null, true);
   const [searching, setSearching] = useState(false);
 
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [isValueAdjustment, setIsValueAdjustment] = useState(false);
-  const [physicalQuantity, setPhysicalQuantity] = useState('');
-  const [totalCostImpact, setTotalCostImpact] = useState('');
-  const [unitCost, setUnitCost] = useState('');
-  const [reason, setReason] = useState('counting_error');
-  const [akunPenyesuaianId, setAkunPenyesuaianId] = useState('');
-  const [notes, setNotes] = useState('');
-  const [referenceDocument, setReferenceDocument] = useState('');
+  const [isValueAdjustment, setIsValueAdjustment] = useDraftState('isValueAdjustment', false, true);
+  const [physicalQuantity, setPhysicalQuantity] = useDraftState('physicalQuantity', '', true);
+  const [totalCostImpact, setTotalCostImpact] = useDraftState('totalCostImpact', '', true);
+  const [unitCost, setUnitCost] = useDraftState('unitCost', '', true);
+  const [reason, setReason] = useDraftState('reason', 'counting_error', true);
+  const [akunPenyesuaianId, setAkunPenyesuaianId] = useDraftState('akunPenyesuaianId', '', true);
+  const [notes, setNotes] = useDraftState('notes', '', true);
+  const [referenceDocument, setReferenceDocument] = useDraftState('referenceDocument', '', true);
 
   const [loading, setLoading] = useState(false);
+  const clearDrafts = useClearTabDrafts()
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -158,6 +160,7 @@ const AdjustmentForm: React.FC = () => {
       const res = await axiosInstance.post('/api/wms/adjustments', payload);
       const adjustmentId = res.data.adjustment?.id;
       toast.success('Penyesuaian stok dibuat sebagai draft');
+      clearDrafts()
       navigate(adjustmentId ? `/app/warehouse/adjustments/${adjustmentId}` : '/app/warehouse/adjustments');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Gagal membuat penyesuaian stok');
