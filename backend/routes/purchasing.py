@@ -925,6 +925,8 @@ def get_grns():
         q = GoodsReceivedNote.query
         if request.args.get('po_id', type=int):
             q = q.filter(GoodsReceivedNote.po_id == request.args.get('po_id', type=int))
+        # GRN otomatis hasil faktur yang sudah dibatalkan/diubah tidak perlu tampil di daftar.
+        q = q.filter(db.not_(db.and_(GoodsReceivedNote.status == 'rejected', GoodsReceivedNote.notes.like('Otomatis dari faktur pembelian%'))))
         grns = q.order_by(GoodsReceivedNote.receipt_date.desc()).all()
         return jsonify({
             'grns': [{

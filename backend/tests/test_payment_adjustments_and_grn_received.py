@@ -267,3 +267,33 @@ def test_purchase_invoice_number_format_and_rename_on_edit(client, auth_headers,
     r = client.post('/api/purchasing/purchase-invoices', json=body, headers=auth_headers)
     assert r.status_code == 201, r.get_json()
     assert Invoice.query.filter_by(invoice_number='PI/26/11/777').count() == 1
+
+
+def test_editing_invoice_reuses_auto_grn_instead_of_creating_new_ones(client, auth_headers, db_session):
+    from models.finance import GlobalAccountDefault
+    from models.product import Material
+    from models.purchasing import GoodsReceivedNote, GRNItem, PurchaseOrder, PurchaseOrderItem, Supplier
+    db_session.add(GlobalAccountDefault(transaction_key='accounts_payable', account_id=_acc(db_session, '9-1000').id)); db_session.commit()
+    m = Material(code='JASA-2', name='Jasa 2', material_type='non_inventory', category='Jasa', primary_uom='UNIT', akun_beban_id=_acc(db_session, '6-6000').id, is_active=True)
+    db_session.add(m); sup = Supplier(code='SUP-RU', company_name='Sup RU', is_active=True); db_session.add(sup); db_session.commit()
+    po = PurchaseOrder(po_number='PO-RU-1', supplier_id=sup.id, order_date=date.today(), status='approved', total_amount=300)
+    db_session.add(po); db_session.commit()
+    poi = PurchaseOrderItem(po_id=po.id, line_number=1, material_id=m.id, quantity=3, uom='UNIT', unit_price=100, total_price=300)
+    db_session.add(poi); db_session.commit()
+    body = {'po_id': po.id, 'supplier_id': sup.id, 'supplier_invoice_number': 'F-RU', 'invoice_date': '2026-11-09',
+            'items': [{'po_item_id': poi.id, 'quantity': 2, 'unit_price': 100}]}
+    first = client.post('/api/purchasing/purchase-invoices', headers=auth_headers, json=body).get_json()['invoice']
+    assert GoodsReceivedNote.query.filter_by(po_id=po.id).count() == 1
+    body.update(replace_invoice_id=first['id']); body['items'][0]['quantity'] = 3
+    r = client.post('/api/purchasing/purchase-invoices', headers=auth_headers, json=body)
+    assert r.status_code == 201, r.get_json()
+    new_no = r.get_json()['invoice']['invoice_number']
+    body.update(replace_invoice_id=r.get_json()['invoice']['id']); body['items'][0]['quantity'] = 1
+    assert client.post('/api/purchasing/purchase-invoices', headers=auth_headers, json=body).status_code == 201
+    grns = GoodsReceivedNote.query.filter_by(po_id=po.id).all()
+    assert len(grns) == 1 and grns[0].status == 'approved'
+    assert float(GRNItem.query.filter_by(grn_id=grns[0].id).first().quantity_received) == 1
+    db_session.refresh(poi)
+    assert float(poi.quantity_received) == 1
+    listed = [g['grn_number'] for g in client.get('/api/purchasing/grn', headers=auth_headers).get_json()['grns']]
+    assert grns[0].grn_number in listed

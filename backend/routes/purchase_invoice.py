@@ -492,6 +492,7 @@ def create_purchase_invoice_core(data, user_id, commit=True):
 
     # Ubah faktur = batalkan faktur lama lalu buat penggantinya dengan nomor yang sama, dalam satu transaksi.
     old_invoice, old_snapshot, invoice_number = None, None, None
+    reused_auto_grns = []
     if data.get('replace_invoice_id'):
         old_invoice = db.session.get(Invoice, data['replace_invoice_id'])
         if not old_invoice or old_invoice.invoice_type != 'purchase':
@@ -505,6 +506,7 @@ def create_purchase_invoice_core(data, user_id, commit=True):
             raise InvoiceInputError('Faktur ini sudah punya pembayaran. Batalkan pembayarannya dulu sebelum mengubah faktur.')
         old_snapshot = _invoice_snapshot(old_invoice)
         from routes.finance import _void_invoice_core
+        orig_no = old_invoice.invoice_number
         err = _void_invoice_core(old_invoice, user_id, 'Diubah menjadi transaksi baru')
         if err:
             raise InvoiceInputError(err[0], err[1])
@@ -519,6 +521,13 @@ def create_purchase_invoice_core(data, user_id, commit=True):
             if Invoice.query.filter(Invoice.invoice_number == new_no).first():
                 raise InvoiceInputError(f'Nomor faktur {new_no} sudah dipakai')
             invoice_number = new_no
+        # GRN otomatis (jasa/biaya) milik faktur lama dipakai ulang oleh faktur pengganti, bukan dibuat baru tiap kali diubah.
+        from models.purchasing import GoodsReceivedNote as _GRN
+        for g in _GRN.query.filter(_GRN.notes == f'{AUTO_GRN_NOTE} {orig_no}', _GRN.status == 'rejected').all():
+            g.status = 'approved'
+            g.notes = f'{AUTO_GRN_NOTE} {invoice_number}'
+            reused_auto_grns.append(g)
+        db.session.flush()
     else:
         manual = (data.get('invoice_number') or '').strip()
         if manual:
@@ -747,6 +756,21 @@ def create_purchase_invoice_core(data, user_id, commit=True):
         total_debit_amount += line_amount_idr
 
     if po:
+        if reused_auto_grns:
+            qty_by_poi = {}
+            for d in items_data:
+                if d.get('po_item_id'):
+                    qty_by_poi[d['po_item_id']] = qty_by_poi.get(d['po_item_id'], 0.0) + float(d.get('quantity') or 0)
+            for g in reused_auto_grns:
+                g.receipt_date = datetime.combine(invoice_date_parsed, datetime.min.time())
+                for gi in g.items:
+                    q = qty_by_poi.get(gi.po_item_id, 0.0)
+                    gi.quantity_received = q
+                    gi.quantity_accepted = q
+                    gi.notes = f'{AUTO_GRN_NOTE} {invoice_number}'
+            db.session.flush()
+            from routes.purchasing import _sync_po_received
+            _sync_po_received(po.id)
         _auto_grn_for_non_inventory(invoice, po, items_data, user_id, invoice_date_parsed)
     if old_invoice is not None:
         _record_invoice_edit_history(old_invoice, invoice, old_snapshot, user_id)
