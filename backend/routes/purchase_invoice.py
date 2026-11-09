@@ -232,6 +232,7 @@ def get_purchase_invoice(id):
             'invoice_number': invoice.invoice_number,
             'po_id': invoice.purchase_order_id,
             'po_number': invoice.purchase_order.po_number if invoice.purchase_order else None,
+            'grn_id': invoice.grn_id,
             'supplier_id': invoice.supplier_id,
             'supplier_name': invoice.supplier.company_name if invoice.supplier else None,
             'invoice_date': invoice.invoice_date.isoformat() if invoice.invoice_date else None,
@@ -445,14 +446,28 @@ def _record_invoice_edit_history(old_inv, new_inv, old_snapshot, user_id):
     db.session.flush()
 
 
+def _from_grn(item_data, grn_src):
+    """Baris faktur dari GRN tanpa PO: ada barang (material/produk) dan tidak memilih akun sendiri."""
+    return bool(grn_src and (item_data.get('material_id') or item_data.get('product_id')) and not item_data.get('account_id'))
+
+
 def create_purchase_invoice_core(data, user_id, commit=True):
     """Buat faktur pembelian terkait PO + jurnal GL. commit=False dipakai Pusat Impor (savepoint dipegang pemanggil).
     Kesalahan input -> InvoiceInputError."""
 
     # Get PO to validate
-    po = db.session.get(PurchaseOrder, data.get('po_id'))
+    po = db.session.get(PurchaseOrder, data.get('po_id')) if data.get('po_id') else None
+    grn_src = None
     if not po:
-        raise InvoiceInputError('Purchase Order not found', 404)
+        # Faktur dari GRN tanpa PO: barang diambil dari GRN, harga diisi di faktur.
+        from models.purchasing import GoodsReceivedNote
+        grn_src = db.session.get(GoodsReceivedNote, data.get('grn_id')) if data.get('grn_id') else None
+        if not grn_src or grn_src.po_id:
+            raise InvoiceInputError('Purchase Order not found', 404)
+        dup = Invoice.query.filter(Invoice.grn_id == grn_src.id, Invoice.status != 'cancelled',
+                                   Invoice.id != (data.get('replace_invoice_id') or 0)).first()
+        if dup:
+            raise InvoiceInputError(f'GRN {grn_src.grn_number} sudah dibuatkan faktur {dup.invoice_number}')
 
     # Ubah faktur = batalkan faktur lama lalu buat penggantinya dengan nomor yang sama, dalam satu transaksi.
     old_invoice, old_snapshot, invoice_number = None, None, None
@@ -460,7 +475,7 @@ def create_purchase_invoice_core(data, user_id, commit=True):
         old_invoice = db.session.get(Invoice, data['replace_invoice_id'])
         if not old_invoice or old_invoice.invoice_type != 'purchase':
             raise InvoiceInputError('Faktur yang akan diubah tidak ditemukan', 404)
-        if old_invoice.purchase_order_id != po.id:
+        if po and old_invoice.purchase_order_id != po.id:
             raise InvoiceInputError('Faktur pengganti harus untuk PO yang sama dengan faktur lama')
         from models.purchase_down_payment import PurchaseDownPaymentAllocation
         if PurchaseDownPaymentAllocation.query.filter_by(invoice_id=old_invoice.id, status='active').first():
@@ -482,14 +497,15 @@ def create_purchase_invoice_core(data, user_id, commit=True):
 
     # Multi-currency (2026-10-19, po_multicurrency_plan.md): currency and
     # exchange_rate come strictly from the PO (single source of truth).
-    if po.currency != 'IDR' and po.status == 'draft':
+    if po and po.currency != 'IDR' and po.status == 'draft':
         raise InvoiceInputError(f'PO {po.currency} masih draft, kurs belum dikunci. Submit PO terlebih dahulu.')
-    if data.get('currency') and data['currency'].strip().upper() != po.currency:
-        raise InvoiceInputError(f"Mata uang invoice harus mengikuti PO ({po.currency}), tidak bisa diubah ke '{data['currency']}'")
-    if data.get('exchange_rate') is not None and abs(float(data['exchange_rate']) - float(po.exchange_rate or 1)) > 1e-6:
+    po_currency = po.currency if po else 'IDR'
+    if data.get('currency') and data['currency'].strip().upper() != po_currency:
+        raise InvoiceInputError(f"Mata uang invoice harus mengikuti PO ({po_currency}), tidak bisa diubah ke '{data['currency']}'")
+    if po and data.get('exchange_rate') is not None and abs(float(data['exchange_rate']) - float(po.exchange_rate or 1)) > 1e-6:
         raise InvoiceInputError(f"Kurs invoice mengikuti kurs PO yang sudah dikunci ({float(po.exchange_rate or 1)}), tidak bisa diisi manual")
-    inv_currency = po.currency
-    inv_rate = float(po.exchange_rate or 1)
+    inv_currency = po_currency
+    inv_rate = float(po.exchange_rate or 1) if po else 1.0
 
     invoice_date_parsed = datetime.strptime(data.get('invoice_date'), '%Y-%m-%d').date() if data.get('invoice_date') else get_local_today()
 
@@ -502,8 +518,9 @@ def create_purchase_invoice_core(data, user_id, commit=True):
     invoice = Invoice(
         invoice_number=invoice_number,
         invoice_type='purchase',
-        purchase_order_id=data.get('po_id'),
-        supplier_id=data.get('supplier_id') or po.supplier_id,
+        purchase_order_id=po.id if po else None,
+        grn_id=grn_src.id if grn_src else None,
+        supplier_id=data.get('supplier_id') or (po.supplier_id if po else grn_src.supplier_id),
         invoice_date=invoice_date_parsed,
         due_date=datetime.strptime(data.get('due_date'), '%Y-%m-%d').date() if data.get('due_date') else None,
         supplier_invoice_number=data.get('supplier_invoice_number'),
@@ -538,7 +555,7 @@ def create_purchase_invoice_core(data, user_id, commit=True):
     # quantity_invoiced tracking and 3-way match stay accurate.
     items_data = data.get('items', [])
     for idx, item_data in enumerate(items_data, 1):
-        if not item_data.get('po_item_id'):
+        if not item_data.get('po_item_id') and not _from_grn(item_data, grn_src):
             # Baris tambahan di luar PO (ongkir, jasa, biaya lain): wajib akun beban dan keterangan.
             acc = db.session.get(Account, item_data.get('account_id')) if item_data.get('account_id') else None
             if not acc or acc.is_header or not acc.is_active:
@@ -645,7 +662,7 @@ def create_purchase_invoice_core(data, user_id, commit=True):
 
         is_inventory_item = False
         non_inventory_account_id = None
-        if not item_data.get('po_item_id'):
+        if not item_data.get('po_item_id') and not _from_grn(item_data, grn_src):
             non_inventory_account_id = int(item_data['account_id'])   # baris tambahan: langsung ke akun pilihan
         elif material_id:
             from utils.finance_helpers import is_non_inventory_material, non_inventory_expense_account
@@ -696,7 +713,8 @@ def create_purchase_invoice_core(data, user_id, commit=True):
         total_items_amount += line_amount
         total_debit_amount += line_amount_idr
 
-    _auto_grn_for_non_inventory(invoice, po, items_data, user_id, invoice_date_parsed)
+    if po:
+        _auto_grn_for_non_inventory(invoice, po, items_data, user_id, invoice_date_parsed)
     if old_invoice is not None:
         _record_invoice_edit_history(old_invoice, invoice, old_snapshot, user_id)
 

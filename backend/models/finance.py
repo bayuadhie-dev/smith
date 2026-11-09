@@ -22,6 +22,7 @@ class Invoice(db.Model):
     due_date = db.Column(db.Date, nullable=True)
     sales_order_id = db.Column(db.Integer, db.ForeignKey('sales_orders.id'), nullable=True)
     purchase_order_id = db.Column(db.Integer, db.ForeignKey('purchase_orders.id'), nullable=True)
+    grn_id = db.Column(db.Integer, db.ForeignKey('goods_received_notes.id'), nullable=True)  # faktur pembelian dari GRN tanpa PO
     work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
     production_approval_id = db.Column(db.Integer, db.ForeignKey('production_approvals.id'), nullable=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=True)

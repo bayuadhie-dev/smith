@@ -15,6 +15,9 @@ const PPN_RATES: Record<string, number> = { Y: 11, A: 1.1, B: 1.2, L: 12 }
 interface Line {
   po_item_id: number | null
   extra?: boolean
+  fromGrn?: boolean
+  material_id?: number | null
+  product_id?: number | null
   account_id?: string
   name: string
   code?: string
@@ -42,6 +45,8 @@ export default function PurchaseInvoiceForm() {
   const [attFiles, setAttFiles] = useState<File[]>([])
   const [params] = useSearchParams()
   const tab = useContext(TabContext)
+  const grnId = params.get('grn_id') ? Number(params.get('grn_id')) : null
+  const [grn, setGrn] = useState<any>(null)
   const editId = params.get('edit') ? Number(params.get('edit')) : null
   const [editInv, setEditInv] = useState<any>(null)
   const [suppliers, setSuppliers] = useState<any[]>([])
@@ -76,6 +81,22 @@ export default function PurchaseInvoiceForm() {
       .then((r) => setOrders(r.data.purchase_orders || []))
       .catch(() => showError('Gagal memuat daftar PO'))
   }, [supplierId])
+
+  // Faktur dari GRN tanpa PO: barang diambil dari GRN, harga diisi di sini.
+  useEffect(() => {
+    if (!grnId || editId) return
+    axiosInstance.get(`/api/purchasing/grn/${grnId}`).then((r) => {
+      const g = r.data
+      setGrn(g)
+      setSupplierId(g.supplier_id)
+      if (g.supplier_invoice_number) setSupplierInvoiceNumber((cur) => cur || g.supplier_invoice_number)
+      setLines((ls) => ls.length ? ls : (g.items || []).map((it: any): Line => ({
+        po_item_id: null, fromGrn: true, material_id: it.material_id ?? null, product_id: it.product_id ?? null,
+        name: it.item_name || '(tanpa nama)', uom: it.uom, ordered: Number(it.quantity_ordered || 0), received: Number(it.quantity_accepted || it.quantity_received || 0), invoiced: 0,
+        qty: Number(it.quantity_accepted || it.quantity_received || 0), price: '', ppn_code: '', description: it.item_name || '',
+      })))
+    }).catch(() => showError('Gagal memuat GRN'))
+  }, [grnId, editId])
 
   // Nomor faktur pemasok yang sudah diisi di GRN ikut terisi di sini.
   useEffect(() => {
@@ -173,7 +194,7 @@ export default function PurchaseInvoiceForm() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!poId) return showError('Pilih PO terlebih dahulu')
+    if (!poId && !grnId) return showError('Pilih PO terlebih dahulu')
     if (!supplierInvoiceNumber.trim()) return showError('No. Faktur Pemasok wajib diisi')
     const items = lines.filter((l) => Number(l.qty) > 0)
     if (items.length === 0) return showError('Isi jumlah tagihan minimal satu baris')
@@ -187,7 +208,8 @@ export default function PurchaseInvoiceForm() {
     setSaving(true)
     try {
       const res = await axiosInstance.post('/api/purchasing/purchase-invoices', {
-        po_id: poId,
+        po_id: poId || undefined,
+        grn_id: !poId && grnId ? grnId : undefined,
         replace_invoice_id: editId || undefined,
         supplier_id: supplierId,
         supplier_invoice_number: supplierInvoiceNumber.trim(),
@@ -195,7 +217,7 @@ export default function PurchaseInvoiceForm() {
         invoice_date: invoiceDate,
         due_date: dueDate || null,
         notes: notes || null,
-        items: items.map((l) => ({ po_item_id: l.extra ? undefined : l.po_item_id, account_id: l.extra && l.account_id ? Number(l.account_id) : undefined, quantity: Number(l.qty), unit_price: Number(l.price), ppn_code: l.ppn_code || '', description: (l.description || '').trim() || undefined })),
+        items: items.map((l) => ({ po_item_id: l.extra ? undefined : l.po_item_id, material_id: l.fromGrn ? (l.material_id || undefined) : undefined, product_id: l.fromGrn ? (l.product_id || undefined) : undefined, uom: l.fromGrn ? l.uom : undefined, account_id: l.extra && l.account_id ? Number(l.account_id) : undefined, quantity: Number(l.qty), unit_price: Number(l.price), ppn_code: l.ppn_code || '', description: (l.description || '').trim() || undefined })),
       })
       showSuccess(editId ? 'Faktur diubah. Faktur lama dibatalkan dan diganti dengan nomor yang sama.' : (res.data?.message || 'Faktur pembelian dibuat'))
       const id = res.data?.invoice?.id
@@ -213,7 +235,7 @@ export default function PurchaseInvoiceForm() {
         }
       }
       if (tab) clearTabDrafts(tab.tabId)
-      navigate(id ? `/app/purchasing/invoices/${id}/match` : '/app/purchasing/invoices')
+      navigate(id ? `/app/purchasing/invoices/${id}${poId ? "/match" : ""}` : '/app/purchasing/invoices')
     } catch (err: any) {
       showError(err?.response?.data?.error || 'Gagal menyimpan faktur pembelian')
     } finally {
@@ -245,6 +267,13 @@ export default function PurchaseInvoiceForm() {
               className="w-full"
             />
           </div>
+          {grn && !poId ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Penerimaan Barang (tanpa PO)</label>
+              <div className="input-field bg-gray-50 dark:bg-gray-900">{grn.grn_number}</div>
+              <p className="mt-1 text-xs text-gray-500">Faktur dibuat dari GRN ini. Isi harga satuan tiap barang sesuai faktur pemasok.</p>
+            </div>
+          ) : (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Purchase Order *</label>
             <SearchableSelect
@@ -257,6 +286,7 @@ export default function PurchaseInvoiceForm() {
             />
             <p className="mt-1 text-xs text-gray-500">Hanya PO yang sudah disetujui, diterima sebagian, atau diterima penuh.</p>
           </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Faktur Pemasok *</label>
             <input className="input-field" value={supplierInvoiceNumber} onChange={(e) => setSupplierInvoiceNumber(e.target.value)} placeholder="Terisi otomatis kalau sudah diisi di GRN" />
@@ -279,10 +309,10 @@ export default function PurchaseInvoiceForm() {
           </div>
         </div>
 
-        {po && (
+        {(po || grn) && (
           <div className="card p-6 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white">Baris Tagihan ({po.po_number}, {currency})</h2>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white">Baris Tagihan ({po ? po.po_number : `GRN ${grn?.grn_number}, tanpa PO`}, {currency})</h2>
               {inclusiveNote && (
                 <p className="text-xs text-blue-600 dark:text-blue-400">PO ini harga sudah termasuk PPN: harga satuan di bawah sudah dipisahkan dari PPN, total tetap sama dengan PO.</p>
               )}
@@ -306,7 +336,7 @@ export default function PurchaseInvoiceForm() {
                   {lines.map((l, i) => {
                     const base = (Number(l.qty) || 0) * (Number(l.price) || 0)
                     return (
-                      <tr key={l.extra ? `x${i}` : l.po_item_id}>
+                      <tr key={l.extra || l.fromGrn ? `x${i}` : l.po_item_id}>
                         <td className="py-2 pr-3">
                           {l.extra ? (
                             <div className="min-w-[14rem]">
@@ -322,12 +352,12 @@ export default function PurchaseInvoiceForm() {
                         <td className="py-2 pr-3">
                           <input className="input-field" value={l.description} onChange={(e) => update(i, { description: e.target.value })} placeholder="Keterangan baris" />
                         </td>
-                        <td className="py-2 pr-3 text-right tabular-nums">{l.extra ? '-' : `${l.ordered.toLocaleString('id-ID')} ${l.uom}`}</td>
+                        <td className="py-2 pr-3 text-right tabular-nums">{l.extra || l.fromGrn ? '-' : `${l.ordered.toLocaleString('id-ID')} ${l.uom}`}</td>
                         <td className={`py-2 pr-3 text-right tabular-nums ${!l.extra && l.received < l.ordered ? 'text-amber-600' : ''}`}>{l.extra ? '-' : l.received.toLocaleString('id-ID')}</td>
                         <td className="py-2 pr-3 text-right tabular-nums">{l.extra ? '-' : l.invoiced.toLocaleString('id-ID')}</td>
                         <td className="py-2 pr-3">
                           <NumberInput className="input-field text-right" value={l.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />
-                          {!l.extra && Number(l.qty) > l.ordered - l.invoiced + 1e-9 && (
+                          {!l.extra && !l.fromGrn && Number(l.qty) > l.ordered - l.invoiced + 1e-9 && (
                             <div className="mt-1 text-xs text-amber-600">Melebihi sisa PO ({Math.max(0, l.ordered - l.invoiced).toLocaleString('id-ID')}); ditandai selisih saat pencocokan 3 arah.</div>
                           )}
                         </td>
@@ -396,7 +426,7 @@ export default function PurchaseInvoiceForm() {
 
         <div className="flex justify-end gap-3">
           <Link to="/app/purchasing/invoices" className="btn-secondary">Batal</Link>
-          <button type="submit" disabled={saving || !po} className="btn-primary disabled:opacity-50">{saving ? 'Menyimpan...' : (editId ? 'Simpan Perubahan' : 'Simpan Faktur')}</button>
+          <button type="submit" disabled={saving || (!po && !grn)} className="btn-primary disabled:opacity-50">{saving ? 'Menyimpan...' : (editId ? 'Simpan Perubahan' : 'Simpan Faktur')}</button>
         </div>
       </form>
     </div>

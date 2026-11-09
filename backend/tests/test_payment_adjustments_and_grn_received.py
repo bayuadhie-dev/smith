@@ -88,3 +88,26 @@ def test_advances_summary_tracks_open_and_settled(client, auth_headers, db_sessi
     assert client.post('/api/finance/payments', headers=auth_headers, json=body).status_code == 201
     r = client.get('/api/finance/advances-summary', headers=auth_headers).get_json()
     assert r['advances'][0]['status'] == 'lunas'
+
+
+def test_purchase_invoice_from_grn_without_po(client, auth_headers, db_session, test_material):
+    from models.finance import Invoice
+    from models.purchasing import GoodsReceivedNote, GRNItem, Supplier
+    from models.finance import GlobalAccountDefault
+    main_location, _ = _setup_warehouse(db_session)
+    db_session.add(GlobalAccountDefault(transaction_key='gr_ir_clearing', account_id=_acc(db_session, '6-6000').id))
+    db_session.add(GlobalAccountDefault(transaction_key='accounts_payable', account_id=_acc(db_session, '9-1000').id)); db_session.commit()
+    sup = Supplier(code='SUP-NOPO', company_name='Sup NoPO', is_active=True)
+    db_session.add(sup); db_session.commit()
+    grn = GoodsReceivedNote(grn_number='BPB-NOPO-1', po_id=None, supplier_id=sup.id, receipt_date=date.today(), status='approved')
+    db_session.add(grn); db_session.commit()
+    db_session.add(GRNItem(grn_id=grn.id, material_id=test_material.id, quantity_ordered=5, quantity_received=5, quantity_accepted=5, uom='KG', location_id=main_location.id))
+    db_session.commit()
+    body = {'grn_id': grn.id, 'supplier_id': sup.id, 'supplier_invoice_number': 'F-1', 'invoice_date': '2026-11-09',
+            'items': [{'material_id': test_material.id, 'quantity': 5, 'unit_price': 1000, 'uom': 'KG', 'description': 'tes'}]}
+    r = client.post('/api/purchasing/purchase-invoices', json=body, headers=auth_headers)
+    assert r.status_code == 201, r.get_json()
+    inv = Invoice.query.filter_by(grn_id=grn.id).first()
+    assert inv.purchase_order_id is None and float(inv.total_amount) == 5000
+    again = client.post('/api/purchasing/purchase-invoices', json=body, headers=auth_headers)
+    assert again.status_code == 400

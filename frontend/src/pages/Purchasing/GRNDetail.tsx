@@ -199,7 +199,7 @@ export default function GRNDetail() {
           <Link to={`/app/purchasing/grn/${grn.id}/edit`} className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">Ubah</Link>
           {grn.status === 'approved' && (
             <Link
-              to={grn.po_id ? `/app/purchasing/invoices/new?po_id=${grn.po_id}` : `/app/purchasing/invoices/new?supplier_id=${grn.supplier_id}`}
+              to={grn.po_id ? `/app/purchasing/invoices/new?po_id=${grn.po_id}` : `/app/purchasing/invoices/new?grn_id=${grn.id}`}
               className="flex items-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-lg hover:bg-emerald-700 text-sm font-medium"
             >
               Buat Faktur Pembelian
