@@ -1,3 +1,4 @@
+import RiwayatPanel from '../../components/RiwayatPanel'
 import DocumentGenerateButton from '../../components/DocumentGenerateButton';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
@@ -914,6 +915,7 @@ const ShippingOrderDetails: React.FC = () => {
           </div>
         </div>
       </div>
+      <RiwayatPanel table="shipping_orders" id={id} />
     </div>
   );
 };

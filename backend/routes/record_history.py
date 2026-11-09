@@ -35,4 +35,11 @@ def get_history():
             continue
         out.append({'id': r.id, 'timestamp': r.timestamp.isoformat() + 'Z' if r.timestamp else None,
                     'user': (r.user.full_name or r.user.username) if r.user else 'Sistem', 'changes': changes})
+    created = AuditLog.query.filter(
+        AuditLog.resource_type == table, AuditLog.resource_id == str(rid), AuditLog.action == 'create'
+    ).order_by(AuditLog.timestamp.asc()).first()
+    if created:
+        out.append({'id': created.id, 'timestamp': created.timestamp.isoformat() + 'Z' if created.timestamp else None,
+                    'user': (created.user.full_name or created.user.username) if created.user else 'Sistem',
+                    'changes': [{'field': 'dibuat', 'old': None, 'new': 'Transaksi dibuat'}]})
     return jsonify({'history': out})

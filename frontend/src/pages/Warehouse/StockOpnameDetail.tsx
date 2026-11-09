@@ -1,3 +1,4 @@
+import RiwayatPanel from '../../components/RiwayatPanel'
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -594,6 +595,7 @@ export default function StockOpnameDetail() {
           </div>
         </div>
       )}
+      <RiwayatPanel table="stock_opname_orders" id={id} />
     </div>
   );
 }

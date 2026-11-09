@@ -1,3 +1,4 @@
+import RiwayatPanel from '../../components/RiwayatPanel'
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, ArrowUturnLeftIcon, CalendarIcon, ClockIcon, CubeIcon, PlayIcon, PlusIcon, ChartBarIcon, PencilIcon, TrashIcon, ExclamationTriangleIcon, DocumentCheckIcon, ClipboardDocumentListIcon, WrenchScrewdriverIcon, DocumentTextIcon, XMarkIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 import DocumentGenerateButton from '../../components/DocumentGenerateButton';
@@ -1313,6 +1314,7 @@ export default function WorkOrderDetail() {
         resourceId={id}
         title={`Log Aktivitas WO ${workOrder?.wo_number || ''}`}
       />
+      <RiwayatPanel table="work_orders" id={id} />
     </div>
   );
 }

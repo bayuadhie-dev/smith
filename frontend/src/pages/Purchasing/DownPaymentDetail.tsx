@@ -1,3 +1,4 @@
+import RiwayatPanel from '../../components/RiwayatPanel'
 import DocActions from '../../components/DocActions'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useCallback, useEffect, useState } from 'react'
@@ -117,6 +118,7 @@ export default function DownPaymentDetail() {
       </Panel>
       {dp.notes && <p className="text-sm text-gray-600 dark:text-gray-300">Catatan: {dp.notes}</p>}
       <AttachmentsPanel entityType="purchase_down_payment" entityId={id} />
+      <RiwayatPanel table="purchase_down_payments" id={id} />
     </div>
   )
 }

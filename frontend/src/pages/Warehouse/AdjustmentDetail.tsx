@@ -1,3 +1,4 @@
+import RiwayatPanel from '../../components/RiwayatPanel'
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -263,6 +264,7 @@ export default function AdjustmentDetail() {
           <p className="text-sm text-gray-700 dark:text-gray-300">{adj.notes}</p>
         </div>
       )}
+      <RiwayatPanel table="inventory_adjustments" id={id} />
     </div>
   );
 }

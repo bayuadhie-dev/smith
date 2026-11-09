@@ -1,3 +1,4 @@
+import RiwayatPanel from '../../components/RiwayatPanel'
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -230,6 +231,7 @@ export default function InvoiceMatching() {
         <p>🟢 <strong>Invoice</strong> = Jumlah & harga yang ditagih supplier</p>
         <p>Δ = Selisih (merah = tagihan lebih besar, biru = tagihan lebih kecil)</p>
       </div>
+      <RiwayatPanel table="invoices" id={id} />
     </div>
   );
 }

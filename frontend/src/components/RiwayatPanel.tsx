@@ -9,7 +9,7 @@ const LABELS: Record<string, string> = {
   required_date: 'Tgl dibutuhkan', expected_date: 'Tgl estimasi', order_date: 'Tgl order', payment_terms: 'Termin',
   delivery_address: 'Alamat kirim', supplier_id: 'Pemasok', customer_id: 'Pelanggan', due_date: 'Jatuh tempo',
   invoice_date: 'Tgl faktur', receipt_date: 'Tgl terima', delivery_note_number: 'No. surat jalan', vehicle_number: 'No. kendaraan',
-  driver_name: 'Sopir', description: 'Nama', reference_number: 'No. referensi', amount: 'Jumlah', currency: 'Mata uang',
+  driver_name: 'Sopir', dibuat: 'Riwayat', grn_number: 'No. GRN', invoice_number: 'No. faktur', payment_number: 'No. bukti', supplier_invoice_number: 'No. faktur pemasok', description: 'Nama', reference_number: 'No. referensi', amount: 'Jumlah', currency: 'Mata uang',
 }
 const label = (f: string) => LABELS[f] || f.replace(/_/g, ' ')
 const val = (v: any) => (v === null || v === undefined || v === '' ? '(kosong)' : typeof v === 'object' ? JSON.stringify(v) : String(v))
