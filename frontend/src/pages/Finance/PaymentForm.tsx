@@ -90,7 +90,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   ]);
 
   const [adj, setAdj] = useDraftState<{ account_id: string; amount: string; description: string }[]>('adj', []);
-  const [openAdv, setOpenAdv] = useState<{ account_id: number; account_code: string; account_name: string; outstanding: number; party_name: string }[]>([]);
+  const [openAdv, setOpenAdv] = useState<{ account_id: number; account_code: string; account_name: string; outstanding: number; party_name: string; entries: { payment_number: string; amount: number }[] }[]>([]);
   const updateAdj = (idx: number, patch: Partial<{ account_id: string; amount: string; description: string }>) => setAdj((a) => a.map((x, i) => (i === idx ? { ...x, ...patch } : x)));
   // Baris selisih diisi sebagai potongan (positif) yang melunasi faktur tanpa kas; ke server dikirim berlawanan tanda.
   const adjTotal = -adj.reduce((s, l) => s + (Number(l.amount) || 0), 0);
@@ -164,6 +164,22 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
       setOpenAdv((r.data.advances || []).filter((a: any) => a.party_type === ptype && String(a.party_id) === String(formData.party_id) && a.outstanding > 0.005));
     }).catch(() => setOpenAdv([]));
   }, [formData.party_id, mode, isStandalone]);
+  const useAdvance = (a: (typeof openAdv)[number]) => {
+    // Tanpa faktur yang dicentang, potongan akan jadi uang keluar negatif: centang dulu faktur terbuka (terlama dulu) sampai tertutup.
+    let nextAlloc = alloc;
+    const hasChecked = invoices.some((i) => i.id in alloc);
+    if (!hasChecked) {
+      nextAlloc = Object.fromEntries(invoices.map((i) => [i.id, '0']));
+      setAlloc(nextAlloc);
+    }
+    const open = invoices.filter((i) => i.id in nextAlloc).reduce((s2, i) => s2 + i.balance_due - (Number(nextAlloc[i.id]) || 0), 0);
+    const already = adj.reduce((s2, l) => s2 + (Number(l.amount) || 0), 0);
+    const used = adj.filter((x) => Number(x.account_id) === a.account_id).reduce((s2, x) => s2 + (Number(x.amount) || 0), 0);
+    const amt = Math.max(0, Math.min(a.outstanding - used, open - already));
+    const refs = Array.from(new Set(a.entries.filter((e) => e.amount > 0).map((e) => e.payment_number))).join(', ');
+    if (amt <= 0) { toast.error('Tidak ada sisa tagihan yang bisa ditutup dengan uang muka ini.'); return; }
+    setAdj((x) => [...x, { account_id: String(a.account_id), amount: String(amt), description: `Pemakaian uang muka${refs ? ' ' + refs : ''}` }]);
+  };
   const isAdvanceAccount = (id: string) => /uang\s*muka|panjar|deposit/i.test(accName(id));
 
   useEffect(() => {
@@ -598,7 +614,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                         <div key={a.account_id} className="flex items-center justify-between gap-2 py-0.5">
                           <span>{a.account_code} {a.account_name}: sisa <strong>{rp(a.outstanding)}</strong></span>
                           <button type="button" disabled={left <= 0} className="rounded border border-amber-400 px-2 py-0.5 text-xs hover:bg-amber-100 disabled:opacity-40"
-                            onClick={() => setAdj((x) => [...x, { account_id: String(a.account_id), amount: String(Math.min(left, Math.max(0, invoices.filter((i) => i.id in alloc).reduce((s2, i) => s2 + i.balance_due, 0) - (Object.values(alloc).reduce((s2, v) => s2 + (Number(v) || 0), 0)) - adj.reduce((s2, l) => s2 + (Number(l.amount) || 0), 0)) || left)), description: 'Pemakaian uang muka' }])}>
+                            onClick={() => useAdvance(a)}>
                             Pakai sebagai potongan
                           </button>
                         </div>
@@ -610,7 +626,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                   <div key={idx} className="grid grid-cols-12 gap-2">
                     <div className="col-span-12 md:col-span-5">
                       <SearchableSelect
-                        options={contraAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name }))}
+                        options={[...contraAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name })), ...openAdv.filter((a) => !contraAccounts.some((c) => c.id === a.account_id)).map((a) => ({ id: a.account_id, code: a.account_code, name: a.account_name }))]}
                         value={l.account_id ? Number(l.account_id) : null}
                         onChange={(v) => updateAdj(idx, { account_id: v ? String(v) : '' })}
                         placeholder="Pilih akun (mis. Biaya Lain-lain, Piutang Karyawan)"
