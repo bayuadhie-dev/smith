@@ -196,7 +196,7 @@ export default function PurchaseInvoiceForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Pemasok *</label>
             <SearchableSelect
-              options={suppliers.map((s: any) => ({ id: s.id, name: `${s.code} - ${s.company_name}${s.supplier_type ? ' [' + s.supplier_type + ']' : ''}` }))}
+              options={suppliers.map((s: any) => ({ id: s.id, name: `${s.code} - ${s.company_name}${s.supplier_type ? ' [' + s.supplier_type + (s.supplier_subtype ? ' - ' + s.supplier_subtype : '') + ']' : ''}` }))}
               value={supplierId}
               onChange={(v) => { setSupplierId(v ? Number(v) : null); setPoId(null) }}
               placeholder="Pilih pemasok"

@@ -373,7 +373,7 @@ const navigate = useNavigate()
               </label>
               <input type="hidden" {...register('supplier_id', { required: 'Supplier is required' })} />
               <SearchableSelect
-                options={(suppliers?.suppliers || []).map((sp: any) => ({ id: sp.id, name: `${sp.code} - ${sp.company_name}${sp.supplier_type ? ' [' + sp.supplier_type + ']' : ''}` }))}
+                options={(suppliers?.suppliers || []).map((sp: any) => ({ id: sp.id, name: `${sp.code} - ${sp.company_name}${sp.supplier_type ? ' [' + sp.supplier_type + (sp.supplier_subtype ? ' - ' + sp.supplier_subtype : '') + ']' : ''}` }))}
                 value={watch('supplier_id') ? Number(watch('supplier_id')) : null}
                 onChange={(v) => setValue('supplier_id', (v ?? '') as any, { shouldValidate: true, shouldDirty: true })}
                 placeholder="Select a supplier"

@@ -172,6 +172,7 @@ def get_suppliers():
                 'country': s.country,
                 'supplier_type': s.supplier_type,
                 'currency': s.currency or 'IDR',
+                'supplier_subtype': s.supplier_subtype,
                 'payment_terms': str(s.payment_terms_days) if s.payment_terms_days is not None else '30',
                 'credit_limit': float(s.credit_limit) if s.credit_limit else 0.0,
                 'rating': s.rating,
@@ -245,6 +246,7 @@ def create_supplier():
             credit_limit=float(data.get('credit_limit', 0)) if data.get('credit_limit') else 0.0,
             supplier_type=data.get('supplier_type'),
             currency=_clean_currency(data.get('currency')),
+            supplier_subtype=(data.get('supplier_subtype') or '').strip()[:100] or None,
             ppn_code=(str(data.get('ppn_code')).strip().upper()[:1] or None) if data.get('ppn_code') else None,
             is_active=data.get('is_active', True),
             notes=data.get('notes'),
@@ -296,6 +298,7 @@ def get_supplier(id):
             'credit_limit': float(supplier.credit_limit) if supplier.credit_limit else 0.0,
             'supplier_type': supplier.supplier_type,
             'currency': supplier.currency or 'IDR',
+            'supplier_subtype': supplier.supplier_subtype,
             'rating': supplier.rating,
             'ppn_code': supplier.ppn_code,
             'is_active': supplier.is_active,
@@ -387,6 +390,8 @@ def update_supplier(id):
             supplier.supplier_type = data['supplier_type']
         if 'currency' in data:
             supplier.currency = _clean_currency(data['currency'])
+        if 'supplier_subtype' in data:
+            supplier.supplier_subtype = (data['supplier_subtype'] or '').strip()[:100] or None
         if 'ppn_code' in data:
             supplier.ppn_code = (str(data['ppn_code']).strip().upper()[:1] or None) if data['ppn_code'] else None
         if 'is_active' in data:

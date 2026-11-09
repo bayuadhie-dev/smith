@@ -26,6 +26,7 @@ class Supplier(db.Model):
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     supplier_type = db.Column(db.String(50), nullable=True)  # manufacturer, distributor, trader
     currency = db.Column(db.String(10), nullable=False, default='IDR', server_default='IDR')  # mata uang utama pemasok; PO baru mengikuti
+    supplier_subtype = db.Column(db.String(100), nullable=True)  # jenis rinci di dalam kategori (mis. STICKER, CARTON BOX, PHMB)
     rating = db.Column(db.String(20), nullable=True)  # A, B, C
     lead_time_days = db.Column(db.Integer, default=0)
 

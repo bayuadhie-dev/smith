@@ -197,7 +197,7 @@ const [search, setSearch] = useState('')
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {supplier.supplier_type || 'General'}
+                          {supplier.supplier_type || 'General'}{supplier.supplier_subtype ? ' - ' + supplier.supplier_subtype : ''}
                         </span>
                         <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                           Payment: {supplier.payment_terms === '0' ? 'C.O.D' : `${supplier.payment_terms || '30'} days`}

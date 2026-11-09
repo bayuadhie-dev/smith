@@ -25,6 +25,7 @@ interface SupplierFormData {
   tax_id: string
   payment_terms: string
   supplier_type?: string
+  supplier_subtype?: string
   currency?: string
   ppn_code?: string
   credit_limit: number
@@ -62,6 +63,7 @@ const { id } = useParams()
       tax_id: '',
       payment_terms: '30',
       supplier_type: '',
+      supplier_subtype: '',
       currency: 'IDR',
       ppn_code: '',
       credit_limit: 0,
@@ -87,6 +89,7 @@ const { id } = useParams()
         tax_id: supplier.tax_id || '',
         payment_terms: supplier.payment_terms || '30',
         supplier_type: supplier.supplier_type || '',
+        supplier_subtype: supplier.supplier_subtype || '',
         currency: supplier.currency || 'IDR',
         ppn_code: supplier.ppn_code || '',
         credit_limit: supplier.credit_limit || 0,
@@ -320,6 +323,15 @@ const { id } = useParams()
                 {typeOptions.map((t: string) => <option key={t} value={t} />)}
               </datalist>
               <p className="mt-1 text-xs text-gray-500">Memudahkan procurement mencari pemasok (mis. PACKAGING, SPAREPART, CHEMICAL).</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Jenis (rinci, opsional)</label>
+              <input
+                {...register('supplier_subtype')}
+                placeholder="Mis. STICKER, CARTON BOX, PHMB, BEARING"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
 
             <div>

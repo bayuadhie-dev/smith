@@ -314,7 +314,7 @@ export default function GRNForm() {
               <div className="input-field bg-gray-50 dark:bg-gray-900">{supplierName || '-'}</div>
             ) : (
               <SearchableSelect
-                options={suppliers.map((x: any) => ({ id: x.id, name: `${x.company_name}${x.supplier_type ? ' [' + x.supplier_type + ']' : ''}` }))}
+                options={suppliers.map((x: any) => ({ id: x.id, name: `${x.company_name}${x.supplier_type ? ' [' + x.supplier_type + (x.supplier_subtype ? ' - ' + x.supplier_subtype : '') + ']' : ''}` }))}
                 value={supplierId}
                 onChange={(v) => { setSupplierId(v ? Number(v) : null); setPoId(null) }}
                 placeholder="Pilih pemasok dulu"

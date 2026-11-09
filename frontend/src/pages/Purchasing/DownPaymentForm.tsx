@@ -77,7 +77,7 @@ export default function DownPaymentForm() {
             <div className="grid gap-4 p-4 md:grid-cols-2">
               <div>
                 <label className={labelCls}>Pemasok</label>
-                <SearchableSelect options={suppliers.map((s: any) => ({ id: s.id, name: `${s.company_name || s.name}${s.supplier_type ? ' [' + s.supplier_type + ']' : ''}` }))} value={supplierId} onChange={(v) => { setSupplierId(v ? Number(v) : null); setPoId(null) }} placeholder="Pilih pemasok" />
+                <SearchableSelect options={suppliers.map((s: any) => ({ id: s.id, name: `${s.company_name || s.name}${s.supplier_type ? ' [' + s.supplier_type + (s.supplier_subtype ? ' - ' + s.supplier_subtype : '') + ']' : ''}` }))} value={supplierId} onChange={(v) => { setSupplierId(v ? Number(v) : null); setPoId(null) }} placeholder="Pilih pemasok" />
               </div>
               <div>
                 <label className={labelCls}>PO (opsional)</label>
