@@ -61,3 +61,12 @@ def test_grn_received_can_be_corrected_on_approved_grn(client, auth_headers, db_
     assert ok.status_code == 200, ok.get_json()
     db_session.refresh(gi)
     assert float(gi.quantity_received) == 2628.7 and float(gi.quantity_accepted) == 2628.7 and float(gi.quantity_rejected) == 0
+
+
+def test_full_discount_zero_cash_payment_saves(client, auth_headers, db_session):
+    bank = _bank(db_session); disc = _acc(db_session, '6-6000')
+    _, inv = _foreign_ap(db_session, currency='IDR', rate=1, amount=300_000)
+    r = _pay(client, auth_headers, bank, inv, 300_000, [{'account_id': disc.id, 'amount': -300_000}], amount=0)
+    assert r.status_code == 201, r.get_json()
+    db_session.refresh(inv)
+    assert inv.status == 'paid'

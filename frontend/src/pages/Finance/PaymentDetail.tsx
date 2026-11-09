@@ -218,7 +218,7 @@ export default function PaymentDetail() {
                 {payment.allocations.map((a) => (
                   <tr key={a.invoice_id}>
                     <td className="py-1">
-                      <a href={`/app/finance/invoices/${a.invoice_id}`} className="underline hover:text-blue-600">{a.invoice_number}</a>
+                      <a href={`/app/${payment.payment_type === "payment" ? "purchasing" : "finance"}/invoices/${a.invoice_id}`} className="underline hover:text-blue-600">{a.invoice_number}</a>
                     </td>
                     <td className="py-1 text-right">{formatRupiah(a.invoice_total_amount)}</td>
                     <td className="py-1 text-right font-medium">{formatRupiah(a.amount)}</td>

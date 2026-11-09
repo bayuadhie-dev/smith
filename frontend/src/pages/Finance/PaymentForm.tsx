@@ -101,9 +101,21 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     bank_account_id: ''
   })
 
+  // Faktur dicentang dengan Dibayar 0 tetapi ada diskon (nilai negatif): diskon itulah yang melunasi faktur, kas keluar 0.
+  const effAlloc: Record<number, string> = (() => {
+    const out: Record<number, string> = { ...alloc };
+    let pool = -adj.reduce((s, l) => s + Math.min(0, Number(l.amount) || 0), 0);
+    for (const inv of invoices) {
+      if (!(inv.id in alloc) || Number(alloc[inv.id]) !== 0 || pool <= 0) continue;
+      const give = Math.min(inv.balance_due, pool);
+      if (give > 0) { out[inv.id] = String(give); pool -= give; }
+    }
+    return out;
+  })();
+
   const totalAmount = isStandalone
     ? lines.reduce((s, l) => s + (Number(l.amount) || 0), 0)
-    : Object.values(alloc).reduce((s, v) => s + (Number(v) || 0), 0) + adjTotal;
+    : Object.values(effAlloc).reduce((s, v) => s + (Number(v) || 0), 0) + adjTotal;
   const allocTotal = totalAmount - (isStandalone ? 0 : adjTotal);
 
   useEffect(() => {
@@ -279,7 +291,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   const bankLabel = bankName ? `${bankName.code} - ${bankName.name}` : '(Kas/Bank belum dipilih)';
   const hasDetail = isStandalone
     ? lines.some((l) => Number(l.amount) !== 0)
-    : Object.values(alloc).some((v) => Number(v) !== 0);
+    : Object.values(effAlloc).some((v) => Number(v) !== 0);
   const journalPreview: { account: string; debit: number; credit: number }[] = [];
   if (hasDetail) {
     const bankIn = totalAmount > 0 ? isReceiptKind : !isReceiptKind;
@@ -290,8 +302,8 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
           const onDebit = isReceiptKind ? n < 0 : n > 0;
           return { account: accName(l.account_id), debit: onDebit ? Math.abs(n) : 0, credit: onDebit ? 0 : Math.abs(n) };
         })
-      : invoices.filter((i) => Number(alloc[i.id]) !== 0 && alloc[i.id] !== undefined).map((i) => {
-          const n = Number(alloc[i.id]);
+      : invoices.filter((i) => Number(effAlloc[i.id]) !== 0 && effAlloc[i.id] !== undefined).map((i) => {
+          const n = Number(effAlloc[i.id]);
           const onDebit = mode === 'ap' ? n > 0 : n < 0;
           return { account: `${mode === 'ar' ? 'Piutang Usaha' : 'Hutang Usaha'} — ${i.invoice_number}`, debit: onDebit ? Math.abs(n) : 0, credit: onDebit ? 0 : Math.abs(n) };
         });
@@ -312,7 +324,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     setError(null);
     const fail = (msg: string) => { setError(msg); toast.error(msg); window.scrollTo({ top: 0, behavior: 'smooth' }) }
 
-    const allocations = Object.entries(alloc)
+    const allocations = Object.entries(effAlloc)
       .filter(([, v]) => Number(v) !== 0)
       .map(([id, v]) => ({ invoice_id: Number(id), amount: Number(v) }));
     const cleanLines = lines
@@ -377,7 +389,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   const labelCls = 'mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200'
   const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
   const partyWord = mode === 'ap' ? 'Pemasok' : 'Pelanggan'
-  const checkedCount = Object.keys(alloc).filter((k) => Number(alloc[Number(k)]) !== 0).length
+  const checkedCount = Object.keys(effAlloc).filter((k) => Number(effAlloc[Number(k)]) !== 0).length
   const reason = !canSubmit && !submitting
     ? (!formData.bank_account_id ? 'Pilih akun kas/bank dulu.' : !hasDetail ? (isStandalone ? 'Isi nilai rincian akun.' : 'Centang faktur yang dilunasi.') : overAllocated.length > 0 ? 'Nilai melebihi sisa tagihan.' : !formData.payment_date ? 'Isi tanggal.' : '')
     : ''
@@ -519,7 +531,9 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                         return (
                           <tr key={inv.id} className={checked ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : ''}>
                             <td className="px-3 py-2"><input type="checkbox" checked={checked} onChange={(e) => toggleInvoice(inv, e.target.checked)} /></td>
-                            <td className="whitespace-nowrap px-3 py-2 font-medium text-gray-900 dark:text-white">{inv.invoice_number}</td>
+                            <td className="whitespace-nowrap px-3 py-2 font-medium text-gray-900 dark:text-white">
+                              <a href={`/app/${mode === 'ap' ? 'purchasing' : 'finance'}/invoices/${inv.id}`} target="_blank" rel="noreferrer" className="text-blue-700 hover:underline dark:text-blue-400" title="Buka faktur di tab baru">{inv.invoice_number}</a>
+                            </td>
                             <td className="whitespace-nowrap px-3 py-2 text-gray-600 dark:text-gray-300">{inv.due_date || '-'}</td>
                             <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">{rp(inv.balance_due)}</td>
                             <td className="px-3 py-2">
@@ -527,7 +541,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                               {(Number(alloc[inv.id]) || 0) > inv.balance_due + 0.01 && <p className="mt-1 text-xs text-red-600">Melebihi sisa faktur</p>}
                               {(Number(alloc[inv.id]) || 0) < 0 && -(Number(alloc[inv.id]) || 0) > paidOf(inv) + 0.01 && <p className="mt-1 text-xs text-red-600">Melebihi yang sudah dibayar</p>}
                             </td>
-                            <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-gray-600 dark:text-gray-300">{rp(inv.balance_due - (Number(alloc[inv.id]) || 0))}</td>
+                            <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-gray-600 dark:text-gray-300">{rp(inv.balance_due - (Number(effAlloc[inv.id]) || 0))}</td>
                           </tr>
                         );
                       })}
