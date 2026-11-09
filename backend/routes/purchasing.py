@@ -1726,7 +1726,15 @@ def update_grn(grn_id):
         data = request.get_json() or {}
         if invoiced and not locked:
             locked = True
-        stock_fields = {'quantity_received', 'quantity_accepted', 'quantity_rejected', 'location_id'}
+        stock_fields = {'quantity_accepted', 'quantity_rejected', 'location_id'}
+        # Jumlah DITERIMA boleh dikoreksi (catatan fisik) selama tidak lebih kecil dari jumlah lolos QC;
+        # stok dan jurnal bersumber dari jumlah lolos QC sehingga tidak ikut berubah.
+        for item_data in data.get('items') or []:
+            if item_data.get('quantity_received') is None:
+                continue
+            gi = {i.id: i for i in grn.items}.get(item_data.get('id')) or {i.po_item_id: i for i in grn.items}.get(item_data.get('po_item_id'))
+            if gi and float(item_data['quantity_received']) < float(gi.quantity_accepted or 0) - 0.0005:
+                return jsonify({'error': f"Jumlah diterima tidak boleh kurang dari jumlah lolos QC ({float(gi.quantity_accepted or 0):,.3f}). Untuk mengurangi stok buat retur atau penyesuaian."}), 400
         if locked:
             # GRN approved / sudah difaktur: stok & jurnal sudah terposting, hanya data non-keuangan yang boleh diubah
             for item_data in data.get('items') or []:
@@ -1762,6 +1770,8 @@ def update_grn(grn_id):
                         continue
                     if f in item_data:
                         setattr(grn_item, f, item_data[f])
+                if item_data.get('quantity_received') is not None and 'quantity_rejected' not in item_data:
+                    grn_item.quantity_rejected = max(0, float(grn_item.quantity_received) - float(grn_item.quantity_accepted or 0))
                 if 'production_date' in item_data and item_data['production_date']:
                     grn_item.production_date = datetime.strptime(item_data['production_date'], '%Y-%m-%d').date()
                 if 'expiry_date' in item_data and item_data['expiry_date']:

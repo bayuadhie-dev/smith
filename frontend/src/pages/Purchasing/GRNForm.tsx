@@ -13,6 +13,7 @@ interface Row {
   po_item_id: number | null
   is_service?: boolean
   split?: Record<string, string>
+  qty0?: number
   itemId?: number
   product_id: number | null
   material_id: number | null
@@ -168,7 +169,7 @@ export default function GRNForm() {
           key: `g-${it.id}`, itemId: it.id, po_item_id: it.po_item_id ?? null, product_id: it.product_id ?? null, material_id: it.material_id ?? null,
           name: it.item_name || (it.po_item_id && byId[it.po_item_id] ? itemName(byId[it.po_item_id]) : (it.material_name || it.product_name || `Item #${it.id}`)),
           code: it.material_code || it.product_code, uom: it.uom, ordered: Number(it.quantity_ordered || 0),
-          receivedBefore: 0, qty: Number(it.quantity_received || 0), location_id: it.location_id ?? null,
+          receivedBefore: 0, qty: Number(it.quantity_received || 0), qty0: Number(it.quantity_received || 0), location_id: it.location_id ?? null,
           batch_number: it.batch_number || '', lot_number: it.lot_number || '',
           production_date: it.production_date ? String(it.production_date).split('T')[0] : '',
           expiry_date: it.expiry_date ? String(it.expiry_date).split('T')[0] : '', notes: it.notes || '', open: false,
@@ -213,6 +214,23 @@ export default function GRNForm() {
       return { batch: b, qty: isLastRest ? r3(left - share * (rest.length - 1)) : share }
     })
   }
+  const [batchEdit, setBatchEdit] = useState<{ i: number; list: { batch: string; qty: string }[] } | null>(null)
+  const openBatch = (i: number) => {
+    const r = rows[i]
+    const cur = batchQtys(r)
+    setBatchEdit({ i, list: cur.length ? cur.map((b) => ({ batch: b.batch, qty: String(b.qty) })) : [{ batch: '', qty: String(num(r.qty)) }] })
+  }
+  const saveBatch = () => {
+    if (!batchEdit) return
+    const list = batchEdit.list.map((b) => ({ batch: b.batch.trim(), qty: b.qty })).filter((b) => b.batch)
+    const names = list.map((b) => b.batch)
+    if (new Set(names).size !== names.length) return showError('Ada nomor batch yang sama dua kali')
+    if (names.some((b) => b.length > 100)) return showError('Satu nomor batch maksimal 100 karakter')
+    const split: Record<string, string> = {}
+    if (list.length > 1) list.forEach((b) => { split[b.batch] = b.qty })
+    update(batchEdit.i, { batch_number: names.join(', '), split })
+    setBatchEdit(null)
+  }
   const removeRow = (i: number) => setRows((rs) => rs.filter((_, idx) => idx !== i))
   const needsWarehouse = (r: Row) => !r.is_service && (r.product_id !== null || r.material_id !== null)
 
@@ -245,7 +263,7 @@ export default function GRNForm() {
         await axiosInstance.put(`/api/purchasing/grn/${id}`, {
           receipt_date: receiptDate, delivery_note_number: deliveryNote, vehicle_number: vehicle, driver_name: driver, notes,
           items: rows.map((r) => ({
-            id: r.itemId, po_item_id: r.po_item_id, lot_number: r.lot_number || null, notes: r.notes || null,
+            id: r.itemId, po_item_id: r.po_item_id, ...(num(r.qty) !== num(r.qty0) ? { quantity_received: num(r.qty) } : {}), lot_number: r.lot_number || null, notes: r.notes || null,
             production_date: r.production_date || null, expiry_date: r.expiry_date || null,
           })),
         })
@@ -399,7 +417,10 @@ export default function GRNForm() {
                           {!isEdit && <td className="py-2 pr-3 text-right tabular-nums">{r.po_item_id ? r.receivedBefore.toLocaleString('id-ID') : '-'}</td>}
                           <td className="py-2 pr-3">
                             {isEdit ? (
-                              <div className="text-right tabular-nums">{num(r.qty).toLocaleString('id-ID')} {r.uom}</div>
+                              <>
+                                <NumberInput className="input-field text-right" value={r.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />
+                                <p className="mt-1 text-right text-xs text-gray-500">{r.uom}</p>
+                              </>
                             ) : (
                               <>
                                 <NumberInput data-col="qty" className="input-field text-right" value={r.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />
@@ -421,7 +442,13 @@ export default function GRNForm() {
                           </td>
                           <td className="py-2 pr-3">
                             {isEdit ? <div className="text-sm">{r.batch_number || '-'}</div>
-                              : <input data-col="batch" className="input-field" value={r.batch_number} onChange={(e) => update(i, { batch_number: e.target.value })} placeholder="No. batch (beberapa batch: pisahkan koma)" />}
+                              : (
+                                <button type="button" data-col="batch" onClick={() => openBatch(i)} className="input-field w-full text-left truncate" title={r.batch_number || 'Isi nomor batch'}>
+                                  {parseBatches(r.batch_number).length === 0 ? <span className="text-gray-400">Isi batch</span>
+                                    : parseBatches(r.batch_number).length === 1 ? r.batch_number
+                                    : `${parseBatches(r.batch_number).length} batch`}
+                                </button>
+                              )}
                           </td>
                           <td className="py-2 whitespace-nowrap">
                             {!isEdit && r.po_item_id === null && <button type="button" onClick={() => removeRow(i)} className="p-1 text-xs text-red-600 hover:underline" title="Hapus baris">Hapus</button>}
@@ -430,25 +457,6 @@ export default function GRNForm() {
                             </button>
                           </td>
                         </tr>
-                        {!isEdit && parseBatches(r.batch_number).length > 1 && (
-                          <tr key={`${r.key}-s`} className="border-b border-gray-100 dark:border-gray-700 bg-amber-50/50 dark:bg-amber-900/10">
-                            <td colSpan={8} className="p-3">
-                              <p className="mb-2 text-xs text-gray-600 dark:text-gray-300">Ada {parseBatches(r.batch_number).length} batch. Isi jumlah tiap batch (bawaan dibagi rata); totalnya harus {num(r.qty).toLocaleString('id-ID')} {r.uom}. Tiap batch disimpan sebagai baris stok sendiri supaya bisa dilacak.</p>
-                              <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                                {batchQtys(r).map((b) => (
-                                  <label key={b.batch} className="text-xs text-gray-600 dark:text-gray-300">
-                                    <span className="block truncate" title={b.batch}>{b.batch}</span>
-                                    <NumberInput className="input-field text-right" value={(r.split && r.split[b.batch] !== undefined ? r.split[b.batch] : String(b.qty)) as any}
-                                      onChange={(e: any) => update(i, { split: { ...(r.split || {}), [b.batch]: e.target.value } })} />
-                                  </label>
-                                ))}
-                              </div>
-                              <p className={`mt-2 text-xs ${Math.abs(batchQtys(r).reduce((a, b) => a + b.qty, 0) - num(r.qty)) > 0.01 ? 'text-red-600' : 'text-gray-500'}`}>
-                                Total batch: {batchQtys(r).reduce((a, b) => a + b.qty, 0).toLocaleString('id-ID')} dari {num(r.qty).toLocaleString('id-ID')}
-                              </p>
-                            </td>
-                          </tr>
-                        )}
                         {r.open && (
                           <tr key={`${r.key}-d`} className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
                             <td colSpan={8} className="p-3">
@@ -488,6 +496,35 @@ export default function GRNForm() {
           <button type="submit" disabled={saving || (!isEdit && !supplierId)} className="btn-primary disabled:opacity-50">{saving ? 'Menyimpan...' : isEdit ? 'Simpan Koreksi' : 'Simpan Penerimaan'}</button>
         </div>
       </form>
+      {batchEdit && (() => {
+        const r = rows[batchEdit.i]
+        const multi = batchEdit.list.length > 1
+        const sum = batchEdit.list.reduce((a, b) => a + num(b.qty), 0)
+        const setItem = (k: number, patch: Partial<{ batch: string; qty: string }>) => setBatchEdit({ ...batchEdit, list: batchEdit.list.map((b, idx) => (idx === k ? { ...b, ...patch } : b)) })
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setBatchEdit(null)}>
+            <div className="w-full max-w-lg rounded-lg bg-white p-5 shadow-xl dark:bg-gray-800" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white">Nomor batch</h3>
+              <p className="mb-3 text-xs text-gray-500">{r.name}. Satu baris per batch. Kalau lebih dari satu, isi jumlah tiap batch; totalnya harus {num(r.qty).toLocaleString('id-ID')} {r.uom}.</p>
+              <div className="max-h-80 space-y-2 overflow-y-auto">
+                {batchEdit.list.map((b, k) => (
+                  <div key={k} className="flex items-center gap-2">
+                    <input autoFocus={k === batchEdit.list.length - 1} className="input-field flex-1" value={b.batch} placeholder="No. batch" onChange={(e) => setItem(k, { batch: e.target.value })} />
+                    {multi && <NumberInput className="input-field w-32 text-right" value={b.qty as any} onChange={(e: any) => setItem(k, { qty: e.target.value })} />}
+                    {multi && <button type="button" className="text-xs text-red-600 hover:underline" onClick={() => setBatchEdit({ ...batchEdit, list: batchEdit.list.filter((_, idx) => idx !== k) })}>Hapus</button>}
+                  </div>
+                ))}
+              </div>
+              <button type="button" className="mt-3 text-sm text-blue-600 hover:underline" onClick={() => setBatchEdit({ ...batchEdit, list: [...batchEdit.list, { batch: '', qty: '0' }] })}>+ Tambah batch</button>
+              {multi && <p className={`mt-2 text-xs ${Math.abs(sum - num(r.qty)) > 0.01 ? 'text-red-600' : 'text-gray-500'}`}>Total batch: {sum.toLocaleString('id-ID')} dari {num(r.qty).toLocaleString('id-ID')}</p>}
+              <div className="mt-4 flex justify-end gap-2">
+                <button type="button" className="btn-secondary" onClick={() => setBatchEdit(null)}>Batal</button>
+                <button type="button" className="btn-primary" onClick={saveBatch}>Simpan batch</button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

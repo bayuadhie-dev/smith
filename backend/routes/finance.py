@@ -914,6 +914,11 @@ def create_payment_core(data, user_id, commit=True):
         )
         if allocations_in and lines_in:
             return jsonify({'error': 'Pilih salah satu: alokasi ke invoice ATAU akun lawan, tidak boleh keduanya'}), 400
+        # Selisih pada pembayaran faktur (pembulatan, uang muka, diskon...): tiap baris ke satu akun.
+        # Nilai positif menambah kas keluar/masuk di atas total faktur, negatif menguranginya (diskon).
+        adjustments_in = data.get('adjustments') or []
+        if adjustments_in and not allocations_in:
+            return jsonify({'error': 'Selisih hanya bisa dipakai bersama faktur yang dilunasi'}), 400
         if not allocations_in and not lines_in:
             return jsonify({'error': 'Minimal satu invoice atau satu akun lawan wajib diisi'}), 400
         if not data.get('bank_account_id'):
@@ -924,7 +929,9 @@ def create_payment_core(data, user_id, commit=True):
         # Alokasi negatif membalik sebagian pelunasan faktur yang sudah dibayar (mis. pengembalian kelebihan).
         if any(Decimal(str(i.get('amount') or 0)) == 0 for i in items):
             return jsonify({'error': 'Setiap baris tidak boleh bernilai 0'}), 400
-        total_amount = sum((Decimal(str(i['amount'])) for i in items), Decimal('0'))
+        if any(Decimal(str(i.get('amount') or 0)) == 0 for i in adjustments_in):
+            return jsonify({'error': 'Setiap baris selisih tidak boleh bernilai 0'}), 400
+        total_amount = sum((Decimal(str(i['amount'])) for i in items + adjustments_in), Decimal('0'))
         if data.get('amount') is not None and abs(Decimal(str(data['amount'])) - total_amount) > Decimal('0.01'):
             return jsonify({'error': f'Nilai total (Rp{float(data["amount"]):,.2f}) tidak sama dengan jumlah rincian (Rp{float(total_amount):,.2f})'}), 400
 
@@ -936,7 +943,7 @@ def create_payment_core(data, user_id, commit=True):
         # daftar piutang/hutang selalu sinkron dengan buku besar).
         from utils.coa_roles import CoaRoles
         _roles = CoaRoles()
-        for l in lines_in:
+        for l in lines_in + adjustments_in:
             acc = db.session.get(Account, l.get('account_id')) if l.get('account_id') else None
             if not acc:
                 return jsonify({'error': 'Akun pada rincian tidak ditemukan'}), 400
@@ -991,6 +998,8 @@ def create_payment_core(data, user_id, commit=True):
             if len({(i.customer_id, i.supplier_id) for i in invoices}) > 1:
                 return jsonify({'error': 'Semua invoice dalam satu pembayaran harus milik customer/supplier yang sama'}), 400
             foreign_currencies = {(i.currency or 'IDR') for i in invoices if (i.currency or 'IDR') != 'IDR'}
+            if foreign_currencies and adjustments_in:
+                return jsonify({'error': 'Selisih/diskon belum bisa dipakai untuk pembayaran faktur valas'}), 400
             if foreign_currencies and (len(foreign_currencies) > 1 or any((i.currency or 'IDR') == 'IDR' for i in invoices)):
                 return jsonify({'error': 'Invoice valas hanya boleh dibayar bersama invoice bermata uang yang sama (tidak boleh dicampur dengan Rupiah atau valas lain)'}), 400
 
@@ -1116,6 +1125,19 @@ def create_payment_core(data, user_id, commit=True):
                     lines.append({'account_id': resolve_accounts_payable(inv.supplier_id), 'debit': ap_idr if ap_idr > 0 else 0, 'credit': -ap_idr if ap_idr < 0 else 0,
                                   'description': f'Pelunasan hutang - {inv.invoice_number}' if ap_idr > 0 else f'Pembalikan pelunasan hutang - {inv.invoice_number}'})
             memo = f'Payment {payment.payment_number} - ' + ', '.join(i.invoice_number for i in invoices)
+            for l in adjustments_in:
+                amt = float(Decimal(str(l['amount'])))
+                ptype, pid = None, None
+                if l.get('party_type') in ('supplier', 'customer') and l.get('party_id'):
+                    ptype, pid = l['party_type'], int(l['party_id'])
+                db.session.add(PaymentLine(payment_id=payment.id, account_id=l['account_id'], amount=amt, description=l.get('description'),
+                                           party_type=ptype, party_id=pid))
+                if is_receipt:
+                    dr, cr = (0, amt) if amt > 0 else (-amt, 0)
+                else:
+                    dr, cr = (amt, 0) if amt > 0 else (0, -amt)
+                lines.append({'account_id': l['account_id'], 'debit': dr, 'credit': cr,
+                              'description': l.get('description') or f'Selisih pembayaran - {payment.payment_number}'})
         else:
             idr_signed_sum = 0.0
             for l in lines_in:

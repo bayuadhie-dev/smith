@@ -32,20 +32,6 @@ export default function InvoiceList() {
   const [statusFilter, setStatusFilter] = useState('');
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [payModal, setPayModal] = useState<any>(null);
-  const [payAmount, setPayAmount] = useState('');
-  const [payMethod, setPayMethod] = useState('transfer');
-  const [payNotes, setPayNotes] = useState('');
-  const [paying, setPaying] = useState(false);
-  const [cashBankAccounts, setCashBankAccounts] = useState<any[]>([]);
-  const [payBankAccountId, setPayBankAccountId] = useState('');
-
-  useEffect(() => {
-    axiosInstance.get('/api/finance/chart-of-accounts').then((res) => {
-      const all = res.data.accounts || [];
-      setCashBankAccounts(all.filter((a: any) => a.is_cash_bank));
-    }).catch(() => {});
-  }, []);
 
   const fetchInvoices = async () => {
     setLoading(true);
@@ -69,36 +55,6 @@ export default function InvoiceList() {
       }
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handlePayment = async () => {
-    if (!payModal) return;
-    if (!payBankAccountId) {
-      toast.error('Pilih akun Kas/Bank sumber pembayaran');
-      return;
-    }
-    setPaying(true);
-    try {
-      const res = await axiosInstance.post(
-        `/api/purchasing/purchase-invoices/${payModal.id}/record-payment`,
-        {
-          amount: parseFloat(payAmount),
-          payment_method: payMethod,
-          notes: payNotes,
-          bank_account_id: Number(payBankAccountId),
-        }
-      );
-      toast.success(res.data.message);
-      setPayModal(null);
-      setPayAmount('');
-      setPayNotes('');
-      setPayBankAccountId('');
-      fetchInvoices();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || 'Gagal mencatat pembayaran');
-    } finally {
-      setPaying(false);
     }
   };
 
@@ -221,7 +177,7 @@ export default function InvoiceList() {
                       </Link>
                       {inv.payment_status !== 'paid' && (
                         <button
-                          onClick={() => { setPayModal(inv); setPayAmount(String(inv.total_amount || '')); }}
+                          onClick={() => navigate(`/app/finance/pembayaran-pembelian/new?invoice_id=${inv.id}`)}
                           className="flex items-center gap-1 text-xs text-green-600 hover:underline"
                         >
                           <BanknotesIcon className="h-3.5 w-3.5" /> Bayar
@@ -235,81 +191,6 @@ export default function InvoiceList() {
           </table>
         )}
       </div>
-
-      {payModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="font-bold text-gray-900 dark:text-white">💳 Catat Pembayaran</h2>
-              <button onClick={() => setPayModal(null)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-                <XMarkIcon className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="text-sm text-gray-500">
-              <p>Invoice: <strong className="text-gray-800 dark:text-white">{payModal.invoice_number}</strong></p>
-              <p>Total: <strong>Rp {Number(payModal.total_amount).toLocaleString('id-ID')}</strong></p>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah Bayar (Rp)</label>
-                <NumberInput currency
-                  value={payAmount}
-                  onChange={e => setPayAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white"
-                  placeholder="0"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Metode Pembayaran</label>
-                <select
-                  value={payMethod}
-                  onChange={e => setPayMethod(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white"
-                >
-                  <option value="transfer">Transfer Bank</option>
-                  <option value="cash">Tunai</option>
-                  <option value="giro">Giro</option>
-                  <option value="cek">Cek</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Akun Kas/Bank</label>
-                <select
-                  value={payBankAccountId}
-                  onChange={e => setPayBankAccountId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white"
-                >
-                  <option value="">Pilih akun...</option>
-                  {cashBankAccounts.map((a: any) => (
-                    <option key={a.id} value={a.id}>{a.code} - {a.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Catatan</label>
-                <input
-                  type="text"
-                  value={payNotes}
-                  onChange={e => setPayNotes(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white"
-                  placeholder="No. referensi, keterangan..."
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setPayModal(null)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm">Batal</button>
-              <button
-                onClick={handlePayment}
-                disabled={paying || !payAmount}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50"
-              >
-                {paying ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <BanknotesIcon className="h-4 w-4" />}
-                Catat Pembayaran
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {total > 25 && (
         <div className="flex justify-center gap-2">

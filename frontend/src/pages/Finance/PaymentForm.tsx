@@ -87,6 +87,10 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     { account_id: '', amount: '', description: '' },
   ]);
 
+  const [adj, setAdj] = useDraftState<{ account_id: string; amount: string; description: string }[]>('adj', []);
+  const updateAdj = (idx: number, patch: Partial<{ account_id: string; amount: string; description: string }>) => setAdj((a) => a.map((x, i) => (i === idx ? { ...x, ...patch } : x)));
+  const adjTotal = adj.reduce((s, l) => s + (Number(l.amount) || 0), 0);
+
   const [formData, setFormData] = useDraftState('formData', {
     party_id: '',
     payment_date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
@@ -99,7 +103,8 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
 
   const totalAmount = isStandalone
     ? lines.reduce((s, l) => s + (Number(l.amount) || 0), 0)
-    : Object.values(alloc).reduce((s, v) => s + (Number(v) || 0), 0);
+    : Object.values(alloc).reduce((s, v) => s + (Number(v) || 0), 0) + adjTotal;
+  const allocTotal = totalAmount - (isStandalone ? 0 : adjTotal);
 
   useEffect(() => {
     if (!editId) {
@@ -113,7 +118,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
       ? '/api/purchasing/suppliers'
       : '/api/sales/customers';
 
-    axiosInstance.get(partyEndpoint).then((res) => {
+    axiosInstance.get(partyEndpoint, { params: { per_page: 1000 } }).then((res) => {
       const list = res.data.suppliers || res.data.customers || res.data || [];
       setParties(list.map((p: any) => ({
         id: p.id,
@@ -197,7 +202,9 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
         paid_to: d.paid_to || '',
         bank_account_id: d.bank_account_id ? String(d.bank_account_id) : '',
       });
-      if (d.lines?.length) {
+      if (d.lines?.length && d.allocations?.length) {
+        setAdj(d.lines.map((l: any) => ({ account_id: String(l.account_id), amount: String(l.amount), description: l.description || '' })));
+      } else if (d.lines?.length) {
         setLines(d.lines.map((l: any) => ({ account_id: String(l.account_id), amount: String(l.amount), description: l.description || '', party_type: l.party_type || '', party_id: l.party_id ? String(l.party_id) : '' })));
       }
     }).catch(() => setError('Gagal memuat transaksi yang akan diubah.'));
@@ -288,6 +295,13 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
           const onDebit = mode === 'ap' ? n > 0 : n < 0;
           return { account: `${mode === 'ar' ? 'Piutang Usaha' : 'Hutang Usaha'} — ${i.invoice_number}`, debit: onDebit ? Math.abs(n) : 0, credit: onDebit ? 0 : Math.abs(n) };
         });
+    if (!isStandalone) {
+      adj.filter((l) => Number(l.amount) !== 0).forEach((l) => {
+        const n = Number(l.amount);
+        const onDebit = isReceiptKind ? n < 0 : n > 0;
+        detail.push({ account: accName(l.account_id), debit: onDebit ? Math.abs(n) : 0, credit: onDebit ? 0 : Math.abs(n) });
+      });
+    }
     if (isReceiptKind) journalPreview.push(...(bankLine ? [bankLine] : []), ...detail);
     else journalPreview.push(...detail, ...(bankLine ? [bankLine] : []));
   }
@@ -310,6 +324,12 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
       fail('Centang minimal satu faktur yang akan dilunasi.');
       return;
     }
+    const cleanAdj = adj.filter((l) => l.account_id || Number(l.amount))
+      .map((l) => ({ account_id: Number(l.account_id), amount: Number(l.amount), description: l.description || undefined }));
+    if (!isStandalone && cleanAdj.some((l) => !l.account_id || !l.amount)) {
+      fail('Setiap baris selisih harus punya akun dan nilai tidak sama dengan 0.');
+      return;
+    }
     if (isStandalone && (cleanLines.length === 0 || cleanLines.some((l) => !l.account_id || !l.amount))) {
       fail('Setiap baris rincian harus punya akun dan nilai tidak sama dengan 0 (boleh negatif untuk pengurang).');
       return;
@@ -328,6 +348,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
         payment_type: paymentType === 'supplier' ? 'payment' : 'receipt',
         allocations: isStandalone ? undefined : allocations,
         lines: isStandalone ? cleanLines : undefined,
+        adjustments: !isStandalone && cleanAdj.length ? cleanAdj : undefined,
         supplier_id: !isStandalone && paymentType === 'supplier' ? Number(formData.party_id) : undefined,
         customer_id: !isStandalone && paymentType === 'customer' ? Number(formData.party_id) : undefined,
         payment_method: formData.payment_method,
@@ -517,6 +538,37 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
             </Panel>
           )}
 
+          {!isStandalone && formData.party_id && (
+            <Panel title="Selisih dan diskon (opsional)">
+              <div className="space-y-2 p-4">
+                <p className="text-xs text-gray-500">
+                  Dipakai kalau uang yang {isReceiptKind ? 'diterima' : 'dibayarkan'} tidak sama dengan total faktur, misalnya pembulatan, selisih pembayaran, atau uang muka.
+                  Nilai positif menambah uang {isReceiptKind ? 'masuk' : 'keluar'} di atas faktur, nilai negatif mengurangi (diskon).
+                </p>
+                {adj.map((l, idx) => (
+                  <div key={idx} className="grid grid-cols-12 gap-2">
+                    <div className="col-span-12 md:col-span-5">
+                      <SearchableSelect
+                        options={contraAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name }))}
+                        value={l.account_id ? Number(l.account_id) : null}
+                        onChange={(v) => updateAdj(idx, { account_id: v ? String(v) : '' })}
+                        placeholder="Pilih akun (mis. Biaya Lain-lain, Piutang Karyawan)"
+                      />
+                    </div>
+                    <input type="text" className={`${inputCls} col-span-7 md:col-span-4`} placeholder="Keterangan (opsional)" value={l.description} onChange={(e) => updateAdj(idx, { description: e.target.value })} />
+                    <NumberInput currency className={`${inputCls} col-span-4 text-right md:col-span-2`} placeholder="Nilai" value={l.amount} onChange={(e) => updateAdj(idx, { amount: e.target.value })} />
+                    <button type="button" className="col-span-1 text-gray-400 hover:text-red-600" onClick={() => setAdj((a) => a.filter((_, i) => i !== idx))} title="Hapus baris">
+                      <XMarkIcon className="mx-auto h-5 w-5" />
+                    </button>
+                  </div>
+                ))}
+                <button type="button" className="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400" onClick={() => setAdj((a) => [...a, { account_id: '', amount: '', description: '' }])}>
+                  + Tambah baris selisih
+                </button>
+              </div>
+            </Panel>
+          )}
+
           {isStandalone && (
             <Panel title="Rincian akun">
               <div className="space-y-2 p-4">
@@ -595,7 +647,11 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                 <dd className="mt-0.5 text-2xl font-semibold tabular-nums text-gray-900 dark:text-white">{rp(totalAmount)}</dd>
               </div>
               {!isStandalone && (
-                <div className="flex justify-between"><dt className="text-gray-500 dark:text-gray-400">Faktur dipilih</dt><dd className="font-medium">{checkedCount}</dd></div>
+                <>
+                  <div className="flex justify-between"><dt className="text-gray-500 dark:text-gray-400">Faktur dipilih</dt><dd className="font-medium">{checkedCount}</dd></div>
+                  <div className="flex justify-between"><dt className="text-gray-500 dark:text-gray-400">Faktur dilunasi</dt><dd className="font-medium tabular-nums">{rp(allocTotal)}</dd></div>
+                  {adjTotal !== 0 && <div className="flex justify-between"><dt className="text-gray-500 dark:text-gray-400">Selisih</dt><dd className="font-medium tabular-nums">{rp(adjTotal)}</dd></div>}
+                </>
               )}
               <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Tanggal</dt><dd className="font-medium">{formData.payment_date || '-'}</dd></div>
               <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Akun kas/bank</dt><dd className="truncate text-right font-medium">{bankName ? `${bankName.code} ${bankName.name}` : '-'}</dd></div>
