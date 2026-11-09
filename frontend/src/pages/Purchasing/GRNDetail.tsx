@@ -84,14 +84,8 @@ export default function GRNDetail() {
     setInspectItems(prev =>
       prev.map((item, i) => {
         if (i !== idx) return item;
+        // Qty ditolak tidak diisi otomatis: diisi sendiri oleh pemeriksa, supaya tidak rancu dengan selisih jumlah.
         const updated = { ...item, [field]: value };
-        // Auto-calculate rejected when accepted changes
-        if (field === 'quantity_accepted') {
-          const accepted = parseFloat(value) || 0;
-          const received = item.quantity_received;
-          const remaining = Math.max(0, received - accepted);
-          updated.quantity_rejected = String(remaining);
-        }
         return updated;
       }),
     );
@@ -336,6 +330,13 @@ export default function GRNDetail() {
                   />
                 </div>
                 <div className="col-span-3">
+                  {isEditable && Math.abs(item.quantity_received - accepted - rejected) > 0.001 && (
+                    <p className="mb-1 text-xs text-amber-600">
+                      {item.quantity_received - accepted - rejected > 0
+                        ? `Belum dialokasikan: ${(item.quantity_received - accepted - rejected).toLocaleString('id-ID')} ${item.uom} (isi Qty Ditolak bila memang ditolak)`
+                        : `Melebihi jumlah diterima ${(accepted + rejected - item.quantity_received).toLocaleString('id-ID')} ${item.uom}; jumlah diterima ikut disesuaikan`}
+                    </p>
+                  )}
                   <input
                     type="text"
                     value={item.rejection_reason}
