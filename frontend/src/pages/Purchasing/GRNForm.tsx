@@ -452,7 +452,8 @@ export default function GRNForm() {
                             )}
                           </td>
                           <td className="py-2 pr-3">
-                            {isEdit ? <div className="text-sm">{r.batch_number || '-'}</div>
+                            {!needsWarehouse(r) ? <div className="text-xs text-gray-400">-</div>
+                              : isEdit ? <div className="text-sm">{r.batch_number || '-'}</div>
                               : (
                                 <button type="button" data-col="batch" onClick={() => openBatch(i)} className="input-field w-full text-left truncate" title={r.batch_number || 'Isi nomor batch'}>
                                   {parseBatches(r.batch_number).length === 0 ? <span className="text-gray-400">Isi batch</span>
