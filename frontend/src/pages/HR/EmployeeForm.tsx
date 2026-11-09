@@ -250,7 +250,7 @@ export default function EmployeeForm() {
                   <option value="">Belum dihubungkan</option>
                   {deviceUsers.map((u) => (
                     <option key={u.device_user_id} value={u.device_user_id} disabled={!!u.used_by && u.device_user_id !== watch('fingerprint_id') && u.used_by !== currentName}>
-                      {u.device_user_id} - {u.name}{u.used_by ? ` (dipakai ${u.used_by})` : ''}
+                      {u.device_user_id} - {u.name}{u.used_by && u.used_by !== currentName ? ` (dipakai ${u.used_by})` : ''}
                     </option>
                   ))}
                 </select>
