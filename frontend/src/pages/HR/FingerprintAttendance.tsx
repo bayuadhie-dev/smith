@@ -577,9 +577,9 @@ const FingerprintAttendance = () => {
         }
       />
 
-      {(syncMsg || lastPunch) && (
-        <p className={`text-xs ${syncing ? 'text-emerald-700' : (lastPunch && Date.now() - new Date(lastPunch).getTime() > 36 * 3600 * 1000 ? 'text-amber-600' : 'text-gray-500')}`}>
-          {syncing ? syncMsg : `Data terakhir dari mesin: ${new Date(lastPunch as string).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}${Date.now() - new Date(lastPunch as string).getTime() > 36 * 3600 * 1000 ? ' (sudah lama, klik Perbarui data)' : ''}`}
+      {(syncing || (lastPunch && Date.now() - new Date(lastPunch).getTime() > 36 * 3600 * 1000)) && (
+        <p className={`text-xs ${syncing ? 'text-emerald-700' : 'text-amber-600'}`}>
+          {syncing ? syncMsg : 'Data dari mesin sudah lama. Klik Perbarui data untuk menarik data terbaru.'}
         </p>
       )}
 
