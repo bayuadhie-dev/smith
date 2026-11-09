@@ -161,6 +161,7 @@ class GoodsReceivedNote(db.Model):
     supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=False)
     receipt_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     delivery_note_number = db.Column(db.String(100), nullable=True)
+    supplier_invoice_number = db.Column(db.String(100), nullable=True)  # no. faktur/seri dari pemasok, diteruskan ke faktur pembelian
     vehicle_number = db.Column(db.String(50), nullable=True)
     driver_name = db.Column(db.String(200), nullable=True)
     status = db.Column(db.String(50), nullable=False, default='pending')  # pending, inspected, approved, rejected

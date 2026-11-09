@@ -56,6 +56,7 @@ export default function GRNForm() {
   const [nextNumber, setNextNumber] = useState('')
   const [receiptDate, setReceiptDate] = useState(todayISO())
   const [deliveryNote, setDeliveryNote] = useState('')
+  const [supInvNo, setSupInvNo] = useState('')
   const [vehicle, setVehicle] = useState('')
   const [driver, setDriver] = useState('')
   const [notes, setNotes] = useState('')
@@ -157,6 +158,7 @@ export default function GRNForm() {
         if (g.supplier_id) setSupplierId(g.supplier_id)
         setReceiptDate(String(g.receipt_date || '').split('T')[0] || todayISO())
         setDeliveryNote(g.delivery_note_number || '')
+        setSupInvNo(g.supplier_invoice_number || '')
         setVehicle(g.vehicle_number || '')
         setDriver(g.driver_name || '')
         setNotes(g.notes || '')
@@ -261,7 +263,7 @@ export default function GRNForm() {
     try {
       if (isEdit) {
         await axiosInstance.put(`/api/purchasing/grn/${id}`, {
-          receipt_date: receiptDate, delivery_note_number: deliveryNote, vehicle_number: vehicle, driver_name: driver, notes,
+          receipt_date: receiptDate, delivery_note_number: deliveryNote, supplier_invoice_number: supInvNo, vehicle_number: vehicle, driver_name: driver, notes,
           items: rows.map((r) => ({
             id: r.itemId, po_item_id: r.po_item_id, ...(num(r.qty) !== num(r.qty0) ? { quantity_received: num(r.qty) } : {}), lot_number: r.lot_number || null, notes: r.notes || null,
             production_date: r.production_date || null, expiry_date: r.expiry_date || null,
@@ -272,7 +274,7 @@ export default function GRNForm() {
       } else {
         const created = await axiosInstance.post('/api/purchasing/grn', {
           po_id: poId, supplier_id: supplierId, receipt_date: receiptDate, grn_number: manualNumber.trim() || undefined,
-          delivery_note_number: deliveryNote || null, vehicle_number: vehicle || null, driver_name: driver || null, notes: notes || null,
+          delivery_note_number: deliveryNote || null, supplier_invoice_number: supInvNo.trim() || null, vehicle_number: vehicle || null, driver_name: driver || null, notes: notes || null,
           items: active.flatMap((r) => {
             const base = {
               po_item_id: r.po_item_id, product_id: r.product_id, material_id: r.material_id, quantity_ordered: r.po_item_id ? r.ordered : num(r.qty),
@@ -362,6 +364,10 @@ export default function GRNForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Surat Jalan</label>
             <input className="input-field" value={deliveryNote} onChange={(e) => setDeliveryNote(e.target.value)} placeholder="Nomor surat jalan pemasok" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Faktur Pemasok</label>
+            <input className="input-field" value={supInvNo} onChange={(e) => setSupInvNo(e.target.value)} placeholder="Nomor seri/faktur dari pemasok (ikut ke faktur pembelian)" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Kendaraan</label>

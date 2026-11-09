@@ -922,10 +922,15 @@ def delete_purchase_order(id):
 @require_permission('purchasing.view', 'warehouse.view')
 def get_grns():
     try:
-        grns = GoodsReceivedNote.query.order_by(GoodsReceivedNote.receipt_date.desc()).all()
+        q = GoodsReceivedNote.query
+        if request.args.get('po_id', type=int):
+            q = q.filter(GoodsReceivedNote.po_id == request.args.get('po_id', type=int))
+        grns = q.order_by(GoodsReceivedNote.receipt_date.desc()).all()
         return jsonify({
             'grns': [{
                 'id': g.id,
+                'po_id': g.po_id,
+                'supplier_invoice_number': g.supplier_invoice_number,
                 'grn_number': g.grn_number,
                 'po_number': g.purchase_order.po_number if g.purchase_order else None,
                 'supplier_name': g.supplier.company_name,
@@ -1003,6 +1008,7 @@ def create_grn():
             supplier_id=supplier_id,
             receipt_date=receipt_dt,
             delivery_note_number=data.get('delivery_note_number'),
+            supplier_invoice_number=(data.get('supplier_invoice_number') or '').strip() or None,
             vehicle_number=data.get('vehicle_number'),
             driver_name=data.get('driver_name'),
             notes=(data.get('notes') or None),
@@ -1271,6 +1277,7 @@ def get_grn(grn_id):
             'supplier_name': grn.supplier.company_name if grn.supplier else None,
             'receipt_date': grn.receipt_date.isoformat() if grn.receipt_date else None,
             'delivery_note_number': grn.delivery_note_number,
+            'supplier_invoice_number': grn.supplier_invoice_number,
             'vehicle_number': grn.vehicle_number,
             'driver_name': grn.driver_name,
             'status': grn.status,
@@ -1747,7 +1754,7 @@ def update_grn(grn_id):
                             and not (f == 'location_id' and getattr(gi, f) == item_data[f]):
                         return jsonify({'error': 'Jumlah/gudang tidak bisa diubah karena GRN sudah disetujui atau difaktur. Ubah catatan, batch, lot, tanggal, atau buat retur.'}), 400
 
-        header_fields = ['receipt_date', 'delivery_note_number', 'vehicle_number', 'driver_name', 'notes']
+        header_fields = ['receipt_date', 'delivery_note_number', 'supplier_invoice_number', 'vehicle_number', 'driver_name', 'notes']
         for field in header_fields:
             if field in data:
                 if field == 'receipt_date' and data[field]:

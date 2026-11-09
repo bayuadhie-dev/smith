@@ -74,6 +74,15 @@ export default function PurchaseInvoiceForm() {
       .catch(() => showError('Gagal memuat daftar PO'))
   }, [supplierId])
 
+  // Nomor faktur pemasok yang sudah diisi di GRN ikut terisi di sini.
+  useEffect(() => {
+    if (!poId || editId) return
+    axiosInstance.get('/api/purchasing/grn', { params: { po_id: poId } }).then((r) => {
+      const no = (r.data.grns || []).map((g: any) => g.supplier_invoice_number).find((x: string) => x && x.trim())
+      if (no) setSupplierInvoiceNumber((cur) => cur || no)
+    }).catch(() => undefined)
+  }, [poId, editId])
+
   useEffect(() => {
     if (!editId) return
     axiosInstance.get(`/api/purchasing/purchase-invoices/${editId}`).then((r) => {
@@ -244,7 +253,7 @@ export default function PurchaseInvoiceForm() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Faktur Pemasok *</label>
-            <input className="input-field" value={supplierInvoiceNumber} onChange={(e) => setSupplierInvoiceNumber(e.target.value)} placeholder="Nomor di faktur dari pemasok" />
+            <input className="input-field" value={supplierInvoiceNumber} onChange={(e) => setSupplierInvoiceNumber(e.target.value)} placeholder="Terisi otomatis kalau sudah diisi di GRN" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Tanggal Faktur Pemasok</label>
