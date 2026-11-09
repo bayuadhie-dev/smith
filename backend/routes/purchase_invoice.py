@@ -864,6 +864,12 @@ def create_purchase_invoice_core(data, user_id, commit=True):
     else:
         post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='purchase_invoice', reference_id=invoice.id)
 
+    # Faktur bernilai 0 (barang milik pelanggan / titipan yang tetap diakui stoknya): tidak ada yang perlu dibayar, langsung lunas.
+    if abs(float(invoice.total_amount or 0)) < 0.005 and not hold_reason:
+        invoice.status = 'paid'
+        invoice.paid_amount = 0
+        invoice.balance_due = 0
+
     if commit:
         db.session.commit()
 

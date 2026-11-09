@@ -197,3 +197,20 @@ def test_uom_options_include_roll_conversion(client, auth_headers, db_session, t
     db_session.add(UoMConversion(from_uom_id=rol.id, to_uom_id=pcs.id, conversion_factor=13635, material_id=test_material.id)); db_session.commit()
     r = client.get(f'/api/purchasing/uom-options?material_id={test_material.id}', headers=auth_headers).get_json()
     assert r['base'] == 'PCS' and {'code': 'ROL', 'factor': 13635.0} in r['options'] and {'code': 'PCS', 'factor': 1.0} in r['options']
+
+
+def test_zero_total_purchase_invoice_is_paid_automatically(client, auth_headers, db_session, test_material):
+    from models.finance import GlobalAccountDefault, Invoice
+    from models.purchasing import GoodsReceivedNote, GRNItem, Supplier
+    main_location, _ = _setup_warehouse(db_session)
+    db_session.add(GlobalAccountDefault(transaction_key='gr_ir_clearing', account_id=_acc(db_session, '6-6000').id))
+    db_session.add(GlobalAccountDefault(transaction_key='accounts_payable', account_id=_acc(db_session, '9-1000').id)); db_session.commit()
+    sup = Supplier(code='SUP-ZERO', company_name='Sup Zero', is_active=True); db_session.add(sup); db_session.commit()
+    grn = GoodsReceivedNote(grn_number='BPB-ZERO-1', supplier_id=sup.id, receipt_date=date.today(), status='approved'); db_session.add(grn); db_session.commit()
+    db_session.add(GRNItem(grn_id=grn.id, material_id=test_material.id, quantity_ordered=2, quantity_received=2, quantity_accepted=2, uom='KG', location_id=main_location.id)); db_session.commit()
+    r = client.post('/api/purchasing/purchase-invoices', headers=auth_headers, json={
+        'grn_id': grn.id, 'supplier_id': sup.id, 'supplier_invoice_number': 'F-0', 'invoice_date': '2026-11-09',
+        'items': [{'material_id': test_material.id, 'quantity': 2, 'unit_price': 0, 'uom': 'KG', 'description': 'titipan customer'}]})
+    assert r.status_code == 201, r.get_json()
+    inv = Invoice.query.filter_by(grn_id=grn.id).first()
+    assert inv.status == 'paid' and float(inv.balance_due) == 0
