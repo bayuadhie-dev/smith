@@ -1264,29 +1264,22 @@ def create_grn():
         return jsonify({'error': 'Penerimaan barang gagal disimpan: ' + msg.split('\n')[0][:200]}), 500
 
 
-@purchasing_bp.route('/uom-options', methods=['GET'])
-@jwt_required()
-@require_permission('purchasing.view', 'warehouse.view')
-def uom_options():
-    """Satuan yang boleh dipakai saat menerima barang: satuan dasar (faktor 1) + konversi material/produk
-    (mis. 1 ROL = 13.635 PCS) dihitung ke satuan dasar."""
-    from models.uom import UoMConversion, UnitOfMeasure
+def _uom_factors(material_id=None, product_id=None):
+    """(satuan dasar, {kode: faktor ke satuan dasar}) dari konversi satuan barang (khusus barang didahulukan dari global)."""
+    from models.uom import UoMConversion
     from models.product import Material, Product
-    material_id = request.args.get('material_id', type=int)
-    product_id = request.args.get('product_id', type=int)
     item = db.session.get(Material, material_id) if material_id else (db.session.get(Product, product_id) if product_id else None)
     if not item:
-        return jsonify({'base': None, 'options': []}), 200
+        return None, {}
     base = item.primary_uom
     out = {base: 1.0}
     q = UoMConversion.query.filter(UoMConversion.is_active == True)
     q = q.filter(db.or_(UoMConversion.material_id == material_id, UoMConversion.material_id.is_(None))) if material_id else \
         q.filter(db.or_(UoMConversion.product_id == product_id, UoMConversion.product_id.is_(None)))
     rows = q.all()
-    # konversi khusus barang menimpa konversi global
-    rows.sort(key=lambda r: 0 if (r.material_id or r.product_id) else 1)   # konversi khusus barang didahulukan
+    rows.sort(key=lambda r: 0 if (r.material_id or r.product_id) else 1)
     b = str(base).lower()
-    for r in rows:   # arah langsung (1 ROL = X PCS) dulu, supaya tidak kena pembulatan kebalikan
+    for r in rows:
         f, t, factor = (r.from_uom.code if r.from_uom else None), (r.to_uom.code if r.to_uom else None), float(r.conversion_factor or 0)
         if f and t and factor > 0 and t.lower() == b and f not in out:
             out[f] = factor
@@ -1294,6 +1287,37 @@ def uom_options():
         f, t, factor = (r.from_uom.code if r.from_uom else None), (r.to_uom.code if r.to_uom else None), float(r.conversion_factor or 0)
         if f and t and factor > 0 and f.lower() == b and t not in out:
             out[t] = round(1 / factor, 6)
+    return base, out
+
+
+def _display_qty(item):
+    """Jumlah GRN sebagaimana diinput Finance (mis. 94 ROL), bukan satuan dasar (PCS). Dipakai tampilan dan cetak.
+    Memakai catatan yang diinput; untuk GRN lama tanpa catatan, dipilih satuan turunan terbesar yang membagi jumlah dengan bulat."""
+    qty = float(item.quantity_received or 0)
+    if item.entered_uom and item.entered_qty is not None and qty:
+        factor = qty / float(item.entered_qty) if float(item.entered_qty) else 1.0
+        return float(item.entered_qty), item.entered_uom, factor
+    base, factors = _uom_factors(item.material_id, item.product_id)
+    best = None
+    for code, f in factors.items():
+        if f > 1 and qty > 0:
+            n = qty / f
+            if n >= 1 and abs(n - round(n)) < 1e-6 and (best is None or f > best[1]):
+                best = (code, f)
+    if best:
+        return round(qty / best[1]), best[0], best[1]
+    return qty, item.uom, 1.0
+
+
+@purchasing_bp.route('/uom-options', methods=['GET'])
+@jwt_required()
+@require_permission('purchasing.view', 'warehouse.view')
+def uom_options():
+    """Satuan yang boleh dipakai saat menerima barang: satuan dasar (faktor 1) + konversi material/produk
+    (mis. 1 ROL = 13.635 PCS) dihitung ke satuan dasar."""
+    base, out = _uom_factors(request.args.get('material_id', type=int), request.args.get('product_id', type=int))
+    if base is None:
+        return jsonify({'base': None, 'options': []}), 200
     return jsonify({'base': base, 'options': [{'code': k, 'factor': v} for k, v in out.items()]}), 200
 
 
@@ -1346,6 +1370,7 @@ def get_grn(grn_id):
                 'quantity_accepted': float(item.quantity_accepted or 0),
                 'quantity_rejected': float(item.quantity_rejected or 0),
                 'uom': item.uom,
+                'display_qty': _display_qty(item)[0], 'display_uom': _display_qty(item)[1], 'display_factor': _display_qty(item)[2],
                 'entered_qty': float(item.entered_qty) if item.entered_qty is not None else None,
                 'entered_uom': item.entered_uom,
                 'batch_number': item.batch_number,

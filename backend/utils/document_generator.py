@@ -807,6 +807,7 @@ def generate_grn_document(grn_id, user_id, detail=False):
         n = float(n or 0)
         return f'{n:,.3f}'.rstrip('0').rstrip('.').replace(',', '_').replace('.', ',').replace('_', '.')
 
+    from routes.purchasing import _display_qty
     groups = {}
     for it in grn.items:
         key = it.po_item_id or (it.material_id, it.product_id, name_of(it))
@@ -816,11 +817,15 @@ def generate_grn_document(grn_id, user_id, detail=False):
         if detail:
             for it in items:
                 n += 1
-                rows.append({'no': n, 'item_name': name_of(it), 'uom': it.uom, 'qty': float(it.quantity_received or 0), 'batch_text': it.batch_number or '-'})
+                dq, du, _f = _display_qty(it)
+                rows.append({'no': n, 'item_name': name_of(it), 'uom': du, 'qty': dq, 'batch_text': it.batch_number or '-'})
         else:
             n += 1
             batches = [b for b in dict.fromkeys(i.batch_number for i in items) if b]
-            rows.append({'no': n, 'item_name': name_of(items[0]), 'uom': items[0].uom, 'qty': sum(float(i.quantity_received or 0) for i in items),
+            disp = [_display_qty(i) for i in items]
+            same = len({d[1] for d in disp}) == 1
+            rows.append({'no': n, 'item_name': name_of(items[0]), 'uom': disp[0][1] if same else items[0].uom,
+                         'qty': sum(d[0] for d in disp) if same else sum(float(i.quantity_received or 0) for i in items),
                          'batch_text': (batches[0] if len(batches) == 1 else (f'{len(batches)} batch' if batches else '-'))})
     total = sum(r['qty'] for r in rows)
     d = lambda x: x.strftime('%d-%m-%Y') if x else ''

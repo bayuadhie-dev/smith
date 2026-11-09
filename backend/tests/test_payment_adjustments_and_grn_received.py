@@ -297,3 +297,18 @@ def test_editing_invoice_reuses_auto_grn_instead_of_creating_new_ones(client, au
     assert float(poi.quantity_received) == 1
     listed = [g['grn_number'] for g in client.get('/api/purchasing/grn', headers=auth_headers).get_json()['grns']]
     assert grns[0].grn_number in listed
+
+
+def test_grn_display_qty_uses_roll_even_for_old_grn_without_entered_uom(client, auth_headers, db_session, test_material):
+    from models.uom import UnitOfMeasure, UoMConversion
+    from models.purchasing import GoodsReceivedNote, GRNItem, Supplier
+    pcs = UnitOfMeasure(code='PCS', name='Pieces', category='count', is_active=True)
+    rol = UnitOfMeasure(code='ROL', name='Roll', category='count', is_active=True)
+    db_session.add_all([pcs, rol]); db_session.commit()
+    test_material.primary_uom = 'PCS'; db_session.commit()
+    db_session.add(UoMConversion(from_uom_id=rol.id, to_uom_id=pcs.id, conversion_factor=13635, material_id=test_material.id)); db_session.commit()
+    sup = Supplier(code='SUP-DQ', company_name='Sup DQ', is_active=True); db_session.add(sup); db_session.commit()
+    g = GoodsReceivedNote(grn_number='BPB-DQ-1', supplier_id=sup.id, receipt_date=date.today(), status='approved'); db_session.add(g); db_session.commit()
+    db_session.add(GRNItem(grn_id=g.id, material_id=test_material.id, quantity_ordered=1281690, quantity_received=1281690, quantity_accepted=1281690, uom='PCS')); db_session.commit()
+    it = client.get(f'/api/purchasing/grn/{g.id}', headers=auth_headers).get_json()['items'][0]
+    assert it['display_qty'] == 94 and it['display_uom'] == 'ROL' and it['display_factor'] == 13635

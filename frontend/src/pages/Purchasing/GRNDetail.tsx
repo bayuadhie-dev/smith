@@ -36,6 +36,8 @@ interface InspectItem {
   quantity_rejected: string;
   rejection_reason: string;
   uom: string;
+  display_qty?: number;
+  display_uom?: string;
   batch_number: string;
   expiry_date: string;
 }
@@ -68,6 +70,8 @@ export default function GRNDetail() {
           quantity_rejected: String(item.quantity_rejected || 0),
           rejection_reason: '',
           uom: item.uom,
+          display_qty: item.display_qty,
+          display_uom: item.display_uom,
           batch_number: item.batch_number || '',
           expiry_date: item.expiry_date || '',
         })),
@@ -307,8 +311,10 @@ export default function GRNDetail() {
                   <span className="text-xs ml-1 text-gray-400">{item.uom}</span>
                 </div>
                 <div className="col-span-1 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {item.quantity_received.toLocaleString('id-ID')}
-                  <span className="text-xs ml-1 text-gray-400">{item.uom}</span>
+                  {item.display_uom && item.display_uom !== item.uom
+                    ? <>{Number(item.display_qty).toLocaleString('id-ID')}<span className="text-xs ml-1 text-gray-400">{item.display_uom}</span>
+                        <div className="text-xs font-normal text-gray-400">= {item.quantity_received.toLocaleString('id-ID')} {item.uom}</div></>
+                    : <>{item.quantity_received.toLocaleString('id-ID')}<span className="text-xs ml-1 text-gray-400">{item.uom}</span></>}
                 </div>
                 <div className="col-span-2">
                   <NumberInput

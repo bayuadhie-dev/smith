@@ -19,6 +19,8 @@ interface Row {
   uomOptions?: { code: string; factor: number }[]
   entryUom?: string
   enteredText?: string
+  dispUom?: string
+  dispFactor?: number
   itemId?: number
   product_id: number | null
   material_id: number | null
@@ -193,7 +195,7 @@ export default function GRNForm() {
             production_date: it.production_date ? String(it.production_date).split('T')[0] : '',
             expiry_date: it.expiry_date ? String(it.expiry_date).split('T')[0] : '', notes: it.notes || '', open: false,
             group: list.map((x: any) => ({ id: x.id, batch: x.batch_number || '', qty: Number(x.quantity_received || 0) })),
-            enteredText: (() => { const ent = list.filter((x: any) => x.entered_uom && x.entered_qty != null); return ent.length === list.length && ent.length ? ent.map((x: any) => `${Number(x.entered_qty).toLocaleString('id-ID')} ${x.entered_uom}`).join(' + ') : '' })(),
+            ...(() => { const du = new Set(list.map((x: any) => x.display_uom)); const f = Number(list[0].display_factor || 1); return du.size === 1 && f > 1 ? { dispUom: list[0].display_uom, dispFactor: f } : {} })(),
           }
         }))
       })
@@ -482,10 +484,12 @@ export default function GRNForm() {
                           <td className="py-2 pr-3">
                             {isEdit ? (
                               <>
-                                {(r.group?.length || 0) > 1
-                                  ? <div className="input-field bg-gray-50 text-right dark:bg-gray-900" title="Jumlah per batch dilihat di rincian batch">{num(r.qty).toLocaleString('id-ID')}</div>
-                                  : <NumberInput className="input-field text-right" value={r.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />}
-                                <p className="mt-1 text-right text-xs text-gray-500">{r.uom}{r.enteredText ? ` (diinput ${r.enteredText})` : ''}</p>
+                                {(r.group?.length || 0) > 1 || (r.dispFactor && r.dispFactor > 1 && (r.group?.length || 0) > 1)
+                                  ? <div className="input-field bg-gray-50 text-right dark:bg-gray-900" title="Jumlah per batch dilihat di rincian batch">{(r.dispFactor && r.dispFactor > 1 ? num(r.qty) / r.dispFactor : num(r.qty)).toLocaleString('id-ID')}</div>
+                                  : (r.dispFactor && r.dispFactor > 1
+                                    ? <NumberInput className="input-field text-right" value={String(Math.round((num(r.qty) / r.dispFactor) * 1000) / 1000) as any} onChange={(e: any) => update(i, { qty: String(num(e.target.value) * (r.dispFactor || 1)) })} />
+                                    : <NumberInput className="input-field text-right" value={r.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />)}
+                                <p className="mt-1 text-right text-xs text-gray-500">{r.dispFactor && r.dispFactor > 1 ? `${r.dispUom} (= ${num(r.qty).toLocaleString('id-ID')} ${r.uom})` : r.uom}</p>
                               </>
                             ) : (
                               <>
