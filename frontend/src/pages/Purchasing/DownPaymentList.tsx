@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import SortableTh, { useSort } from '../../components/SortableTh'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosConfig'
 import { formatRupiah } from '../../utils/currencyUtils'
@@ -17,6 +18,8 @@ export default function DownPaymentList() {
   const [params] = useSearchParams()
   const poId = params.get('po_id')
   const [rows, setRows] = useState<Row[]>([])
+  const acc = useMemo(() => ({ dp_number: (r: any) => r.dp_number, dp_date: (r: any) => r.dp_date, supplier_name: (r: any) => r.supplier_name, po_number: (r: any) => r.po_number, amount: (r: any) => Number(r.amount), allocated_amount: (r: any) => Number(r.allocated_amount), remaining: (r: any) => Number(r.remaining), status: (r: any) => r.status }), [])
+  const { sorted: sortedRows, sort, toggle } = useSort(rows, acc)
   const [summary, setSummary] = useState({ count: 0, paid: 0, allocated: 0, remaining: 0 })
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
@@ -61,13 +64,13 @@ export default function DownPaymentList() {
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-900"><tr>
-            <th className={th}>Nomor</th><th className={th}>Tanggal</th><th className={th}>Pemasok</th><th className={th}>PO</th>
-            <th className={`${th} text-right`}>Jumlah</th><th className={`${th} text-right`}>Terpakai</th><th className={`${th} text-right`}>Sisa</th><th className={th}>Status</th>
+            <SortableTh label="Nomor" k="dp_number" sort={sort} toggle={toggle} className={th} /><SortableTh label="Tanggal" k="dp_date" sort={sort} toggle={toggle} className={th} /><SortableTh label="Pemasok" k="supplier_name" sort={sort} toggle={toggle} className={th} /><SortableTh label="PO" k="po_number" sort={sort} toggle={toggle} className={th} />
+            <SortableTh label="Jumlah" k="amount" sort={sort} toggle={toggle} className={`${th} text-right`} /><SortableTh label="Terpakai" k="allocated_amount" sort={sort} toggle={toggle} className={`${th} text-right`} /><SortableTh label="Sisa" k="remaining" sort={sort} toggle={toggle} className={`${th} text-right`} /><SortableTh label="Status" k="status" sort={sort} toggle={toggle} className={th} />
           </tr></thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500">Memuat...</td></tr>}
             {!loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500">Belum ada uang muka.</td></tr>}
-            {rows.map((r) => (
+            {sortedRows.map((r) => (
               <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
                 <td className="whitespace-nowrap px-4 py-2.5 text-sm font-medium"><Link to={`/app/purchasing/down-payments/${r.id}`} className="text-emerald-700 hover:underline dark:text-emerald-400">{r.dp_number}</Link></td>
                 <td className="whitespace-nowrap px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300">{fmtDate(r.dp_date)}</td>

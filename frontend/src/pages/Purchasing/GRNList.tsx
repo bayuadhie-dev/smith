@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import SortableTh, { useSort } from '../../components/SortableTh';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import {
@@ -22,6 +23,8 @@ const QC_CONFIG: Record<string, { label: string; color: string }> = {
 export default function GRNList() {
   const navigate = useNavigate();
   const [grns, setGrns] = useState<any[]>([]);
+  const grnAcc = useMemo(() => ({ grn_number: (r: any) => r.grn_number, po_number: (r: any) => r.po_number, supplier_name: (r: any) => r.supplier_name, receipt_date: (r: any) => r.receipt_date, status: (r: any) => r.status }), []);
+  const { sorted: sortedGrns, sort, toggle } = useSort(grns, grnAcc);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
@@ -94,17 +97,17 @@ export default function GRNList() {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. GRN</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. PO</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Supplier</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tgl Terima</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Status</th>
+                <SortableTh label="No. GRN" k="grn_number" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="No. PO" k="po_number" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="Supplier" k="supplier_name" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="Tgl Terima" k="receipt_date" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="Status" k="status" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
                 <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">QC</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {grns.map((grn) => {
+              {sortedGrns.map((grn) => {
                 const status = STATUS_CONFIG[grn.status] || { label: grn.status, color: 'bg-gray-100 text-gray-600' };
                 const qc = grn.quality_status ? QC_CONFIG[grn.quality_status] : null;
                 return (

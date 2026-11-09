@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import SortableTh, { useSort } from '../../components/SortableTh';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import {
@@ -23,6 +24,8 @@ const APPROVAL_CONFIG: Record<string, { label: string; color: string }> = {
 export default function PurchaseReturnList() {
   const navigate = useNavigate();
   const [returns, setReturns] = useState<any[]>([]);
+  const retAcc = useMemo(() => ({ return_number: (r: any) => r.return_number, invoice_number: (r: any) => r.invoice_number, supplier_name: (r: any) => r.supplier_name, return_date: (r: any) => r.return_date, total_amount: (r: any) => Number(r.total_amount), status: (r: any) => r.status, approval_status: (r: any) => r.approval_status }), []);
+  const { sorted: sortedReturns, sort, toggle } = useSort(returns, retAcc);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -113,17 +116,17 @@ export default function PurchaseReturnList() {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. Retur</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. Invoice</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Supplier</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tgl Retur</th>
-                <th className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Total</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Status</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Persetujuan</th>
+                <SortableTh label="No. Retur" k="return_number" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="No. Invoice" k="invoice_number" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="Supplier" k="supplier_name" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="Tgl Retur" k="return_date" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="Total" k="total_amount" sort={sort} toggle={toggle} className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="Status" k="status" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="Persetujuan" k="approval_status" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {returns.map((ret) => {
+              {sortedReturns.map((ret) => {
                 const status = STATUS_CONFIG[ret.status] || { label: ret.status, color: 'bg-gray-100 text-gray-600' };
                 const approval = APPROVAL_CONFIG[ret.approval_status] || { label: ret.approval_status, color: 'bg-gray-100 text-gray-600' };
                 return (

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import SortableTh, { useSort } from '../../components/SortableTh';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import {
@@ -27,6 +28,8 @@ const PAY_CONFIG: Record<string, { label: string; color: string }> = {
 export default function InvoiceList() {
   const navigate = useNavigate();
   const [invoices, setInvoices] = useState<any[]>([]);
+  const invAcc = useMemo(() => ({ invoice_number: (r: any) => r.invoice_number, po_number: (r: any) => r.po_number, supplier_name: (r: any) => r.supplier_name, invoice_date: (r: any) => r.invoice_date, due_date: (r: any) => r.due_date, total_amount: (r: any) => Number(r.total_amount), status: (r: any) => r.status }), []);
+  const { sorted: sortedInvoices, sort, toggle } = useSort(invoices, invAcc);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -113,20 +116,20 @@ export default function InvoiceList() {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. Invoice</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. PO</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Supplier</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tgl Invoice</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Jatuh Tempo</th>
-                <th className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Total</th>
+                <SortableTh label="No. Invoice" k="invoice_number" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="No. PO" k="po_number" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="Supplier" k="supplier_name" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="Tgl Invoice" k="invoice_date" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="Jatuh Tempo" k="due_date" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortableTh label="Total" k="total_amount" sort={sort} toggle={toggle} className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300" />
                 <th className="px-4 py-3 text-center font-medium text-gray-600 dark:text-gray-300">GRN</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Status</th>
+                <SortableTh label="Status" k="status" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
                 <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Pembayaran</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {invoices.map((inv) => {
+              {sortedInvoices.map((inv) => {
                 const status = STATUS_CONFIG[inv.status] || { label: inv.status, color: 'bg-gray-100 text-gray-700' };
                 const pay = PAY_CONFIG[inv.payment_status] || { label: inv.payment_status, color: 'bg-gray-100 text-gray-700' };
                 const isOverdue = inv.due_date && new Date(inv.due_date) < new Date() && inv.payment_status !== 'paid';
