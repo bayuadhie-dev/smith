@@ -89,6 +89,18 @@ export default function PurchaseInvoiceForm() {
       .catch(() => showError('Gagal memuat daftar PO'))
   }, [supplierId])
 
+  // Ubah faktur tanpa PO: baris diambil dari faktur lama.
+  useEffect(() => {
+    if (!editId || !editInv || editInv.po_id || !editInv.grn_id) return
+    axiosInstance.get(`/api/purchasing/grn/${editInv.grn_id}`).then((r) => setGrn(r.data)).catch(() => undefined)
+    const rc = (pct: number) => (pct >= 11.5 ? 'L' : pct >= 10 ? 'Y' : pct >= 1.15 ? 'B' : pct > 0 ? 'A' : '')
+    setLines((editInv.items || []).map((x: any): Line => ({
+      po_item_id: null, fromGrn: true, material_id: x.material_id ?? null, product_id: x.product_id ?? null,
+      name: x.description || x.material_name || x.product_name || '(tanpa nama)', uom: x.uom || '', ordered: 0, received: 0, invoiced: 0,
+      qty: Number(x.quantity), price: Number(x.unit_price), ppn_code: rc(Number(x.tax_percent || 0)), description: x.description || '',
+    })))
+  }, [editInv])
+
   // Faktur dari GRN tanpa PO: barang diambil dari GRN, harga diisi di sini.
   useEffect(() => {
     if (!grnId || editId) return
@@ -203,7 +215,7 @@ export default function PurchaseInvoiceForm() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!poId && !grnId) return showError('Pilih PO terlebih dahulu')
+    if (!poId && !grnId && !editInv?.grn_id) return showError('Pilih PO terlebih dahulu')
     if (!supplierInvoiceNumber.trim()) return showError('No. Faktur Pemasok wajib diisi')
     const items = lines.filter((l) => Number(l.qty) > 0)
     if (items.length === 0) return showError('Isi jumlah tagihan minimal satu baris')
@@ -219,7 +231,7 @@ export default function PurchaseInvoiceForm() {
       const res = await axiosInstance.post('/api/purchasing/purchase-invoices', {
         invoice_number: !editId && numberTouched.current && invNumber.trim() ? invNumber.trim() : undefined,
         po_id: poId || undefined,
-        grn_id: !poId && grnId ? grnId : undefined,
+        grn_id: !poId ? (grnId || editInv?.grn_id || undefined) : undefined,
         replace_invoice_id: editId || undefined,
         supplier_id: supplierId,
         supplier_invoice_number: supplierInvoiceNumber.trim(),

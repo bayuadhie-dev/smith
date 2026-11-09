@@ -128,3 +128,24 @@ def test_grn_number_can_be_corrected_and_stays_unique(client, auth_headers, db_s
     assert client.put(f'/api/purchasing/grn/{b.id}', json={'grn_number': 'BPB-N-9'}, headers=auth_headers).status_code == 200
     db_session.refresh(b)
     assert b.grn_number == 'BPB-N-9'
+
+
+def test_edit_purchase_invoice_without_po_replaces_and_keeps_number(client, auth_headers, db_session, test_material):
+    from models.finance import GlobalAccountDefault, Invoice
+    from models.purchasing import GoodsReceivedNote, GRNItem, Supplier
+    main_location, _ = _setup_warehouse(db_session)
+    db_session.add(GlobalAccountDefault(transaction_key='gr_ir_clearing', account_id=_acc(db_session, '6-6000').id))
+    db_session.add(GlobalAccountDefault(transaction_key='accounts_payable', account_id=_acc(db_session, '9-1000').id)); db_session.commit()
+    sup = Supplier(code='SUP-EDNP', company_name='Sup EdNP', is_active=True); db_session.add(sup); db_session.commit()
+    grn = GoodsReceivedNote(grn_number='BPB-EDNP-1', supplier_id=sup.id, receipt_date=date.today(), status='approved')
+    db_session.add(grn); db_session.commit()
+    db_session.add(GRNItem(grn_id=grn.id, material_id=test_material.id, quantity_ordered=2, quantity_received=2, quantity_accepted=2, uom='KG', location_id=main_location.id)); db_session.commit()
+    body = {'grn_id': grn.id, 'supplier_id': sup.id, 'supplier_invoice_number': 'F-9', 'invoice_date': '2026-11-09',
+            'items': [{'material_id': test_material.id, 'quantity': 2, 'unit_price': 500, 'uom': 'KG', 'description': 'x'}]}
+    first = client.post('/api/purchasing/purchase-invoices', json=body, headers=auth_headers).get_json()
+    old_id = first['invoice']['id']; number = first['invoice']['invoice_number']
+    body['replace_invoice_id'] = old_id; body['items'][0]['unit_price'] = 700
+    r = client.post('/api/purchasing/purchase-invoices', json=body, headers=auth_headers)
+    assert r.status_code == 201, r.get_json()
+    new = Invoice.query.filter_by(invoice_number=number).first()
+    assert float(new.total_amount) == 1400 and new.grn_id == grn.id and new.id != old_id

@@ -55,6 +55,41 @@ export default function InvoiceMatching() {
     );
   }
 
+  if (error && inv && !inv.po_id) {
+    const fmt = (n: number) => `Rp ${Number(n || 0).toLocaleString('id-ID')}`
+    return (
+      <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Faktur Pembelian {inv.invoice_number}</h1>
+            <p className="text-sm text-gray-500">{inv.supplier_name || '-'} · tanpa PO{inv.grn_id ? <> · <Link className="text-blue-600 hover:underline" to={`/app/purchasing/grn/${inv.grn_id}`}>lihat GRN</Link></> : null} · pencocokan 3 arah tidak berlaku tanpa PO</p>
+          </div>
+          {inv.status !== 'cancelled' && inv.grn_id && (
+            <Link to={`/app/purchasing/invoices/new?grn_id=${inv.grn_id}&edit=${id}`} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200">Ubah faktur</Link>
+          )}
+        </div>
+        <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+          <div><div className="text-xs text-gray-500">No. faktur pemasok</div>{inv.supplier_invoice_number || '-'}</div>
+          <div><div className="text-xs text-gray-500">Tanggal</div>{inv.invoice_date || '-'}</div>
+          <div><div className="text-xs text-gray-500">Jatuh tempo</div>{inv.due_date || '-'}</div>
+          <div><div className="text-xs text-gray-500">Status</div>{inv.status}</div>
+        </div>
+        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-left text-xs text-gray-500 dark:bg-gray-900"><tr><th className="px-3 py-2">Item</th><th className="px-3 py-2 text-right">Qty</th><th className="px-3 py-2 text-right">Harga</th><th className="px-3 py-2 text-right">Jumlah</th></tr></thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              {(inv.items || []).map((it: any, i: number) => (
+                <tr key={i}><td className="px-3 py-2">{it.description || it.material_name || it.product_name || '-'}</td><td className="px-3 py-2 text-right">{Number(it.quantity).toLocaleString('id-ID')} {it.uom}</td><td className="px-3 py-2 text-right">{fmt(it.unit_price)}</td><td className="px-3 py-2 text-right">{fmt(it.total_amount ?? it.total_price)}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="text-right text-lg font-semibold">Total {fmt(inv.total_amount)}</div>
+        <Link to="/app/purchasing/invoices" className="inline-block text-sm text-blue-600 hover:underline">← Kembali ke daftar invoice</Link>
+      </div>
+    )
+  }
+
   if (error) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8">
