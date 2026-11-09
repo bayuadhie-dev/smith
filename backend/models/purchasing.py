@@ -195,6 +195,7 @@ class GRNItem(db.Model):
     quantity_accepted = db.Column(db.Numeric(15, 2), default=0)
     quantity_rejected = db.Column(db.Numeric(15, 2), default=0)
     uom = db.Column(db.String(20), nullable=False)
+    item_name = db.Column(db.String(255), nullable=True)  # nama barang yang diedit saat penerimaan (bawaan dari PO)
     batch_number = db.Column(db.String(100), nullable=True)
     lot_number = db.Column(db.String(100), nullable=True)
     production_date = db.Column(db.Date, nullable=True)

@@ -269,7 +269,7 @@ export default function GRNForm() {
         await axiosInstance.put(`/api/purchasing/grn/${id}`, {
           receipt_date: receiptDate, delivery_note_number: deliveryNote, supplier_invoice_number: supInvNo, vehicle_number: vehicle, driver_name: driver, notes,
           items: rows.map((r) => ({
-            id: r.itemId, po_item_id: r.po_item_id, ...(num(r.qty) !== num(r.qty0) ? { quantity_received: num(r.qty) } : {}), lot_number: r.lot_number || null, notes: r.notes || null,
+            id: r.itemId, po_item_id: r.po_item_id, item_name: r.name.trim() || null, ...(num(r.qty) !== num(r.qty0) ? { quantity_received: num(r.qty) } : {}), lot_number: r.lot_number || null, notes: r.notes || null,
             production_date: r.production_date || null, expiry_date: r.expiry_date || null,
           })),
         })
@@ -281,7 +281,7 @@ export default function GRNForm() {
           delivery_note_number: deliveryNote || null, supplier_invoice_number: supInvNo.trim() || null, vehicle_number: vehicle || null, driver_name: driver || null, notes: notes || null,
           items: active.flatMap((r) => {
             const base = {
-              po_item_id: r.po_item_id, product_id: r.product_id, material_id: r.material_id, quantity_ordered: r.po_item_id ? r.ordered : num(r.qty),
+              item_name: r.name.trim() || null, po_item_id: r.po_item_id, product_id: r.product_id, material_id: r.material_id, quantity_ordered: r.po_item_id ? r.ordered : num(r.qty),
               uom: r.uom, location_id: r.is_service ? null : r.location_id, lot_number: r.lot_number || null,
               production_date: r.production_date || null, expiry_date: r.expiry_date || null, notes: r.notes || null,
             }
@@ -420,9 +420,9 @@ export default function GRNForm() {
                     return (
                       <Fragment key={r.key}>
                         <tr className="border-b border-gray-100 dark:border-gray-700 align-top">
-                          <td className="py-2 pr-3">
-                            <div className="font-medium text-gray-900 dark:text-white">{r.name}</div>
-                            {r.code && <div className="text-xs text-gray-400">{r.code}</div>}
+                          <td className="py-2 pr-3 min-w-[14rem]">
+                            <input className="input-field font-medium" value={r.name} onChange={(e) => update(i, { name: e.target.value })} placeholder="Nama barang" />
+                            {r.code && <div className="mt-0.5 text-xs text-gray-400">{r.code}</div>}
                           </td>
                           {!isEdit && <td className="py-2 pr-3 text-right tabular-nums">{r.po_item_id ? `${r.ordered.toLocaleString('id-ID')} ${r.uom}` : r.uom}</td>}
                           {!isEdit && <td className="py-2 pr-3 text-right tabular-nums">{r.po_item_id ? r.receivedBefore.toLocaleString('id-ID') : '-'}</td>}

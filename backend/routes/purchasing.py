@@ -1063,6 +1063,7 @@ def create_grn():
                 quantity_received=quantity_received,
                 quantity_accepted=quantity_accepted,
                 uom=uom,
+                item_name=((item_data.get('item_name') or '').strip()[:255] or None),
                 batch_number=batch_number,
                 lot_number=(item_data.get('lot_number') or None),
                 production_date=datetime.strptime(item_data['production_date'][:10], '%Y-%m-%d').date() if item_data.get('production_date') else None,
@@ -1297,6 +1298,7 @@ def get_grn(grn_id):
                 'product_id': item.product_id,
                 'material_id': item.material_id,
                 'item_name': (
+                    item.item_name or
                     (item.po_item.description if item.po_item and item.po_item.description else None) or
                     (item.product.name if item.product else None) or
                     (item.material.name if item.material else None) or f'Item #{item.id}'
@@ -1771,7 +1773,7 @@ def update_grn(grn_id):
                 grn_item = items_by_id.get(item_data.get('id')) or items_by_po_item.get(po_item_id)
                 if not grn_item:
                     continue
-                for f in ['quantity_received', 'quantity_accepted', 'quantity_rejected',
+                for f in ['quantity_received', 'quantity_accepted', 'quantity_rejected', 'item_name',
                           'batch_number', 'lot_number', 'location_id', 'notes']:
                     if locked and f in stock_fields:
                         continue
