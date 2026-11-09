@@ -1421,7 +1421,7 @@ def advances_summary():
             continue
         k = (l.party_type, l.party_id, a.id)
         g = groups.setdefault(k, {'party_type': l.party_type, 'party_id': l.party_id, 'party_name': _line_party_name(l),
-                                  'account_code': a.account_code, 'account_name': a.account_name,
+                                  'account_id': a.id, 'account_code': a.account_code, 'account_name': a.account_name,
                                   'direction': 'dibayar' if p.payment_type == 'payment' else 'diterima',
                                   'given': 0.0, 'settled': 0.0, 'last_date': None, 'entries': []})
         amt = float(l.amount)

@@ -88,6 +88,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   ]);
 
   const [adj, setAdj] = useDraftState<{ account_id: string; amount: string; description: string }[]>('adj', []);
+  const [openAdv, setOpenAdv] = useState<{ account_id: number; account_code: string; account_name: string; outstanding: number; party_name: string }[]>([]);
   const updateAdj = (idx: number, patch: Partial<{ account_id: string; amount: string; description: string }>) => setAdj((a) => a.map((x, i) => (i === idx ? { ...x, ...patch } : x)));
   // Baris selisih diisi sebagai potongan (positif) yang melunasi faktur tanpa kas; ke server dikirim berlawanan tanda.
   const adjTotal = -adj.reduce((s, l) => s + (Number(l.amount) || 0), 0);
@@ -154,6 +155,13 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     axiosInstance.get('/api/purchasing/suppliers', { params: { per_page: 1000 } }).then((r) => setAdvSuppliers((r.data.suppliers || []).map((p: any) => ({ id: p.id, name: p.company_name || p.name })))).catch(() => {});
     axiosInstance.get('/api/sales/customers', { params: { per_page: 1000 } }).then((r) => setAdvCustomers((r.data.customers || []).map((p: any) => ({ id: p.id, name: p.company_name || p.name })))).catch(() => {});
   }, [mode]);
+  useEffect(() => {
+    if (isStandalone || !formData.party_id) { setOpenAdv([]); return; }
+    const ptype = mode === 'ap' ? 'supplier' : 'customer';
+    axiosInstance.get('/api/finance/advances-summary').then((r) => {
+      setOpenAdv((r.data.advances || []).filter((a: any) => a.party_type === ptype && String(a.party_id) === String(formData.party_id) && a.outstanding > 0.005));
+    }).catch(() => setOpenAdv([]));
+  }, [formData.party_id, mode, isStandalone]);
   const isAdvanceAccount = (id: string) => /uang\s*muka|panjar|deposit/i.test(accName(id));
 
   useEffect(() => {
@@ -574,6 +582,24 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                 <p className="text-xs text-gray-500">
                   Isi nilai potongan (positif) yang ikut melunasi faktur tanpa uang keluar dari kas/bank, misalnya diskon, pembulatan, atau uang muka. Kolom Dibayar di faktur adalah uang yang benar-benar keluar dari kas/bank; kolom Diskon adalah total potongan di sini.
                 </p>
+                {openAdv.length > 0 && (
+                  <div className="rounded-md bg-amber-50 p-3 text-sm dark:bg-amber-900/20">
+                    <p className="mb-1 font-medium text-amber-900 dark:text-amber-100">Uang muka lainnya yang masih menggantung untuk {partyWord.toLowerCase()} ini</p>
+                    {openAdv.map((a) => {
+                      const used = adj.filter((x) => Number(x.account_id) === a.account_id).reduce((s2, x) => s2 + (Number(x.amount) || 0), 0);
+                      const left = Math.max(0, a.outstanding - used);
+                      return (
+                        <div key={a.account_id} className="flex items-center justify-between gap-2 py-0.5">
+                          <span>{a.account_code} {a.account_name}: sisa <strong>{rp(a.outstanding)}</strong></span>
+                          <button type="button" disabled={left <= 0} className="rounded border border-amber-400 px-2 py-0.5 text-xs hover:bg-amber-100 disabled:opacity-40"
+                            onClick={() => setAdj((x) => [...x, { account_id: String(a.account_id), amount: String(Math.min(left, Math.max(0, invoices.filter((i) => i.id in alloc).reduce((s2, i) => s2 + i.balance_due, 0) - (Object.values(alloc).reduce((s2, v) => s2 + (Number(v) || 0), 0)) - adj.reduce((s2, l) => s2 + (Number(l.amount) || 0), 0)) || left)), description: 'Pemakaian uang muka' }])}>
+                            Pakai sebagai potongan
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                 {adj.map((l, idx) => (
                   <div key={idx} className="grid grid-cols-12 gap-2">
                     <div className="col-span-12 md:col-span-5">
