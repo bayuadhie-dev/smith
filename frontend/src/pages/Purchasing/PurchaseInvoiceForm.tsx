@@ -47,6 +47,13 @@ export default function PurchaseInvoiceForm() {
   const tab = useContext(TabContext)
   const grnId = params.get('grn_id') ? Number(params.get('grn_id')) : null
   const [grn, setGrn] = useState<any>(null)
+  const [invNumber, setInvNumber] = useState('')
+  const [nextNumber, setNextNumber] = useState('')
+  const numberTouched = useRef(false)
+  useEffect(() => {
+    if (params.get('edit')) return
+    axiosInstance.get('/api/purchasing/purchase-invoices/next-number').then((r) => setNextNumber(r.data.next_number || '')).catch(() => undefined)
+  }, [])
   const editId = params.get('edit') ? Number(params.get('edit')) : null
   const [editInv, setEditInv] = useState<any>(null)
   const [suppliers, setSuppliers] = useState<any[]>([])
@@ -90,6 +97,7 @@ export default function PurchaseInvoiceForm() {
       setGrn(g)
       setSupplierId(g.supplier_id)
       if (g.supplier_invoice_number) setSupplierInvoiceNumber((cur) => cur || g.supplier_invoice_number)
+      if (g.notes) setNotes((cur) => cur || g.notes)
       setLines((ls) => ls.length ? ls : (g.items || []).map((it: any): Line => ({
         po_item_id: null, fromGrn: true, material_id: it.material_id ?? null, product_id: it.product_id ?? null,
         name: it.item_name || '(tanpa nama)', uom: it.uom, ordered: Number(it.quantity_ordered || 0), received: Number(it.quantity_accepted || it.quantity_received || 0), invoiced: 0,
@@ -127,6 +135,7 @@ export default function PurchaseInvoiceForm() {
         const data = r.data
         setPo(data)
         if (!supplierId) setSupplierId(data.supplier_id)
+        if (!editId && data.notes) setNotes((cur) => cur || data.notes)
         const rate = data.is_taxable ? (PPN_RATES[data.ppn_code || 'Y'] ?? 0) : 0
         const inclusive = Boolean(data.is_taxable && data.tax_inclusive && rate)
         const own: Record<number, any> = {}
@@ -208,6 +217,7 @@ export default function PurchaseInvoiceForm() {
     setSaving(true)
     try {
       const res = await axiosInstance.post('/api/purchasing/purchase-invoices', {
+        invoice_number: !editId && numberTouched.current && invNumber.trim() ? invNumber.trim() : undefined,
         po_id: poId || undefined,
         grn_id: !poId && grnId ? grnId : undefined,
         replace_invoice_id: editId || undefined,
@@ -287,6 +297,16 @@ export default function PurchaseInvoiceForm() {
             <p className="mt-1 text-xs text-gray-500">Hanya PO yang sudah disetujui, diterima sebagian, atau diterima penuh.</p>
           </div>
           )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Transaksi (PI)</label>
+            {editId ? (
+              <div className="input-field bg-gray-50 dark:bg-gray-900">{editInv?.invoice_number || '-'}</div>
+            ) : (
+              <input className="input-field" value={numberTouched.current ? invNumber : (nextNumber || '')} placeholder="Otomatis"
+                onChange={(e) => { numberTouched.current = true; setInvNumber(e.target.value) }} />
+            )}
+            <p className="mt-1 text-xs text-gray-500">{editId ? 'Nomor lama dipertahankan.' : 'Terisi nomor berikutnya secara otomatis; bisa diganti manual.'}</p>
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Faktur Pemasok *</label>
             <input className="input-field" value={supplierInvoiceNumber} onChange={(e) => setSupplierInvoiceNumber(e.target.value)} placeholder="Terisi otomatis kalau sudah diisi di GRN" />

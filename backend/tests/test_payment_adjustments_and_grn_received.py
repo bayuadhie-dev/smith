@@ -111,3 +111,8 @@ def test_purchase_invoice_from_grn_without_po(client, auth_headers, db_session, 
     assert inv.purchase_order_id is None and float(inv.total_amount) == 5000
     again = client.post('/api/purchasing/purchase-invoices', json=body, headers=auth_headers)
     assert again.status_code == 400
+
+
+def test_purchase_invoice_next_number_and_manual_number(client, auth_headers, db_session):
+    r = client.get('/api/purchasing/purchase-invoices/next-number', headers=auth_headers)
+    assert r.status_code == 200 and r.get_json()['next_number'].startswith('PI-')

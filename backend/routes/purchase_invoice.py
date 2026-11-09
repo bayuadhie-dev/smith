@@ -108,6 +108,16 @@ def _status_to_legacy_payment_status(status):
 # PURCHASE INVOICE CRUD
 # ===============================
 
+@purchase_invoice_bp.route('/purchase-invoices/next-number', methods=['GET'])
+@jwt_required()
+@require_permission('purchasing.view')
+def purchase_invoice_next_number():
+    from models.finance import NumberSequence
+    from utils.helpers import peek_number
+    cfg = NumberSequence.query.filter_by(sequence_key='purchase_invoice').first()
+    return jsonify({'next_number': peek_number(cfg.prefix if cfg else 'PI', Invoice, 'invoice_number', style='dashed')}), 200
+
+
 @purchase_invoice_bp.route('/purchase-invoices', methods=['GET'])
 @jwt_required()
 @require_permission('purchasing.view')
@@ -493,7 +503,13 @@ def create_purchase_invoice_core(data, user_id, commit=True):
         old_invoice.invoice_number = f'{invoice_number}-V{n}'
         db.session.flush()
     else:
-        invoice_number = generate_number_v2('purchase_invoice', 'PI', Invoice, 'invoice_number', style='dashed')
+        manual = (data.get('invoice_number') or '').strip()
+        if manual:
+            if Invoice.query.filter_by(invoice_number=manual).first():
+                raise InvoiceInputError(f'Nomor faktur {manual} sudah dipakai')
+            invoice_number = manual
+        else:
+            invoice_number = generate_number_v2('purchase_invoice', 'PI', Invoice, 'invoice_number', style='dashed')
 
     # Multi-currency (2026-10-19, po_multicurrency_plan.md): currency and
     # exchange_rate come strictly from the PO (single source of truth).
