@@ -267,7 +267,7 @@ export default function GRNForm() {
     try {
       if (isEdit) {
         await axiosInstance.put(`/api/purchasing/grn/${id}`, {
-          receipt_date: receiptDate, delivery_note_number: deliveryNote, supplier_invoice_number: supInvNo, vehicle_number: vehicle, driver_name: driver, notes,
+          grn_number: grnNumber.trim() || undefined, receipt_date: receiptDate, delivery_note_number: deliveryNote, supplier_invoice_number: supInvNo, vehicle_number: vehicle, driver_name: driver, notes,
           items: rows.map((r) => ({
             id: r.itemId, po_item_id: r.po_item_id, item_name: r.name.trim() || null, ...(num(r.qty) !== num(r.qty0) ? { quantity_received: num(r.qty) } : {}), lot_number: r.lot_number || null, notes: r.notes || null,
             production_date: r.production_date || null, expiry_date: r.expiry_date || null,
@@ -327,7 +327,7 @@ export default function GRNForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Nomor Penerimaan</label>
             {isEdit ? (
-              <div className="input-field bg-gray-50 dark:bg-gray-900">{grnNumber || '-'}</div>
+              <input className="input-field" value={grnNumber} onChange={(e) => setGrnNumber(e.target.value)} placeholder="Nomor penerimaan" />
             ) : (
               <input className="input-field" value={manualNumber} onChange={(e) => setManualNumber(e.target.value)} placeholder={nextNumber ? `${nextNumber} (otomatis)` : 'Otomatis'} />
             )}

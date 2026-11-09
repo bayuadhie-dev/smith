@@ -116,3 +116,15 @@ def test_purchase_invoice_from_grn_without_po(client, auth_headers, db_session, 
 def test_purchase_invoice_next_number_and_manual_number(client, auth_headers, db_session):
     r = client.get('/api/purchasing/purchase-invoices/next-number', headers=auth_headers)
     assert r.status_code == 200 and r.get_json()['next_number'].startswith('PI-')
+
+
+def test_grn_number_can_be_corrected_and_stays_unique(client, auth_headers, db_session):
+    from models.purchasing import GoodsReceivedNote, Supplier
+    sup = Supplier(code='SUP-GN', company_name='Sup GN', is_active=True); db_session.add(sup); db_session.commit()
+    a = GoodsReceivedNote(grn_number='BPB-N-1', supplier_id=sup.id, receipt_date=date.today(), status='pending')
+    b = GoodsReceivedNote(grn_number='BPB-N-2', supplier_id=sup.id, receipt_date=date.today(), status='approved')
+    db_session.add_all([a, b]); db_session.commit()
+    assert client.put(f'/api/purchasing/grn/{a.id}', json={'grn_number': 'BPB-N-2'}, headers=auth_headers).status_code == 400
+    assert client.put(f'/api/purchasing/grn/{b.id}', json={'grn_number': 'BPB-N-9'}, headers=auth_headers).status_code == 200
+    db_session.refresh(b)
+    assert b.grn_number == 'BPB-N-9'

@@ -1756,6 +1756,13 @@ def update_grn(grn_id):
                             and not (f == 'location_id' and getattr(gi, f) == item_data[f]):
                         return jsonify({'error': 'Jumlah/gudang tidak bisa diubah karena GRN sudah disetujui atau difaktur. Ubah catatan, batch, lot, tanggal, atau buat retur.'}), 400
 
+        new_no = (data.get('grn_number') or '').strip()
+        if new_no and new_no != grn.grn_number:
+            if GoodsReceivedNote.query.filter(GoodsReceivedNote.grn_number == new_no, GoodsReceivedNote.id != grn.id).first():
+                return jsonify({'error': f'Nomor penerimaan {new_no} sudah dipakai'}), 400
+            if len(new_no) > 100:
+                return jsonify({'error': 'Nomor penerimaan maksimal 100 karakter'}), 400
+            grn.grn_number = new_no
         header_fields = ['receipt_date', 'delivery_note_number', 'supplier_invoice_number', 'vehicle_number', 'driver_name', 'notes']
         for field in header_fields:
             if field in data:
