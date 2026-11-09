@@ -9,10 +9,14 @@ export const MODULES: ModuleDef[] = [
   { id: 'finance', label: 'Finance', prefixes: ['/app/finance', '/app/accounting'] },
   { id: 'sales', label: 'Sales', prefixes: ['/app/sales', '/app/returns'] },
   { id: 'purchasing', label: 'Purchasing', prefixes: ['/app/purchasing'] },
-  { id: 'production', label: 'Production', prefixes: ['/app/production'] },
+  { id: 'production', label: 'Production', prefixes: ['/app/production', '/app/mrp', '/app/oee', '/app/waste'] },
   { id: 'warehouse', label: 'Warehouse', prefixes: ['/app/warehouse', '/app/wms'] },
   { id: 'hr', label: 'Human Resources', prefixes: ['/app/hr'] },
-  { id: 'quality', label: 'Quality', prefixes: ['/app/quality'] },
+  { id: 'quality', label: 'Quality', prefixes: ['/app/quality', '/app/quality-enhanced'] },
+  { id: 'maintenance', label: 'Maintenance', prefixes: ['/app/maintenance', '/app/assets'] },
+  { id: 'products', label: 'Products', prefixes: ['/app/products', '/app/master-data', '/app/rnd'] },
+  { id: 'shipping', label: 'Shipping', prefixes: ['/app/shipping'] },
+  { id: 'settings', label: 'Settings', prefixes: ['/app/settings', '/app/imports'] },
 ]
 
 export const MAX_TABS_PER_MODULE = Number.POSITIVE_INFINITY

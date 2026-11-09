@@ -107,11 +107,14 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   const discOf: Record<number, number> = (() => {
     const out: Record<number, number> = {};
     let pool = adj.reduce((s, l) => s + Math.max(0, Number(l.amount) || 0), 0);
-    for (const inv of invoices) {
-      if (!(inv.id in alloc) || pool <= 0) continue;
-      const give = Math.max(0, Math.min(inv.balance_due - (Number(alloc[inv.id]) || 0), pool));
+    const checked = invoices.filter((i) => i.id in alloc);
+    checked.forEach((inv, k) => {
+      if (pool <= 0) return;
+      const room = Math.max(0, inv.balance_due - (Number(alloc[inv.id]) || 0));
+      // Sisa diskon yang tidak muat ditaruh di faktur terakhir (jadi terlihat minus di Sisa Setelah), bukan hilang diam-diam.
+      const give = k === checked.length - 1 ? pool : Math.min(room, pool);
       if (give > 0) { out[inv.id] = give; pool -= give; }
-    }
+    });
     return out;
   })();
   const effAlloc: Record<number, string> = Object.fromEntries(
@@ -283,7 +286,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
 
   const paidOf = (i: { total_amount: number; balance_due: number }) => Math.max(0, i.total_amount - i.balance_due);
   const overAllocated = invoices.filter((i) => {
-    const n = Number(alloc[i.id]) || 0;
+    const n = Number(effAlloc[i.id]) || 0;
     return n > i.balance_due + 0.01 || (n < 0 && -n > paidOf(i) + 0.01);
   });
   const bankName = cashBankAccounts.find((a) => a.id === Number(formData.bank_account_id));
@@ -550,7 +553,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                             <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">{rp(inv.balance_due)}</td>
                             <td className="px-3 py-2">
                               <NumberInput className={`${inputCls} text-right`} disabled={!checked} value={alloc[inv.id] ?? ''} onChange={(e) => setAlloc((a) => ({ ...a, [inv.id]: e.target.value }))} />
-                              {(Number(alloc[inv.id]) || 0) > inv.balance_due + 0.01 && <p className="mt-1 text-xs text-red-600">Melebihi sisa faktur</p>}
+                              {(Number(effAlloc[inv.id]) || 0) > inv.balance_due + 0.01 && <p className="mt-1 text-xs text-red-600">Dibayar + diskon melebihi sisa faktur</p>}
                               {(Number(alloc[inv.id]) || 0) < 0 && -(Number(alloc[inv.id]) || 0) > paidOf(inv) + 0.01 && <p className="mt-1 text-xs text-red-600">Melebihi yang sudah dibayar</p>}
                             </td>
                             <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-gray-600 dark:text-gray-300">{discOf[inv.id] ? rp(discOf[inv.id]) : '-'}</td>
