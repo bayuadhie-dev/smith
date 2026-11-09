@@ -331,6 +331,50 @@ def ingest():
     return jsonify({'users_created': created, 'users_updated': updated, 'logs_received': len(rows), 'logs_inserted': inserted}), 200
 
 
+# ---------------------------------------------------------------- tombol Perbarui data
+def _ingest_token_ok():
+    import os
+    import hmac
+    expected = os.getenv('FINGERPRINT_INGEST_TOKEN', '')
+    return bool(expected) and hmac.compare_digest(expected, request.headers.get('X-Ingest-Token', ''))
+
+
+@fingerprint_bp.route('/refresh', methods=['POST'])
+@jwt_required()
+@require_permission('hr.view')
+def refresh_start():
+    from flask import current_app
+    from flask_jwt_extended import get_jwt_identity
+    from utils.fingerprint_refresh import request_refresh
+    return jsonify(request_refresh(get_jwt_identity(), current_app._get_current_object())), 200
+
+
+@fingerprint_bp.route('/refresh/status', methods=['GET'])
+@jwt_required()
+@require_permission('hr.view')
+def refresh_status():
+    from utils.fingerprint_refresh import public_state
+    return jsonify(public_state()), 200
+
+
+@fingerprint_bp.route('/refresh/pending', methods=['GET'])
+def refresh_pending():
+    """Dipanggil server kantor (pengumpul) dengan token ingest: adakah permintaan perbarui yang menunggu?"""
+    if not _ingest_token_ok():
+        return jsonify({'error': 'Unauthorized'}), 401
+    from utils.fingerprint_refresh import claim_pending
+    return jsonify({'id': claim_pending()}), 200
+
+
+@fingerprint_bp.route('/refresh/result', methods=['POST'])
+def refresh_result():
+    if not _ingest_token_ok():
+        return jsonify({'error': 'Unauthorized'}), 401
+    from utils.fingerprint_refresh import report_result
+    b = request.get_json(silent=True) or {}
+    return jsonify({'recorded': report_result(b.get('id'), bool(b.get('ok')), str(b.get('message') or '')[:300], b.get('new_logs'))}), 200
+
+
 # ---------------------------------------------------------------- jadwal kerja
 def _sched_dict(sc, assigned=None):
     return {'id': sc.id, 'name': sc.name, 'days': sc.days or {}, 'late_tolerance_minutes': sc.late_tolerance_minutes,

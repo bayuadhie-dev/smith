@@ -441,6 +441,42 @@ const FingerprintAttendance = () => {
   const [exporting, setExporting] = useState(false)
   const [printOpen, setPrintOpen] = useState(false)
   const [tick, setTick] = useState(0)
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState('')
+  const [lastPunch, setLastPunch] = useState<string | null>(null)
+
+  const loadSyncInfo = useCallback(() => {
+    axiosInstance.get('/api/hr/fingerprint/refresh/status').then((r) => setLastPunch(r.data.last_punch || null)).catch(() => {})
+  }, [])
+  useEffect(() => { loadSyncInfo() }, [loadSyncInfo])
+
+  // Tombol Perbarui data: minta server menarik data terbaru dari mesin, tunggu selesai, lalu muat ulang tampilan.
+  const refreshFromDevice = async () => {
+    if (syncing) return
+    setSyncing(true); setSyncMsg('Meminta data terbaru dari mesin...')
+    try {
+      let st = (await axiosInstance.post('/api/hr/fingerprint/refresh')).data
+      const started = Date.now()
+      while ((st.status === 'pending' || st.status === 'running') && Date.now() - started < 6 * 60 * 1000) {
+        setSyncMsg(st.status === 'pending' ? 'Menunggu server kantor...' : 'Menarik data dari mesin (sekitar 2 menit)...')
+        await new Promise((res) => setTimeout(res, 3000))
+        st = (await axiosInstance.get('/api/hr/fingerprint/refresh/status')).data
+      }
+      if (st.status === 'done') {
+        showSuccess(st.new_logs != null ? `Data diperbarui: ${st.new_logs} log baru.` : (st.message || 'Data diperbarui.'))
+      } else if (st.status === 'failed') {
+        showError(st.message || 'Penarikan dari mesin gagal. Tampilan dimuat ulang dari data yang sudah ada.')
+      } else {
+        showError('Penarikan belum selesai. Tampilan dimuat ulang dari data yang sudah ada.')
+      }
+    } catch (e: any) {
+      showError(e?.response?.data?.error || 'Gagal meminta pembaruan data.')
+    } finally {
+      setSyncing(false); setSyncMsg('')
+      setTick((x) => x + 1)
+      loadSyncInfo()
+    }
+  }
   const [dayModal, setDayModal] = useState<{ deviceId: string; date: string } | null>(null)
   const [holidayOpen, setHolidayOpen] = useState(false)
 
@@ -523,6 +559,7 @@ const FingerprintAttendance = () => {
         subtitle="Kehadiran dari mesin fingerprint: masuk, pulang, terlambat, dan selisih jam kerja"
         actions={
           <>
+            <button onClick={refreshFromDevice} disabled={syncing} className={btnCls} title="Tarik data terbaru dari mesin fingerprint, lalu muat ulang">{syncing ? 'Memperbarui...' : 'Perbarui data'}</button>
             {canEdit && <button onClick={() => setHolidayOpen(true)} className={btnCls}>Libur khusus</button>}
             <div className="relative">
               <button onClick={() => setPrintOpen(!printOpen)} disabled={exporting || !data} className={btnCls}>Cetak PDF</button>
@@ -539,6 +576,12 @@ const FingerprintAttendance = () => {
           </>
         }
       />
+
+      {(syncMsg || lastPunch) && (
+        <p className={`text-xs ${syncing ? 'text-emerald-700' : (lastPunch && Date.now() - new Date(lastPunch).getTime() > 36 * 3600 * 1000 ? 'text-amber-600' : 'text-gray-500')}`}>
+          {syncing ? syncMsg : `Data terakhir dari mesin: ${new Date(lastPunch as string).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}${Date.now() - new Date(lastPunch as string).getTime() > 36 * 3600 * 1000 ? ' (sudah lama, klik Perbarui data)' : ''}`}
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         {presets().map((p) => (

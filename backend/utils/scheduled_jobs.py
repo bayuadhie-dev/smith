@@ -258,6 +258,10 @@ def register_scheduled_jobs(app):
         id='notify_due_invoices',
         replace_existing=True,
     )
+    if os.getenv('FINGERPRINT_COLLECTOR_URL'):
+        from utils.fingerprint_refresh import collector_tick
+        scheduler.add_job(func=lambda: collector_tick(app), trigger='interval', seconds=20, id='fingerprint_collector_tick',
+                          replace_existing=True, max_instances=1, coalesce=True)
     from datetime import datetime, timedelta
     scheduler.add_job(
         func=lambda: refresh_exchange_rates(app),
