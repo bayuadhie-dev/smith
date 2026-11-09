@@ -71,6 +71,12 @@ export default function PurchaseInvoiceForm() {
   const [supplierInvoiceDate, setSupplierInvoiceDate] = useDraftState('supInvDate', todayISO(), !editId)
   const [invoiceDate, setInvoiceDate] = useDraftState('invDate', todayISO(), !editId)
   const [dueDate, setDueDate] = useDraftState('dueDate', '', !editId)
+  const [termDays, setTermDays] = useDraftState<string>('termDays', '', !editId)
+  const dueTouched = useRef(false)
+  const termTouched = useRef(false)
+  const termLabel = (d: string) => (d === '0' ? 'C.O.D' : `Net ${d}`)
+  const termChoices = Array.from(new Set(['0', '7', '14', '21', '30', '45', '60', '90', termDays].filter((x) => x !== '')))
+    .sort((a, b) => Number(a) - Number(b))
   const [notes, setNotes] = useDraftState('notes', '', !editId)
   const [saving, setSaving] = useState(false)
   const [openDps, setOpenDps] = useState<OpenDP[]>([])
@@ -100,6 +106,17 @@ export default function PurchaseInvoiceForm() {
       qty: Number(x.quantity), price: Number(x.unit_price), ppn_code: rc(Number(x.tax_percent || 0)), description: x.description || '',
     })))
   }, [editInv])
+
+  // Syarat pembayaran bawaan = termin pemasok; Jatuh Tempo = tanggal faktur + termin (bisa diubah manual).
+  useEffect(() => {
+    if (editId || termTouched.current || termDays !== '') return
+    const sup = suppliers.find((x: any) => x.id === supplierId)
+    if (sup && sup.payment_terms !== undefined && sup.payment_terms !== null && sup.payment_terms !== '') setTermDays(String(Number(sup.payment_terms)))
+  }, [supplierId, suppliers])
+  useEffect(() => {
+    if (editId || dueTouched.current || termDays === '' || !invoiceDate) return
+    setDueDate(addDays(invoiceDate, Number(termDays)))
+  }, [termDays, invoiceDate])
 
   // Faktur dari GRN tanpa PO: barang diambil dari GRN, harga diisi di sini.
   useEffect(() => {
@@ -238,6 +255,7 @@ export default function PurchaseInvoiceForm() {
         supplier_invoice_date: supplierInvoiceDate || null,
         invoice_date: invoiceDate,
         due_date: dueDate || null,
+        payment_terms: termDays !== '' ? termLabel(termDays) : undefined,
         notes: notes || null,
         items: items.map((l) => ({ po_item_id: l.extra ? undefined : l.po_item_id, material_id: l.fromGrn ? (l.material_id || undefined) : undefined, product_id: l.fromGrn ? (l.product_id || undefined) : undefined, uom: l.fromGrn ? l.uom : undefined, account_id: l.extra && l.account_id ? Number(l.account_id) : undefined, quantity: Number(l.qty), unit_price: Number(l.price), ppn_code: l.ppn_code || '', description: (l.description || '').trim() || undefined })),
       })
@@ -332,8 +350,16 @@ export default function PurchaseInvoiceForm() {
             <input type="date" className="input-field" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} required />
           </div>
           <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Syarat Pembayaran</label>
+            <select className="input-field" value={termDays} onChange={(e) => { termTouched.current = true; dueTouched.current = false; setTermDays(e.target.value) }}>
+              <option value="">Pilih syarat pembayaran</option>
+              {termChoices.map((d) => <option key={d} value={d}>{termLabel(d)}</option>)}
+            </select>
+            <p className="mt-1 text-xs text-gray-500">Bawaan dari termin pemasok. Jatuh tempo dihitung dari tanggal faktur.</p>
+          </div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Jatuh Tempo</label>
-            <input type="date" className="input-field" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+            <input type="date" className="input-field" value={dueDate} onChange={(e) => { dueTouched.current = true; setDueDate(e.target.value) }} />
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Catatan</label>
