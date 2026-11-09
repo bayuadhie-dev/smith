@@ -9,6 +9,7 @@ import SearchableSelect from '../../components/SearchableSelect'
 import NumberInput from '../../components/ui/NumberInput'
 import { formatCurrencyAmount } from '../../utils/currencyUtils'
 import { showError, showSuccess } from '../../components/ui/Toast'
+import { confirmDialog } from '../../components/ui'
 
 const PPN_RATES: Record<string, number> = { Y: 11, A: 1.1, B: 1.2, L: 12 }
 
@@ -243,6 +244,10 @@ export default function PurchaseInvoiceForm() {
       if (v < 0 || v > d.remaining + 0.005) return showError(`Uang muka ${d.dp_number}: jumlah melebihi sisa (${d.remaining.toLocaleString('id-ID')})`)
     }
     if (dpTotal > totals.total + 0.005) return showError('Total uang muka yang dipakai melebihi total tagihan')
+    if (Math.abs(totals.total) < 0.005) {
+      const ok = await confirmDialog('Total faktur ini Rp 0. Faktur akan otomatis berstatus lunas (tidak ada yang perlu dibayar), sedangkan stok barangnya tetap diakui. Lanjut simpan?')
+      if (!ok) return
+    }
     setSaving(true)
     try {
       const res = await axiosInstance.post('/api/purchasing/purchase-invoices', {

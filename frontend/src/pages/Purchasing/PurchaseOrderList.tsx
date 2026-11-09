@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import SortableTh, { useSort } from '../../components/SortableTh'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { format } from 'date-fns'
@@ -53,6 +54,8 @@ const [search, setSearch] = useState('')
   })
   
   const [submitForApproval] = useSubmitForApprovalMutation()
+  const poAcc = useMemo(() => ({ po_number: (r: any) => r.po_number, supplier_name: (r: any) => r.supplier_name, order_date: (r: any) => r.order_date, status: (r: any) => r.status, total_amount: (r: any) => Number(r.total_amount_idr ?? r.total_amount) }), [])
+  const { sorted: sortedPOs, sort, toggle } = useSort(data?.purchase_orders || [], poAcc)
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { class: string; label: string }> = {
@@ -232,23 +235,16 @@ const [search, setSearch] = useState('')
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    PO Details
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Status & Priority
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  </th>
+                  <SortableTh label="No. PO" k="po_number" sort={sort} toggle={toggle} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" />
+                  <SortableTh label="Supplier" k="supplier_name" sort={sort} toggle={toggle} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" />
+                  <SortableTh label="Tanggal Transaksi" k="order_date" sort={sort} toggle={toggle} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" />
+                  <SortableTh label="Status" k="status" sort={sort} toggle={toggle} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" />
+                  <SortableTh label="Total" k="total_amount" sort={sort} toggle={toggle} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" />
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {data?.purchase_orders?.map((po: any) => {
+                {sortedPOs.map((po: any) => {
                   const statusBadge = getStatusBadge(po.status)
                   const priorityBadge = getPriorityBadge(po.priority)
                   

@@ -1,4 +1,7 @@
-import React, { Suspense, useEffect, useRef } from 'react'
+import React, { Suspense, useContext, useEffect, useRef, useState } from 'react'
+import { ReactReduxContext } from 'react-redux'
+import { RefreshCw } from 'lucide-react'
+import { api } from '../store/api'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ErrorBoundary from '../components/ui/ErrorBoundary'
 import LoadingSpinner from '../components/Common/LoadingSpinner'
@@ -6,7 +9,7 @@ import { confirmDialog } from '../components/ui'
 import { installClickTracker, titleFromElement } from './clickTracker'
 import { attachDomDraft, type DomDraftHandle } from './domDraft'
 import { TabContext, isTabDirty, useDirtyVersion } from './drafts'
-import { moduleById, moduleForPath, splitPath } from './modules'
+import { isFormPath, moduleById, moduleForPath, splitPath } from './modules'
 import TabBar from './TabBar'
 import TabRouter from './TabRouter'
 import { useWorkspace, type TabState } from './WorkspaceContext'
@@ -22,6 +25,17 @@ function TabPane({ tab, active }: { tab: TabState; active: boolean }) {
   pathnameRef.current = pathname
   const handle = useRef<DomDraftHandle>()
   const first = useRef(true)
+  const reduxCtx = useContext(ReactReduxContext)
+  const [nonce, setNonce] = useState(0)
+  const [spin, setSpin] = useState(false)
+  // Tombol muat ulang hanya di halaman daftar (bukan form atau detail), supaya isian tidak hilang.
+  const isList = !isFormPath(pathname) && !/\/\d+(\/|$)/.test(pathname) && /\/app\/[^/]+\/[^/]+/.test(pathname)
+  const refresh = () => {
+    setSpin(true)
+    reduxCtx?.store.dispatch(api.util.resetApiState())
+    setNonce((n) => n + 1)
+    setTimeout(() => setSpin(false), 800)
+  }
 
   useEffect(() => {
     if (!ref.current) return
@@ -37,9 +51,17 @@ function TabPane({ tab, active }: { tab: TabState; active: boolean }) {
   return (
     <div ref={ref} hidden={!active} data-tab-pane={tab.id}>
       <TabContext.Provider value={{ tabId: tab.id }}>
+        {isList && (
+          <div className="flex justify-end px-4 pt-2">
+            <button type="button" onClick={refresh} title="Muat ulang data daftar ini"
+              className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
+              <RefreshCw size={13} className={spin ? 'animate-spin' : ''} /> Perbarui
+            </button>
+          </div>
+        )}
         <ErrorBoundary>
           <Suspense fallback={<LoadingSpinner />}>
-            <TabRouter
+            <TabRouter key={nonce}
               initialPath={tab.path}
               containerRef={ref}
               onOpenNew={(path, title) => {
