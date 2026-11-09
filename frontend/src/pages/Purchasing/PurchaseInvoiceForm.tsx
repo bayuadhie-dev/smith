@@ -207,7 +207,7 @@ export default function PurchaseInvoiceForm() {
         setDueDate((d) => d || addDays(invoiceDate, Number.isFinite(days) ? days : 30))
       })
       .catch(() => showError('Gagal memuat PO'))
-  }, [poId])
+  }, [poId, editInv?.id])
 
   const dpFirst = useRef(true)
   useEffect(() => {
