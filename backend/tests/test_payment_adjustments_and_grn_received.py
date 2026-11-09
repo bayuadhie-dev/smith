@@ -324,3 +324,23 @@ def test_supplier_payment_uses_pp_numbering_while_cash_keeps_pay(client, auth_he
     r2 = client.post('/api/finance/payments', headers=auth_headers, json={'payment_date': '2026-10-31T10:00:00', 'payment_type': 'payment',
         'payment_method': 'bank_transfer', 'bank_account_id': bank.id, 'lines': [{'account_id': exp.id, 'amount': 5}]})
     assert r2.get_json()['payment_number'].startswith('PAY-')
+
+
+def test_grn_rebatch_split_and_rename_moves_stock(client, auth_headers, db_session, test_material):
+    from models.purchasing import GoodsReceivedNote, GRNItem, Supplier
+    from models.warehouse import Inventory
+    loc, _ = _setup_warehouse(db_session)
+    sup = Supplier(code='SUP-RB', company_name='Sup RB', is_active=True); db_session.add(sup); db_session.commit()
+    body = {'supplier_id': sup.id, 'items': [{'material_id': test_material.id, 'quantity_ordered': 100, 'quantity_received': 100, 'quantity_accepted': 100,
+                                              'uom': 'KG', 'batch_number': 'A1', 'location_id': loc.id}]}
+    gid = client.post('/api/purchasing/grn', json=body, headers=auth_headers).get_json()['grn_id']
+    gi = GRNItem.query.filter_by(grn_id=gid).first()
+    spec = {'ids': [gi.id], 'items': [{'id': gi.id, 'batch_number': 'A1', 'quantity': 60}, {'id': None, 'batch_number': 'A2', 'quantity': 40}]}
+    r = client.put(f'/api/purchasing/grn/{gid}', json={'rebatch': [spec]}, headers=auth_headers)
+    assert r.status_code == 200, r.get_json()
+    items = {i.batch_number: float(i.quantity_received) for i in GRNItem.query.filter_by(grn_id=gid).all()}
+    assert items == {'A1': 60.0, 'A2': 40.0}
+    inv = {i.batch_number: float(i.quantity_on_hand) for i in Inventory.query.filter_by(material_id=test_material.id, location_id=loc.id).all()}
+    assert inv['A1'] == 60 and inv['A2'] == 40
+    bad = {'ids': [i.id for i in GRNItem.query.filter_by(grn_id=gid).all()], 'items': [{'id': None, 'batch_number': 'Z', 'quantity': 99}]}
+    assert client.put(f'/api/purchasing/grn/{gid}', json={'rebatch': [bad]}, headers=auth_headers).status_code == 400

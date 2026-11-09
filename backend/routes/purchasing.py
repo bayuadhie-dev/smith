@@ -1772,6 +1772,88 @@ def approve_grn(grn_id):
         return jsonify({'error': str(e)}), 500
 
 
+class _RebatchError(Exception):
+    pass
+
+
+def _apply_rebatch(grn, spec):
+    """Atur ulang pembagian batch satu barang pada GRN (ganti nomor, ubah jumlah per batch, tambah/hapus batch) tanpa mengubah
+    total diterima. Stok dipindah antar baris batch di lokasi yang sama; ditolak kalau stok batch lama sudah terpakai.
+    spec = {'ids': [id item lama...], 'items': [{'id': id|None, 'batch_number': str, 'quantity': n}, ...]}"""
+    from models.warehouse import Inventory
+    by_id = {i.id: i for i in grn.items}
+    old = [by_id.get(x) for x in spec.get('ids') or []]
+    if not old or any(o is None for o in old):
+        raise _RebatchError('Baris barang yang diatur ulang tidak ditemukan pada GRN ini')
+    key = {(o.po_item_id, o.material_id, o.product_id, o.location_id) for o in old}
+    if len(key) != 1:
+        raise _RebatchError('Batch hanya bisa diatur ulang untuk satu barang dan satu lokasi')
+    if any(float(o.quantity_rejected or 0) > 0.0005 for o in old):
+        raise _RebatchError('Barang ini punya jumlah ditolak; atur batch tidak tersedia')
+    new = spec.get('items') or []
+    total_old = sum(float(o.quantity_accepted or 0) for o in old)
+    total_new = sum(float(n.get('quantity') or 0) for n in new)
+    if abs(total_old - total_new) > 0.005:
+        raise _RebatchError(f'Jumlah per batch ({total_new:,.3f}) harus sama dengan total diterima ({total_old:,.3f})')
+    names = [str(n.get('batch_number') or '').strip() for n in new if float(n.get('quantity') or 0) > 0]
+    if len(set(names)) != len(names):
+        raise _RebatchError('Ada nomor batch yang sama dua kali')
+    if any(len(n) > 100 for n in names):
+        raise _RebatchError('Satu nomor batch maksimal 100 karakter')
+    first = old[0]
+    stocked = bool(first.location_id and (first.material_id or first.product_id))
+
+    def inv_row(batch, create=False, like=None):
+        q = Inventory.query.filter_by(location_id=first.location_id, batch_number=(batch or None))
+        q = q.filter_by(product_id=first.product_id) if first.product_id else q.filter_by(material_id=first.material_id)
+        row = q.first()
+        if not row and create:
+            row = Inventory(product_id=first.product_id, material_id=first.material_id, location_id=first.location_id, batch_number=batch or None,
+                            quantity_on_hand=0, quantity_available=0, stock_status=(like.stock_status if like else 'available'), grn_id=grn.id)
+            db.session.add(row)
+        return row
+
+    like = None
+    if stocked:
+        for o in old:
+            row = inv_row(o.batch_number)
+            q = float(o.quantity_accepted or 0)
+            if q <= 0:
+                continue
+            if not row or float(row.quantity_on_hand or 0) < q - 0.005 or float(row.quantity_available or 0) < q - 0.005:
+                raise _RebatchError(f'Stok batch {o.batch_number or "(kosong)"} sudah terpakai atau dipindah, jadi pembagian batch tidak bisa diubah')
+            like = like or row
+            row.quantity_on_hand = float(row.quantity_on_hand) - q
+            row.quantity_available = float(row.quantity_available) - q
+    kept = set()
+    for n in new:
+        qty = float(n.get('quantity') or 0)
+        if qty <= 0:
+            continue
+        batch = str(n.get('batch_number') or '').strip() or None
+        it = by_id.get(n.get('id')) if n.get('id') else None
+        if it is None or it not in old:
+            it = GRNItem(grn_id=grn.id, po_item_id=first.po_item_id, product_id=first.product_id, material_id=first.material_id,
+                         quantity_ordered=first.quantity_ordered, uom=first.uom, location_id=first.location_id, lot_number=first.lot_number,
+                         production_date=first.production_date, expiry_date=first.expiry_date, notes=first.notes, item_name=first.item_name,
+                         quantity_rejected=0)
+            db.session.add(it)
+        it.batch_number = batch
+        it.quantity_received = qty
+        it.quantity_accepted = qty
+        it.entered_qty = None
+        it.entered_uom = None
+        kept.add(id(it))
+        if stocked:
+            row = inv_row(batch, create=True, like=like)
+            row.quantity_on_hand = float(row.quantity_on_hand or 0) + qty
+            row.quantity_available = float(row.quantity_available or 0) + qty
+    for o in old:
+        if id(o) not in kept:
+            db.session.delete(o)
+    db.session.flush()
+
+
 @purchasing_bp.route('/grn/<int:grn_id>', methods=['PUT'])
 @jwt_required()
 @require_permission('purchasing.edit')
@@ -1834,6 +1916,13 @@ def update_grn(grn_id):
                     grn.receipt_date = datetime.strptime(data[field].split('T')[0], '%Y-%m-%d')
                 else:
                     setattr(grn, field, data[field])
+
+        for spec in data.get('rebatch') or []:
+            try:
+                _apply_rebatch(grn, spec)
+            except _RebatchError as e:
+                db.session.rollback()
+                return jsonify({'error': str(e)}), 400
 
         items_data = data.get('items')
         if items_data:
