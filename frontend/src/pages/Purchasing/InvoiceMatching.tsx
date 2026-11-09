@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
+import DocumentGenerateButton from '../../components/DocumentGenerateButton';
+import { usePermissions } from '../../contexts/PermissionContext';
 import {
   ArrowLeftIcon, ArrowPathIcon, CheckCircleIcon,
   ExclamationTriangleIcon, XCircleIcon,
@@ -30,12 +32,18 @@ export default function InvoiceMatching() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [inv, setInv] = useState<any>(null);
+  const { hasPermission } = usePermissions() as any;
 
   useEffect(() => {
     axiosInstance.get(`/api/purchasing/purchase-invoices/${id}/three-way-match`)
       .then(r => setData(r.data))
       .catch(err => setError(err?.response?.data?.error || 'Gagal memuat data matching'))
       .finally(() => setLoading(false));
+  }, [id]);
+
+  useEffect(() => {
+    axiosInstance.get(`/api/purchasing/purchase-invoices/${id}`).then(r => setInv(r.data)).catch(() => setInv(null));
   }, [id]);
 
   if (loading) {
@@ -80,6 +88,14 @@ export default function InvoiceMatching() {
             PO: <span className="font-medium">{data.po_number}</span> |
             Supplier: <span className="font-medium">{data.supplier_name}</span>
           </p>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <DocumentGenerateButton transactionType="three_way_match" transactionId={Number(id)} transactionNumber={data.invoice_number} label="Cetak Hasil" />
+          {(!hasPermission || hasPermission('purchasing.edit')) && inv && inv.status !== 'cancelled' && (
+            Number(inv.amount_paid || 0) > 0
+              ? <span className="text-xs text-gray-500" title="Batalkan pembayarannya dulu untuk bisa mengubah faktur">Faktur sudah dibayar, tidak bisa diubah</span>
+              : <Link to={`/app/purchasing/invoices/new?po_id=${inv.po_id}&edit=${id}`} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Ubah faktur</Link>
+          )}
         </div>
       </div>
 

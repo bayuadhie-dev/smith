@@ -725,6 +725,72 @@ def generate_purchase_invoice_document(invoice_id, user_id):
     return document
 
 
+def generate_three_way_match_document(invoice_id, user_id):
+    """Cetak hasil pencocokan 3 arah (PO, penerimaan barang, faktur) sebagai dokumen lanskap."""
+    from models.finance import Invoice
+    from routes.purchase_invoice import _compute_three_way_match
+
+    inv = db.session.get(Invoice, invoice_id)
+    if not inv or inv.invoice_type != 'purchase':
+        raise ValueError('Faktur pembelian tidak ditemukan')
+    m = _compute_three_way_match(inv)
+    ccy = (inv.currency or 'IDR').upper()
+    symbols = {'IDR': 'Rp', 'USD': 'US$', 'EUR': 'EUR', 'CNY': 'CNY', 'JPY': 'JPY', 'SGD': 'S$'}
+
+    def money(v):
+        n = float(v or 0)
+        txt = f'{n:,.{2 if (ccy != "IDR" or n != int(n)) else 0}f}'.replace(',', '_').replace('.', ',').replace('_', '.')
+        return f'{symbols.get(ccy, ccy)} {txt}'
+
+    overall_text = {'matched': 'Cocok', 'discrepancy': 'Ada selisih', 'missing_grn': 'GRN belum ada'}.get(m['overall_status'], m['overall_status'])
+    from models.purchasing import PurchaseOrderItem
+    for l in m['lines']:
+        if not (l.get('item_name') or '').strip():
+            poi = db.session.get(PurchaseOrderItem, l['po_item_id'])
+            l['item_name'] = (poi.description or (poi.material.name if poi and poi.material else '') or (poi.product.name if poi and poi.product else '')) if poi else ''
+    rows = []
+    for i, l in enumerate(m['lines'], 1):
+        diffs = []
+        if abs(l['price_variance']) > 0.01:
+            diffs.append(f"Harga {('+' if l['price_variance'] > 0 else '')}{money(l['price_variance'])}")
+        if abs(l['qty_vs_grn']) > 0.001:
+            diffs.append(f"Qty {('+' if l['qty_vs_grn'] > 0 else '')}{l['qty_vs_grn']:g} vs GRN")
+        rows.append({
+            'no': i, 'item_name': l['item_name'], 'uom': l['uom'] or '', 'po_qty': l['po_qty'], 'po_price_text': money(l['po_price']),
+            'grn_qty': l['grn_accepted'], 'inv_qty': l['inv_qty'], 'inv_price_text': money(l['inv_price']), 'inv_total_text': money(l['inv_total']),
+            'diff_text': '; '.join(diffs) or '-', 'status_text': {'matched': 'Cocok', 'discrepancy': 'Selisih'}.get(l['status'], l['status']),
+        })
+    notes = '\n'.join(f"{r['item_name']}: " + ' | '.join(l['issues']) for r, l in zip(rows, m['lines']) if l['issues'])
+    d = lambda x: x.strftime('%d-%m-%Y') if x else ''
+    document_data = {
+        'document_number': inv.invoice_number,
+        'hdr_no': f'No. Faktur {inv.invoice_number}',
+        'hdr_date': f'Tanggal: {d(inv.invoice_date)}',
+        'hdr_extra': f'PO: {m["po_number"]}',
+        'invoice_number': inv.invoice_number, 'po_number': m['po_number'], 'overall_text': overall_text,
+        'supplier_name': m['supplier_name'] or '',
+        'summary_line': f"{m['grn_count']} dokumen penerimaan barang | Mata uang {ccy}",
+        'lines': rows, 'notes': notes,
+        'po_total_text': money(m['po_total_invoiced']), 'invoice_subtotal_text': money(m['invoice_subtotal']),
+        'value_diff_text': money(m['invoice_subtotal'] - m['po_total_invoiced']),
+        'company': get_company_context(),
+    }
+    template = ensure_default_template(user_id, 'three_way_match')
+    document = Document(
+        document_number=generate_number('DOC-3WM', Document, 'document_number'),
+        document_title=f'Pencocokan 3 Arah {inv.invoice_number}', document_type='three_way_match',
+        template_version_id=template.current_version_id, document_data=document_data,
+        reference_type='purchase_invoice', reference_id=inv.id, reference_number=inv.invoice_number,
+        status='generated', created_by=user_id)
+    document.html_content = render_template_version_to_html(template.current_version, document_data)
+    db.session.add(document)
+    db.session.flush()
+    db.session.add(DocumentLog(document_id=document.id, activity_type='auto_generated',
+                               activity_description=f'Pencocokan 3 arah {inv.invoice_number} dicetak', user_id=user_id))
+    db.session.commit()
+    return document
+
+
 def generate_purchase_order_document(po_id, user_id):
     """Printable Purchase Order."""
     from models.purchasing import PurchaseOrder

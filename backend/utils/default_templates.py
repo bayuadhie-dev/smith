@@ -271,6 +271,31 @@ def po_totals(left, top, label_w=40, value_w=40, row_h=6.5):
     return objs
 
 
+def build_three_way_match():
+    o = header(10, 277, 'PENCOCOKAN 3 ARAH', lines=3)
+    o += [BOX(10, 33, 150, 18),
+          L('PEMASOK', 12, 34, 100, 3.5, fs=7.5, color=MUTED),
+          F('supplier_name', 12, 38.5, 146, 5, fs=11, bold=True),
+          F('summary_line', 12, 44.5, 146, 5, fs=8.5, color=MUTED)]
+    o += meta_grid(165, 33, 40, 72, [('No. Faktur', 'invoice_number'), ('No. PO', 'po_number'), ('Status', 'overall_text')], 6)
+    o.append(TABLE('lines', 10, 55, 277, [
+        C('no', 'No.', 8, 'center'), C('item_name', 'Barang', 62), C('uom', 'Sat.', 12),
+        C('po_qty', 'PO Qty', 18, 'right', 'num'), C('po_price_text', 'PO Harga', 24, 'right'),
+        C('grn_qty', 'GRN Diterima', 22, 'right', 'num'),
+        C('inv_qty', 'Faktur Qty', 18, 'right', 'num'), C('inv_price_text', 'Faktur Harga', 24, 'right'), C('inv_total_text', 'Faktur Total', 28, 'right'),
+        C('diff_text', 'Selisih', 36, 'left'), C('status_text', 'Status', 25, 'left'),
+    ], min_rows=0, row_h=7, height=30, fs=8.5))
+    o += flow([BOX(177, 92, 55, 7, fill=CELL), BOX(232, 92, 55, 7), L('Total harga PO x qty faktur', 178.5, 93.5, 52, 4, fs=8.5),
+               F('po_total_text', 233.5, 93.5, 52, 4, fs=9, align='right'),
+               BOX(177, 99, 55, 7, fill=CELL), BOX(232, 99, 55, 7), L('Total Faktur (tanpa PPN)', 178.5, 100.5, 52, 4, fs=9),
+               F('invoice_subtotal_text', 233.5, 100.5, 52, 4, fs=9, align='right'),
+               BOX(177, 106, 55, 7, fill=TEAL), BOX(232, 106, 55, 7, fill=TEAL), L('Selisih nilai', 178.5, 107.5, 52, 4, fs=9.5, bold=True, color='#ffffff'),
+               F('value_diff_text', 233.5, 107.5, 52, 4, fs=9.5, bold=True, align='right', color='#ffffff')])
+    o += flow(notes_side(10, 92, 160, 22))
+    o += flow(signatures(10, 277, 122, ['Dibuat oleh,', 'Diperiksa oleh,', 'Disetujui oleh,'], captions={0: ' ', 1: ' ', 2: ' '}))
+    return o, 'A4', 'landscape', None, None
+
+
 def build_surat_jalan():
     o = header(14, 182, 'SURAT JALAN')
     o += [BOX(14, 33, 90, 26),
@@ -364,6 +389,7 @@ DEFAULTS = {
     'invoice': ('Invoice Default', 'INVOICE_DEFAULT', build_invoice),
     'purchase_order': ('Purchase Order Default', 'PO_DEFAULT', build_po),
     'purchase_invoice': ('Faktur Pembelian Default', 'PI_DEFAULT', build_purchase_invoice),
+    'three_way_match': ('Pencocokan 3 Arah Default', 'TWM_DEFAULT', build_three_way_match),
     'surat_jalan': ('Surat Jalan Default', 'SJ_DEFAULT', build_surat_jalan),
     'spk': ('SPK Default', 'SPK_DEFAULT', build_spk),
     'spk_batch': ('SPK Batch Default', 'SPK_BATCH_DEFAULT', build_spk_batch),

@@ -1,3 +1,4 @@
+import json
 from flask import Blueprint, request, jsonify, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.auth_decorators import require_permission
@@ -169,6 +170,8 @@ def get_purchase_invoices():
 
         if status:
             query = query.filter(Invoice.status == status)
+        else:
+            query = query.filter(Invoice.status != 'cancelled')
         if payment_status == 'unpaid':
             query = query.filter(Invoice.status.in_(['draft', 'sent']))
         elif payment_status in ('partial', 'paid', 'overdue'):
@@ -413,17 +416,69 @@ def _auto_grn_for_non_inventory(invoice, po, items_data, user_id, receipt_date):
     return grn
 
 
+def _invoice_snapshot(inv):
+    def d(x):
+        return x.isoformat() if x else None
+    return {
+        'Tanggal faktur': d(inv.invoice_date), 'Jatuh tempo': d(inv.due_date), 'No. faktur pemasok': inv.supplier_invoice_number,
+        'Tanggal faktur pemasok': d(inv.supplier_invoice_date), 'Catatan': inv.notes, 'Total': float(inv.total_amount or 0),
+        'Baris': sorted(f"{(i.description or '')[:40]}: {float(i.quantity or 0):g} x {float(i.unit_price or 0):g}" for i in inv.items),
+    }
+
+
+def _record_invoice_edit_history(old_inv, new_inv, old_snapshot, user_id):
+    """Riwayat perubahan dipindah ke faktur pengganti, supaya yang terlihat satu faktur dengan catatan perubahan."""
+    import json
+    from models.settings_extended import AuditLog
+    from models.record_attachment import RecordAttachment
+    new_snapshot = _invoice_snapshot(new_inv)
+    old_v, new_v = {}, {}
+    for k, v in old_snapshot.items():
+        if new_snapshot.get(k) != v:
+            old_v[k] = v
+            new_v[k] = new_snapshot.get(k)
+    AuditLog.query.filter_by(resource_type='invoices', resource_id=str(old_inv.id)).update({'resource_id': str(new_inv.id)})
+    RecordAttachment.query.filter_by(entity_type='purchase_invoice', entity_id=old_inv.id).update({'entity_id': new_inv.id})
+    db.session.add(AuditLog(user_id=user_id, action='update', resource_type='invoices', resource_id=str(new_inv.id),
+                            old_values=json.dumps(old_v, default=str), new_values=json.dumps(new_v, default=str),
+                            request_method='POST', request_url=request.url, status='success', timestamp=datetime.utcnow()))
+    db.session.flush()
+
+
 def create_purchase_invoice_core(data, user_id, commit=True):
     """Buat faktur pembelian terkait PO + jurnal GL. commit=False dipakai Pusat Impor (savepoint dipegang pemanggil).
     Kesalahan input -> InvoiceInputError."""
-
-    # Generate invoice number
-    invoice_number = generate_number_v2('purchase_invoice', 'PI', Invoice, 'invoice_number', style='dashed')
 
     # Get PO to validate
     po = db.session.get(PurchaseOrder, data.get('po_id'))
     if not po:
         raise InvoiceInputError('Purchase Order not found', 404)
+
+    # Ubah faktur = batalkan faktur lama lalu buat penggantinya dengan nomor yang sama, dalam satu transaksi.
+    old_invoice, old_snapshot, invoice_number = None, None, None
+    if data.get('replace_invoice_id'):
+        old_invoice = db.session.get(Invoice, data['replace_invoice_id'])
+        if not old_invoice or old_invoice.invoice_type != 'purchase':
+            raise InvoiceInputError('Faktur yang akan diubah tidak ditemukan', 404)
+        if old_invoice.purchase_order_id != po.id:
+            raise InvoiceInputError('Faktur pengganti harus untuk PO yang sama dengan faktur lama')
+        from models.purchase_down_payment import PurchaseDownPaymentAllocation
+        if PurchaseDownPaymentAllocation.query.filter_by(invoice_id=old_invoice.id, status='active').first():
+            raise InvoiceInputError('Faktur ini sudah dialokasikan uang muka. Batalkan alokasinya dulu sebelum mengubah faktur.')
+        if Payment.query.filter_by(invoice_id=old_invoice.id).first():
+            raise InvoiceInputError('Faktur ini sudah punya pembayaran. Batalkan pembayarannya dulu sebelum mengubah faktur.')
+        old_snapshot = _invoice_snapshot(old_invoice)
+        from routes.finance import _void_invoice_core
+        err = _void_invoice_core(old_invoice, user_id, 'Diubah menjadi transaksi baru')
+        if err:
+            raise InvoiceInputError(err[0], err[1])
+        db.session.flush()
+        invoice_number = old_invoice.invoice_number
+        n = Invoice.query.filter(Invoice.invoice_number.like(f'{invoice_number}-V%')).count() + 1
+        old_invoice.invoice_number = f'{invoice_number}-V{n}'
+        db.session.flush()
+    else:
+        invoice_number = generate_number_v2('purchase_invoice', 'PI', Invoice, 'invoice_number', style='dashed')
 
     # Multi-currency (2026-10-19, po_multicurrency_plan.md): currency and
     # exchange_rate come strictly from the PO (single source of truth).
@@ -642,6 +697,8 @@ def create_purchase_invoice_core(data, user_id, commit=True):
         total_debit_amount += line_amount_idr
 
     _auto_grn_for_non_inventory(invoice, po, items_data, user_id, invoice_date_parsed)
+    if old_invoice is not None:
+        _record_invoice_edit_history(old_invoice, invoice, old_snapshot, user_id)
 
     # Header total_amount had the same gap as item total_price: left
     # entirely to the caller, defaulting to 0 when omitted - an invoice

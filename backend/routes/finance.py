@@ -1197,6 +1197,66 @@ def create_payment_core(data, user_id, commit=True):
         return jsonify({'error': str(e)}), 500
 
 
+def _void_invoice_core(invoice, user_id, reason):
+    """Void faktur (jurnal dibalik, jumlah tagih PO dikembalikan, GRN otomatis dibatalkan). Mengembalikan (pesan_error, status) atau None.
+    Tidak melakukan commit. Dipakai route void dan alur "Ubah faktur pembelian"."""
+    if invoice.status == 'cancelled':
+        return ('Invoice sudah dalam status cancelled', 400)
+
+    if float(invoice.paid_amount or 0) > 0:
+        return ('Invoice ini sudah punya pembayaran. Void Payment-nya '
+                     'terlebih dahulu lewat /api/finance/payments/<id>/void '
+                     'sebelum bisa void invoice ini.', 400)
+
+    from utils.finance_helpers import is_period_locked, reverse_accounting_entries
+
+    invoice_transaction_type = 'sales_invoice' if invoice.invoice_type == 'sales' else 'purchase_invoice'
+    if is_period_locked(invoice.invoice_date, transaction_type=invoice_transaction_type):
+        return (f'Periode {invoice.invoice_date.strftime("%Y-%m")} sudah '
+                     'ditutup (period-close). Tidak bisa void invoice di periode ini.', 400)
+
+
+
+    reverse_accounting_entries(
+        reference_type=invoice_transaction_type,
+        reference_id=invoice.id,
+        entry_date=get_local_now().date(),
+        user_id=user_id,
+        description=f'Void invoice {invoice.invoice_number}' + (f' - {reason}' if reason else ''),
+    )
+
+    # Faktur pembelian: kembalikan qty yang sudah ditagih pada baris PO,
+    # supaya baris itu bisa ditagih ulang dan 3-way match tidak terkunci
+    # oleh faktur yang sudah dibatalkan.
+    if invoice.invoice_type == 'purchase':
+        from models import PurchaseOrderItem
+        for it in invoice.items:
+            if it.po_item_id:
+                poi = db.session.get(PurchaseOrderItem, it.po_item_id)
+                if poi:
+                    poi.quantity_invoiced = max(0.0, float(poi.quantity_invoiced or 0) - float(it.quantity or 0))
+
+    if invoice.invoice_type == 'purchase' and invoice.purchase_order_id:
+        # GRN otomatis (jasa/biaya) dari faktur ini ikut dibatalkan supaya jumlah diterima PO kembali.
+        from models.purchasing import GoodsReceivedNote
+        from routes.purchasing import _sync_po_received
+        auto = GoodsReceivedNote.query.filter(GoodsReceivedNote.po_id == invoice.purchase_order_id,
+                                              GoodsReceivedNote.notes == f'Otomatis dari faktur pembelian {invoice.invoice_number}').all()
+        for g in auto:
+            g.status = 'rejected'
+        db.session.flush()
+        if auto:
+            _sync_po_received(invoice.purchase_order_id)
+
+    invoice.status = 'cancelled'
+    invoice.balance_due = 0
+    invoice.voided_by = user_id
+    invoice.voided_at = get_local_now()
+    invoice.void_reason = reason
+
+    return None
+
+
 @finance_bp.route('/invoices/<int:id>/void', methods=['POST'])
 @jwt_required()
 @require_permission('finance.create')
@@ -1224,64 +1284,10 @@ def void_invoice(id):
         if not invoice:
             return jsonify({'error': 'Invoice tidak ditemukan'}), 404
 
-        if invoice.status == 'cancelled':
-            return jsonify({'error': 'Invoice sudah dalam status cancelled'}), 400
-
-        if float(invoice.paid_amount or 0) > 0:
-            return jsonify({
-                'error': 'Invoice ini sudah punya pembayaran. Void Payment-nya '
-                         'terlebih dahulu lewat /api/finance/payments/<id>/void '
-                         'sebelum bisa void invoice ini.'
-            }), 400
-
-        from utils.finance_helpers import is_period_locked, reverse_accounting_entries
-
-        invoice_transaction_type = 'sales_invoice' if invoice.invoice_type == 'sales' else 'purchase_invoice'
-        if is_period_locked(invoice.invoice_date, transaction_type=invoice_transaction_type):
-            return jsonify({
-                'error': f'Periode {invoice.invoice_date.strftime("%Y-%m")} sudah '
-                         'ditutup (period-close). Tidak bisa void invoice di periode ini.'
-            }), 400
-
         data = request.get_json(silent=True) or {}
-        reason = data.get('reason')
-
-        reverse_accounting_entries(
-            reference_type=invoice_transaction_type,
-            reference_id=invoice.id,
-            entry_date=get_local_now().date(),
-            user_id=user_id,
-            description=f'Void invoice {invoice.invoice_number}' + (f' - {reason}' if reason else ''),
-        )
-
-        # Faktur pembelian: kembalikan qty yang sudah ditagih pada baris PO,
-        # supaya baris itu bisa ditagih ulang dan 3-way match tidak terkunci
-        # oleh faktur yang sudah dibatalkan.
-        if invoice.invoice_type == 'purchase':
-            from models import PurchaseOrderItem
-            for it in invoice.items:
-                if it.po_item_id:
-                    poi = db.session.get(PurchaseOrderItem, it.po_item_id)
-                    if poi:
-                        poi.quantity_invoiced = max(0.0, float(poi.quantity_invoiced or 0) - float(it.quantity or 0))
-
-        if invoice.invoice_type == 'purchase' and invoice.purchase_order_id:
-            # GRN otomatis (jasa/biaya) dari faktur ini ikut dibatalkan supaya jumlah diterima PO kembali.
-            from models.purchasing import GoodsReceivedNote
-            from routes.purchasing import _sync_po_received
-            auto = GoodsReceivedNote.query.filter(GoodsReceivedNote.po_id == invoice.purchase_order_id,
-                                                  GoodsReceivedNote.notes == f'Otomatis dari faktur pembelian {invoice.invoice_number}').all()
-            for g in auto:
-                g.status = 'rejected'
-            db.session.flush()
-            if auto:
-                _sync_po_received(invoice.purchase_order_id)
-
-        invoice.status = 'cancelled'
-        invoice.balance_due = 0
-        invoice.voided_by = user_id
-        invoice.voided_at = get_local_now()
-        invoice.void_reason = reason
+        err = _void_invoice_core(invoice, user_id, data.get('reason'))
+        if err:
+            return jsonify({'error': err[0]}), err[1]
 
         db.session.commit()
         return jsonify({'message': f'Invoice {invoice.invoice_number} berhasil di-void'}), 200

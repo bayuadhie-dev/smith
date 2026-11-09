@@ -40,6 +40,8 @@ export default function PurchaseInvoiceForm() {
   const navigate = useNavigate()
   const [attFiles, setAttFiles] = useState<File[]>([])
   const [params] = useSearchParams()
+  const editId = params.get('edit') ? Number(params.get('edit')) : null
+  const [editInv, setEditInv] = useState<any>(null)
   const [suppliers, setSuppliers] = useState<any[]>([])
   const [supplierId, setSupplierId] = useState<number | null>(null)
   const [orders, setOrders] = useState<any[]>([])
@@ -73,7 +75,20 @@ export default function PurchaseInvoiceForm() {
   }, [supplierId])
 
   useEffect(() => {
+    if (!editId) return
+    axiosInstance.get(`/api/purchasing/purchase-invoices/${editId}`).then((r) => {
+      const inv = r.data
+      if (inv.status === 'cancelled') { showError('Faktur ini sudah dibatalkan, tidak bisa diubah.'); return }
+      setEditInv(inv)
+      setPoId(inv.po_id); setSupplierId(inv.supplier_id)
+      setSupplierInvoiceNumber(inv.supplier_invoice_number || ''); setSupplierInvoiceDate(inv.supplier_invoice_date || todayISO())
+      setInvoiceDate(inv.invoice_date || todayISO()); setDueDate(inv.due_date || ''); setNotes(inv.notes || '')
+    }).catch(() => showError('Gagal memuat faktur yang akan diubah'))
+  }, [editId])
+
+  useEffect(() => {
     if (!poId) { setPo(null); setLines([]); return }
+    if (editId && !editInv) return
     axiosInstance.get(`/api/purchasing/purchase-orders/${poId}`)
       .then((r) => {
         const data = r.data
@@ -81,24 +96,34 @@ export default function PurchaseInvoiceForm() {
         if (!supplierId) setSupplierId(data.supplier_id)
         const rate = data.is_taxable ? (PPN_RATES[data.ppn_code || 'Y'] ?? 0) : 0
         const inclusive = Boolean(data.is_taxable && data.tax_inclusive && rate)
-        setLines((data.items || []).map((it: any) => {
-          const outstanding = Math.max(0, Number(it.quantity) - Number(it.quantity_invoiced || 0))
-          const toInvoice = it.is_non_inventory ? outstanding : Math.min(outstanding, Math.max(0, Number(it.quantity_received || 0) - Number(it.quantity_invoiced || 0)))
+        const own: Record<number, any> = {}
+        ;(editInv?.items || []).forEach((x: any) => { if (x.po_item_id) own[x.po_item_id] = x })
+        const rateCode = (pct: number) => (pct >= 11.5 ? 'L' : pct >= 10 ? 'Y' : pct >= 1.15 ? 'B' : pct > 0 ? 'A' : '')
+        const baseLines = (data.items || []).map((it: any) => {
+          const mine = own[it.id]
+          const invoicedOthers = Number(it.quantity_invoiced || 0) - (mine ? Number(mine.quantity) : 0)
+          const outstanding = Math.max(0, Number(it.quantity) - invoicedOthers)
+          const toInvoice = mine ? Number(mine.quantity) : (it.is_non_inventory ? outstanding : Math.min(outstanding, Math.max(0, Number(it.quantity_received || 0) - invoicedOthers)))
           const price = inclusive ? Math.round((Number(it.unit_price) / (1 + rate / 100)) * 100) / 100 : Number(it.unit_price)
           return {
             po_item_id: it.id,
             name: it.material_name || it.product_name || it.description || '(tanpa nama)',
-            description: (it.description || '').trim() || it.material_name || it.product_name || '',
             code: it.material_code || it.product_code,
             uom: it.uom,
             ordered: Number(it.quantity),
             received: it.is_non_inventory ? Number(it.quantity_invoiced || 0) : Number(it.quantity_received || 0),
-            invoiced: Number(it.quantity_invoiced || 0),
+            invoiced: invoicedOthers,
             qty: toInvoice,
-            price,
-            ppn_code: data.is_taxable ? (data.ppn_code || 'Y') : '',
+            price: mine ? Number(mine.unit_price) : price,
+            ppn_code: mine ? rateCode(Number(mine.tax_percent || 0)) : (data.is_taxable ? (data.ppn_code || 'Y') : ''),
+            description: mine ? (mine.description || '') : ((it.description || '').trim() || it.material_name || it.product_name || ''),
           } as Line
+        })
+        const extras: Line[] = (editInv?.items || []).filter((x: any) => !x.po_item_id).map((x: any) => ({
+          po_item_id: null, extra: true, name: '', uom: x.uom || '', ordered: 0, received: 0, invoiced: 0, qty: Number(x.quantity), price: Number(x.unit_price),
+          ppn_code: rateCode(Number(x.tax_percent || 0)), description: x.description || '', account_id: '',
         }))
+        setLines([...baseLines, ...extras])
         const supplier = suppliers.find((s) => s.id === data.supplier_id)
         const days = supplier ? Number(supplier.payment_terms ?? 30) : 30
         setDueDate((d) => d || addDays(invoiceDate, Number.isFinite(days) ? days : 30))
@@ -108,7 +133,7 @@ export default function PurchaseInvoiceForm() {
 
   useEffect(() => {
     setDpUse({})
-    if (!supplierId) { setOpenDps([]); return }
+    if (!supplierId || editId) { setOpenDps([]); return }
     axiosInstance.get('/api/purchasing/down-payments', { params: { supplier_id: supplierId, open: 1, per_page: 100 } })
       .then((r) => setOpenDps((r.data.down_payments || []).map((d: any) => ({ id: d.id, dp_number: d.dp_number, po_number: d.po_number, remaining: Number(d.remaining || 0) }))))
       .catch(() => setOpenDps([]))
@@ -149,6 +174,7 @@ export default function PurchaseInvoiceForm() {
     try {
       const res = await axiosInstance.post('/api/purchasing/purchase-invoices', {
         po_id: poId,
+        replace_invoice_id: editId || undefined,
         supplier_id: supplierId,
         supplier_invoice_number: supplierInvoiceNumber.trim(),
         supplier_invoice_date: supplierInvoiceDate || null,
@@ -157,7 +183,7 @@ export default function PurchaseInvoiceForm() {
         notes: notes || null,
         items: items.map((l) => ({ po_item_id: l.extra ? undefined : l.po_item_id, account_id: l.extra && l.account_id ? Number(l.account_id) : undefined, quantity: Number(l.qty), unit_price: Number(l.price), ppn_code: l.ppn_code || '', description: (l.description || '').trim() || undefined })),
       })
-      showSuccess(res.data?.message || 'Faktur pembelian dibuat')
+      showSuccess(editId ? 'Faktur diubah. Faktur lama dibatalkan dan diganti dengan nomor yang sama.' : (res.data?.message || 'Faktur pembelian dibuat'))
       const id = res.data?.invoice?.id
       await uploadAttachments('purchase_invoice', id, attFiles)
       if (id) {
@@ -185,7 +211,8 @@ export default function PurchaseInvoiceForm() {
       <div className="flex items-center gap-3">
         <Link to="/app/purchasing/invoices" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><ArrowLeftIcon className="h-5 w-5" /></Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Buat Faktur Pembelian</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{editId ? `Ubah Faktur ${editInv?.invoice_number || ""}` : "Buat Faktur Pembelian"}</h1>
+          {editId && <p className="mt-1 text-sm text-amber-700">Saat disimpan, faktur lama dibatalkan (jurnal dibalik) dan diganti faktur baru dengan nomor yang sama. Faktur yang sudah dibayar atau dialokasikan uang muka tidak bisa diubah. Baris di luar PO perlu dipilih ulang akunnya.</p>}
           <p className="text-sm text-gray-500">Tagihan pemasok atas PO. Jurnal hutang diposting otomatis dan faktur ikut pencocokan 3 arah.</p>
         </div>
       </div>
@@ -354,7 +381,7 @@ export default function PurchaseInvoiceForm() {
 
         <div className="flex justify-end gap-3">
           <Link to="/app/purchasing/invoices" className="btn-secondary">Batal</Link>
-          <button type="submit" disabled={saving || !po} className="btn-primary disabled:opacity-50">{saving ? 'Menyimpan...' : 'Simpan Faktur'}</button>
+          <button type="submit" disabled={saving || !po} className="btn-primary disabled:opacity-50">{saving ? 'Menyimpan...' : (editId ? 'Simpan Perubahan' : 'Simpan Faktur')}</button>
         </div>
       </form>
     </div>
