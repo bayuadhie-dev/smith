@@ -129,6 +129,7 @@ export default function InvoiceMatching() {
           </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
+          <DocumentGenerateButton transactionType="purchase_invoice" transactionId={Number(id)} transactionNumber={data.invoice_number} label="Cetak Faktur" />
           <DocumentGenerateButton transactionType="three_way_match" transactionId={Number(id)} transactionNumber={data.invoice_number} label="Cetak Hasil" />
           {(!hasPermission || hasPermission('purchasing.edit')) && inv && inv.status !== 'cancelled' && (
             Number(inv.amount_paid || 0) > 0
