@@ -70,3 +70,21 @@ def test_full_discount_zero_cash_payment_saves(client, auth_headers, db_session)
     assert r.status_code == 201, r.get_json()
     db_session.refresh(inv)
     assert inv.status == 'paid'
+
+
+def test_advances_summary_tracks_open_and_settled(client, auth_headers, db_session):
+    from models.finance import Account
+    from models.purchasing import Supplier
+    bank = _bank(db_session)
+    adv = Account(account_code='1-1999', account_name='Uang Muka Lainnya', account_type='asset', normal_balance='debit', is_active=True)
+    db_session.add(adv); sup = Supplier(code='SUP-ADV', company_name='PT Adv', is_active=True); db_session.add(sup); db_session.commit()
+    body = {'payment_date': '2026-10-31T10:00:00', 'payment_type': 'payment', 'payment_method': 'bank_transfer', 'bank_account_id': bank.id,
+            'lines': [{'account_id': adv.id, 'amount': 1000, 'party_type': 'supplier', 'party_id': sup.id}]}
+    assert client.post('/api/finance/payments', headers=auth_headers, json=body).status_code == 201
+    r = client.get('/api/finance/advances-summary', headers=auth_headers).get_json()
+    assert 'advances' in r, r
+    assert r['advances'][0]['outstanding'] == 1000 and r['advances'][0]['status'] == 'menggantung'
+    body['lines'][0]['amount'] = -1000
+    assert client.post('/api/finance/payments', headers=auth_headers, json=body).status_code == 201
+    r = client.get('/api/finance/advances-summary', headers=auth_headers).get_json()
+    assert r['advances'][0]['status'] == 'lunas'

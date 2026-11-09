@@ -1130,6 +1130,8 @@ def create_payment_core(data, user_id, commit=True):
                 ptype, pid = None, None
                 if l.get('party_type') in ('supplier', 'customer') and l.get('party_id'):
                     ptype, pid = l['party_type'], int(l['party_id'])
+                elif supplier_id or customer_id:
+                    ptype, pid = ('supplier', supplier_id) if supplier_id else ('customer', customer_id)
                 db.session.add(PaymentLine(payment_id=payment.id, account_id=l['account_id'], amount=amt, description=l.get('description'),
                                            party_type=ptype, party_id=pid))
                 if is_receipt:
@@ -1399,6 +1401,42 @@ def get_payment_detail(id):
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@finance_bp.route('/advances-summary', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view')
+def advances_summary():
+    """Rekap uang muka lainnya per pemasok/pelanggan: baris pembayaran/penerimaan pada akun bernama uang muka/panjar/deposit
+    yang punya nama pihak. Sisa = jumlah baris (nilai negatif = sudah diselesaikan/dikurangi). Sisa != 0 berarti masih menggantung."""
+    from models.finance import PaymentLine
+    import re
+    rx = re.compile(r'uang\s*muka|panjar|deposit', re.I)
+    rows = db.session.query(PaymentLine, Payment, Account).join(Payment, Payment.id == PaymentLine.payment_id) \
+        .join(Account, Account.id == PaymentLine.account_id) \
+        .filter(Payment.status != 'cancelled', PaymentLine.party_id.isnot(None)).all()
+    groups = {}
+    for l, p, a in rows:
+        if not rx.search(a.account_name or ''):
+            continue
+        k = (l.party_type, l.party_id, a.id)
+        g = groups.setdefault(k, {'party_type': l.party_type, 'party_id': l.party_id, 'party_name': _line_party_name(l),
+                                  'account_code': a.account_code, 'account_name': a.account_name,
+                                  'direction': 'dibayar' if p.payment_type == 'payment' else 'diterima',
+                                  'given': 0.0, 'settled': 0.0, 'last_date': None, 'entries': []})
+        amt = float(l.amount)
+        if amt > 0: g['given'] += amt
+        else: g['settled'] += -amt
+        d = (p.payment_date.date() if hasattr(p.payment_date, 'date') else p.payment_date).isoformat() if p.payment_date else None
+        if d and (not g['last_date'] or d > g['last_date']): g['last_date'] = d
+        g['entries'].append({'payment_id': p.id, 'payment_number': p.payment_number, 'date': d, 'amount': amt, 'description': l.description})
+    out = []
+    for g in groups.values():
+        g['outstanding'] = round(g['given'] - g['settled'], 2)
+        g['status'] = 'lunas' if abs(g['outstanding']) < 0.005 else 'menggantung'
+        out.append(g)
+    out.sort(key=lambda x: (x['status'] != 'menggantung', -abs(x['outstanding'])))
+    return jsonify({'advances': out, 'total_outstanding': round(sum(x['outstanding'] for x in out), 2)}), 200
 
 
 @finance_bp.route('/payments/<int:id>/void', methods=['POST'])
