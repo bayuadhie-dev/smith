@@ -73,6 +73,8 @@ def _serialize_invoice_list_item(inv):
         'exchange_rate': float(inv.exchange_rate) if inv.exchange_rate else None,
         'subtotal': float(inv.subtotal) if inv.subtotal else 0,
         'tax_amount': float(inv.tax_amount) if inv.tax_amount else 0,
+        'pph_type': inv.pph_type, 'pph_rate': float(inv.pph_rate) if inv.pph_rate is not None else None,
+        'pph_amount': float(inv.pph_amount) if inv.pph_amount else 0,
         'discount_amount': float(inv.discount_amount) if inv.discount_amount else 0,
         'shipping_amount': float(inv.shipping_amount) if inv.shipping_amount else 0,
         'other_charges': float(inv.other_charges) if inv.other_charges else 0,
@@ -259,6 +261,8 @@ def get_purchase_invoice(id):
             'payment_method': invoice.payment_method,
             'subtotal': float(invoice.subtotal) if invoice.subtotal else 0,
             'tax_amount': float(invoice.tax_amount) if invoice.tax_amount else 0,
+            'pph_type': invoice.pph_type, 'pph_rate': float(invoice.pph_rate) if invoice.pph_rate is not None else None,
+            'pph_amount': float(invoice.pph_amount) if invoice.pph_amount else 0,
             'discount_amount': float(invoice.discount_amount) if invoice.discount_amount else 0,
             'shipping_amount': float(invoice.shipping_amount) if invoice.shipping_amount else 0,
             'other_charges': float(invoice.other_charges) if invoice.other_charges else 0,
@@ -438,7 +442,7 @@ def _invoice_snapshot(inv):
         return x.isoformat() if x else None
     return {
         'Tanggal faktur': d(inv.invoice_date), 'Jatuh tempo': d(inv.due_date), 'No. faktur pemasok': inv.supplier_invoice_number,
-        'Tanggal faktur pemasok': d(inv.supplier_invoice_date), 'Catatan': inv.notes, 'Total': float(inv.total_amount or 0),
+        'Tanggal faktur pemasok': d(inv.supplier_invoice_date), 'Catatan': inv.notes, 'Total': float(inv.total_amount or 0), 'PPh': float(inv.pph_amount or 0),
         'Baris': sorted(f"{(i.description or '')[:40]}: {float(i.quantity or 0):g} x {float(i.unit_price or 0):g}" for i in inv.items),
     }
 
@@ -822,6 +826,22 @@ def create_purchase_invoice_core(data, user_id, commit=True):
         if data.get('total_amount') is None:
             invoice.total_amount = float(invoice.total_amount or 0) + header_tax
             invoice.balance_due = float(invoice.total_amount) - float(invoice.paid_amount or 0)
+    # PPh dipotong dari tagihan pemasok (mis. PPh 22 batubara): hutang ke pemasok berkurang, hutang PPh bertambah.
+    pph_idr = 0.0
+    try:
+        pph_in = float(data.get('pph_amount') or 0)
+    except (TypeError, ValueError):
+        pph_in = 0.0
+    if pph_in > 0:
+        pph_idr = round(pph_in * inv_rate, 2)
+        if pph_idr >= total_debit_amount + 0.005:
+            raise InvoiceInputError('Nilai PPh tidak boleh melebihi total tagihan')
+        invoice.pph_type = (data.get('pph_type') or 'PPh').strip()[:30]
+        invoice.pph_rate = data.get('pph_rate') if data.get('pph_rate') not in (None, '') else None
+        invoice.pph_amount = pph_in
+        if data.get('total_amount') is None:
+            invoice.total_amount = float(invoice.total_amount or 0) - pph_in
+            invoice.balance_due = float(invoice.total_amount) - float(invoice.paid_amount or 0)
     if ppn_masukan_total > 0:
         journal_lines.append({
             'account_id': ppn_masukan_account_id,
@@ -832,10 +852,17 @@ def create_purchase_invoice_core(data, user_id, commit=True):
 
     # Credit: accounts payable (resolved per-supplier per Accurate's pattern)
     payable_account_id = resolve_accounts_payable(invoice.supplier_id)
+    if pph_idr > 0:
+        from utils.finance_helpers import resolve_pph_payable_account_id
+        journal_lines.append({
+            'account_id': resolve_pph_payable_account_id(invoice.pph_type),
+            'debit': 0, 'credit': pph_idr,
+            'description': f'{invoice.pph_type} dipotong - {invoice_number}',
+        })
     journal_lines.append({
         'account_id': payable_account_id,
         'debit': 0,
-        'credit': total_debit_amount,
+        'credit': round(total_debit_amount - pph_idr, 2),
         'description': f'Accounts payable for {invoice_number}',
     })
 

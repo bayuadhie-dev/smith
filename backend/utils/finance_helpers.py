@@ -1258,6 +1258,36 @@ def fx_difference_line(cash_idr, ap_idr, description):
             'description': description}
 
 
+def resolve_pph_payable_account_id(pph_type):
+    """Akun Hutang PPh untuk jenis pajak yang dipotong dari tagihan pemasok (PPh 22, PPh 23, PPh 4(2), ...):
+    pengaturan pajak (PPh 22/23) -> akun liabilitas bernama sesuai -> dibuat otomatis."""
+    import re
+    from models.finance import TaxAccountSettings
+    from sqlalchemy import func
+    label = (pph_type or 'PPh').strip()
+    key = re.sub(r'[^0-9a-z()]', '', label.lower().replace('pph', ''))
+    settings = get_or_create_singleton(TaxAccountSettings)
+    if key == '22' and settings.akun_pph22_id:
+        return settings.akun_pph22_id
+    if key == '23' and settings.akun_pph23_id:
+        return settings.akun_pph23_id
+    pat = f'%pph%{key}%'
+    acc = Account.query.filter(Account.account_type == 'liability', Account.is_active.is_(True), Account.is_header.is_(False),
+                               func.lower(Account.account_name).like(pat)).first()
+    if not acc:
+        n = Account.query.filter(Account.account_code.like('2-13%')).count() + 1
+        acc = Account(account_code=f'2-13{n:02d}', account_name=f'Hutang {label}', account_type='liability',
+                      normal_balance='credit', is_active=True, is_header=False)
+        db.session.add(acc)
+        db.session.flush()
+    if key == '22':
+        settings.akun_pph22_id = acc.id
+    elif key == '23':
+        settings.akun_pph23_id = acc.id
+    db.session.flush()
+    return acc.id
+
+
 def resolve_ppn_masukan_account_id():
     """Akun PPN Masukan: pengaturan pajak -> akun bernama 'PPN Masukan' -> buat 1-1700.
     Hasilnya disimpan ke pengaturan pajak supaya konsisten."""

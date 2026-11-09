@@ -72,6 +72,11 @@ export default function PurchaseInvoiceForm() {
   const [supplierInvoiceDate, setSupplierInvoiceDate] = useDraftState('supInvDate', todayISO(), !editId)
   const [invoiceDate, setInvoiceDate] = useDraftState('invDate', todayISO(), !editId)
   const [dueDate, setDueDate] = useDraftState('dueDate', '', !editId)
+  const [pphType, setPphType] = useDraftState<string>('pphType', '', !editId)
+  const [pphRate, setPphRate] = useDraftState<string>('pphRate', '', !editId)
+  const [pphAmt, setPphAmt] = useDraftState<string>('pphAmt', '', !editId)
+  const pphEdited = useRef(false)
+  const PPH_DEFAULT: Record<string, string> = { 'PPh 22': '1.5', 'PPh 23': '2', 'PPh 4(2)': '10' }
   const [termDays, setTermDays] = useDraftState<string>('termDays', '', !editId)
   const dueTouched = useRef(false)
   const termTouched = useRef(false)
@@ -153,7 +158,7 @@ export default function PurchaseInvoiceForm() {
       setEditInv(inv)
       setPoId(inv.po_id); setSupplierId(inv.supplier_id)
       setSupplierInvoiceNumber(inv.supplier_invoice_number || ''); setSupplierInvoiceDate(inv.supplier_invoice_date || todayISO())
-      setInvoiceDate(inv.invoice_date || todayISO()); setDueDate(inv.due_date || ''); setNotes(inv.notes || '')
+      setInvoiceDate(inv.invoice_date || todayISO()); setDueDate(inv.due_date || ''); setNotes(inv.notes || ''); if (inv.pph_amount > 0) { pphEdited.current = true; setPphType(inv.pph_type || 'PPh 22'); setPphRate(inv.pph_rate != null ? String(inv.pph_rate) : ''); setPphAmt(String(inv.pph_amount)) }
     }).catch(() => showError('Gagal memuat faktur yang akan diubah'))
   }, [editId])
 
@@ -224,8 +229,14 @@ export default function PurchaseInvoiceForm() {
       dpp += base
       tax += (base * (PPN_RATES[l.ppn_code] ?? 0)) / 100
     })
-    return { dpp, tax, total: dpp + tax }
-  }, [lines])
+    const pph = pphType ? Math.max(0, Number(pphAmt) || 0) : 0
+    return { dpp, tax, pph, total: dpp + tax - pph }
+  }, [lines, pphType, pphAmt])
+  useEffect(() => {
+    if (!pphType || pphEdited.current || editId) return
+    const base = lines.reduce((a, l) => a + (Number(l.qty) || 0) * (Number(l.price) || 0), 0)
+    setPphAmt(String(Math.round((base * (Number(pphRate) || 0)) / 100)))
+  }, [lines, pphType, pphRate])
 
   const dpTotal = Object.values(dpUse).reduce((a, v) => a + (Number(v) || 0), 0)
 
@@ -260,6 +271,7 @@ export default function PurchaseInvoiceForm() {
         supplier_invoice_date: supplierInvoiceDate || null,
         invoice_date: invoiceDate,
         due_date: dueDate || null,
+        ...(pphType && totals.pph > 0 ? { pph_type: pphType, pph_rate: Number(pphRate) || undefined, pph_amount: totals.pph } : {}),
         payment_terms: termDays !== '' ? termLabel(termDays) : undefined,
         notes: notes || null,
         items: items.map((l) => ({ po_item_id: l.extra ? undefined : l.po_item_id, material_id: l.fromGrn ? (l.material_id || undefined) : undefined, product_id: l.fromGrn ? (l.product_id || undefined) : undefined, uom: l.fromGrn ? l.uom : undefined, account_id: l.extra && l.account_id ? Number(l.account_id) : undefined, quantity: Number(l.qty), unit_price: Number(l.price), ppn_code: l.ppn_code || '', description: (l.description || '').trim() || undefined })),
@@ -448,6 +460,21 @@ export default function PurchaseInvoiceForm() {
               + Tambah baris di luar PO (ongkos kirim, biaya lain)
             </button>
             <p className="text-xs text-gray-500">Qty tagih terisi dari barang yang sudah diterima dan belum ditagih. Menagih lebih dari yang diterima akan ditandai selisih saat pencocokan 3 arah.</p>
+            <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">PPh dipotong (opsional)</h3>
+              <p className="mt-1 text-xs text-gray-500">Isi kalau tagihan pemasok sudah memotong PPh (mis. PPh 22 batubara). Total tagihan = DPP + PPN - PPh. PPh dicatat sebagai hutang pajak.</p>
+              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
+                <select className="input-field" value={pphType} onChange={(e) => { pphEdited.current = false; setPphType(e.target.value); setPphRate(PPH_DEFAULT[e.target.value] || ''); if (!e.target.value) setPphAmt('') }}>
+                  <option value="">Tanpa PPh</option>
+                  {Object.keys(PPH_DEFAULT).map((k) => <option key={k} value={k}>{k}</option>)}
+                </select>
+                <div className="flex items-center gap-2">
+                  <NumberInput className="input-field text-right" value={pphRate as any} disabled={!pphType} onChange={(e: any) => { pphEdited.current = false; setPphRate(e.target.value) }} placeholder="Tarif" />
+                  <span className="text-sm text-gray-500">%</span>
+                </div>
+                <NumberInput currency className="input-field text-right" value={pphAmt as any} disabled={!pphType} onChange={(e: any) => { pphEdited.current = true; setPphAmt(e.target.value) }} placeholder="Nilai PPh" />
+              </div>
+            </div>
             {openDps.length > 0 && currency === 'IDR' && (
               <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -475,6 +502,7 @@ export default function PurchaseInvoiceForm() {
               <div className="w-80 space-y-1 text-sm">
                 <div className="flex justify-between text-gray-600 dark:text-gray-300"><span>DPP</span><span>{formatCurrencyAmount(totals.dpp, currency)}</span></div>
                 <div className="flex justify-between text-gray-600 dark:text-gray-300"><span>PPN</span><span>{formatCurrencyAmount(totals.tax, currency)}</span></div>
+                {totals.pph > 0 && <div className="flex justify-between text-gray-600 dark:text-gray-300"><span>{pphType} dipotong</span><span>- {formatCurrencyAmount(totals.pph, currency)}</span></div>}
                 <div className="flex justify-between text-lg font-semibold"><span>Total Tagihan</span><span>{formatCurrencyAmount(totals.total, currency)}</span></div>
                 {dpTotal > 0 && (
                   <>

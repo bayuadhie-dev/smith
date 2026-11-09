@@ -214,3 +214,24 @@ def test_zero_total_purchase_invoice_is_paid_automatically(client, auth_headers,
     assert r.status_code == 201, r.get_json()
     inv = Invoice.query.filter_by(grn_id=grn.id).first()
     assert inv.status == 'paid' and float(inv.balance_due) == 0
+
+
+def test_purchase_invoice_with_pph_reduces_payable_and_posts_balanced_journal(client, auth_headers, db_session, test_material):
+    from models.finance import AccountingEntry, GlobalAccountDefault, Invoice
+    from models.purchasing import GoodsReceivedNote, GRNItem, Supplier
+    main_location, _ = _setup_warehouse(db_session)
+    db_session.add(GlobalAccountDefault(transaction_key='gr_ir_clearing', account_id=_acc(db_session, '6-6000').id))
+    db_session.add(GlobalAccountDefault(transaction_key='accounts_payable', account_id=_acc(db_session, '9-1000').id)); db_session.commit()
+    sup = Supplier(code='SUP-PPH', company_name='Sup PPh', is_active=True); db_session.add(sup); db_session.commit()
+    grn = GoodsReceivedNote(grn_number='BPB-PPH-1', supplier_id=sup.id, receipt_date=date.today(), status='approved'); db_session.add(grn); db_session.commit()
+    db_session.add(GRNItem(grn_id=grn.id, material_id=test_material.id, quantity_ordered=14920, quantity_received=14920, quantity_accepted=14920, uom='KG', location_id=main_location.id)); db_session.commit()
+    r = client.post('/api/purchasing/purchase-invoices', headers=auth_headers, json={
+        'grn_id': grn.id, 'supplier_id': sup.id, 'supplier_invoice_number': 'F-PPH', 'invoice_date': '2026-11-09',
+        'pph_type': 'PPh 22', 'pph_rate': 1.5, 'pph_amount': 384936,
+        'items': [{'material_id': test_material.id, 'quantity': 14920, 'unit_price': 1720, 'uom': 'KG', 'description': 'batu bara', 'ppn_code': 'Y'}]})
+    assert r.status_code == 201, r.get_json()
+    inv = Invoice.query.filter_by(grn_id=grn.id).first()
+    assert round(float(inv.total_amount), 2) == 28100328.0 and float(inv.pph_amount) == 384936 and inv.pph_type == 'PPh 22'
+    entries = AccountingEntry.query.filter_by(reference_type='purchase_invoice', reference_id=inv.id).all()
+    assert round(sum(float(e.debit_amount or 0) for e in entries), 2) == round(sum(float(e.credit_amount or 0) for e in entries), 2) == 28485264.0
+    assert any('PPh 22' in (e.description or '') and float(e.credit_amount) == 384936 for e in entries)

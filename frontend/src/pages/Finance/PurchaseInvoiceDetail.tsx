@@ -33,6 +33,8 @@ interface PurchaseInvoiceDetailData {
   currency: string;
   subtotal: number;
   tax_amount: number;
+  pph_type?: string | null;
+  pph_amount?: number;
   discount_amount: number;
   shipping_amount: number;
   total_amount: number;
@@ -162,6 +164,14 @@ const PurchaseInvoiceDetail: React.FC = () => {
               {data.currency === 'IDR' ? 'Rp' : data.currency} {data.total_amount.toLocaleString('id-ID')}
             </div>
           </div>
+          {(data.pph_amount || 0) > 0 && (
+            <div>
+              <div className="text-gray-500 dark:text-gray-400">{data.pph_type || 'PPh'} dipotong</div>
+              <div className="font-medium text-gray-900 dark:text-white">
+                {data.currency === 'IDR' ? 'Rp' : data.currency} {(data.pph_amount || 0).toLocaleString('id-ID')}
+              </div>
+            </div>
+          )}
           <div>
             <div className="text-gray-500 dark:text-gray-400">Sisa Tagihan</div>
             <div className="font-medium text-gray-900 dark:text-white">

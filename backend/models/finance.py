@@ -31,6 +31,9 @@ class Invoice(db.Model):
     currency = db.Column(db.String(10), nullable=False, default='IDR')
     exchange_rate = db.Column(db.Numeric(15, 6), default=1)
     subtotal = db.Column(db.Numeric(15, 2), default=0)
+    pph_type = db.Column(db.String(30), nullable=True)   # PPh yang dipotong saat membayar pemasok (mis. 'PPh 22')
+    pph_rate = db.Column(db.Numeric(6, 3), nullable=True)
+    pph_amount = db.Column(db.Numeric(15, 2), default=0)
     tax_amount = db.Column(db.Numeric(15, 2), default=0)
     discount_amount = db.Column(db.Numeric(15, 2), default=0)
     shipping_amount = db.Column(db.Numeric(15, 2), default=0)  # purchase: freight-in, posted to a separate payables account per Accurate's pattern - not merged into item cost
