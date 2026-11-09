@@ -82,6 +82,8 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   const editAllocRef = useRef<{ invoice_id: number; invoice_number: string | null; invoice_total_amount: number | null; amount: number; discount?: number }[] | null>(null);
   const [paymentNumber, setPaymentNumber] = useDraftState('paymentNumber', '');
   const [nextNumber, setNextNumber] = useState('');
+  const numberTouched = useRef(false);
+  useEffect(() => { if (!editId && nextNumber && !numberTouched.current && !paymentNumber) setPaymentNumber(nextNumber); }, [nextNumber]);
   const [alloc, setAlloc] = useDraftState<Record<number, string>>('alloc', {});
   const [lines, setLines] = useDraftState<{ account_id: string; amount: string; description: string; party_type?: string; party_id?: string }[]>('lines', [
     { account_id: '', amount: '', description: '' },
@@ -360,6 +362,10 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     }
     const cleanAdj = adj.filter((l) => l.account_id || Number(l.amount))
       .map((l) => ({ account_id: Number(l.account_id), amount: -Number(l.amount), description: l.description || undefined }));
+    for (const a of openAdv) {
+      const used = adj.filter((x) => Number(x.account_id) === a.account_id).reduce((s2, x) => s2 + (Number(x.amount) || 0), 0);
+      if (used > a.outstanding + 0.01) { fail(`Pemakaian uang muka ${a.account_code} (${rp(used)}) melebihi sisanya (${rp(a.outstanding)}).`); return; }
+    }
     if (!isStandalone && cleanAdj.some((l) => !l.account_id || !l.amount)) {
       fail('Setiap baris selisih harus punya akun dan nilai tidak sama dengan 0.');
       return;
@@ -376,7 +382,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
     setSubmitting(true);
     try {
       const res = await axiosInstance.post('/api/finance/payments', {
-        payment_number: paymentNumber.trim() || undefined,
+        payment_number: (paymentNumber.trim() && !(paymentNumber.trim() === nextNumber && !numberTouched.current)) ? paymentNumber.trim() : undefined,
         replace_payment_id: editId ? Number(editId) : undefined,
         payment_date: formData.payment_date,
         payment_type: paymentType === 'supplier' ? 'payment' : 'receipt',
@@ -456,9 +462,9 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                   className={inputCls}
                   placeholder={editId ? 'Nomor lama dipertahankan' : (nextNumber ? `${nextNumber} (otomatis)` : 'Otomatis')}
                   value={paymentNumber}
-                  onChange={(e) => setPaymentNumber(e.target.value)}
+                  onChange={(e) => { numberTouched.current = true; setPaymentNumber(e.target.value); }}
                 />
-                <p className="mt-1 text-xs text-gray-500">Kosongkan untuk nomor otomatis.</p>
+                <p className="mt-1 text-xs text-gray-500">Terisi nomor berikutnya secara otomatis; bisa diganti manual.</p>
               </div>
               {isStandalone && (
                 <div className="md:col-span-2">
@@ -611,6 +617,9 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                       />
                     </div>
                     <input type="text" className={`${inputCls} col-span-7 md:col-span-4`} placeholder="Keterangan (opsional)" value={l.description} onChange={(e) => updateAdj(idx, { description: e.target.value })} />
+                    {openAdv.some((a) => a.account_id === Number(l.account_id)) && (
+                      <p className="col-span-12 -mt-1 text-xs text-emerald-700 dark:text-emerald-400">Pemakaian uang muka {partyWord.toLowerCase()}: sisa uang muka akan berkurang otomatis dan tercatat di Rekap Uang Muka Lainnya.</p>
+                    )}
                     <NumberInput currency className={`${inputCls} col-span-4 text-right md:col-span-2`} placeholder="Nilai" value={l.amount} onChange={(e) => updateAdj(idx, { amount: e.target.value })} />
                     <button type="button" className="col-span-1 text-gray-400 hover:text-red-600" onClick={() => setAdj((a) => a.filter((_, i) => i !== idx))} title="Hapus baris">
                       <XMarkIcon className="mx-auto h-5 w-5" />
