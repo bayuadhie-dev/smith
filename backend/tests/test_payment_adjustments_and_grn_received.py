@@ -149,3 +149,24 @@ def test_edit_purchase_invoice_without_po_replaces_and_keeps_number(client, auth
     assert r.status_code == 201, r.get_json()
     new = Invoice.query.filter_by(invoice_number=number).first()
     assert float(new.total_amount) == 1400 and new.grn_id == grn.id and new.id != old_id
+
+
+def test_no_auto_grn_when_service_line_already_received_by_manual_grn(client, auth_headers, db_session):
+    from models.finance import GlobalAccountDefault
+    from models.product import Material
+    from models.purchasing import GoodsReceivedNote, GRNItem, PurchaseOrder, PurchaseOrderItem, Supplier
+    db_session.add(GlobalAccountDefault(transaction_key='accounts_payable', account_id=_acc(db_session, '9-1000').id)); db_session.commit()
+    m = Material(code='JASA-1', name='Jasa Kirim', material_type='non_inventory', category='Jasa', primary_uom='UNIT', akun_beban_id=_acc(db_session, '6-6000').id, is_active=True)
+    db_session.add(m); sup = Supplier(code='SUP-AG', company_name='Sup AG', is_active=True); db_session.add(sup); db_session.commit()
+    po = PurchaseOrder(po_number='PO-AG-1', supplier_id=sup.id, order_date=date.today(), status='approved', total_amount=100)
+    db_session.add(po); db_session.commit()
+    poi = PurchaseOrderItem(po_id=po.id, line_number=1, material_id=m.id, quantity=1, uom='UNIT', unit_price=100, total_price=100)
+    db_session.add(poi); db_session.commit()
+    g = GoodsReceivedNote(grn_number='BPB-AG-1', po_id=po.id, supplier_id=sup.id, receipt_date=date.today(), status='approved')
+    db_session.add(g); db_session.commit()
+    db_session.add(GRNItem(grn_id=g.id, po_item_id=poi.id, material_id=m.id, quantity_ordered=1, quantity_received=1, quantity_accepted=1, uom='UNIT')); db_session.commit()
+    r = client.post('/api/purchasing/purchase-invoices', headers=auth_headers, json={
+        'po_id': po.id, 'supplier_id': sup.id, 'supplier_invoice_number': 'F-AG', 'invoice_date': '2026-11-09',
+        'items': [{'po_item_id': poi.id, 'quantity': 1, 'unit_price': 100}]})
+    assert r.status_code == 201, r.get_json()
+    assert GoodsReceivedNote.query.filter_by(po_id=po.id).count() == 1

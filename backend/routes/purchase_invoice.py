@@ -407,7 +407,13 @@ def _auto_grn_for_non_inventory(invoice, po, items_data, user_id, receipt_date):
     for d in items_data:
         poi = db.session.get(PurchaseOrderItem, d.get('po_item_id')) if d.get('po_item_id') else None
         if poi and poi.material_id and is_non_inventory_material(poi.material_id) and float(d.get('quantity') or 0) > 0:
-            rows.append((poi, float(d['quantity'])))
+            # Hanya selisih yang belum tercatat diterima: kalau GRN manual sudah mencatat penerimaan jasa/biaya ini, jangan dobel.
+            from models.purchasing import GRNItem as _GI, GoodsReceivedNote as _G
+            got = float(db.session.query(db.func.coalesce(db.func.sum(_GI.quantity_accepted), 0))
+                        .join(_G, _G.id == _GI.grn_id).filter(_GI.po_item_id == poi.id, _G.status != 'rejected').scalar() or 0)
+            gap = float(poi.quantity_invoiced or 0) - got
+            if gap > 0.0005:
+                rows.append((poi, min(float(d['quantity']), gap)))
     if not rows:
         return None
     grn = GoodsReceivedNote(
