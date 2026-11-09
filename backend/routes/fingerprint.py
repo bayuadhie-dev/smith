@@ -48,6 +48,18 @@ def _mapped_by_device_id():
     return {e.fingerprint_id: e for e in Employee.query.filter(Employee.fingerprint_id.isnot(None)).all()}
 
 
+@fingerprint_bp.route('/users/options', methods=['GET'])
+@jwt_required()
+@require_permission('hr.view')
+def user_options():
+    """Daftar pengguna mesin untuk dropdown di form karyawan: id, nama, dan apakah sudah dipakai karyawan lain."""
+    mapped = _mapped_by_device_id()
+    out = [{'device_user_id': u.device_user_id, 'name': u.name, 'last_log_at': u.last_log_at.isoformat() if u.last_log_at else None,
+            'used_by': mapped[u.device_user_id].full_name if u.device_user_id in mapped else None}
+           for u in FingerprintUser.query.order_by(FingerprintUser.name).all()]
+    return jsonify({'users': out}), 200
+
+
 @fingerprint_bp.route('/users', methods=['GET'])
 @jwt_required()
 @require_permission('hr.view')

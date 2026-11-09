@@ -136,6 +136,7 @@ def get_employees():
             'employees': [{
                 'id': e.id,
                 'employee_number': e.employee_number,
+                'fingerprint_id': e.fingerprint_id,
                 'full_name': e.full_name,
                 'department': e.department.name if e.department else None,
                 'department_id': e.department_id,
@@ -241,8 +242,9 @@ def create_employee():
             employee_number=data['employee_number'],
             nik=data.get('nik'),
             first_name=data['first_name'],
-            last_name=data['last_name'],
-            full_name=f"{data['first_name']} {data['last_name']}",
+            last_name=data.get('last_name') or '',
+            full_name=f"{data['first_name']} {data.get('last_name') or ''}".strip(),
+            fingerprint_id=(str(data.get('fingerprint_id')).strip() or None) if data.get('fingerprint_id') else None,
             email=data.get('email'),
             phone=data.get('phone'),
             mobile=data.get('mobile'),
@@ -270,6 +272,8 @@ def create_employee():
             emergency_contact_phone=data.get('emergency_contact_phone')
         )
         
+        if employee.fingerprint_id and Employee.query.filter_by(fingerprint_id=employee.fingerprint_id).first():
+            return jsonify({'error': f'ID fingerprint {employee.fingerprint_id} sudah dipakai karyawan lain'}), 400
         db.session.add(employee)
         db.session.commit()
         

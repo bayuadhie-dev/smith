@@ -52,6 +52,7 @@ interface EmployeeFormData {
   emergency_contact_name: string
   emergency_contact_phone: string
   emergency_contact_relation: string
+  fingerprint_id: string
 }
 
 export default function EmployeeForm() {
@@ -97,6 +98,7 @@ export default function EmployeeForm() {
       axiosInstance.get(`/api/hr/employees/${id}`)
         .then(res => {
           const emp = res.data.employee
+          setCurrentName(emp.full_name || '')
           reset({
             employee_number: emp.employee_number || '',
             nik: emp.nik || '',
@@ -128,7 +130,8 @@ export default function EmployeeForm() {
             transport_allowance_amount: emp.transport_allowance_amount?.toString() || '0',
             emergency_contact_name: emp.emergency_contact_name || '',
             emergency_contact_phone: emp.emergency_contact_phone || '',
-            emergency_contact_relation: emp.emergency_contact_relation || ''
+            emergency_contact_relation: emp.emergency_contact_relation || '',
+            fingerprint_id: emp.fingerprint_id || ''
           })
         })
         .catch(() => {
@@ -138,6 +141,12 @@ export default function EmployeeForm() {
         .finally(() => setLoadingData(false))
     }
   }, [id, isEdit, reset, navigate])
+
+  const [deviceUsers, setDeviceUsers] = useState<{ device_user_id: string; name: string; used_by: string | null }[]>([])
+  const [currentName, setCurrentName] = useState('')
+  useEffect(() => {
+    axiosInstance.get('/api/hr/fingerprint/users/options').then((r) => setDeviceUsers(r.data.users || [])).catch(() => setDeviceUsers([]))
+  }, [])
 
   const employmentTypes = [
     { value: 'full_time', label: 'Karyawan Tetap' },
@@ -236,6 +245,18 @@ export default function EmployeeForm() {
           <div className="p-6 space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div>
+                <label className={labelClass}>ID Fingerprint</label>
+                <select {...register('fingerprint_id')} className={inputClass}>
+                  <option value="">Belum dihubungkan</option>
+                  {deviceUsers.map((u) => (
+                    <option key={u.device_user_id} value={u.device_user_id} disabled={!!u.used_by && u.device_user_id !== watch('fingerprint_id') && u.used_by !== currentName}>
+                      {u.device_user_id} - {u.name}{u.used_by ? ` (dipakai ${u.used_by})` : ''}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">Pilih nama orang ini di mesin absensi supaya kehadirannya terbaca.</p>
+              </div>
+              <div>
                 <label className={labelClass}>NIK</label>
                 <input
                   type="text"
@@ -278,10 +299,10 @@ export default function EmployeeForm() {
             </div>
 
             <div>
-              <label className={labelClass}>Nama Belakang <span className="text-red-500">*</span></label>
+              <label className={labelClass}>Nama Belakang</label>
               <input
                 type="text"
-                {...register('last_name', { required: 'Nama belakang wajib diisi' })}
+                {...register('last_name')}
                 className={`${inputClass} ${errors.last_name ? 'border-red-300 bg-red-50' : ''}`}
                 placeholder="Nama belakang"
               />

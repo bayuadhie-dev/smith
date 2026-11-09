@@ -57,6 +57,7 @@ def get_employee_detail(employee_id):
                 'outsourcing_vendor': employee.outsourcing_vendor.name if employee.outsourcing_vendor else None,
                 'hire_date': employee.hire_date.isoformat() if employee.hire_date else None,
                 'termination_date': employee.termination_date.isoformat() if employee.termination_date else None,
+                'fingerprint_id': employee.fingerprint_id,
                 'status': employee.status,
                 'salary': float(employee.salary) if employee.salary else None,
                 'ptkp_status': employee.ptkp_status or 'TK/0',
@@ -100,7 +101,14 @@ def update_employee(employee_id):
         if 'last_name' in data:
             employee.last_name = data['last_name']
         if 'first_name' in data or 'last_name' in data:
-            employee.full_name = f"{employee.first_name} {employee.last_name}"
+            employee.full_name = f"{employee.first_name} {employee.last_name or ''}".strip()
+        if 'fingerprint_id' in data:
+            fid = str(data['fingerprint_id']).strip() if data['fingerprint_id'] else ''
+            if fid:
+                other = Employee.query.filter(Employee.fingerprint_id == fid, Employee.id != employee_id).first()
+                if other:
+                    return jsonify({'error': f'ID fingerprint {fid} sudah dipakai {other.full_name}'}), 400
+            employee.fingerprint_id = fid or None
         if 'email' in data:
             employee.email = data['email']
         if 'phone' in data:
@@ -156,6 +164,14 @@ def update_employee(employee_id):
         
         employee.updated_at = get_local_now()
         db.session.commit()
+        try:
+            import os, redis
+            r = redis.from_url(os.getenv('REDIS_URL', 'redis://localhost:6379/0'))
+            keys = r.keys('hr_employees_*')
+            if keys:
+                r.delete(*keys)
+        except Exception:
+            pass
         
         return jsonify(success_response('api.success'))
     except Exception as e:

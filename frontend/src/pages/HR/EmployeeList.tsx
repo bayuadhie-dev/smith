@@ -123,6 +123,9 @@ export default function EmployeeList() {
             </p>
           </div>
         </div>
+        <Link to="/app/hr/fingerprint-mapping" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200">
+          Hubungkan ID mesin
+        </Link>
         <Link to="/app/hr/employees/new" className="btn-primary inline-flex items-center gap-2">
           <PlusIcon className="h-5 w-5" />
           Tambah Karyawan
@@ -232,6 +235,7 @@ export default function EmployeeList() {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">NIK</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nama Lengkap</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">ID Mesin</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Departemen</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Jabatan</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tipe</th>
@@ -257,6 +261,9 @@ export default function EmployeeList() {
                           <div className="text-sm text-gray-500 dark:text-gray-400">{employee.email || '-'}</div>
                         </div>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">
+                      {employee.fingerprint_id ? <span className="text-gray-900 dark:text-white">{employee.fingerprint_id}</span> : <span className="text-amber-600">belum</span>}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                       {employee.department || '-'}
