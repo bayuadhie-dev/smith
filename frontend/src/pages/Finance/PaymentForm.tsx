@@ -89,7 +89,8 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
 
   const [adj, setAdj] = useDraftState<{ account_id: string; amount: string; description: string }[]>('adj', []);
   const updateAdj = (idx: number, patch: Partial<{ account_id: string; amount: string; description: string }>) => setAdj((a) => a.map((x, i) => (i === idx ? { ...x, ...patch } : x)));
-  const adjTotal = adj.reduce((s, l) => s + (Number(l.amount) || 0), 0);
+  // Baris selisih diisi sebagai potongan (positif) yang melunasi faktur tanpa kas; ke server dikirim berlawanan tanda.
+  const adjTotal = -adj.reduce((s, l) => s + (Number(l.amount) || 0), 0);
 
   const [formData, setFormData] = useDraftState('formData', {
     party_id: '',
@@ -105,7 +106,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   // Faktur dilunasi = Dibayar + Diskon.
   const discOf: Record<number, number> = (() => {
     const out: Record<number, number> = {};
-    let pool = -adj.reduce((s, l) => s + Math.min(0, Number(l.amount) || 0), 0);
+    let pool = adj.reduce((s, l) => s + Math.max(0, Number(l.amount) || 0), 0);
     for (const inv of invoices) {
       if (!(inv.id in alloc) || pool <= 0) continue;
       const give = Math.max(0, Math.min(inv.balance_due - (Number(alloc[inv.id]) || 0), pool));
@@ -225,7 +226,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
         bank_account_id: d.bank_account_id ? String(d.bank_account_id) : '',
       });
       if (d.lines?.length && d.allocations?.length) {
-        setAdj(d.lines.map((l: any) => ({ account_id: String(l.account_id), amount: String(l.amount), description: l.description || '' })));
+        setAdj(d.lines.map((l: any) => ({ account_id: String(l.account_id), amount: String(-Number(l.amount)), description: l.description || '' })));
       } else if (d.lines?.length) {
         setLines(d.lines.map((l: any) => ({ account_id: String(l.account_id), amount: String(l.amount), description: l.description || '', party_type: l.party_type || '', party_id: l.party_id ? String(l.party_id) : '' })));
       }
@@ -319,7 +320,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
         });
     if (!isStandalone) {
       adj.filter((l) => Number(l.amount) !== 0).forEach((l) => {
-        const n = Number(l.amount);
+        const n = -Number(l.amount);
         const onDebit = isReceiptKind ? n < 0 : n > 0;
         detail.push({ account: accName(l.account_id), debit: onDebit ? Math.abs(n) : 0, credit: onDebit ? 0 : Math.abs(n) });
       });
@@ -347,7 +348,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
       return;
     }
     const cleanAdj = adj.filter((l) => l.account_id || Number(l.amount))
-      .map((l) => ({ account_id: Number(l.account_id), amount: Number(l.amount), description: l.description || undefined }));
+      .map((l) => ({ account_id: Number(l.account_id), amount: -Number(l.amount), description: l.description || undefined }));
     if (!isStandalone && cleanAdj.some((l) => !l.account_id || !l.amount)) {
       fail('Setiap baris selisih harus punya akun dan nilai tidak sama dengan 0.');
       return;
@@ -565,11 +566,10 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
           )}
 
           {!isStandalone && formData.party_id && (
-            <Panel title="Selisih dan diskon (opsional)">
+            <Panel title="Informasi diskon / potongan (opsional)">
               <div className="space-y-2 p-4">
                 <p className="text-xs text-gray-500">
-                  Dipakai kalau uang yang {isReceiptKind ? 'diterima' : 'dibayarkan'} tidak sama dengan total faktur, misalnya pembulatan, selisih pembayaran, atau uang muka.
-                  Nilai positif menambah uang {isReceiptKind ? 'masuk' : 'keluar'} di atas faktur, nilai negatif mengurangi (diskon).
+                  Isi nilai potongan (positif) yang ikut melunasi faktur tanpa uang keluar dari kas/bank, misalnya diskon, pembulatan, atau uang muka. Kolom Dibayar di faktur adalah uang yang benar-benar keluar dari kas/bank; kolom Diskon adalah total potongan di sini.
                 </p>
                 {adj.map((l, idx) => (
                   <div key={idx} className="grid grid-cols-12 gap-2">
@@ -676,7 +676,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                 <>
                   <div className="flex justify-between"><dt className="text-gray-500 dark:text-gray-400">Faktur dipilih</dt><dd className="font-medium">{checkedCount}</dd></div>
                   <div className="flex justify-between"><dt className="text-gray-500 dark:text-gray-400">Faktur dilunasi</dt><dd className="font-medium tabular-nums">{rp(allocTotal)}</dd></div>
-                  {adjTotal !== 0 && <div className="flex justify-between"><dt className="text-gray-500 dark:text-gray-400">Selisih</dt><dd className="font-medium tabular-nums">{rp(adjTotal)}</dd></div>}
+                  {adjTotal !== 0 && <div className="flex justify-between"><dt className="text-gray-500 dark:text-gray-400">Total diskon/potongan</dt><dd className="font-medium tabular-nums">{rp(-adjTotal)}</dd></div>}
                 </>
               )}
               <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Tanggal</dt><dd className="font-medium">{formData.payment_date || '-'}</dd></div>
