@@ -312,3 +312,15 @@ def test_grn_display_qty_uses_roll_even_for_old_grn_without_entered_uom(client, 
     db_session.add(GRNItem(grn_id=g.id, material_id=test_material.id, quantity_ordered=1281690, quantity_received=1281690, quantity_accepted=1281690, uom='PCS')); db_session.commit()
     it = client.get(f'/api/purchasing/grn/{g.id}', headers=auth_headers).get_json()['items'][0]
     assert it['display_qty'] == 94 and it['display_uom'] == 'ROL' and it['display_factor'] == 13635
+
+
+def test_supplier_payment_uses_pp_numbering_while_cash_keeps_pay(client, auth_headers, db_session):
+    import re
+    bank = _bank(db_session); exp = _acc(db_session, '9-1000')
+    _, inv = _foreign_ap(db_session, currency='IDR', rate=1, amount=1000)
+    assert re.fullmatch(r'PP/\d{2}/\d{2}/\d{3}', client.get('/api/finance/payments/next-number?kind=ap', headers=auth_headers).get_json()['next_number'])
+    r = _pay(client, auth_headers, bank, inv, 1000)
+    assert r.status_code == 201 and re.fullmatch(r'PP/\d{2}/\d{2}/\d{3}', r.get_json()['payment_number']), r.get_json()
+    r2 = client.post('/api/finance/payments', headers=auth_headers, json={'payment_date': '2026-10-31T10:00:00', 'payment_type': 'payment',
+        'payment_method': 'bank_transfer', 'bank_account_id': bank.id, 'lines': [{'account_id': exp.id, 'amount': 5}]})
+    assert r2.get_json()['payment_number'].startswith('PAY-')

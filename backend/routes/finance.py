@@ -766,6 +766,8 @@ def get_payments():
 @require_permission('finance.view')
 def payment_next_number():
     from utils.helpers import peek_number
+    if request.args.get('kind') == 'ap':   # Pembayaran Pembelian (utang): PP/26/11/001, terpisah dari Kas/Bank (PAY-)
+        return jsonify({'next_number': peek_number('PP', Payment, 'payment_number', style='slashed')}), 200
     prefix = 'RCP' if request.args.get('type') == 'receipt' else 'PAY'
     return jsonify({'next_number': peek_number(prefix, Payment, 'payment_number')}), 200
 
@@ -1042,7 +1044,10 @@ def create_payment_core(data, user_id, commit=True):
                 db.session.refresh(inv)
 
         # RCP- for Penerimaan, PAY- for Pembayaran (separate number series)
-        payment_number = manual_number or generate_number('RCP' if payment_type == 'receipt' else 'PAY', Payment, 'payment_number')
+        if not manual_number and invoices and payment_type == 'payment':
+            payment_number = generate_number('PP', Payment, 'payment_number', style='slashed')   # Pembayaran Pembelian (utang)
+        else:
+            payment_number = manual_number or generate_number('RCP' if payment_type == 'receipt' else 'PAY', Payment, 'payment_number')
 
         bank_acc = db.session.get(Account, data.get('bank_account_id')) if data.get('bank_account_id') else None
         bank_ccy = ((bank_acc.currency if bank_acc else None) or 'IDR').upper()

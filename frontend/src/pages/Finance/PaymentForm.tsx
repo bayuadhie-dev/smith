@@ -229,7 +229,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   useEffect(() => {
     if (editId) return;
     const t = mode === 'ar' || (mode === 'kas' && cashDirection === 'in') ? 'receipt' : 'payment';
-    axiosInstance.get(`/api/finance/payments/next-number?type=${t}`)
+    axiosInstance.get(`/api/finance/payments/next-number?type=${t}${mode === 'ap' ? '&kind=ap' : ''}`)
       .then((res) => setNextNumber(res.data.next_number || ''))
       .catch(() => setNextNumber(''));
   }, [mode, cashDirection, editId]);
