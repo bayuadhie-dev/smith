@@ -98,7 +98,7 @@ def test_purchase_invoice_import_links_po_lines_and_posts(client, auth_headers, 
 
     done = _post(client, auth_headers, 'purchase_invoice', _xlsx(PURCH, rows), True)
     created = [t['created'] for t in done['transactions'] if t['created']]
-    assert created and created[0].startswith('PI-')
+    assert created and created[0].startswith('PI')
     inv = Invoice.query.filter_by(invoice_number=created[0]).first()
     assert inv.supplier_invoice_number == 'SUP-1' and inv.purchase_order_id == po.id and float(inv.total_amount) == 200000
     n, deb, cred = _journal_totals()

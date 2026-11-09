@@ -59,7 +59,8 @@ def generate_number(prefix, model=None, field_name='number', style='compact'):
     # constraint on the very first insert.
     if counter.last_seq == 0:
         field = getattr(model, field_name)
-        like_pattern = (f"{prefix}-{year[2:]}/{month}/%" if style == 'slash' else
+        like_pattern = (f"{prefix}/{year[2:]}/{month}/%" if style == 'slashed' else
+                        f"{prefix}-{year[2:]}/{month}/%" if style == 'slash' else
                         f"{prefix}-{year}-{month}-%" if style == 'dashed' else f"{prefix}-{period}-%")
         existing_numbers = db.session.query(field).filter(field.like(like_pattern)).all()
         for (value,) in existing_numbers:
@@ -74,6 +75,8 @@ def generate_number(prefix, model=None, field_name='number', style='compact'):
     new_seq = counter.last_seq
     db.session.flush()
 
+    if style == 'slashed':
+        return f"{prefix}/{year[2:]}/{month}/{new_seq:03d}"
     if style == 'slash':
         return f"{prefix}-{year[2:]}/{month}/{new_seq:03d}"
     if style == 'dashed':
@@ -91,13 +94,16 @@ def peek_number(prefix, model, field_name, style='compact'):
     last = counter.last_seq if counter else 0
     if last == 0:
         field = getattr(model, field_name)
-        pat = (f"{prefix}-{period[2:4]}/{period[4:]}/%" if style == 'slash' else
+        pat = (f"{prefix}/{period[2:4]}/{period[4:]}/%" if style == 'slashed' else
+               f"{prefix}-{period[2:4]}/{period[4:]}/%" if style == 'slash' else
                f"{prefix}-{period[:4]}-{period[4:]}-%" if style == 'dashed' else f"{prefix}-{period}-%")
         for (value,) in db.session.query(field).filter(field.like(pat)).all():
             try:
                 last = max(last, int(re.split(r'[-/]', value)[-1]))
             except (ValueError, AttributeError):
                 continue
+    if style == 'slashed':
+        return f"{prefix}/{period[2:4]}/{period[4:]}/{last + 1:03d}"
     if style == 'slash':
         return f"{prefix}-{period[2:4]}/{period[4:]}/{last + 1:03d}"
     if style == 'dashed':

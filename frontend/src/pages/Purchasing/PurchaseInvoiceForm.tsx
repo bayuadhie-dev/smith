@@ -158,7 +158,7 @@ export default function PurchaseInvoiceForm() {
       setEditInv(inv)
       setPoId(inv.po_id); setSupplierId(inv.supplier_id)
       setSupplierInvoiceNumber(inv.supplier_invoice_number || ''); setSupplierInvoiceDate(inv.supplier_invoice_date || todayISO())
-      setInvoiceDate(inv.invoice_date || todayISO()); setDueDate(inv.due_date || ''); setNotes(inv.notes || ''); if (inv.pph_amount > 0) { pphEdited.current = true; setPphType(inv.pph_type || 'PPh 22'); setPphRate(inv.pph_rate != null ? String(inv.pph_rate) : ''); setPphAmt(String(inv.pph_amount)) }
+      setInvoiceDate(inv.invoice_date || todayISO()); setDueDate(inv.due_date || ''); setNotes(inv.notes || ''); if (inv.payment_terms) { const m = /net\s*(\d+)/i.exec(inv.payment_terms); const d = /c\.?o\.?d/i.test(inv.payment_terms) ? '0' : (m ? m[1] : ''); if (d !== '') { termTouched.current = true; dueTouched.current = true; setTermDays(d) } } if (inv.pph_amount > 0) { pphEdited.current = true; setPphType(inv.pph_type || 'PPh 22'); setPphRate(inv.pph_rate != null ? String(inv.pph_rate) : ''); setPphAmt(String(inv.pph_amount)) }
     }).catch(() => showError('Gagal memuat faktur yang akan diubah'))
   }, [editId])
 
@@ -262,7 +262,7 @@ export default function PurchaseInvoiceForm() {
     setSaving(true)
     try {
       const res = await axiosInstance.post('/api/purchasing/purchase-invoices', {
-        invoice_number: !editId && numberTouched.current && invNumber.trim() ? invNumber.trim() : undefined,
+        invoice_number: numberTouched.current && invNumber.trim() && invNumber.trim() !== (editInv?.invoice_number || '') ? invNumber.trim() : undefined,
         po_id: poId || undefined,
         grn_id: !poId ? (grnId || editInv?.grn_id || undefined) : undefined,
         replace_invoice_id: editId || undefined,
@@ -346,13 +346,9 @@ export default function PurchaseInvoiceForm() {
           )}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Transaksi (PI)</label>
-            {editId ? (
-              <div className="input-field bg-gray-50 dark:bg-gray-900">{editInv?.invoice_number || '-'}</div>
-            ) : (
-              <input className="input-field" value={numberTouched.current ? invNumber : (nextNumber || '')} placeholder="Otomatis"
-                onChange={(e) => { numberTouched.current = true; setInvNumber(e.target.value) }} />
-            )}
-            <p className="mt-1 text-xs text-gray-500">{editId ? 'Nomor lama dipertahankan.' : 'Terisi nomor berikutnya secara otomatis; bisa diganti manual.'}</p>
+            <input className="input-field" value={editId ? (numberTouched.current ? invNumber : (editInv?.invoice_number || '')) : (numberTouched.current ? invNumber : (nextNumber || ''))} placeholder="Otomatis"
+              onChange={(e) => { numberTouched.current = true; setInvNumber(e.target.value) }} />
+            <p className="mt-1 text-xs text-gray-500">{editId ? 'Nomor lama dipertahankan kecuali Anda ganti.' : 'Terisi nomor berikutnya secara otomatis; bisa diganti manual.'}</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Faktur Pemasok *</label>

@@ -117,7 +117,7 @@ def purchase_invoice_next_number():
     from models.finance import NumberSequence
     from utils.helpers import peek_number
     cfg = NumberSequence.query.filter_by(sequence_key='purchase_invoice').first()
-    return jsonify({'next_number': peek_number(cfg.prefix if cfg else 'PI', Invoice, 'invoice_number', style='dashed')}), 200
+    return jsonify({'next_number': peek_number(cfg.prefix if cfg else 'PI', Invoice, 'invoice_number', style='slashed')}), 200
 
 
 @purchase_invoice_bp.route('/purchase-invoices', methods=['GET'])
@@ -245,6 +245,7 @@ def get_purchase_invoice(id):
             'po_id': invoice.purchase_order_id,
             'po_number': invoice.purchase_order.po_number if invoice.purchase_order else None,
             'grn_id': invoice.grn_id,
+            'payment_terms': invoice.payment_terms,
             'supplier_id': invoice.supplier_id,
             'supplier_name': invoice.supplier.company_name if invoice.supplier else None,
             'invoice_date': invoice.invoice_date.isoformat() if invoice.invoice_date else None,
@@ -512,6 +513,12 @@ def create_purchase_invoice_core(data, user_id, commit=True):
         n = Invoice.query.filter(Invoice.invoice_number.like(f'{invoice_number}-V%')).count() + 1
         old_invoice.invoice_number = f'{invoice_number}-V{n}'
         db.session.flush()
+        # Nomor faktur boleh diganti saat Ubah (mis. mengikuti format baru); harus unik.
+        new_no = (data.get('invoice_number') or '').strip()
+        if new_no and new_no != invoice_number:
+            if Invoice.query.filter(Invoice.invoice_number == new_no).first():
+                raise InvoiceInputError(f'Nomor faktur {new_no} sudah dipakai')
+            invoice_number = new_no
     else:
         manual = (data.get('invoice_number') or '').strip()
         if manual:
@@ -519,7 +526,7 @@ def create_purchase_invoice_core(data, user_id, commit=True):
                 raise InvoiceInputError(f'Nomor faktur {manual} sudah dipakai')
             invoice_number = manual
         else:
-            invoice_number = generate_number_v2('purchase_invoice', 'PI', Invoice, 'invoice_number', style='dashed')
+            invoice_number = generate_number_v2('purchase_invoice', 'PI', Invoice, 'invoice_number', style='slashed')
 
     # Multi-currency (2026-10-19, po_multicurrency_plan.md): currency and
     # exchange_rate come strictly from the PO (single source of truth).

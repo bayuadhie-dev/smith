@@ -115,7 +115,7 @@ def test_purchase_invoice_from_grn_without_po(client, auth_headers, db_session, 
 
 def test_purchase_invoice_next_number_and_manual_number(client, auth_headers, db_session):
     r = client.get('/api/purchasing/purchase-invoices/next-number', headers=auth_headers)
-    assert r.status_code == 200 and r.get_json()['next_number'].startswith('PI-')
+    assert r.status_code == 200 and r.get_json()['next_number'].startswith('PI')
 
 
 def test_grn_number_can_be_corrected_and_stays_unique(client, auth_headers, db_session):
@@ -246,3 +246,24 @@ def test_invoice_summary_list_hides_cancelled_unless_filtered(client, auth_heade
     assert 'PI-HIDE-1' in nums and 'PI-HIDE-1-V1' not in nums
     nums2 = [i['invoice_number'] for i in client.get('/api/purchasing/purchase-invoices/summary?status=cancelled', headers=auth_headers).get_json()['invoices']]
     assert 'PI-HIDE-1-V1' in nums2
+
+
+def test_purchase_invoice_number_format_and_rename_on_edit(client, auth_headers, db_session, test_material):
+    from models.finance import GlobalAccountDefault, Invoice
+    from models.purchasing import GoodsReceivedNote, GRNItem, Supplier
+    db_session.add(GlobalAccountDefault(transaction_key='gr_ir_clearing', account_id=_acc(db_session, '6-6000').id))
+    db_session.add(GlobalAccountDefault(transaction_key='accounts_payable', account_id=_acc(db_session, '9-1000').id)); db_session.commit()
+    nxt = client.get('/api/purchasing/purchase-invoices/next-number', headers=auth_headers).get_json()['next_number']
+    import re
+    assert re.fullmatch(r'PI/\d{2}/\d{2}/\d{3}', nxt), nxt
+    sup = Supplier(code='SUP-FMT', company_name='Sup Fmt', is_active=True); db_session.add(sup); db_session.commit()
+    grn = GoodsReceivedNote(grn_number='BPB-FMT-1', supplier_id=sup.id, receipt_date=date.today(), status='approved'); db_session.add(grn); db_session.commit()
+    db_session.add(GRNItem(grn_id=grn.id, material_id=test_material.id, quantity_ordered=1, quantity_received=1, quantity_accepted=1, uom='KG')); db_session.commit()
+    body = {'grn_id': grn.id, 'supplier_id': sup.id, 'supplier_invoice_number': 'F-F', 'invoice_date': '2026-11-09',
+            'items': [{'material_id': test_material.id, 'quantity': 1, 'unit_price': 10, 'uom': 'KG', 'description': 'x'}]}
+    first = client.post('/api/purchasing/purchase-invoices', json=body, headers=auth_headers).get_json()['invoice']
+    assert re.fullmatch(r'PI/\d{2}/\d{2}/\d{3}', first['invoice_number'])
+    body.update(replace_invoice_id=first['id'], invoice_number='PI/26/11/777')
+    r = client.post('/api/purchasing/purchase-invoices', json=body, headers=auth_headers)
+    assert r.status_code == 201, r.get_json()
+    assert Invoice.query.filter_by(invoice_number='PI/26/11/777').count() == 1
