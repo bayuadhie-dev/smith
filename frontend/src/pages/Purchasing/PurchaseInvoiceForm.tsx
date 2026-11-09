@@ -1,6 +1,7 @@
 import { enterMovesDown } from '../../utils/enterNavigation'
 import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { TabContext, clearTabDrafts, useDraftState } from '../../workspace/drafts'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
@@ -40,26 +41,28 @@ export default function PurchaseInvoiceForm() {
   const navigate = useNavigate()
   const [attFiles, setAttFiles] = useState<File[]>([])
   const [params] = useSearchParams()
+  const tab = useContext(TabContext)
   const editId = params.get('edit') ? Number(params.get('edit')) : null
   const [editInv, setEditInv] = useState<any>(null)
   const [suppliers, setSuppliers] = useState<any[]>([])
-  const [supplierId, setSupplierId] = useState<number | null>(null)
+  const [supplierId, setSupplierId] = useDraftState<number | null>('supplierId', null, !editId)
   const [orders, setOrders] = useState<any[]>([])
-  const [poId, setPoId] = useState<number | null>(params.get('po_id') ? Number(params.get('po_id')) : null)
+  const [poId, setPoId] = useDraftState<number | null>('poId', params.get('po_id') ? Number(params.get('po_id')) : null, !editId)
   const [po, setPo] = useState<any>(null)
-  const [lines, setLines] = useState<Line[]>([])
+  const [lines, setLines] = useDraftState<Line[]>('lines', [], !editId)
+  const restoredLines = useRef(lines.length > 0)
   const [expenseAccounts, setExpenseAccounts] = useState<{ id: number; code: string; name: string }[]>([])
   useEffect(() => {
     axiosInstance.get('/api/finance/chart-of-accounts').then((r) => setExpenseAccounts((r.data.accounts || []).filter((a: any) => a.type === 'expense' && !a.is_header && a.is_active !== false).map((a: any) => ({ id: a.id, code: a.code, name: a.name })))).catch(() => {})
   }, [])
-  const [supplierInvoiceNumber, setSupplierInvoiceNumber] = useState('')
-  const [supplierInvoiceDate, setSupplierInvoiceDate] = useState(todayISO())
-  const [invoiceDate, setInvoiceDate] = useState(todayISO())
-  const [dueDate, setDueDate] = useState('')
-  const [notes, setNotes] = useState('')
+  const [supplierInvoiceNumber, setSupplierInvoiceNumber] = useDraftState('supInvNo', '', !editId)
+  const [supplierInvoiceDate, setSupplierInvoiceDate] = useDraftState('supInvDate', todayISO(), !editId)
+  const [invoiceDate, setInvoiceDate] = useDraftState('invDate', todayISO(), !editId)
+  const [dueDate, setDueDate] = useDraftState('dueDate', '', !editId)
+  const [notes, setNotes] = useDraftState('notes', '', !editId)
   const [saving, setSaving] = useState(false)
   const [openDps, setOpenDps] = useState<OpenDP[]>([])
-  const [dpUse, setDpUse] = useState<Record<number, string>>({})
+  const [dpUse, setDpUse] = useDraftState<Record<number, string>>('dpUse', {}, !editId)
 
   useEffect(() => {
     axiosInstance.get('/api/purchasing/suppliers', { params: { per_page: 1000 } })
@@ -96,7 +99,7 @@ export default function PurchaseInvoiceForm() {
   }, [editId])
 
   useEffect(() => {
-    if (!poId) { setPo(null); setLines([]); return }
+    if (!poId) { setPo(null); if (!restoredLines.current) setLines([]); return }
     if (editId && !editInv) return
     axiosInstance.get(`/api/purchasing/purchase-orders/${poId}`)
       .then((r) => {
@@ -132,7 +135,8 @@ export default function PurchaseInvoiceForm() {
           po_item_id: null, extra: true, name: '', uom: x.uom || '', ordered: 0, received: 0, invoiced: 0, qty: Number(x.quantity), price: Number(x.unit_price),
           ppn_code: rateCode(Number(x.tax_percent || 0)), description: x.description || '', account_id: '',
         }))
-        setLines([...baseLines, ...extras])
+        if (restoredLines.current) restoredLines.current = false
+        else setLines([...baseLines, ...extras])
         const supplier = suppliers.find((s) => s.id === data.supplier_id)
         const days = supplier ? Number(supplier.payment_terms ?? 30) : 30
         setDueDate((d) => d || addDays(invoiceDate, Number.isFinite(days) ? days : 30))
@@ -140,8 +144,9 @@ export default function PurchaseInvoiceForm() {
       .catch(() => showError('Gagal memuat PO'))
   }, [poId])
 
+  const dpFirst = useRef(true)
   useEffect(() => {
-    setDpUse({})
+    if (dpFirst.current) { dpFirst.current = false } else setDpUse({})
     if (!supplierId || editId) { setOpenDps([]); return }
     axiosInstance.get('/api/purchasing/down-payments', { params: { supplier_id: supplierId, open: 1, per_page: 100 } })
       .then((r) => setOpenDps((r.data.down_payments || []).map((d: any) => ({ id: d.id, dp_number: d.dp_number, po_number: d.po_number, remaining: Number(d.remaining || 0) }))))
@@ -207,6 +212,7 @@ export default function PurchaseInvoiceForm() {
           }
         }
       }
+      if (tab) clearTabDrafts(tab.tabId)
       navigate(id ? `/app/purchasing/invoices/${id}/match` : '/app/purchasing/invoices')
     } catch (err: any) {
       showError(err?.response?.data?.error || 'Gagal menyimpan faktur pembelian')

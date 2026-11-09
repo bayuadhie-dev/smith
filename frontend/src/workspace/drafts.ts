@@ -101,9 +101,9 @@ export function clearAllDrafts() {
  * useState that survives a page refresh while the form lives inside a workspace tab.
  * Outside a tab it behaves like plain useState. Call the returned `discard()` after a successful save.
  */
-export function useDraftState<T>(key: string, initial: T | (() => T)): [T, React.Dispatch<React.SetStateAction<T>>, () => void] {
+export function useDraftState<T>(key: string, initial: T | (() => T), enabled = true): [T, React.Dispatch<React.SetStateAction<T>>, () => void] {
   const ctx = useContext(TabContext)
-  const tabId = ctx?.tabId
+  const tabId = enabled ? ctx?.tabId : undefined
   const initialRef = useRef<T>()
   const [value, setValue] = useState<T>(() => {
     const base = typeof initial === 'function' ? (initial as () => T)() : initial

@@ -1,5 +1,6 @@
 import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { TabContext, clearTabDrafts, useDraftState } from '../../workspace/drafts'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeftIcon, ChevronDownIcon, ChevronUpIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { enterMovesDown } from '../../utils/enterNavigation'
@@ -42,11 +43,12 @@ export default function GRNForm() {
   const { id } = useParams()
   const isEdit = Boolean(id)
   const [params] = useSearchParams()
+  const tab = useContext(TabContext)
   const [orders, setOrders] = useState<any[]>([])
   const [locations, setLocations] = useState<any[]>([])
   const [po, setPo] = useState<any>(null)
-  const [poId, setPoId] = useState<number | null>(params.get('po_id') ? Number(params.get('po_id')) : null)
-  const [supplierId, setSupplierId] = useState<number | null>(params.get('supplier_id') ? Number(params.get('supplier_id')) : null)
+  const [poId, setPoId] = useDraftState<number | null>('poId', params.get('po_id') ? Number(params.get('po_id')) : null, !isEdit)
+  const [supplierId, setSupplierId] = useDraftState<number | null>('supplierId', params.get('supplier_id') ? Number(params.get('supplier_id')) : null, !isEdit)
   const [suppliers, setSuppliers] = useState<any[]>([])
   const [materials, setMaterials] = useState<any[]>([])
   const [notesTouched, setNotesTouched] = useState(false)
@@ -54,14 +56,15 @@ export default function GRNForm() {
   const [grnNumber, setGrnNumber] = useState('')
   const [manualNumber, setManualNumber] = useState('')
   const [nextNumber, setNextNumber] = useState('')
-  const [receiptDate, setReceiptDate] = useState(todayISO())
-  const [deliveryNote, setDeliveryNote] = useState('')
-  const [supInvNo, setSupInvNo] = useState('')
-  const [vehicle, setVehicle] = useState('')
-  const [driver, setDriver] = useState('')
-  const [notes, setNotes] = useState('')
-  const [rows, setRows] = useState<Row[]>([])
-  const [bulkLocation, setBulkLocation] = useState<number | null>(null)
+  const [receiptDate, setReceiptDate] = useDraftState('receiptDate', todayISO(), !isEdit)
+  const [deliveryNote, setDeliveryNote] = useDraftState('deliveryNote', '', !isEdit)
+  const [supInvNo, setSupInvNo] = useDraftState('supInvNo', '', !isEdit)
+  const [vehicle, setVehicle] = useDraftState('vehicle', '', !isEdit)
+  const [driver, setDriver] = useDraftState('driver', '', !isEdit)
+  const [notes, setNotes] = useDraftState('notes', '', !isEdit)
+  const [rows, setRows] = useDraftState<Row[]>('rows', [], !isEdit)
+  const restoredRows = useRef(rows.length > 0)
+  const [bulkLocation, setBulkLocation] = useDraftState<number | null>('bulkLocation', null, !isEdit)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -130,12 +133,13 @@ export default function GRNForm() {
   // Penerimaan baru dari PO: baris diturunkan dari PO, jumlah awal = sisa yang belum diterima, catatan ikut dari PO.
   useEffect(() => {
     if (isEdit) return
-    if (!poId) { setPo(null); setRows((rs) => rs.filter((r) => r.po_item_id === null)); return }
+    if (!poId) { setPo(null); if (!restoredRows.current) setRows((rs) => rs.filter((r) => r.po_item_id === null)); return }
     axiosInstance.get(`/api/purchasing/purchase-orders/${poId}`)
       .then((r) => {
         const data = r.data
         setPo(data)
-        setRows((rs) => [...rowsFromPo(data), ...rs.filter((x) => x.po_item_id === null)])
+        if (restoredRows.current) restoredRows.current = false
+        else setRows((rs) => [...rowsFromPo(data), ...rs.filter((x) => x.po_item_id === null)])
         if (!notesTouched && data.notes) setNotes(data.notes)
       })
       .catch((e) => {
@@ -289,6 +293,7 @@ export default function GRNForm() {
         await uploadAttachments('grn', created.data?.grn_id, attFiles)
         showSuccess('Penerimaan barang dicatat dan stok bertambah')
       }
+      if (tab) clearTabDrafts(tab.tabId)
       navigate('/app/purchasing/grn')
     } catch (err: any) {
       setError(err?.response?.data?.error || err?.response?.data?.message || 'Gagal menyimpan GRN')
