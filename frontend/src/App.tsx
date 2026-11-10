@@ -236,9 +236,8 @@ import PaymentForm from './pages/Finance/PaymentForm'
 import PaymentList from './pages/Finance/PaymentList'
 import AdvanceRecap from './pages/Finance/AdvanceRecap'
 import PaymentDetail from './pages/Finance/PaymentDetail'
-import ExpenseList from './pages/Finance/ExpenseList'
 import EmployeeExpenseForm from './pages/Finance/EmployeeExpenseForm'
-import ReimbursementList from './pages/Finance/ReimbursementList'
+import ClaimsHub from './pages/Finance/ClaimsHub'
 import ReimbursementForm from './pages/Finance/ReimbursementForm'
 import EmployeeList from './pages/HR/EmployeeList'
 import EmployeeForm from './pages/HR/EmployeeForm'
@@ -759,12 +758,12 @@ function AppChildRoutes() {
                 <Route path="finance/penerimaan-penjualan/new" element={<PaymentForm key="ar" kind="ar" />} />
                 <Route path="finance/pembayaran-pembelian/new" element={<PaymentForm key="ap" kind="ap" />} />
                 {/* Employee Expense Claims */}
-                <Route path="finance/expenses" element={<ExpenseList />} />
+                <Route path="finance/expenses" element={<ClaimsHub />} />
                 <Route path="finance/expenses/new" element={<EmployeeExpenseForm />} />
                 <Route path="finance/expenses/:id/edit" element={<EmployeeExpenseForm />} />
                 <Route path="finance/expenses/:id" element={<ExpenseDetail />} />
                 {/* Reimbursements */}
-                <Route path="finance/reimbursements" element={<ReimbursementList />} />
+                <Route path="finance/reimbursements" element={<ClaimsHub />} />
                 <Route path="finance/reimbursements/new" element={<ReimbursementForm />} />
                 <Route path="finance/reimbursements/:id" element={<ReimbursementDetail />} />
                 {/* Company Expenses (Supplier-based) */}

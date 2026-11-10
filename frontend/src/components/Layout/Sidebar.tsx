@@ -390,8 +390,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Rekap Uang Muka Lainnya', href: '/app/finance/rekap-uang-muka', icon: BanknotesIcon },
             { name: 'Budget', href: '/app/finance/budget', icon: CurrencyDollarIcon },
             { name: 'Cash Flow', href: '/app/finance/cash-flow', icon: ArrowsRightLeftIcon },
-            { name: 'Expenses', href: '/app/finance/expenses', icon: DocumentTextIcon, permission: 'expense' },
-            { name: 'Reimbursements', href: '/app/finance/reimbursements', icon: CurrencyDollarIcon, permission: 'expense' },
+            { name: 'Klaim Biaya Karyawan', href: '/app/finance/expenses', icon: DocumentTextIcon, permission: 'expense' },
             { name: 'Tagihan Rutin', href: '/app/finance/recurring-payments', icon: CurrencyDollarIcon, permission: 'expense' },
             { name: 'Approvals', href: '/app/approval', icon: DocumentCheckIcon, permission: 'approval' },
           ]
