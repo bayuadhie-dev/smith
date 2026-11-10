@@ -922,6 +922,8 @@ def generate_reimbursement_document(reimb_id, user_id):
     r = db.session.get(Reimbursement, reimb_id)
     if not r:
         raise ValueError('Reimbursement tidak ditemukan')
+    if r.status != 'paid':
+        raise PermissionError('Bukti reimbursement hanya bisa dicetak setelah reimbursement dibayar.')
     d = lambda x: x.strftime('%d-%m-%Y') if x else ''
     rows = []
     for i, e in enumerate(r.expenses, 1):

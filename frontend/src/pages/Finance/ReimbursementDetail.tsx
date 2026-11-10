@@ -102,7 +102,11 @@ const ReimbursementDetail: React.FC = () => {
 
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{data.reimbursement_number}</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{data.employee_name}</p>
-      <div className="mb-6"><DocumentGenerateButton transactionType="reimbursement" transactionId={data.id} transactionNumber={data.reimbursement_number} label="Cetak Bukti" /></div>
+      <div className="mb-6">
+        {data.status === 'paid'
+          ? <DocumentGenerateButton transactionType="reimbursement" transactionId={data.id} transactionNumber={data.reimbursement_number} label="Cetak Bukti" />
+          : <p className="text-xs text-gray-500">Bukti reimbursement bisa dicetak setelah dibayar.</p>}
+      </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div className="grid grid-cols-2 gap-4 text-sm">

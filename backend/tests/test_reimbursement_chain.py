@@ -49,6 +49,7 @@ def test_chain_steps_email_links_pay_by_finance_and_print(client, auth_headers, 
                                           step='review' if step.kind == 'mengetahui' else 'approval', expires_at=datetime.utcnow() + timedelta(days=1)))
         db_session.commit()
         return raw
+    assert client.post(f'/api/documents/generate-from-reimbursement/{rid}', headers=auth_headers).status_code == 400   # belum dibayar: tidak bisa dicetak
     t_boss = token(steps[1], boss); t_fin = token(steps[0], fin)
     assert client.get(f'/api/approval-email/{t_boss}').status_code == 400          # belum giliran
     g = client.get(f'/api/approval-email/{t_fin}')
@@ -71,7 +72,7 @@ def test_chain_steps_email_links_pay_by_finance_and_print(client, auth_headers, 
     assert pay.status_code == 200, pay.get_json()
     db_session.expire_all()
     assert Reimbursement.query.get(rid).status == 'paid'
-    d = db_session.get(Document, client.post(f'/api/documents/generate-from-reimbursement/{rid}', headers=auth_headers).get_json()['document_id'])
+    d = db_session.get(Document, client.post(f'/api/documents/generate-from-reimbursement/{rid}', headers=auth_headers).get_json()['document_id'])   # sudah dibayar di atas
     dd = d.document_data
     assert dd['employee_name'] == 'Budi S' and dd['mengetahui_name'] == 'Jessica' and dd['menyetujui_name'] == 'Hizkia Wijaya'
     assert dd['lines'][0]['uraian'] == 'Taksi' and dd['terbilang'].startswith('Tujuh puluh lima ribu') and 'Hizkia Wijaya' in d.html_content

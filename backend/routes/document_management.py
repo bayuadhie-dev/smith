@@ -1117,6 +1117,9 @@ def generate_from_reimbursement(reimb_id):
         document = generate_reimbursement_document(reimb_id, get_jwt_identity())
         return jsonify({'message': 'Bukti reimbursement dibuat', 'document_id': document.id,
                         'document_number': document.document_number}), 201
+    except PermissionError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
     except ValueError as e:
         return jsonify({'error': str(e)}), 404
     except Exception as e:
