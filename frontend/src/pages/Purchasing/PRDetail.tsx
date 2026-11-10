@@ -10,7 +10,7 @@ import {
   ArrowLeftIcon, PencilSquareIcon, ArrowPathIcon, CubeIcon,
   ArrowTopRightOnSquareIcon, CheckCircleIcon, XCircleIcon, ClockIcon,
 } from '@heroicons/react/24/outline';
-import { formatRupiah } from '../../utils/currencyUtils';
+import { formatRupiah, formatCurrencyAmount } from '../../utils/currencyUtils';
 
 const STEP_STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
   pending:  { label: 'Menunggu', color: 'bg-gray-100 text-gray-600', icon: ClockIcon },
@@ -294,7 +294,7 @@ export default function PRDetail() {
                   <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{item.item_code || '-'}</td>
                   <td className="py-2 pr-3 text-right tabular-nums">{item.quantity.toLocaleString('id-ID')}</td>
                   <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{item.uom}</td>
-                  <td className="py-2 pr-3 text-right tabular-nums">{item.estimated_unit_price ? formatRupiah(item.estimated_unit_price) : '-'}</td>
+                  <td className="py-2 pr-3 text-right tabular-nums">{item.estimated_unit_price ? formatCurrencyAmount(item.estimated_unit_price, pr.currency) : '-'}</td>
                   <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{item.preferred_supplier_name || '-'}</td>
                   <td className="py-2 pr-3">
                     {item.converted_po_number ? (
@@ -307,7 +307,7 @@ export default function PRDetail() {
                       </Link>
                     ) : '-'}
                   </td>
-                  <td className="py-2 text-right tabular-nums font-medium">{item.estimated_total ? formatRupiah(item.estimated_total) : '-'}</td>
+                  <td className="py-2 text-right tabular-nums font-medium">{item.estimated_total ? formatCurrencyAmount(item.estimated_total, pr.currency) : '-'}</td>
                 </tr>
               ))}
             </tbody>

@@ -497,7 +497,7 @@ export default function PRForm() {
                 />
               </div>
               <div className="col-span-2">
-                <NumberInput currency
+                <NumberInput currency={formData.currency === 'IDR'}
                   value={item.estimated_unit_price}
                   onChange={(e) => updateItem(idx, 'estimated_unit_price', e.target.value)}
                   disabled={!isEditable}
@@ -519,7 +519,7 @@ export default function PRForm() {
               </div>
               <div className="col-span-1 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
                 {item.estimated_total > 0
-                  ? `Rp ${item.estimated_total.toLocaleString('id-ID')}`
+                  ? `${formData.currency === 'IDR' ? 'Rp' : formData.currency} ${item.estimated_total.toLocaleString('id-ID', { maximumFractionDigits: 2 })}`
                   : '—'}
               </div>
               {isEditable && (
