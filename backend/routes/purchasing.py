@@ -1941,6 +1941,8 @@ def update_grn(grn_id):
                         setattr(grn_item, f, item_data[f])
                 if item_data.get('quantity_received') is not None and 'quantity_rejected' not in item_data:
                     grn_item.quantity_rejected = max(0, float(grn_item.quantity_received) - float(grn_item.quantity_accepted or 0))
+                if float(grn_item.quantity_rejected or 0) < 0:
+                    grn_item.quantity_rejected = 0
                 if 'production_date' in item_data and item_data['production_date']:
                     grn_item.production_date = datetime.strptime(item_data['production_date'], '%Y-%m-%d').date()
                 if 'expiry_date' in item_data and item_data['expiry_date']:
