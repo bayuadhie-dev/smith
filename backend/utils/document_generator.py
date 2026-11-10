@@ -872,7 +872,8 @@ def generate_purchase_requisition_document(pr_id, user_id):
     for i, it in enumerate(pr.items, 1):
         master = (it.material.name if it.material else (it.product.name if it.product else ''))
         rows.append({'no': i, 'code': it.item_code or (it.material.code if it.material else (it.product.code if it.product else '')),
-                     'item_name': it.item_name or master, 'quantity': float(it.quantity or 0), 'uom': it.uom, 'notes': it.notes or ''})
+                     'item_name': it.item_name or master, 'quantity': float(it.quantity or 0), 'uom': it.uom, 'notes': it.notes or '',
+                     'qty_text': f'{fmt(it.quantity)} {it.uom}'.strip()})
     labels = {'low': 'Rendah', 'normal': 'Normal', 'high': 'Tinggi', 'urgent': 'Mendesak'}
     status = {'draft': 'Draf', 'submitted': 'Diajukan', 'approved': 'Disetujui', 'rejected': 'Ditolak', 'converted': 'Jadi PO', 'partially_converted': 'Sebagian jadi PO'}
     document_data = {
@@ -881,6 +882,7 @@ def generate_purchase_requisition_document(pr_id, user_id):
         'department_line': f'Departemen: {pr.department}' if pr.department else '',
         'purpose': pr.purpose or '', 'request_date': d(pr.request_date), 'required_date': d(pr.required_date),
         'priority_label': labels.get(pr.priority, pr.priority or ''), 'status_label': status.get(pr.status, pr.status or ''),
+        'bagian': pr.department or '', 'bpp_no': pr.pr_number, 'tanggal_text': d(pr.request_date), 'kepada': 'Purchasing',
         'lines': rows, 'notes': pr.notes or '', 'company': get_company_context(),
     }
     template = ensure_default_template(user_id, 'purchase_requisition')

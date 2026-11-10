@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-11f'
+LAYOUT = 'v2-2026-11g'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 AUTO_NOTE_PREFIXES = ('Auto-generated', 'Migrasi otomatis')  # the font-unit migration only rescales values of auto-generated layouts
 
@@ -317,21 +317,30 @@ def build_grn():
 
 
 def build_purchase_requisition():
-    o = header(14, 182, 'BON PERMINTAAN PEMBELIAN', lines=3)
-    o += [BOX(14, 33, 90, 26),
-          L('PEMOHON', 16, 34, 86, 3.5, fs=7.5, color=MUTED),
-          F('requester_name', 16, 38.5, 86, 5, fs=11, bold=True),
-          F('department_line', 16, 45, 86, 5, fs=9, color=MUTED),
-          F('purpose', 16, 50, 86, 9, fs=8.5)]
-    o += meta_grid(104, 33, 34, 58, [('Tgl Permintaan', 'request_date'), ('Dibutuhkan', 'required_date'),
-                                     ('Prioritas', 'priority_label'), ('Status', 'status_label')], 6.5)
-    o.append(TABLE('lines', 14, 63, 182, [
-        C('no', 'No.', 9, 'center'), C('code', 'Kode', 24), C('item_name', 'Nama Barang', 70),
-        C('quantity', 'Qty', 20, 'right', 'num'), C('uom', 'Satuan', 16), C('notes', 'Keterangan', 43),
-    ], min_rows=0, row_h=6.5, height=30, fs=9))
-    o += flow(notes_line(14, 100, 182))
-    o += flow(signatures(14, 182, 125, ['Pemohon,', 'Diketahui oleh,', 'Disetujui oleh,'], captions={0: ' ', 1: ' ', 2: ' '}))
-    return o, 'A4', 'portrait', None, None
+    """Meniru formulir kertas FRM-PRC-01 (A5 landscape): kotak kop, baris revisi, blok Bagian/BPP No, tabel, tanda tangan."""
+    INK = '#111111'
+    o = [BOX(10, 8, 85, 16, stroke=INK), BOX(95, 8, 65, 16, stroke=INK), BOX(160, 8, 40, 16, stroke=INK),
+         IMG('company.logo_url', 12, 9.5, 14, 13),
+         F('company.name', 28, 11, 66, 11, fs=11, bold=True),
+         L('BON PERMINTAAN PEMBELIAN', 96, 13, 63, 6, fs=11, bold=True, align='center'),
+         L('FRM-PRC-01', 161, 14, 38, 5, fs=8, bold=True),
+         BOX(10, 24, 190, 9, stroke=INK),
+         L('Revision No.: 0', 12, 24.8, 120, 4, fs=8, bold=True),
+         L('Create Date : 30 Oktober 2026', 12, 28.6, 120, 4, fs=8),
+         BOX(10, 33, 190, 19, stroke=INK),
+         L('BAGIAN', 12, 34, 22, 4, fs=8), L(':', 34, 34, 3, 4, fs=8), F('bagian', 37, 34, 80, 4, fs=8.5, bold=True),
+         L('BPP NO', 12, 38.5, 22, 4, fs=8), L(':', 34, 38.5, 3, 4, fs=8), F('bpp_no', 37, 38.5, 80, 4, fs=8.5, bold=True),
+         L('TANGGAL', 125, 34, 22, 4, fs=8), L(':', 147, 34, 3, 4, fs=8), F('tanggal_text', 150, 34, 48, 4, fs=8.5, bold=True),
+         L('KEPADA', 125, 38.5, 22, 4, fs=8), L(':', 147, 38.5, 3, 4, fs=8), F('kepada', 150, 38.5, 48, 4, fs=8.5, bold=True),
+         L('Harap diberikan / dibelikan barang - barang tersebut dibawah ini :', 12, 46.5, 180, 4, fs=7.5)]
+    t = TABLE('lines', 10, 52, 190, [
+        C('no', 'NO.', 14, 'center'), C('item_name', 'JENIS BARANG', 90), C('qty_text', 'KUANTUM', 30, 'center'),
+        C('notes', 'KETERANGAN', 56),
+    ], min_rows=11, row_h=5.6, height=30, fs=8.5)
+    t.update({'headerBg': '#e5e7eb', 'headerColor': '#000000', 'gridColor': INK, 'zebra': '#ffffff'})
+    o.append(t)
+    o += flow(signatures(10, 190, 90, ['Pemohon,', 'Mengetahui,', 'Menyetujui,'], captions={0: ' ', 1: ' ', 2: ' '}, gap=14))
+    return o, 'A5', 'landscape', 210, 148
 
 
 def build_surat_jalan():

@@ -386,3 +386,14 @@ def test_purchase_requisition_with_usd_currency_and_convert_to_po(client, auth_h
     pr = r.get_json()
     assert pr['currency'] == 'USD' and pr['exchange_rate'] == 16000.0 and pr['total_estimated'] == 100 and pr['total_estimated_idr'] == 1600000.0
     assert client.post('/api/purchasing/purchase-requisitions', json={**body, 'currency': 'XXX'}, headers=auth_headers).status_code == 500
+
+
+def test_pr_print_matches_paper_form_fields(client, auth_headers, db_session, test_user):
+    from models.purchasing import PRItem, PurchaseRequisition
+    from models.document_management import Document
+    pr = PurchaseRequisition(pr_number='BPP-T-1', requested_by=test_user.id, request_date=date.today(), department='Gudang', status='draft')
+    db_session.add(pr); db_session.commit()
+    db_session.add(PRItem(pr_id=pr.id, line_number=1, item_name='Sarung tangan', quantity=10, uom='PCS')); db_session.commit()
+    d = db_session.get(Document, client.post(f'/api/documents/generate-from-purchase-requisition/{pr.id}', headers=auth_headers).get_json()['document_id'])
+    h = d.html_content
+    assert all(k in h for k in ('FRM-PRC-01', 'BON PERMINTAAN PEMBELIAN', 'BAGIAN', 'BPP NO', 'Gudang', 'BPP-T-1', 'Sarung tangan', '10 PCS', 'Mengetahui', 'Menyetujui'))
