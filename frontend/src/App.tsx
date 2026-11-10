@@ -51,7 +51,10 @@ import MovementDetail from './pages/Warehouse/MovementDetail'
 import AdjustmentForm from './pages/Warehouse/AdjustmentForm'
 import AdjustmentList from './pages/Warehouse/AdjustmentList'
 import AdjustmentDetail from './pages/Warehouse/AdjustmentDetail'
-import TransferForm from './pages/Warehouse/TransferForm'
+import StockTransferList from './pages/Warehouse/StockTransferList'
+import StockTransferForm from './pages/Warehouse/StockTransferForm'
+import StockTransferDetail from './pages/Warehouse/StockTransferDetail'
+import ItemStockPage from './pages/Warehouse/ItemStockPage'
 import LocationList from './pages/Warehouse/LocationList'
 import LocationDetail from './pages/Warehouse/LocationDetail'
 import MovementList from './pages/Warehouse/MovementList'
@@ -509,8 +512,11 @@ function AppChildRoutes() {
                 <Route path="warehouse/adjustments" element={<AdjustmentList />} />
                 <Route path="warehouse/adjustments/new" element={<AdjustmentForm />} />
                 <Route path="warehouse/adjustments/:id" element={<AdjustmentDetail />} />
-                <Route path="warehouse/transfers/new" element={<TransferForm />} />
-                <Route path="warehouse/transfers/:id/edit" element={<TransferForm />} />
+                <Route path="warehouse/transfers" element={<StockTransferList />} />
+                <Route path="warehouse/transfers/new" element={<StockTransferForm />} />
+                <Route path="warehouse/transfers/receive" element={<StockTransferList receiveMode />} />
+                <Route path="warehouse/transfers/:id" element={<StockTransferDetail />} />
+                <Route path="warehouse/item-stock/:kind/:id" element={<ItemStockPage />} />
                 <Route path="warehouse/reports" element={<InventoryList />} />
                 <Route path="warehouse/materials" element={<MaterialsDashboard />} />
                 <Route path="warehouse/materials/list" element={<MaterialsList />} />

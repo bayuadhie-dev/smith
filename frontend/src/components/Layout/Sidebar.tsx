@@ -243,7 +243,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
               name: 'Transaksi', icon: ArrowsRightLeftIcon, isSubMenu: true, subChildren: [
                 { name: 'Penerimaan Barang', href: '/app/purchasing/grn' },
                 { name: 'Permintaan Barang', href: '/app/warehouse/material-issues' },
-                { name: 'Pemindahan Barang', href: '/app/warehouse/movements' },
+                { name: 'Pemindahan Barang', href: '/app/warehouse/transfers' },
+                { name: 'Terima Barang', href: '/app/warehouse/transfers/receive' },
               ]
             },
             {
@@ -267,6 +268,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             {
               name: 'Laporan', icon: DocumentChartBarIcon, isSubMenu: true, subChildren: [
                 { name: 'Barang per Gudang', href: '/app/warehouse/stock-summary' },
+                { name: 'Mutasi Stok', href: '/app/warehouse/movements' },
                 { name: 'Stok Minimum', href: '/app/warehouse/alerts' },
                 { name: 'Analytics', href: '/app/warehouse/analytics' },
               ]

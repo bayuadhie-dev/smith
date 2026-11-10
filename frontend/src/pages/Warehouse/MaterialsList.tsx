@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog, showSuccess, showError } from '../../components/ui';
@@ -307,7 +307,7 @@ const MaterialsList: React.FC = () => {
                         </div>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">{material.name}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white"><Link to={`/app/warehouse/item-stock/material/${material.id}`} className="hover:text-emerald-700 hover:underline" title="Lihat stok per gudang dan mutasi">{material.name}</Link></div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">{material.code}</div>
                       </div>
                     </div>
