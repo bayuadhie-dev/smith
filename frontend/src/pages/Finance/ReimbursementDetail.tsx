@@ -26,6 +26,10 @@ interface ReimbursementDetailData {
   status: string;
   submitted_at: string | null;
   approved_at: string | null;
+  paid_at?: string | null;
+  paid_date?: string | null;
+  payment_reference?: string | null;
+  paid_from_account?: string | null;
   expenses: ExpenseLine[];
 }
 
@@ -91,6 +95,12 @@ const ReimbursementDetail: React.FC = () => {
               Rp{data.total_amount.toLocaleString('id-ID')}
             </div>
           </div>
+          {data.paid_from_account && (
+            <div>
+              <div className="text-gray-500 dark:text-gray-400">Dibayar dari</div>
+              <div className="font-medium text-gray-900 dark:text-white">{data.paid_from_account}{data.paid_date ? ` · ${data.paid_date}` : ''}{data.payment_reference ? ` · Ref ${data.payment_reference}` : ''}</div>
+            </div>
+          )}
           <div>
             <div className="text-gray-500 dark:text-gray-400">Metode Pembayaran</div>
             <div className="font-medium text-gray-900 dark:text-white">{data.payment_method || '-'}</div>

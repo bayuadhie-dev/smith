@@ -75,19 +75,38 @@ const ReimbursementList: React.FC = () => {
     }
   };
 
-  const handlePay = async (reimbursementId: number) => {
-    const paymentRef = window.prompt('Masukkan nomor referensi pembayaran:');
-    if (!paymentRef) return;
+  const [payFor, setPayFor] = useState<Reimbursement | null>(null);
+  const [banks, setBanks] = useState<{ id: number; name: string }[]>([]);
+  const [payBank, setPayBank] = useState('');
+  const [payDate, setPayDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [payRef, setPayRef] = useState('');
+  const [paying, setPaying] = useState(false);
 
+  const handlePay = async (r: Reimbursement) => {
+    setPayFor(r); setPayRef(''); setPayBank(''); setPayDate(new Date().toISOString().slice(0, 10));
+    if (banks.length === 0) {
+      try {
+        const res = await axiosInstance.get('/api/finance/chart-of-accounts');
+        setBanks((res.data.accounts || []).filter((a: any) => a.is_cash_bank && !a.is_header && (a.currency || 'IDR') === 'IDR')
+          .map((a: any) => ({ id: a.id, name: `${a.code} - ${a.name}` })));
+      } catch { toast.error('Gagal memuat daftar akun kas/bank'); }
+    }
+  };
+
+  const confirmPay = async () => {
+    if (!payFor) return;
+    if (!payBank) { toast.error('Pilih akun Kas/Bank sumber pembayaran'); return; }
+    setPaying(true);
     try {
-      await axiosInstance.post(`/api/expenses/reimbursements/${reimbursementId}/pay`, {
-        payment_reference: paymentRef,
+      await axiosInstance.post(`/api/expenses/reimbursements/${payFor.id}/pay`, {
+        bank_account_id: Number(payBank), payment_date: payDate, payment_reference: payRef || undefined,
       });
-      toast.success('Reimbursement ditandai sebagai dibayar');
+      toast.success('Reimbursement dibayar dan dijurnal');
+      setPayFor(null);
       fetchReimbursements();
     } catch (error: any) {
-      toast.error(error?.response?.data?.error || 'Gagal menandai pembayaran');
-    }
+      toast.error(error?.response?.data?.error || 'Gagal membayar reimbursement');
+    } finally { setPaying(false); }
   };
 
   const getStatusColor = (status: string) => {
@@ -244,9 +263,9 @@ const ReimbursementList: React.FC = () => {
                         )}
                         {reimb.status === 'approved' && hasPermission('expense.payment') && (
                           <button
-                            onClick={() => handlePay(reimb.id)}
+                            onClick={() => handlePay(reimb)}
                             className="p-1 text-blue-600 hover:text-blue-800"
-                            title="Mark as Paid"
+                            title="Bayar"
                           >
                             <DollarSign className="w-4 h-4" />
                           </button>
@@ -290,6 +309,28 @@ const ReimbursementList: React.FC = () => {
           </div>
         )}
       </div>
+      {payFor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setPayFor(null)}>
+          <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl dark:bg-gray-800" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">Bayar reimbursement</h3>
+            <p className="mb-3 text-xs text-gray-500">{payFor.reimbursement_number} · {payFor.employee_name} · Rp {Number(payFor.total_amount).toLocaleString('id-ID')}</p>
+            <label className="mb-1 block text-sm font-medium">Dibayar dari akun Kas/Bank *</label>
+            <select className="input-field mb-3" value={payBank} onChange={(e) => setPayBank(e.target.value)}>
+              <option value="">Pilih akun kas/bank</option>
+              {banks.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+            <label className="mb-1 block text-sm font-medium">Tanggal pembayaran</label>
+            <input type="date" className="input-field mb-3" value={payDate} onChange={(e) => setPayDate(e.target.value)} />
+            <label className="mb-1 block text-sm font-medium">No. referensi transfer (opsional)</label>
+            <input className="input-field mb-4" value={payRef} onChange={(e) => setPayRef(e.target.value)} placeholder="No. transfer atau bukti kas" />
+            <p className="mb-3 text-xs text-gray-500">Jurnal: Hutang Karyawan didebit, akun Kas/Bank yang dipilih dikredit. Uang keluar tercatat di buku bank.</p>
+            <div className="flex justify-end gap-2">
+              <button type="button" className="btn-secondary" onClick={() => setPayFor(null)}>Batal</button>
+              <button type="button" className="btn-primary disabled:opacity-50" disabled={paying} onClick={confirmPay}>{paying ? 'Memproses...' : 'Bayar'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

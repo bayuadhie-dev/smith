@@ -929,6 +929,23 @@ def pay_reimbursement(reimbursement_id):
             return jsonify({'success': False, 'error': 'Only approved reimbursements can be paid'}), 400
         
         data = request.get_json() or {}
+
+        # Akun Kas/Bank sumber: wajib dipilih, supaya uang keluar tercatat di buku bank (bukan kas bawaan).
+        from models.finance import Account
+        bank_id = data.get('bank_account_id')
+        bank = db.session.get(Account, int(bank_id)) if bank_id else None
+        if not bank or not bank.is_cash_bank or bank.is_header or not bank.is_active:
+            return jsonify({'success': False, 'error': 'Pilih akun Kas/Bank sumber pembayaran'}), 400
+        if (bank.currency or 'IDR').upper() != 'IDR':
+            return jsonify({'success': False, 'error': 'Reimbursement dibayar dari akun Rupiah'}), 400
+        try:
+            pay_date = datetime.strptime(data['payment_date'], '%Y-%m-%d').date() if data.get('payment_date') else datetime.utcnow().date()
+        except ValueError:
+            return jsonify({'success': False, 'error': 'Tanggal pembayaran tidak valid'}), 400
+        if is_period_locked(pay_date, transaction_type='reimbursement'):
+            return jsonify({'success': False, 'error': f'Periode {pay_date.strftime("%Y-%m")} sudah ditutup (period-close). Tidak bisa membayar di periode ini.'}), 400
+        reimbursement.paid_from_account_id = bank.id
+        reimbursement.paid_date = pay_date
         
         reimbursement.status = 'paid'
         reimbursement.processed_by = user_id
@@ -952,10 +969,9 @@ def pay_reimbursement(reimbursement_id):
         from utils.finance_helpers import post_pending_journal
 
         hutang_default = GlobalAccountDefault.query.filter_by(transaction_key='hutang_karyawan').first()
-        cash_default = GlobalAccountDefault.query.filter_by(transaction_key='cash').first()
-        if not hutang_default or not cash_default:
+        if not hutang_default:
             db.session.rollback()
-            return jsonify({'success': False, 'error': 'Akun Hutang Karyawan atau Kas belum diatur di Preferensi Akun'}), 400
+            return jsonify({'success': False, 'error': 'Akun Hutang Karyawan belum diatur di Preferensi Akun'}), 400
 
         amount = float(reimbursement.total_amount or 0)
         journal_lines = [
@@ -966,7 +982,7 @@ def pay_reimbursement(reimbursement_id):
                 'description': f'Pelunasan reimbursement {reimbursement.reimbursement_number}',
             },
             {
-                'account_id': cash_default.account_id,
+                'account_id': bank.id,
                 'debit': 0,
                 'credit': amount,
                 'description': f'Pelunasan reimbursement {reimbursement.reimbursement_number}',
@@ -975,7 +991,7 @@ def pay_reimbursement(reimbursement_id):
 
         pending = PendingJournalEntry(
             workflow_id=None,
-            entry_date=datetime.utcnow().date(),
+            entry_date=pay_date,
             description=f'Payment for Reimbursement {reimbursement.reimbursement_number}',
             reference=reimbursement.reimbursement_number,
             lines=journal_lines,
@@ -1094,6 +1110,10 @@ def get_reimbursement_detail(reimbursement_id):
             'status': reimbursement.status,
             'submitted_at': reimbursement.submitted_at.isoformat() if reimbursement.submitted_at else None,
             'approved_at': reimbursement.approved_at.isoformat() if reimbursement.approved_at else None,
+            'paid_at': reimbursement.paid_at.isoformat() if reimbursement.paid_at else None,
+            'paid_date': reimbursement.paid_date.isoformat() if reimbursement.paid_date else None,
+            'payment_reference': reimbursement.payment_reference,
+            'paid_from_account': (lambda a: f'{a.account_code} - {a.account_name}' if a else None)(db.session.get(Account, reimbursement.paid_from_account_id)) if reimbursement.paid_from_account_id else None,
             'expenses': [{
                 'id': exp.id,
                 'expense_number': exp.expense_number,

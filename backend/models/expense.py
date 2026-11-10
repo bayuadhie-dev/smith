@@ -138,6 +138,8 @@ class Reimbursement(db.Model):
     paid_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     paid_at = db.Column(db.DateTime)
     payment_reference = db.Column(db.String(100))
+    paid_from_account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)   # akun Kas/Bank sumber pembayaran
+    paid_date = db.Column(db.Date, nullable=True)
     
     # Accounting
     journal_entry_id = db.Column(db.Integer, db.ForeignKey('accounting_entries.id'))
