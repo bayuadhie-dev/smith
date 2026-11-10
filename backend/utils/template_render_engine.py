@@ -101,7 +101,7 @@ def _format_value(value, fmt):
             return 'Rp ' + f"{int(round(n)):,}".replace(',', '.')
         if n == int(n):
             return f"{int(n):,}".replace(',', '.')
-        return f"{n:,.2f}".rstrip('0').rstrip('.').replace(',', '_').replace('.', ',').replace('_', '.')
+        return f"{n:,.4f}".rstrip('0').rstrip('.').replace(',', '_').replace('.', ',').replace('_', '.')
     return value
 
 

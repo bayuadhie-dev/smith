@@ -646,7 +646,7 @@ def build_po_document_data(po):
 
 def generate_purchase_invoice_document(invoice_id, user_id):
     """Printable Faktur Pembelian (purchase invoice)."""
-    from models.finance import Invoice
+    from models.finance import Invoice, Account
 
     inv = db.session.get(Invoice, invoice_id)
     if not inv or inv.invoice_type != 'purchase':
@@ -675,7 +675,7 @@ def generate_purchase_invoice_document(invoice_id, user_id):
         master = (item.product.name if item.product else (item.material.name if getattr(item, 'material', None) else ''))
         line_items.append({
             'no': len(line_items) + 1,
-            'code': (item.product.code if item.product else (getattr(item.material, 'code', '') if getattr(item, 'material', None) else '')),
+            'code': (item.product.code if item.product else (getattr(item.material, 'code', '') if getattr(item, 'material', None) else ((db.session.get(Account, item.account_id).account_code if item.account_id and db.session.get(Account, item.account_id) else '')))),
             'item_name': (item.description or master) + (('\n' + item.notes.strip()) if (item.notes or '').strip() else ''),
             'quantity': float(item.quantity or 0), 'uom': item.uom or '',
             'unit_price_text': money(item.unit_price), 'subtotal_text': money(base),
