@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-11d'
+LAYOUT = 'v2-2026-11e'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 AUTO_NOTE_PREFIXES = ('Auto-generated', 'Migrasi otomatis')  # the font-unit migration only rescales values of auto-generated layouts
 
@@ -312,7 +312,7 @@ def build_grn():
                L('TOTAL DITERIMA', 117.5, 99.5, 36, 4, fs=9, bold=True),
                F('total_qty_text', 157.5, 99.5, 37, 4, fs=9, bold=True, align='right')])
     o += flow(notes_line(14, 109, 182))
-    o += flow(signatures(14, 182, 130, ['Diterima oleh,', 'Diperiksa oleh,', 'Pengirim,'], captions={0: ' ', 1: ' ', 2: ' '}))
+    o += flow(signatures(14, 182, 130, ['Diterima oleh,', 'Diperiksa oleh,'], captions={0: ' ', 1: ' '}))
     return o, 'A4', 'portrait', None, None
 
 
