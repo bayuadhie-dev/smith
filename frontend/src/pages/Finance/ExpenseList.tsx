@@ -34,6 +34,7 @@ interface Expense {
   submitted_at: string | null;
   approved_at: string | null;
   reimbursement_number: string | null;
+  reimbursement_status_display?: string | null;
   created_at: string;
 }
 
@@ -286,6 +287,11 @@ const ExpenseList: React.FC = () => {
                       {expense.required_manager_id && (
                         <div className="mt-1 text-xs text-gray-500">
                           Manager: {expense.manager_status === 'approved' ? '✓ Disetujui' : expense.manager_status === 'rejected' ? '✗ Ditolak' : '⏳ Menunggu'}
+                        </div>
+                      )}
+                      {expense.reimbursement_number && (
+                        <div className="mt-1 text-xs text-gray-500">
+                          Pembayaran: {expense.reimbursement_status_display}
                         </div>
                       )}
                     </td>

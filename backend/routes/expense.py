@@ -128,6 +128,7 @@ def get_expenses():
                 'approved_at': exp.approved_at.isoformat() if exp.approved_at else None,
                 'reimbursement_id': exp.reimbursement_id,
                 'reimbursement_number': exp.reimbursement.reimbursement_number if exp.reimbursement else None,
+                'reimbursement_status_display': exp.reimbursement.status_display if exp.reimbursement else None,
                 'created_at': exp.created_at.isoformat() if exp.created_at else None,
             })
         

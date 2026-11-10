@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
+import { usePermissions } from '../../contexts/PermissionContext'
 import ExpenseList from './ExpenseList'
 import ReimbursementList from './ReimbursementList'
 
@@ -10,11 +11,14 @@ const TABS = [
 export default function ClaimsHub() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const active = pathname.startsWith('/app/finance/reimbursements') ? 1 : 0
+  const { hasAnyPermission } = usePermissions()
+  const canSeePayments = hasAnyPermission(['expense.payment', 'expense.approve'])
+  const tabs = canSeePayments ? TABS : TABS.slice(0, 1)
+  const active = canSeePayments && pathname.startsWith('/app/finance/reimbursements') ? 1 : 0
   return (
     <div>
-      <div className="flex gap-1 border-b border-gray-200 px-6 pt-4 dark:border-gray-700">
-        {TABS.map((t, i) => (
+      {tabs.length > 1 && <div className="flex gap-1 border-b border-gray-200 px-6 pt-4 dark:border-gray-700">
+        {tabs.map((t, i) => (
           <button
             key={t.path}
             type="button"
@@ -29,7 +33,7 @@ export default function ClaimsHub() {
             {t.label}
           </button>
         ))}
-      </div>
+      </div>}
       {active === 0 ? <ExpenseList /> : <ReimbursementList />}
     </div>
   )
