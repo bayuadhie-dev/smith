@@ -1,7 +1,7 @@
 import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import { useDraftState, useClearTabDrafts } from '../../workspace/drafts'
 import { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import {
   ArrowLeftIcon, PlusIcon, TrashIcon, PaperAirplaneIcon,
@@ -70,6 +70,8 @@ export default function PRForm() {
 
   // For convert-to-PO modal
   const [showConvertModal, setShowConvertModal] = useState(false);
+  const [searchParams] = useSearchParams();
+  useEffect(() => { if (searchParams.get('buatpo') === '1' && pr?.status === 'approved') setShowConvertModal(true); }, [pr?.status]);
   const [convertSupplierId, setConvertSupplierId] = useState('');
   const [newSup, setNewSup] = useState<{ name: string; currency: string; terms: string } | null>(null);
   const [savingSup, setSavingSup] = useState(false);

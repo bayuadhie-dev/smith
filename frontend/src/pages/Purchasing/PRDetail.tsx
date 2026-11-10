@@ -2,7 +2,8 @@ import DocumentGenerateButton from '../../components/DocumentGenerateButton'
 import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useAppSelector } from '../../hooks/redux';
 import axiosInstance from '../../utils/axiosConfig';
 import AccessibleModal from '../../components/ui/AccessibleModal';
 import { toast } from 'react-hot-toast';
@@ -28,6 +29,9 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 
 export default function PRDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const me = useAppSelector((st: any) => st.auth?.user);
+  const [submitting, setSubmitting] = useState(false);
   const [pr, setPr] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -50,6 +54,17 @@ export default function PRDetail() {
   };
 
   useEffect(() => { fetchPr(); }, [id]);
+
+  const submitPr = async () => {
+    setSubmitting(true);
+    try {
+      const r = await axiosInstance.post(`/api/purchasing/purchase-requisitions/${id}/submit`);
+      toast.success(r.data?.message || 'PR diajukan');
+      await fetchPr();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Gagal mengajukan PR');
+    } finally { setSubmitting(false); }
+  };
 
   const actOnStep = async (level: number, action: 'approve' | 'reject', reason?: string) => {
     setActingLevel(level);
@@ -120,6 +135,16 @@ export default function PRDetail() {
         <div className="flex items-center gap-2">
         <DocumentGenerateButton transactionType="purchase_requisition" transactionId={pr.id} transactionNumber={pr.pr_number} label="Cetak Bon" />
         {pr.status === 'draft' && (
+          <button type="button" onClick={submitPr} disabled={submitting} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium disabled:opacity-50">
+            {submitting ? 'Mengajukan...' : 'Ajukan'}
+          </button>
+        )}
+        {pr.status === 'approved' && !pr.converted_to_po_id && (
+          <button type="button" onClick={() => navigate(`/app/purchasing/requisitions/${id}/edit?buatpo=1`)} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium">
+            Buat PO
+          </button>
+        )}
+        {pr.status === 'draft' && (
           <Link
             to={`/app/purchasing/requisitions/${id}/edit`}
             className="flex items-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-lg hover:bg-emerald-700 text-sm font-medium"
@@ -183,7 +208,8 @@ export default function PRDetail() {
               const cfg = STEP_STATUS_CONFIG[step.status] || STEP_STATUS_CONFIG.pending;
               const StepIcon = cfg.icon;
               const priorApproved = pr.approval_steps.slice(0, idx).every((s: any) => s.status === 'approved');
-              const isActionable = step.status === 'pending' && priorApproved;
+              const mine = !step.assigned_user_id || !me || me.is_super_admin || me.id === step.assigned_user_id;
+              const isActionable = step.status === 'pending' && priorApproved && mine;
               return (
                 <div key={step.id} className="border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden">
                   <div
