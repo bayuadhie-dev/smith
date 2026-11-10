@@ -132,7 +132,7 @@ def format_pr_item(item):
         'estimated_unit_price': float(item.estimated_unit_price) if item.estimated_unit_price else None,
         'estimated_total': float(item.estimated_total) if item.estimated_total else None,
         'preferred_supplier_id': item.preferred_supplier_id,
-        'preferred_supplier_name': item.preferred_supplier.company_name if item.preferred_supplier else None,
+        'preferred_supplier_name': item.preferred_supplier.company_name if item.preferred_supplier else item.preferred_supplier_name,
         'converted_to_po_id': item.converted_to_po_id,
         'converted_po_number': item.converted_po.po_number if item.converted_po else None,
         'notes': item.notes,
@@ -252,6 +252,7 @@ def create_pr_core(data, user_id, pr_number=None):
             estimated_unit_price=unit_price or None,
             estimated_total=qty * unit_price if unit_price else None,
             preferred_supplier_id=item_data.get('preferred_supplier_id'),
+            preferred_supplier_name=((item_data.get('preferred_supplier_name') or '').strip()[:200] or None),
             notes=item_data.get('notes'),
         ))
     db.session.flush()
@@ -302,6 +303,7 @@ def update_pr(pr_id):
                     estimated_unit_price=unit_price or None,
                     estimated_total=qty * unit_price if unit_price else None,
                     preferred_supplier_id=item_data.get('preferred_supplier_id'),
+                    preferred_supplier_name=((item_data.get('preferred_supplier_name') or '').strip()[:200] or None),
                     notes=item_data.get('notes'),
                 )
                 db.session.add(item)

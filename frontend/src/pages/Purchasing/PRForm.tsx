@@ -27,13 +27,14 @@ interface PRItem {
   estimated_unit_price: string;
   estimated_total: number;
   preferred_supplier_id: string;
+  preferred_supplier_name: string;
   notes: string;
 }
 
 const emptyItem = (): PRItem => ({
   item_name: '', item_code: '', quantity: '', uom: 'kg',
   estimated_unit_price: '', estimated_total: 0,
-  preferred_supplier_id: '', notes: '',
+  preferred_supplier_id: '', preferred_supplier_name: '', notes: '',
 });
 
 export default function PRForm() {
@@ -106,6 +107,7 @@ export default function PRForm() {
             estimated_unit_price: i.estimated_unit_price ? String(i.estimated_unit_price) : '',
             estimated_total: i.estimated_total || 0,
             preferred_supplier_id: i.preferred_supplier_id ? String(i.preferred_supplier_id) : '',
+            preferred_supplier_name: i.preferred_supplier_id ? '' : (i.preferred_supplier_name || ''),
             notes: i.notes || '',
           })) : [emptyItem()]);
         })
@@ -146,6 +148,7 @@ export default function PRForm() {
             quantity: parseFloat(i.quantity) || 0,
             estimated_unit_price: parseFloat(i.estimated_unit_price) || null,
             preferred_supplier_id: parseInt(i.preferred_supplier_id) || null,
+            preferred_supplier_name: i.preferred_supplier_name || null,
           })),
       };
       if (isNew) {
@@ -427,7 +430,7 @@ export default function PRForm() {
           <div className="col-span-1">Qty</div>
           <div className="col-span-1">Satuan</div>
           <div className="col-span-2">Harga Est.</div>
-          <div className="col-span-2">Supplier Pref.</div>
+          <div className="col-span-2">Saran Pemasok</div>
           <div className="col-span-1 text-right">Total Est.</div>
           {isEditable && <div className="col-span-1"></div>}
         </div>
@@ -486,17 +489,15 @@ export default function PRForm() {
                 />
               </div>
               <div className="col-span-2">
-                <select
-                  value={item.preferred_supplier_id}
-                  onChange={(e) => updateItem(idx, 'preferred_supplier_id', e.target.value)}
+                <input
+                  type="text"
+                  value={item.preferred_supplier_id ? (suppliers.find((x: any) => String(x.id) === item.preferred_supplier_id)?.company_name || '') : item.preferred_supplier_name}
+                  onChange={(e) => setItems(prev => prev.map((it, k) => (k === idx ? { ...it, preferred_supplier_id: '', preferred_supplier_name: e.target.value } : it)))}
                   disabled={!isEditable}
+                  placeholder="Saran pemasok (opsional)"
+                  maxLength={200}
                   className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50"
-                >
-                  <option value="">— Supplier —</option>
-                  {suppliers.map(s => (
-                    <option key={s.id} value={s.id}>{s.company_name}</option>
-                  ))}
-                </select>
+                />
               </div>
               <div className="col-span-1 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
                 {item.estimated_total > 0

@@ -272,7 +272,7 @@ export default function PRDetail() {
                 <th className="pb-2 pr-3 text-right">Qty</th>
                 <th className="pb-2 pr-3">Satuan</th>
                 <th className="pb-2 pr-3 text-right">Harga Est.</th>
-                <th className="pb-2 pr-3">Supplier Pref.</th>
+                <th className="pb-2 pr-3">Saran Pemasok</th>
                 <th className="pb-2 pr-3">PO</th>
                 <th className="pb-2 text-right">Total Est.</th>
               </tr>

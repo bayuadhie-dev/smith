@@ -567,6 +567,7 @@ class PRItem(db.Model):
     uom = db.Column(db.String(20), nullable=False)
     estimated_unit_price = db.Column(db.Numeric(15, 2), nullable=True)
     estimated_total = db.Column(db.Numeric(15, 2), nullable=True)
+    preferred_supplier_name = db.Column(db.String(200), nullable=True)   # saran pemasok teks bebas (opsional); pemasok sungguhan dipilih saat jadi PO
     preferred_supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=True)
     notes = db.Column(db.Text, nullable=True)
     # 2026-09-21: per-line record of which PO this item actually ended up

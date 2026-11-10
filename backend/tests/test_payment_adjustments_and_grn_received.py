@@ -397,3 +397,11 @@ def test_pr_print_matches_paper_form_fields(client, auth_headers, db_session, te
     d = db_session.get(Document, client.post(f'/api/documents/generate-from-purchase-requisition/{pr.id}', headers=auth_headers).get_json()['document_id'])
     h = d.html_content
     assert all(k in h for k in ('FRM-PRC-01', 'BON PERMINTAAN PEMBELIAN', 'BAGIAN', 'BPP NO', 'Gudang', 'BPP-T-1', 'Sarung tangan', '10 PCS', 'Mengetahui', 'Menyetujui'))
+
+
+def test_pr_item_supplier_is_optional_free_text(client, auth_headers, db_session):
+    body = {'department': 'IT', 'items': [{'item_name': 'Langganan', 'quantity': 1, 'uom': 'bulan', 'preferred_supplier_name': '  Anthropic  '}]}
+    pr = client.post('/api/purchasing/purchase-requisitions', json=body, headers=auth_headers).get_json()
+    assert pr['items'][0]['preferred_supplier_id'] is None and pr['items'][0]['preferred_supplier_name'] == 'Anthropic'
+    up = client.put(f"/api/purchasing/purchase-requisitions/{pr['id']}", json={'items': [{'item_name': 'Langganan', 'quantity': 1, 'uom': 'bulan'}]}, headers=auth_headers).get_json()
+    assert up['items'][0]['preferred_supplier_name'] is None
