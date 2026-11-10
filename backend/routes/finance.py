@@ -1095,6 +1095,8 @@ def create_payment_core(data, user_id, commit=True):
 
         if old_payment and old_snapshot is not None:
             _record_payment_edit_history(old_payment, payment, old_snapshot, data, user_id)
+            from utils.finance_helpers import purge_cancelled_payment
+            purge_cancelled_payment(old_payment)   # pembayaran lama hasil Ubah tidak disimpan; perubahannya ada di Riwayat
 
         from utils.finance_helpers import (
             resolve_accounts_receivable, resolve_accounts_payable, post_pending_journal, fx_difference_line

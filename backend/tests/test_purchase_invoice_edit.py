@@ -37,13 +37,15 @@ def test_edit_replaces_invoice_keeps_number_and_restores_qty(client, auth_header
     assert new['invoice_number'] == old_no and new['id'] != old_id
     db_session.expire_all()
     old = db_session.get(Invoice, old_id)
-    assert old.status == 'cancelled' and old.invoice_number == f'{old_no}-V1'
+    assert old is None                                                           # faktur lama dihapus, bukan disimpan sebagai batal
+    from models.finance import AccountingEntry
+    assert AccountingEntry.query.filter(AccountingEntry.reference_type.in_(['purchase_invoice', 'void_purchase_invoice']), AccountingEntry.reference_id == old_id).count() == 0
     db_session.refresh(it); assert float(it.quantity_invoiced) == 80          # 60 dikembalikan, 80 ditagih
     assert RecordAttachment.query.filter_by(entity_type='purchase_invoice', entity_id=new['id']).count() == 1
     h = client.get(f"/api/history?table=invoices&id={new['id']}", headers=auth_headers).get_json()['history']
     assert any(c['field'] == 'Total' for e in h for c in e['changes'])
     again = _post(client, auth_headers, sup, po, it, 70, replace_invoice_id=old_id)
-    assert again.status_code == 400                                              # faktur lama sudah dibatalkan
+    assert again.status_code == 404                                              # faktur lama sudah tidak ada
 
 
 def test_edit_blocked_when_paid(client, auth_headers, db_session, test_material):

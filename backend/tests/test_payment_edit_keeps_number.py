@@ -19,15 +19,13 @@ def test_edit_keeps_payment_number_and_voids_old(client, auth_headers, db_sessio
     assert new['payment_number'] == 'PAY-KEEP-1'
     assert new['payment_id'] != old_id
 
-    old = db_session.get(Payment, old_id)
-    db_session.refresh(old)
-    assert old.payment_number == 'PAY-KEEP-1-V1'
-    assert old.status == 'cancelled'
+    db_session.expire_all()
+    assert db_session.get(Payment, old_id) is None          # pembayaran lama dihapus, bukan disimpan sebagai batal
 
     r3 = _post(client, auth_headers, bank, a, 900, replace_payment_id=new['payment_id'])
     assert r3.status_code == 201, r3.get_json()
     assert r3.get_json()['payment_number'] == 'PAY-KEEP-1'
-    assert Payment.query.filter_by(payment_number='PAY-KEEP-1-V2').count() == 1
+    assert Payment.query.filter(Payment.payment_number.like('PAY-KEEP-1-V%')).count() == 0
 
 
 def test_edit_records_history_and_hides_replaced(client, auth_headers, db_session):

@@ -774,6 +774,8 @@ def create_purchase_invoice_core(data, user_id, commit=True):
         _auto_grn_for_non_inventory(invoice, po, items_data, user_id, invoice_date_parsed)
     if old_invoice is not None:
         _record_invoice_edit_history(old_invoice, invoice, old_snapshot, user_id)
+        from utils.finance_helpers import purge_cancelled_invoice
+        purge_cancelled_invoice(old_invoice)   # faktur lama hasil Ubah tidak disimpan; perubahannya ada di Riwayat
 
     # Header total_amount had the same gap as item total_price: left
     # entirely to the caller, defaulting to 0 when omitted - an invoice

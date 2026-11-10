@@ -181,6 +181,51 @@ def post_pending_journal(pending_journal_id, posted_by_user_id=None, reference_t
     return created_entries
 
 
+def purge_cancelled_invoice(inv):
+    """Hapus permanen faktur yang sudah dibatalkan beserta barisnya dan jurnal aslinya + jurnal pembaliknya (saling meniadakan,
+    jadi buku besar tetap bersih). Dipakai untuk faktur lama hasil Ubah. Menolak (return False) kalau masih ada dokumen yang menunjuknya."""
+    from models.finance import AccountingEntry, Payment, PaymentAllocation, InvoiceItem
+    if inv.status != 'cancelled':
+        return False
+    if Payment.query.filter_by(invoice_id=inv.id).first() or PaymentAllocation.query.filter_by(invoice_id=inv.id).first():
+        return False
+    from sqlalchemy import text
+    for tbl in ('credit_memo_applications', 'customer_deposit_usages', 'purchase_down_payment_allocations', 'purchase_returns', 'shipping_orders'):
+        if db.session.execute(text(f'select 1 from {tbl} where invoice_id = :i limit 1'), {'i': inv.id}).first():
+            return False
+    entries = AccountingEntry.query.filter(AccountingEntry.reference_type.in_(['purchase_invoice', 'void_purchase_invoice', 'sales_invoice', 'void_sales_invoice']),
+                                           AccountingEntry.reference_id == inv.id).all()
+    ids = [e.id for e in entries]
+    if ids and db.session.execute(text('select 1 from bank_statement_lines where matched_accounting_entry_id = any(:ids) limit 1'), {'ids': ids}).first() \
+            if db.engine.dialect.name == 'postgresql' else False:
+        return False
+    for e in entries:
+        db.session.delete(e)
+    InvoiceItem.query.filter_by(invoice_id=inv.id).delete()
+    db.session.delete(inv)
+    db.session.flush()
+    return True
+
+
+def purge_cancelled_payment(pay):
+    """Sama seperti purge_cancelled_invoice, untuk pembayaran lama hasil Ubah."""
+    from models.finance import AccountingEntry, PaymentAllocation, PaymentLine
+    if pay.status != 'cancelled':
+        return False
+    entries = AccountingEntry.query.filter(AccountingEntry.reference_type.in_(['payment', 'void_payment']), AccountingEntry.reference_id == pay.id).all()
+    ids = [e.id for e in entries]
+    from sqlalchemy import text
+    if ids and db.engine.dialect.name == 'postgresql' and db.session.execute(text('select 1 from bank_statement_lines where matched_accounting_entry_id = any(:ids) limit 1'), {'ids': ids}).first():
+        return False
+    for e in entries:
+        db.session.delete(e)
+    PaymentAllocation.query.filter_by(payment_id=pay.id).delete()
+    PaymentLine.query.filter_by(payment_id=pay.id).delete()
+    db.session.delete(pay)
+    db.session.flush()
+    return True
+
+
 def reverse_accounting_entries(reference_type, reference_id, entry_date, user_id,
                                 description=None, new_reference_type=None):
     """
