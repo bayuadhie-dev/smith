@@ -66,7 +66,7 @@ def test_void_sales_invoice_without_payment_reverses_journal(client, auth_header
     original_entries = AccountingEntry.query.filter_by(reference_type='sales_invoice', reference_id=invoice_id).all()
     assert len(original_entries) > 0
 
-    resp = client.post(f'/api/finance/invoices/{invoice_id}/void', json={'reason': 'test void'}, headers=auth_headers)
+    resp = _void_invoice_direct(invoice_id, 'test void')
     assert resp.status_code == 200, resp.get_json()
 
     invoice = db.session.get(Invoice, invoice_id)
@@ -138,7 +138,7 @@ def test_void_payment_reverses_journal_and_restores_invoice_balance(client, auth
     assert invoice.status == 'paid'
     assert float(invoice.balance_due) == 0
 
-    resp2 = client.post(f'/api/finance/payments/{payment_id}/void', json={'reason': 'test void payment'}, headers=auth_headers)
+    resp2 = _void_payment_direct(payment_id, 'test void payment')
     assert resp2.status_code == 200, resp2.get_json()
 
     from models.finance import Payment
@@ -236,7 +236,7 @@ def test_void_purchase_invoice_reverses_journal(client, auth_headers, db_session
     db_session.add_all([entry1, entry2])
     db_session.commit()
 
-    resp = client.post(f'/api/finance/invoices/{invoice.id}/void', json={'reason': 'test PI void'}, headers=auth_headers)
+    resp = _void_invoice_direct(invoice.id, 'test PI void')
     assert resp.status_code == 200, resp.get_json()
 
     db.session.refresh(invoice)
@@ -252,3 +252,33 @@ def test_void_purchase_invoice_reverses_journal(client, auth_headers, db_session
     total_debit = sum(float(e.debit_amount or 0) for e in reversal_entries)
     total_credit = sum(float(e.credit_amount or 0) for e in reversal_entries)
     assert round(total_debit, 2) == round(total_credit, 2)
+
+
+class _Ok:
+    status_code = 200
+
+    def get_json(self):
+        return {}
+
+
+def _void_invoice_direct(invoice_id, reason=None):
+    """Tombol Void kini menghapus transaksinya; tes pembalikan jurnal memanggil inti void langsung."""
+    from models import db
+    from models.finance import Invoice
+    from routes.finance import _void_invoice_core
+    from models.user import User
+    err = _void_invoice_core(db.session.get(Invoice, invoice_id), User.query.first().id, reason)
+    assert err is None, err
+    db.session.commit()
+    return _Ok()
+
+
+def _void_payment_direct(payment_id, reason=None):
+    from models import db
+    from models.finance import Payment
+    from routes.finance import _void_payment_core
+    from models.user import User
+    err = _void_payment_core(db.session.get(Payment, payment_id), User.query.first().id, reason)
+    assert err is None, err
+    db.session.commit()
+    return _Ok()

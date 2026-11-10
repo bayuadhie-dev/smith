@@ -1316,12 +1316,22 @@ def void_invoice(id):
             return jsonify({'error': 'Invoice tidak ditemukan'}), 404
 
         data = request.get_json(silent=True) or {}
+        number = invoice.invoice_number
         err = _void_invoice_core(invoice, user_id, data.get('reason'))
         if err:
             return jsonify({'error': err[0]}), err[1]
 
+        from utils.finance_helpers import purge_cancelled_invoice
+        from models.purchasing import GoodsReceivedNote, GRNItem
+        auto_grns = GoodsReceivedNote.query.filter(GoodsReceivedNote.notes == f'Otomatis dari faktur pembelian {number}',
+                                                   GoodsReceivedNote.status == 'rejected').all()
+        purged = purge_cancelled_invoice(invoice)   # transaksi yang dibatalkan tidak disimpan
+        if purged:
+            for g in auto_grns:
+                GRNItem.query.filter_by(grn_id=g.id).delete()
+                db.session.delete(g)
         db.session.commit()
-        return jsonify({'message': f'Invoice {invoice.invoice_number} berhasil di-void'}), 200
+        return jsonify({'message': f'Invoice {number} berhasil dibatalkan' + (' dan dihapus' if purged else ''), 'deleted': purged}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -1472,8 +1482,11 @@ def void_payment(id):
         err = _void_payment_core(payment, user_id, data.get('reason'))
         if err:
             return err
+        number = payment.payment_number
+        from utils.finance_helpers import purge_cancelled_payment
+        purged = purge_cancelled_payment(payment)   # transaksi yang dibatalkan tidak disimpan
         db.session.commit()
-        return jsonify({'message': f'Payment {payment.payment_number} berhasil di-void'}), 200
+        return jsonify({'message': f'Payment {number} berhasil dibatalkan' + (' dan dihapus' if purged else ''), 'deleted': purged}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

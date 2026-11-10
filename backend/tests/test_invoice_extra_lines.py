@@ -48,7 +48,7 @@ def test_auto_grn_for_non_inventory_and_overdelivery(client, auth_headers, db_se
     assert len(g) == 1 and g[0].status == 'approved' and g[0].grn_number.startswith('BPB-')
     db_session.refresh(it); assert float(it.quantity_received) == 14920
     inv_id = r.get_json()['invoice']['id']
-    v = client.post(f'/api/finance/invoices/{inv_id}/void', json={'reason': 'uji'}, headers=auth_headers)
-    assert v.status_code == 200, v.get_json()
+    from tests.test_void_gl import _void_invoice_direct
+    _void_invoice_direct(inv_id, 'uji')
     db_session.refresh(it); db_session.refresh(g[0])
     assert g[0].status == 'rejected' and float(it.quantity_received) == 0

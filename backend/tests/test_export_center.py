@@ -74,7 +74,10 @@ def test_journal_list_flags_voided_pairs_and_excludes_them_from_summary(client, 
         'payment_date': '2026-10-20', 'payment_type': 'payment', 'payment_method': 'cash', 'amount': amt, 'bank_account_id': bank.id,
         'payment_number': n, 'lines': [{'account_id': a.id, 'amount': amt}]}).get_json()['payment_id']
     keep, gone = mk('PAY-K', 100), mk('PAY-V', 250)
-    assert client.post(f'/api/finance/payments/{gone}/void', headers=auth_headers, json={}).status_code == 200
+    from datetime import date as _d
+    from utils.finance_helpers import reverse_accounting_entries
+    reverse_accounting_entries(reference_type='payment', reference_id=gone, entry_date=_d(2026, 10, 21), user_id=None, description='Void payment PAY-V')
+    db_session.commit()   # Void lewat tombol kini menghapus transaksinya; pasangan jurnal batal tetap bisa muncul dari pembalikan manual
     d = client.get('/api/finance/accounting/journal-entries?hide_voided=0', headers=auth_headers).get_json()
     assert sorted(e['kind'] for e in d['entries']) == ['normal', 'reversal', 'voided']
     assert d['summary'] == {'journals': 1, 'total_debit': 100.0, 'total_credit': 100.0, 'hidden': 2}
@@ -135,7 +138,10 @@ def test_general_ledger_hides_cancelled_pairs_and_links_to_source(client, auth_h
         'payment_date': '2026-10-20', 'payment_type': 'payment', 'payment_method': 'cash', 'amount': amt, 'bank_account_id': bank.id,
         'payment_number': n, 'lines': [{'account_id': a.id, 'amount': amt}]}).get_json()['payment_id']
     keep, gone = mk('PAY-GK', 100), mk('PAY-GV', 250)
-    assert client.post(f'/api/finance/payments/{gone}/void', headers=auth_headers, json={}).status_code == 200
+    from datetime import date as _d
+    from utils.finance_helpers import reverse_accounting_entries
+    reverse_accounting_entries(reference_type='payment', reference_id=gone, entry_date=_d(2026, 10, 21), user_id=None, description='Void payment')
+    db_session.commit()
     d = client.get('/api/finance/general-ledger?start_date=2026-10-01&end_date=2026-10-31&per_page=100', headers=auth_headers).get_json()
     assert d['total'] == 2 and {e['document_url'] for e in d['entries']} == {f'/app/finance/payments/{keep}'}
     assert sum(e['debit_amount'] - e['credit_amount'] for e in d['entries']) == 0

@@ -344,3 +344,22 @@ def test_grn_rebatch_split_and_rename_moves_stock(client, auth_headers, db_sessi
     assert inv['A1'] == 60 and inv['A2'] == 40
     bad = {'ids': [i.id for i in GRNItem.query.filter_by(grn_id=gid).all()], 'items': [{'id': None, 'batch_number': 'Z', 'quantity': 99}]}
     assert client.put(f'/api/purchasing/grn/{gid}', json={'rebatch': [bad]}, headers=auth_headers).status_code == 400
+
+
+def test_voiding_payment_and_invoice_deletes_them_with_their_journals(client, auth_headers, db_session):
+    from models.finance import AccountingEntry, Invoice, Payment
+    bank = _bank(db_session)
+    _, inv = _foreign_ap(db_session, currency='IDR', rate=1, amount=1000)
+    pid = _pay(client, auth_headers, bank, inv, 400).get_json()['payment_id']
+    r = client.post(f'/api/finance/payments/{pid}/void', headers=auth_headers, json={})
+    assert r.status_code == 200 and r.get_json()['deleted'] is True
+    db_session.expire_all()
+    assert db_session.get(Payment, pid) is None
+    assert AccountingEntry.query.filter(AccountingEntry.reference_type.in_(['payment', 'void_payment']), AccountingEntry.reference_id == pid).count() == 0
+    db_session.refresh(inv)
+    assert float(inv.paid_amount) == 0 and float(inv.balance_due) == 1000      # saldo faktur kembali
+    iid = inv.id
+    r2 = client.post(f'/api/finance/invoices/{iid}/void', headers=auth_headers, json={})
+    assert r2.status_code == 200 and r2.get_json()['deleted'] is True
+    db_session.expire_all()
+    assert db_session.get(Invoice, iid) is None
