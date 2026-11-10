@@ -121,6 +121,7 @@ scikit-learn==1.9.0  # utils/ews_scoring.py (Early Warning System .pkl models)
 joblib==1.5.3  # utils/ews_scoring.py
 opencv-python-headless==4.14.0.94  # utils/face_detector.py
 pikepdf==10.17.0  # utils/dcc_pdf.py (lock DCC PDFs)
+pypdf>=4.0  # utils/customer_po_import.py (baca PO pelanggan PDF bila pdftotext tidak ada)
 pywebpush==2.5.0  # utils/send_notification.py (web push)
 resend==2.50.0  # utils/email_service.py (EMAIL_PROVIDER=resend)
 google-api-python-client==2.201.0  # backup_database.py (Google Drive upload)
