@@ -71,6 +71,24 @@ export default function PRForm() {
   // For convert-to-PO modal
   const [showConvertModal, setShowConvertModal] = useState(false);
   const [convertSupplierId, setConvertSupplierId] = useState('');
+  const [newSup, setNewSup] = useState<{ name: string; currency: string; terms: string } | null>(null);
+  const [savingSup, setSavingSup] = useState(false);
+  const createSupplier = async () => {
+    if (!newSup || !newSup.name.trim()) { toast.error('Nama pemasok wajib diisi'); return; }
+    setSavingSup(true);
+    try {
+      const r = await axiosInstance.post('/api/purchasing/suppliers', { name: newSup.name.trim(), currency: newSup.currency, payment_terms: newSup.terms || undefined });
+      const sup = r.data?.supplier || r.data
+      const sid = sup?.id ?? r.data?.supplier_id
+      const list = await axiosInstance.get('/api/purchasing/suppliers?per_page=500')
+      setSuppliers(list.data.suppliers || [])
+      if (sid) setConvertSupplierId(String(sid))
+      setNewSup(null)
+      toast.success('Pemasok baru dibuat')
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || 'Gagal membuat pemasok')
+    } finally { setSavingSup(false) }
+  };
 
   // For approve/reject modal
   const [showApproveModal, setShowApproveModal] = useState(false);
@@ -597,6 +615,27 @@ export default function PRForm() {
                 <option key={s.id} value={s.id}>{s.company_name}</option>
               ))}
             </select>
+            {!newSup ? (
+              <button type="button" className="mb-4 -mt-2 text-sm text-blue-600 hover:underline"
+                onClick={() => setNewSup({ name: (items.find((i) => i.preferred_supplier_name?.trim())?.preferred_supplier_name || '').trim(), currency: formData.currency || 'IDR', terms: '30' })}>
+                + Buat pemasok baru
+              </button>
+            ) : (
+              <div className="mb-4 -mt-2 space-y-2 rounded-lg border border-gray-200 p-3 dark:border-gray-600">
+                <input className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white" placeholder="Nama pemasok" value={newSup.name} onChange={(e) => setNewSup({ ...newSup, name: e.target.value })} />
+                <div className="flex gap-2">
+                  <select className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white" value={newSup.currency} onChange={(e) => setNewSup({ ...newSup, currency: e.target.value })}>
+                    <option value="IDR">IDR</option><option value="USD">USD</option><option value="CNY">CNY</option>
+                  </select>
+                  <input type="number" min="0" className="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white" placeholder="Termin (hari)" value={newSup.terms} onChange={(e) => setNewSup({ ...newSup, terms: e.target.value })} />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button type="button" className="px-3 py-1.5 border rounded-lg text-sm" onClick={() => setNewSup(null)}>Batal</button>
+                  <button type="button" disabled={savingSup} className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm disabled:opacity-50" onClick={createSupplier}>{savingSup ? 'Menyimpan...' : 'Simpan pemasok'}</button>
+                </div>
+                <p className="text-xs text-gray-500">Data lengkap (alamat, NPWP, rekening) bisa dilengkapi nanti di master pemasok.</p>
+              </div>
+            )}
             <div className="flex gap-2 justify-end">
               <button onClick={() => setShowConvertModal(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
               <button
