@@ -184,7 +184,8 @@ class ApprovalEmailToken(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     token_hash = db.Column(db.String(64), unique=True, nullable=False, index=True)
-    workflow_id = db.Column(db.Integer, db.ForeignKey('approval_workflows.id', ondelete='CASCADE'), nullable=False, index=True)
+    workflow_id = db.Column(db.Integer, db.ForeignKey('approval_workflows.id', ondelete='CASCADE'), nullable=True, index=True)
+    pr_approval_id = db.Column(db.Integer, db.ForeignKey('pr_approvals.id', ondelete='CASCADE'), nullable=True, index=True)   # langkah persetujuan PR
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     step = db.Column(db.String(20), nullable=False)  # review / approval
     expires_at = db.Column(db.DateTime, nullable=False)

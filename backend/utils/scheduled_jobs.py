@@ -169,8 +169,11 @@ def check_approval_escalations(app):
                 continue
 
             target_user_ids = set()
-            role_user_ids = db.session.query(UserRole.user_id).filter(UserRole.role_id == step.required_role_id).all()
-            target_user_ids.update(uid for (uid,) in role_user_ids)
+            if step.assigned_user_id:
+                target_user_ids.add(step.assigned_user_id)
+            else:
+                role_user_ids = db.session.query(UserRole.user_id).filter(UserRole.role_id == step.required_role_id).all()
+                target_user_ids.update(uid for (uid,) in role_user_ids)
             super_admin_ids = db.session.query(User.id).filter(User.is_super_admin == True, User.is_active == True).all()
             target_user_ids.update(uid for (uid,) in super_admin_ids)
 
@@ -179,7 +182,7 @@ def check_approval_escalations(app):
                 send_notification(
                     uid,
                     title='Approval PR Terlambat Diproses',
-                    message=f'PR {pr.pr_number if pr else step.pr_id} level {step.approval_level} ({step.required_role.name if step.required_role else ""}) sudah menunggu lebih dari 48 jam - mohon segera diproses.',
+                    message=f'PR {pr.pr_number if pr else step.pr_id} level {step.approval_level} ({(step.kind or (step.required_role.name if step.required_role else ""))}) sudah menunggu lebih dari 48 jam - mohon segera diproses.',
                     category='system',
                     notification_type='warning',
                     priority='high',

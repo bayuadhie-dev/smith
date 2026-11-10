@@ -874,6 +874,17 @@ def generate_purchase_requisition_document(pr_id, user_id):
         rows.append({'no': i, 'code': it.item_code or (it.material.code if it.material else (it.product.code if it.product else '')),
                      'item_name': it.item_name or master, 'quantity': float(it.quantity or 0), 'uom': it.uom, 'notes': it.notes or '',
                      'qty_text': f'{fmt(it.quantity)} {it.uom}'.strip()})
+    names = {}
+    for st in pr.approval_steps:
+        if st.kind:
+            u = st.assigned_user or st.approver
+            names[st.kind] = (u.full_name or u.username) if u else ''
+    if not names:
+        from utils.pr_approval import get_chain
+        from models.user import User
+        for link in get_chain():
+            u = db.session.get(User, link['user_id'])
+            names[link['kind']] = (u.full_name or u.username) if u else ''
     labels = {'low': 'Rendah', 'normal': 'Normal', 'high': 'Tinggi', 'urgent': 'Mendesak'}
     status = {'draft': 'Draf', 'submitted': 'Diajukan', 'approved': 'Disetujui', 'rejected': 'Ditolak', 'converted': 'Jadi PO', 'partially_converted': 'Sebagian jadi PO'}
     document_data = {
@@ -882,6 +893,7 @@ def generate_purchase_requisition_document(pr_id, user_id):
         'department_line': f'Departemen: {pr.department}' if pr.department else '',
         'purpose': pr.purpose or '', 'request_date': d(pr.request_date), 'required_date': d(pr.required_date),
         'priority_label': labels.get(pr.priority, pr.priority or ''), 'status_label': status.get(pr.status, pr.status or ''),
+        'mengetahui_name': names.get('mengetahui', ''), 'menyetujui_name': names.get('menyetujui', ''),
         'bagian': pr.department or '', 'bpp_no': pr.pr_number, 'tanggal_text': d(pr.request_date), 'kepada': 'Purchasing',
         'lines': rows, 'notes': pr.notes or '', 'company': get_company_context(),
     }

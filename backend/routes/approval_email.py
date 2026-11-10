@@ -32,7 +32,7 @@ def _resolve(token):
     if err:
         return None, None, None, err
     user = db.session.get(User, row.user_id)
-    wf = db.session.get(ApprovalWorkflow, row.workflow_id)
+    wf = db.session.get(ApprovalWorkflow, row.workflow_id) if row.workflow_id else None
     if not user or not user.is_active:
         return None, None, None, 'Akun penyetuju tidak aktif.'
     return row, user, wf, None
@@ -46,6 +46,11 @@ def preview(token):
     row, user, wf, err = _resolve(token)
     if err:
         return jsonify({'error': err}), 400
+    if row.pr_approval_id:
+        from utils.pr_approval import pr_details
+        from models.purchasing import PRApproval
+        return jsonify({'step': row.step, 'approver': user.full_name or user.username,
+                        'details': pr_details(db.session.get(PRApproval, row.pr_approval_id).purchase_requisition)})
     return jsonify({'step': row.step, 'approver': user.full_name or user.username,
                     'details': ae.workflow_details(wf)})
 
@@ -61,6 +66,22 @@ def act(token):
     action = body.get('action')
     if action not in ('approve', 'reject'):
         return jsonify({'error': 'Aksi tidak valid.'}), 400
+
+    if row.pr_approval_id:
+        from models.purchasing import PRApproval
+        from utils import pr_approval as pra
+        notes = (body.get('notes') or '').strip()
+        if action == 'reject' and not notes:
+            return jsonify({'error': 'Alasan penolakan wajib diisi.'}), 400
+        step = db.session.get(PRApproval, row.pr_approval_id)
+        resp, status = pra.step_action(step.pr_id, step.approval_level, user.id, action, (notes + ' [via email]').strip(), notes)
+        if status == 200:
+            row.used_at = __import__('datetime').datetime.utcnow()
+            db.session.commit()
+            pra.after_change_async(step.pr_id)
+            return jsonify({'message': resp['message']}), 200
+        db.session.rollback()
+        return jsonify(resp), status
 
     from routes.approval_workflow import review_core, approve_core, reject_core, user_can_act_on
     allowed, msg = user_can_act_on(user, wf, row.step)

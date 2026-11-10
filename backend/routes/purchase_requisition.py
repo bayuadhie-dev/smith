@@ -30,6 +30,18 @@ def _create_pr_approval_levels(pr):
     amount, and set pr.status accordingly. Does not commit - caller does."""
     total = _pr_total_estimated(pr)
 
+    # Rantai penyetuju per orang (mis. Finance mengetahui, Hizkia menyetujui): selalu butuh persetujuan, tanpa batas otomatis.
+    from utils.pr_approval import get_chain
+    chain = get_chain()
+    if chain:
+        created = []
+        for level_num, link in enumerate(chain, start=1):
+            step = PRApproval(pr_id=pr.id, approval_level=level_num, required_role_id=None, assigned_user_id=int(link['user_id']), kind=link['kind'], status='pending')
+            db.session.add(step)
+            created.append(step)
+        pr.status = 'submitted'
+        return created
+
     if total < PR_AUTO_APPROVE_LIMIT:
         pr.status = 'approved'
         pr.approved_by = None
@@ -59,6 +71,9 @@ def format_pr_approval_step(step):
         'approval_level': step.approval_level,
         'required_role_id': step.required_role_id,
         'required_role_name': step.required_role.name if step.required_role else None,
+        'assigned_user_id': step.assigned_user_id,
+        'assigned_user_name': (step.assigned_user.full_name or step.assigned_user.username) if getattr(step, 'assigned_user', None) else None,
+        'kind': step.kind,
         'approver_id': step.approver_id,
         'approver_name': step.approver.full_name if step.approver else None,
         'status': step.status,
@@ -336,6 +351,8 @@ def submit_pr(pr_id):
         # _create_pr_approval_levels for the full threshold logic.
         _create_pr_approval_levels(pr)
         db.session.commit()
+        from utils.pr_approval import after_change_async
+        after_change_async(pr.id)
 
         msg = 'PR otomatis disetujui (di bawah batas approval)' if pr.status == 'approved' else 'PR berhasil diajukan untuk approval'
         return jsonify({'message': msg, 'pr': format_pr(pr)}), 200
@@ -394,68 +411,21 @@ def approve_pr(pr_id):
 @jwt_required()
 @require_permission('purchase_requests.approve')
 def act_on_pr_approval_step(pr_id, level):
-    """Approve or reject ONE level of a tiered PR approval. Levels are
-    sequential - level N can't be acted on until level N-1 is approved.
-    The acting user must hold the role required for that level (any user
-    with that role can act - this is role-gated, not a pre-assigned
-    individual, same pattern as ApprovalConfiguration.approver_roles)."""
+    """Approve or reject ONE level of a PR approval. Levels are sequential - level N can't be acted on until level N-1 is approved.
+    Langkah bisa ditetapkan ke satu orang (assigned_user_id) atau berbasis role (any user with the role)."""
     try:
+        from utils import pr_approval as pra
         user_id = int(get_jwt_identity())
-        pr = db.session.get(PurchaseRequisition, pr_id, with_for_update=True)
-        if not pr:
-            return jsonify({'error': 'Purchase Requisition not found'}), 404
-
-        # Idempotency (2026-10-17): row-locked so a genuinely concurrent
-        # duplicate request can't both read status='pending' before either
-        # commits - matches the same fix applied to the generic
-        # ApprovalWorkflow system (routes/approval_workflow.py) the same day.
-        step = PRApproval.query.filter_by(pr_id=pr_id, approval_level=level).with_for_update().first()
-        if not step:
-            return jsonify({'error': f'Approval level {level} tidak ditemukan untuk PR ini'}), 404
-        if step.status != 'pending':
-            return jsonify({'error': f'Approval level {level} sudah berstatus {step.status}'}), 400
-
-        prior_pending = PRApproval.query.filter(
-            PRApproval.pr_id == pr_id,
-            PRApproval.approval_level < level,
-            PRApproval.status != 'approved',
-        ).first()
-        if prior_pending:
-            return jsonify({'error': f'Level {prior_pending.approval_level} harus di-approve dulu sebelum level {level}.'}), 400
-
-        user = db.session.get(User, user_id)
-        user_role_names = {ur.role.name for ur in user.roles if ur.role}
-        if not user.is_super_admin and step.required_role.name not in user_role_names:
-            return jsonify({'error': f'Approval level {level} butuh role "{step.required_role.name}" - akun Anda tidak punya role ini.'}), 403
-
         data = request.get_json() or {}
         action = data.get('action', 'approve')
-
-        step.approver_id = user_id
-        step.approved_at = datetime.utcnow()
-        step.comments = data.get('comments')
-
-        if action == 'approve':
-            step.status = 'approved'
-            remaining = PRApproval.query.filter(
-                PRApproval.pr_id == pr_id, PRApproval.status != 'approved'
-            ).count()
-            if remaining == 0:
-                pr.status = 'approved'
-                pr.approved_by = user_id
-                pr.approved_at = datetime.utcnow()
-                pr.rejection_reason = None
-            msg = f'Level {level} ({step.required_role.name}) disetujui' + (' - PR fully approved' if remaining == 0 else '')
-        else:
-            step.status = 'rejected'
-            pr.status = 'rejected'
-            pr.approved_by = user_id
-            pr.approved_at = datetime.utcnow()
-            pr.rejection_reason = data.get('rejection_reason', step.comments or '')
-            msg = f'PR ditolak pada level {level} ({step.required_role.name})'
-
+        resp, status = pra.step_action(pr_id, level, user_id, action, data.get('comments'), data.get('rejection_reason'))
+        if status != 200:
+            db.session.rollback()
+            return jsonify(resp), status
         db.session.commit()
-        return jsonify({'message': msg, 'pr': format_pr(pr)}), 200
+        pr = db.session.get(PurchaseRequisition, pr_id)
+        pra.after_change_async(pr_id)
+        return jsonify({'message': resp['message'], 'pr': format_pr(pr)}), 200
 
     except Exception as e:
         db.session.rollback()

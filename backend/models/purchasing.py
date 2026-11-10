@@ -248,7 +248,9 @@ class PRApproval(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pr_id = db.Column(db.Integer, db.ForeignKey('purchase_requisitions.id', ondelete='CASCADE'), nullable=False)
     approval_level = db.Column(db.Integer, nullable=False)  # 1, 2, ...
-    required_role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
+    required_role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=True)   # kosong kalau penyetuju ditetapkan per orang
+    assigned_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)   # penyetuju yang ditetapkan (mis. Finance, Hizkia)
+    kind = db.Column(db.String(20), nullable=True)   # mengetahui / menyetujui
     approver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # filled in once acted on
     status = db.Column(db.String(20), nullable=False, default='pending')  # pending, approved, rejected
     comments = db.Column(db.Text, nullable=True)
@@ -261,7 +263,8 @@ class PRApproval(db.Model):
 
     purchase_requisition = db.relationship('PurchaseRequisition', backref='approval_steps')
     required_role = db.relationship('Role')
-    approver = db.relationship('User')
+    approver = db.relationship('User', foreign_keys=[approver_id])
+    assigned_user = db.relationship('User', foreign_keys=[assigned_user_id])
 
 
 class SupplierQuote(db.Model):

@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-11g'
+LAYOUT = 'v2-2026-11h'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 AUTO_NOTE_PREFIXES = ('Auto-generated', 'Migrasi otomatis')  # the font-unit migration only rescales values of auto-generated layouts
 
@@ -339,7 +339,7 @@ def build_purchase_requisition():
     ], min_rows=11, row_h=5.6, height=30, fs=8.5)
     t.update({'headerBg': '#e5e7eb', 'headerColor': '#000000', 'gridColor': INK, 'zebra': '#ffffff'})
     o.append(t)
-    o += flow(signatures(10, 190, 90, ['Pemohon,', 'Mengetahui,', 'Menyetujui,'], captions={0: ' ', 1: ' ', 2: ' '}, gap=14))
+    o += flow(signatures(10, 190, 90, ['Pemohon,', 'Mengetahui,', 'Menyetujui,'], caption_paths={0: 'requester_name', 1: 'mengetahui_name', 2: 'menyetujui_name'}, gap=14))
     return o, 'A5', 'landscape', 210, 148
 
 

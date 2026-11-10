@@ -45,6 +45,27 @@ def issue_token(workflow, user, step):
     return raw
 
 
+def issue_token_for_pr(step, user):
+    from models.approval_workflow import ApprovalEmailToken
+    raw = secrets.token_urlsafe(32)
+    db.session.add(ApprovalEmailToken(token_hash=_hash(raw), workflow_id=None, pr_approval_id=step.id, user_id=user.id,
+                                      step='review' if step.kind == 'mengetahui' else 'approval',
+                                      expires_at=datetime.utcnow() + timedelta(days=TOKEN_TTL_DAYS)))
+    return raw
+
+
+def _find_pr_token(row):
+    from models.purchasing import PRApproval, PurchaseRequisition
+    step = db.session.get(PRApproval, row.pr_approval_id)
+    pr = db.session.get(PurchaseRequisition, step.pr_id) if step else None
+    if not step or not pr or step.status != 'pending' or pr.status != 'submitted':
+        return None, 'Dokumen ini sudah diproses atau tahapnya sudah berubah.'
+    prior = PRApproval.query.filter(PRApproval.pr_id == step.pr_id, PRApproval.approval_level < step.approval_level, PRApproval.status != 'approved').first()
+    if prior:
+        return None, 'Dokumen ini belum sampai ke tahap Anda.'
+    return row, None
+
+
 def find_token(raw):
     """Token valid -> ApprovalEmailToken, selain itu (None, pesan)."""
     from models.approval_workflow import ApprovalEmailToken, ApprovalWorkflow
@@ -55,6 +76,8 @@ def find_token(raw):
         return None, 'Tautan ini sudah dipakai.'
     if row.expires_at < datetime.utcnow():
         return None, 'Tautan sudah kedaluwarsa. Buka dokumennya langsung di ERP.'
+    if row.pr_approval_id:
+        return _find_pr_token(row)
     wf = db.session.get(ApprovalWorkflow, row.workflow_id)
     if not wf or STEP_OF_STATUS.get(wf.status) != row.step:
         return None, 'Dokumen ini sudah diproses atau tahapnya sudah berubah.'

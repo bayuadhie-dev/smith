@@ -196,7 +196,7 @@ export default function PRDetail() {
                         {step.approval_level}
                       </span>
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">{step.required_role_name || `Role #${step.required_role_id}`}</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{step.assigned_user_name ? `${step.kind === 'mengetahui' ? 'Mengetahui' : 'Menyetujui'}: ${step.assigned_user_name}` : (step.required_role_name || `Role #${step.required_role_id}`)}</p>
                         {step.approver_name && (
                           <p className="text-xs text-gray-400">{step.approver_name} &middot; {step.approved_at ? new Date(step.approved_at).toLocaleString('id-ID') : ''}</p>
                         )}
@@ -369,7 +369,7 @@ export default function PRDetail() {
         {stepModal.step && (
           <div className="space-y-3 text-sm">
             <DetailRow label="Level" value={String(stepModal.step.approval_level)} />
-            <DetailRow label="Role yang Dibutuhkan" value={stepModal.step.required_role_name || `Role #${stepModal.step.required_role_id}`} />
+            <DetailRow label={stepModal.step.assigned_user_name ? 'Penyetuju' : 'Role yang Dibutuhkan'} value={stepModal.step.assigned_user_name || stepModal.step.required_role_name || `Role #${stepModal.step.required_role_id}`} />
             <DetailRow
               label="Status"
               value={(STEP_STATUS_CONFIG[stepModal.step.status] || STEP_STATUS_CONFIG.pending).label}
