@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-11e'
+LAYOUT = 'v2-2026-11f'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 AUTO_NOTE_PREFIXES = ('Auto-generated', 'Migrasi otomatis')  # the font-unit migration only rescales values of auto-generated layouts
 
@@ -316,6 +316,24 @@ def build_grn():
     return o, 'A4', 'portrait', None, None
 
 
+def build_purchase_requisition():
+    o = header(14, 182, 'BON PERMINTAAN PEMBELIAN', lines=3)
+    o += [BOX(14, 33, 90, 26),
+          L('PEMOHON', 16, 34, 86, 3.5, fs=7.5, color=MUTED),
+          F('requester_name', 16, 38.5, 86, 5, fs=11, bold=True),
+          F('department_line', 16, 45, 86, 5, fs=9, color=MUTED),
+          F('purpose', 16, 50, 86, 9, fs=8.5)]
+    o += meta_grid(104, 33, 34, 58, [('Tgl Permintaan', 'request_date'), ('Dibutuhkan', 'required_date'),
+                                     ('Prioritas', 'priority_label'), ('Status', 'status_label')], 6.5)
+    o.append(TABLE('lines', 14, 63, 182, [
+        C('no', 'No.', 9, 'center'), C('code', 'Kode', 24), C('item_name', 'Nama Barang', 70),
+        C('quantity', 'Qty', 20, 'right', 'num'), C('uom', 'Satuan', 16), C('notes', 'Keterangan', 43),
+    ], min_rows=0, row_h=6.5, height=30, fs=9))
+    o += flow(notes_line(14, 100, 182))
+    o += flow(signatures(14, 182, 125, ['Pemohon,', 'Diketahui oleh,', 'Disetujui oleh,'], captions={0: ' ', 1: ' ', 2: ' '}))
+    return o, 'A4', 'portrait', None, None
+
+
 def build_surat_jalan():
     o = header(14, 182, 'SURAT JALAN')
     o += [BOX(14, 33, 90, 26),
@@ -410,6 +428,7 @@ DEFAULTS = {
     'purchase_order': ('Purchase Order Default', 'PO_DEFAULT', build_po),
     'purchase_invoice': ('Faktur Pembelian Default', 'PI_DEFAULT', build_purchase_invoice),
     'three_way_match': ('Pencocokan 3 Arah Default', 'TWM_DEFAULT', build_three_way_match),
+    'purchase_requisition': ('Bon Permintaan Pembelian Default', 'PR_DEFAULT', build_purchase_requisition),
     'grn': ('Penerimaan Barang Default', 'GRN_DEFAULT', build_grn),
     'surat_jalan': ('Surat Jalan Default', 'SJ_DEFAULT', build_surat_jalan),
     'spk': ('SPK Default', 'SPK_DEFAULT', build_spk),

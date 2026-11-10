@@ -856,6 +856,48 @@ def generate_grn_document(grn_id, user_id, detail=False):
     return document
 
 
+def generate_purchase_requisition_document(pr_id, user_id):
+    """Cetak Bon Permintaan Pembelian (Purchase Request)."""
+    from models.purchasing import PurchaseRequisition
+
+    pr = db.session.get(PurchaseRequisition, pr_id)
+    if not pr:
+        raise ValueError('Permintaan pembelian tidak ditemukan')
+
+    def fmt(n):
+        return f'{float(n or 0):,.3f}'.rstrip('0').rstrip('.').replace(',', '_').replace('.', ',').replace('_', '.')
+
+    d = lambda x: x.strftime('%d-%m-%Y') if x else '-'
+    rows = []
+    for i, it in enumerate(pr.items, 1):
+        master = (it.material.name if it.material else (it.product.name if it.product else ''))
+        rows.append({'no': i, 'code': it.item_code or (it.material.code if it.material else (it.product.code if it.product else '')),
+                     'item_name': it.item_name or master, 'quantity': float(it.quantity or 0), 'uom': it.uom, 'notes': it.notes or ''})
+    labels = {'low': 'Rendah', 'normal': 'Normal', 'high': 'Tinggi', 'urgent': 'Mendesak'}
+    status = {'draft': 'Draf', 'submitted': 'Diajukan', 'approved': 'Disetujui', 'rejected': 'Ditolak', 'converted': 'Jadi PO', 'partially_converted': 'Sebagian jadi PO'}
+    document_data = {
+        'document_number': pr.pr_number, 'hdr_no': f'No. {pr.pr_number}', 'hdr_date': f'Tanggal: {d(pr.request_date)}', 'hdr_extra': '',
+        'requester_name': (pr.requester.full_name or pr.requester.username) if pr.requester else '',
+        'department_line': f'Departemen: {pr.department}' if pr.department else '',
+        'purpose': pr.purpose or '', 'request_date': d(pr.request_date), 'required_date': d(pr.required_date),
+        'priority_label': labels.get(pr.priority, pr.priority or ''), 'status_label': status.get(pr.status, pr.status or ''),
+        'lines': rows, 'notes': pr.notes or '', 'company': get_company_context(),
+    }
+    template = ensure_default_template(user_id, 'purchase_requisition')
+    document = Document(
+        document_number=generate_number('DOC-PR', Document, 'document_number'),
+        document_title=f'Bon Permintaan Pembelian {pr.pr_number}', document_type='purchase_requisition',
+        template_version_id=template.current_version_id, document_data=document_data,
+        reference_type='purchase_requisition', reference_id=pr.id, reference_number=pr.pr_number, status='generated', created_by=user_id)
+    document.html_content = render_template_version_to_html(template.current_version, document_data)
+    db.session.add(document)
+    db.session.flush()
+    db.session.add(DocumentLog(document_id=document.id, activity_type='auto_generated',
+                               activity_description=f'Bon permintaan pembelian {pr.pr_number} dicetak', user_id=user_id))
+    db.session.commit()
+    return document
+
+
 def generate_purchase_order_document(po_id, user_id):
     """Printable Purchase Order."""
     from models.purchasing import PurchaseOrder

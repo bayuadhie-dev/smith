@@ -1,3 +1,4 @@
+import DocumentGenerateButton from '../../components/DocumentGenerateButton'
 import RiwayatPanel from '../../components/RiwayatPanel'
 import AttachmentsPanel from '../../components/AttachmentsPanel'
 import { useState, useEffect } from 'react';
@@ -116,6 +117,8 @@ export default function PRDetail() {
             </div>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+        <DocumentGenerateButton transactionType="purchase_requisition" transactionId={pr.id} transactionNumber={pr.pr_number} label="Cetak Bon" />
         {pr.status === 'draft' && (
           <Link
             to={`/app/purchasing/requisitions/${id}/edit`}
@@ -124,6 +127,7 @@ export default function PRDetail() {
             <PencilSquareIcon className="h-4 w-4" /> Edit
           </Link>
         )}
+        </div>
       </div>
 
       {pr.status === 'rejected' && pr.rejection_reason && (

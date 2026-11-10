@@ -363,3 +363,15 @@ def test_voiding_payment_and_invoice_deletes_them_with_their_journals(client, au
     assert r2.status_code == 200 and r2.get_json()['deleted'] is True
     db_session.expire_all()
     assert db_session.get(Invoice, iid) is None
+
+
+def test_purchase_requisition_print(client, auth_headers, db_session, test_user):
+    from models.purchasing import PRItem, PurchaseRequisition
+    from models.document_management import Document
+    pr = PurchaseRequisition(pr_number='PR-T-1', requested_by=test_user.id, request_date=date.today(), department='Produksi', purpose='Stok', status='approved', priority='high')
+    db_session.add(pr); db_session.commit()
+    db_session.add(PRItem(pr_id=pr.id, line_number=1, item_name='Kertas A4', quantity=5, uom='RIM')); db_session.commit()
+    r = client.post(f'/api/documents/generate-from-purchase-requisition/{pr.id}', headers=auth_headers)
+    assert r.status_code == 201, r.get_json()
+    d = db_session.get(Document, r.get_json()['document_id'])
+    assert d.document_data['lines'][0]['item_name'] == 'Kertas A4' and d.document_data['priority_label'] == 'Tinggi' and 'Kertas A4' in d.html_content
