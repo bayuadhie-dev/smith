@@ -243,8 +243,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
               name: 'Transaksi', icon: ArrowsRightLeftIcon, isSubMenu: true, subChildren: [
                 { name: 'Penerimaan Barang', href: '/app/purchasing/grn' },
                 { name: 'Permintaan Barang', href: '/app/warehouse/material-issues' },
-                { name: 'Pemindahan Barang', href: '/app/warehouse/transfers' },
-                { name: 'Terima Barang', href: '/app/warehouse/transfers/receive' },
+                { name: 'Pemindahan & Terima Barang', href: '/app/warehouse/transfers' },
               ]
             },
             {

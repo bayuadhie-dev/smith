@@ -51,7 +51,7 @@ import MovementDetail from './pages/Warehouse/MovementDetail'
 import AdjustmentForm from './pages/Warehouse/AdjustmentForm'
 import AdjustmentList from './pages/Warehouse/AdjustmentList'
 import AdjustmentDetail from './pages/Warehouse/AdjustmentDetail'
-import StockTransferList from './pages/Warehouse/StockTransferList'
+import TransferHub from './pages/Warehouse/TransferHub'
 import StockTransferForm from './pages/Warehouse/StockTransferForm'
 import StockTransferDetail from './pages/Warehouse/StockTransferDetail'
 import ItemStockPage from './pages/Warehouse/ItemStockPage'
@@ -514,9 +514,9 @@ function AppChildRoutes() {
                 <Route path="warehouse/adjustments" element={<AdjustmentList />} />
                 <Route path="warehouse/adjustments/new" element={<AdjustmentForm />} />
                 <Route path="warehouse/adjustments/:id" element={<AdjustmentDetail />} />
-                <Route path="warehouse/transfers" element={<StockTransferList />} />
+                <Route path="warehouse/transfers" element={<TransferHub />} />
                 <Route path="warehouse/transfers/new" element={<StockTransferForm />} />
-                <Route path="warehouse/transfers/receive" element={<StockTransferList receiveMode />} />
+                <Route path="warehouse/transfers/receive" element={<TransferHub />} />
                 <Route path="warehouse/transfers/:id" element={<StockTransferDetail />} />
                 <Route path="warehouse/item-stock/:kind/:id" element={<ItemStockPage />} />
                 <Route path="warehouse/reports" element={<InventoryList />} />
