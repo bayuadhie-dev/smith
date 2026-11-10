@@ -16,6 +16,7 @@ from decimal import Decimal
 from sqlalchemy import or_, func, and_
 from sqlalchemy.orm import joinedload, selectinload
 import json
+import re
 from utils.timezone import get_local_now, get_local_today
 import redis
 import os
@@ -1185,6 +1186,31 @@ def _sync_sales_order_journal(order, old_total, new_total, user_id):
             )
             pending.total_debit = new_total
             pending.total_credit = new_total
+
+
+@sales_bp.route('/orders/<int:id>', methods=['DELETE'])
+@jwt_required()
+@require_permission('sales_orders.delete', 'sales_orders.edit')
+def delete_draft_order(id):
+    """Hapus Sales Order yang masih draf dan belum punya dokumen turunan (transaksi yang dibatalkan tidak disimpan)."""
+    from sqlalchemy.exc import IntegrityError
+    try:
+        order = db.session.get(SalesOrder, id)
+        if not order:
+            return jsonify({'error': 'Order tidak ditemukan'}), 404
+        if order.status != 'draft':
+            return jsonify({'error': 'Hanya Sales Order berstatus draf yang bisa dihapus. Order yang sudah dikonfirmasi dibatalkan lewat alur biasa.'}), 400
+        number = order.order_number
+        SalesOrderItem.query.filter_by(order_id=order.id).delete()
+        db.session.delete(order)
+        db.session.commit()
+        return jsonify({'message': f'Order {number} dihapus', 'deleted': True}), 200
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'error': 'Order ini sudah punya dokumen turunan (pengiriman, faktur, atau SPK), jadi tidak bisa dihapus.'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 
 @sales_bp.route('/orders/<int:id>', methods=['PUT'])
@@ -3874,3 +3900,128 @@ def delete_customer_material_info(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+# ===============================
+# IMPOR PO PELANGGAN (PDF) -> SALES ORDER DRAF
+# ===============================
+
+def _match_customers(hint, ship_to):
+    q = Customer.query.filter(Customer.is_active.is_(True)) if hasattr(Customer, 'is_active') else Customer.query
+    words = [w for w in re.split(r'[^A-Za-z0-9]+', (hint or '').upper()) if len(w) >= 4 and w not in ('PT', 'CV')]
+    if not words:
+        return []
+    for w in words[:1]:
+        q = q.filter(Customer.company_name.ilike(f'%{w}%'))
+    rows = q.order_by(Customer.company_name).limit(200).all()
+    ship = [w for w in re.split(r'[^A-Za-z0-9]+', (ship_to or '').upper()) if len(w) >= 3 and w not in ('DC',)]
+    def score(c):
+        n = (c.company_name or '').upper()
+        return sum(1 for w in ship if w in n)
+    rows.sort(key=lambda c: (-score(c), c.company_name or ''))
+    return [{'id': c.id, 'name': c.company_name, 'score': score(c)} for c in rows[:30]]
+
+
+def _match_products(customer_id, plu, name):
+    from models.sales import CustomerMaterialInfo
+    found = []
+    # 1) kode barang pelanggan yang pernah dipetakan (semua cabang pelanggan yang sama)
+    cm = CustomerMaterialInfo.query.filter(CustomerMaterialInfo.customer_material_code == plu, CustomerMaterialInfo.is_active.is_(True)).all()
+    for r in cm:
+        if r.product and r.product.id not in [x['id'] for x in found]:
+            found.append({'id': r.product.id, 'code': r.product.code, 'name': r.product.name, 'uom': r.product.primary_uom, 'via': 'kode pelanggan'})
+    # 2) barcode
+    for p in Product.query.filter(Product.barcode == plu).limit(3).all():
+        if p.id not in [x['id'] for x in found]:
+            found.append({'id': p.id, 'code': p.code, 'name': p.name, 'uom': p.primary_uom, 'via': 'barcode'})
+    # 3) kemiripan nama
+    toks = [t for t in re.split(r'[^A-Za-z0-9]+', (name or '').upper()) if len(t) >= 4 and not t.isdigit()][:4]
+    if toks and len(found) < 8:
+        q = Product.query
+        for t in toks[:2]:
+            q = q.filter(Product.name.ilike(f'%{t}%'))
+        for p in q.order_by(Product.name).limit(12).all():
+            if p.id not in [x['id'] for x in found]:
+                found.append({'id': p.id, 'code': p.code, 'name': p.name, 'uom': p.primary_uom, 'via': 'nama mirip'})
+    return found[:10]
+
+
+@sales_bp.route('/orders/import-po/preview', methods=['POST'])
+@jwt_required()
+@require_permission('sales_orders.create')
+def import_po_preview():
+    try:
+        f = request.files.get('file')
+        if not f:
+            return jsonify({'error': 'File PDF wajib diunggah'}), 400
+        data = f.read()
+        if len(data) > 10 * 1024 * 1024:
+            return jsonify({'error': 'Ukuran file maksimal 10 MB'}), 400
+        from utils.customer_po_import import pdf_to_text, parse_customer_po
+        text = pdf_to_text(data)
+        if not text.strip():
+            return jsonify({'error': 'Teks PDF tidak terbaca (mungkin hasil scan/foto). Isi SO secara manual.'}), 422
+        po = parse_customer_po(text)
+        customers = _match_customers(po.get('customer_hint'), po.get('ship_to'))
+        cid = customers[0]['id'] if customers and customers[0]['score'] > 0 else None
+        for it in po['items']:
+            it['candidates'] = _match_products(cid, it['plu'], it['name'])
+            it['product_id'] = it['candidates'][0]['id'] if it['candidates'] and it['candidates'][0]['via'] != 'nama mirip' else None
+        dup = None
+        if po.get('po_number'):
+            d = SalesOrder.query.filter(SalesOrder.customer_po_number == po['po_number'], SalesOrder.status != 'cancelled').first()
+            dup = d.order_number if d else None
+        return jsonify({'po': po, 'customers': customers, 'customer_id': cid, 'duplicate_of': dup}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@sales_bp.route('/orders/import-po/create', methods=['POST'])
+@jwt_required()
+@require_permission('sales_orders.create')
+def import_po_create():
+    try:
+        from models.sales import CustomerMaterialInfo
+        d = request.get_json() or {}
+        user_id = get_jwt_identity()
+        cid = d.get('customer_id')
+        if not cid or not db.session.get(Customer, cid):
+            return jsonify({'error': 'Pilih pelanggan'}), 400
+        items = d.get('items') or []
+        if not items or any(not i.get('product_id') for i in items):
+            return jsonify({'error': 'Setiap baris harus dipetakan ke produk'}), 400
+        po_no = (d.get('po_number') or '').strip()
+        if po_no:
+            dup = SalesOrder.query.filter(SalesOrder.customer_po_number == po_no, SalesOrder.customer_id == cid, SalesOrder.status != 'cancelled').first()
+            if dup:
+                return jsonify({'error': f'PO {po_no} sudah dibuat sebagai {dup.order_number}'}), 400
+        data = {
+            'customer_id': cid, 'order_date': d.get('po_date') or get_local_today().isoformat(), 'customer_po_number': po_no or None,
+            'payment_terms': f"Net {d['terms_days']}" if d.get('terms_days') else None,
+            'notes': d.get('notes') or (f"Diimpor dari PO pelanggan {po_no}" if po_no else None),
+            'items': [{'product_id': i['product_id'], 'quantity': float(i['quantity']), 'unit_price': float(i['unit_price']),
+                       'discount_percent': float(i.get('discount_percent') or 0), 'uom': i.get('uom') or 'PCS',
+                       'description': i.get('description')} for i in items],
+        }
+        order = create_sales_order_core(data, user_id)
+        for i in items:   # simpan kode barang pelanggan supaya PO berikutnya cocok otomatis
+            plu = (i.get('plu') or '').strip()
+            if plu and not CustomerMaterialInfo.query.filter_by(customer_id=cid, product_id=i['product_id']).first():
+                db.session.add(CustomerMaterialInfo(customer_id=cid, product_id=i['product_id'], customer_material_code=plu, created_by=user_id,
+                                                    notes='Dari impor PO pelanggan'))
+        db.session.commit()
+        return jsonify({'message': 'Sales Order draf dibuat', 'order_id': order.id, 'order_number': order.order_number}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@sales_bp.route('/orders/import-po/products', methods=['GET'])
+@jwt_required()
+@require_permission('sales_orders.create')
+def import_po_search_products():
+    q = (request.args.get('q') or '').strip()
+    if len(q) < 2:
+        return jsonify({'products': []}), 200
+    rows = Product.query.filter(or_(Product.name.ilike(f'%{q}%'), Product.code.ilike(f'%{q}%'))).order_by(Product.name).limit(20).all()
+    return jsonify({'products': [{'id': p.id, 'code': p.code, 'name': p.name, 'uom': p.primary_uom} for p in rows]}), 200

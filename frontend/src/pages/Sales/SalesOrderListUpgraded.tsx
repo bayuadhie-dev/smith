@@ -23,6 +23,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
 import ConfirmAndStartProductionModal from '../../components/Sales/ConfirmAndStartProductionModal';
+import ImportCustomerPOModal from '../../components/Sales/ImportCustomerPOModal';
 
 interface SalesOrder {
   id: number;
@@ -60,6 +61,7 @@ const SalesOrderListUpgraded: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showActions]);
 
+  const [showPoImport, setShowPoImport] = useState(false);
   const { data, isLoading, refetch } = useGetSalesOrdersQuery({
     search: searchTerm,
     status: statusFilter,
@@ -131,7 +133,18 @@ const SalesOrderListUpgraded: React.FC = () => {
     }).format(value);
   };
 
-  const handleCancelOrder = async (id: number) => {
+  const handleCancelOrder = async (id: number, status?: string) => {
+    if (status === 'draft') {
+      if (!(await confirmDialog('Hapus Sales Order draf ini? Order akan dihapus permanen.'))) return;
+      try {
+        await axiosInstance.delete(`/api/sales/orders/${id}`);
+        toast.success('Order dihapus');
+        refetch();
+      } catch (e: any) {
+        toast.error(e?.response?.data?.error || 'Gagal menghapus order');
+      }
+      return;
+    }
     if (!(await confirmDialog('Are you sure you want to cancel this order?'))) return;
     try {
       await axiosInstance.put(`/api/sales/orders/${id}`, { status: 'cancelled' });
@@ -169,6 +182,13 @@ const SalesOrderListUpgraded: React.FC = () => {
               title="Refresh"
             >
               <ArrowPathIcon className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowPoImport(true)}
+              className="inline-flex items-center px-4 py-2 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 transition-colors"
+            >
+              Impor PO Pelanggan
             </button>
             <Link
               to="/app/imports?kind=sales_order"
@@ -384,7 +404,7 @@ const SalesOrderListUpgraded: React.FC = () => {
                             </button>
                             {!['delivered', 'cancelled'].includes(order.status) && (
                               <button
-                                onClick={() => handleCancelOrder(order.id)}
+                                onClick={() => handleCancelOrder(order.id, order.status)}
                                 className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                               >
                                 <XMarkIcon className="h-4 w-4 mr-2" />
@@ -422,6 +442,8 @@ const SalesOrderListUpgraded: React.FC = () => {
           </div>
         </div>
       )}
+
+      {showPoImport && <ImportCustomerPOModal onClose={() => { setShowPoImport(false); refetch() }} />}
 
       {approvingOrder && (
         <ConfirmAndStartProductionModal
