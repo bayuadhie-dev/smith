@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '../../hooks/redux'
 import { logout } from '../../store/slices/authSlice'
 import ThemeToggle from '../Common/ThemeToggle'
 import {
+  AdjustmentsHorizontalIcon,
   ArrowPathIcon,
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
@@ -232,7 +233,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           ]
         },
         {
-          name: 'Warehouse',
+          name: 'Inventory',
           href: '/app/warehouse',
           icon: BuildingStorefrontIcon,
           permission: 'warehouse',
@@ -240,21 +241,23 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Dashboard', href: '/app/warehouse', icon: PresentationChartLineIcon },
             {
               name: 'Transaksi', icon: ArrowsRightLeftIcon, isSubMenu: true, subChildren: [
-                { name: 'Penerimaan Barang (GRN)', href: '/app/purchasing/grn' },
+                { name: 'Penerimaan Barang', href: '/app/purchasing/grn' },
                 { name: 'Permintaan Barang', href: '/app/warehouse/material-issues' },
                 { name: 'Pemindahan Barang', href: '/app/warehouse/movements' },
+              ]
+            },
+            {
+              name: 'Penyesuaian Stok', icon: AdjustmentsHorizontalIcon, isSubMenu: true, subChildren: [
+                { name: 'Penyesuaian Stok', href: '/app/warehouse/adjustments' },
                 { name: 'Input Stok Manual', href: '/app/warehouse/stock-input' },
                 { name: 'Penambahan Bahan Baku', href: '/app/warehouse/inventory' },
-              ]
-            },
-            {
-              name: 'Stok Opname', icon: ClipboardDocumentCheckIcon, isSubMenu: true, subChildren: [
                 { name: 'Perintah Opname', href: '/app/warehouse/stock-opname' },
                 { name: 'Hasil Opname', href: '/app/warehouse/stock-opname/results' },
+                { name: 'Cycle Count', href: '/app/wms/cycle-counts' },
               ]
             },
             {
-              name: 'Master Data Gudang', icon: CubeIcon, isSubMenu: true, subChildren: [
+              name: 'Barang & Gudang', icon: CubeIcon, isSubMenu: true, subChildren: [
                 { name: 'Barang & Material', href: '/app/warehouse/materials' },
                 { name: 'Daftar Material', href: '/app/warehouse/materials/list' },
                 { name: 'Gudang & Lokasi', href: '/app/warehouse/locations' },
@@ -266,18 +269,6 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                 { name: 'Barang per Gudang', href: '/app/warehouse/stock-summary' },
                 { name: 'Stok Minimum', href: '/app/warehouse/alerts' },
                 { name: 'Analytics', href: '/app/warehouse/analytics' },
-              ]
-            },
-            {
-              name: 'Manajemen Gudang Lanjutan (WMS)', icon: SparklesIcon, isSubMenu: true, subChildren: [
-                { name: 'Dashboard WMS', href: '/app/wms' },
-                { name: 'Stok per SPK', href: '/app/wms/stock-by-wo' },
-                { name: 'Konsumsi Material', href: '/app/wms/material-consumption' },
-                { name: 'Pick List', href: '/app/wms/pick-lists' },
-                { name: 'Transfer Stok', href: '/app/wms/transfers' },
-                { name: 'Penyesuaian Stok', href: '/app/warehouse/adjustments' },
-                { name: 'Cycle Count', href: '/app/wms/cycle-counts' },
-                { name: 'Batch Traceability', href: '/app/wms/batch-traceability' },
               ]
             },
           ]
@@ -323,6 +314,16 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
               ]
             },
             { name: 'WIP Stock', href: '/app/production/wip-stock', icon: ArchiveBoxIcon },
+            {
+              name: 'WMS (Gudang Produksi)', icon: SparklesIcon, isSubMenu: true, subChildren: [
+                { name: 'Dashboard WMS', href: '/app/wms' },
+                { name: 'Stok per SPK', href: '/app/wms/stock-by-wo' },
+                { name: 'Konsumsi Material', href: '/app/wms/material-consumption' },
+                { name: 'Pick List', href: '/app/wms/pick-lists' },
+                { name: 'Transfer Stok', href: '/app/wms/transfers' },
+                { name: 'Batch Traceability', href: '/app/wms/batch-traceability' },
+              ]
+            },
             {
               name: 'Batch', icon: CalendarDaysIcon, isSubMenu: true, subChildren: [
                 { name: 'Batch Scheduling', href: '/app/production/batch-scheduling' },
