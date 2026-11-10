@@ -30,6 +30,7 @@ export default function ImportCustomerPOModal({ onClose }: { onClose: () => void
       fd.append('file', file)
       const r = await axiosInstance.post('/api/sales/orders/import-po/preview', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
       setPo(r.data.po); setCustomers(r.data.customers || []); setCustomerId(r.data.customer_id || ''); setDup(r.data.duplicate_of || null)
+      setExpired(r.data.po.expired_date || '')
       setKeepUnit(/indomaret|indomarco/i.test(String((r.data.customers || [])[0]?.name || '')))
       setRows((r.data.po.items || []).map((it: any): Row => {
         const chosen = (it.candidates || []).find((c: Cand) => c.id === it.product_id) || null

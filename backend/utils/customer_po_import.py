@@ -30,8 +30,8 @@ def pdf_to_text(data: bytes) -> str:
         return ''
 
 
-def _date(txt):
-    m = re.search(r'TGL\s*:\s*(\d{1,2})-([A-Za-z]{3})-(\d{2,4})', txt)
+def _date(txt, pat=r'TGL\s*:\s*(\d{1,2})-([A-Za-z]{3})-(\d{2,4})'):
+    m = re.search(pat, txt)
     if not m:
         return None
     mon = MONTHS.get(m.group(2).upper())
@@ -44,12 +44,13 @@ def _date(txt):
 
 
 def parse_customer_po(text: str) -> dict:
-    out = {'po_number': None, 'po_date': None, 'terms_days': None, 'ship_to': None, 'customer_hint': None, 'items': [], 'warnings': []}
+    out = {'po_number': None, 'po_date': None, 'expired_date': None, 'terms_days': None, 'ship_to': None, 'customer_hint': None, 'items': [], 'warnings': []}
     m = re.search(r'NO\.?\s*PO\s*:\s*([A-Z0-9\-/]+)', text)
     out['po_number'] = m.group(1) if m else None
     m = re.search(r'TOP\s*:\s*(\d+)', text)
     out['terms_days'] = int(m.group(1)) if m else None
     out['po_date'] = _date(text)
+    out['expired_date'] = _date(text, r'TIDAK\s+BERLAKU\s+LAGI\s+SETELAH\s+TGL\s*:?\s*(\d{1,2})-([A-Za-z]{3})-(\d{2,4})')
     m = re.search(r'KRM\s*KE\s*:\s*(.+?)(?:\s{2,}|\n)', text)
     out['ship_to'] = m.group(1).strip() if m else None
     m = re.search(r'W\.?P\s*:\s*(.+?)(?:\n|$)', text)
