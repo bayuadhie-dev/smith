@@ -522,7 +522,10 @@ export default function GRNForm() {
                           </td>
                           <td className="py-2 pr-3">
                             {isEdit ? (
-                              <div className="text-sm">{locationOptions.find((l) => l.id === r.location_id)?.name || '-'}</div>
+                              <div>
+                                <div className="text-sm">{locationOptions.find((l) => l.id === r.location_id)?.name || '-'}</div>
+                                {r.location_id && <a href={`/app/warehouse/transfers/new?grn=${id}`} target="_blank" rel="noreferrer" className="text-xs text-emerald-700 hover:underline">Pindahkan ke gudang lain</a>}
+                              </div>
                             ) : r.is_service ? (
                               <div className="text-xs text-gray-500">Jasa, tidak masuk gudang</div>
                             ) : (

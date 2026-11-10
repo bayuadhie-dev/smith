@@ -27,6 +27,11 @@ export default function StockTransferForm() {
     axiosInstance.get('/api/warehouse/locations', { params: { per_page: 1000 } }).then((r) => setLocs(r.data.locations || [])).catch(() => showError('Daftar lokasi gagal dimuat'))
   }, [])
 
+  useEffect(() => {
+    const g = params.get('grn')
+    if (g && sources.some((x) => x.source_type === 'grn' && String(x.source_id) === g)) { setSrcKind('grn'); setSrcKey(`grn:${g}`) }
+  }, [sources]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const list = useMemo(() => sources.filter((s) => s.source_type === srcKind), [sources, srcKind])
   const src = useMemo(() => list.find((s) => `${s.source_type}:${s.source_id}` === srcKey) || null, [list, srcKey])
 

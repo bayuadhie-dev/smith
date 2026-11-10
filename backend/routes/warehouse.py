@@ -990,6 +990,7 @@ def get_movements():
                 'unit_cost': float(m.unit_cost) if m.unit_cost else 0,
                 'total_value': float(m.quantity) * float(m.unit_cost or 0),
                 'location_code': location_code,
+                'location_id': location.id if location else None,
                 'location_name': location_name,
                 'reference_type': m.reference_type or '',
                 'reference_number': m.reference_number or '',

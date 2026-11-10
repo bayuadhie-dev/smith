@@ -261,7 +261,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
               name: 'Barang & Gudang', icon: CubeIcon, isSubMenu: true, subChildren: [
                 { name: 'Barang & Material', href: '/app/warehouse/materials' },
                 { name: 'Daftar Material', href: '/app/warehouse/materials/list' },
-                { name: 'Gudang & Lokasi', href: '/app/warehouse/locations' },
+                { name: 'Master Gudang', href: '/app/warehouse/zones' },
+                { name: 'Lokasi Gudang', href: '/app/warehouse/locations' },
                 { name: 'Satuan Barang', href: '/app/warehouse/uom' },
               ]
             },

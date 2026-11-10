@@ -167,7 +167,7 @@ const [showModal, setShowModal] = useState(false)
                     <BuildingStorefrontIcon className="h-6 w-6 text-blue-600" />
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{zone.name}</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white"><Link to={`/app/warehouse/gudang/${zone.id}`} className="hover:text-emerald-700 hover:underline" title="Lihat stok, lokasi, dan mutasi gudang">{zone.name}</Link></h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{zone.code}</p>
                   </div>
                 </div>

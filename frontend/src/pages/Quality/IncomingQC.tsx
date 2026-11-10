@@ -21,6 +21,9 @@ import NumberInput from '../../components/ui/NumberInput'
 interface IncomingMaterial {
   id: number;
   po_number: string;
+  gr_number?: string;
+  grn_id?: number;
+  grn_status?: string;
   supplier_name: string;
   material_code: string;
   material_name: string;
@@ -329,6 +332,7 @@ export default function IncomingQC() {
                   <td className="px-4 py-4">
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">{material.po_number}</p>
+                      {material.grn_id && <a href={`/app/purchasing/grn/${material.grn_id}`} className="text-xs text-emerald-700 hover:underline" target="_blank" rel="noreferrer">{material.gr_number} ({material.grn_status})</a>}
                       <p className="text-sm text-gray-500 flex items-center gap-1">
                         <TruckIcon className="w-4 h-4" />
                         {material.supplier_name}

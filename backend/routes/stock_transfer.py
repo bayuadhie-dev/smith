@@ -329,3 +329,40 @@ def item_stock():
     for m in moves:
         m['from_label'], m['to_label'] = locs.get(m['from_location_id']), locs.get(m['to_location_id'])
     return jsonify({'stock': stock, 'total_on_hand': sum(s['on_hand'] for s in stock), 'movements': moves}), 200
+
+
+@stock_transfer_bp.route('/zone-stock/<int:zone_id>', methods=['GET'])
+@jwt_required()
+@require_permission('warehouse.view')
+def zone_stock(zone_id):
+    """Master gudang: lokasi, stok per barang, dan mutasi satu gudang."""
+    from models.warehouse import WarehouseZone
+    from models.wms_advanced import InventoryTransaction
+    zone = db.session.get(WarehouseZone, zone_id)
+    if not zone:
+        return jsonify({'error': 'Gudang tidak ditemukan'}), 404
+    locs = WarehouseLocation.query.filter_by(zone_id=zone_id).all()
+    loc_ids = [l.id for l in locs]
+    rows = Inventory.query.filter(Inventory.location_id.in_(loc_ids or [0]), Inventory.quantity_on_hand != 0).all()
+    items, per_loc = {}, {}
+    for r in rows:
+        key = ('m', r.material_id) if r.material_id else ('p', r.product_id)
+        it = items.setdefault(key, {'kind': 'material' if r.material_id else 'product', 'item_id': key[1], 'on_hand': 0.0, 'available': 0.0})
+        it['on_hand'] += float(r.quantity_on_hand)
+        it['available'] += float(r.quantity_available)
+        per_loc[r.location_id] = per_loc.get(r.location_id, 0.0) + float(r.quantity_on_hand)
+    for it in items.values():
+        obj = db.session.get(Material, it['item_id']) if it['kind'] == 'material' else db.session.get(Product, it['item_id'])
+        it['code'], it['name'] = getattr(obj, 'code', None), getattr(obj, 'name', None)
+        it['uom'] = getattr(obj, 'primary_uom', None) or getattr(obj, 'unit_of_measure', None)
+    mq = InventoryTransaction.query.filter(or_(InventoryTransaction.to_location_id.in_(loc_ids or [0]), InventoryTransaction.from_location_id.in_(loc_ids or [0])))
+    names = {l.id: l.location_code for l in locs}
+    moves = []
+    for m in mq.order_by(InventoryTransaction.id.desc()).limit(200).all():
+        obj = db.session.get(Material, m.material_id) if m.material_id else (db.session.get(Product, m.product_id) if m.product_id else None)
+        moves.append({'date': m.transaction_date.isoformat() if m.transaction_date else None, 'type': m.transaction_type, 'direction': m.direction,
+                      'quantity': float(m.quantity), 'item': getattr(obj, 'name', None), 'batch_number': m.batch_number, 'reference_number': m.reference_number,
+                      'location': names.get(m.to_location_id) or names.get(m.from_location_id)})
+    return jsonify({'zone': {'id': zone.id, 'code': zone.code, 'name': zone.name, 'zone_type': zone.zone_type, 'is_active': zone.is_active},
+                    'locations': [{'id': l.id, 'location_code': l.location_code, 'on_hand': per_loc.get(l.id, 0.0), 'is_active': l.is_active} for l in locs],
+                    'items': sorted(items.values(), key=lambda x: -x['on_hand']), 'movements': moves}), 200

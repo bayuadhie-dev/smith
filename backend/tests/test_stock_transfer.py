@@ -72,3 +72,35 @@ def test_transfer_insufficient_stock_and_cancel(client, auth_headers, db_session
     assert client.post(f'/api/stock-transfers/{tid}/ship', headers=auth_headers).status_code == 400
     assert client.post(f'/api/stock-transfers/{tid}/cancel', headers=auth_headers).status_code == 200
     assert client.get('/api/stock-transfers/sources', headers=auth_headers).status_code == 200
+
+
+def test_incoming_qc_updates_grn_status(client, auth_headers, db_session, test_material):
+    from models.purchasing import GoodsReceivedNote, GRNItem
+    a = _loc(db_session, 'QA')
+    from models.purchasing import Supplier
+    sup = Supplier(code='SUP-QC1', company_name='Pemasok QC', is_active=True)
+    db_session.add(sup); db_session.flush()
+    g = GoodsReceivedNote(grn_number='BPB-TEST/001', supplier_id=sup.id, receipt_date=__import__('datetime').date.today(), status='pending', received_by=1)
+    db_session.add(g); db_session.flush()
+    it = GRNItem(grn_id=g.id, material_id=test_material.id, item_name='Bahan', quantity_ordered=10, quantity_received=10,
+                 quantity_accepted=10, uom='KG', location_id=a.id, batch_number='B9')
+    db_session.add(it); db_session.commit()
+    lst = client.get('/api/quality/incoming-materials', headers=auth_headers).get_json()
+    assert any(m['id'] == it.id and m['grn_id'] == g.id for m in lst['materials'])
+    r = client.post(f'/api/quality/incoming-materials/{it.id}/inspect', headers=auth_headers, json={'result': 'accepted', 'visual_inspection': 'passed'})
+    assert r.status_code == 201, r.get_json()
+    db_session.refresh(g)
+    assert g.status == 'inspected' and g.quality_status == 'passed'
+    passed = client.get('/api/quality/incoming-materials?status=passed', headers=auth_headers).get_json()
+    assert any(m['id'] == it.id for m in passed['materials'])
+
+
+def test_zone_stock_summary(client, auth_headers, db_session, test_material):
+    a = _loc(db_session, 'ZS1')
+    _inv(db_session, test_material, a, 12, 'B1')
+    r = client.get(f'/api/stock-transfers/zone-stock/{a.zone_id}', headers=auth_headers)
+    assert r.status_code == 200
+    d = r.get_json()
+    assert any(i['item_id'] == test_material.id and i['on_hand'] == 12 for i in d['items'])
+    assert any(l['id'] == a.id and l['on_hand'] == 12 for l in d['locations'])
+    assert client.get('/api/stock-transfers/zone-stock/99999', headers=auth_headers).status_code == 404

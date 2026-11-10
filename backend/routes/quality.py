@@ -960,6 +960,33 @@ def get_inventory_by_qc_status():
 
 # ============ QC BARANG MASUK (INCOMING MATERIAL QC) ============
 
+def _sync_grn_after_incoming_qc(grn_id, user_id):
+    """Hasil QC Barang Masuk ikut mengisi status GRN: bila semua barang bergudang di GRN sudah diinspeksi, GRN jadi 'inspected'."""
+    from models.purchasing import GoodsReceivedNote
+    grn = db.session.get(GoodsReceivedNote, grn_id)
+    if not grn or grn.status not in ('pending', 'inspected'):
+        return
+    results = []
+    for it in grn.items:
+        if not it.location_id or not (it.material_id or it.product_id):
+            continue
+        insp = QualityInspection.query.filter(QualityInspection.reference_type == 'goods_receipt_item',
+                                              QualityInspection.reference_id == it.id).first()
+        if not insp:
+            return
+        results.append(insp.result)
+    if not results:
+        return
+    grn.status = 'inspected'
+    grn.inspected_by = user_id
+    if all(r == 'accepted' for r in results):
+        grn.quality_status = 'passed'
+    elif all(r == 'rejected' for r in results):
+        grn.quality_status = 'failed'
+    else:
+        grn.quality_status = 'partial'
+
+
 @quality_bp.route('/incoming-materials', methods=['GET'])
 @jwt_required()
 @require_permission('quality.view')
@@ -971,9 +998,13 @@ def get_incoming_materials_for_qc():
         status = request.args.get('status', 'pending')
         
         # Get goods receipts that need QC
-        grns = GoodsReceivedNote.query.filter(
-            GoodsReceivedNote.status == 'pending'
-        ).order_by(GoodsReceivedNote.receipt_date.desc()).all()
+        from models.purchasing import GRNItem as _GI
+        inspected_grn_ids = db.session.query(_GI.grn_id).join(
+            QualityInspection, db.and_(QualityInspection.reference_type == 'goods_receipt_item', QualityInspection.reference_id == _GI.id))
+        grns = GoodsReceivedNote.query.filter(db.or_(
+            GoodsReceivedNote.status.in_(['pending', 'inspected']),
+            GoodsReceivedNote.id.in_(inspected_grn_ids.subquery()),
+        )).order_by(GoodsReceivedNote.receipt_date.desc()).all()
 
         # GRNItem.material relationship is disabled on the model (see
         # models/purchasing.py - "# material = db.relationship('Material')
@@ -1037,6 +1068,8 @@ def get_incoming_materials_for_qc():
                     'uom': item.uom or 'pcs',
                     'received_date': gr.receipt_date.isoformat() if gr.receipt_date else None,
                     'qc_status': qc_status,
+                    'grn_id': gr.id,
+                    'grn_status': gr.status,
                     'inspection_id': existing_inspection.id if existing_inspection else None,
                     'inspector_name': existing_inspection.inspector.username if existing_inspection and existing_inspection.inspector else None,
                     'inspected_date': existing_inspection.inspection_date.isoformat() if existing_inspection and existing_inspection.inspection_date else None,
@@ -1134,6 +1167,7 @@ def inspect_incoming_material(item_id):
                 inv.qc_date = get_local_now()
                 quarantined_inventory_ids.append(inv.id)
 
+        _sync_grn_after_incoming_qc(gr_item.grn_id, user_id)
         db.session.commit()
 
         return jsonify({

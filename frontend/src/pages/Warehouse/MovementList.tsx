@@ -27,6 +27,7 @@ interface InventoryMovement {
   unit_cost: number;
   total_value: number;
   location_code: string;
+  location_id?: number | null;
   location_name: string;
   reference_type: string;
   reference_number: string;
@@ -366,7 +367,7 @@ const MovementList: React.FC = () => {
                           <MapPinIcon className="h-4 w-4 text-gray-400 mr-2" />
                           <div>
                             <div className="text-sm font-medium text-gray-900 dark:text-white">
-                              {movement.location_code}
+                              {movement.location_id ? <Link to={`/app/warehouse/locations/${movement.location_id}`} className="text-emerald-700 hover:underline">{movement.location_code}</Link> : movement.location_code}
                             </div>
                             <div className="text-sm text-gray-500">
                               {movement.location_name}

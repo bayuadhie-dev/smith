@@ -60,6 +60,7 @@ import LocationDetail from './pages/Warehouse/LocationDetail'
 import MovementList from './pages/Warehouse/MovementList'
 import StockInput from './pages/Warehouse/StockInput'
 import WarehouseZones from './pages/Warehouse/WarehouseZones'
+import ZoneStockPage from './pages/Warehouse/ZoneStockPage'
 import MaterialsDashboard from './pages/Warehouse/MaterialsDashboard'
 import MaterialsList from './pages/Warehouse/MaterialsList'
 import MaterialView from './pages/Warehouse/MaterialView'
@@ -489,6 +490,7 @@ function AppChildRoutes() {
                 <Route path="warehouse/analytics" element={<WarehouseAnalytics />} />
                 <Route path="warehouse/abc-analysis" element={<ABCAnalysis />} />
                 <Route path="warehouse/zones" element={<WarehouseZones />} />
+                <Route path="warehouse/gudang/:id" element={<ZoneStockPage />} />
                 <Route path="warehouse/zones/:id" element={<WarehouseZones />} />
                 <Route path="warehouse/zones/:id/locations" element={<WarehouseLocations />} />
                 <Route path="warehouse/zones/new" element={<WarehouseZones />} />
