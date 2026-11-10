@@ -622,12 +622,22 @@ export default function PRForm() {
               </button>
             ) : (
               <div className="mb-4 -mt-2 space-y-2 rounded-lg border border-gray-200 p-3 dark:border-gray-600">
+                <label className="block text-xs text-gray-500">Nama pemasok</label>
                 <input className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white" placeholder="Nama pemasok" value={newSup.name} onChange={(e) => setNewSup({ ...newSup, name: e.target.value })} />
                 <div className="flex gap-2">
-                  <select className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white" value={newSup.currency} onChange={(e) => setNewSup({ ...newSup, currency: e.target.value })}>
-                    <option value="IDR">IDR</option><option value="USD">USD</option><option value="CNY">CNY</option>
-                  </select>
-                  <input type="number" min="0" className="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white" placeholder="Termin (hari)" value={newSup.terms} onChange={(e) => setNewSup({ ...newSup, terms: e.target.value })} />
+                  <div className="flex-1">
+                    <label className="mb-1 block text-xs text-gray-500">Mata uang</label>
+                    <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white" value={newSup.currency} onChange={(e) => setNewSup({ ...newSup, currency: e.target.value })}>
+                      <option value="IDR">IDR</option><option value="USD">USD</option><option value="CNY">CNY</option>
+                    </select>
+                  </div>
+                  <div className="w-40">
+                    <label className="mb-1 block text-xs text-gray-500">Termin pembayaran (hari)</label>
+                    <div className="flex items-center gap-1">
+                      <input type="number" min="0" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white" value={newSup.terms} onChange={(e) => setNewSup({ ...newSup, terms: e.target.value })} />
+                      <span className="text-xs text-gray-500">hari</span>
+                    </div>
+                  </div>
                 </div>
                 <div className="flex justify-end gap-2">
                   <button type="button" className="px-3 py-1.5 border rounded-lg text-sm" onClick={() => setNewSup(null)}>Batal</button>
