@@ -92,7 +92,8 @@ class InvoiceItem(db.Model):
     material_id = db.Column(db.Integer, db.ForeignKey('materials.id'), nullable=True)
     po_item_id = db.Column(db.Integer, db.ForeignKey('purchase_order_items.id'), nullable=True)  # purchase: links back to the PO line for 3-way match / quantity_invoiced tracking
     description = db.Column(db.Text, nullable=False)
-    quantity = db.Column(db.Numeric(15, 2), nullable=False)
+    quantity = db.Column(db.Numeric(15, 4), nullable=False)
+    account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)  # baris tambahan di luar PO: akun beban pilihan
     uom = db.Column(db.String(20), nullable=True)
     unit_price = db.Column(db.Numeric(15, 2), nullable=False)
     discount_percent = db.Column(db.Numeric(5, 2), default=0)

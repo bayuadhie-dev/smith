@@ -198,7 +198,7 @@ export default function PurchaseInvoiceForm() {
         })
         const extras: Line[] = (editInv?.items || []).filter((x: any) => !x.po_item_id).map((x: any) => ({
           po_item_id: null, extra: true, name: '', uom: x.uom || '', ordered: 0, received: 0, invoiced: 0, qty: Number(x.quantity), price: Number(x.unit_price),
-          ppn_code: rateCode(Number(x.tax_percent || 0)), description: x.description || '', account_id: '',
+          ppn_code: rateCode(Number(x.tax_percent || 0)), description: x.description || '', account_id: x.account_id ? String(x.account_id) : '',
         }))
         if (restoredLines.current) restoredLines.current = false
         else setLines([...baseLines, ...extras])
