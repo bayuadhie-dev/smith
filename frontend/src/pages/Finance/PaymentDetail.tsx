@@ -92,12 +92,13 @@ export default function PaymentDetail() {
 
   const handleVoid = async () => {
     if (!payment) return;
-    if (!(await confirmDialog(`Void ${payment.payment_number}? Jurnal akan dibalik dan saldo faktur dikembalikan.`, { title: 'Void Transaksi', confirmText: 'Ya, Void' }))) return;
+    const who = payment.supplier_name || payment.customer_name || payment.paid_to || '-'
+    const amt = `Rp ${Number(payment.amount || 0).toLocaleString('id-ID')}`
+    if (!(await confirmDialog(`Batalkan dan hapus permanen ${payment.payment_number} (${who}, ${amt})? Transaksi dan jurnalnya akan dihapus dan tidak bisa dikembalikan. Saldo faktur yang dibayar kembali seperti semula.`, { title: 'Batalkan dan hapus transaksi', confirmText: 'Ya, hapus permanen' }))) return;
     try {
       await axiosInstance.post(`/api/finance/payments/${payment.id}/void`, { reason: voidReason || undefined });
-      showSuccess('Transaksi berhasil di-void');
-      const res = await axiosInstance.get(`/api/finance/payments/${payment.id}`);
-      setPayment(res.data);
+      showSuccess('Transaksi dibatalkan dan dihapus');
+      navigate(payment.payment_type === 'receipt' ? '/app/finance/penerimaan-penjualan' : '/app/finance/pembayaran-pembelian');
     } catch (err: any) {
       showError(err.response?.data?.error || 'Gagal void transaksi');
     }
@@ -176,7 +177,7 @@ export default function PaymentDetail() {
             onChange={(e) => setVoidReason(e.target.value)}
           />
           <button onClick={handleVoid} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-            Void
+            Batalkan & hapus
           </button>
         </div>
       )}
