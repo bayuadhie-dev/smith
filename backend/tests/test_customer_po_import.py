@@ -50,3 +50,12 @@ def test_delete_draft_sales_order_removes_it(client, auth_headers, db_session, t
     assert d.status_code == 200 and d.get_json()['deleted'] is True
     db_session.expire_all()
     assert db_session.get(SalesOrder, oid) is None
+
+
+def test_branch_match_prefers_exact_dc_name(client, auth_headers, db_session, monkeypatch):
+    from models import Customer
+    db_session.add_all([Customer(code='J1', company_name='PT INDOMARCO PRISMATAMA - JAKARTA', is_active=True),
+                        Customer(code='J2', company_name='PT INDOMARCO PRISMATAMA - JAKARTA 2', is_active=True)]); db_session.commit()
+    from routes.sales import _match_customers
+    assert _match_customers('PT. INDOMARCO PRISMATAMA', 'DC JAKARTA 2')[0]['name'].endswith('JAKARTA 2')
+    assert _match_customers('PT. INDOMARCO PRISMATAMA', 'DC JAKARTA')[0]['name'].endswith('- JAKARTA')

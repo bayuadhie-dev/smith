@@ -3915,9 +3915,13 @@ def _match_customers(hint, ship_to):
         q = q.filter(Customer.company_name.ilike(f'%{w}%'))
     rows = q.order_by(Customer.company_name).limit(200).all()
     ship = [w for w in re.split(r'[^A-Za-z0-9]+', (ship_to or '').upper()) if len(w) >= 3 and w not in ('DC',)]
+    ship_full = re.sub(r'^\s*DC\s+', '', (ship_to or '').upper()).strip()
     def score(c):
         n = (c.company_name or '').upper()
-        return sum(1 for w in ship if w in n)
+        pts = sum(1 for w in ship if w in n)
+        if ship_full and n.endswith(' - ' + ship_full):
+            pts += 10   # nama cabang persis sama (mis. "JAKARTA 2" bukan "JAKARTA")
+        return pts
     rows.sort(key=lambda c: (-score(c), c.company_name or ''))
     return [{'id': c.id, 'name': c.company_name, 'score': score(c)} for c in rows[:30]]
 
