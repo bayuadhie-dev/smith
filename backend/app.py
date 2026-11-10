@@ -444,6 +444,7 @@ def create_app(config_class=Config):
     from routes.warehouse_enhanced import warehouse_enhanced_bp
 
     from routes.stock_opname import stock_opname_bp
+    from routes.stock_transfer import stock_transfer_bp
 
     from routes.settings_extended import settings_extended_bp
 
@@ -645,6 +646,7 @@ def create_app(config_class=Config):
     app.register_blueprint(wms_advanced_bp)  # WMS Advanced with /api/wms prefix
 
     app.register_blueprint(stock_opname_bp, url_prefix='/api/stock-opname')
+    app.register_blueprint(stock_transfer_bp, url_prefix='/api/stock-transfers')
 
     
 

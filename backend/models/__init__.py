@@ -102,6 +102,7 @@ from .accurate import AccurateConfig, AccurateItemMapping, AccurateSyncLog
 from .spk import SPKWarehouseStageLog
 from .machine_layout import MachineLayoutWing, MachineLayoutNode, MachineAlias
 from .warehouse_adjustment import InventoryAdjustment, InventoryTransfer
+from .stock_transfer import StockTransfer, StockTransferLine, StockTransferReceipt, StockTransferReceiptLine
 from .batch_scheduling import (
     ProductionRecipe, GlobalCalendar, ExceptionCalendar,
     MachineCalendarOverride, ProductionBatch
@@ -209,6 +210,7 @@ __all__ = [
     'StockTransferOrder', 'StockTransferItem', 'CycleCountSchedule',
     # Expense models
     'Expense', 'Reimbursement', 'ReimbursementApproval',
+    'StockTransfer', 'StockTransferLine', 'StockTransferReceipt', 'StockTransferReceiptLine',
     # Accurate models
     'AccurateConfig', 'AccurateItemMapping', 'AccurateSyncLog',
     # Machine Layout Visualization models
