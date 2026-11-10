@@ -53,8 +53,18 @@ export default function PRForm() {
     required_date: '',
     purpose: '',
     priority: 'normal',
+    currency: 'IDR',
     notes: '',
   }, isNew);
+  const [rate, setRate] = useState<number | null>(1);
+  const [rateErr, setRateErr] = useState(false);
+  useEffect(() => {
+    if (formData.currency === 'IDR') { setRate(1); setRateErr(false); return; }
+    setRate(null); setRateErr(false);
+    axiosInstance.get('/api/purchasing/exchange-rate', { params: { currency: formData.currency } })
+      .then((r) => { if (r.data?.rate) setRate(Number(r.data.rate)); else setRateErr(true); })
+      .catch(() => setRateErr(true));
+  }, [formData.currency]);
   const [items, setItems] = useDraftState<PRItem[]>('items', [emptyItem()], isNew);
 
   // For convert-to-PO modal
@@ -84,6 +94,7 @@ export default function PRForm() {
             required_date: data.required_date || '',
             purpose: data.purpose || '',
             priority: data.priority || 'normal',
+            currency: data.currency || 'IDR',
             notes: data.notes || '',
           });
           setItems(data.items.length > 0 ? data.items.map((i: any) => ({
@@ -340,6 +351,24 @@ export default function PRForm() {
             />
           </div>
           <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Mata Uang Harga Estimasi</label>
+            <select
+              value={formData.currency}
+              onChange={(e) => setFormData(p => ({ ...p, currency: e.target.value }))}
+              disabled={!isEditable}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50 disabled:text-gray-500"
+            >
+              <option value="IDR">IDR - Rupiah</option>
+              <option value="USD">USD - Dolar AS</option>
+              <option value="CNY">CNY - Yuan</option>
+            </select>
+            {formData.currency !== 'IDR' && (
+              <p className={`mt-1 text-xs ${rateErr ? 'text-red-600' : 'text-emerald-700'}`}>
+                {rateErr ? `Kurs ${formData.currency} hari ini belum tersedia.` : rate ? `Kurs hari ini: 1 ${formData.currency} = Rp ${rate.toLocaleString('id-ID')}` : 'Mengambil kurs...'}
+              </p>
+            )}
+          </div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Prioritas</label>
             <select
               value={formData.priority}
@@ -492,7 +521,8 @@ export default function PRForm() {
         {/* Total */}
         <div className="flex justify-end pt-3 border-t border-gray-100 dark:border-gray-700">
           <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-            Total Estimasi: Rp {items.reduce((sum, i) => sum + i.estimated_total, 0).toLocaleString('id-ID')}
+            Total Estimasi: {formData.currency === 'IDR' ? 'Rp' : formData.currency} {items.reduce((sum, i) => sum + i.estimated_total, 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })}
+            {formData.currency !== 'IDR' && rate ? ` (≈ Rp ${Math.round(items.reduce((sum, i) => sum + i.estimated_total, 0) * rate).toLocaleString('id-ID')})` : ''}
           </div>
         </div>
       </div>

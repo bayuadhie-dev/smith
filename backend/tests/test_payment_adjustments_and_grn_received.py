@@ -375,3 +375,14 @@ def test_purchase_requisition_print(client, auth_headers, db_session, test_user)
     assert r.status_code == 201, r.get_json()
     d = db_session.get(Document, r.get_json()['document_id'])
     assert d.document_data['lines'][0]['item_name'] == 'Kertas A4' and d.document_data['priority_label'] == 'Tinggi' and 'Kertas A4' in d.html_content
+
+
+def test_purchase_requisition_with_usd_currency_and_convert_to_po(client, auth_headers, db_session, monkeypatch):
+    monkeypatch.setattr('utils.exchange_rates.get_current_rate', lambda pair: 16000.0)
+    body = {'department': 'IT', 'purpose': 'Langganan Claude Code', 'currency': 'USD',
+            'items': [{'item_name': 'Claude Code subscription', 'quantity': 1, 'uom': 'bulan', 'estimated_unit_price': 100}]}
+    r = client.post('/api/purchasing/purchase-requisitions', json=body, headers=auth_headers)
+    assert r.status_code == 201, r.get_json()
+    pr = r.get_json()
+    assert pr['currency'] == 'USD' and pr['exchange_rate'] == 16000.0 and pr['total_estimated'] == 100 and pr['total_estimated_idr'] == 1600000.0
+    assert client.post('/api/purchasing/purchase-requisitions', json={**body, 'currency': 'XXX'}, headers=auth_headers).status_code == 500

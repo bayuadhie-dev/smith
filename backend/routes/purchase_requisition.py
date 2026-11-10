@@ -94,6 +94,9 @@ def format_pr(pr):
         'purpose': pr.purpose,
         'status': pr.status,
         'priority': pr.priority,
+        'currency': pr.currency or 'IDR',
+        'exchange_rate': float(pr.exchange_rate) if pr.exchange_rate else (1.0 if (pr.currency or 'IDR') == 'IDR' else None),
+        'total_estimated_idr': round(float(sum(float(i.estimated_total or 0) for i in pr.items)) * (float(pr.exchange_rate) if pr.exchange_rate else 1.0), 2),
         'approved_by': pr.approved_by,
         'approver_name': pr.approver.full_name if pr.approver else None,
         'approved_at': pr.approved_at.isoformat() if pr.approved_at else None,
@@ -202,11 +205,25 @@ def create_pr():
         return jsonify({'error': str(e)}), 500
 
 
+def _pr_currency_and_rate(data):
+    """Mata uang PR + kurs langsung hari ini (untuk estimasi). IDR = kurs 1."""
+    from routes.purchasing import _validate_po_currency
+    ccy = _validate_po_currency(data.get('currency'))
+    if ccy == 'IDR':
+        return ccy, 1.0
+    from utils.exchange_rates import get_current_rate
+    rate = get_current_rate(f'{ccy}_IDR')
+    manual = data.get('exchange_rate')
+    return ccy, (float(manual) if manual not in (None, '', 0) else rate)
+
+
 def create_pr_core(data, user_id, pr_number=None):
     """Buat PR draft + itemnya TANPA commit (dipakai form dan Pusat Impor). pr_number kosong = nomor otomatis."""
     if pr_number and PurchaseRequisition.query.filter(db.func.lower(PurchaseRequisition.pr_number) == pr_number.lower()).first():
         raise ValueError(f'No. PR {pr_number} sudah ada')
+    ccy, rate = _pr_currency_and_rate(data)
     pr = PurchaseRequisition(
+        currency=ccy, exchange_rate=rate,
         pr_number=pr_number or generate_pr_number(),
         requested_by=data.get('requested_by', user_id),
         department=data.get('department'),
@@ -263,6 +280,8 @@ def update_pr(pr_id):
             pr.purpose = data['purpose']
         if 'priority' in data:
             pr.priority = data['priority']
+        if 'currency' in data:
+            pr.currency, pr.exchange_rate = _pr_currency_and_rate(data)
         if 'notes' in data:
             pr.notes = data['notes']
 
@@ -513,6 +532,7 @@ def convert_pr_to_po(pr_id):
                 order_date=date.today(),
                 required_date=pr.required_date,
                 status='draft',
+                currency=pr.currency or 'IDR',
                 payment_terms=data.get('payment_terms'),
                 notes=f"Dibuat dari PR {pr.pr_number}. {pr.notes or ''}".strip(),
                 created_by=user_id,

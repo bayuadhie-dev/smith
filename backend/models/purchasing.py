@@ -523,6 +523,8 @@ class PurchaseRequisition(db.Model):
     purpose = db.Column(db.Text, nullable=True)
     # draft → submitted → approved/rejected → converted (to PO)
     status = db.Column(db.String(50), nullable=False, default='draft')
+    currency = db.Column(db.String(10), nullable=False, default='IDR', server_default='IDR')   # mata uang harga estimasi (mis. USD untuk langganan)
+    exchange_rate = db.Column(db.Numeric(15, 6), nullable=True)   # kurs ke IDR saat PR dibuat (estimasi; kurs PO dikunci saat PO disubmit)
     priority = db.Column(db.String(20), nullable=False, default='normal')  # low, normal, high, urgent
     approved_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     approved_at = db.Column(db.DateTime, nullable=True)

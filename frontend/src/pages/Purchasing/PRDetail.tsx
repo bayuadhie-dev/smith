@@ -315,7 +315,7 @@ export default function PRDetail() {
         </div>
         <div className="flex justify-end pt-3 mt-3 border-t border-gray-100 dark:border-gray-700">
           <p className="text-sm font-bold text-gray-900 dark:text-white">
-            Total Estimasi: {formatRupiah(pr.total_estimated)}
+            Total Estimasi: {pr.currency && pr.currency !== 'IDR' ? `${pr.currency} ${Number(pr.total_estimated).toLocaleString('id-ID', { maximumFractionDigits: 2 })} (≈ ${formatRupiah(pr.total_estimated_idr)}, kurs ${Number(pr.exchange_rate || 0).toLocaleString('id-ID')})` : formatRupiah(pr.total_estimated)}
           </p>
         </div>
       </div>
