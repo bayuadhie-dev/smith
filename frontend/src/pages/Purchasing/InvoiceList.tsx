@@ -84,7 +84,7 @@ export default function InvoiceList() {
           <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Cari nomor invoice..."
+            placeholder="Cari no. invoice, no. PO, atau supplier..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white"

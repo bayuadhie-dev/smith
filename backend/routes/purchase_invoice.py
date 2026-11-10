@@ -1325,7 +1325,13 @@ def invoice_match_summary():
         else:
             q = q.filter(Invoice.status != 'cancelled')   # faktur lama hasil "Ubah" cukup terlihat di Riwayat, bukan di daftar
         if search:
-            q = q.filter(Invoice.invoice_number.ilike(f'%{search}%'))
+            like = f'%{search}%'
+            q = q.filter(db.or_(
+                Invoice.invoice_number.ilike(like),
+                Invoice.supplier_invoice_number.ilike(like),
+                Invoice.purchase_order_id.in_(db.select(PurchaseOrder.id).where(PurchaseOrder.po_number.ilike(like))),
+                Invoice.supplier_id.in_(db.select(Supplier.id).where(db.or_(Supplier.company_name.ilike(like), Supplier.code.ilike(like)))),
+            ))
 
         paginated = q.order_by(Invoice.created_at.desc()).paginate(
             page=page, per_page=per_page, error_out=False
