@@ -46,6 +46,11 @@ def preview(token):
     row, user, wf, err = _resolve(token)
     if err:
         return jsonify({'error': err}), 400
+    if row.reimbursement_approval_id:
+        from utils.reimb_approval import details
+        from models.expense import ReimbursementApproval
+        return jsonify({'step': row.step, 'approver': user.full_name or user.username,
+                        'details': details(db.session.get(ReimbursementApproval, row.reimbursement_approval_id).reimbursement)})
     if row.pr_approval_id:
         from utils.pr_approval import pr_details
         from models.purchasing import PRApproval
@@ -66,6 +71,22 @@ def act(token):
     action = body.get('action')
     if action not in ('approve', 'reject'):
         return jsonify({'error': 'Aksi tidak valid.'}), 400
+
+    if row.reimbursement_approval_id:
+        from models.expense import ReimbursementApproval
+        from utils import reimb_approval as ra
+        notes = (body.get('notes') or '').strip()
+        if action == 'reject' and not notes:
+            return jsonify({'error': 'Alasan penolakan wajib diisi.'}), 400
+        step = db.session.get(ReimbursementApproval, row.reimbursement_approval_id)
+        resp, status = ra.step_action(step.reimbursement_id, step.approval_level, user.id, action, (notes + ' [via email]').strip())
+        if status == 200:
+            row.used_at = __import__('datetime').datetime.utcnow()
+            db.session.commit()
+            ra.after_change_async(step.reimbursement_id)
+            return jsonify({'message': resp['message']}), 200
+        db.session.rollback()
+        return jsonify(resp), status
 
     if row.pr_approval_id:
         from models.purchasing import PRApproval

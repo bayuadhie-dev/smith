@@ -762,6 +762,8 @@ def get_reimbursements():
                 'payment_method': reimb.payment_method,
                 'status': reimb.status,
                 'status_display': reimb.status_display,
+                'has_steps': bool(reimb.approval_steps),
+                'assigned_user_id': next((st.assigned_user_id for st in reimb.approval_steps if st.status == 'pending'), None),
                 'expense_count': reimb.expense_count,
                 'submitted_at': reimb.submitted_at.isoformat() if reimb.submitted_at else None,
                 'approved_at': reimb.approved_at.isoformat() if reimb.approved_at else None,
@@ -848,8 +850,15 @@ def create_reimbursement():
         # Link expenses to reimbursement
         for exp in expenses:
             exp.reimbursement_id = reimbursement.id
+
+        from utils.reimb_approval import create_steps, after_change_async
+        n_steps = create_steps(reimbursement)
+        reimbursement.submitted_at = datetime.utcnow()
+        reimbursement.submitted_by = user_id
         
         db.session.commit()
+        if n_steps:
+            after_change_async(reimbursement.id)
         
         return jsonify({
             'success': True,
@@ -882,6 +891,8 @@ def approve_reimbursement(reimbursement_id):
             return jsonify({'success': False, 'error': 'Permission denied'}), 403
 
         reimbursement = Reimbursement.query.get_or_404(reimbursement_id)
+        if reimbursement.approval_steps:
+            return jsonify({'success': False, 'error': 'Reimbursement ini memakai persetujuan berjenjang (Mengetahui lalu Menyetujui). Proses lewat halaman detail.'}), 400
         
         if reimbursement.status != 'pending':
             return jsonify({'success': False, 'error': 'Only pending reimbursements can be approved'}), 400
@@ -902,9 +913,30 @@ def approve_reimbursement(reimbursement_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@expense_bp.route('/reimbursements/<int:reimbursement_id>/approval-steps/<int:level>/action', methods=['POST'])
+@jwt_required()
+@require_permission('expense.approve', 'expense.view')
+def act_on_reimbursement_step(reimbursement_id, level):
+    try:
+        from utils import reimb_approval as ra
+        data = request.get_json() or {}
+        action = data.get('action', 'approve')
+        if action == 'reject' and not (data.get('comments') or '').strip():
+            return jsonify({'success': False, 'error': 'Alasan penolakan wajib diisi'}), 400
+        resp, status = ra.step_action(reimbursement_id, level, int(get_jwt_identity()), action, data.get('comments'))
+        if status != 200:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': resp['error']}), status
+        db.session.commit()
+        ra.after_change_async(reimbursement_id)
+        return jsonify({'success': True, 'message': resp['message']}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @expense_bp.route('/reimbursements/<int:reimbursement_id>/pay', methods=['POST'])
 @jwt_required()
-@require_permission('expense.create')
 def pay_reimbursement(reimbursement_id):
     """Mark reimbursement as paid"""
     try:
@@ -914,11 +946,13 @@ def pay_reimbursement(reimbursement_id):
         # if not check_permission('expense.payment'):
         #     return jsonify({'success': False, 'error': 'Permission denied'}), 403
         
-        # Only admins may process payments
-        if not can_view_all(user_id):
-            return jsonify({'success': False, 'error': 'Permission denied'}), 403
-
         reimbursement = Reimbursement.query.get_or_404(reimbursement_id)
+        # Super admin, atau pihak Mengetahui (Finance) pada rantai persetujuan reimbursement ini.
+        is_finance = any(st.kind == 'mengetahui' and st.assigned_user_id == int(user_id) for st in reimbursement.approval_steps)
+        if not can_view_all(user_id) and not is_finance:
+            from utils.auth_decorators import _get_user_permissions
+            if 'expense.payment' not in _get_user_permissions(db.session.get(User, int(user_id))):
+                return jsonify({'success': False, 'error': 'Permission denied'}), 403
 
         from utils.finance_helpers import is_period_locked
         today = datetime.utcnow().date()
@@ -1110,6 +1144,11 @@ def get_reimbursement_detail(reimbursement_id):
             'status': reimbursement.status,
             'submitted_at': reimbursement.submitted_at.isoformat() if reimbursement.submitted_at else None,
             'approved_at': reimbursement.approved_at.isoformat() if reimbursement.approved_at else None,
+            'approval_steps': [{'level': st.approval_level, 'kind': st.kind, 'status': st.status, 'assigned_user_id': st.assigned_user_id,
+                                'assigned_user_name': (st.assigned_user.full_name or st.assigned_user.username) if st.assigned_user else None,
+                                'approver_name': (st.approver.full_name or st.approver.username) if st.approver else None,
+                                'approved_at': st.approved_at.isoformat() if st.approved_at else None, 'comments': st.comments}
+                               for st in reimbursement.approval_steps],
             'paid_at': reimbursement.paid_at.isoformat() if reimbursement.paid_at else None,
             'paid_date': reimbursement.paid_date.isoformat() if reimbursement.paid_date else None,
             'payment_reference': reimbursement.payment_reference,

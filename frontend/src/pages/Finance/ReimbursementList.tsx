@@ -19,6 +19,8 @@ interface Reimbursement {
   total_amount: number;
   currency: string;
   payment_method: string | null;
+  has_steps?: boolean;
+  assigned_user_id?: number | null;
   status: string;
   status_display: string;
   expense_count: number;
@@ -252,7 +254,7 @@ const ReimbursementList: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <div className="flex justify-center gap-2">
-                        {reimb.status === 'pending' && hasPermission('expense.approve') && (
+                        {reimb.status === 'pending' && !reimb.has_steps && hasPermission('expense.approve') && (
                           <button
                             onClick={() => handleApprove(reimb.id)}
                             className="p-1 text-green-600 hover:text-green-800"
@@ -261,7 +263,7 @@ const ReimbursementList: React.FC = () => {
                             <CheckCircle className="w-4 h-4" />
                           </button>
                         )}
-                        {reimb.status === 'approved' && hasPermission('expense.payment') && (
+                        {reimb.status === 'approved' && (hasPermission('expense.payment') || reimb.has_steps) && (
                           <button
                             onClick={() => handlePay(reimb)}
                             className="p-1 text-blue-600 hover:text-blue-800"

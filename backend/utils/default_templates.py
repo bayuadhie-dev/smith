@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-11h'
+LAYOUT = 'v2-2026-11i'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 AUTO_NOTE_PREFIXES = ('Auto-generated', 'Migrasi otomatis')  # the font-unit migration only rescales values of auto-generated layouts
 
@@ -343,6 +343,27 @@ def build_purchase_requisition():
     return o, 'A5', 'landscape', 210, 148
 
 
+def build_reimbursement():
+    """Bukti Reimbursement (A5 landscape): data karyawan, rincian pengeluaran, total + terbilang, rekening, empat tanda tangan."""
+    o = header(10, 190, 'BUKTI REIMBURSEMENT', lines=2)
+    o += [BOX(10, 30, 95, 22),
+          L('KARYAWAN', 12, 31, 91, 3.5, fs=7.5, color=MUTED),
+          F('employee_name', 12, 35.5, 91, 5, fs=11, bold=True),
+          F('bank_line', 12, 42, 91, 9, fs=8.5, color=MUTED)]
+    o += meta_grid(107, 30, 30, 63, [('Periode', 'period_text'), ('Dibayar dari', 'paid_from'), ('Tgl Bayar', 'paid_date_text'), ('No. Referensi', 'payment_reference')], 5.5)
+    o.append(TABLE('lines', 10, 55, 190, [
+        C('no', 'No.', 9, 'center'), C('tanggal', 'Tanggal', 24), C('kategori', 'Kategori', 36),
+        C('uraian', 'Uraian', 78), C('jumlah', 'Jumlah', 43, 'right', 'rp'),
+    ], min_rows=0, row_h=6, height=30, fs=8.5))
+    o += flow([BOX(110, 90, 40, 7, fill=CELL), BOX(150, 90, 50, 7, fill=CELL),
+               L('TOTAL', 111.5, 91.5, 36, 4, fs=9.5, bold=True),
+               F('total_amount', 151.5, 91.5, 47, 4, fs=9.5, bold=True, align='right', fmt='rp')])
+    o += flow(words_box(10, 99, 190, 8))
+    o += flow(signatures(10, 190, 112, ['Penerima,', 'Mengetahui,', 'Menyetujui,', 'Dibayar oleh,'],
+                         caption_paths={0: 'employee_name', 1: 'mengetahui_name', 2: 'menyetujui_name', 3: 'payer_name'}, gap=12))
+    return o, 'A5', 'landscape', 210, 148
+
+
 def build_surat_jalan():
     o = header(14, 182, 'SURAT JALAN')
     o += [BOX(14, 33, 90, 26),
@@ -438,6 +459,7 @@ DEFAULTS = {
     'purchase_invoice': ('Faktur Pembelian Default', 'PI_DEFAULT', build_purchase_invoice),
     'three_way_match': ('Pencocokan 3 Arah Default', 'TWM_DEFAULT', build_three_way_match),
     'purchase_requisition': ('Bon Permintaan Pembelian Default', 'PR_DEFAULT', build_purchase_requisition),
+    'reimbursement': ('Bukti Reimbursement Default', 'REIMB_DEFAULT', build_reimbursement),
     'grn': ('Penerimaan Barang Default', 'GRN_DEFAULT', build_grn),
     'surat_jalan': ('Surat Jalan Default', 'SJ_DEFAULT', build_surat_jalan),
     'spk': ('SPK Default', 'SPK_DEFAULT', build_spk),

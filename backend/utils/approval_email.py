@@ -66,6 +66,19 @@ def _find_pr_token(row):
     return row, None
 
 
+def _find_reimb_token(row):
+    from models.expense import Reimbursement, ReimbursementApproval
+    step = db.session.get(ReimbursementApproval, row.reimbursement_approval_id)
+    r = db.session.get(Reimbursement, step.reimbursement_id) if step else None
+    if not step or not r or step.status != 'pending' or r.status != 'pending':
+        return None, 'Dokumen ini sudah diproses atau tahapnya sudah berubah.'
+    prior = ReimbursementApproval.query.filter(ReimbursementApproval.reimbursement_id == step.reimbursement_id,
+                                               ReimbursementApproval.approval_level < step.approval_level, ReimbursementApproval.status != 'approved').first()
+    if prior:
+        return None, 'Dokumen ini belum sampai ke tahap Anda.'
+    return row, None
+
+
 def find_token(raw):
     """Token valid -> ApprovalEmailToken, selain itu (None, pesan)."""
     from models.approval_workflow import ApprovalEmailToken, ApprovalWorkflow
@@ -78,6 +91,8 @@ def find_token(raw):
         return None, 'Tautan sudah kedaluwarsa. Buka dokumennya langsung di ERP.'
     if row.pr_approval_id:
         return _find_pr_token(row)
+    if row.reimbursement_approval_id:
+        return _find_reimb_token(row)
     wf = db.session.get(ApprovalWorkflow, row.workflow_id)
     if not wf or STEP_OF_STATUS.get(wf.status) != row.step:
         return None, 'Dokumen ini sudah diproses atau tahapnya sudah berubah.'

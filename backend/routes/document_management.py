@@ -1108,6 +1108,22 @@ def generate_from_grn(grn_id):
         return jsonify({'error': str(e)}), 500
 
 
+@document_bp.route('/generate-from-reimbursement/<int:reimb_id>', methods=['POST'])
+@jwt_required()
+@require_permission('documents.create')
+def generate_from_reimbursement(reimb_id):
+    try:
+        from utils.document_generator import generate_reimbursement_document
+        document = generate_reimbursement_document(reimb_id, get_jwt_identity())
+        return jsonify({'message': 'Bukti reimbursement dibuat', 'document_id': document.id,
+                        'document_number': document.document_number}), 201
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 @document_bp.route('/generate-from-purchase-requisition/<int:pr_id>', methods=['POST'])
 @jwt_required()
 @require_permission('documents.create')

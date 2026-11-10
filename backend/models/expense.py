@@ -175,7 +175,8 @@ class Reimbursement(db.Model):
     @property
     def status_display(self):
         status_map = {
-            'pending': 'Pending Approval',
+            'pending': 'Menunggu persetujuan',
+            'rejected': 'Ditolak',
             'approved': 'Approved',
             'processing': 'Processing Payment',
             'paid': 'Paid',
@@ -220,3 +221,23 @@ def generate_reimbursement_number(mapper, connection, target):
         else:
             sequence = 1
         target.reimbursement_number = f'REIMB-{year_month}-{sequence:04d}'
+
+
+class ReimbursementApproval(db.Model):
+    """Langkah persetujuan reimbursement per orang (Mengetahui lalu Menyetujui), berurutan."""
+    __tablename__ = 'reimbursement_approvals'
+
+    id = db.Column(db.Integer, primary_key=True)
+    reimbursement_id = db.Column(db.Integer, db.ForeignKey('reimbursements.id', ondelete='CASCADE'), nullable=False, index=True)
+    approval_level = db.Column(db.Integer, nullable=False)
+    assigned_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    kind = db.Column(db.String(20), nullable=False)   # mengetahui / menyetujui
+    status = db.Column(db.String(20), nullable=False, default='pending')   # pending, approved, rejected
+    approver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    comments = db.Column(db.Text, nullable=True)
+    approved_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    reimbursement = db.relationship('Reimbursement', backref=db.backref('approval_steps', cascade='all, delete-orphan', order_by='ReimbursementApproval.approval_level'))
+    assigned_user = db.relationship('User', foreign_keys=[assigned_user_id])
+    approver = db.relationship('User', foreign_keys=[approver_id])

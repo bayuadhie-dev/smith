@@ -96,7 +96,7 @@ from .wms_advanced import (
     MaterialConsumption, InventoryTransaction, PickList, PickListItem,
     StockTransferOrder, StockTransferItem, CycleCountSchedule
 )
-from .expense import Expense, Reimbursement
+from .expense import Expense, Reimbursement, ReimbursementApproval
 from .spc import SPCParameter, SPCProductSpec, SPCSample, SPCMeasurement, SPCControlLimitHistory
 from .accurate import AccurateConfig, AccurateItemMapping, AccurateSyncLog
 from .spk import SPKWarehouseStageLog
@@ -208,7 +208,7 @@ __all__ = [
     'MaterialConsumption', 'InventoryTransaction', 'PickList', 'PickListItem',
     'StockTransferOrder', 'StockTransferItem', 'CycleCountSchedule',
     # Expense models
-    'Expense', 'Reimbursement',
+    'Expense', 'Reimbursement', 'ReimbursementApproval',
     # Accurate models
     'AccurateConfig', 'AccurateItemMapping', 'AccurateSyncLog',
     # Machine Layout Visualization models

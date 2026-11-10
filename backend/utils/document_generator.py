@@ -912,6 +912,58 @@ def generate_purchase_requisition_document(pr_id, user_id):
     return document
 
 
+def generate_reimbursement_document(reimb_id, user_id):
+    """Cetak Bukti Reimbursement. Wajib ada untuk arsip dan pembayaran."""
+    from models.expense import Reimbursement
+    from models.finance import Account
+    from utils.reimb_approval import get_chain
+    from models.user import User
+
+    r = db.session.get(Reimbursement, reimb_id)
+    if not r:
+        raise ValueError('Reimbursement tidak ditemukan')
+    d = lambda x: x.strftime('%d-%m-%Y') if x else ''
+    rows = []
+    for i, e in enumerate(r.expenses, 1):
+        rows.append({'no': i, 'tanggal': d(e.expense_date), 'kategori': e.expense_category or '', 'uraian': e.description or '', 'jumlah': float(e.amount or 0)})
+    total = float(r.total_amount or 0)
+    names = {}
+    for st in r.approval_steps:
+        u = st.approver or st.assigned_user
+        names[st.kind] = (u.full_name or u.username) if u else ''
+    if not names:
+        for link in get_chain():
+            u = db.session.get(User, link['user_id'])
+            names[link['kind']] = (u.full_name or u.username) if u else ''
+    acc = db.session.get(Account, r.paid_from_account_id) if r.paid_from_account_id else None
+    payer = db.session.get(User, r.paid_by) if r.paid_by else None
+    period = ' s/d '.join(x for x in [d(r.reimbursement_period_start), d(r.reimbursement_period_end)] if x)
+    document_data = {
+        'document_number': r.reimbursement_number, 'hdr_no': f'No. {r.reimbursement_number}',
+        'hdr_date': f'Tanggal: {d(r.created_at)}', 'hdr_extra': '',
+        'employee_name': r.employee_name or '', 'bank_line': ' | '.join(x for x in [r.payment_method, r.bank_name, r.bank_account_number, r.bank_account_name] if x),
+        'period_text': period or '-', 'paid_from': f'{acc.account_code} {acc.account_name}' if acc else '-',
+        'paid_date_text': d(r.paid_date) or '-', 'payment_reference': r.payment_reference or '-',
+        'lines': rows, 'total_amount': total,
+        'terbilang': (_terbilang(total).strip().capitalize() + ' rupiah') if total >= 1 else 'Nol rupiah',
+        'mengetahui_name': names.get('mengetahui', ''), 'menyetujui_name': names.get('menyetujui', ''),
+        'payer_name': (payer.full_name or payer.username) if payer else '', 'notes': r.notes or '', 'company': get_company_context(),
+    }
+    template = ensure_default_template(user_id, 'reimbursement')
+    document = Document(
+        document_number=generate_number('DOC-RMB', Document, 'document_number'),
+        document_title=f'Bukti Reimbursement {r.reimbursement_number}', document_type='reimbursement',
+        template_version_id=template.current_version_id, document_data=document_data,
+        reference_type='reimbursement', reference_id=r.id, reference_number=r.reimbursement_number, status='generated', created_by=user_id)
+    document.html_content = render_template_version_to_html(template.current_version, document_data)
+    db.session.add(document)
+    db.session.flush()
+    db.session.add(DocumentLog(document_id=document.id, activity_type='auto_generated',
+                               activity_description=f'Bukti reimbursement {r.reimbursement_number} dicetak', user_id=user_id))
+    db.session.commit()
+    return document
+
+
 def generate_purchase_order_document(po_id, user_id):
     """Printable Purchase Order."""
     from models.purchasing import PurchaseOrder
