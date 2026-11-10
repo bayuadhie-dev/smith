@@ -109,14 +109,21 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
   // Faktur dilunasi = Dibayar + Diskon.
   const discOf: Record<number, number> = (() => {
     const out: Record<number, number> = {};
-    let pool = adj.reduce((s, l) => s + Math.max(0, Number(l.amount) || 0), 0);
     const checked = invoices.filter((i) => i.id in alloc);
+    // Nilai minus (kelebihan bayar / uang muka) ikut tampil di kolom Diskon sebagai angka negatif supaya sisa faktur jadi nol.
+    let over = -adj.reduce((s, l) => s + Math.min(0, Number(l.amount) || 0), 0);
+    checked.forEach((inv, k) => {
+      if (over <= 0) return;
+      const take = k === checked.length - 1 ? over : Math.min(Math.max(0, Number(alloc[inv.id]) || 0), over);
+      if (take > 0) { out[inv.id] = -take; over -= take; }
+    });
+    let pool = adj.reduce((s, l) => s + Math.max(0, Number(l.amount) || 0), 0);
     checked.forEach((inv, k) => {
       if (pool <= 0) return;
       const room = Math.max(0, inv.balance_due - (Number(alloc[inv.id]) || 0));
       // Sisa diskon yang tidak muat ditaruh di faktur terakhir (jadi terlihat minus di Sisa Setelah), bukan hilang diam-diam.
       const give = k === checked.length - 1 ? pool : Math.min(room, pool);
-      if (give > 0) { out[inv.id] = give; pool -= give; }
+      if (give > 0) { out[inv.id] = (out[inv.id] || 0) + give; pool -= give; }
     });
     return out;
   })();
