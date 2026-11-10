@@ -27,6 +27,9 @@ interface SalesOrderFormData {
   customer_id: number
   order_date: string
   required_date?: string
+  order_number?: string
+  customer_po_number?: string
+  expired_date?: string
   priority?: string
   notes?: string
   shipping_cost?: number
@@ -131,6 +134,9 @@ const navigate = useNavigate()
         customer_id: existingOrder.customer_id,
         order_date: existingOrder.order_date ? existingOrder.order_date.split('T')[0] : new Date().toISOString().split('T')[0],
         required_date: existingOrder.required_date ? existingOrder.required_date.split('T')[0] : undefined,
+        order_number: existingOrder.order_number || '',
+        customer_po_number: existingOrder.customer_po_number || '',
+        expired_date: existingOrder.expired_date ? existingOrder.expired_date.split('T')[0] : undefined,
         priority: existingOrder.priority || 'normal',
         notes: existingOrder.notes || '',
         shipping_cost: existingOrder.shipping_cost || 0,
@@ -339,6 +345,9 @@ const navigate = useNavigate()
             id: id!,
             customer_id: parseInt(data.customer_id.toString()),
             required_date: data.required_date,
+            order_number: data.order_number,
+            customer_po_number: data.customer_po_number || '',
+            expired_date: data.expired_date || '',
             priority: data.priority,
             notes: data.notes,
             shipping_cost: parseFloat((data.shipping_cost || 0).toString()),
@@ -511,6 +520,27 @@ const navigate = useNavigate()
               {errors.customer_id && (
                 <p className="mt-1 text-sm text-red-600">{errors.customer_id.message}</p>
               )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                No. SO
+              </label>
+              <input type="text" {...register('order_number')} className="input-field" placeholder="Otomatis bila dikosongkan" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                No. PO Pelanggan
+              </label>
+              <input type="text" {...register('customer_po_number')} className="input-field" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                Tgl Expired PO
+              </label>
+              <input type="date" {...register('expired_date')} className="input-field" />
             </div>
 
             <div>

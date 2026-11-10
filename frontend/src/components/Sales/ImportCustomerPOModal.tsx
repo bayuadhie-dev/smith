@@ -20,6 +20,8 @@ export default function ImportCustomerPOModal({ onClose }: { onClose: () => void
   const [customerId, setCustomerId] = useState<number | ''>('')
   const [dup, setDup] = useState<string | null>(null)
   const [rows, setRows] = useState<Row[]>([])
+  const [expired, setExpired] = useState('')
+  const [keepUnit, setKeepUnit] = useState(false)
 
   const upload = async (file: File) => {
     setBusy(true)
@@ -28,6 +30,7 @@ export default function ImportCustomerPOModal({ onClose }: { onClose: () => void
       fd.append('file', file)
       const r = await axiosInstance.post('/api/sales/orders/import-po/preview', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
       setPo(r.data.po); setCustomers(r.data.customers || []); setCustomerId(r.data.customer_id || ''); setDup(r.data.duplicate_of || null)
+      setKeepUnit(/indomaret|indomarco/i.test(String((r.data.customers || [])[0]?.name || '')))
       setRows((r.data.po.items || []).map((it: any): Row => {
         const chosen = (it.candidates || []).find((c: Cand) => c.id === it.product_id) || null
         const same = chosen && chosen.uom?.toUpperCase() === String(it.uom).toUpperCase()
@@ -50,8 +53,8 @@ export default function ImportCustomerPOModal({ onClose }: { onClose: () => void
   }
 
   const lines = rows.map((r) => {
-    const f = Number(r.factor) || 1
-    return { ...r, qty: r.quantity * f, price: r.unit_price / f }
+    const f = keepUnit ? 1 : (Number(r.factor) || 1)
+    return { ...r, qty: r.quantity * f, price: r.unit_price / f, uomOut: keepUnit ? r.uom : r.chosen?.uom }
   })
   const ready = !!po && !!customerId && !dup && rows.length > 0 && rows.every((r) => r.chosen)
 
@@ -59,8 +62,8 @@ export default function ImportCustomerPOModal({ onClose }: { onClose: () => void
     setBusy(true)
     try {
       const res = await axiosInstance.post('/api/sales/orders/import-po/create', {
-        customer_id: customerId, po_number: po.po_number, po_date: po.po_date, terms_days: po.terms_days,
-        items: lines.map((l) => ({ plu: l.plu, product_id: l.chosen!.id, quantity: l.qty, unit_price: l.price, discount_percent: l.discount_percent, uom: l.chosen!.uom, description: l.name })),
+        customer_id: customerId, po_number: po.po_number, po_date: po.po_date, expired_date: expired || null, terms_days: po.terms_days,
+        items: lines.map((l) => ({ plu: l.plu, product_id: l.chosen!.id, quantity: l.qty, unit_price: l.price, discount_percent: l.discount_percent, uom: l.uomOut, description: l.name })),
       })
       showSuccess(`Sales Order draf ${res.data.order_number} dibuat`)
       onClose()
@@ -99,6 +102,16 @@ export default function ImportCustomerPOModal({ onClose }: { onClose: () => void
               <div><div className="text-xs text-gray-500">Termin</div>{po.terms_days ? `Net ${po.terms_days}` : '-'}</div>
               <div><div className="text-xs text-gray-500">Kirim ke</div>{po.ship_to || '-'}</div>
             </div>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-medium">Tgl Expired PO</label>
+                <input type="date" className="input-field" value={expired} onChange={(e) => setExpired(e.target.value)} />
+              </div>
+              <label className="flex items-center gap-2 self-end text-sm">
+                <input type="checkbox" checked={keepUnit} onChange={(e) => setKeepUnit(e.target.checked)} />
+                Pakai satuan PO apa adanya (mis. carton)
+              </label>
+            </div>
             <div>
               <label className="mb-1 block text-sm font-medium">Pelanggan *</label>
               <select className="input-field" value={customerId} onChange={(e) => setCustomerId(e.target.value ? Number(e.target.value) : '')}>
@@ -127,7 +140,7 @@ export default function ImportCustomerPOModal({ onClose }: { onClose: () => void
                       <div>
                         <label className="text-xs text-gray-500">1 {r.uom} = berapa {r.chosen?.uom || 'satuan produk'}</label>
                         <input className="input-field" type="number" min="0" step="any" value={r.factor} onChange={(e) => update(i, { factor: e.target.value })} />
-                        {r.chosen && <p className="mt-1 text-xs text-emerald-700">SO: {l.qty.toLocaleString('id-ID')} {r.chosen.uom} × {rp(l.price)}, diskon {r.discount_percent}%</p>}
+                        {r.chosen && <p className="mt-1 text-xs text-emerald-700">SO: {l.qty.toLocaleString('id-ID')} {l.uomOut} × {rp(l.price)}, diskon {r.discount_percent}%</p>}
                       </div>
                     </div>
                   </div>

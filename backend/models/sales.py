@@ -365,6 +365,7 @@ class SalesOrder(db.Model):
     status = db.Column(db.String(50), nullable=False, default='draft')  # draft, confirmed, in_production, ready, shipped, delivered, cancelled
     priority = db.Column(db.String(20), nullable=False, default='normal')  # low, normal, high, urgent
     customer_po_number = db.Column(db.String(100), nullable=True)
+    expired_date = db.Column(db.Date, nullable=True)
     payment_terms = db.Column(db.String(100), nullable=True)
     payment_method = db.Column(db.String(50), nullable=True)
     delivery_address = db.Column(db.Text, nullable=True)

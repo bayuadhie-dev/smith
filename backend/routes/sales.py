@@ -553,6 +553,7 @@ def create_sales_order_core(data, user_id, order_number=None):
     """Buat SalesOrder draft + item + total, TANPA commit (dipakai endpoint dan Pusat Impor). Return order."""
     order_number = order_number or generate_number_v2('sales_order', 'SO', SalesOrder, 'order_number')
     
+    order_number = (data.get('order_number') or '').strip() or order_number
     order = SalesOrder(
         order_number=order_number,
         customer_id=data['customer_id'],
@@ -561,6 +562,7 @@ def create_sales_order_core(data, user_id, order_number=None):
         status='draft',
         priority=data.get('priority', 'normal'),
         customer_po_number=data.get('customer_po_number'),
+        expired_date=datetime.fromisoformat(data['expired_date']).date() if data.get('expired_date') else None,
         payment_terms=data.get('payment_terms'),
         delivery_address=data.get('delivery_address'),
         shipping_method=data.get('shipping_method'),
@@ -730,6 +732,7 @@ def get_order(id):
             'status': order.status,
             'priority': order.priority,
             'customer_po_number': order.customer_po_number,
+            'expired_date': order.expired_date.isoformat() if order.expired_date else None,
             'payment_terms': order.payment_terms,
             'delivery_address': order.delivery_address,
             'shipping_method': order.shipping_method,
@@ -1258,6 +1261,15 @@ def update_order(id):
             order.required_date = datetime.fromisoformat(data['required_date'].replace('Z', '+00:00'))
         if 'customer_id' in data and data['customer_id']:
             order.customer_id = data['customer_id']
+        if 'customer_po_number' in data:
+            order.customer_po_number = (data['customer_po_number'] or '').strip() or None
+        if 'expired_date' in data:
+            order.expired_date = datetime.fromisoformat(data['expired_date']).date() if data['expired_date'] else None
+        if data.get('order_number') and data['order_number'].strip() != order.order_number:
+            new_no = data['order_number'].strip()
+            if SalesOrder.query.filter(SalesOrder.order_number == new_no, SalesOrder.id != order.id).first():
+                return jsonify({'error': f'Nomor SO {new_no} sudah dipakai'}), 400
+            order.order_number = new_no
         if 'shipping_method' in data:
             order.shipping_method = data['shipping_method']
         if 'shipping_cost' in data:
@@ -4000,7 +4012,7 @@ def import_po_create():
             if dup:
                 return jsonify({'error': f'PO {po_no} sudah dibuat sebagai {dup.order_number}'}), 400
         data = {
-            'customer_id': cid, 'order_date': d.get('po_date') or get_local_today().isoformat(), 'customer_po_number': po_no or None,
+            'customer_id': cid, 'order_date': d.get('po_date') or get_local_today().isoformat(), 'customer_po_number': po_no or None, 'expired_date': d.get('expired_date') or None,
             'payment_terms': f"Net {d['terms_days']}" if d.get('terms_days') else None,
             'notes': d.get('notes') or (f"Diimpor dari PO pelanggan {po_no}" if po_no else None),
             'items': [{'product_id': i['product_id'], 'quantity': float(i['quantity']), 'unit_price': float(i['unit_price']),
