@@ -247,16 +247,6 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
               ]
             },
             {
-              name: 'Penyesuaian Stok', icon: AdjustmentsHorizontalIcon, isSubMenu: true, subChildren: [
-                { name: 'Penyesuaian Stok', href: '/app/warehouse/adjustments' },
-                { name: 'Input Stok Manual', href: '/app/warehouse/stock-input' },
-                { name: 'Penambahan Bahan Baku', href: '/app/warehouse/inventory' },
-                { name: 'Perintah Opname', href: '/app/warehouse/stock-opname' },
-                { name: 'Hasil Opname', href: '/app/warehouse/stock-opname/results' },
-                { name: 'Cycle Count', href: '/app/wms/cycle-counts' },
-              ]
-            },
-            {
               name: 'Barang & Gudang', icon: CubeIcon, isSubMenu: true, subChildren: [
                 { name: 'Barang & Material', href: '/app/warehouse/materials' },
                 { name: 'Daftar Material', href: '/app/warehouse/materials/list' },
@@ -273,6 +263,20 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                 { name: 'Analytics', href: '/app/warehouse/analytics' },
               ]
             },
+          ]
+        },
+        {
+          name: 'Penyesuaian Stok',
+          href: '/app/warehouse/adjustments',
+          icon: AdjustmentsHorizontalIcon,
+          permission: 'warehouse',
+          children: [
+            { name: 'Penyesuaian Stok', href: '/app/warehouse/adjustments' },
+            { name: 'Input Stok Manual', href: '/app/warehouse/stock-input' },
+            { name: 'Penambahan Bahan Baku', href: '/app/warehouse/inventory' },
+            { name: 'Perintah Opname', href: '/app/warehouse/stock-opname' },
+            { name: 'Hasil Opname', href: '/app/warehouse/stock-opname/results' },
+            { name: 'Cycle Count', href: '/app/wms/cycle-counts' },
           ]
         },
         {
