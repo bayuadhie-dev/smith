@@ -177,7 +177,7 @@ class GoodsReceivedNote(db.Model):
     # Relationships
     purchase_order = db.relationship('PurchaseOrder', back_populates='grn_records')
     supplier = db.relationship('Supplier')
-    items = db.relationship('GRNItem', back_populates='grn', cascade='all, delete-orphan')
+    items = db.relationship('GRNItem', back_populates='grn', cascade='all, delete-orphan', order_by='GRNItem.id')
     received_by_user = db.relationship('User', foreign_keys=[received_by])
     inspected_by_user = db.relationship('User', foreign_keys=[inspected_by])
     approved_by_user = db.relationship('User', foreign_keys=[approved_by])
