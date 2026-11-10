@@ -777,6 +777,8 @@ def create_purchase_invoice_core(data, user_id, commit=True):
     if old_invoice is not None:
         _record_invoice_edit_history(old_invoice, invoice, old_snapshot, user_id)
         from utils.finance_helpers import purge_cancelled_invoice
+        from models.record_attachment import RecordAttachment
+        RecordAttachment.query.filter_by(entity_type='purchase_invoice', entity_id=old_invoice.id).update({'entity_id': invoice.id})
         purge_cancelled_invoice(old_invoice)   # faktur lama hasil Ubah tidak disimpan; perubahannya ada di Riwayat
 
     # Header total_amount had the same gap as item total_price: left

@@ -312,7 +312,7 @@ export default function PurchaseInvoiceForm() {
       </div>
 
       <form onSubmit={submit} onKeyDown={enterMovesDown} className="space-y-6">
-<PendingAttachments files={attFiles} onChange={setAttFiles} />
+<PendingAttachments files={attFiles} onChange={setAttFiles} entityType="purchase_invoice" entityId={editId || undefined} />
         <div className="card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Pemasok *</label>

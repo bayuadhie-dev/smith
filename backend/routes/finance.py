@@ -1096,6 +1096,8 @@ def create_payment_core(data, user_id, commit=True):
         if old_payment and old_snapshot is not None:
             _record_payment_edit_history(old_payment, payment, old_snapshot, data, user_id)
             from utils.finance_helpers import purge_cancelled_payment
+            from models.record_attachment import RecordAttachment
+            RecordAttachment.query.filter_by(entity_type='payment', entity_id=old_payment.id).update({'entity_id': payment.id})
             purge_cancelled_payment(old_payment)   # pembayaran lama hasil Ubah tidak disimpan; perubahannya ada di Riwayat
 
         from utils.finance_helpers import (
