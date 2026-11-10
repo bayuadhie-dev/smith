@@ -271,6 +271,46 @@ export default function InvoiceMatching() {
         <p>🟢 <strong>Invoice</strong> = Jumlah & harga yang ditagih supplier</p>
         <p>Δ = Selisih (merah = tagihan lebih besar, biru = tagihan lebih kecil)</p>
       </div>
+      {((data.extra_lines || []).length > 0 || data.notes) && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
+          <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-700">
+            <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Biaya Tambahan & Catatan</h2>
+          </div>
+          {(data.extra_lines || []).length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm divide-y divide-gray-100 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-3 py-2 text-left font-medium text-gray-500 uppercase text-xs">Keterangan</th>
+                    <th className="px-3 py-2 text-left font-medium text-gray-500 uppercase text-xs">Akun</th>
+                    <th className="px-3 py-2 text-right font-medium text-gray-500 uppercase text-xs">Qty</th>
+                    <th className="px-3 py-2 text-right font-medium text-gray-500 uppercase text-xs">Harga</th>
+                    <th className="px-3 py-2 text-right font-medium text-gray-500 uppercase text-xs">Jumlah</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {data.extra_lines.map((x: any, i: number) => (
+                    <tr key={i}>
+                      <td className="px-3 py-2.5 text-gray-800 dark:text-gray-200">{x.description}{x.notes ? <div className="text-xs text-gray-500">{x.notes}</div> : null}</td>
+                      <td className="px-3 py-2.5 text-gray-600 dark:text-gray-300">{x.account || '-'}</td>
+                      <td className="px-3 py-2.5 text-right tabular-nums">{Number(x.quantity).toLocaleString('id-ID', { maximumFractionDigits: 4 })} {x.uom || ''}</td>
+                      <td className="px-3 py-2.5 text-right tabular-nums">Rp {Number(x.unit_price).toLocaleString('id-ID')}</td>
+                      <td className="px-3 py-2.5 text-right tabular-nums font-medium">Rp {Number(x.total).toLocaleString('id-ID')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {data.notes && (
+            <div className="border-t border-gray-100 px-5 py-3 text-sm dark:border-gray-700">
+              <p className="mb-1 text-xs font-medium uppercase text-gray-500">Catatan</p>
+              <p className="whitespace-pre-line text-gray-700 dark:text-gray-200">{data.notes}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       <AttachmentsPanel entityType="purchase_invoice" entityId={id} />
       <RiwayatPanel table="invoices" id={id} />
     </div>

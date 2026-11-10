@@ -1235,6 +1235,16 @@ def _compute_three_way_match(invoice):
     invoice_subtotal = round(sum(l['inv_qty'] * l['inv_price'] for l in lines), 2)
     po_total_invoiced = round(sum(l['inv_qty'] * l['po_price'] for l in lines), 2)
     rate = float(invoice.exchange_rate or 1)
+    extra_lines = []
+    for it in invoice.items:
+        if it.po_item_id:
+            continue
+        acc = db.session.get(Account, it.account_id) if it.account_id else None
+        extra_lines.append({
+            'description': it.description, 'account': f'{acc.account_code} - {acc.account_name}' if acc else None,
+            'quantity': float(it.quantity or 0), 'uom': it.uom, 'unit_price': float(it.unit_price or 0),
+            'total': round(float(it.quantity or 0) * float(it.unit_price or 0) - float(it.discount_amount or 0), 2), 'notes': it.notes,
+        })
     return {
         'invoice_id': invoice.id,
         'invoice_number': invoice.invoice_number,
@@ -1255,6 +1265,11 @@ def _compute_three_way_match(invoice):
         'has_qty_variance': has_qty_variance,
         'has_missing_grn': has_missing_grn,
         'lines': lines,
+        'extra_lines': extra_lines,
+        'notes': invoice.notes,
+        'dpp': round(sum(float(i.quantity or 0) * float(i.unit_price or 0) - float(i.discount_amount or 0) for i in invoice.items), 2),
+        'tax_amount': float(invoice.tax_amount or 0),
+        'pph_amount': float(getattr(invoice, 'pph_amount', 0) or 0),
     }
 
 
