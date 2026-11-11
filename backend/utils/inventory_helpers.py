@@ -26,6 +26,8 @@ def derive_movement_type_code(txn):
         return '261', 'Pengeluaran Bahan Baku ke SPK'
     if t == 'transfer':
         return '311', 'Transfer Antar Gudang/Lokasi'
+    if t == 'qc_disposition_out':
+        return '321', 'Ubah Status Batch (keluar)'
     if t == 'qc_disposition' and direction == 'out':
         return '551', 'Barang Rusak / Reject / QC Disposition'
     if ref == 'shift_production_reject' and direction == 'in':
@@ -248,6 +250,16 @@ def apply_qc_disposition_splits(inventory_id, splits, user_id, reference_type=No
             total_cost=round(quantity * source_unit_cost, 2) if source_unit_cost else None,
         )
         movements.append(movement)
+        if status != 'reject':
+            # Ubah status hanya memindahkan qty antar status, jadi di buku mutasi harus netral: pasangkan dengan keluar bernilai sama.
+            movements.append(record_inventory_transaction(
+                transaction_type='qc_disposition_out', direction='out', quantity=quantity,
+                product_id=source.product_id, material_id=source.material_id,
+                from_location_id=source.location_id, to_location_id=source.location_id, batch_number=source.batch_number,
+                reference_type=reference_type, reference_id=reference_id,
+                notes=f'Status {status_before} keluar (pindah ke {status})', created_by=user_id,
+                unit_cost=source_unit_cost, total_cost=round(quantity * source_unit_cost, 2) if source_unit_cost else None,
+            ))
 
     return movements
 

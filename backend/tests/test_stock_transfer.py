@@ -119,3 +119,19 @@ def test_receipts_list_has_grn_origin(client, auth_headers, db_session, test_mat
     row = next(r for r in d['receipts'] if r['number'] == 'BPB-RC/001')
     assert row['origin'] == 'grn' and row['from_label'] == 'Pemasok RC' and row['href'].endswith(str(g.id))
     assert client.get('/api/stock-transfers/receipts?origin=transfer', headers=auth_headers).get_json()['total'] == 0
+
+
+def test_qc_status_change_is_ledger_neutral(client, db_session, test_material):
+    from sqlalchemy import text
+    from models import Inventory
+    from utils.inventory_helpers import apply_qc_disposition_splits
+    a = _loc(db_session, 'QN1')
+    inv = _inv(db_session, test_material, a, 40, 'BQ')
+    inv.stock_status = 'quarantine'
+    db_session.commit()
+    apply_qc_disposition_splits(inv.id, [{'status': 'available', 'quantity': 40}], user_id=1)
+    db_session.commit()
+    net = db_session.execute(text("select coalesce(sum(case when direction='in' then quantity else -quantity end),0) from inventory_transactions where material_id=:m"),
+                             {'m': test_material.id}).scalar()
+    assert float(net) == 0
+    assert sum(float(i.quantity_on_hand) for i in Inventory.query.filter_by(material_id=test_material.id)) == 40
