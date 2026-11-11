@@ -986,6 +986,8 @@ def get_movements():
                 'movement_type': m.transaction_type,
                 'product_code': product_code,
                 'product_name': product_name,
+                'material_id': m.material_id,
+                'product_id': m.product_id,
                 'quantity': float(m.quantity),
                 'unit_cost': float(m.unit_cost) if m.unit_cost else 0,
                 'total_value': float(m.quantity) * float(m.unit_cost or 0),

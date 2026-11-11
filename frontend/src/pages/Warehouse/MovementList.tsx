@@ -23,6 +23,8 @@ interface InventoryMovement {
   movement_type: string;
   product_code: string;
   product_name: string;
+  material_id?: number | null;
+  product_id?: number | null;
   quantity: number;
   unit_cost: number;
   total_value: number;
@@ -336,7 +338,7 @@ const MovementList: React.FC = () => {
                               {movement.product_code}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {movement.product_name}
+                              {(movement.material_id || movement.product_id) ? <Link to={`/app/warehouse/item-stock/${movement.material_id ? 'material' : 'product'}/${movement.material_id || movement.product_id}`} className="hover:text-emerald-700 hover:underline" title="Lihat stok per gudang dan mutasi">{movement.product_name}</Link> : movement.product_name}
                             </div>
                           </div>
                         </div>

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
@@ -175,7 +176,7 @@ const StockAlerts: React.FC = () => {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-sm font-mono font-bold text-gray-900 dark:text-white">{alert.item_code}</td>
-                <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{alert.item_name}</td>
+                <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><Link to={`/app/warehouse/item-stock/${alert.item_type === 'product' ? 'product' : 'material'}/${alert.item_id}`} className="hover:text-emerald-700 hover:underline" title="Lihat stok per gudang dan mutasi">{alert.item_name}</Link></td>
                 <td className="px-4 py-3 text-sm text-right font-mono">
                   <span className={alert.current_stock <= 0 ? 'text-red-600 font-bold' : 'text-amber-600 font-bold'}>
                     {alert.current_stock.toLocaleString()}

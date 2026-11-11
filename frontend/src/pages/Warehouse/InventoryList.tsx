@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetInventoryQuery, useGetWarehouseDashboardQuery } from '../../services/api';
 import { Package, Layers, Box } from 'lucide-react';
@@ -127,7 +128,7 @@ const { data: inventory, isLoading } = useGetInventoryQuery({})
                 {inventory?.inventory?.map((item: any) => (
                   <tr key={item.id}>
                     <td className="font-medium">{item.item_code}</td>
-                    <td>{item.item_name}</td>
+                    <td>{(item.material_id || item.product_id) ? <Link to={`/app/warehouse/item-stock/${item.material_id ? 'material' : 'product'}/${item.material_id || item.product_id}`} className="hover:text-emerald-700 hover:underline" title="Lihat stok per gudang dan mutasi">{item.item_name}</Link> : item.item_name}</td>
                     <td>
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         item.item_type === 'product' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'

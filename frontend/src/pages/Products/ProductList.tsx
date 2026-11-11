@@ -72,7 +72,7 @@ export default function ProductList() {
                 {data?.products?.map((product: any) => (
                   <tr key={product.id}>
                     <td className="font-medium">{product.code}</td>
-                    <td>{product.name}</td>
+                    <td><Link to={`/app/warehouse/item-stock/product/${product.id}`} className="hover:text-emerald-700 hover:underline" title="Lihat stok per gudang dan mutasi">{product.name}</Link></td>
                     <td>{product.category || '-'}</td>
                     <td>{product.primary_uom}</td>
                     <td>Rp {product.price.toLocaleString()}</td>

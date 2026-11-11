@@ -489,7 +489,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
                         {item.item_code}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900 dark:text-white">{item.item_name}</div>
+                        <div className="text-sm text-gray-900 dark:text-white">{(item.material_id || item.product_id) ? <Link to={`/app/warehouse/item-stock/${item.material_id ? 'material' : 'product'}/${item.material_id || item.product_id}`} className="hover:text-emerald-700 hover:underline" title="Lihat stok per gudang dan mutasi">{item.item_name}</Link> : item.item_name}</div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">{item.uom}</div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">

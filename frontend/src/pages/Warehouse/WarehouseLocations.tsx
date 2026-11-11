@@ -8,7 +8,7 @@ const { data: zones } = useGetWarehouseZonesQuery({})
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Warehouse Locations</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Lokasi Gudang</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {zones?.zones?.map((zone: any) => (

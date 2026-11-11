@@ -194,7 +194,7 @@ const LocationForm: React.FC = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               <Building className="inline h-4 w-4 mr-1" />
-              Warehouse Zone *
+              Gudang *
             </label>
             <select
               name="zone_id"
