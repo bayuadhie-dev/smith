@@ -1,6 +1,6 @@
 import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import { useDraftState, useClearTabDrafts } from '../../workspace/drafts'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import {
@@ -139,10 +139,38 @@ export default function PRForm() {
   const calcTotal = (qty: string, price: string) =>
     (parseFloat(qty) || 0) * (parseFloat(price) || 0);
 
+  const [materials, setMaterials] = useState<any[]>([]);
+  const [uomOpts, setUomOpts] = useState<Record<string, string[]>>({});
+  const uomLoading = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    axiosInstance.get('/api/materials/', { params: { per_page: 2000 } })
+      .then((r) => setMaterials((r.data.materials || []).filter((m: any) => m.is_active !== false)))
+      .catch(() => setMaterials([]));
+  }, []);
+  const materialOf = (it: { item_code: string; item_name: string }) =>
+    materials.find((m) => it.item_code && m.code === it.item_code) ||
+    materials.find((m) => it.item_name.trim() && m.name.toLowerCase() === it.item_name.trim().toLowerCase());
+  const matIds = items.map((it) => materialOf(it)?.id).filter(Boolean).join(',');
+  useEffect(() => {
+    items.forEach((it) => {
+      const m = materialOf(it);
+      if (!m || uomOpts[m.id] || uomLoading.current.has(String(m.id))) return;
+      uomLoading.current.add(String(m.id));
+      axiosInstance.get('/api/purchasing/uom-options', { params: { material_id: m.id } })
+        .then((r) => setUomOpts((o) => ({ ...o, [m.id]: (r.data.options || []).map((x: any) => x.code) })))
+        .catch(() => setUomOpts((o) => ({ ...o, [m.id]: [] })));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matIds, materials.length]);
+
   const updateItem = (idx: number, field: keyof PRItem, value: string) => {
     setItems(prev => prev.map((item, i) => {
       if (i !== idx) return item;
       const updated = { ...item, [field]: value };
+      if (field === 'item_name') {
+        const m = materials.find((x) => x.name.toLowerCase() === value.trim().toLowerCase());
+        if (m) { updated.item_code = m.code; updated.uom = m.unit_of_measure || m.primary_uom || updated.uom; }
+      }
       updated.estimated_total = calcTotal(
         field === 'quantity' ? value : updated.quantity,
         field === 'estimated_unit_price' ? value : updated.estimated_unit_price,
@@ -455,6 +483,9 @@ export default function PRForm() {
           {isEditable && <div className="col-span-1"></div>}
         </div>
 
+        <datalist id="pr-materials">
+          {materials.map((m) => <option key={m.id} value={m.name}>{m.code}</option>)}
+        </datalist>
         <div className="space-y-2">
           {items.map((item, idx) => (
             <div key={idx} className="grid grid-cols-12 gap-2 items-center">
@@ -465,6 +496,7 @@ export default function PRForm() {
                   onChange={(e) => updateItem(idx, 'item_name', e.target.value)}
                   disabled={!isEditable}
                   placeholder="Nama material/barang"
+                  list="pr-materials"
                   className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50"
                 />
               </div>
@@ -489,14 +521,20 @@ export default function PRForm() {
                 />
               </div>
               <div className="col-span-1">
-                <input
-                  type="text"
-                  value={item.uom}
-                  onChange={(e) => updateItem(idx, 'uom', e.target.value)}
-                  disabled={!isEditable}
-                  placeholder="kg"
-                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50"
-                />
+                {(() => {
+                  const m = materialOf(item);
+                  const opts = m ? (uomOpts[m.id] || []) : [];
+                  const cls = 'w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50';
+                  if (opts.length > 1 || (opts.length === 1 && opts[0] !== item.uom)) {
+                    const list = opts.includes(item.uom) || !item.uom ? opts : [item.uom, ...opts];
+                    return (
+                      <select value={item.uom} onChange={(e) => updateItem(idx, 'uom', e.target.value)} disabled={!isEditable} className={cls}>
+                        {list.map((c) => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    );
+                  }
+                  return <input type="text" value={item.uom} onChange={(e) => updateItem(idx, 'uom', e.target.value)} disabled={!isEditable} placeholder="kg" className={cls} />;
+                })()}
               </div>
               <div className="col-span-2">
                 <NumberInput currency={formData.currency === 'IDR'}
