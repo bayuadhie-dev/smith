@@ -204,6 +204,12 @@ class Product(db.Model):
     kebutuhan_es_kg = db.Column(db.Float, nullable=True)
     # Production Process
     process_produksi = db.Column(db.String(200), nullable=True)
+    # Paket pengerjaan satu FG: produk Ingredient, WIP (WIPC=Cutting, WIPP=Perforating), dan WASTE-nya
+    ingredient_product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
+    wip_product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
+    wipc_product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
+    wipp_product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
+    waste_product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
     kode_jumbo_roll = db.Column(db.String(50), nullable=True)
     nama_jumbo_roll = db.Column(db.String(200), nullable=True)
     kode_main_roll = db.Column(db.String(50), nullable=True)
@@ -265,6 +271,11 @@ class Product(db.Model):
             'kebutuhan_polyester_kg': self.kebutuhan_polyester_kg,
             'kebutuhan_es_kg': self.kebutuhan_es_kg,
             'process_produksi': self.process_produksi,
+            'ingredient_product_id': self.ingredient_product_id,
+            'wip_product_id': self.wip_product_id,
+            'wipc_product_id': self.wipc_product_id,
+            'wipp_product_id': self.wipp_product_id,
+            'waste_product_id': self.waste_product_id,
             'kode_jumbo_roll': self.kode_jumbo_roll,
             'nama_jumbo_roll': self.nama_jumbo_roll,
             'kode_main_roll': self.kode_main_roll,

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Link } from 'react-router-dom';
 import { confirmDialog, showError, showSuccess } from './ui';
+import axiosInstance from '../utils/axiosConfig';
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
@@ -194,6 +195,24 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
           <p className="text-gray-600 dark:text-gray-300">Manajemen data produk - {totalProducts} produk</p>
         </div>
         <div className="flex space-x-3">
+          <button
+            onClick={async () => {
+              try {
+                const dry = await axiosInstance.post('/api/products-new/auto-link-process', { dry_run: true });
+                if (!dry.data.fg_matched) { showSuccess('Tidak ada FG baru yang bisa ditautkan otomatis.'); return; }
+                const sample = dry.data.matches.slice(0, 5).map((m: any) => m.fg).join('\n');
+                if (!(await confirmDialog(`${dry.data.fg_matched} FG akan ditautkan ke Ingredient/WIP/WASTE berdasarkan kemiripan nama.\nContoh:\n${sample}\nLanjutkan?`))) return;
+                const done = await axiosInstance.post('/api/products-new/auto-link-process', { dry_run: false });
+                showSuccess(`${done.data.fg_updated} FG ditautkan`);
+              } catch (e: any) {
+                showError(e?.response?.data?.error || 'Gagal menautkan otomatis');
+              }
+            }}
+            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center space-x-2"
+            title="Isi otomatis paket Ingredient, WIP, WASTE tiap FG dari kemiripan nama"
+          >
+            <span>Tautkan paket dari nama</span>
+          </button>
           <button
             onClick={handleExport}
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center space-x-2"

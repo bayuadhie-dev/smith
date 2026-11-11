@@ -127,6 +127,7 @@ def create_product():
             'slitting_cm', 'lebar_mr_net_cm', 'lebar_mr_gross_cm', 'keterangan_slitting',
             'no_mesin_epd', 'speed_epd_pack_menit', 'meter_kain', 'kg_kain',
             'kebutuhan_rayon_kg', 'kebutuhan_polyester_kg', 'kebutuhan_es_kg',
+            'ingredient_product_id', 'wip_product_id', 'wipc_product_id', 'wipp_product_id', 'waste_product_id',
             'process_produksi', 'kode_jumbo_roll', 'nama_jumbo_roll', 'kode_main_roll',
             'nama_main_roll', 'kapasitas_mixing_kg', 'actual_mixing_kg', 'dosing_kg',
             'notes'
@@ -186,7 +187,8 @@ def update_product(product_id):
             'spunlace', 'rayon', 'polyester', 'es', 'slitting_cm', 'lebar_mr_net_cm',
             'lebar_mr_gross_cm', 'keterangan_slitting', 'no_mesin_epd', 'speed_epd_pack_menit',
             'meter_kain', 'kg_kain', 'kebutuhan_rayon_kg', 'kebutuhan_polyester_kg',
-            'kebutuhan_es_kg', 'process_produksi', 'kode_jumbo_roll', 'nama_jumbo_roll',
+            'kebutuhan_es_kg', 'ingredient_product_id', 'wip_product_id', 'wipc_product_id', 'wipp_product_id', 'waste_product_id',
+            'process_produksi', 'kode_jumbo_roll', 'nama_jumbo_roll',
             'kode_main_roll', 'nama_main_roll', 'kapasitas_mixing_kg', 'actual_mixing_kg',
             'dosing_kg', 'notes', 'is_active'
         ]:
@@ -392,3 +394,56 @@ def import_excel():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+import re as _re
+
+_LINK_PREFIXES = [('wipc_product_id', 'WIPC'), ('wipp_product_id', 'WIPP'), ('wip_product_id', 'WIP'),
+                  ('waste_product_id', 'WASTE'), ('ingredient_product_id', 'INGREDIENTS')]
+
+
+def _norm_tokens(name):
+    n = _re.sub(r'@\S+', ' ', (name or '').upper())
+    n = _re.sub(r'[^A-Z0-9& ]', ' ', n)
+    return tuple(t for t in n.split() if t not in ('FT', 'BND'))
+
+
+@products_new_bp.route('/auto-link-process', methods=['POST'])
+@jwt_required()
+def auto_link_process():
+    """Isi otomatis tautan Ingredient/WIP/WIPC/WIPP/WASTE di tiap FG dari kemiripan nama. dry_run=true hanya menampilkan hasilnya."""
+    from utils.auth_decorators import _get_user_permissions
+    from flask_jwt_extended import get_jwt_identity
+    from models.user import User
+    user = db.session.get(User, int(get_jwt_identity()))
+    if not (user and (user.is_super_admin or 'products.edit' in _get_user_permissions(user))):
+        return jsonify({'error': 'Permission denied'}), 403
+    dry = (request.get_json(silent=True) or {}).get('dry_run', True)
+    prods = ProductNew.query.filter(ProductNew.is_active.is_(True)).all()
+    index = {}
+    for p in prods:
+        up = (p.name or '').upper().strip()
+        for field, prefix in _LINK_PREFIXES:
+            if up == prefix or up.startswith(prefix + ' '):
+                index.setdefault((field, _norm_tokens(up[len(prefix):])), []).append(p)
+                break
+    helper_ids = {p.id for ps in index.values() for p in ps}
+    out, linked = [], 0
+    for fg in prods:
+        if fg.id in helper_ids or not (fg.code or '').startswith('4'):
+            continue
+        key = _norm_tokens(fg.name)
+        found = {}
+        for field, _ in _LINK_PREFIXES:
+            cands = index.get((field, key)) or []
+            if len(cands) == 1 and getattr(fg, field) is None:
+                found[field] = cands[0]
+        if found:
+            out.append({'fg': f'{fg.code} {fg.name}', **{f: f'{c.code} {c.name}' for f, c in found.items()}})
+            if not dry:
+                for f, c in found.items():
+                    setattr(fg, f, c.id)
+                linked += 1
+    if not dry:
+        db.session.commit()
+    return jsonify({'dry_run': bool(dry), 'fg_matched': len(out), 'fg_updated': linked, 'matches': out}), 200

@@ -135,3 +135,13 @@ def test_qc_status_change_is_ledger_neutral(client, db_session, test_material):
                              {'m': test_material.id}).scalar()
     assert float(net) == 0
     assert sum(float(i.quantity_on_hand) for i in Inventory.query.filter_by(material_id=test_material.id)) == 40
+
+
+def test_material_issue_requires_printed_spk(client, auth_headers, db_session, test_product):
+    from models.production import WorkOrder
+    wo = WorkOrder(wo_number='WO-SPK-GATE', product_id=test_product.id, quantity=10, uom='PCS', status='planned')
+    db_session.add(wo); db_session.commit()
+    r = client.post('/api/production/material-issues', headers=auth_headers, json={'work_order_id': wo.id, 'items': []})
+    assert r.status_code == 400 and 'Cetak SPK' in (r.get_json().get('error') or '')
+    r2 = client.post(f'/api/production/material-issues/from-work-order/{wo.id}', headers=auth_headers)
+    assert r2.status_code == 400 and 'Cetak SPK' in (r2.get_json().get('error') or '')

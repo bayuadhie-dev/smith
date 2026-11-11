@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import AccountSlotSelector from './Finance/AccountSlotSelector';
 import NumberInput from './ui/NumberInput'
+import SearchableSelect from './SearchableSelect'
 
 interface Machine {
   id: number;
@@ -51,6 +52,11 @@ interface ProductNew {
   kode_jumbo_roll?: string;
   nama_jumbo_roll?: string;
   kode_main_roll?: string;
+  ingredient_product_id?: number | null;
+  wip_product_id?: number | null;
+  wipc_product_id?: number | null;
+  wipp_product_id?: number | null;
+  waste_product_id?: number | null;
   nama_main_roll?: string;
   kapasitas_mixing_kg?: number;
   actual_mixing_kg?: number;
@@ -114,6 +120,11 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
     kode_jumbo_roll: '',
     nama_jumbo_roll: '',
     kode_main_roll: '',
+    ingredient_product_id: null,
+    wip_product_id: null,
+    wipc_product_id: null,
+    wipp_product_id: null,
+    waste_product_id: null,
     nama_main_roll: '',
     kapasitas_mixing_kg: undefined,
     actual_mixing_kg: undefined,
@@ -128,6 +139,13 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [machines, setMachines] = useState<Machine[]>([]);
   const [loadingMachines, setLoadingMachines] = useState(false);
+
+  const [allProducts, setAllProducts] = useState<{ id: number; name: string }[]>([]);
+  useEffect(() => {
+    axiosInstance.get('/api/products-new/', { params: { per_page: 2000 } })
+      .then((r) => setAllProducts((r.data?.products || []).map((x: any) => ({ id: x.id, name: `${x.kode_produk} - ${x.nama_produk}` }))))
+      .catch(() => setAllProducts([]));
+  }, []);
 
   // Fetch machines for dropdown
   useEffect(() => {
@@ -756,6 +774,32 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   placeholder="Contoh: MR FN 40-25 D 50%R/50%P 160 CM"
                 />
               </div>
+            </div>
+
+            {/* Paket pengerjaan: Ingredient, WIP, WASTE */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b pb-2">
+                Paket Pengerjaan (Ingredient, WIP, Waste)
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Produk pasangan untuk FG ini. Dipakai saat membuat SPK Ingredient, WIP (WIPC = Cutting, WIPP = Perforating), dan Waste.</p>
+              {([
+                ['ingredient_product_id', 'Produk Ingredient'],
+                ['wip_product_id', 'Produk WIP'],
+                ['wipc_product_id', 'Produk WIPC (Cutting)'],
+                ['wipp_product_id', 'Produk WIPP (Perforating)'],
+                ['waste_product_id', 'Produk Waste'],
+              ] as const).map(([field, label]) => (
+                <div key={field}>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{label}</label>
+                  <SearchableSelect
+                    options={allProducts}
+                    value={(formData as any)[field] ?? null}
+                    onChange={(v) => handleInputChange(field, v ? Number(v) : null as any)}
+                    placeholder="Tidak ada"
+                    className="w-full"
+                  />
+                </div>
+              ))}
             </div>
 
             {/* Mixing Process */}

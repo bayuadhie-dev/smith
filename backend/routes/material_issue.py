@@ -134,6 +134,16 @@ def get_material_issue(id):
     except Exception as e:
         return error_response(str(e)), 500
 
+def _spk_printed(work_order_id):
+    """Urutan wajib: Cetak SPK dulu, baru Permintaan Barang."""
+    from models.document_management import Document
+    return Document.query.filter(Document.reference_type == 'work_order', Document.reference_id == work_order_id,
+                                 Document.document_type == 'spk', Document.status != 'cancelled').first() is not None
+
+
+_SPK_FIRST = 'SPK belum dicetak. Urutannya: Cetak SPK, lalu Permintaan Barang. Cetak SPK dulu dari halaman SPK.'
+
+
 @material_issue_bp.route('/material-issues', methods=['POST'])
 @jwt_required()
 @require_permission('materials.create')
@@ -160,6 +170,8 @@ def create_material_issue():
             wo = db.session.get(WorkOrder, work_order_id)
             if not wo:
                 return error_response('Work order not found'), 404
+            if not _spk_printed(work_order_id):
+                return jsonify({'error': _SPK_FIRST, 'message': _SPK_FIRST}), 400
 
         if sales_order_id:
             from models.sales import SalesOrder
@@ -244,6 +256,8 @@ def create_material_issue_from_wo(work_order_id):
         wo = db.session.get(WorkOrder, work_order_id)
         if not wo:
             return error_response('Work order not found'), 404
+        if not _spk_printed(work_order_id):
+            return jsonify({'error': _SPK_FIRST, 'message': _SPK_FIRST}), 400
         
         # Get BOM for the product
         bom = BillOfMaterials.query.filter_by(product_id=wo.product_id, is_active=True).first()

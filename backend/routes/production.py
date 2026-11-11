@@ -4386,6 +4386,14 @@ def sync_packing_list(wo_id):
         work_order = db.session.get(WorkOrder, wo_id)
         if not work_order:
             return jsonify({'error': 'Work order not found'}), 404
+
+        # Urutan wajib: penyelesaian barang jadi (semua batch ditutup) dulu, baru Packing List
+        from models.batch_scheduling import ProductionBatch
+        _batches = ProductionBatch.query.filter_by(work_order_id=wo_id).all()
+        _open = [b for b in _batches if not b.admin_closed]
+        if work_order.product and (work_order.product.material_type or '').strip().lower() == 'finished_goods' and _open:
+            _msg = 'Penyelesaian barang jadi belum selesai: tutup semua batch dulu, baru buat Packing List.'
+            return jsonify({'error': _msg, 'message': _msg}), 400
         
         data = request.get_json() or {}
         total_karton = data.get('total_karton', 0)

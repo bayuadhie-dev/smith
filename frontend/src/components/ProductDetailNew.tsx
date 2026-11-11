@@ -42,6 +42,11 @@ interface ProductNew {
   kode_jumbo_roll?: string;
   nama_jumbo_roll?: string;
   kode_main_roll?: string;
+  ingredient_product_id?: number | null;
+  wip_product_id?: number | null;
+  wipc_product_id?: number | null;
+  wipp_product_id?: number | null;
+  waste_product_id?: number | null;
   nama_main_roll?: string;
   kapasitas_mixing_kg?: number;
   actual_mixing_kg?: number;
