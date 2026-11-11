@@ -97,6 +97,7 @@ const WeeklyProductionPlan: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
   const [machines, setMachines] = useState<Machine[]>([]);
+  const [monthlyMachineId, setMonthlyMachineId] = useState('');
 
   // EWS: ringkasan risiko downtime 7 hari terakhir, untuk badge peringatan per mesin
   const { data: ewsSummary } = useGetEWSSummaryQuery({ days: 7 });
@@ -397,9 +398,15 @@ const WeeklyProductionPlan: React.FC = () => {
       return;
     }
 
+    if (!selectedMonthly.machine_id && !monthlyMachineId) {
+      showWarning('Pilih mesin untuk jadwal minggu ini');
+      return;
+    }
+
     try {
       const weekStart = weekDates[0] ? toLocalDateString(weekDates[0]) : '';
       await axiosInstance.post(`/api/production/monthly-schedule/${selectedMonthly.id}/add-to-weekly`, {
+        machine_id: selectedMonthly.machine_id || parseInt(monthlyMachineId),
         order_ctn: orderCtn,
         week_start: weekStart,
         schedule_days: formData.schedule_days,
@@ -409,6 +416,7 @@ const WeeklyProductionPlan: React.FC = () => {
       setShowMonthlyModal(false);
       setSelectedMonthly(null);
       setMonthlyOrderCtn('');
+      setMonthlyMachineId('');
       resetForm();
       fetchData();
       showSuccess('Jadwal berhasil ditambahkan dari target bulanan');
@@ -1236,6 +1244,19 @@ const WeeklyProductionPlan: React.FC = () => {
                         Jadwalkan: {selectedMonthly.product_name}
                       </h4>
                       
+                      {!selectedMonthly.machine_id && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                            Mesin <span className="text-red-500">*</span>
+                          </label>
+                          <select value={monthlyMachineId} onChange={(e) => setMonthlyMachineId(e.target.value)}
+                            className="w-full px-4 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg dark:bg-gray-800 dark:text-white focus:border-purple-400 focus:outline-none">
+                            <option value="">Pilih mesin</option>
+                            {machines.map((m) => <option key={m.id} value={m.id}>{m.code} - {m.name}</option>)}
+                          </select>
+                          <p className="mt-1 text-xs text-gray-500">Target bulanan ini belum punya mesin, pilih mesin untuk jadwal minggu ini.</p>
+                        </div>
+                      )}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           Jumlah CTN untuk minggu ini <span className="text-red-500">*</span>

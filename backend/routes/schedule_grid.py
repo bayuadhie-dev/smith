@@ -1080,8 +1080,12 @@ def add_monthly_to_weekly(id):
         ).fetchone()
         qty_per_ctn_from_db = int(product_data[0]) if product_data and product_data[0] else 0
         
+        machine_id = data.get('machine_id') or monthly.machine_id
+        if not machine_id:
+            return jsonify({'error': 'Pilih mesin dulu: target bulanan ini belum punya mesin'}), 400
+
         weekly_item = ScheduleGridItem(
-            machine_id=monthly.machine_id,
+            machine_id=machine_id,
             product_id=monthly.product_id,
             week_start=week_start,
             order_ctn=order_ctn,
