@@ -104,3 +104,18 @@ def test_zone_stock_summary(client, auth_headers, db_session, test_material):
     assert any(i['item_id'] == test_material.id and i['on_hand'] == 12 for i in d['items'])
     assert any(l['id'] == a.id and l['on_hand'] == 12 for l in d['locations'])
     assert client.get('/api/stock-transfers/zone-stock/99999', headers=auth_headers).status_code == 404
+
+
+def test_receipts_list_has_grn_origin(client, auth_headers, db_session, test_material):
+    from models.purchasing import GoodsReceivedNote, GRNItem, Supplier
+    a = _loc(db_session, 'RC1')
+    sup = Supplier(code='SUP-RC1', company_name='Pemasok RC', is_active=True)
+    db_session.add(sup); db_session.flush()
+    g = GoodsReceivedNote(grn_number='BPB-RC/001', supplier_id=sup.id, receipt_date=__import__('datetime').date.today(), status='approved', received_by=1)
+    db_session.add(g); db_session.flush()
+    db_session.add(GRNItem(grn_id=g.id, material_id=test_material.id, item_name='Bahan', quantity_ordered=1, quantity_received=1, quantity_accepted=1, uom='KG', location_id=a.id))
+    db_session.commit()
+    d = client.get('/api/stock-transfers/receipts', headers=auth_headers).get_json()
+    row = next(r for r in d['receipts'] if r['number'] == 'BPB-RC/001')
+    assert row['origin'] == 'grn' and row['from_label'] == 'Pemasok RC' and row['href'].endswith(str(g.id))
+    assert client.get('/api/stock-transfers/receipts?origin=transfer', headers=auth_headers).get_json()['total'] == 0

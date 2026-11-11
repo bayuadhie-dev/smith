@@ -38,7 +38,7 @@ export default function StockTransferList({ receiveMode = false }: { receiveMode
   return (
     <div className="space-y-4 p-6">
       <PageHeader
-        title={receiveMode ? 'Terima Barang' : 'Pemindahan Barang'}
+        title={receiveMode ? 'Penerimaan Barang' : 'Pemindahan Barang'}
         subtitle={receiveMode ? 'Pemindahan yang sudah dikirim dan menunggu diterima di gudang tujuan' : 'Pindah barang antar gudang, dari Permintaan Barang atau Penerimaan Barang'}
         actions={!receiveMode ? <Link to="/app/warehouse/transfers/new" className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Pemindahan baru</Link> : undefined}
       />

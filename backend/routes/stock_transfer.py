@@ -366,3 +366,38 @@ def zone_stock(zone_id):
     return jsonify({'zone': {'id': zone.id, 'code': zone.code, 'name': zone.name, 'zone_type': zone.zone_type, 'is_active': zone.is_active},
                     'locations': [{'id': l.id, 'location_code': l.location_code, 'on_hand': per_loc.get(l.id, 0.0), 'is_active': l.is_active} for l in locs],
                     'items': sorted(items.values(), key=lambda x: -x['on_hand']), 'movements': moves}), 200
+
+
+@stock_transfer_bp.route('/receipts', methods=['GET'])
+@jwt_required()
+@require_permission('warehouse.view')
+def receipts():
+    """Penerimaan Barang: gabungan GRN (asal GRN) dan pemindahan yang diterima/menunggu diterima (asal Pemindahan)."""
+    from models.purchasing import GoodsReceivedNote
+    origin = request.args.get('origin')
+    status = request.args.get('status')
+    s = (request.args.get('search') or '').strip().lower()
+    rows = []
+    if origin in (None, '', 'grn'):
+        for g in GoodsReceivedNote.query.order_by(GoodsReceivedNote.id.desc()).limit(200).all():
+            locs = []
+            for it in g.items:
+                if it.location_id:
+                    lab = _loc_label(db.session.get(WarehouseLocation, it.location_id))
+                    if lab and lab not in locs:
+                        locs.append(lab)
+            rows.append({'origin': 'grn', 'id': g.id, 'number': g.grn_number, 'source_number': g.purchase_order.po_number if g.purchase_order else None,
+                         'date': g.receipt_date.isoformat() if g.receipt_date else None,
+                         'from_label': g.supplier.company_name if getattr(g, 'supplier', None) else None, 'to_label': ', '.join(locs) or '-',
+                         'status': g.status, 'href': f'/app/purchasing/grn/{g.id}'})
+    if origin in (None, '', 'transfer'):
+        for t in StockTransfer.query.filter(StockTransfer.status != 'cancelled', StockTransfer.status != 'draft').order_by(StockTransfer.id.desc()).limit(200).all():
+            rows.append({'origin': 'transfer', 'id': t.id, 'number': t.transfer_number, 'source_number': t.source_number,
+                         'date': (t.shipped_at or t.created_at).isoformat(), 'from_label': _loc_label(t.from_location), 'to_label': _loc_label(t.to_location),
+                         'status': t.status, 'href': f'/app/warehouse/transfers/{t.id}'})
+    if status:
+        rows = [r for r in rows if r['status'] == status]
+    if s:
+        rows = [r for r in rows if s in (r['number'] or '').lower() or s in (r['source_number'] or '').lower() or s in (r['from_label'] or '').lower()]
+    rows.sort(key=lambda r: r['date'] or '', reverse=True)
+    return jsonify({'receipts': rows, 'total': len(rows)}), 200

@@ -19,7 +19,7 @@ const ROUTE_TITLES: Record<string, string> = {
   '/app/inventory/products': 'Products',
   '/app/inventory/materials': 'Materials',
   '/app/warehouse': 'Inventory',
-  '/app/warehouse/transfers': 'Pemindahan & Terima Barang',
+  '/app/warehouse/transfers': 'Pemindahan & Penerimaan Barang',
   '/app/warehouse/zones': 'Master Gudang',
   '/app/warehouse/locations': 'Lokasi Gudang',
   '/app/warehouse/movements': 'Mutasi Stok',

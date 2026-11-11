@@ -1,9 +1,10 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import StockTransferList from './StockTransferList'
+import ReceiptsList from './ReceiptsList'
 
 const TABS = [
   { path: '/app/warehouse/transfers', label: 'Pemindahan Barang', hint: 'Dari Permintaan Barang atau Penerimaan Barang' },
-  { path: '/app/warehouse/transfers/receive', label: 'Terima Barang', hint: 'Ambil pemindahan yang sudah dikirim ke gudang ini' },
+  { path: '/app/warehouse/transfers/receive', label: 'Penerimaan Barang', hint: 'Barang masuk dari GRN atau dari pemindahan (tombol Ambil)' },
 ]
 
 export default function TransferHub() {
@@ -20,7 +21,7 @@ export default function TransferHub() {
           </button>
         ))}
       </div>
-      <StockTransferList key={active} receiveMode={active === 1} />
+      {active === 1 ? <ReceiptsList /> : <StockTransferList />}
     </div>
   )
 }
