@@ -3,18 +3,18 @@
 @tailwind utilities;
 
 
-/* Tema per perusahaan: nilai bawaan = tampilan Falmaco (emerald). Fengsheng: forest green + oatmilk + burnt orange. */
+/* Tema per perusahaan. Bawaan = Falmaco: Frost White 60% / Gunmetal Grey 30% / Cobalt 10%. Fengsheng: oatmilk + forest green + burnt orange. */
 :root {
-  --brand-50: 236 253 245;
-  --brand-100: 209 250 229;
-  --brand-200: 167 243 208;
-  --brand-300: 110 231 183;
-  --brand-400: 52 211 153;
-  --brand-500: 16 185 129;
-  --brand-600: 5 150 105;
-  --brand-700: 4 120 87;
-  --brand-800: 6 95 70;
-  --brand-900: 6 78 59;
+  --brand-50: 238 243 253;
+  --brand-100: 220 231 250;
+  --brand-200: 185 207 245;
+  --brand-300: 138 174 238;
+  --brand-400: 90 138 228;
+  --brand-500: 56 115 219;
+  --brand-600: 31 95 209;
+  --brand-700: 26 79 174;
+  --brand-800: 52 58 65;
+  --brand-900: 38 43 49;
   --accent-50: 255 247 237;
   --accent-100: 255 237 213;
   --accent-200: 254 215 170;
@@ -25,9 +25,9 @@
   --accent-700: 194 65 12;
   --accent-800: 154 52 18;
   --accent-900: 124 45 18;
-  --surface-50: 249 250 251;
-  --surface-100: 243 244 246;
-  --surface-200: 229 231 235;
+  --surface-50: 242 244 246;
+  --surface-100: 233 236 239;
+  --surface-200: 221 225 230;
 }
 
 html[data-company='fengsheng'] {
