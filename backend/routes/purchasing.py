@@ -1582,6 +1582,45 @@ def destroy_quarantine_inventory(inventory_id):
         return jsonify({'error': str(e)}), 500
 
 
+def _post_grn_delta_journal(grn, deltas, user_id):
+    """Jurnal selisih penerimaan: deltas = [(product_id, nilai)], nilai positif = tambah persediaan. Satu jurnal, GR/IR sebagai lawan."""
+    from models.finance import GlobalAccountDefault
+    from models.approval_workflow import PendingJournalEntry
+    from utils.finance_helpers import resolve_account, post_pending_journal
+    lines, debit, credit = [], 0.0, 0.0
+    for product_id, amount in deltas:
+        amount = round(amount, 2)
+        if abs(amount) < 0.005:
+            continue
+        try:
+            acc = resolve_account('akun_persediaan_id', product_id=product_id, category_id=None)
+        except ValueError:
+            continue
+        if amount > 0:
+            lines.append({'account_id': acc, 'debit': amount, 'credit': 0, 'description': f'Selisih penerimaan GRN {grn.grn_number} (inspeksi)'})
+            debit += amount
+        else:
+            lines.append({'account_id': acc, 'debit': 0, 'credit': -amount, 'description': f'Selisih penerimaan GRN {grn.grn_number} (inspeksi)'})
+            credit += -amount
+    if not lines:
+        return
+    gr_ir = GlobalAccountDefault.query.filter_by(transaction_key='gr_ir_clearing').first()
+    if not gr_ir:
+        return
+    net = round(debit - credit, 2)
+    if net > 0:
+        lines.append({'account_id': gr_ir.account_id, 'debit': 0, 'credit': net, 'description': f'GR/IR Clearing - selisih GRN {grn.grn_number}'})
+        credit += net
+    elif net < 0:
+        lines.append({'account_id': gr_ir.account_id, 'debit': -net, 'credit': 0, 'description': f'GR/IR Clearing - selisih GRN {grn.grn_number}'})
+        debit += -net
+    pending = PendingJournalEntry(workflow_id=None, entry_date=get_local_now().date(), description=f'Selisih Penerimaan Barang (GRN) {grn.grn_number}',
+                                  reference=grn.grn_number, lines=lines, total_debit=round(debit, 2), total_credit=round(credit, 2), created_by=user_id)
+    db.session.add(pending)
+    db.session.flush()
+    post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='goods_receipt', reference_id=grn.id)
+
+
 @purchasing_bp.route('/grn/<int:grn_id>/inspect', methods=['POST'])
 @jwt_required()
 @require_permission('purchasing.create')
@@ -1605,6 +1644,7 @@ def inspect_grn(grn_id):
         total_accepted = 0
         total_rejected = 0
 
+        gl_deltas = []
         for item_data in items_data:
             item = GRNItem.query.filter_by(id=item_data['id'], grn_id=grn_id).first()
             if not item:
@@ -1663,6 +1703,14 @@ def inspect_grn(grn_id):
                         notes=f"QC Inspection adjustment for GRN {grn.grn_number}",
                         created_by=user_id
                     )
+
+            # Selisih jumlah diterima setelah GRN diposting (mis. over-delivery saat inspeksi) harus ikut ke GL:
+            # Dr/Cr Persediaan lawan GR/IR, dinilai pada harga PO, sama seperti saat GRN dibuat.
+            if delta != 0 and item.location_id and (item.product_id or item.material_id):
+                _poi = db.session.get(PurchaseOrderItem, item.po_item_id) if item.po_item_id else None
+                _po = db.session.get(PurchaseOrder, grn.po_id) if grn.po_id else None
+                if _poi and _poi.unit_price:
+                    gl_deltas.append((item.product_id, delta * float(_poi.unit_price) * (float(_po.exchange_rate or 1) if _po else 1.0)))
 
             # Fase 4 audit fix (2026-09-30): barang yang ditolak (quantity_rejected)
             # sebelumnya hanya angka di GRNItem, tidak pernah masuk Inventory -
@@ -1735,6 +1783,7 @@ def inspect_grn(grn_id):
             grn.quality_status = 'partial'
 
         db.session.flush()
+        _post_grn_delta_journal(grn, gl_deltas, user_id)
         if grn.po_id:
             _sync_po_received(grn.po_id)
         db.session.commit()

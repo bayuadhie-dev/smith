@@ -145,3 +145,36 @@ def test_material_issue_requires_printed_spk(client, auth_headers, db_session, t
     assert r.status_code == 400 and 'Cetak SPK' in (r.get_json().get('error') or '')
     r2 = client.post(f'/api/production/material-issues/from-work-order/{wo.id}', headers=auth_headers)
     assert r2.status_code == 400 and 'Cetak SPK' in (r2.get_json().get('error') or '')
+
+
+def test_inspection_over_delivery_posts_gl_delta(client, auth_headers, db_session, test_material):
+    from datetime import date
+    from models import Inventory
+    from models.finance import Account, GlobalAccountDefault
+    from models.purchasing import GoodsReceivedNote, GRNItem, PurchaseOrder, PurchaseOrderItem, Supplier
+    from tests.test_grn_reject_quarantine import _setup_warehouse
+    loc, _ = _setup_warehouse(db_session)
+    inv_acc = Account(account_code='1-5000', account_name='Persediaan Bahan Baku', account_type='asset', normal_balance='debit', is_active=True)
+    gr = Account(account_code='2-7000', account_name='GR/IR', account_type='liability', normal_balance='credit', is_active=True)
+    db_session.add_all([inv_acc, gr]); db_session.flush()
+    db_session.add(GlobalAccountDefault(transaction_key='akun_persediaan_id', account_id=inv_acc.id))
+    db_session.add(GlobalAccountDefault(transaction_key='gr_ir_clearing', account_id=gr.id)); db_session.commit()
+    sup = Supplier(code='SUP-DG', company_name='Sup DG', is_active=True); db_session.add(sup); db_session.commit()
+    po = PurchaseOrder(po_number='PO-DG-1', supplier_id=sup.id, order_date=date.today(), status='approved', total_amount=2400)
+    db_session.add(po); db_session.commit()
+    poi = PurchaseOrderItem(po_id=po.id, line_number=1, material_id=test_material.id, quantity=2400, uom='KG', unit_price=10, total_price=24000)
+    db_session.add(poi); db_session.commit()
+    g = GoodsReceivedNote(grn_number='BPB-DG-1', po_id=po.id, supplier_id=sup.id, receipt_date=date.today(), status='pending')
+    db_session.add(g); db_session.commit()
+    it = GRNItem(grn_id=g.id, po_item_id=poi.id, material_id=test_material.id, quantity_ordered=2400, quantity_received=2400, quantity_accepted=2400,
+                 uom='KG', location_id=loc.id, batch_number='B1')
+    db_session.add(it)
+    db_session.add(Inventory(material_id=test_material.id, location_id=loc.id, quantity_on_hand=2400, quantity_available=2400, batch_number='B1', is_active=True))
+    db_session.commit()
+    r = client.post(f'/api/purchasing/grn/{g.id}/inspect', headers=auth_headers, json={'items': [{'id': it.id, 'quantity_accepted': 2628.7, 'quantity_rejected': 0}]})
+    assert r.status_code == 200, r.get_json()
+    from models.finance import AccountingEntry
+    rows = AccountingEntry.query.filter(AccountingEntry.reference_number == 'BPB-DG-1').all()
+    dr = sum(float(x.debit_amount or 0) for x in rows)
+    cr = sum(float(x.credit_amount or 0) for x in rows)
+    assert round(dr, 2) == round(cr, 2) == 2287.0
