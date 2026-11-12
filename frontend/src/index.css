@@ -399,3 +399,11 @@ html[data-company='fengsheng'].dark { --sidebar-bg: 14 22 18; }
 .dark .recharts-cartesian-axis-tick-value { fill: rgb(156 163 175); }
 .dark .recharts-cartesian-grid line { stroke: rgb(var(--gray-700)); }
 .dark .recharts-legend-item-text { color: rgb(209 213 219) !important; }
+
+html:where(:not(.dark)) .text-gray-400:where(:not(.sidebar-themed *)) {
+  color: #6b7280;
+}
+
+html:where(:not(.dark)) .text-yellow-600:where(:not(.sidebar-themed *)) {
+  color: #a16207;
+}
