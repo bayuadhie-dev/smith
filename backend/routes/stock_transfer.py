@@ -96,6 +96,18 @@ def sources():
                               'uom': it.uom, 'quantity': float(rem), 'batch_number': it.batch_number})
         if lines:
             out.append({'source_type': 'grn', 'source_id': g.id, 'source_number': g.grn_number, 'from_location_id': loc, 'lines': lines})
+    from models.production import PackingList, WorkOrder
+    for pl in PackingList.query.filter(PackingList.total_karton > 0).order_by(PackingList.id.desc()).limit(200).all():
+        wo = db.session.get(WorkOrder, pl.work_order_id)
+        if not wo or wo.status != 'completed' or not wo.product:
+            continue
+        qty = _d(wo.quantity_good or wo.quantity_produced or 0)
+        rem = qty - _already_transferred('packing_list', pl.id, None, wo.product_id)
+        if rem > 0:
+            out.append({'source_type': 'packing_list', 'source_id': pl.id, 'source_number': f'Packing List {wo.wo_number}', 'spk_number': wo.wo_number,
+                        'from_location_id': None,
+                        'lines': [{'material_id': None, 'product_id': wo.product_id, 'item_code': wo.product.code, 'item_name': wo.product.name,
+                                   'uom': wo.uom, 'quantity': float(rem), 'batch_number': None}]})
     return jsonify({'sources': out}), 200
 
 
@@ -156,8 +168,20 @@ def create_transfer():
             if not g:
                 return jsonify({'error': 'Penerimaan Barang tidak ditemukan'}), 404
             src_no = g.grn_number
+        elif stype == 'packing_list':
+            from models.production import PackingList, WorkOrder
+            pl = db.session.get(PackingList, sid)
+            wo = db.session.get(WorkOrder, pl.work_order_id) if pl else None
+            if not pl or not wo:
+                return jsonify({'error': 'Packing List tidak ditemukan'}), 404
+            src_no = f'Packing List {wo.wo_number}'
         elif stype != 'manual':
             return jsonify({'error': 'Sumber tidak dikenal'}), 400
+        if stype != 'packing_list':
+            fg_ids = [l.get('product_id') for l in lines_in if l.get('product_id')]
+            if fg_ids and Product.query.filter(Product.id.in_(fg_ids), Product.material_type == 'finished_goods').first():
+                msg = 'Pemindahan barang jadi (FG) wajib dari Packing List sebagai dokumen release dan serah terima produksi ke gudang.'
+                return jsonify({'error': msg}), 400
         t = StockTransfer(transfer_number=_next_number(get_local_now()), source_type=stype, source_id=sid if stype != 'manual' else None,
                           source_number=src_no, from_location_id=int(frm), to_location_id=int(to), status='draft',
                           notes=d.get('notes'), created_by=user_id)

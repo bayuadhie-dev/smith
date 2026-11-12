@@ -13,7 +13,7 @@ export const TRANSFER_STATUS: Record<string, { label: string; cls: string }> = {
   received: { label: 'Diterima', cls: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
   cancelled: { label: 'Dibatalkan', cls: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' },
 }
-const SOURCE: Record<string, string> = { material_issue: 'Permintaan Barang', grn: 'Penerimaan Barang', manual: 'Manual' }
+const SOURCE: Record<string, string> = { material_issue: 'Permintaan Barang', grn: 'Penerimaan Barang', packing_list: 'Packing List', manual: 'Manual' }
 
 export default function StockTransferList({ receiveMode = false }: { receiveMode?: boolean }) {
   const [rows, setRows] = useState<Row[]>([])

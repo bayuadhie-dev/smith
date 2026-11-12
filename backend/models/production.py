@@ -339,6 +339,8 @@ class WorkOrder(db.Model):
     bom_id = db.Column(db.Integer, db.ForeignKey('bill_of_materials.id'), nullable=True)
     production_plan_id = db.Column(db.Integer, db.ForeignKey('production_plans.id'), nullable=True)
     sales_order_id = db.Column(db.Integer, db.ForeignKey('sales_orders.id'), nullable=True)
+    parent_wo_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)  # SPK FG induk (paket Ingredient/WIP/WASTE)
+    package_role = db.Column(db.String(20), nullable=True)  # ingredient, wip, wipc, wipp, waste
     
     # Quantity & UOM
     quantity = db.Column(db.Numeric(15, 2), nullable=False)
@@ -974,6 +976,7 @@ class PackingList(db.Model):
         result = {
             'id': self.id,
             'work_order_id': self.work_order_id,
+            'wo_number': self.work_order.wo_number if self.work_order else None,
             'product_name': self.product_name,
             'total_karton': self.total_karton,
             'last_carton_number': self.last_carton_number,
@@ -1204,6 +1207,8 @@ class LiveMonitoringCheck(db.Model):
             'product_name': self.product_name,
             'work_order_id': self.work_order_id,
             'wo_number': self.wo_number,
+            'parent_wo_id': self.parent_wo_id,
+            'package_role': self.package_role,
             'stop_from': self.stop_from,
             'stop_to': self.stop_to,
             'stop_duration_minutes': self.stop_duration_minutes,

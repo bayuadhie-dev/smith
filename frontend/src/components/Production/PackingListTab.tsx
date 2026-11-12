@@ -26,6 +26,7 @@ interface OcrRow {
 interface PackingList {
   id: number;
   work_order_id: number;
+  wo_number?: string;
   product_name: string;
   total_karton: number;
   last_carton_number: number;
@@ -275,6 +276,7 @@ export default function PackingListTab({
           <div>
             <h3 className="text-lg font-semibold text-green-800">📦 Packing List</h3>
             <p className="text-sm text-green-600">{productName}</p>
+            {packingList?.wo_number && <p className="text-xs font-medium text-green-700">No. SPK: {packingList.wo_number}</p>}
           </div>
           <div className="text-right">
             <p className="text-sm text-green-600">Total Karton</p>

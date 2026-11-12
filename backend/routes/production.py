@@ -1247,6 +1247,28 @@ def create_work_order():
         from utils.material_overcommit_check import check_material_overcommit
         overcommit_warnings = check_material_overcommit(wo.product_id, wo.quantity, exclude_wo_id=wo.id)
 
+        # Paket pengerjaan: SPK pasangan (Ingredient/WIP/WIPC/WIPP/WASTE) disiapkan sebagai draf, urutan input bebas.
+        package_wos = []
+        if not data.get('skip_package') and wo.product:
+            for field, role in (('ingredient_product_id', 'ingredient'), ('wip_product_id', 'wip'), ('wipc_product_id', 'wipc'),
+                                ('wipp_product_id', 'wipp'), ('waste_product_id', 'waste')):
+                pid = getattr(wo.product, field, None)
+                if not pid:
+                    continue
+                child = WorkOrder(
+                    wo_number=generate_number('WO', WorkOrder, 'wo_number'), product_id=pid, quantity=wo.quantity,
+                    uom=(db.session.get(Product, pid).primary_uom if db.session.get(Product, pid) else wo.uom) or wo.uom,
+                    status='planned', priority=wo.priority, source_type='manual', sales_order_id=wo.sales_order_id,
+                    parent_wo_id=wo.id, package_role=role, created_by=user_id,
+                    notes=f'Paket dari SPK {wo.wo_number} ({role.upper()}). Sesuaikan qty dengan hasil proses.')
+                db.session.add(child)
+                db.session.flush()
+                try:
+                    snapshot_bom_to_work_order(child)
+                except Exception:
+                    pass
+                package_wos.append({'id': child.id, 'wo_number': child.wo_number, 'role': role})
+
         db.session.commit()
 
         # Invalidate WO list cache
@@ -1262,6 +1284,7 @@ def create_work_order():
             'wo_id': wo.id,
             'wo_number': wo_number,
             'material_warnings': overcommit_warnings,
+            'package_work_orders': package_wos,
         }), 201
     except Exception as e:
         db.session.rollback()

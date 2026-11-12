@@ -14,7 +14,7 @@ export default function StockTransferForm() {
   const [params] = useSearchParams()
   const [sources, setSources] = useState<Source[]>([])
   const [locs, setLocs] = useState<Loc[]>([])
-  const [srcKind, setSrcKind] = useState<'material_issue' | 'grn'>(params.get('grn') ? 'grn' : 'material_issue')
+  const [srcKind, setSrcKind] = useState<'material_issue' | 'grn' | 'packing_list'>(params.get('grn') ? 'grn' : 'material_issue')
   const [srcKey, setSrcKey] = useState('')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -62,25 +62,25 @@ export default function StockTransferForm() {
   const lbl = 'mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400'
   return (
     <div className="space-y-4 p-6">
-      <PageHeader title="Pemindahan Barang Baru" subtitle="Pilih sumbernya dulu: Permintaan Barang atau Penerimaan Barang" />
+      <PageHeader title="Pemindahan Barang Baru" subtitle="Pilih sumbernya dulu. Barang jadi (FG) wajib dari Packing List sebagai dokumen serah terima produksi ke gudang" />
       <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
         <div className="grid gap-3 md:grid-cols-2">
           <div>
             <label className={lbl}>Ambil dari</label>
             <div className="flex gap-2">
-              {([['material_issue', 'Permintaan Barang'], ['grn', 'Penerimaan Barang']] as const).map(([k, t]) => (
+              {([['material_issue', 'Permintaan Barang'], ['grn', 'Penerimaan Barang'], ['packing_list', 'Packing List (FG)']] as const).map(([k, t]) => (
                 <button key={k} type="button" onClick={() => { setSrcKind(k); setSrcKey('') }}
                   className={`rounded-md border px-3 py-2 text-sm ${srcKind === k ? 'border-emerald-600 bg-emerald-50 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200' : 'border-gray-300 text-gray-600 dark:border-gray-600 dark:text-gray-300'}`}>{t}</button>
               ))}
             </div>
           </div>
           <div>
-            <label className={lbl}>{srcKind === 'grn' ? 'No. Penerimaan Barang' : 'No. Permintaan Barang'}</label>
+            <label className={lbl}>{srcKind === 'grn' ? 'No. Penerimaan Barang' : srcKind === 'packing_list' ? 'Packing List (No. SPK)' : 'No. Permintaan Barang'}</label>
             <select className={sel} value={srcKey} onChange={(e) => setSrcKey(e.target.value)}>
               <option value="">Pilih...</option>
               {list.map((s) => <option key={`${s.source_type}:${s.source_id}`} value={`${s.source_type}:${s.source_id}`}>{s.source_number} ({s.lines.length} barang)</option>)}
             </select>
-            {list.length === 0 && <p className="mt-1 text-xs text-gray-500">Tidak ada {srcKind === 'grn' ? 'penerimaan' : 'permintaan'} yang masih punya qty belum dipindahkan.</p>}
+            {list.length === 0 && <p className="mt-1 text-xs text-gray-500">Tidak ada {srcKind === 'grn' ? 'penerimaan' : srcKind === 'packing_list' ? 'Packing List' : 'permintaan'} yang masih punya qty belum dipindahkan.</p>}
           </div>
           <div>
             <label className={lbl}>Gudang/lokasi asal</label>
