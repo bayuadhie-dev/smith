@@ -17,7 +17,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import {
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
 interface FinanceKPIs {
@@ -208,14 +208,11 @@ const FinanceDashboard: React.FC = () => {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
             <YAxis tickFormatter={formatAxisValue} />
-            <Tooltip formatter={(value, name) => [
-              formatRupiah(value as number),
-              name === 'revenue' ? 'Revenue' :
-              name === 'profit' ? 'Profit' : 'Expenses'
-            ]} />
-            <Bar dataKey="revenue" fill="#3B82F6" name="Revenue" />
-            <Bar dataKey="profit" fill="#10B981" name="Profit" />
-            <Bar dataKey="expenses" fill="#EF4444" name="Expenses" />
+            <Tooltip formatter={(value, name) => [formatRupiah(value as number), name]} />
+            <Legend />
+            <Bar dataKey="revenue" fill="#3B82F6" name="Pendapatan" />
+            <Bar dataKey="profit" fill="#10B981" name="Laba" />
+            <Bar dataKey="expenses" fill="#EF4444" name="Beban" />
           </BarChart>
         </ResponsiveContainer>
       </div>
