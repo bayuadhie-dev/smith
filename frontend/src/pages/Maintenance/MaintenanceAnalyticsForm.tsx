@@ -42,7 +42,7 @@ interface AnalyticsData {
   };
 }
 
-const COLORS = ['#059669', '#0f766e', '#d97706', '#dc2626', '#6b7280', '#0369a1'];
+const COLORS = ['rgb(var(--brand-600))', '#0f766e', '#d97706', '#dc2626', '#6b7280', '#0369a1'];
 
 const reportTypes = [
   { value: 'overview', label: 'Ringkasan' },
@@ -301,8 +301,8 @@ const MaintenanceAnalyticsForm: React.FC = () => {
                     <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
                     <Tooltip />
                     <Legend />
-                    <Bar yAxisId="left" dataKey="work_orders" fill="#a7f3d0" name="SPK" />
-                    <Line yAxisId="right" type="monotone" dataKey="mttr" stroke="#059669" strokeWidth={2} dot={false} name="MTTR (jam)" />
+                    <Bar yAxisId="left" dataKey="work_orders" fill="rgb(var(--brand-200))" name="SPK" />
+                    <Line yAxisId="right" type="monotone" dataKey="mttr" stroke="rgb(var(--brand-600))" strokeWidth={2} dot={false} name="MTTR (jam)" />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -316,7 +316,7 @@ const MaintenanceAnalyticsForm: React.FC = () => {
                     <XAxis dataKey="machine" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
                     <Tooltip />
-                    <Bar dataKey="availability" fill="#059669" name="Ketersediaan (%)" />
+                    <Bar dataKey="availability" fill="rgb(var(--brand-600))" name="Ketersediaan (%)" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

@@ -30,6 +30,16 @@
   --surface-50: 242 244 246;
   --surface-100: 233 236 239;
   --surface-200: 221 225 230;
+  --cta-50: 238 243 253;
+  --cta-100: 220 231 250;
+  --cta-200: 185 207 245;
+  --cta-300: 138 174 238;
+  --cta-400: 90 138 228;
+  --cta-500: 56 115 219;
+  --cta-600: 31 95 209;
+  --cta-700: 26 79 174;
+  --cta-800: 52 58 65;
+  --cta-900: 38 43 49;
 }
 
 html[data-company='fengsheng'] {
@@ -58,31 +68,59 @@ html[data-company='fengsheng'] {
   --surface-50: 244 238 225;
   --surface-100: 236 227 210;
   --surface-200: 223 211 188;
+  --cta-50: 255 244 234;
+  --cta-100: 253 227 204;
+  --cta-200: 250 199 155;
+  --cta-300: 245 162 99;
+  --cta-400: 234 123 47;
+  --cta-500: 217 102 15;
+  --cta-600: 194 87 12;
+  --cta-700: 161 71 11;
+  --cta-800: 127 58 14;
+  --cta-900: 102 49 15;
 }
 
-/* Fengsheng: kartu/panel putih jadi oatmilk terang; tombol utama dan item menu aktif pakai burnt orange (aksen 10%). */
+/* Fengsheng: kartu/panel putih jadi oatmilk terang. */
 html[data-company='fengsheng']:not(.dark) .bg-white {
   background-color: #FBF8F1;
 }
-html[data-company='fengsheng'] .btn-primary {
-  background-color: rgb(var(--accent-600));
+
+/* Tombol/menu aktif berwarna biru, indigo, ungu, atau hijau merek mengikuti warna aksi perusahaan (--cta): Falmaco cobalt, Fengsheng burnt orange. */
+.btn-primary {
+  background-color: rgb(var(--cta-600));
 }
-html[data-company='fengsheng'] .btn-primary:hover {
-  background-color: rgb(var(--accent-700));
+.btn-primary:hover {
+  background-color: rgb(var(--cta-700));
 }
-html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-emerald-6'],
-html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-emerald-7'],
-html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-emerald-8'],
-html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-primary-6'],
-html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-primary-7'] {
-  background-color: rgb(var(--accent-600)) !important;
+:is(button, a, input[type='submit'])[class~='bg-emerald-600'],
+:is(button, a, input[type='submit'])[class~='bg-emerald-700'],
+:is(button, a, input[type='submit'])[class~='bg-emerald-800'],
+:is(button, a, input[type='submit'])[class~='bg-primary-600'],
+:is(button, a, input[type='submit'])[class~='bg-primary-700'],
+:is(button, a, input[type='submit'])[class~='bg-blue-600'],
+:is(button, a, input[type='submit'])[class~='bg-blue-700'],
+:is(button, a, input[type='submit'])[class~='bg-indigo-600'],
+:is(button, a, input[type='submit'])[class~='bg-indigo-700'],
+:is(button, a, input[type='submit'])[class~='bg-violet-600'],
+:is(button, a, input[type='submit'])[class~='bg-violet-700'],
+:is(button, a, input[type='submit'])[class~='bg-purple-600'],
+:is(button, a, input[type='submit'])[class~='bg-purple-700'] {
+  background-color: rgb(var(--cta-600)) !important;
 }
-html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-emerald-6']:hover,
-html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-emerald-7']:hover,
-html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-emerald-8']:hover,
-html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-primary-6']:hover,
-html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-primary-7']:hover {
-  background-color: rgb(var(--accent-700)) !important;
+:is(button, a, input[type='submit'])[class~='bg-emerald-600']:hover,
+:is(button, a, input[type='submit'])[class~='bg-emerald-700']:hover,
+:is(button, a, input[type='submit'])[class~='bg-emerald-800']:hover,
+:is(button, a, input[type='submit'])[class~='bg-primary-600']:hover,
+:is(button, a, input[type='submit'])[class~='bg-primary-700']:hover,
+:is(button, a, input[type='submit'])[class~='bg-blue-600']:hover,
+:is(button, a, input[type='submit'])[class~='bg-blue-700']:hover,
+:is(button, a, input[type='submit'])[class~='bg-indigo-600']:hover,
+:is(button, a, input[type='submit'])[class~='bg-indigo-700']:hover,
+:is(button, a, input[type='submit'])[class~='bg-violet-600']:hover,
+:is(button, a, input[type='submit'])[class~='bg-violet-700']:hover,
+:is(button, a, input[type='submit'])[class~='bg-purple-600']:hover,
+:is(button, a, input[type='submit'])[class~='bg-purple-700']:hover {
+  background-color: rgb(var(--cta-700)) !important;
 }
 
 @layer base {

@@ -163,7 +163,7 @@ export default function BatchRecordWeeklyReport() {
               <p className="text-sm text-white/80 print:text-gray-500">Yield Minggu Ini</p>
               <p className="text-2xl font-black mt-1">{summary.yield_percent != null ? `${summary.yield_percent}%` : '-'}</p>
             </div>
-            <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-2xl shadow-md p-5 text-white print:shadow-none print:border print:border-gray-300 print:text-gray-900 print:bg-none">
+            <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-2xl shadow-md p-5 text-white print:shadow-none print:border print:border-gray-300 print:text-gray-900 print:bg-none">
               <p className="text-sm text-white/80 print:text-gray-500">Total Reject</p>
               <p className="text-2xl font-black mt-1">{summary.total_reject.toLocaleString('id-ID')}</p>
             </div>

@@ -48,11 +48,11 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         <div className="relative w-12 h-12">
           <div className="absolute inset-0 rounded-full border-4 border-slate-200 dark:border-slate-700" />
           <div
-            className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary-600 border-r-teal-400 animate-spin"
+            className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary-600 border-r-primary-300 animate-spin"
             style={{ animationDuration: '0.9s' }}
           />
           <div
-            className="absolute inset-[5px] rounded-full border-4 border-transparent border-b-[#F15D2C] animate-spin [animation-direction:reverse]"
+            className="absolute inset-[5px] rounded-full border-4 border-transparent border-b-[rgb(var(--spinner-inner))] dark:border-b-[rgb(var(--spinner-inner-dark))] animate-spin [animation-direction:reverse]"
             style={{ animationDuration: '1.4s' }}
           />
           <div className="absolute inset-0 flex items-center justify-center">
@@ -102,11 +102,11 @@ export const PageLoading: React.FC<{ message?: string }> = ({ message }) => {
         <div className="relative inline-block w-16 h-16">
           <div className="absolute inset-0 rounded-full border-4 border-slate-200 dark:border-slate-700" />
           <div
-            className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary-600 border-r-teal-400 animate-spin"
+            className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary-600 border-r-primary-300 animate-spin"
             style={{ animationDuration: '0.9s' }}
           />
           <div
-            className="absolute inset-[6px] rounded-full border-4 border-transparent border-b-[#F15D2C] animate-spin [animation-direction:reverse]"
+            className="absolute inset-[6px] rounded-full border-4 border-transparent border-b-[rgb(var(--spinner-inner))] dark:border-b-[rgb(var(--spinner-inner-dark))] animate-spin [animation-direction:reverse]"
             style={{ animationDuration: '1.4s' }}
           />
           <div className="absolute inset-0 flex items-center justify-center">

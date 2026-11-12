@@ -48,8 +48,8 @@ const TrendCard = ({ title, data, currency }: { title: string; data: Point[]; cu
           <AreaChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id={`g-${title.length}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#059669" stopOpacity={0.18} />
-                <stop offset="100%" stopColor="#059669" stopOpacity={0} />
+                <stop offset="0%" stopColor="rgb(var(--brand-600))" stopOpacity={0.18} />
+                <stop offset="100%" stopColor="rgb(var(--brand-600))" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" vertical={false} />
@@ -57,7 +57,7 @@ const TrendCard = ({ title, data, currency }: { title: string; data: Point[]; cu
             <YAxis width={44} tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false}
               tickFormatter={(v: number) => (v >= 1e9 ? `${(v / 1e9).toFixed(1)}M` : v >= 1e6 ? `${(v / 1e6).toFixed(0)}jt` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}rb` : String(v))} />
             <Tooltip formatter={(v: number) => [fmt(v), '']} labelFormatter={(d: string) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })} />
-            <Area type="monotone" dataKey="value" stroke="#059669" strokeWidth={2} fill={`url(#g-${title.length})`} />
+            <Area type="monotone" dataKey="value" stroke="rgb(var(--brand-600))" strokeWidth={2} fill={`url(#g-${title.length})`} />
           </AreaChart>
         </ResponsiveContainer>
       </div>

@@ -96,7 +96,7 @@ export default function EWSDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
           <p className="text-xs opacity-90">Rasio Bahaya</p>
           <p className="mt-1 text-2xl font-bold">
             {summaryLoading ? '...' : `${summaryData?.bahaya_rate ?? 0}%`}

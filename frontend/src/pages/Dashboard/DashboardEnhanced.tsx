@@ -429,7 +429,7 @@ export default function DashboardEnhanced() {
         </div>
 
         {/* Quality Pass Rate */}
-        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-white/20 rounded-lg">
               <CheckCircleIcon className="w-5 h-5" />
@@ -467,7 +467,7 @@ export default function DashboardEnhanced() {
                   <path d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#f1f5f9" className="dark:stroke-gray-700" strokeWidth="14" strokeLinecap="round" />
                   {filled > 0 && (
                     <path
-                      d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#059669" strokeWidth="14" strokeLinecap="round"
+                      d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="rgb(var(--brand-600))" strokeWidth="14" strokeLinecap="round"
                       strokeDasharray={`${filled} ${circumference}`} strokeDashoffset={0}
                       style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(.2,.9,.25,1)' }}
                     />
@@ -478,7 +478,7 @@ export default function DashboardEnhanced() {
                 </svg>
                 <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pb-1">
                   <span className="text-3xl font-bold text-gray-900 dark:text-white">{oeeVal}/100</span>
-                  <span className="text-xs font-semibold text-[#F15D2C]">{statusLabel} &middot; {executiveData?.oee?.machine_utilization || 0}% utilisasi mesin</span>
+                  <span className="text-xs font-semibold text-orange-600">{statusLabel} &middot; {executiveData?.oee?.machine_utilization || 0}% utilisasi mesin</span>
                 </div>
               </div>
               <button
@@ -496,7 +496,7 @@ export default function DashboardEnhanced() {
         <div className="xl:col-span-2 bg-gradient-to-br from-gray-900 to-slate-800 rounded-2xl shadow-md p-5 text-white flex flex-col">
           <div className="flex items-center justify-between mb-1">
             <h3 className="text-base font-bold text-white">Sorotan &amp; Peringatan</h3>
-            <ExclamationTriangleIcon className="w-5 h-5 text-[#F15D2C]" />
+            <ExclamationTriangleIcon className="w-5 h-5 text-orange-600" />
           </div>
           <p className="text-xs text-gray-400 mb-4">Isu prioritas yang butuh perhatian hari ini</p>
           {criticalIssues.length === 0 ? (
@@ -508,7 +508,7 @@ export default function DashboardEnhanced() {
             <div className="space-y-3 flex-1">
               {criticalIssues.slice(0, 3).map((issue, i) => (
                 <div key={i} className="flex items-start gap-3 bg-white/5 rounded-lg p-3">
-                  <span className="w-2 h-2 mt-1.5 rounded-full bg-[#F15D2C] flex-shrink-0" />
+                  <span className="w-2 h-2 mt-1.5 rounded-full bg-orange-500 flex-shrink-0" />
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-orange-300 uppercase tracking-wide">{issue.module}</p>
                     <p className="text-sm text-gray-100 truncate">{issue.message}</p>
@@ -669,10 +669,10 @@ export default function DashboardEnhanced() {
                 yAxisId="right"
                 type="monotone"
                 dataKey={(d: any) => trends?.oee?.find((o: any) => o.period === d.period)?.value || 0}
-                stroke="#059669"
+                stroke="rgb(var(--brand-600))"
                 strokeWidth={2}
                 name="OEE %"
-                dot={{ fill: '#059669', r: 4 }}
+                dot={{ fill: 'rgb(var(--brand-600))', r: 4 }}
               />
             </ComposedChart>
           </ResponsiveContainer>
@@ -734,9 +734,9 @@ export default function DashboardEnhanced() {
                 <Line
                   type="monotone"
                   dataKey="value"
-                  stroke="#059669"
+                  stroke="rgb(var(--brand-600))"
                   strokeWidth={3}
-                  dot={{ fill: '#059669', r: 4 }}
+                  dot={{ fill: 'rgb(var(--brand-600))', r: 4 }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -931,7 +931,7 @@ export default function DashboardEnhanced() {
             { label: 'New SPK', icon: CogIcon, href: '/app/production/work-orders/new', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400' },
             { label: 'New Sales Order', icon: ShoppingCartIcon, href: '/app/sales/orders/new', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400' },
             { label: 'New PO', icon: BuildingStorefrontIcon, href: '/app/purchasing/orders/new', bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400' },
-            { label: 'QC Inspection', icon: CheckCircleIcon, href: '/app/quality/incoming', bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-[#F15D2C] dark:text-orange-400' },
+            { label: 'QC Inspection', icon: CheckCircleIcon, href: '/app/quality/incoming', bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400' },
             { label: 'Issue Material', icon: CubeIcon, href: '/app/warehouse/material-issues/new', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-600 dark:text-teal-400' },
             { label: 'View Reports', icon: DocumentTextIcon, href: '/app/reports', bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400' },
           ].map((qa) => (

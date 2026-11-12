@@ -415,7 +415,7 @@ const ConvertingDashboard: React.FC = () => {
             <p className="text-sm opacity-90">Grade A</p>
             {renderTotals('total_good')}
           </div>
-          <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+          <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
             <p className="text-sm opacity-90">Reject</p>
             {renderTotals('total_reject')}
           </div>

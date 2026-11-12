@@ -721,7 +721,7 @@ const SystemOverviewEnhanced: React.FC = () => {
       {/* Animated Background Mesh Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-primary-600/15 rounded-full mix-blend-screen filter blur-[120px] animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-[#F15D2C]/15 rounded-full mix-blend-screen filter blur-[120px] animate-pulse animation-delay-2000"></div>
+        <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-cta-500/15 rounded-full mix-blend-screen filter blur-[120px] animate-pulse animation-delay-2000"></div>
         <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 w-[700px] h-[700px] bg-emerald-600/10 rounded-full mix-blend-screen filter blur-[140px]"></div>
       </div>
 
@@ -815,7 +815,7 @@ const SystemOverviewEnhanced: React.FC = () => {
               <span className="text-white block mb-2 drop-shadow-md">
                 {companyName}
               </span>
-              <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-[#F15D2C] bg-clip-text text-transparent drop-shadow-sm">
+              <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-cta-500 bg-clip-text text-transparent drop-shadow-sm">
                 Sistem ERP Enterprise
               </span>
             </h1>
@@ -867,10 +867,10 @@ const SystemOverviewEnhanced: React.FC = () => {
                 <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider text-center">Pengguna</p>
               </div>
 
-              <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-5 hover:border-[#F15D2C]/50 transition-all duration-300 shadow-xl group">
+              <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-800 p-5 hover:border-cta-500/50 transition-all duration-300 shadow-xl group">
                 <div className="flex items-center justify-center mb-2">
-                  <div className="p-2.5 bg-[#F15D2C]/10 rounded-xl group-hover:scale-110 transition-transform">
-                    <CogIcon className="h-6 w-6 text-[#F15D2C]" />
+                  <div className="p-2.5 bg-cta-500/10 rounded-xl group-hover:scale-110 transition-transform">
+                    <CogIcon className="h-6 w-6 text-cta-500" />
                   </div>
                 </div>
                 <p className="text-2xl font-extrabold text-white mb-0.5 tracking-tight text-center">{systemStats.activeModules}</p>

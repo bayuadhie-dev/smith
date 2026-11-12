@@ -147,7 +147,7 @@ export default function SPCDashboard() {
           </div>
         </div>
 
-        <div className={`bg-gradient-to-br ${dashboard.today_ooc > 0 ? 'from-[#F15D2C] to-[#C73E1D]' : 'from-teal-500 to-teal-600'} rounded-xl p-4 text-white shadow-lg`}>
+        <div className={`bg-gradient-to-br ${dashboard.today_ooc > 0 ? 'from-orange-500 to-orange-700' : 'from-teal-500 to-teal-600'} rounded-xl p-4 text-white shadow-lg`}>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-lg"><ExclamationTriangleIcon className="h-6 w-6" /></div>
             <div>

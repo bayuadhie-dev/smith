@@ -44,6 +44,19 @@ export default {
           800: 'rgb(var(--brand-800) / <alpha-value>)',
           900: 'rgb(var(--brand-900) / <alpha-value>)',
         },
+        // cta = warna aksi/aksen per perusahaan: Falmaco cobalt, Fengsheng burnt orange
+        cta: {
+          50: 'rgb(var(--cta-50) / <alpha-value>)',
+          100: 'rgb(var(--cta-100) / <alpha-value>)',
+          200: 'rgb(var(--cta-200) / <alpha-value>)',
+          300: 'rgb(var(--cta-300) / <alpha-value>)',
+          400: 'rgb(var(--cta-400) / <alpha-value>)',
+          500: 'rgb(var(--cta-500) / <alpha-value>)',
+          600: 'rgb(var(--cta-600) / <alpha-value>)',
+          700: 'rgb(var(--cta-700) / <alpha-value>)',
+          800: 'rgb(var(--cta-800) / <alpha-value>)',
+          900: 'rgb(var(--cta-900) / <alpha-value>)',
+        },
         orange: {
           50: 'rgb(var(--accent-50) / <alpha-value>)',
           100: 'rgb(var(--accent-100) / <alpha-value>)',

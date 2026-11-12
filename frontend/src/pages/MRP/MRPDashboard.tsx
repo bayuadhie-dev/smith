@@ -555,7 +555,7 @@ const MRPDashboard: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-white/20 rounded-lg"><ExclamationTriangleIcon className="w-5 h-5" /></div>
           </div>

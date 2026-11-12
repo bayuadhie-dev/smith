@@ -84,7 +84,7 @@ export default function HRDashboard() {
       name: 'Cuti menunggu',
       value: pendingLeaves,
       icon: CalendarDaysIcon,
-      gradient: 'from-[#F15D2C] to-[#C73E1D]',
+      gradient: 'from-cta-500 to-cta-700',
       subtext: 'Menunggu approval'
     },
     {
@@ -159,7 +159,7 @@ export default function HRDashboard() {
       description: 'Laporan absensi, cuti, dan statistik karyawan',
       icon: ChartBarIcon,
       href: '/app/hr/reports',
-      gradient: 'from-[#F15D2C] to-[#C73E1D]',
+      gradient: 'from-cta-500 to-cta-700',
       stats: 'Ekspor Excel/PDF'
     }
   ]

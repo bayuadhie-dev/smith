@@ -113,7 +113,7 @@ const RNDDashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-white/20 rounded-lg">
               <AlertTriangle className="w-5 h-5" />

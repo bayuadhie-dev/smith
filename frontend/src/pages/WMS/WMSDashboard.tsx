@@ -89,7 +89,7 @@ const WMSDashboard: React.FC = () => {
       value: data?.alerts.low_stock?.toString() || '0',
       subtitle: 'item di bawah minimum',
       icon: ExclamationTriangleIcon,
-      gradient: data?.alerts.low_stock && data.alerts.low_stock > 0 ? 'from-[#F15D2C] to-[#C73E1D]' : 'from-gray-400 to-gray-500',
+      gradient: data?.alerts.low_stock && data.alerts.low_stock > 0 ? 'from-orange-500 to-orange-700' : 'from-gray-400 to-gray-500',
       link: '/app/warehouse/alerts',
     },
   ];
@@ -98,7 +98,7 @@ const WMSDashboard: React.FC = () => {
     { name: 'Stok per WO', icon: DocumentMagnifyingGlassIcon, href: '/app/wms/stock-by-wo', desc: 'Lihat stok berdasarkan SPK', gradient: 'from-primary-600 to-primary-700' },
     { name: 'Konsumsi Material', icon: CubeIcon, href: '/app/wms/material-consumption', desc: 'Tracking pemakaian bahan baku', gradient: 'from-teal-500 to-teal-600' },
     { name: 'Transaksi Stok', icon: ArrowsRightLeftIcon, href: '/app/wms/transactions', desc: 'Log transaksi inventori', gradient: 'from-violet-500 to-violet-600' },
-    { name: 'Pick List', icon: ClipboardDocumentListIcon, href: '/app/wms/pick-lists', desc: 'Daftar pengambilan barang', gradient: 'from-[#F15D2C] to-[#C73E1D]' },
+    { name: 'Pick List', icon: ClipboardDocumentListIcon, href: '/app/wms/pick-lists', desc: 'Daftar pengambilan barang', gradient: 'from-cta-500 to-cta-700' },
     { name: 'Transfer Stok', icon: TruckIcon, href: '/app/wms/transfers', desc: 'Pemindahan antar lokasi', gradient: 'from-amber-500 to-amber-600' },
     { name: 'Cycle Count', icon: ChartBarIcon, href: '/app/wms/cycle-counts', desc: 'Jadwal stock opname berkala', gradient: 'from-sky-500 to-sky-600' },
   ];

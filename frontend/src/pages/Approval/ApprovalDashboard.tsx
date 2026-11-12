@@ -122,7 +122,7 @@ export default function ApprovalDashboard() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl shadow-lg p-5 text-white">
+        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl shadow-lg p-5 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm opacity-90">Pending Review</p>

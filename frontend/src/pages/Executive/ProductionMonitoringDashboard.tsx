@@ -405,7 +405,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
         {/* Background decorative circles */}
         <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full" />
         <div className="absolute -bottom-10 -left-10 w-56 h-56 bg-white/5 rounded-full" />
-        <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-[#F15D2C]/10 rounded-full blur-xl" />
+        <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-cta-500/10 rounded-full blur-xl" />
         <div className="relative flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           {/* Left: Title + Period */}
           <div>

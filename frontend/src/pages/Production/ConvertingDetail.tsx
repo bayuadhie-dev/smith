@@ -166,7 +166,7 @@ export default function ConvertingDetail() {
         <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow">
           <p className="text-sm opacity-90">Grade A</p><p className="text-2xl font-bold">{fmtQty(p.grade_a)}</p><p className="text-xs opacity-75">{unit}</p>
         </div>
-        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow">
+        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow">
           <p className="text-sm opacity-90">Grade B / Reject</p><p className="text-2xl font-bold">{fmtQty(p.grade_b)}</p><p className="text-xs opacity-75">{unit}</p>
         </div>
         <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white shadow">

@@ -228,7 +228,7 @@ export default function WorkCenterDashboard() {
           <p className="text-xs opacity-90">Mesin Berjalan</p>
           <p className="mt-1 text-2xl font-bold">{runningCount} / {machines.length}</p>
         </div>
-        <div className={`bg-gradient-to-br ${breakdownCount > 0 ? 'from-[#F15D2C] to-[#C73E1D]' : 'from-violet-500 to-violet-600'} rounded-xl p-4 text-white shadow-lg`}>
+        <div className={`bg-gradient-to-br ${breakdownCount > 0 ? 'from-orange-500 to-orange-700' : 'from-violet-500 to-violet-600'} rounded-xl p-4 text-white shadow-lg`}>
           <p className="text-xs opacity-90">Breakdown Aktif</p>
           <p className="mt-1 text-2xl font-bold">{breakdownCount}</p>
         </div>

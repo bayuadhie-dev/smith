@@ -342,7 +342,7 @@ export default function DocumentDashboardUpgraded() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5 text-white">
+        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-white/80">This Month</p>

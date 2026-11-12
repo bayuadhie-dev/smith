@@ -215,7 +215,7 @@ const DailyControllerSwiper: React.FC<DailyControllerSwiperProps> = ({
             {/* Emerald - Total Runtime */}
             <div 
               className="rounded-xl p-4 text-white shadow-lg"
-              style={{ background: 'linear-gradient(to bottom right, #10b981, #059669)' }}
+              style={{ background: 'linear-gradient(to bottom right, rgb(var(--brand-500)), rgb(var(--brand-600)))' }}
             >
               <div className="flex items-center gap-2 mb-2">
                 <ClockIcon className="h-5 w-5 opacity-80" />

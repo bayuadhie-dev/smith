@@ -127,7 +127,7 @@ export default function Purchasing() {
       name: 'Penawaran menunggu',
       value: quotesData?.quotes?.filter((q: any) => q.status === 'submitted').length || 0,
       icon: BanknotesIcon,
-      gradient: 'from-[#F15D2C] to-[#C73E1D]',
+      gradient: 'from-cta-500 to-cta-700',
       link: '/app/purchasing/quotes'
     },
   ]

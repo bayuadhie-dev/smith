@@ -156,7 +156,7 @@ const AssetDashboard: React.FC = () => {
           <p className="text-2xl font-bold">{formatCurrency(summary?.totals.total_acquisition_cost || 0)}</p>
         </div>
 
-        <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] rounded-xl p-4 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-white/20 rounded-lg">
               <ArrowTrendingDownIcon className="w-5 h-5" />
@@ -312,7 +312,7 @@ const AssetDashboard: React.FC = () => {
           onClick={() => navigate('/app/assets/spare-parts')}
           className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 text-left"
         >
-          <div className="bg-gradient-to-br from-[#F15D2C] to-[#C73E1D] p-2.5 rounded-xl inline-flex mb-3">
+          <div className="bg-gradient-to-br from-cta-500 to-cta-700 p-2.5 rounded-xl inline-flex mb-3">
             <WrenchScrewdriverIcon className="h-6 w-6 text-white" />
           </div>
           <h3 className="font-semibold text-slate-800 dark:text-white">Suku Cadang</h3>
