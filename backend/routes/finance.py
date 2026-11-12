@@ -3697,6 +3697,9 @@ def create_account():
                 return jsonify({'error': f"Akun '{parent.account_code}' bukan akun induk (header), tidak bisa dijadikan induk"}), 400
             parent_id = parent.id
 
+        if (data['type'] or '').lower() == 'expense' and data.get('normal_balance') and data['normal_balance'] != 'debit':
+            return jsonify({'error': 'Akun biaya saldo normalnya harus debit. Saldo kredit membuat Laba Rugi tampil minus.'}), 400
+
         new_account = Account(
             account_code=data['code'],
             account_name=data['name'],
