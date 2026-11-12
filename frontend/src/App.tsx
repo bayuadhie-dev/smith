@@ -1055,16 +1055,16 @@ function App() {
   // Show loading screen while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-[#064e3b] to-slate-900">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-primary-900 to-slate-900">
         <div className="text-center">
           <div className="relative h-16 w-16 mx-auto mb-4">
             <div className="absolute inset-0 rounded-full border-[3px] border-white/10" />
             <div
-              className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-primary-500 border-r-teal-400 animate-spin"
+              className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-primary-500 border-r-primary-300 animate-spin"
               style={{ animationDuration: '0.9s' }}
             />
             <div
-              className="absolute inset-[6px] rounded-full border-[3px] border-transparent border-b-[#F15D2C] animate-spin [animation-direction:reverse]"
+              className="absolute inset-[6px] rounded-full border-[3px] border-transparent border-b-[rgb(var(--spinner-inner-dark))] animate-spin [animation-direction:reverse]"
               style={{ animationDuration: '1.4s' }}
             />
             <div className="absolute inset-0 flex items-center justify-center">

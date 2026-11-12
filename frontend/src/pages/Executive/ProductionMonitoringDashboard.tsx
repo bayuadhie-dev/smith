@@ -401,7 +401,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
       {/* ═══════════════════════════════════════════════════════════
           HEADER — Premium Executive Style
       ═══════════════════════════════════════════════════════════ */}
-      <div className="relative bg-gradient-to-r from-[#064e3b] via-primary-600 to-teal-600 rounded-2xl p-5 text-white shadow-2xl overflow-hidden">
+      <div className="relative bg-gradient-to-r from-primary-900 via-primary-600 to-teal-600 rounded-2xl p-5 text-white shadow-2xl overflow-hidden">
         {/* Background decorative circles */}
         <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full" />
         <div className="absolute -bottom-10 -left-10 w-56 h-56 bg-white/5 rounded-full" />

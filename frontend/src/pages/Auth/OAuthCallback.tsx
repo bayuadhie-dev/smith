@@ -136,7 +136,7 @@ export default function OAuthCallback() {
   }, [searchParams, navigate, dispatch]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-[#064e3b] to-slate-900">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-primary-900 to-slate-900">
       <div className="text-center">
         {status === 'processing' && (
           <>

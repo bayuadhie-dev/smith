@@ -14,11 +14,11 @@ const LoadingSpinner: React.FC = () => {
       <div className="relative h-16 w-16">
         <div className="absolute inset-0 rounded-full border-[3px] border-gray-200 dark:border-gray-700" />
         <div
-          className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-primary-600 border-r-teal-400 animate-spin"
+          className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-primary-600 border-r-primary-300 animate-spin"
           style={{ animationDuration: '0.9s' }}
         />
         <div
-          className="absolute inset-[6px] rounded-full border-[3px] border-transparent border-b-[#F15D2C] animate-spin [animation-direction:reverse]"
+          className="absolute inset-[6px] rounded-full border-[3px] border-transparent border-b-[rgb(var(--spinner-inner))] animate-spin [animation-direction:reverse]"
           style={{ animationDuration: '1.4s' }}
         />
         <div className="absolute inset-0 flex items-center justify-center">
