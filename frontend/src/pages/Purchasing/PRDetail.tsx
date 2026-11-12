@@ -147,7 +147,7 @@ export default function PRDetail() {
         {pr.status === 'draft' && (
           <Link
             to={`/app/purchasing/requisitions/${id}/edit`}
-            className="flex items-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-lg hover:bg-emerald-700 text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium"
           >
             <PencilSquareIcon className="h-4 w-4" /> Edit
           </Link>
@@ -264,7 +264,7 @@ export default function PRDetail() {
                           <button
                             onClick={() => actOnStep(step.approval_level, 'approve')}
                             disabled={actingLevel === step.approval_level}
-                            className="px-3 py-1.5 bg-[#059669] text-white rounded-lg text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"
+                            className="px-3 py-1.5 bg-primary-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"
                           >
                             {actingLevel === step.approval_level ? 'Memproses...' : 'Setujui'}
                           </button>
@@ -313,7 +313,7 @@ export default function PRDetail() {
                 >
                   <td className="py-2 pr-3 font-medium text-gray-900 dark:text-white">
                     <span className="flex items-center gap-1.5">
-                      {item.material_id && <CubeIcon className="h-3.5 w-3.5 text-[#059669] flex-shrink-0" />}
+                      {item.material_id && <CubeIcon className="h-3.5 w-3.5 text-primary-600 flex-shrink-0" />}
                       {item.item_name}
                     </span>
                   </td>

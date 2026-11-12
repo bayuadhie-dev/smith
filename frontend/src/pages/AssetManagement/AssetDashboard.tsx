@@ -104,7 +104,7 @@ const AssetDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#059669]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     );
   }
@@ -127,7 +127,7 @@ const AssetDashboard: React.FC = () => {
         </div>
         <button
           onClick={() => navigate('/app/assets/new')}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
         >
           <PlusIcon className="h-5 w-5" />
           Tambah Aset
@@ -136,7 +136,7 @@ const AssetDashboard: React.FC = () => {
 
       {/* Summary Cards - bento: Total Aset spans 2 cols (primary metric) */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+        <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-white/20 rounded-lg">
               <ChartBarIcon className="w-5 h-5" />
@@ -286,7 +286,7 @@ const AssetDashboard: React.FC = () => {
           onClick={() => navigate('/app/assets/list')}
           className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 text-left"
         >
-          <div className="bg-gradient-to-br from-[#059669] to-[#047857] p-2.5 rounded-xl inline-flex mb-3">
+          <div className="bg-gradient-to-br from-primary-600 to-primary-700 p-2.5 rounded-xl inline-flex mb-3">
             <ChartBarIcon className="h-6 w-6 text-white" />
           </div>
           <h3 className="font-semibold text-slate-800 dark:text-white">Daftar Aset</h3>

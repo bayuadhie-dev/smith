@@ -104,7 +104,7 @@ export default function ApprovalDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#059669]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     );
   }
@@ -142,7 +142,7 @@ export default function ApprovalDashboard() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl shadow-lg p-5 text-white">
+        <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl shadow-lg p-5 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm opacity-90">Approved</p>
@@ -187,7 +187,7 @@ export default function ApprovalDashboard() {
               onClick={() => setFilter(tab.id)}
               className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
                 filter === tab.id
-                  ? 'bg-gradient-to-br from-[#059669] to-[#047857] text-white'
+                  ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >

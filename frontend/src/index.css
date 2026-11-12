@@ -2,6 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+
+/* Tema per perusahaan: nilai bawaan = tampilan Falmaco (emerald). Fengsheng: forest green + oatmilk + burnt orange. */
+:root {
+  --brand-50: 236 253 245;
+  --brand-100: 209 250 229;
+  --brand-200: 167 243 208;
+  --brand-300: 110 231 183;
+  --brand-400: 52 211 153;
+  --brand-500: 16 185 129;
+  --brand-600: 5 150 105;
+  --brand-700: 4 120 87;
+  --brand-800: 6 95 70;
+  --brand-900: 6 78 59;
+  --accent-50: 255 247 237;
+  --accent-100: 255 237 213;
+  --accent-200: 254 215 170;
+  --accent-300: 253 186 116;
+  --accent-400: 251 146 60;
+  --accent-500: 249 115 22;
+  --accent-600: 234 88 12;
+  --accent-700: 194 65 12;
+  --accent-800: 154 52 18;
+  --accent-900: 124 45 18;
+  --surface-50: 249 250 251;
+  --surface-100: 243 244 246;
+  --surface-200: 229 231 235;
+}
+
+html[data-company='fengsheng'] {
+  --brand-50: 238 244 240;
+  --brand-100: 214 230 220;
+  --brand-200: 175 205 187;
+  --brand-300: 127 174 149;
+  --brand-400: 76 138 110;
+  --brand-500: 45 107 80;
+  --brand-600: 36 90 67;
+  --brand-700: 31 77 58;
+  --brand-800: 23 59 44;
+  --brand-900: 16 42 31;
+  --accent-50: 255 244 234;
+  --accent-100: 253 227 204;
+  --accent-200: 250 199 155;
+  --accent-300: 245 162 99;
+  --accent-400: 234 123 47;
+  --accent-500: 217 102 15;
+  --accent-600: 194 87 12;
+  --accent-700: 161 71 11;
+  --accent-800: 127 58 14;
+  --accent-900: 102 49 15;
+  --surface-50: 244 238 225;
+  --surface-100: 236 227 210;
+  --surface-200: 223 211 188;
+}
+
 @layer base {
   body {
     @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100;

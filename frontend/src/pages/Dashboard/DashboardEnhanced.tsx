@@ -261,7 +261,7 @@ export default function DashboardEnhanced() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#059669]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     )
   }
@@ -375,7 +375,7 @@ export default function DashboardEnhanced() {
       {/* Key Metrics - bento: Sales Today spans 2 cols (primary metric, has sparkline) */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Sales Today */}
-        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+        <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-white/20 rounded-lg">
@@ -531,7 +531,7 @@ export default function DashboardEnhanced() {
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl">
+                <div className="p-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl">
                   <TrophyIcon className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -647,7 +647,7 @@ export default function DashboardEnhanced() {
               <h3 className="text-base font-bold text-gray-900 dark:text-white">Production & OEE</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">Output vs efficiency</p>
             </div>
-            <TrendUp className="w-5 h-5 text-[#059669]" />
+            <TrendUp className="w-5 h-5 text-primary-600" />
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <ComposedChart data={trends?.production || []}>
@@ -690,7 +690,7 @@ export default function DashboardEnhanced() {
                 </div>
                 <div className="px-4">
                   <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Rata-rata OEE</p>
-                  <p className="text-lg font-bold text-[#059669]">{avgOee.toFixed(1)}%</p>
+                  <p className="text-lg font-bold text-primary-600">{avgOee.toFixed(1)}%</p>
                 </div>
                 <div className="pl-4">
                   <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Periode Terbaik</p>
@@ -708,7 +708,7 @@ export default function DashboardEnhanced() {
               <h3 className="text-base font-bold text-gray-900 dark:text-white">Sales Trend</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">Last 7 days</p>
             </div>
-            <ShoppingCartIcon className="w-5 h-5 text-[#059669]" />
+            <ShoppingCartIcon className="w-5 h-5 text-primary-600" />
           </div>
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -771,7 +771,7 @@ export default function DashboardEnhanced() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg overflow-hidden transition-shadow duration-200">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-lg">
+              <div className="p-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-lg">
                 <Package className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -794,7 +794,7 @@ export default function DashboardEnhanced() {
                   <div key={index} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-[#059669] to-[#047857] text-white text-sm font-bold flex-shrink-0">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-primary-600 to-primary-700 text-white text-sm font-bold flex-shrink-0">
                           {index + 1}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -809,7 +809,7 @@ export default function DashboardEnhanced() {
                     </div>
                     <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden ml-11">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-[#059669] to-[#047857]"
+                        className="h-full rounded-full bg-gradient-to-r from-primary-600 to-primary-700"
                         style={{ width: `${((product.quantity || 0) / maxQty) * 100}%` }}
                       />
                     </div>
@@ -836,7 +836,7 @@ export default function DashboardEnhanced() {
                   <p className="text-xs text-gray-500 dark:text-gray-400">Audit trail (superadmin tidak tercatat)</p>
                 </div>
               </div>
-              <Link to="/app/settings/audit-trail" className="text-sm font-medium text-[#059669] hover:underline flex-shrink-0">
+              <Link to="/app/settings/audit-trail" className="text-sm font-medium text-primary-600 hover:underline flex-shrink-0">
                 Lihat Semua
               </Link>
             </div>

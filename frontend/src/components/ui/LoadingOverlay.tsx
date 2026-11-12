@@ -48,7 +48,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         <div className="relative w-12 h-12">
           <div className="absolute inset-0 rounded-full border-4 border-slate-200 dark:border-slate-700" />
           <div
-            className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#059669] border-r-teal-400 animate-spin"
+            className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary-600 border-r-teal-400 animate-spin"
             style={{ animationDuration: '0.9s' }}
           />
           <div
@@ -56,7 +56,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
             style={{ animationDuration: '1.4s' }}
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-2 w-2 rounded-full bg-gradient-to-br from-[#059669] to-[#047857] animate-pulse" />
+            <div className="h-2 w-2 rounded-full bg-gradient-to-br from-primary-600 to-primary-700 animate-pulse" />
           </div>
         </div>
 
@@ -102,7 +102,7 @@ export const PageLoading: React.FC<{ message?: string }> = ({ message }) => {
         <div className="relative inline-block w-16 h-16">
           <div className="absolute inset-0 rounded-full border-4 border-slate-200 dark:border-slate-700" />
           <div
-            className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#059669] border-r-teal-400 animate-spin"
+            className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary-600 border-r-teal-400 animate-spin"
             style={{ animationDuration: '0.9s' }}
           />
           <div
@@ -110,7 +110,7 @@ export const PageLoading: React.FC<{ message?: string }> = ({ message }) => {
             style={{ animationDuration: '1.4s' }}
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-[#059669] to-[#047857] animate-pulse" />
+            <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-primary-600 to-primary-700 animate-pulse" />
           </div>
         </div>
         <p className="mt-4 text-slate-600 dark:text-slate-400 font-medium text-sm sm:text-base">{displayMsg}</p>

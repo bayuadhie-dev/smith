@@ -263,7 +263,7 @@ export default function DocumentDashboardUpgraded() {
   if (loading && documents.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#059669]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     );
   }
@@ -274,7 +274,7 @@ export default function DocumentDashboardUpgraded() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <DocumentTextIcon className="h-7 w-7 text-[#059669]" />
+            <DocumentTextIcon className="h-7 w-7 text-primary-600" />
             Dokumen
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Generate, manage, and track all business documents</p>
@@ -296,7 +296,7 @@ export default function DocumentDashboardUpgraded() {
           </Link>
           <Link
             to="/app/documents/generate"
-            className="inline-flex items-center px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg font-medium hover:shadow-lg transition-shadow"
+            className="inline-flex items-center px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg font-medium hover:shadow-lg transition-shadow"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
             Generate Document
@@ -306,7 +306,7 @@ export default function DocumentDashboardUpgraded() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5 text-white">
+        <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-white/80">Total Documents</p>

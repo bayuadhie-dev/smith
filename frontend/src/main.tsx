@@ -7,6 +7,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App'
 import { store } from './store'
 import './index.css'
+import { initCompanyTheme } from './theme/company'
+
+initCompanyTheme()
 
 // Initialize error logger (catches unhandled errors and sends to backend)
 import './utils/errorLogger'

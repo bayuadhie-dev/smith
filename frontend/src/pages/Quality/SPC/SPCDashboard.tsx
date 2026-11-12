@@ -106,7 +106,7 @@ export default function SPCDashboard() {
 
   if (dashLoading) return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#059669]" />
+      <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600" />
     </div>
   );
 
@@ -128,7 +128,7 @@ export default function SPCDashboard() {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
         >
           <PlusCircleIcon className="h-5 w-5" />
           Input Sample
@@ -137,7 +137,7 @@ export default function SPCDashboard() {
 
       {/* Summary Cards - bento */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-lg"><BeakerIcon className="h-6 w-6" /></div>
             <div>

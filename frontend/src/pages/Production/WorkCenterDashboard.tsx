@@ -218,7 +218,7 @@ export default function WorkCenterDashboard() {
 
       {/* Summary cards - bento: OEE Rata-rata spans 2 cols (primary metric) */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+        <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
           <p className="text-sm opacity-90">OEE Rata-rata</p>
           <p className="mt-1 text-3xl font-bold">
             {machinesWithData.length ? `${avgOEE.toFixed(1)}%` : '-'}

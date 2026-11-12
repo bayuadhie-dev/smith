@@ -69,7 +69,7 @@ export default function HRDashboard() {
       name: 'Karyawan aktif',
       value: activeEmployees,
       icon: UserGroupIcon,
-      gradient: 'from-[#059669] to-[#047857]',
+      gradient: 'from-primary-600 to-primary-700',
       subtext: `${totalEmployees} terdaftar`,
       span: true,
     },
@@ -103,7 +103,7 @@ export default function HRDashboard() {
       description: 'Kelola data karyawan, jabatan, dan departemen',
       icon: UserGroupIcon,
       href: '/app/hr/employees',
-      gradient: 'from-[#059669] to-[#047857]',
+      gradient: 'from-primary-600 to-primary-700',
       stats: `${activeEmployees} karyawan aktif`
     },
     {

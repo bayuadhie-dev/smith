@@ -1060,7 +1060,7 @@ function App() {
           <div className="relative h-16 w-16 mx-auto mb-4">
             <div className="absolute inset-0 rounded-full border-[3px] border-white/10" />
             <div
-              className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[#10b981] border-r-teal-400 animate-spin"
+              className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-primary-500 border-r-teal-400 animate-spin"
               style={{ animationDuration: '0.9s' }}
             />
             <div
@@ -1068,7 +1068,7 @@ function App() {
               style={{ animationDuration: '1.4s' }}
             />
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-[#059669] to-[#047857] animate-pulse" />
+              <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-primary-600 to-primary-700 animate-pulse" />
             </div>
           </div>
           <p className="text-emerald-100 text-sm font-medium">Verifying session...</p>

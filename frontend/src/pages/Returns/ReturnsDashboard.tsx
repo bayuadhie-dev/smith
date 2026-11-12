@@ -87,7 +87,7 @@ const [page, setPage] = useState(1)
         </div>
         <Link
           to="/app/returns/new"
-          className="bg-gradient-to-br from-[#059669] to-[#047857] text-white px-4 py-2 rounded-lg hover:shadow-lg transition-shadow flex items-center gap-2 text-sm font-medium"
+          className="bg-gradient-to-br from-primary-600 to-primary-700 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-shadow flex items-center gap-2 text-sm font-medium"
         >
           <PlusIcon className="h-5 w-5" />
           New Return
@@ -98,7 +98,7 @@ const [page, setPage] = useState(1)
       {analytics && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+            <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
               <div className="flex items-center gap-2 mb-2">
                 <div className="p-2 bg-white/20 rounded-lg">
                   <ArrowPathIcon className="w-5 h-5" />

@@ -93,7 +93,7 @@ export default function BatchRecordWeeklyReport() {
           </Link>
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
           >
             <PrinterIcon className="h-4 w-4" /> Cetak / PDF
           </button>
@@ -127,7 +127,7 @@ export default function BatchRecordWeeklyReport() {
         </span>
         <button
           onClick={() => setWeekStart(toISODate(mondayOf(new Date())))}
-          className="ml-auto px-3 py-1.5 text-xs font-medium text-[#059669] hover:underline"
+          className="ml-auto px-3 py-1.5 text-xs font-medium text-primary-600 hover:underline"
         >
           Minggu Ini
         </button>
@@ -149,7 +149,7 @@ export default function BatchRecordWeeklyReport() {
         <>
           {/* Summary bento cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 print:grid-cols-4 print:gap-2">
-            <div className="xl:col-span-2 print:col-span-1 bg-gradient-to-br from-[#059669] to-[#047857] rounded-2xl shadow-md p-5 text-white print:shadow-none print:border print:border-gray-300 print:text-gray-900 print:bg-none">
+            <div className="xl:col-span-2 print:col-span-1 bg-gradient-to-br from-primary-600 to-primary-700 rounded-2xl shadow-md p-5 text-white print:shadow-none print:border print:border-gray-300 print:text-gray-900 print:bg-none">
               <p className="text-sm text-white/80 print:text-gray-500">Total Batch Minggu Ini</p>
               <p className="text-3xl font-black mt-1">{summary.total_batches}</p>
               <p className="text-xs text-white/70 print:text-gray-500 mt-1">{summary.batches_closed} ditutup &bull; {summary.batches_open} belum ditutup</p>
@@ -207,7 +207,7 @@ export default function BatchRecordWeeklyReport() {
                             <Link
                               to={`/app/production/batches/${b.id}/record`}
                               onClick={e => e.stopPropagation()}
-                              className="text-[#059669] hover:underline"
+                              className="text-primary-600 hover:underline"
                             >
                               {b.batch_number}
                             </Link>
@@ -319,7 +319,7 @@ function BatchExpandDetail({ loading, detail, batchId }: { loading: boolean; det
       </div>
       <Link
         to={`/app/production/batches/${batchId}/record`}
-        className="inline-block text-xs font-medium text-[#059669] hover:underline"
+        className="inline-block text-xs font-medium text-primary-600 hover:underline"
       >
         Lihat dokumen Catatan Pengolahan Bets lengkap &rarr;
       </Link>

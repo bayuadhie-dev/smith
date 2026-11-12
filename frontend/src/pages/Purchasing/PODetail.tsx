@@ -127,7 +127,7 @@ export default function PODetail() {
         <DocumentGenerateButton transactionType="purchase_order" transactionId={po.id} transactionNumber={po.po_number} label="Cetak PO" />
         <Link
           to={`/app/purchasing/purchase-orders/${id}/edit`}
-          className="flex items-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-lg hover:bg-emerald-700 text-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium"
         >
           <PencilSquareIcon className="h-4 w-4" /> Edit
         </Link>
@@ -160,7 +160,7 @@ export default function PODetail() {
             <p className="text-xs text-gray-400 dark:text-gray-500">Supplier</p>
             <button
               onClick={openSupplierDrillDown}
-              className="text-[#059669] hover:underline flex items-center gap-1 font-medium"
+              className="text-primary-600 hover:underline flex items-center gap-1 font-medium"
             >
               <BuildingStorefrontIcon className="h-4 w-4" /> {po.supplier.company_name}
             </button>
@@ -221,7 +221,7 @@ export default function PODetail() {
                   >
                     <td className="py-2 pr-3 font-medium text-gray-900 dark:text-white">
                       <span className="flex items-center gap-1.5">
-                        {item.material_id && <CubeIcon className="h-3.5 w-3.5 text-[#059669] flex-shrink-0" />}
+                        {item.material_id && <CubeIcon className="h-3.5 w-3.5 text-primary-600 flex-shrink-0" />}
                         {name}
                       </span>
                       {(code || (master && master !== name)) && <p className="text-xs text-gray-400 dark:text-gray-500 ml-5">{[code, master !== name ? master : ''].filter(Boolean).join(' · ')}</p>}
@@ -259,7 +259,7 @@ export default function PODetail() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-gray-900 dark:text-white">Jadwal Kedatangan</h2>
-            <Link to={`/app/purchasing/purchase-orders/${id}/edit`} className="text-sm text-[#059669] hover:underline">Ubah jadwal</Link>
+            <Link to={`/app/purchasing/purchase-orders/${id}/edit`} className="text-sm text-primary-600 hover:underline">Ubah jadwal</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

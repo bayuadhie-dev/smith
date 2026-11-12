@@ -401,7 +401,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
       {/* ═══════════════════════════════════════════════════════════
           HEADER — Premium Executive Style
       ═══════════════════════════════════════════════════════════ */}
-      <div className="relative bg-gradient-to-r from-[#064e3b] via-[#059669] to-teal-600 rounded-2xl p-5 text-white shadow-2xl overflow-hidden">
+      <div className="relative bg-gradient-to-r from-[#064e3b] via-primary-600 to-teal-600 rounded-2xl p-5 text-white shadow-2xl overflow-hidden">
         {/* Background decorative circles */}
         <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full" />
         <div className="absolute -bottom-10 -left-10 w-56 h-56 bg-white/5 rounded-full" />
@@ -672,7 +672,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
             <div
               onClick={() => setAutoRefresh(prev => !prev)}
               className={`relative w-11 h-6 rounded-full transition-colors duration-300 cursor-pointer ${
-                autoRefresh ? 'bg-gradient-to-r from-[#059669] to-[#047857]' : 'bg-gray-300 dark:bg-gray-600'
+                autoRefresh ? 'bg-gradient-to-r from-primary-600 to-primary-700' : 'bg-gray-300 dark:bg-gray-600'
               }`}
             >
               <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
@@ -705,7 +705,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
         <button
           onClick={async () => { setIsRefreshing(true); await fetchData(); setIsRefreshing(false); }}
           disabled={isRefreshing}
-          className="flex items-center gap-2 px-4 py-1.5 text-sm font-semibold bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow disabled:opacity-60"
+          className="flex items-center gap-2 px-4 py-1.5 text-sm font-semibold bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow disabled:opacity-60"
         >
           <ArrowDownTrayIcon className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           {isRefreshing ? 'Memuat...' : 'Refresh Sekarang'}
@@ -723,7 +723,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
               onClick={() => setActiveTab(t.id as any)}
               className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
                 activeTab === t.id
-                  ? 'bg-gradient-to-r from-[#059669] to-teal-600 text-white shadow-md shadow-emerald-200 dark:shadow-none scale-[1.02]'
+                  ? 'bg-gradient-to-r from-primary-600 to-teal-600 text-white shadow-md shadow-emerald-200 dark:shadow-none scale-[1.02]'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
@@ -4099,7 +4099,7 @@ const FGConversionTab: React.FC<{
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#059669] via-teal-500 to-[#047857] rounded-2xl p-5 text-white shadow-xl">
+      <div className="bg-gradient-to-r from-primary-600 via-teal-500 to-primary-700 rounded-2xl p-5 text-white shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h2 className="text-xl font-bold flex items-center gap-2">
@@ -4116,7 +4116,7 @@ const FGConversionTab: React.FC<{
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Konversi', value: summary.total_conversions, sub: `${summary.completed} selesai`, color: 'from-[#059669] to-[#047857]', icon: '📦' },
+          { label: 'Total Konversi', value: summary.total_conversions, sub: `${summary.completed} selesai`, color: 'from-primary-600 to-primary-700', icon: '📦' },
           { label: 'Total FG Output', value: fmtNum(summary.total_fg_qty), sub: 'pcs diproduksi', color: 'from-teal-500 to-teal-600', icon: '✅' },
           { label: 'Total WIP Input', value: fmtNum(summary.total_wip_qty), sub: 'pcs WIP dipakai', color: 'from-violet-500 to-violet-600', icon: '🏭' },
           {
@@ -4156,7 +4156,7 @@ const FGConversionTab: React.FC<{
                     <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{count as number} <span className="text-gray-400 font-normal text-xs">({pct}%)</span></span>
                   </div>
                   <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5">
-                    <div className="h-1.5 rounded-full bg-gradient-to-r from-[#059669] to-teal-500" style={{ width: `${pct}%` }} />
+                    <div className="h-1.5 rounded-full bg-gradient-to-r from-primary-600 to-teal-500" style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               );

@@ -187,7 +187,7 @@ export default function BankReconciliation() {
           <button
             onClick={handleUpload}
             disabled={uploading}
-            className="px-4 py-2 bg-[#059669] hover:bg-[#047857] text-white rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50"
+            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50"
           >
             <ArrowUpTrayIcon className="w-4 h-4" />
             {uploading ? 'Mengimpor...' : 'Impor'}
@@ -209,7 +209,7 @@ export default function BankReconciliation() {
                   onClick={() => setSelectedStatementId(s.id)}
                   className={`w-full text-left p-3 rounded-lg border transition-colors ${
                     selectedStatementId === s.id
-                      ? 'border-[#059669] bg-emerald-50 dark:bg-emerald-900/20'
+                      ? 'border-primary-600 bg-emerald-50 dark:bg-emerald-900/20'
                       : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                   }`}
                 >
@@ -297,7 +297,7 @@ export default function BankReconciliation() {
                           <span className="truncate flex-1">{c.entry_number} · {c.entry_date} · {c.description || '-'}</span>
                           <button
                             onClick={() => handleMatch(line.id, c.id)}
-                            className="ml-2 flex-shrink-0 flex items-center gap-1 text-[#059669] hover:underline font-medium"
+                            className="ml-2 flex-shrink-0 flex items-center gap-1 text-primary-600 hover:underline font-medium"
                           >
                             <LinkIcon className="w-3.5 h-3.5" /> Cocokkan
                           </button>

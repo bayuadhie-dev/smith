@@ -179,7 +179,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#065f46] relative">
+      <div className="hidden lg:flex lg:w-1/2 bg-primary-800 relative">
         <div className="flex flex-col justify-between w-full px-12 xl:px-20 py-14">
           <div className="flex items-center gap-3">
             {logoUrl ? (
@@ -187,7 +187,7 @@ export default function Login() {
                 <img src={logoUrl} alt={companyName} className="h-9 w-auto max-w-[9rem] object-contain" />
               </span>
             ) : (
-              <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white text-base font-semibold text-[#047857]">
+              <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white text-base font-semibold text-primary-700">
                 {companyName.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || 'ER'}
               </span>
             )}
@@ -214,7 +214,7 @@ export default function Login() {
               {logoUrl ? (
                 <img src={logoUrl} alt={companyName} className="h-12 w-auto max-w-[9rem] object-contain" />
               ) : (
-                <div className="w-12 h-12 bg-[#047857] rounded-lg flex items-center justify-center text-base font-semibold text-white">
+                <div className="w-12 h-12 bg-primary-700 rounded-lg flex items-center justify-center text-base font-semibold text-white">
                   {companyName.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || 'ER'}
                 </div>
               )}
@@ -302,7 +302,7 @@ export default function Login() {
                   name="username"
                   type="text"
                   required
-                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-transparent transition-all"
+                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
                   placeholder="Nama pengguna"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -324,7 +324,7 @@ export default function Login() {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-transparent transition-all"
+                  className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
                   placeholder="Kata sandi"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -351,11 +351,11 @@ export default function Login() {
                   id="remember-me"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-300 text-[#059669] focus:ring-[#059669] cursor-pointer"
+                  className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-600 cursor-pointer"
                 />
                 <span className="text-sm text-slate-600 dark:text-slate-400">Ingat saya</span>
               </label>
-              <Link to="/forgot-password" className="text-sm font-medium text-[#059669] hover:text-emerald-700 transition-colors">
+              <Link to="/forgot-password" className="text-sm font-medium text-primary-600 hover:text-emerald-700 transition-colors">
                 Lupa kata sandi?
               </Link>
             </div>
@@ -364,7 +364,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[#059669] hover:bg-[#047857] text-white font-semibold rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
@@ -397,7 +397,7 @@ export default function Login() {
               type="button"
               onClick={handleGoogleLogin}
               disabled={!googleEnabled || googleLoading}
-              className={`w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:ring-offset-2 transition-all duration-300 ${(!googleEnabled || googleLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 transition-all duration-300 ${(!googleEnabled || googleLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {googleLoading ? (
                 <>
@@ -423,7 +423,7 @@ export default function Login() {
           <div className="text-center mt-6">
             <p className="text-slate-600 dark:text-slate-400">
               Belum punya akun?{' '}
-              <Link to="/register" className="font-semibold text-[#059669] hover:text-emerald-700 transition-colors">
+              <Link to="/register" className="font-semibold text-primary-600 hover:text-emerald-700 transition-colors">
                 Daftar
               </Link>
             </p>

@@ -369,7 +369,7 @@ const ConvertingDashboard: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate('/app/production/converting/input')}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
           >
             <PlusIcon className="h-5 w-5" />
             Input Produksi
@@ -402,7 +402,7 @@ const ConvertingDashboard: React.FC = () => {
       {/* Summary Cards - bento */}
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-          <div className="bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+          <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
             <p className="text-sm opacity-90">Total Mesin</p>
             <p className="text-2xl font-bold">{summary.total_machines}</p>
             <p className="text-xs opacity-75">{summary.active_machines} aktif</p>
@@ -429,7 +429,7 @@ const ConvertingDashboard: React.FC = () => {
       {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <ArrowPathIcon className="h-8 w-8 animate-spin text-[#059669]" />
+          <ArrowPathIcon className="h-8 w-8 animate-spin text-primary-600" />
         </div>
       )}
 

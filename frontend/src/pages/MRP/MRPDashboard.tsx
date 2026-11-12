@@ -341,7 +341,7 @@ const MRPDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#059669]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
         <span className="ml-3">Loading MRP dashboard...</span>
       </div>
     );
@@ -513,7 +513,7 @@ const MRPDashboard: React.FC = () => {
         <div className="flex flex-wrap gap-2">
           <Link
             to="/app/production/demand-planning"
-            className="flex items-center px-4 py-2 bg-gradient-to-br from-[#059669] to-[#047857] text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
+            className="flex items-center px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
           >
             <ChartBarIcon className="h-4 w-4 mr-2" />
             Demand Planning
@@ -544,7 +544,7 @@ const MRPDashboard: React.FC = () => {
 
       {/* KPI Cards - bento: Total SPK spans 2 cols (primary metric) */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-[#059669] to-[#047857] rounded-xl p-4 text-white shadow-lg">
+        <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-white/20 rounded-lg"><CubeIcon className="w-5 h-5" /></div>
             <p className="text-sm opacity-90">Total SPK</p>

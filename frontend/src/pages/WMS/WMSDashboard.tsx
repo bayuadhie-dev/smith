@@ -53,7 +53,7 @@ const WMSDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#059669]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     );
   }
@@ -64,7 +64,7 @@ const WMSDashboard: React.FC = () => {
       value: data?.inventory.total_items?.toLocaleString() || '0',
       subtitle: `${data?.inventory.total_quantity?.toLocaleString() || '0'} total qty`,
       icon: CubeIcon,
-      gradient: 'from-[#059669] to-[#047857]',
+      gradient: 'from-primary-600 to-primary-700',
       link: '/app/warehouse/inventory',
       span: true,
     },
@@ -95,7 +95,7 @@ const WMSDashboard: React.FC = () => {
   ];
 
   const quickActions = [
-    { name: 'Stok per WO', icon: DocumentMagnifyingGlassIcon, href: '/app/wms/stock-by-wo', desc: 'Lihat stok berdasarkan SPK', gradient: 'from-[#059669] to-[#047857]' },
+    { name: 'Stok per WO', icon: DocumentMagnifyingGlassIcon, href: '/app/wms/stock-by-wo', desc: 'Lihat stok berdasarkan SPK', gradient: 'from-primary-600 to-primary-700' },
     { name: 'Konsumsi Material', icon: CubeIcon, href: '/app/wms/material-consumption', desc: 'Tracking pemakaian bahan baku', gradient: 'from-teal-500 to-teal-600' },
     { name: 'Transaksi Stok', icon: ArrowsRightLeftIcon, href: '/app/wms/transactions', desc: 'Log transaksi inventori', gradient: 'from-violet-500 to-violet-600' },
     { name: 'Pick List', icon: ClipboardDocumentListIcon, href: '/app/wms/pick-lists', desc: 'Daftar pengambilan barang', gradient: 'from-[#F15D2C] to-[#C73E1D]' },

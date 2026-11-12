@@ -14,7 +14,7 @@ const LoadingSpinner: React.FC = () => {
       <div className="relative h-16 w-16">
         <div className="absolute inset-0 rounded-full border-[3px] border-gray-200 dark:border-gray-700" />
         <div
-          className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[#059669] border-r-teal-400 animate-spin"
+          className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-primary-600 border-r-teal-400 animate-spin"
           style={{ animationDuration: '0.9s' }}
         />
         <div
@@ -22,7 +22,7 @@ const LoadingSpinner: React.FC = () => {
           style={{ animationDuration: '1.4s' }}
         />
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-[#059669] to-[#047857] animate-pulse" />
+          <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-primary-600 to-primary-700 animate-pulse" />
         </div>
       </div>
       <p className="text-xs font-medium text-gray-400 dark:text-gray-500 animate-pulse">Memuat...</p>
