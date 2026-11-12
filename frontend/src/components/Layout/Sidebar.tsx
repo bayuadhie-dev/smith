@@ -613,7 +613,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
   }
 
   return (
-    <div className="sidebar-scroll flex grow flex-col gap-y-3 overflow-y-auto bg-white dark:bg-gray-900 px-4 pb-4 border-r border-gray-200 dark:border-gray-800">
+    <div className="dark sidebar-themed sidebar-scroll flex grow flex-col gap-y-3 overflow-y-auto bg-white dark:bg-gray-900 px-4 pb-4 border-r border-gray-200 dark:border-gray-800">
       <style>{`
         .sidebar-scroll::-webkit-scrollbar { width: 5px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }

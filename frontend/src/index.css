@@ -16,6 +16,7 @@
   --brand-800: 52 58 65;
   --brand-900: 38 43 49;
   --spinner-inner: 52 58 65;
+  --sidebar-bg: 52 58 65;
   --spinner-inner-dark: 138 174 238;
   --accent-50: 255 247 237;
   --accent-100: 255 237 213;
@@ -43,6 +44,7 @@
 }
 
 html[data-company='fengsheng'] {
+  --sidebar-bg: 31 77 58;
   --spinner-inner: 194 87 12;
   --spinner-inner-dark: 217 102 15;
   --brand-50: 238 244 240;
@@ -79,6 +81,18 @@ html[data-company='fengsheng'] {
   --cta-800: 127 58 14;
   --cta-900: 102 49 15;
 }
+
+/* Sidebar gelap per perusahaan: Falmaco gunmetal, Fengsheng forest green. Pakai varian dark: bawaan sidebar. */
+.sidebar-themed {
+  background-color: rgb(var(--sidebar-bg)) !important;
+  border-color: rgb(255 255 255 / 0.08) !important;
+}
+.sidebar-themed.sidebar-themed .dark\:bg-gray-800 { background-color: rgb(255 255 255 / 0.08); }
+.sidebar-themed.sidebar-themed .dark\:border-gray-800,
+.sidebar-themed.sidebar-themed .dark\:border-gray-700 { border-color: rgb(255 255 255 / 0.14); }
+.sidebar-themed.sidebar-themed .dark\:hover\:bg-gray-800:hover,
+.sidebar-themed.sidebar-themed .dark\:hover\:bg-gray-700:hover,
+.sidebar-themed.sidebar-themed .dark\:focus\:bg-gray-700:focus { background-color: rgb(255 255 255 / 0.12); }
 
 /* Fengsheng: kartu/panel putih jadi oatmilk terang. */
 html[data-company='fengsheng']:not(.dark) .bg-white {
