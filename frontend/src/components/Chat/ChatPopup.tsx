@@ -423,7 +423,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({ isOpen, onClose, onOpenFullPage }
                     <button
                       onClick={sendMessage}
                       disabled={!messageInput.trim()}
-                      className={`p-2 ${messageInput.trim() ? 'text-blue-500 hover:text-blue-400' : 'text-gray-500'}`}
+                      className={`p-2 ${messageInput.trim() ? 'text-blue-500 hover:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}
                     >
                       <PaperAirplaneIcon className="h-5 w-5" />
                     </button>
@@ -517,7 +517,7 @@ const MessageBubble: React.FC<{
             <span className="ml-1 truncate">{message.reply_to.content}</span>
           </div>
         )}
-        <p className={`text-sm text-gray-200 break-words ${message.is_deleted ? 'italic text-gray-500' : ''}`}>
+        <p className={`text-sm text-gray-200 break-words ${message.is_deleted ? 'italic text-gray-500 dark:text-gray-400' : ''}`}>
           {message.content}
           {message.is_edited && <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">(diedit)</span>}
         </p>

@@ -13,16 +13,16 @@ import toast from 'react-hot-toast';
 import NumberInput from '../../components/ui/NumberInput'
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  pending:   { label: 'Pending',    color: 'bg-gray-100 text-gray-700' },
-  inspected: { label: 'Inspeksi',   color: 'bg-blue-100 text-blue-700' },
-  approved:  { label: 'Disetujui',  color: 'bg-green-100 text-green-700' },
-  rejected:  { label: 'Ditolak',    color: 'bg-red-100 text-red-700' },
+  pending:   { label: 'Pending',    color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
+  inspected: { label: 'Inspeksi',   color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+  approved:  { label: 'Disetujui',  color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+  rejected:  { label: 'Ditolak',    color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
 };
 
 const QC_CONFIG: Record<string, { label: string; color: string }> = {
-  passed:  { label: '✅ Lulus QC',   color: 'bg-green-50 text-green-700 border-green-200' },
-  partial: { label: '⚠️ Sebagian',  color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
-  failed:  { label: '❌ Gagal QC',  color: 'bg-red-50 text-red-700 border-red-200' },
+  passed:  { label: '✅ Lulus QC',   color: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800' },
+  partial: { label: '⚠️ Sebagian',  color: 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800' },
+  failed:  { label: '❌ Gagal QC',  color: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800' },
 };
 
 interface InspectItem {
@@ -150,7 +150,7 @@ export default function GRNDetail() {
   if (!grn) return <div className="p-6 text-red-500">GRN tidak ditemukan</div>;
 
   const isEditable = grn.status !== 'approved';
-  const statusCfg = STATUS_CONFIG[grn.status] || { label: grn.status, color: 'bg-gray-100 text-gray-700' };
+  const statusCfg = STATUS_CONFIG[grn.status] || { label: grn.status, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' };
   const qcCfg = grn.quality_status ? QC_CONFIG[grn.quality_status] : null;
 
   const totalReceived = grn.items.reduce((s: number, i: any) => s + i.quantity_received, 0);
@@ -186,7 +186,7 @@ export default function GRNDetail() {
           {isEditable && (
             <button
               onClick={handleAcceptAll}
-              className="px-3 py-1.5 border border-green-300 text-green-700 rounded-lg text-sm hover:bg-green-50"
+              className="px-3 py-1.5 border border-green-300 text-green-700 rounded-lg text-sm hover:bg-green-50 dark:text-green-300"
             >
               ✅ Terima Semua
             </button>
@@ -201,7 +201,7 @@ export default function GRNDetail() {
               Simpan Inspeksi
             </button>
           )}
-          <Link to={`/app/purchasing/grn/${grn.id}/edit`} className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">Ubah</Link>
+          <Link to={`/app/purchasing/grn/${grn.id}/edit`} className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-600">Ubah</Link>
           <DocumentGenerateButton transactionType="grn" transactionId={grn.id} transactionNumber={grn.grn_number} label="Cetak" />
           <DocumentGenerateButton transactionType="grn" transactionId={grn.id} transactionNumber={grn.grn_number} label="Cetak + rincian batch" detail />
           {grn.status === 'approved' && (
@@ -227,13 +227,13 @@ export default function GRNDetail() {
       {/* Info cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'No. PO', value: grn.po_id ? <Link to={`/app/purchasing/purchase-orders/${grn.po_id}`} className="text-blue-600 hover:underline">{grn.po_number}</Link> : 'Tanpa PO' },
+          { label: 'No. PO', value: grn.po_id ? <Link to={`/app/purchasing/purchase-orders/${grn.po_id}`} className="text-blue-600 hover:underline dark:text-blue-400">{grn.po_number}</Link> : 'Tanpa PO' },
           { label: 'Supplier', value: grn.supplier_name },
           { label: 'Tgl Terima', value: grn.receipt_date ? new Date(grn.receipt_date).toLocaleDateString('id-ID') : '—' },
           { label: 'Diterima oleh', value: grn.received_by_name || '—' },
         ].map(({ label, value }) => (
           <div key={label} className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
-            <p className="text-xs text-gray-500 mb-0.5">{label}</p>
+            <p className="text-xs text-gray-500 mb-0.5 dark:text-gray-400">{label}</p>
             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{value}</p>
           </div>
         ))}
@@ -246,9 +246,9 @@ export default function GRNDetail() {
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Ringkasan QC — {acceptRate}% diterima
             </span>
-            <span className="text-xs text-gray-500">
-              Diterima: <strong className="text-green-600">{totalAccepted.toLocaleString('id-ID')}</strong> |
-              Ditolak: <strong className="text-red-600">{totalRejected.toLocaleString('id-ID')}</strong>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              Diterima: <strong className="text-green-600 dark:text-green-400">{totalAccepted.toLocaleString('id-ID')}</strong> |
+              Ditolak: <strong className="text-red-600 dark:text-red-400">{totalRejected.toLocaleString('id-ID')}</strong>
             </span>
           </div>
           <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -272,7 +272,7 @@ export default function GRNDetail() {
         </h2>
 
         {/* Header */}
-        <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 uppercase px-1">
+        <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 uppercase px-1 dark:text-gray-400">
           <div className="col-span-3">Item</div>
           <div className="col-span-1 text-right">Dipesan</div>
           <div className="col-span-1 text-right">Diterima</div>
@@ -298,7 +298,7 @@ export default function GRNDetail() {
                 <div className="col-span-3">
                   <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{item.item_name}</p>
                   {item.master_name && item.master_name !== item.item_name && <p className="text-xs text-gray-400">{item.master_name}</p>}
-                  {item.notes && <p className="text-xs text-gray-500 italic">Ket: {item.notes}</p>}
+                  {item.notes && <p className="text-xs text-gray-500 italic dark:text-gray-400">Ket: {item.notes}</p>}
                   {item.batch_number && (
                     <p className="text-xs text-gray-400">Batch: {item.batch_number}</p>
                   )}
@@ -306,7 +306,7 @@ export default function GRNDetail() {
                     <p className="text-xs text-gray-400">Exp: {item.expiry_date}</p>
                   )}
                 </div>
-                <div className="col-span-1 text-right text-sm text-gray-500">
+                <div className="col-span-1 text-right text-sm text-gray-500 dark:text-gray-400">
                   {item.quantity_ordered.toLocaleString('id-ID')}
                   <span className="text-xs ml-1 text-gray-400">{item.uom}</span>
                 </div>
@@ -340,7 +340,7 @@ export default function GRNDetail() {
                 </div>
                 <div className="col-span-3">
                   {isEditable && Math.abs(item.quantity_received - accepted - rejected) > 0.001 && (
-                    <p className="mb-1 text-xs text-amber-600">
+                    <p className="mb-1 text-xs text-amber-600 dark:text-amber-400">
                       {item.quantity_received - accepted - rejected > 0
                         ? `Belum dialokasikan: ${(item.quantity_received - accepted - rejected).toLocaleString('id-ID')} ${item.uom} (isi Qty Ditolak bila memang ditolak)`
                         : `Melebihi jumlah diterima ${(accepted + rejected - item.quantity_received).toLocaleString('id-ID')} ${item.uom}; jumlah diterima ikut disesuaikan`}
@@ -376,7 +376,7 @@ export default function GRNDetail() {
         )}
 
         {grn.notes && (
-          <div className="pt-2 text-xs text-gray-500 whitespace-pre-line">{grn.notes}</div>
+          <div className="pt-2 text-xs text-gray-500 whitespace-pre-line dark:text-gray-400">{grn.notes}</div>
         )}
       </div>
       <AttachmentsPanel entityType="grn" entityId={id} />

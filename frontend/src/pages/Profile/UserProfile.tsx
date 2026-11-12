@@ -244,7 +244,7 @@ const UserProfile: React.FC = () => {
             {/* Avatar */}
             <div className="absolute -top-16 left-6">
               <div className="w-32 h-32 bg-white dark:bg-gray-700 rounded-full border-4 border-white dark:border-gray-800 shadow-lg flex items-center justify-center">
-                <span className="text-5xl font-bold text-blue-600">
+                <span className="text-5xl font-bold text-blue-600 dark:text-blue-400">
                   {profile.full_name?.charAt(0).toUpperCase() || 'U'}
                 </span>
               </div>
@@ -261,7 +261,7 @@ const UserProfile: React.FC = () => {
                   <>
                     <button
                       onClick={cancelEditing}
-                      className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+                      className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm dark:text-gray-200 dark:border-gray-600"
                     >
                       <XMarkIcon className="h-4 w-4 mr-2" />
                       Batal
@@ -309,13 +309,13 @@ const UserProfile: React.FC = () => {
                   </h1>
                 )}
                 {profile.is_super_admin && (
-                  <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full flex items-center">
+                  <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full flex items-center dark:bg-purple-900/30 dark:text-purple-300">
                     <CheckBadgeIcon className="h-4 w-4 mr-1" />
                     Super Admin
                   </span>
                 )}
                 {profile.is_admin && !profile.is_super_admin && (
-                  <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full flex items-center">
+                  <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full flex items-center dark:bg-blue-900/30 dark:text-blue-300">
                     <ShieldCheckIcon className="h-4 w-4 mr-1" />
                     Admin
                   </span>
@@ -347,7 +347,7 @@ const UserProfile: React.FC = () => {
         {/* Bio Section */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-            <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-600" />
+            <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
             Tentang Saya
           </h2>
           {isEditing ? (
@@ -371,7 +371,7 @@ const UserProfile: React.FC = () => {
           {/* Contact Info */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-              <UserCircleIcon className="h-5 w-5 mr-2 text-blue-600" />
+              <UserCircleIcon className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
               Informasi Kontak
             </h2>
             
@@ -408,7 +408,7 @@ const UserProfile: React.FC = () => {
           {/* Work Info */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-              <BriefcaseIcon className="h-5 w-5 mr-2 text-blue-600" />
+              <BriefcaseIcon className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
               Informasi Pekerjaan
             </h2>
             
@@ -468,7 +468,7 @@ const UserProfile: React.FC = () => {
           {/* Account Info */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-              <ShieldCheckIcon className="h-5 w-5 mr-2 text-blue-600" />
+              <ShieldCheckIcon className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
               Informasi Akun
             </h2>
             
@@ -477,7 +477,7 @@ const UserProfile: React.FC = () => {
                 <div className={`h-5 w-5 rounded-full mr-3 mt-0.5 ${profile.is_active ? 'bg-green-500' : 'bg-red-500'}`}></div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
-                  <p className={`font-medium ${profile.is_active ? 'text-green-600' : 'text-red-600'}`}>
+                  <p className={`font-medium ${profile.is_active ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                     {profile.is_active ? 'Aktif' : 'Nonaktif'}
                   </p>
                 </div>
@@ -498,7 +498,7 @@ const UserProfile: React.FC = () => {
           {/* Activity Info */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-              <ClockIcon className="h-5 w-5 mr-2 text-blue-600" />
+              <ClockIcon className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
               Aktivitas
             </h2>
             

@@ -15,7 +15,7 @@ export default function ZoneStockPage() {
   useEffect(() => {
     axiosInstance.get(`/api/stock-transfers/zone-stock/${id}`).then((r) => setD(r.data)).catch(() => showError('Data gudang gagal dimuat'))
   }, [id])
-  if (!d) return <div className="p-6 text-sm text-gray-500">Memuat...</div>
+  if (!d) return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Memuat...</div>
   const th = 'px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400'
   const n = (v: number) => v.toLocaleString('id-ID', { maximumFractionDigits: 4 })
   return (
@@ -27,7 +27,7 @@ export default function ZoneStockPage() {
             <thead><tr><th className={th}>Lokasi</th><th className={`${th} text-right`}>Stok</th><th className={th}>Status</th></tr></thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {d.locations.map((l: any) => (
-                <tr key={l.id}><td className="px-3 py-2"><Link to={`/app/warehouse/locations/${l.id}`} className="text-emerald-700 hover:underline">{l.location_code}</Link></td>
+                <tr key={l.id}><td className="px-3 py-2"><Link to={`/app/warehouse/locations/${l.id}`} className="text-emerald-700 hover:underline dark:text-emerald-300">{l.location_code}</Link></td>
                   <td className="px-3 py-2 text-right tabular-nums">{n(l.on_hand)}</td><td className="px-3 py-2">{l.is_active ? 'Aktif' : 'Nonaktif'}</td></tr>
               ))}
             </tbody>
@@ -35,7 +35,7 @@ export default function ZoneStockPage() {
         </div>
       </Panel>
       <Panel title="Barang di gudang ini">
-        {d.items.length === 0 ? <p className="text-sm text-gray-500">Tidak ada stok.</p> : (
+        {d.items.length === 0 ? <p className="text-sm text-gray-500 dark:text-gray-400">Tidak ada stok.</p> : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
               <thead><tr><th className={th}>Kode</th><th className={th}>Nama</th><th className={`${th} text-right`}>Stok</th><th className={`${th} text-right`}>Tersedia</th></tr></thead>
@@ -43,7 +43,7 @@ export default function ZoneStockPage() {
                 {d.items.map((i: any) => (
                   <tr key={`${i.kind}${i.item_id}`}>
                     <td className="px-3 py-2">{i.code}</td>
-                    <td className="px-3 py-2"><Link to={`/app/warehouse/item-stock/${i.kind}/${i.item_id}`} className="text-emerald-700 hover:underline">{i.name}</Link></td>
+                    <td className="px-3 py-2"><Link to={`/app/warehouse/item-stock/${i.kind}/${i.item_id}`} className="text-emerald-700 hover:underline dark:text-emerald-300">{i.name}</Link></td>
                     <td className="px-3 py-2 text-right tabular-nums">{n(i.on_hand)} {i.uom}</td><td className="px-3 py-2 text-right tabular-nums">{n(i.available)}</td>
                   </tr>
                 ))}
@@ -62,10 +62,10 @@ export default function ZoneStockPage() {
                   <td className="whitespace-nowrap px-3 py-2">{m.date ? new Date(m.date).toLocaleDateString('id-ID') : '-'}</td>
                   <td className="px-3 py-2">{TYPE[m.type] || m.type}</td><td className="px-3 py-2">{m.reference_number || '-'}</td><td className="px-3 py-2">{m.item || '-'}</td>
                   <td className="px-3 py-2">{m.location || '-'}</td><td className="px-3 py-2">{m.batch_number || '-'}</td>
-                  <td className={`px-3 py-2 text-right tabular-nums ${m.direction === 'in' ? 'text-emerald-700' : 'text-red-600'}`}>{m.direction === 'in' ? '+' : '-'}{n(m.quantity)}</td>
+                  <td className={`px-3 py-2 text-right tabular-nums ${m.direction === 'in' ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-600 dark:text-red-400'}`}>{m.direction === 'in' ? '+' : '-'}{n(m.quantity)}</td>
                 </tr>
               ))}
-              {d.movements.length === 0 && <tr><td colSpan={7} className="px-3 py-6 text-center text-gray-500">Belum ada mutasi.</td></tr>}
+              {d.movements.length === 0 && <tr><td colSpan={7} className="px-3 py-6 text-center text-gray-500 dark:text-gray-400">Belum ada mutasi.</td></tr>}
             </tbody>
           </table>
         </div>

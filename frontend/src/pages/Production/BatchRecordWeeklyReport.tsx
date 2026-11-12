@@ -4,12 +4,12 @@ import axiosInstance from '../../utils/axiosConfig';
 import { ArrowPathIcon, PrinterIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  draft:        { label: 'Draft',        color: 'bg-gray-100 text-gray-700' },
-  approved:     { label: 'Disetujui',    color: 'bg-blue-100 text-blue-700' },
-  in_progress:  { label: 'Berjalan',     color: 'bg-amber-100 text-amber-700' },
-  completed:    { label: 'Selesai',      color: 'bg-emerald-100 text-emerald-700' },
-  cancelled:    { label: 'Dibatalkan',   color: 'bg-red-100 text-red-700' },
-  unplaceable:  { label: 'Belum Terjadwal', color: 'bg-gray-100 text-gray-700' },
+  draft:        { label: 'Draft',        color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
+  approved:     { label: 'Disetujui',    color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+  in_progress:  { label: 'Berjalan',     color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
+  completed:    { label: 'Selesai',      color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
+  cancelled:    { label: 'Dibatalkan',   color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
+  unplaceable:  { label: 'Belum Terjadwal', color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
 };
 
 function mondayOf(d: Date): Date {
@@ -127,7 +127,7 @@ export default function BatchRecordWeeklyReport() {
         </span>
         <button
           onClick={() => setWeekStart(toISODate(mondayOf(new Date())))}
-          className="ml-auto px-3 py-1.5 text-xs font-medium text-primary-600 hover:underline"
+          className="ml-auto px-3 py-1.5 text-xs font-medium text-primary-600 hover:underline dark:text-primary-400"
         >
           Minggu Ini
         </button>
@@ -136,7 +136,7 @@ export default function BatchRecordWeeklyReport() {
       {/* Print-only header */}
       <div className="hidden print:block text-center border-b-2 border-gray-900 pb-3 mb-4">
         <h2 className="text-lg font-bold uppercase tracking-wide">Laporan Mingguan Batch Report</h2>
-        <p className="text-xs text-gray-500">{fmtDateLabel(weekStart)} &ndash; {fmtDateLabel(weekEnd)}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">{fmtDateLabel(weekStart)} &ndash; {fmtDateLabel(weekEnd)}</p>
       </div>
 
       {loading ? (
@@ -144,7 +144,7 @@ export default function BatchRecordWeeklyReport() {
           <ArrowPathIcon className="h-6 w-6 animate-spin mr-2" /> Memuat laporan...
         </div>
       ) : !summary ? (
-        <div className="text-center py-16 text-gray-500">Gagal memuat laporan minggu ini.</div>
+        <div className="text-center py-16 text-gray-500 dark:text-gray-400">Gagal memuat laporan minggu ini.</div>
       ) : (
         <>
           {/* Summary bento cards */}
@@ -189,9 +189,9 @@ export default function BatchRecordWeeklyReport() {
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {data.batches.length === 0 ? (
-                    <tr><td colSpan={10} className="text-center py-8 text-gray-500">Tidak ada batch pada periode ini.</td></tr>
+                    <tr><td colSpan={10} className="text-center py-8 text-gray-500 dark:text-gray-400">Tidak ada batch pada periode ini.</td></tr>
                   ) : data.batches.map((b: any) => {
-                    const cfg = STATUS_CONFIG[b.status] || { label: b.status, color: 'bg-gray-100 text-gray-700' };
+                    const cfg = STATUS_CONFIG[b.status] || { label: b.status, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' };
                     const isExpanded = expandedId === b.id;
                     return (
                       <Fragment key={b.id}>
@@ -207,7 +207,7 @@ export default function BatchRecordWeeklyReport() {
                             <Link
                               to={`/app/production/batches/${b.id}/record`}
                               onClick={e => e.stopPropagation()}
-                              className="text-primary-600 hover:underline"
+                              className="text-primary-600 hover:underline dark:text-primary-400"
                             >
                               {b.batch_number}
                             </Link>
@@ -216,7 +216,7 @@ export default function BatchRecordWeeklyReport() {
                           <td className="px-4 py-3">{b.product_name || '-'}</td>
                           <td className="px-4 py-3 text-right tabular-nums">{b.planned_qty.toLocaleString('id-ID')}</td>
                           <td className="px-4 py-3 text-right tabular-nums">{b.realized_qty.toLocaleString('id-ID')}</td>
-                          <td className="px-4 py-3 text-right tabular-nums text-red-600">{b.reject_quantity.toLocaleString('id-ID')}</td>
+                          <td className="px-4 py-3 text-right tabular-nums text-red-600 dark:text-red-400">{b.reject_quantity.toLocaleString('id-ID')}</td>
                           <td className="px-4 py-3 text-right tabular-nums">{b.yield_percent != null ? `${b.yield_percent}%` : '-'}</td>
                           <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs font-medium ${cfg.color}`}>{cfg.label}</span></td>
                         </tr>
@@ -253,7 +253,7 @@ function BatchExpandDetail({ loading, detail, batchId }: { loading: boolean; det
     );
   }
   if (!detail) {
-    return <p className="text-sm text-gray-500 py-2">Gagal memuat detail batch ini.</p>;
+    return <p className="text-sm text-gray-500 py-2 dark:text-gray-400">Gagal memuat detail batch ini.</p>;
   }
   return (
     <div className="space-y-4">
@@ -278,7 +278,7 @@ function BatchExpandDetail({ loading, detail, batchId }: { loading: boolean; det
                   <td className="py-1 pr-3 text-gray-700 dark:text-gray-200">{m.item_name}</td>
                   <td className="py-1 pr-3 text-right tabular-nums">{m.quantity_planned.toLocaleString('id-ID')}</td>
                   <td className="py-1 pr-3 text-right tabular-nums">{m.quantity_actual != null ? m.quantity_actual.toLocaleString('id-ID') : '-'}</td>
-                  <td className={`py-1 pr-3 text-right tabular-nums ${m.variance != null && m.variance !== 0 ? 'text-amber-600' : ''}`}>{m.variance != null ? m.variance.toLocaleString('id-ID') : '-'}</td>
+                  <td className={`py-1 pr-3 text-right tabular-nums ${m.variance != null && m.variance !== 0 ? 'text-amber-600 dark:text-amber-400' : ''}`}>{m.variance != null ? m.variance.toLocaleString('id-ID') : '-'}</td>
                   <td className="py-1 text-gray-400">{m.uom}</td>
                 </tr>
               ))}
@@ -310,7 +310,7 @@ function BatchExpandDetail({ loading, detail, batchId }: { loading: boolean; det
                   <td className="py-1 pr-3">{s.operator_name || '-'}</td>
                   <td className="py-1 pr-3 text-right tabular-nums">{s.target_quantity.toLocaleString('id-ID')}</td>
                   <td className="py-1 pr-3 text-right tabular-nums">{s.actual_quantity.toLocaleString('id-ID')}</td>
-                  <td className="py-1 text-right tabular-nums text-red-600">{s.reject_quantity.toLocaleString('id-ID')}</td>
+                  <td className="py-1 text-right tabular-nums text-red-600 dark:text-red-400">{s.reject_quantity.toLocaleString('id-ID')}</td>
                 </tr>
               ))}
             </tbody>
@@ -319,7 +319,7 @@ function BatchExpandDetail({ loading, detail, batchId }: { loading: boolean; det
       </div>
       <Link
         to={`/app/production/batches/${batchId}/record`}
-        className="inline-block text-xs font-medium text-primary-600 hover:underline"
+        className="inline-block text-xs font-medium text-primary-600 hover:underline dark:text-primary-400"
       >
         Lihat dokumen Catatan Pengolahan Bets lengkap &rarr;
       </Link>

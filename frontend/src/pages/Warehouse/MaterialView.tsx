@@ -89,13 +89,13 @@ const MaterialView: React.FC = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'raw_materials':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
       case 'chemical_materials':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
       case 'packaging_materials':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -122,11 +122,11 @@ const MaterialView: React.FC = () => {
 
   if (error || !material) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">{error || 'Material not found'}</p>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
+        <p className="text-red-800 dark:text-red-300">{error || 'Material not found'}</p>
         <button
           onClick={() => navigate('/app/warehouse/materials/list')}
-          className="mt-2 text-blue-600 hover:text-blue-800"
+          className="mt-2 text-blue-600 hover:text-blue-800 dark:text-blue-400"
         >
           ← Back to Materials List
         </button>
@@ -141,14 +141,14 @@ const MaterialView: React.FC = () => {
         <div className="flex items-center space-x-4">
           <button
             onClick={() => navigate('/app/warehouse/materials/list')}
-            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-1" />
             Back to Materials
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{material.name}</h1>
-            <p className="text-gray-600">Material Code: {material.code}</p>
+            <p className="text-gray-600 dark:text-gray-300">Material Code: {material.code}</p>
           </div>
         </div>
         <div className="flex space-x-3">
@@ -254,7 +254,7 @@ const MaterialView: React.FC = () => {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-500 dark:text-gray-400">Active Status</span>
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                  material.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  material.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                 }`}>
                   {material.is_active ? 'Active' : 'Inactive'}
                 </span>
@@ -262,7 +262,7 @@ const MaterialView: React.FC = () => {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-500 dark:text-gray-400">Hazardous</span>
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                  material.is_hazardous ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  material.is_hazardous ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                 }`}>
                   {material.is_hazardous ? 'Yes' : 'No'}
                 </span>

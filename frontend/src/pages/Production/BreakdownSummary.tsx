@@ -59,26 +59,26 @@ const BreakdownSummary: React.FC = () => {
   if (!data) {
     return (
       <div className="p-6">
-        <p className="text-red-600">Failed to load data</p>
+        <p className="text-red-600 dark:text-red-400">Failed to load data</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-slate-50 min-h-screen">
+    <div className="p-6 bg-slate-50 min-h-screen dark:bg-slate-900">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
             <Link
               to="/app/production/work-orders-monitoring"
-              className="text-slate-600 hover:text-slate-800"
+              className="text-slate-600 hover:text-slate-800 dark:text-slate-300"
             >
               <ArrowLeftIcon className="h-5 w-5" />
             </Link>
-            <h1 className="text-2xl font-bold text-slate-800">Machine Breakdown Impact</h1>
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Machine Breakdown Impact</h1>
           </div>
-          <p className="text-slate-500">SPK affected by machine breakdowns</p>
+          <p className="text-slate-500 dark:text-slate-400">SPK affected by machine breakdowns</p>
         </div>
       </div>
 
@@ -86,42 +86,42 @@ const BreakdownSummary: React.FC = () => {
       <div className="grid grid-cols-3 gap-6 mb-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 bg-red-100 rounded-lg">
-              <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
+            <div className="p-3 bg-red-100 rounded-lg dark:bg-red-900/30">
+              <ExclamationTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-500">Affected SPK</p>
-              <p className="text-3xl font-bold text-red-600">{data.total_affected_wos}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Affected SPK</p>
+              <p className="text-3xl font-bold text-red-600 dark:text-red-400">{data.total_affected_wos}</p>
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <ClockIcon className="h-6 w-6 text-orange-600" />
+            <div className="p-3 bg-orange-100 rounded-lg dark:bg-orange-900/30">
+              <ClockIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-500">Total Breakdown Time</p>
-              <p className="text-3xl font-bold text-orange-600">{data.total_breakdown_hours}h</p>
-              <p className="text-xs text-slate-500">{data.total_breakdown_minutes} minutes</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Total Breakdown Time</p>
+              <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{data.total_breakdown_hours}h</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{data.total_breakdown_minutes} minutes</p>
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <ChartBarIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-3 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+              <ChartBarIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-500">Avg Breakdown per WO</p>
-              <p className="text-3xl font-bold text-blue-600">
+              <p className="text-sm text-slate-500 dark:text-slate-400">Avg Breakdown per WO</p>
+              <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                 {data.total_affected_wos > 0 
                   ? Math.round(data.total_breakdown_minutes / data.total_affected_wos)
                   : 0}
               </p>
-              <p className="text-xs text-slate-500">minutes</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">minutes</p>
             </div>
           </div>
         </div>
@@ -129,58 +129,58 @@ const BreakdownSummary: React.FC = () => {
 
       {/* Affected SPK Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-800">Top 20 Most Affected SPK</h2>
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Top 20 Most Affected SPK</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-50">
+            <thead className="bg-slate-50 dark:bg-slate-900">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">Rank</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">WO Number</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">Product</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">Machine</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Status</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Progress</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Breakdown Time</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Required Date</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Rank</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">WO Number</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Product</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Machine</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Status</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Progress</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Breakdown Time</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Required Date</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {data.affected_work_orders.map((wo, index) => (
-                <tr key={wo.wo_number} className="hover:bg-slate-50">
+                <tr key={wo.wo_number} className="hover:bg-slate-50 dark:hover:bg-slate-800">
                   <td className="px-4 py-3">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                       index === 0 ? 'bg-red-500 text-white' :
                       index === 1 ? 'bg-orange-500 text-white' :
                       index === 2 ? 'bg-yellow-500 text-white' :
-                      'bg-slate-200 text-slate-600'
+                      'bg-slate-200 text-slate-600 dark:text-slate-300 dark:bg-slate-700'
                     }`}>
                       {index + 1}
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="font-medium text-blue-600">{wo.wo_number}</span>
+                    <span className="font-medium text-blue-600 dark:text-blue-400">{wo.wo_number}</span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-sm text-slate-700">{wo.product_name}</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-200">{wo.product_name}</span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <CogIcon className="h-4 w-4 text-slate-400" />
-                      <span className="text-sm text-slate-700">{wo.machine_name}</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-200">{wo.machine_name}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                      wo.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'
+                      wo.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
                     }`}>
                       {wo.status}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-slate-200 rounded-full h-2">
+                      <div className="flex-1 bg-slate-200 rounded-full h-2 dark:bg-slate-700">
                         <div
                           className={`h-2 rounded-full ${
                             wo.progress_percentage >= 75 ? 'bg-green-500' :
@@ -191,19 +191,19 @@ const BreakdownSummary: React.FC = () => {
                           style={{ width: `${wo.progress_percentage}%` }}
                         ></div>
                       </div>
-                      <span className="text-sm font-medium text-slate-700 w-12 text-right">
+                      <span className="text-sm font-medium text-slate-700 w-12 text-right dark:text-slate-200">
                         {wo.progress_percentage}%
                       </span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <div className="flex flex-col items-center">
-                      <span className="text-lg font-bold text-red-600">{wo.breakdown_minutes}</span>
-                      <span className="text-xs text-slate-500">minutes</span>
+                      <span className="text-lg font-bold text-red-600 dark:text-red-400">{wo.breakdown_minutes}</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">minutes</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className="text-sm text-slate-700">
+                    <span className="text-sm text-slate-700 dark:text-slate-200">
                       {wo.required_date ? new Date(wo.required_date).toLocaleDateString('id-ID') : '-'}
                     </span>
                   </td>
@@ -214,8 +214,8 @@ const BreakdownSummary: React.FC = () => {
                   <td colSpan={8} className="px-4 py-8 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <ExclamationTriangleIcon className="h-12 w-12 text-green-500" />
-                      <p className="text-green-600 font-medium">No breakdowns detected!</p>
-                      <p className="text-sm text-slate-500">All SPK are running smoothly</p>
+                      <p className="text-green-600 font-medium dark:text-green-400">No breakdowns detected!</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">All SPK are running smoothly</p>
                     </div>
                   </td>
                 </tr>
@@ -226,7 +226,7 @@ const BreakdownSummary: React.FC = () => {
       </div>
 
       {/* Period Info */}
-      <div className="mt-4 text-center text-sm text-slate-500">
+      <div className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">
         Data period: {new Date(data.date_from).toLocaleDateString('id-ID')} - {new Date(data.date_to).toLocaleDateString('id-ID')}
       </div>
     </div>

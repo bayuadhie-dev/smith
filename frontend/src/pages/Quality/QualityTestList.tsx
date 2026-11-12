@@ -83,18 +83,18 @@ export default function QualityTestList() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'critical': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
+      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800';
+      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-700';
     }
   };
 
   const getPassRateColor = (rate: number) => {
-    if (rate >= 95) return 'text-green-600';
-    if (rate >= 85) return 'text-yellow-600';
-    return 'text-red-600';
+    if (rate >= 95) return 'text-green-600 dark:text-green-400';
+    if (rate >= 85) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
   };
 
   if (isLoading) {
@@ -142,10 +142,10 @@ export default function QualityTestList() {
 
       {/* Critical Alerts */}
       {dashboardData?.summary.critical_alerts > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
           <div className="flex items-center mb-3">
             <BellIcon className="h-5 w-5 text-red-500 mr-2" />
-            <h3 className="text-lg font-semibold text-red-800">
+            <h3 className="text-lg font-semibold text-red-800 dark:text-red-300">
               {dashboardData.summary.critical_alerts} Critical Quality Alert{dashboardData.summary.critical_alerts > 1 ? 's' : ''}
             </h3>
           </div>
@@ -207,7 +207,7 @@ export default function QualityTestList() {
             </div>
             <ExclamationTriangleIcon className="h-8 w-8 text-yellow-500" />
           </div>
-          <div className="mt-2 text-sm text-red-600">
+          <div className="mt-2 text-sm text-red-600 dark:text-red-400">
             {dashboardData?.summary.critical_alerts || 0} critical
           </div>
         </div>
@@ -220,7 +220,7 @@ export default function QualityTestList() {
             </div>
             <ClockIcon className="h-8 w-8 text-purple-500" />
           </div>
-          <div className="mt-2 text-sm text-red-600">
+          <div className="mt-2 text-sm text-red-600 dark:text-red-400">
             {dashboardData?.summary.overdue_capas || 0} overdue
           </div>
         </div>
@@ -287,7 +287,7 @@ export default function QualityTestList() {
         <Link to="/app/quality-enhanced/alerts" className="group bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between mb-4">
             <BellIcon className="h-8 w-8 text-yellow-500" />
-            <span className="text-xs px-2 py-1 bg-red-100 text-red-800 rounded-full">
+            <span className="text-xs px-2 py-1 bg-red-100 text-red-800 rounded-full dark:bg-red-900/30 dark:text-red-300">
               {dashboardData?.summary.active_alerts || 0}
             </span>
           </div>
@@ -319,7 +319,7 @@ export default function QualityTestList() {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Quality Alerts</h3>
-            <Link to="/app/quality-enhanced/alerts" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            <Link to="/app/quality-enhanced/alerts" className="text-blue-600 hover:text-blue-800 text-sm font-medium dark:text-blue-400">
               View All
             </Link>
           </div>

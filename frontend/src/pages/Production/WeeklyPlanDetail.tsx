@@ -65,10 +65,10 @@ interface Machine {
 }
 
 const MATERIAL_STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-gray-100 text-gray-800',
-  available: 'bg-green-100 text-green-800',
-  shortage: 'bg-red-100 text-red-800',
-  no_bom: 'bg-yellow-100 text-yellow-800',
+  pending: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+  available: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  shortage: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  no_bom: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
 };
 
 const MATERIAL_STATUS_LABELS: Record<string, string> = {
@@ -264,7 +264,7 @@ const WeeklyPlanDetail: React.FC = () => {
         </button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <CalendarDaysIcon className="h-7 w-7 text-blue-600" />
+            <CalendarDaysIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
             {plan.plan_number}
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
@@ -274,11 +274,11 @@ const WeeklyPlanDetail: React.FC = () => {
         
         {/* Status Badge */}
         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-          plan.status === 'draft' ? 'bg-gray-100 text-gray-800' :
-          plan.status === 'submitted' ? 'bg-yellow-100 text-yellow-800' :
-          plan.status === 'approved' ? 'bg-blue-100 text-blue-800' :
-          plan.status === 'in_progress' ? 'bg-green-100 text-green-800' :
-          'bg-gray-100 text-gray-800'
+          plan.status === 'draft' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100' :
+          plan.status === 'submitted' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+          plan.status === 'approved' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+          plan.status === 'in_progress' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+          'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
         }`}>
           {plan.status.toUpperCase()}
         </span>
@@ -388,9 +388,9 @@ const WeeklyPlanDetail: React.FC = () => {
                   <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        item.priority === 1 ? 'bg-red-100 text-red-800' :
-                        item.priority === 2 ? 'bg-orange-100 text-orange-800' :
-                        'bg-gray-100 text-gray-800'
+                        item.priority === 1 ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                        item.priority === 2 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' :
+                        'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
                       }`}>
                         #{item.priority}
                       </span>
@@ -424,7 +424,7 @@ const WeeklyPlanDetail: React.FC = () => {
                       {item.wo_number ? (
                         <Link
                           to={`/app/production/work-orders/${item.work_order_id}`}
-                          className="text-blue-600 hover:text-blue-800 font-medium"
+                          className="text-blue-600 hover:text-blue-800 font-medium dark:text-blue-400"
                         >
                           {item.wo_number}
                         </Link>
@@ -436,7 +436,7 @@ const WeeklyPlanDetail: React.FC = () => {
                       <td className="px-4 py-3">
                         <button
                           onClick={() => handleDeleteItem(item.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 dark:text-red-400"
                         >
                           <TrashIcon className="h-5 w-5" />
                         </button>
@@ -554,7 +554,7 @@ const WeeklyPlanDetail: React.FC = () => {
       {showShortageModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-4">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-red-600">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-red-600 dark:text-red-400">
               <ExclamationTriangleIcon className="h-5 w-5" />
               Material Shortage - {showShortageModal.product_name}
             </h3>
@@ -562,7 +562,7 @@ const WeeklyPlanDetail: React.FC = () => {
             {showShortageModal.shortage_items && (
               <div className="space-y-3">
                 {JSON.parse(showShortageModal.shortage_items).map((item: any, idx: number) => (
-                  <div key={idx} className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div key={idx} className="p-3 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-800">
                     <p className="font-medium">{item.material_name}</p>
                     <p className="text-sm text-gray-600 dark:text-gray-300">{item.material_code}</p>
                     <div className="grid grid-cols-3 gap-2 mt-2 text-sm">
@@ -576,7 +576,7 @@ const WeeklyPlanDetail: React.FC = () => {
                       </div>
                       <div>
                         <span className="text-gray-500 dark:text-gray-400">Kurang:</span>
-                        <span className="font-medium ml-1 text-red-600">{item.shortage.toLocaleString()}</span>
+                        <span className="font-medium ml-1 text-red-600 dark:text-red-400">{item.shortage.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>

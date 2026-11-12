@@ -55,13 +55,13 @@ const movementTypeLabels: Record<string, string> = {
 };
 
 const movementTypeColors: Record<string, string> = {
-  stock_in: 'bg-green-100 text-green-800',
-  receive: 'bg-green-100 text-green-800',
-  stock_out: 'bg-red-100 text-red-800',
-  issue: 'bg-red-100 text-red-800',
-  transfer: 'bg-blue-100 text-blue-800',
-  adjust: 'bg-yellow-100 text-yellow-800',
-  production_receipt: 'bg-emerald-100 text-emerald-800'
+  stock_in: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  receive: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  stock_out: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  issue: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  transfer: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  adjust: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+  production_receipt: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
 };
 
 const referenceTypeLabels: Record<string, string> = {
@@ -134,8 +134,8 @@ const MovementDetail: React.FC = () => {
   if (error || !data) {
     return (
       <div className="space-y-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <p className="text-red-700">{error || 'Data tidak ditemukan'}</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center dark:bg-red-900/20 dark:border-red-800">
+          <p className="text-red-700 dark:text-red-300">{error || 'Data tidak ditemukan'}</p>
           <button onClick={() => navigate('/app/warehouse/movements')} className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
             Kembali ke Daftar
           </button>
@@ -144,7 +144,7 @@ const MovementDetail: React.FC = () => {
     );
   }
 
-  const typeColor = movementTypeColors[data.movement_type] || 'bg-gray-100 text-gray-800';
+  const typeColor = movementTypeColors[data.movement_type] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
   const typeLabel = movementTypeLabels[data.movement_type] || data.movement_type;
 
   return (
@@ -211,7 +211,7 @@ const MovementDetail: React.FC = () => {
                   <MapPinIcon className="h-5 w-5 text-gray-400" />
                   <div className="flex items-center gap-2 flex-wrap">
                     {data.from_location && (
-                      <span className="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-sm font-medium">
+                      <span className="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-sm font-medium dark:bg-red-900/20 dark:text-red-300">
                         Dari: {data.from_location.location_code} ({data.from_location.zone_name})
                       </span>
                     )}
@@ -219,12 +219,12 @@ const MovementDetail: React.FC = () => {
                       <ArrowRightIcon className="h-4 w-4 text-gray-400" />
                     )}
                     {data.to_location && (
-                      <span className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium">
+                      <span className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium dark:bg-green-900/20 dark:text-green-300">
                         Ke: {data.to_location.location_code} ({data.to_location.zone_name})
                       </span>
                     )}
                     {!data.from_location && !data.to_location && data.location && (
-                      <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium">
+                      <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium dark:bg-blue-900/20 dark:text-blue-300">
                         Lokasi: {data.location.location_code} ({data.location.zone_name})
                       </span>
                     )}
@@ -248,7 +248,7 @@ const MovementDetail: React.FC = () => {
           {/* Batch & Tracking */}
           {(data.batch_number || data.lot_number || data.serial_number || data.expiry_date) && (
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
                   <TagIcon className="h-4 w-4" /> Informasi Batch & Tracking
                 </h3>
@@ -287,7 +287,7 @@ const MovementDetail: React.FC = () => {
         <div className="space-y-6">
           {/* Cost Info */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100">
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
                 <CurrencyDollarIcon className="h-4 w-4" /> Informasi Biaya
               </h3>
@@ -303,7 +303,7 @@ const MovementDetail: React.FC = () => {
               </div>
               <div className="border-t pt-3 flex justify-between">
                 <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Total</span>
-                <span className="text-sm font-bold text-blue-700">{data.total_cost ? formatCurrency(data.total_cost) : '-'}</span>
+                <span className="text-sm font-bold text-blue-700 dark:text-blue-300">{data.total_cost ? formatCurrency(data.total_cost) : '-'}</span>
               </div>
             </div>
           </div>
@@ -311,7 +311,7 @@ const MovementDetail: React.FC = () => {
           {/* Reference */}
           {(data.reference_type || data.reference_number) && (
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
                   <DocumentTextIcon className="h-4 w-4" /> Referensi
                 </h3>
@@ -341,7 +341,7 @@ const MovementDetail: React.FC = () => {
 
           {/* Audit Info */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100">
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
                 <ClockIcon className="h-4 w-4" /> Audit
               </h3>

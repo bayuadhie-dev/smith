@@ -61,7 +61,7 @@ function TreeNode({
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {children.length > 0 ? (
-            <button onClick={() => setExpanded(!expanded)} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+            <button onClick={() => setExpanded(!expanded)} className="text-gray-400 hover:text-gray-600 flex-shrink-0 dark:hover:text-white">
               {expanded ? <ChevronDownIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />}
             </button>
           ) : (
@@ -84,14 +84,14 @@ function TreeNode({
                 {item.item_code} - {item.item_name}
               </span>
             )}
-            {isSubAssembly && <span className="ml-2 text-xs text-amber-600">(WIP - actual opsional)</span>}
+            {isSubAssembly && <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">(WIP - actual opsional)</span>}
             {!isSubAssembly && item.suggested_actual != null && (
-              <div className="text-xs text-primary-600">
+              <div className="text-xs text-primary-600 dark:text-primary-400">
                 Disarankan dari Material Issue: {item.suggested_actual.toLocaleString()} {item.uom} (sudah diisi otomatis, boleh diedit)
               </div>
             )}
             {item.suggested_actual_note && (
-              <div className="text-xs text-amber-600">{item.suggested_actual_note}</div>
+              <div className="text-xs text-amber-600 dark:text-amber-400">{item.suggested_actual_note}</div>
             )}
             {item.actual_batch_number && (
               <div className="text-xs text-gray-500 dark:text-gray-400">Batch dipakai: {item.actual_batch_number}</div>
@@ -99,7 +99,7 @@ function TreeNode({
           </div>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
-          <span className="text-sm text-gray-500 w-28 text-right">
+          <span className="text-sm text-gray-500 w-28 text-right dark:text-gray-400">
             {item.quantity_planned.toLocaleString()} {item.uom}
           </span>
           <NumberInput
@@ -128,7 +128,7 @@ export default function WorkOrderBomActualTree({ items, actualValues, onChangeAc
 
   return (
     <div>
-      <div className="flex justify-between text-xs font-medium text-gray-500 uppercase pb-2 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex justify-between text-xs font-medium text-gray-500 uppercase pb-2 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
         <span>Bahan</span>
         <span>Rencana / Aktual</span>
       </div>

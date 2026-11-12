@@ -202,35 +202,35 @@ export default function InProcessQC() {
     switch (status) {
       case 'passed':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
             <CheckCircleIcon className="w-3.5 h-3.5" />
             OK
           </span>
         );
       case 'warning':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
             <ExclamationTriangleIcon className="w-3.5 h-3.5" />
             Perhatian
           </span>
         );
       case 'critical':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
             <XCircleIcon className="w-3.5 h-3.5" />
             Kritis
           </span>
         );
       case 'inspecting':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
             <BeakerIcon className="w-3.5 h-3.5" />
             Sedang Inspeksi
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-100">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-100 dark:bg-gray-700">
             <ClockIcon className="w-3.5 h-3.5" />
             Belum Dicek
           </span>
@@ -250,7 +250,7 @@ export default function InProcessQC() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <CogIcon className="w-7 h-7 text-purple-600" />
+            <CogIcon className="w-7 h-7 text-purple-600 dark:text-purple-400" />
             QC Dalam Proses (IPQC)
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
@@ -264,52 +264,52 @@ export default function InProcessQC() {
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <WrenchScrewdriverIcon className="w-6 h-6 text-blue-600" />
+              <WrenchScrewdriverIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {processes.length}
               </p>
-              <p className="text-sm text-gray-500">Mesin Aktif</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Mesin Aktif</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <CheckCircleIcon className="w-6 h-6 text-green-600" />
+              <CheckCircleIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {processes.filter(p => p.qc_status === 'passed').length}
               </p>
-              <p className="text-sm text-gray-500">Status OK</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Status OK</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-              <ExclamationTriangleIcon className="w-6 h-6 text-yellow-600" />
+              <ExclamationTriangleIcon className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {processes.filter(p => p.qc_status === 'warning').length}
               </p>
-              <p className="text-sm text-gray-500">Perlu Perhatian</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Perlu Perhatian</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-              <XCircleIcon className="w-6 h-6 text-red-600" />
+              <XCircleIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {processes.filter(p => p.qc_status === 'critical').length}
               </p>
-              <p className="text-sm text-gray-500">Kritis</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Kritis</p>
             </div>
           </div>
         </div>
@@ -358,7 +358,7 @@ export default function InProcessQC() {
         ) : filteredProcesses.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <CogIcon className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">Tidak ada proses yang sedang berjalan</p>
+            <p className="text-gray-500 dark:text-gray-400">Tidak ada proses yang sedang berjalan</p>
           </div>
         ) : (
           filteredProcesses.map(process => (
@@ -374,7 +374,7 @@ export default function InProcessQC() {
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <p className="font-bold text-gray-900 dark:text-white">{process.machine_name}</p>
-                  <p className="text-sm text-gray-500">{process.wo_number}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{process.wo_number}</p>
                 </div>
                 {getStatusBadge(process.qc_status)}
               </div>
@@ -397,7 +397,7 @@ export default function InProcessQC() {
                 {process.defect_rate !== undefined && (
                   <div className="flex items-center gap-2 text-sm">
                     <ExclamationTriangleIcon className={`w-4 h-4 ${process.defect_rate > 2 ? 'text-red-500' : 'text-gray-400'}`} />
-                    <span className={process.defect_rate > 2 ? 'text-red-600 font-medium' : 'text-gray-600 dark:text-gray-300'}>
+                    <span className={process.defect_rate > 2 ? 'text-red-600 font-medium dark:text-red-400' : 'text-gray-600 dark:text-gray-300'}>
                       Defect Rate: {process.defect_rate}%
                     </span>
                   </div>
@@ -406,7 +406,7 @@ export default function InProcessQC() {
 
               {/* Progress Bar */}
               <div className="mb-4">
-                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                <div className="flex justify-between text-xs text-gray-500 mb-1 dark:text-gray-400">
                   <span>Progress</span>
                   <span>{Math.round((process.current_output / process.target_output) * 100)}%</span>
                 </div>
@@ -419,7 +419,7 @@ export default function InProcessQC() {
               </div>
 
               {process.last_inspection && (
-                <p className="text-xs text-gray-500 mb-3">
+                <p className="text-xs text-gray-500 mb-3 dark:text-gray-400">
                   <ClockIcon className="w-3.5 h-3.5 inline mr-1" />
                   Inspeksi terakhir: {new Date(process.last_inspection).toLocaleString('id-ID')}
                 </p>
@@ -443,7 +443,7 @@ export default function InProcessQC() {
           <div className="bg-white dark:bg-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <BeakerIcon className="w-6 h-6 text-purple-600" />
+                <BeakerIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 IPQC - {selectedProcess.machine_name}
               </h2>
               <p className="text-gray-500 dark:text-gray-400 mt-1">
@@ -475,15 +475,15 @@ export default function InProcessQC() {
                   {formData.parameter_checks.map((param, index) => (
                     <div key={index} className="grid grid-cols-4 gap-3 p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
                       <div>
-                        <label className="text-xs text-gray-500">Parameter</label>
+                        <label className="text-xs text-gray-500 dark:text-gray-400">Parameter</label>
                         <p className="font-medium text-gray-900 dark:text-white">{param.name}</p>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">Target</label>
+                        <label className="text-xs text-gray-500 dark:text-gray-400">Target</label>
                         <p className="font-medium text-gray-900 dark:text-white">{param.target}</p>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">Aktual</label>
+                        <label className="text-xs text-gray-500 dark:text-gray-400">Aktual</label>
                         <input
                           type="text"
                           value={param.actual}
@@ -493,14 +493,14 @@ export default function InProcessQC() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">Status</label>
+                        <label className="text-xs text-gray-500 dark:text-gray-400">Status</label>
                         <select
                           value={param.status}
                           onChange={(e) => updateParameterCheck(index, 'status', e.target.value)}
                           className={`w-full px-2 py-1 border rounded text-sm font-medium ${
-                            param.status === 'ok' ? 'border-green-300 bg-green-50 text-green-700' :
-                            param.status === 'warning' ? 'border-yellow-300 bg-yellow-50 text-yellow-700' :
-                            'border-red-300 bg-red-50 text-red-700'
+                            param.status === 'ok' ? 'border-green-300 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' :
+                            param.status === 'warning' ? 'border-yellow-300 bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300' :
+                            'border-red-300 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
                           }`}
                         >
                           <option value="ok">OK</option>
@@ -522,8 +522,8 @@ export default function InProcessQC() {
                   <div className="flex gap-2">
                     <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border-2 cursor-pointer ${
                       formData.visual_check === 'passed' 
-                        ? 'border-green-500 bg-green-50 text-green-700' 
-                        : 'border-gray-200 hover:border-green-300'
+                        ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' 
+                        : 'border-gray-200 hover:border-green-300 dark:border-gray-700'
                     }`}>
                       <input
                         type="radio"
@@ -536,8 +536,8 @@ export default function InProcessQC() {
                     </label>
                     <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border-2 cursor-pointer ${
                       formData.visual_check === 'failed' 
-                        ? 'border-red-500 bg-red-50 text-red-700' 
-                        : 'border-gray-200 hover:border-red-300'
+                        ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300' 
+                        : 'border-gray-200 hover:border-red-300 dark:border-gray-700'
                     }`}>
                       <input
                         type="radio"
@@ -605,8 +605,8 @@ export default function InProcessQC() {
                         key={defect}
                         className={`px-3 py-1.5 rounded-full text-sm cursor-pointer transition-colors ${
                           formData.defect_types.includes(defect)
-                            ? 'bg-red-100 text-red-700 border-2 border-red-300'
-                            : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200'
+                            ? 'bg-red-100 text-red-700 border-2 border-red-300 dark:bg-red-900/30 dark:text-red-300'
+                            : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200'
                         }`}
                       >
                         <input
@@ -666,7 +666,7 @@ export default function InProcessQC() {
                       className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                         formData.result === option.value
                           ? `border-${option.color}-500 bg-${option.color}-50 text-${option.color}-700`
-                          : 'border-gray-200 hover:border-gray-400'
+                          : 'border-gray-200 hover:border-gray-400 dark:border-gray-700'
                       }`}
                     >
                       <input

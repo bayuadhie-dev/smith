@@ -88,13 +88,13 @@ export default function ProductList() {
                       <div className="flex gap-2">
                         <Link
                           to={`/products/${product.id}/edit`}
-                          className="text-primary-600 hover:text-primary-900"
+                          className="text-primary-600 hover:text-primary-900 dark:text-primary-400"
                         >
                           <PencilIcon className="h-5 w-5" />
                         </Link>
                         <button
                           onClick={() => handleDelete(product.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 dark:text-red-400"
                         >
                           <TrashIcon className="h-5 w-5" />
                         </button>

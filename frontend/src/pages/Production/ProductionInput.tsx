@@ -419,14 +419,14 @@ const ProductionInput: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <Factory className="h-8 w-8 text-blue-600" />
+            <Factory className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Input Produksi Shift
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mt-2">Input data produksi per shift dan mesin dengan validasi otomatis</p>
         </div>
         <div className="flex items-center gap-4">
           {isDirty && (
-            <div className="flex items-center gap-2 text-orange-600">
+            <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400">
               <AlertTriangle className="h-4 w-4" />
               <span className="text-sm">Ada perubahan belum disimpan</span>
             </div>
@@ -444,9 +444,9 @@ const ProductionInput: React.FC = () => {
 
       {message && (
         <div className={`p-4 rounded-lg border-l-4 ${
-          message.type === 'success' ? 'bg-green-50 border-green-500 text-green-700' : 
-          message.type === 'warning' ? 'bg-yellow-50 border-yellow-500 text-yellow-700' : 
-          'bg-red-50 border-red-500 text-red-700'
+          message.type === 'success' ? 'bg-green-50 border-green-500 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 
+          message.type === 'warning' ? 'bg-yellow-50 border-yellow-500 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300' : 
+          'bg-red-50 border-red-500 text-red-700 dark:bg-red-900/20 dark:text-red-300'
         }`}>
           <div className="flex items-center gap-2">
             {message.type === 'success' && <CheckCircle className="h-5 w-5" />}
@@ -478,7 +478,7 @@ const ProductionInput: React.FC = () => {
                   value={formData.production_date}
                   onChange={(e) => handleInputChange('production_date', e.target.value)}
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    validationErrors.production_date ? 'border-red-500' : 'border-gray-300'
+                    validationErrors.production_date ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                   }`}
                   required
                 />
@@ -496,7 +496,7 @@ const ProductionInput: React.FC = () => {
                   value={formData.shift}
                   onChange={(e) => handleInputChange('shift', e.target.value)}
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    validationErrors.shift ? 'border-red-500' : 'border-gray-300'
+                    validationErrors.shift ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                   }`}
                   required
                 >
@@ -519,7 +519,7 @@ const ProductionInput: React.FC = () => {
                   value={formData.machine_id}
                   onChange={(e) => handleInputChange('machine_id', e.target.value)}
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    validationErrors.machine_id ? 'border-red-500' : 'border-gray-300'
+                    validationErrors.machine_id ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                   }`}
                   required
                 >
@@ -572,7 +572,7 @@ const ProductionInput: React.FC = () => {
                     setIsDirty(true);
                   }}
                   disabled={!formData.machine_id || !formData.production_date || !formData.shift}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-800 dark:border-gray-600"
                 >
                   <option value="">
                     {loadingBatches ? 'Memuat...' : (!formData.machine_id || !formData.production_date || !formData.shift)
@@ -743,7 +743,7 @@ const ProductionInput: React.FC = () => {
                       value={formData.downtime_mesin}
                       onChange={(e) => handleInputChange('downtime_mesin', e.target.value)}
                       placeholder="0"
-                      className="w-full px-2 py-1.5 text-sm border border-red-200 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-red-50"
+                      className="w-full px-2 py-1.5 text-sm border border-red-200 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-red-50 dark:bg-red-900/20 dark:border-red-800"
                     />
                   </div>
                   
@@ -756,20 +756,20 @@ const ProductionInput: React.FC = () => {
                       value={formData.downtime_operator}
                       onChange={(e) => handleInputChange('downtime_operator', e.target.value)}
                       placeholder="0"
-                      className="w-full px-2 py-1.5 text-sm border border-orange-200 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-orange-50"
+                      className="w-full px-2 py-1.5 text-sm border border-orange-200 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-800"
                     />
                   </div>
                   
                   {/* Raw Material - 0% */}
                   <div>
                     <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-                      Raw Material <span className="text-yellow-600">(0%)</span>
+                      Raw Material <span className="text-yellow-600 dark:text-yellow-400">(0%)</span>
                     </label>
                     <NumberInput
                       value={formData.downtime_material}
                       onChange={(e) => handleInputChange('downtime_material', e.target.value)}
                       placeholder="0"
-                      className="w-full px-2 py-1.5 text-sm border border-yellow-200 rounded-md focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 bg-yellow-50"
+                      className="w-full px-2 py-1.5 text-sm border border-yellow-200 rounded-md focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800"
                     />
                   </div>
                   
@@ -782,7 +782,7 @@ const ProductionInput: React.FC = () => {
                       value={formData.downtime_design}
                       onChange={(e) => handleInputChange('downtime_design', e.target.value)}
                       placeholder="0"
-                      className="w-full px-2 py-1.5 text-sm border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50"
+                      className="w-full px-2 py-1.5 text-sm border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800"
                     />
                   </div>
                   
@@ -808,7 +808,7 @@ const ProductionInput: React.FC = () => {
                       value={formData.idle_time}
                       onChange={(e) => handleInputChange('idle_time', e.target.value)}
                       placeholder="0"
-                      className="w-full px-2 py-1.5 text-sm border border-purple-200 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-purple-50"
+                      className="w-full px-2 py-1.5 text-sm border border-purple-200 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-800"
                     />
                   </div>
                 </div>
@@ -817,25 +817,25 @@ const ProductionInput: React.FC = () => {
                 <div className="mt-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
                   <div className="grid grid-cols-5 gap-2 text-xs">
                     <div className="text-center">
-                      <div className="font-medium text-red-600">Mesin</div>
+                      <div className="font-medium text-red-600 dark:text-red-400">Mesin</div>
                       <div className="text-gray-700 dark:text-gray-200">
                         {((parseInt(formData.downtime_mesin || '0') / parseInt(formData.planned_runtime || '480')) * 100).toFixed(1)}%
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="font-medium text-orange-600">Operator</div>
+                      <div className="font-medium text-orange-600 dark:text-orange-400">Operator</div>
                       <div className="text-gray-700 dark:text-gray-200">
                         {((parseInt(formData.downtime_operator || '0') / parseInt(formData.planned_runtime || '480')) * 100).toFixed(1)}%
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="font-medium text-yellow-600">Material</div>
+                      <div className="font-medium text-yellow-600 dark:text-yellow-400">Material</div>
                       <div className="text-gray-700 dark:text-gray-200">
                         {((parseInt(formData.downtime_material || '0') / parseInt(formData.planned_runtime || '480')) * 100).toFixed(1)}%
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="font-medium text-blue-600">Design</div>
+                      <div className="font-medium text-blue-600 dark:text-blue-400">Design</div>
                       <div className="text-gray-700 dark:text-gray-200">
                         {((parseInt(formData.downtime_design || '0') / parseInt(formData.planned_runtime || '480')) * 100).toFixed(1)}%
                       </div>
@@ -892,15 +892,15 @@ const ProductionInput: React.FC = () => {
           <div className="px-6 py-4 border-b">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                <Calculator className="h-5 w-5 text-blue-600" />
+                <Calculator className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 Metrics Otomatis & Performance
               </h3>
               <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                 metrics.isGoodPerformance 
-                  ? 'bg-green-100 text-green-800'
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                   : metrics.isWarningPerformance 
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-red-100 text-red-800'
+                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                  : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
               }`}>
                 {metrics.isGoodPerformance 
                   ? '🎯 Excellent Performance'
@@ -913,25 +913,25 @@ const ProductionInput: React.FC = () => {
           </div>
           <div className="p-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
-                <div className="text-3xl font-bold text-blue-600 mb-1">{metrics.qualityRate}%</div>
-                <div className="text-sm font-medium text-blue-700">Quality Rate</div>
-                <div className="text-xs text-blue-600 mt-1">Good / Actual</div>
+              <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="text-3xl font-bold text-blue-600 mb-1 dark:text-blue-400">{metrics.qualityRate}%</div>
+                <div className="text-sm font-medium text-blue-700 dark:text-blue-300">Quality Rate</div>
+                <div className="text-xs text-blue-600 mt-1 dark:text-blue-400">Good / Actual</div>
               </div>
-              <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
-                <div className="text-3xl font-bold text-green-600 mb-1">{metrics.efficiencyRate}%</div>
-                <div className="text-sm font-medium text-green-700">Efficiency Rate</div>
-                <div className="text-xs text-green-600 mt-1">Actual / Target</div>
+              <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="text-3xl font-bold text-green-600 mb-1 dark:text-green-400">{metrics.efficiencyRate}%</div>
+                <div className="text-sm font-medium text-green-700 dark:text-green-300">Efficiency Rate</div>
+                <div className="text-xs text-green-600 mt-1 dark:text-green-400">Actual / Target</div>
               </div>
-              <div className="text-center p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200">
-                <div className="text-3xl font-bold text-yellow-600 mb-1">{metrics.availabilityRate}%</div>
-                <div className="text-sm font-medium text-yellow-700">Availability Rate</div>
-                <div className="text-xs text-yellow-600 mt-1">Uptime / Planned</div>
+              <div className="text-center p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                <div className="text-3xl font-bold text-yellow-600 mb-1 dark:text-yellow-400">{metrics.availabilityRate}%</div>
+                <div className="text-sm font-medium text-yellow-700 dark:text-yellow-300">Availability Rate</div>
+                <div className="text-xs text-yellow-600 mt-1 dark:text-yellow-400">Uptime / Planned</div>
               </div>
-              <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
-                <div className="text-3xl font-bold text-purple-600 mb-1">{metrics.oeeScore}%</div>
-                <div className="text-sm font-medium text-purple-700">OEE Score</div>
-                <div className="text-xs text-purple-600 mt-1">Overall Equipment Effectiveness</div>
+              <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200 dark:border-purple-800">
+                <div className="text-3xl font-bold text-purple-600 mb-1 dark:text-purple-400">{metrics.oeeScore}%</div>
+                <div className="text-sm font-medium text-purple-700 dark:text-purple-300">OEE Score</div>
+                <div className="text-xs text-purple-600 mt-1 dark:text-purple-400">Overall Equipment Effectiveness</div>
               </div>
             </div>
             
@@ -1055,7 +1055,7 @@ const ProductionInput: React.FC = () => {
             </button>
             
             {Object.keys(validationErrors).length > 0 && (
-              <div className="text-red-600 text-sm flex items-center gap-2">
+              <div className="text-red-600 text-sm flex items-center gap-2 dark:text-red-400">
                 <XCircle className="h-4 w-4" />
                 {Object.keys(validationErrors).length} error(s) found
               </div>
@@ -1067,7 +1067,7 @@ const ProductionInput: React.FC = () => {
             disabled={loading || Object.keys(validationErrors).length > 0}
             className={`px-8 py-3 rounded-md font-medium flex items-center gap-2 ${
               loading || Object.keys(validationErrors).length > 0
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400'
                 : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500'
             }`}
           >

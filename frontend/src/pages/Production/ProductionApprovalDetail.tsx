@@ -273,8 +273,8 @@ const ProductionApprovalDetail: React.FC = () => {
   if (!approval) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">Approval tidak ditemukan</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
+          <p className="text-red-800 dark:text-red-300">Approval tidak ditemukan</p>
         </div>
       </div>
     );
@@ -300,19 +300,19 @@ const ProductionApprovalDetail: React.FC = () => {
         {/* Status Badge */}
         <div className="flex items-center gap-2">
           {approval.forwarded_to_finance ? (
-            <span className="px-4 py-2 bg-purple-100 text-purple-800 rounded-full font-medium">
+            <span className="px-4 py-2 bg-purple-100 text-purple-800 rounded-full font-medium dark:bg-purple-900/30 dark:text-purple-300">
               ✓ Forwarded to Finance
             </span>
           ) : approval.status === 'approved' ? (
-            <span className="px-4 py-2 bg-green-100 text-green-800 rounded-full font-medium">
+            <span className="px-4 py-2 bg-green-100 text-green-800 rounded-full font-medium dark:bg-green-900/30 dark:text-green-300">
               ✓ Disetujui
             </span>
           ) : approval.status === 'rejected' ? (
-            <span className="px-4 py-2 bg-red-100 text-red-800 rounded-full font-medium">
+            <span className="px-4 py-2 bg-red-100 text-red-800 rounded-full font-medium dark:bg-red-900/30 dark:text-red-300">
               ✗ Ditolak
             </span>
           ) : (
-            <span className="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-full font-medium">
+            <span className="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-full font-medium dark:bg-yellow-900/30 dark:text-yellow-300">
               ⏳ Menunggu Approval
             </span>
           )}
@@ -355,7 +355,7 @@ const ProductionApprovalDetail: React.FC = () => {
           {approval.status === 'pending' && !editing && (
             <button
               onClick={() => setEditing(true)}
-              className="flex items-center gap-1 px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-lg"
+              className="flex items-center gap-1 px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-lg dark:text-blue-400"
             >
               <PencilIcon className="h-4 w-4" />
               Edit
@@ -440,24 +440,24 @@ const ProductionApprovalDetail: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-green-50 p-4 rounded-lg">
-              <p className="text-sm text-green-600">Qty Good</p>
-              <p className="text-2xl font-bold text-green-800">{approval.quantity_good.toLocaleString()}</p>
+            <div className="bg-green-50 p-4 rounded-lg dark:bg-green-900/20">
+              <p className="text-sm text-green-600 dark:text-green-400">Qty Good</p>
+              <p className="text-2xl font-bold text-green-800 dark:text-green-300">{approval.quantity_good.toLocaleString()}</p>
               {hasChanges && approval.original_quantity_good && (
                 <p className="text-xs text-gray-500 dark:text-gray-400">Original: {approval.original_quantity_good.toLocaleString()}</p>
               )}
             </div>
-            <div className="bg-red-50 p-4 rounded-lg">
-              <p className="text-sm text-red-600">Qty Reject</p>
-              <p className="text-2xl font-bold text-red-800">{approval.quantity_reject.toLocaleString()}</p>
+            <div className="bg-red-50 p-4 rounded-lg dark:bg-red-900/20">
+              <p className="text-sm text-red-600 dark:text-red-400">Qty Reject</p>
+              <p className="text-2xl font-bold text-red-800 dark:text-red-300">{approval.quantity_reject.toLocaleString()}</p>
             </div>
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-sm text-blue-600">Total Produced</p>
-              <p className="text-2xl font-bold text-blue-800">{approval.quantity_produced.toLocaleString()}</p>
+            <div className="bg-blue-50 p-4 rounded-lg dark:bg-blue-900/20">
+              <p className="text-sm text-blue-600 dark:text-blue-400">Total Produced</p>
+              <p className="text-2xl font-bold text-blue-800 dark:text-blue-300">{approval.quantity_produced.toLocaleString()}</p>
             </div>
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <p className="text-sm text-purple-600">Quality Rate</p>
-              <p className="text-2xl font-bold text-purple-800">{approval.quality_rate}%</p>
+            <div className="bg-purple-50 p-4 rounded-lg dark:bg-purple-900/20">
+              <p className="text-sm text-purple-600 dark:text-purple-400">Quality Rate</p>
+              <p className="text-2xl font-bold text-purple-800 dark:text-purple-300">{approval.quality_rate}%</p>
             </div>
           </div>
         )}
@@ -477,18 +477,18 @@ const ProductionApprovalDetail: React.FC = () => {
           </div>
           
           {/* Production Summary */}
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
-                <span className="text-blue-600">Pack per Karton:</span>
+                <span className="text-blue-600 dark:text-blue-400">Pack per Karton:</span>
                 <span className="ml-2 font-bold">{approval.material_usage[0]?.packs_per_karton || 1}</span>
               </div>
               <div>
-                <span className="text-blue-600">Total Produksi:</span>
+                <span className="text-blue-600 dark:text-blue-400">Total Produksi:</span>
                 <span className="ml-2 font-bold">{approval.material_usage[0]?.qty_produced_packs?.toLocaleString()} pack</span>
               </div>
               <div>
-                <span className="text-blue-600">Setara Karton:</span>
+                <span className="text-blue-600 dark:text-blue-400">Setara Karton:</span>
                 <span className="ml-2 font-bold">{approval.material_usage[0]?.qty_produced_kartons?.toLocaleString()} karton</span>
               </div>
             </div>
@@ -504,10 +504,10 @@ const ProductionApprovalDetail: React.FC = () => {
                   <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipe</th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty/Karton</th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty/Pack</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-blue-600 uppercase">Qty Dibutuhkan</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-blue-600 uppercase dark:text-blue-400">Qty Dibutuhkan</th>
                   <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">UOM</th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-orange-600 uppercase">Scrap %</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-green-600 uppercase">Qty Efektif</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-orange-600 uppercase dark:text-orange-400">Scrap %</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-green-600 uppercase dark:text-green-400">Qty Efektif</th>
                   <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Critical</th>
                 </tr>
               </thead>
@@ -521,20 +521,20 @@ const ProductionApprovalDetail: React.FC = () => {
                     </td>
                     <td className="px-3 py-2 text-center">
                       <span className={`px-2 py-0.5 text-xs rounded-full ${
-                        mat.material_type === 'wip' ? 'bg-purple-100 text-purple-700' :
-                        mat.material_type === 'packaging materials' ? 'bg-blue-100 text-blue-700' :
-                        mat.material_type === 'chemical materials' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-gray-100 text-gray-700'
+                        mat.material_type === 'wip' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' :
+                        mat.material_type === 'packaging materials' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+                        mat.material_type === 'chemical materials' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                        'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
                       }`}>
                         {mat.material_type || mat.category}
                       </span>
                     </td>
                     <td className="px-3 py-2 text-sm text-right">{mat.qty_per_karton?.toLocaleString(undefined, {maximumFractionDigits: 4})}</td>
                     <td className="px-3 py-2 text-sm text-right">{mat.qty_per_pack?.toLocaleString(undefined, {maximumFractionDigits: 4})}</td>
-                    <td className="px-3 py-2 text-sm text-right font-medium text-blue-600">{mat.qty_needed?.toLocaleString(undefined, {maximumFractionDigits: 4})}</td>
+                    <td className="px-3 py-2 text-sm text-right font-medium text-blue-600 dark:text-blue-400">{mat.qty_needed?.toLocaleString(undefined, {maximumFractionDigits: 4})}</td>
                     <td className="px-3 py-2 text-sm text-center">{mat.uom}</td>
-                    <td className="px-3 py-2 text-sm text-center text-orange-600">{mat.scrap_percent}%</td>
-                    <td className="px-3 py-2 text-sm text-right font-bold text-green-700">{mat.qty_effective?.toLocaleString(undefined, {maximumFractionDigits: 4})}</td>
+                    <td className="px-3 py-2 text-sm text-center text-orange-600 dark:text-orange-400">{mat.scrap_percent}%</td>
+                    <td className="px-3 py-2 text-sm text-right font-bold text-green-700 dark:text-green-300">{mat.qty_effective?.toLocaleString(undefined, {maximumFractionDigits: 4})}</td>
                     <td className="px-3 py-2 text-center">
                       {mat.is_critical && <span className="text-red-500 font-bold">⚠</span>}
                     </td>
@@ -569,18 +569,18 @@ const ProductionApprovalDetail: React.FC = () => {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {approval.production_summary.consumption_per_grade.map((row: any, idx: number) => (
                   <tr key={idx} className={`${
-                    row.grade === 'TOTAL' ? 'bg-blue-50 font-bold' :
-                    row.color === 'green' ? 'bg-green-50' :
-                    row.color === 'yellow' ? 'bg-yellow-50' :
-                    row.color === 'red' ? 'bg-red-50' :
-                    row.color === 'gray' ? 'bg-gray-50' : ''
+                    row.grade === 'TOTAL' ? 'bg-blue-50 font-bold dark:bg-blue-900/20' :
+                    row.color === 'green' ? 'bg-green-50 dark:bg-green-900/20' :
+                    row.color === 'yellow' ? 'bg-yellow-50 dark:bg-yellow-900/20' :
+                    row.color === 'red' ? 'bg-red-50 dark:bg-red-900/20' :
+                    row.color === 'gray' ? 'bg-gray-50 dark:bg-gray-900' : ''
                   }`}>
                     <td className={`px-4 py-2 text-sm font-medium ${
-                      row.color === 'green' ? 'text-green-700' :
-                      row.color === 'yellow' ? 'text-yellow-700' :
-                      row.color === 'red' ? 'text-red-700' :
-                      row.color === 'gray' ? 'text-gray-700' :
-                      row.color === 'blue' ? 'text-blue-700' : 'text-gray-900'
+                      row.color === 'green' ? 'text-green-700 dark:text-green-300' :
+                      row.color === 'yellow' ? 'text-yellow-700 dark:text-yellow-300' :
+                      row.color === 'red' ? 'text-red-700 dark:text-red-300' :
+                      row.color === 'gray' ? 'text-gray-700 dark:text-gray-200' :
+                      row.color === 'blue' ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white'
                     }`}>{row.grade}</td>
                     <td className="px-4 py-2 text-sm text-right">{row.qty_pack?.toLocaleString()}</td>
                     <td className="px-4 py-2 text-sm text-right">{row.kain_kg?.toLocaleString(undefined, {maximumFractionDigits: 4})}</td>
@@ -596,21 +596,21 @@ const ProductionApprovalDetail: React.FC = () => {
           {/* Consumption Totals Summary */}
           {approval.production_summary.consumption_totals && (
             <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-amber-50 p-3 rounded-lg border border-amber-200">
-                <p className="text-xs text-amber-600">Total Kain</p>
-                <p className="text-lg font-bold text-amber-800">{approval.production_summary.consumption_totals.total_kain_kg?.toLocaleString(undefined, {maximumFractionDigits: 4})} kg</p>
+              <div className="bg-amber-50 p-3 rounded-lg border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
+                <p className="text-xs text-amber-600 dark:text-amber-400">Total Kain</p>
+                <p className="text-lg font-bold text-amber-800 dark:text-amber-300">{approval.production_summary.consumption_totals.total_kain_kg?.toLocaleString(undefined, {maximumFractionDigits: 4})} kg</p>
               </div>
-              <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                <p className="text-xs text-purple-600">Total Ingredient</p>
-                <p className="text-lg font-bold text-purple-800">{approval.production_summary.consumption_totals.total_ingredient_kg?.toLocaleString(undefined, {maximumFractionDigits: 4})} kg</p>
+              <div className="bg-purple-50 p-3 rounded-lg border border-purple-200 dark:bg-purple-900/20 dark:border-purple-800">
+                <p className="text-xs text-purple-600 dark:text-purple-400">Total Ingredient</p>
+                <p className="text-lg font-bold text-purple-800 dark:text-purple-300">{approval.production_summary.consumption_totals.total_ingredient_kg?.toLocaleString(undefined, {maximumFractionDigits: 4})} kg</p>
               </div>
-              <div className="bg-cyan-50 p-3 rounded-lg border border-cyan-200">
-                <p className="text-xs text-cyan-600">Total Packaging</p>
-                <p className="text-lg font-bold text-cyan-800">{approval.production_summary.consumption_totals.total_packaging_pcs?.toLocaleString()} pcs</p>
+              <div className="bg-cyan-50 p-3 rounded-lg border border-cyan-200 dark:bg-cyan-900/20 dark:border-cyan-800">
+                <p className="text-xs text-cyan-600 dark:text-cyan-400">Total Packaging</p>
+                <p className="text-lg font-bold text-cyan-800 dark:text-cyan-300">{approval.production_summary.consumption_totals.total_packaging_pcs?.toLocaleString()} pcs</p>
               </div>
-              <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
-                <p className="text-xs text-pink-600">Total Stiker</p>
-                <p className="text-lg font-bold text-pink-800">{approval.production_summary.consumption_totals.total_stiker_pcs?.toLocaleString()} pcs</p>
+              <div className="bg-pink-50 p-3 rounded-lg border border-pink-200 dark:bg-pink-900/20 dark:border-pink-800">
+                <p className="text-xs text-pink-600 dark:text-pink-400">Total Stiker</p>
+                <p className="text-lg font-bold text-pink-800 dark:text-pink-300">{approval.production_summary.consumption_totals.total_stiker_pcs?.toLocaleString()} pcs</p>
               </div>
             </div>
           )}
@@ -625,21 +625,21 @@ const ProductionApprovalDetail: React.FC = () => {
             Breakdown Downtime
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-red-50 p-4 rounded-lg">
-              <p className="text-sm text-red-600">Mesin</p>
-              <p className="text-xl font-bold text-red-800">{approval.production_summary.downtime_breakdown.mesin} menit</p>
+            <div className="bg-red-50 p-4 rounded-lg dark:bg-red-900/20">
+              <p className="text-sm text-red-600 dark:text-red-400">Mesin</p>
+              <p className="text-xl font-bold text-red-800 dark:text-red-300">{approval.production_summary.downtime_breakdown.mesin} menit</p>
             </div>
-            <div className="bg-orange-50 p-4 rounded-lg">
-              <p className="text-sm text-orange-600">Operator</p>
-              <p className="text-xl font-bold text-orange-800">{approval.production_summary.downtime_breakdown.operator} menit</p>
+            <div className="bg-orange-50 p-4 rounded-lg dark:bg-orange-900/20">
+              <p className="text-sm text-orange-600 dark:text-orange-400">Operator</p>
+              <p className="text-xl font-bold text-orange-800 dark:text-orange-300">{approval.production_summary.downtime_breakdown.operator} menit</p>
             </div>
-            <div className="bg-yellow-50 p-4 rounded-lg">
-              <p className="text-sm text-yellow-600">Material</p>
-              <p className="text-xl font-bold text-yellow-800">{approval.production_summary.downtime_breakdown.material} menit</p>
+            <div className="bg-yellow-50 p-4 rounded-lg dark:bg-yellow-900/20">
+              <p className="text-sm text-yellow-600 dark:text-yellow-400">Material</p>
+              <p className="text-xl font-bold text-yellow-800 dark:text-yellow-300">{approval.production_summary.downtime_breakdown.material} menit</p>
             </div>
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-sm text-blue-600">Design</p>
-              <p className="text-xl font-bold text-blue-800">{approval.production_summary.downtime_breakdown.design} menit</p>
+            <div className="bg-blue-50 p-4 rounded-lg dark:bg-blue-900/20">
+              <p className="text-sm text-blue-600 dark:text-blue-400">Design</p>
+              <p className="text-xl font-bold text-blue-800 dark:text-blue-300">{approval.production_summary.downtime_breakdown.design} menit</p>
             </div>
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <p className="text-sm text-gray-600 dark:text-gray-300">Others</p>
@@ -680,8 +680,8 @@ const ProductionApprovalDetail: React.FC = () => {
                     <td className="px-3 py-2 text-sm">{new Date(sp.production_date).toLocaleDateString('id-ID')}</td>
                     <td className="px-3 py-2 text-sm">{sp.shift.replace('shift_', 'Shift ')}</td>
                     <td className="px-3 py-2 text-sm text-right">{sp.actual_quantity.toLocaleString()}</td>
-                    <td className="px-3 py-2 text-sm text-right text-green-600">{sp.good_quantity.toLocaleString()}</td>
-                    <td className="px-3 py-2 text-sm text-right text-red-600">{sp.reject_quantity.toLocaleString()}</td>
+                    <td className="px-3 py-2 text-sm text-right text-green-600 dark:text-green-400">{sp.good_quantity.toLocaleString()}</td>
+                    <td className="px-3 py-2 text-sm text-right text-red-600 dark:text-red-400">{sp.reject_quantity.toLocaleString()}</td>
                     <td className="px-3 py-2 text-sm text-right">{sp.efficiency_rate.toFixed(1)}%</td>
                     <td className="px-3 py-2 text-sm text-right font-medium">{sp.oee_score.toFixed(1)}%</td>
                     <td className="px-3 py-2 text-sm">{sp.operator_name || '-'}</td>
@@ -700,21 +700,21 @@ const ProductionApprovalDetail: React.FC = () => {
           Breakdown Biaya
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-sm text-blue-600">Material Cost</p>
-            <p className="text-xl font-bold text-blue-800">{formatCurrency(approval.material_cost)}</p>
+          <div className="bg-blue-50 p-4 rounded-lg dark:bg-blue-900/20">
+            <p className="text-sm text-blue-600 dark:text-blue-400">Material Cost</p>
+            <p className="text-xl font-bold text-blue-800 dark:text-blue-300">{formatCurrency(approval.material_cost)}</p>
           </div>
-          <div className="bg-green-50 p-4 rounded-lg">
-            <p className="text-sm text-green-600">Labor Cost</p>
-            <p className="text-xl font-bold text-green-800">{formatCurrency(approval.labor_cost)}</p>
+          <div className="bg-green-50 p-4 rounded-lg dark:bg-green-900/20">
+            <p className="text-sm text-green-600 dark:text-green-400">Labor Cost</p>
+            <p className="text-xl font-bold text-green-800 dark:text-green-300">{formatCurrency(approval.labor_cost)}</p>
           </div>
-          <div className="bg-purple-50 p-4 rounded-lg">
-            <p className="text-sm text-purple-600">Overhead Cost</p>
-            <p className="text-xl font-bold text-purple-800">{formatCurrency(approval.overhead_cost)}</p>
+          <div className="bg-purple-50 p-4 rounded-lg dark:bg-purple-900/20">
+            <p className="text-sm text-purple-600 dark:text-purple-400">Overhead Cost</p>
+            <p className="text-xl font-bold text-purple-800 dark:text-purple-300">{formatCurrency(approval.overhead_cost)}</p>
           </div>
-          <div className="bg-orange-50 p-4 rounded-lg">
-            <p className="text-sm text-orange-600">Total Cost</p>
-            <p className="text-xl font-bold text-orange-800">{formatCurrency(approval.total_cost)}</p>
+          <div className="bg-orange-50 p-4 rounded-lg dark:bg-orange-900/20">
+            <p className="text-sm text-orange-600 dark:text-orange-400">Total Cost</p>
+            <p className="text-xl font-bold text-orange-800 dark:text-orange-300">{formatCurrency(approval.total_cost)}</p>
             {hasChanges && approval.original_total_cost && (
               <p className="text-xs text-gray-500 dark:text-gray-400">Original: {formatCurrency(approval.original_total_cost)}</p>
             )}

@@ -251,7 +251,7 @@ const QuickStockInputModal: React.FC<QuickStockInputModalProps> = ({
                   Location <span className="text-red-500">*</span>
                 </label>
                 {loadingLocations ? (
-                  <div className="flex items-center justify-center py-2 text-gray-500">
+                  <div className="flex items-center justify-center py-2 text-gray-500 dark:text-gray-400">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
                     Loading locations...
                   </div>

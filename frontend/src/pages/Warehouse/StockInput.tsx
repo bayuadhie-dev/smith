@@ -333,25 +333,25 @@ const StockInput: React.FC = () => {
           <div className="flex items-center space-x-4">
             <Link
               to="/app/warehouse/inventory"
-              className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
+              className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
             >
               <ArrowLeftIcon className="h-5 w-5 mr-2" />
               {t('warehouse.back_to_inventory')}
             </Link>
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('warehouse.stock_input')}</h1>
-              <p className="text-gray-600 mt-1">{t('warehouse.stock_input_desc')}</p>
+              <p className="text-gray-600 mt-1 dark:text-gray-300">{t('warehouse.stock_input_desc')}</p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
             {fetchingData ? (
-              <div className="flex items-center text-gray-500">
+              <div className="flex items-center text-gray-500 dark:text-gray-400">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500 mr-2"></div>
                 <span className="text-sm">Loading data...</span>
               </div>
             ) : (
               <>
-                <QrCodeIcon className="h-6 w-6 text-blue-600" />
+                <QrCodeIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 <span className="text-sm text-gray-500 dark:text-gray-400">Manual Entry Mode</span>
               </>
             )}
@@ -448,12 +448,12 @@ const StockInput: React.FC = () => {
             </div>
 
             {submitErrors.length > 0 && (
-              <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
                 <div className="flex items-center mb-2">
-                  <ExclamationCircleIcon className="h-5 w-5 text-red-600 mr-2" />
-                  <h3 className="text-sm font-medium text-red-800">Please fix the following errors:</h3>
+                  <ExclamationCircleIcon className="h-5 w-5 text-red-600 mr-2 dark:text-red-400" />
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-300">Please fix the following errors:</h3>
                 </div>
-                <ul className="text-sm text-red-700 list-disc list-inside">
+                <ul className="text-sm text-red-700 list-disc list-inside dark:text-red-300">
                   {submitErrors.map((error, idx) => (
                     <li key={idx}>{error}</li>
                   ))}
@@ -491,8 +491,8 @@ const StockInput: React.FC = () => {
                         <td className="px-4 py-3">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             item.item_type === 'material' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-blue-100 text-blue-800'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                              : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
                           }`}>
                             {item.item_type === 'material' ? t('products.materials') : t('production.product')}
                           </span>
@@ -508,7 +508,7 @@ const StockInput: React.FC = () => {
                                 className={`text-sm min-w-[200px] ${item.errors.item ? 'border-red-500' : ''}`}
                               />
                               {item.errors.item && (
-                                <div className="text-xs text-red-600 mt-1">{item.errors.item}</div>
+                                <div className="text-xs text-red-600 mt-1 dark:text-red-400">{item.errors.item}</div>
                               )}
                               {item.item_name && (
                                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -526,7 +526,7 @@ const StockInput: React.FC = () => {
                                 className={`text-sm min-w-[200px] ${item.errors.item ? 'border-red-500' : ''}`}
                               />
                               {item.errors.item && (
-                                <div className="text-xs text-red-600 mt-1">{item.errors.item}</div>
+                                <div className="text-xs text-red-600 mt-1 dark:text-red-400">{item.errors.item}</div>
                               )}
                               {item.item_name && (
                                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -547,7 +547,7 @@ const StockInput: React.FC = () => {
                               required
                             />
                             {item.errors.quantity && (
-                              <div className="text-xs text-red-600 mt-1">{item.errors.quantity}</div>
+                              <div className="text-xs text-red-600 mt-1 dark:text-red-400">{item.errors.quantity}</div>
                             )}
                             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item.uom}</div>
                           </div>
@@ -566,7 +566,7 @@ const StockInput: React.FC = () => {
                               className={`text-sm ${item.errors.location ? 'border-red-500' : ''}`}
                             />
                             {item.errors.location && (
-                              <div className="text-xs text-red-600 mt-1">{item.errors.location}</div>
+                              <div className="text-xs text-red-600 mt-1 dark:text-red-400">{item.errors.location}</div>
                             )}
                           </div>
                         </td>
@@ -589,7 +589,7 @@ const StockInput: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => removeStockItem(item.id)}
-                            className="p-1 text-red-600 hover:text-red-800"
+                            className="p-1 text-red-600 hover:text-red-800 dark:text-red-400"
                             title="Remove item"
                           >
                             <XMarkIcon className="h-4 w-4" />

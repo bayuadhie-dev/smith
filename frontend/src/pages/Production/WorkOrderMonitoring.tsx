@@ -72,12 +72,12 @@ const WorkOrderMonitoring: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'released': return 'bg-yellow-100 text-yellow-800';
-      case 'planned': return 'bg-slate-100 text-slate-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-slate-100 text-slate-800';
+      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'in_progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'released': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'planned': return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100';
+      case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      default: return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100';
     }
   };
 
@@ -127,24 +127,24 @@ const WorkOrderMonitoring: React.FC = () => {
   }
 
   return (
-    <div className="p-6 bg-slate-50 min-h-screen">
+    <div className="p-6 bg-slate-50 min-h-screen dark:bg-slate-900">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">WO Monitoring</h1>
-          <p className="text-slate-500">Real-time tracking & progress monitoring</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">WO Monitoring</h1>
+          <p className="text-slate-500 dark:text-slate-400">Real-time tracking & progress monitoring</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`px-4 py-2 rounded-lg flex items-center gap-2 ${showFilters ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}`}
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 ${showFilters ? 'bg-blue-600 text-white' : 'bg-white text-slate-700 dark:bg-gray-800 dark:text-slate-200'}`}
           >
             <FunnelIcon className="h-5 w-5" />
             Filter
           </button>
           <button
             onClick={fetchData}
-            className="px-4 py-2 bg-white dark:bg-gray-800 text-slate-700 rounded-lg hover:bg-slate-100 flex items-center gap-2"
+            className="px-4 py-2 bg-white dark:bg-gray-800 text-slate-700 rounded-lg hover:bg-slate-100 flex items-center gap-2 dark:hover:bg-slate-800 dark:text-slate-200"
           >
             <ArrowPathIcon className="h-5 w-5" />
             Refresh
@@ -163,11 +163,11 @@ const WorkOrderMonitoring: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-200">Status</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg dark:border-slate-600"
               >
                 <option value="">All Status</option>
                 <option value="planned">Planned</option>
@@ -178,13 +178,13 @@ const WorkOrderMonitoring: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Machine</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-200">Machine</label>
               <input
                 type="text"
                 value={machineFilter}
                 onChange={(e) => setMachineFilter(e.target.value)}
                 placeholder="Machine ID"
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg dark:border-slate-600"
               />
             </div>
           </div>
@@ -194,24 +194,24 @@ const WorkOrderMonitoring: React.FC = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-5 gap-4 mb-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-          <p className="text-sm text-slate-500">Total WO</p>
-          <p className="text-2xl font-bold text-slate-800">{totalWOs}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Total WO</p>
+          <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{totalWOs}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-          <p className="text-sm text-slate-500">In Progress</p>
-          <p className="text-2xl font-bold text-blue-600">{inProgress}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">In Progress</p>
+          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{inProgress}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-          <p className="text-sm text-slate-500">Delayed</p>
-          <p className="text-2xl font-bold text-red-600">{delayed}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Delayed</p>
+          <p className="text-2xl font-bold text-red-600 dark:text-red-400">{delayed}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-          <p className="text-sm text-slate-500">Completed</p>
-          <p className="text-2xl font-bold text-green-600">{completed}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Completed</p>
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{completed}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-          <p className="text-sm text-slate-500">Avg Progress</p>
-          <p className="text-2xl font-bold text-slate-800">{avgProgress}%</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Avg Progress</p>
+          <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{avgProgress}%</p>
         </div>
       </div>
 
@@ -219,45 +219,45 @@ const WorkOrderMonitoring: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-50">
+            <thead className="bg-slate-50 dark:bg-slate-900">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">WO Number</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">Product</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">Machine</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Status</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Priority</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Progress</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Qty</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Downtime</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Required Date</th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Actions</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">WO Number</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Product</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Machine</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Status</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Priority</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Progress</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Qty</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Downtime</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Required Date</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {workOrders.map((wo) => (
-                <tr key={wo.id} className={`hover:bg-slate-50 ${wo.is_delayed ? 'bg-red-50' : ''}`}>
+                <tr key={wo.id} className={`hover:bg-slate-50 dark:hover:bg-slate-800 ${wo.is_delayed ? 'bg-red-50 dark:bg-red-900/20' : ''}`}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      {wo.is_delayed && <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />}
+                      {wo.is_delayed && <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400" />}
                       <Link
                         to={`/app/production/work-orders/${wo.id}`}
-                        className="font-medium text-blue-600 hover:underline"
+                        className="font-medium text-blue-600 hover:underline dark:text-blue-400"
                       >
                         {wo.wo_number}
                       </Link>
                     </div>
                     {wo.is_delayed && (
-                      <p className="text-xs text-red-600 mt-1">Delayed {wo.delay_hours}h</p>
+                      <p className="text-xs text-red-600 mt-1 dark:text-red-400">Delayed {wo.delay_hours}h</p>
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <p className="font-medium text-slate-800">{wo.product_name}</p>
-                    <p className="text-xs text-slate-500">{wo.product_code}</p>
+                    <p className="font-medium text-slate-800 dark:text-slate-100">{wo.product_name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{wo.product_code}</p>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <CogIcon className="h-4 w-4 text-slate-400" />
-                      <span className="text-sm text-slate-700">{wo.machine_name || '-'}</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-200">{wo.machine_name || '-'}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center">
@@ -270,28 +270,28 @@ const WorkOrderMonitoring: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-slate-200 rounded-full h-2">
+                      <div className="flex-1 bg-slate-200 rounded-full h-2 dark:bg-slate-700">
                         <div
                           className={`h-2 rounded-full ${getProgressColor(wo.progress_percentage)}`}
                           style={{ width: `${wo.progress_percentage}%` }}
                         ></div>
                       </div>
-                      <span className="text-sm font-medium text-slate-700 w-12 text-right">
+                      <span className="text-sm font-medium text-slate-700 w-12 text-right dark:text-slate-200">
                         {wo.progress_percentage}%
                       </span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <p className="text-sm font-medium text-slate-800">
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
                       {wo.quantity_produced.toLocaleString()} / {wo.quantity_planned.toLocaleString()}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       Good: {wo.quantity_good.toLocaleString()}
                     </p>
                   </td>
                   <td className="px-4 py-3 text-center">
                     {wo.total_downtime_minutes > 0 ? (
-                      <span className="text-sm font-medium text-orange-600">
+                      <span className="text-sm font-medium text-orange-600 dark:text-orange-400">
                         {wo.total_downtime_minutes} min
                       </span>
                     ) : (
@@ -301,7 +301,7 @@ const WorkOrderMonitoring: React.FC = () => {
                   <td className="px-4 py-3 text-center">
                     <div className="flex items-center justify-center gap-1">
                       <CalendarIcon className="h-4 w-4 text-slate-400" />
-                      <span className="text-sm text-slate-700">
+                      <span className="text-sm text-slate-700 dark:text-slate-200">
                         {wo.required_date ? new Date(wo.required_date).toLocaleDateString('id-ID') : '-'}
                       </span>
                     </div>
@@ -310,14 +310,14 @@ const WorkOrderMonitoring: React.FC = () => {
                     <div className="flex items-center justify-center gap-2">
                       <Link
                         to={`/app/production/work-orders/${wo.id}/timeline`}
-                        className="text-blue-600 hover:text-blue-800"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
                         title="View Timeline"
                       >
                         <ClockIcon className="h-5 w-5" />
                       </Link>
                       <Link
                         to={`/app/production/work-orders/${wo.id}/breakdown`}
-                        className="text-orange-600 hover:text-orange-800"
+                        className="text-orange-600 hover:text-orange-800 dark:text-orange-400"
                         title="Breakdown Impact"
                       >
                         <ChartBarIcon className="h-5 w-5" />
@@ -328,7 +328,7 @@ const WorkOrderMonitoring: React.FC = () => {
               ))}
               {workOrders.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-4 py-8 text-center text-slate-500">
+                  <td colSpan={10} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                     No SPK found
                   </td>
                 </tr>

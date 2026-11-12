@@ -134,18 +134,18 @@ export default function PieceworkLogList() {
   const verifiedCount = logs.filter(l => l.status === 'verified').length
   const pendingCount = logs.filter(l => l.status === 'pending').length
 
-  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1"
+  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm dark:border-gray-600"
+  const labelClass = "block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200"
 
   const statusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      verified: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800'
+      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+      verified: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
     }
     const labels: Record<string, string> = { pending: 'Pending', verified: 'Verified', rejected: 'Ditolak' }
     return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'}`}>
         {labels[status] || status}
       </span>
     )
@@ -176,15 +176,15 @@ export default function PieceworkLogList() {
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">Total Nilai</p>
-          <p className="text-lg font-bold text-orange-700">{formatCurrency(totalAmount)}</p>
+          <p className="text-lg font-bold text-orange-700 dark:text-orange-300">{formatCurrency(totalAmount)}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">Verified</p>
-          <p className="text-xl font-bold text-green-700">{verifiedCount}</p>
+          <p className="text-xl font-bold text-green-700 dark:text-green-300">{verifiedCount}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">Pending</p>
-          <p className="text-xl font-bold text-yellow-700">{pendingCount}</p>
+          <p className="text-xl font-bold text-yellow-700 dark:text-yellow-300">{pendingCount}</p>
         </div>
       </div>
 
@@ -246,21 +246,21 @@ export default function PieceworkLogList() {
                     <td className="px-4 py-3 text-sm text-right font-mono">{log.quantity.toLocaleString('id-ID')}</td>
                     <td className="px-4 py-3 text-sm text-center">{log.unit}</td>
                     <td className="px-4 py-3 text-sm text-right font-mono">{formatCurrency(log.rate_per_unit)}</td>
-                    <td className="px-4 py-3 text-sm text-right font-mono font-medium text-orange-700">{formatCurrency(log.total_amount)}</td>
+                    <td className="px-4 py-3 text-sm text-right font-mono font-medium text-orange-700 dark:text-orange-300">{formatCurrency(log.total_amount)}</td>
                     <td className="px-4 py-3 text-center">{statusBadge(log.status)}</td>
                     <td className="px-4 py-3">
                       {log.status === 'pending' && (
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => handleVerify(log.id, 'verify')}
-                            className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg"
+                            className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg dark:text-green-400"
                             title="Verifikasi"
                           >
                             <CheckCircleIcon className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => handleVerify(log.id, 'reject')}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg dark:text-red-400"
                             title="Tolak"
                           >
                             <XCircleIcon className="h-4 w-4" />
@@ -331,9 +331,9 @@ export default function PieceworkLogList() {
               </div>
 
               {formData.quantity && formData.rate_per_unit && (
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center dark:bg-orange-900/20 dark:border-orange-800">
                   <span className="text-sm text-gray-600 dark:text-gray-300">Total: </span>
-                  <span className="text-lg font-bold text-orange-700">
+                  <span className="text-lg font-bold text-orange-700 dark:text-orange-300">
                     {formatCurrency(parseFloat(formData.quantity || '0') * parseFloat(formData.rate_per_unit || '0'))}
                   </span>
                 </div>

@@ -182,8 +182,8 @@ export default function WorkOrderEdit() {
 
   if (!workOrder) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">SPK tidak ditemukan</p>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
+        <p className="text-red-800 dark:text-red-300">SPK tidak ditemukan</p>
       </div>
     );
   }
@@ -274,7 +274,7 @@ export default function WorkOrderEdit() {
               </p>
             )}
             {eligibleMachineIds && eligibleMachineIds.length === 0 && (
-              <p className="mt-1 text-xs text-amber-600">
+              <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
                 Belum ada resep (ProductionRecipe) untuk produk ini - menampilkan semua mesin.
               </p>
             )}

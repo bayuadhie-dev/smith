@@ -20,7 +20,7 @@ export default function ItemStockPage() {
     axiosInstance.get(kind === 'product' ? `/api/products/${id}` : `/api/warehouse/materials/${id}`).then((r) => setName(r.data?.name || r.data?.material?.name || r.data?.product?.name || '')).catch(() => undefined)
   }, [kind, id])
 
-  if (!data) return <div className="p-6 text-sm text-gray-500">Memuat...</div>
+  if (!data) return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Memuat...</div>
   const th = 'px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400'
   const n = (v: number) => v.toLocaleString('id-ID', { maximumFractionDigits: 4 })
   const perZone: Record<string, number> = {}
@@ -29,7 +29,7 @@ export default function ItemStockPage() {
     <div className="space-y-4 p-6">
       <PageHeader title={name || 'Stok & Mutasi Barang'} subtitle={`Total di semua gudang: ${n(data.total_on_hand)}`} />
       <Panel title="Tersedia di gudang">
-        {data.stock.length === 0 ? <p className="text-sm text-gray-500">Tidak ada stok.</p> : (
+        {data.stock.length === 0 ? <p className="text-sm text-gray-500 dark:text-gray-400">Tidak ada stok.</p> : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
               <thead><tr><th className={th}>Gudang</th><th className={th}>Lokasi</th><th className={th}>Batch</th><th className={`${th} text-right`}>Stok</th><th className={`${th} text-right`}>Tersedia</th><th className={th}>Status</th></tr></thead>
@@ -39,7 +39,7 @@ export default function ItemStockPage() {
                     <td className="px-3 py-2 text-right tabular-nums">{n(s.on_hand)}</td><td className="px-3 py-2 text-right tabular-nums">{n(s.available)}</td><td className="px-3 py-2">{s.stock_status}</td></tr>
                 ))}
               </tbody>
-              <tfoot>{Object.entries(perZone).map(([z, q]) => <tr key={z} className="text-xs text-gray-500"><td className="px-3 py-1" colSpan={3}>Subtotal {z}</td><td className="px-3 py-1 text-right tabular-nums">{n(q)}</td><td colSpan={2} /></tr>)}</tfoot>
+              <tfoot>{Object.entries(perZone).map(([z, q]) => <tr key={z} className="text-xs text-gray-500 dark:text-gray-400"><td className="px-3 py-1" colSpan={3}>Subtotal {z}</td><td className="px-3 py-1 text-right tabular-nums">{n(q)}</td><td colSpan={2} /></tr>)}</tfoot>
             </table>
           </div>
         )}
@@ -54,15 +54,15 @@ export default function ItemStockPage() {
                   <td className="whitespace-nowrap px-3 py-2">{m.date ? new Date(m.date).toLocaleDateString('id-ID') : '-'}</td>
                   <td className="px-3 py-2">{TYPE[m.type] || m.type}</td><td className="px-3 py-2">{m.reference_number || '-'}</td>
                   <td className="px-3 py-2">{m.from_label || '-'}</td><td className="px-3 py-2">{m.to_label || '-'}</td><td className="px-3 py-2">{m.batch_number || '-'}</td>
-                  <td className={`px-3 py-2 text-right tabular-nums ${m.direction === 'in' ? 'text-emerald-700' : 'text-red-600'}`}>{m.direction === 'in' ? '+' : '-'}{n(m.quantity)}</td>
+                  <td className={`px-3 py-2 text-right tabular-nums ${m.direction === 'in' ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-600 dark:text-red-400'}`}>{m.direction === 'in' ? '+' : '-'}{n(m.quantity)}</td>
                 </tr>
               ))}
-              {data.movements.length === 0 && <tr><td colSpan={7} className="px-3 py-6 text-center text-gray-500">Belum ada mutasi.</td></tr>}
+              {data.movements.length === 0 && <tr><td colSpan={7} className="px-3 py-6 text-center text-gray-500 dark:text-gray-400">Belum ada mutasi.</td></tr>}
             </tbody>
           </table>
         </div>
       </Panel>
-      <Link to="/app/warehouse/materials/list" className="text-sm text-emerald-700 hover:underline">Kembali ke daftar material</Link>
+      <Link to="/app/warehouse/materials/list" className="text-sm text-emerald-700 hover:underline dark:text-emerald-300">Kembali ke daftar material</Link>
     </div>
   )
 }

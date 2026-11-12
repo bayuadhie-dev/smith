@@ -150,9 +150,9 @@ const ProductDashboard: React.FC = () => {
 
   const getStockStatusColor = (status: string) => {
     switch (status) {
-      case 'out_of_stock': return 'text-red-600 bg-red-100';
-      case 'low_stock': return 'text-yellow-600 bg-yellow-100';
-      default: return 'text-green-600 bg-green-100';
+      case 'out_of_stock': return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
+      case 'low_stock': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
+      default: return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
     }
   };
 
@@ -292,7 +292,7 @@ const ProductDashboard: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Stock Alerts</h3>
-            <Link to="/app/warehouse/inventory" className="text-sm text-blue-600 hover:text-blue-800">
+            <Link to="/app/warehouse/inventory" className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">
               View All →
             </Link>
           </div>

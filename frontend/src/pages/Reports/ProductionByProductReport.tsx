@@ -142,7 +142,7 @@ export default function ProductionByProductReport() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <ChartBarIcon className="h-8 w-8 text-blue-600" />
+            <ChartBarIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Laporan Produksi per Produk
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Analisis produksi berdasarkan produk dan periode</p>
@@ -288,7 +288,7 @@ export default function ProductionByProductReport() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {data.map((period) => (
                   <React.Fragment key={period.period}>
                     <tr className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
@@ -301,10 +301,10 @@ export default function ProductionByProductReport() {
                       <td className="px-4 py-3 text-right font-medium text-gray-900 dark:text-white">
                         {formatNumber(period.total_produced)}
                       </td>
-                      <td className="px-4 py-3 text-right text-green-600">
+                      <td className="px-4 py-3 text-right text-green-600 dark:text-green-400">
                         {formatNumber(period.total_good)}
                       </td>
-                      <td className="px-4 py-3 text-right text-red-600">
+                      <td className="px-4 py-3 text-right text-red-600 dark:text-red-400">
                         {formatNumber(period.total_reject)}
                       </td>
                       <td className="px-4 py-3 text-right">
@@ -312,8 +312,8 @@ export default function ProductionByProductReport() {
                           className={`px-2 py-1 rounded text-xs font-medium ${
                             period.total_produced > 0 &&
                             (period.total_reject / period.total_produced) * 100 > 5
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-green-100 text-green-700'
+                              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                              : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
                           }`}
                         >
                           {period.total_produced > 0
@@ -326,7 +326,7 @@ export default function ProductionByProductReport() {
                           onClick={() =>
                             setExpandedPeriod(expandedPeriod === period.period ? null : period.period)
                           }
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
                         >
                           {expandedPeriod === period.period ? (
                             <ChevronLeftIcon className="h-5 w-5 rotate-90" />
@@ -361,21 +361,21 @@ export default function ProductionByProductReport() {
                                     <td className="py-2 font-mono text-xs">{product.product_code}</td>
                                     <td className="py-2">{product.product_name}</td>
                                     <td className="py-2 text-right">{formatNumber(product.total_produced)}</td>
-                                    <td className="py-2 text-right text-green-600">
+                                    <td className="py-2 text-right text-green-600 dark:text-green-400">
                                       {formatNumber(product.total_good)}
                                     </td>
-                                    <td className="py-2 text-right text-red-600">
+                                    <td className="py-2 text-right text-red-600 dark:text-red-400">
                                       {formatNumber(product.total_reject)}
                                     </td>
-                                    <td className="py-2 text-right text-orange-600">
+                                    <td className="py-2 text-right text-orange-600 dark:text-orange-400">
                                       {formatNumber(product.total_waste)}
                                     </td>
                                     <td className="py-2 text-right">
                                       <span
                                         className={`px-2 py-0.5 rounded text-xs ${
                                           product.reject_rate > 5
-                                            ? 'bg-red-100 text-red-700'
-                                            : 'bg-green-100 text-green-700'
+                                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                                            : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
                                         }`}
                                       >
                                         {formatPercent(product.reject_rate)}
@@ -398,8 +398,8 @@ export default function ProductionByProductReport() {
                 <tr>
                   <td className="px-4 py-3">TOTAL</td>
                   <td className="px-4 py-3 text-right">{formatNumber(totals.total_produced)}</td>
-                  <td className="px-4 py-3 text-right text-green-600">{formatNumber(totals.total_good)}</td>
-                  <td className="px-4 py-3 text-right text-red-600">{formatNumber(totals.total_reject)}</td>
+                  <td className="px-4 py-3 text-right text-green-600 dark:text-green-400">{formatNumber(totals.total_good)}</td>
+                  <td className="px-4 py-3 text-right text-red-600 dark:text-red-400">{formatNumber(totals.total_reject)}</td>
                   <td className="px-4 py-3 text-right">
                     {totals.total_produced > 0
                       ? formatPercent((totals.total_reject / totals.total_produced) * 100)

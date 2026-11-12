@@ -412,7 +412,7 @@ const LeadForm: React.FC = () => {
                   name="decision_maker"
                   checked={formData.decision_maker}
                   onChange={handleInputChange}
-                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:text-blue-400"
                 />
                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">Decision Maker</span>
               </label>

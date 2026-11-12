@@ -391,7 +391,7 @@ const ShippingReportsForm: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
-                <CubeIcon className="h-8 w-8 text-blue-600" />
+                <CubeIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Shipments</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.total_shipments}</p>
@@ -401,7 +401,7 @@ const ShippingReportsForm: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
-                <CurrencyDollarIcon className="h-8 w-8 text-green-600" />
+                <CurrencyDollarIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Value</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -413,7 +413,7 @@ const ShippingReportsForm: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
-                <CubeIcon className="h-8 w-8 text-purple-600" />
+                <CubeIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Weight</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.total_weight} kg</p>
@@ -423,7 +423,7 @@ const ShippingReportsForm: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
-                <ClockIcon className="h-8 w-8 text-orange-600" />
+                <ClockIcon className="h-8 w-8 text-orange-600 dark:text-orange-400" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Delivery Time</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.average_delivery_time} days</p>
@@ -433,7 +433,7 @@ const ShippingReportsForm: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
-                <ArrowTrendingUpIcon className="h-8 w-8 text-green-600" />
+                <ArrowTrendingUpIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">On-Time Rate</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.on_time_delivery_rate}%</p>
@@ -443,7 +443,7 @@ const ShippingReportsForm: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
-                <ExclamationCircleIcon className="h-8 w-8 text-red-600" />
+                <ExclamationCircleIcon className="h-8 w-8 text-red-600 dark:text-red-400" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Damaged</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.damaged_shipments}</p>
@@ -567,7 +567,7 @@ const ShippingReportsForm: React.FC = () => {
                           {item.delivery_date ? new Date(item.delivery_date).toLocaleDateString() : '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                             {item.status.replace('_', ' ').toUpperCase()}
                           </span>
                         </td>

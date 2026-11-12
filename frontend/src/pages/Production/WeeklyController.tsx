@@ -126,9 +126,9 @@ const WeeklyController: React.FC = () => {
   };
 
   const getEfficiencyColor = (efficiency: number, target: number) => {
-    if (efficiency >= target) return 'text-green-600 bg-green-50';
-    if (efficiency >= target * 0.7) return 'text-yellow-600 bg-yellow-50';
-    return 'text-red-600 bg-red-50';
+    if (efficiency >= target) return 'text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400';
+    if (efficiency >= target * 0.7) return 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400';
+    return 'text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400';
   };
 
   const getDates = () => {
@@ -159,17 +159,17 @@ const WeeklyController: React.FC = () => {
   }
 
   return (
-    <div className="p-6 bg-slate-50 min-h-screen">
+    <div className="p-6 bg-slate-50 min-h-screen dark:bg-slate-900">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Controller Mingguan</h1>
-          <p className="text-slate-500">Ringkasan efisiensi mingguan per mesin</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Controller Mingguan</h1>
+          <p className="text-slate-500 dark:text-slate-400">Ringkasan efisiensi mingguan per mesin</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate('/app/production/controller')}
-            className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300"
+            className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 dark:text-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600"
           >
             Daily
           </button>
@@ -178,7 +178,7 @@ const WeeklyController: React.FC = () => {
           </button>
           <button
             onClick={() => navigate('/app/production/monthly-controller')}
-            className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300"
+            className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 dark:text-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600"
           >
             Monthly
           </button>
@@ -190,13 +190,13 @@ const WeeklyController: React.FC = () => {
         <div className="flex items-center justify-between">
           <button
             onClick={() => changeWeek(-1)}
-            className="p-2 hover:bg-slate-100 rounded-lg"
+            className="p-2 hover:bg-slate-100 rounded-lg dark:hover:bg-slate-800"
           >
-            <ChevronLeftIcon className="h-5 w-5 text-slate-600" />
+            <ChevronLeftIcon className="h-5 w-5 text-slate-600 dark:text-slate-300" />
           </button>
           <div className="flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5 text-blue-600" />
-            <span className="font-semibold text-slate-800">
+            <CalendarIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <span className="font-semibold text-slate-800 dark:text-slate-100">
               {new Date(weekStart).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
               {' - '}
               {weekEnd && new Date(weekEnd).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -204,9 +204,9 @@ const WeeklyController: React.FC = () => {
           </div>
           <button
             onClick={() => changeWeek(1)}
-            className="p-2 hover:bg-slate-100 rounded-lg"
+            className="p-2 hover:bg-slate-100 rounded-lg dark:hover:bg-slate-800"
           >
-            <ChevronRightIcon className="h-5 w-5 text-slate-600" />
+            <ChevronRightIcon className="h-5 w-5 text-slate-600 dark:text-slate-300" />
           </button>
         </div>
       </div>
@@ -214,28 +214,28 @@ const WeeklyController: React.FC = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-          <p className="text-sm text-slate-500">Total Mesin Aktif</p>
-          <p className="text-2xl font-bold text-slate-800">{totalMachines}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Total Mesin Aktif</p>
+          <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{totalMachines}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-          <p className="text-sm text-slate-500">Rata-rata Efisiensi</p>
-          <p className={`text-2xl font-bold ${avgEfficiency >= 85 ? 'text-green-600' : avgEfficiency >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Rata-rata Efisiensi</p>
+          <p className={`text-2xl font-bold ${avgEfficiency >= 85 ? 'text-green-600 dark:text-green-400' : avgEfficiency >= 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
             {avgEfficiency}%
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2">
-            <ArrowTrendingUpIcon className="h-5 w-5 text-green-600" />
-            <p className="text-sm text-slate-500">Mencapai Target</p>
+            <ArrowTrendingUpIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <p className="text-sm text-slate-500 dark:text-slate-400">Mencapai Target</p>
           </div>
-          <p className="text-2xl font-bold text-green-600">{machinesOnTarget}</p>
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{machinesOnTarget}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2">
-            <ArrowTrendingDownIcon className="h-5 w-5 text-red-600" />
-            <p className="text-sm text-slate-500">Dibawah Target</p>
+            <ArrowTrendingDownIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
+            <p className="text-sm text-slate-500 dark:text-slate-400">Dibawah Target</p>
           </div>
-          <p className="text-2xl font-bold text-red-600">{machinesBelowTarget}</p>
+          <p className="text-2xl font-bold text-red-600 dark:text-red-400">{machinesBelowTarget}</p>
         </div>
       </div>
 
@@ -243,28 +243,28 @@ const WeeklyController: React.FC = () => {
       <div className="flex gap-2 mb-6">
         <button
           onClick={() => setActiveTab('machines')}
-          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'machines' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'machines' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-gray-800 dark:hover:bg-slate-800 dark:text-slate-300'}`}
         >
           <CogIcon className="h-5 w-5 inline mr-2" />
           Mesin
         </button>
         <button
           onClick={() => setActiveTab('products')}
-          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'products' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'products' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-gray-800 dark:hover:bg-slate-800 dark:text-slate-300'}`}
         >
           <CubeIcon className="h-5 w-5 inline mr-2" />
           Produk ({products.length})
         </button>
         <button
           onClick={() => setActiveTab('downtime')}
-          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'downtime' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'downtime' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-gray-800 dark:hover:bg-slate-800 dark:text-slate-300'}`}
         >
           <ExclamationTriangleIcon className="h-5 w-5 inline mr-2" />
           Downtime ({allDowntime.length})
         </button>
         <button
           onClick={() => setActiveTab('charts')}
-          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'charts' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'charts' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-gray-800 dark:hover:bg-slate-800 dark:text-slate-300'}`}
         >
           <ChartBarIcon className="h-5 w-5 inline mr-2" />
           Grafik
@@ -276,28 +276,28 @@ const WeeklyController: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50">
+              <thead className="bg-slate-50 dark:bg-slate-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">Mesin</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Mesin</th>
                   {getDates().map(date => (
-                    <th key={date} className="px-3 py-3 text-center text-sm font-semibold text-slate-600">
+                    <th key={date} className="px-3 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">
                       {formatDate(date)}
                     </th>
                   ))}
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 bg-blue-50">Rata-rata</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Target</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Status</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 bg-blue-50 dark:text-slate-300 dark:bg-blue-900/20">Rata-rata</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Target</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {machines.map((machine) => (
-                  <tr key={machine.machine_id} className="hover:bg-slate-50">
+                  <tr key={machine.machine_id} className="hover:bg-slate-50 dark:hover:bg-slate-800">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <CogIcon className="h-5 w-5 text-slate-400" />
                         <div>
-                          <p className="font-medium text-slate-800">{machine.machine_name}</p>
-                          <p className="text-xs text-slate-500">{machine.machine_code}</p>
+                          <p className="font-medium text-slate-800 dark:text-slate-100">{machine.machine_name}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{machine.machine_code}</p>
                         </div>
                       </div>
                     </td>
@@ -315,21 +315,21 @@ const WeeklyController: React.FC = () => {
                         </td>
                       );
                     })}
-                    <td className="px-4 py-3 text-center bg-blue-50">
+                    <td className="px-4 py-3 text-center bg-blue-50 dark:bg-blue-900/20">
                       <span className={`inline-block px-3 py-1 rounded-lg text-lg font-bold ${getEfficiencyColor(machine.avg_efficiency, machine.target_efficiency)}`}>
                         {machine.avg_efficiency}%
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className="text-slate-600">{machine.target_efficiency}%</span>
+                      <span className="text-slate-600 dark:text-slate-300">{machine.target_efficiency}%</span>
                     </td>
                     <td className="px-4 py-3 text-center">
                       {machine.avg_efficiency >= machine.target_efficiency ? (
-                        <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                        <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium dark:bg-green-900/30 dark:text-green-300">
                           ✓ Tercapai
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                        <span className="inline-flex items-center px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium dark:bg-red-900/30 dark:text-red-300">
                           ✗ Belum
                         </span>
                       )}
@@ -338,7 +338,7 @@ const WeeklyController: React.FC = () => {
                 ))}
                 {machines.length === 0 && (
                   <tr>
-                    <td colSpan={11} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={11} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                       Tidak ada data produksi minggu ini
                     </td>
                   </tr>
@@ -353,37 +353,37 @@ const WeeklyController: React.FC = () => {
       {activeTab === 'products' && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b">
-            <h3 className="text-lg font-semibold text-slate-800">Produk yang Diproduksi</h3>
-            <p className="text-sm text-slate-500">Total {products.length} produk, {products.reduce((sum, p) => sum + p.quantity, 0).toLocaleString()} pcs</p>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Produk yang Diproduksi</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Total {products.length} produk, {products.reduce((sum, p) => sum + p.quantity, 0).toLocaleString()} pcs</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50">
+              <thead className="bg-slate-50 dark:bg-slate-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">#</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">Nama Produk</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600">Total Output</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600">Grade A</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600">Grade B</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600">Grade C</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">Mesin</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">#</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Nama Produk</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Total Output</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Grade A</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Grade B</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Grade C</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Mesin</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {products.map((product, index) => (
-                  <tr key={product.product_name} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 text-slate-500">{index + 1}</td>
-                    <td className="px-4 py-3 font-medium text-slate-800">{product.product_name}</td>
-                    <td className="px-4 py-3 text-right font-bold text-slate-800">{product.quantity.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right text-green-600">{product.grade_a.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right text-yellow-600">{product.grade_b.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right text-red-600">{product.grade_c.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-sm text-slate-500">{product.machines.join(', ')}</td>
+                  <tr key={product.product_name} className="hover:bg-slate-50 dark:hover:bg-slate-800">
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{index + 1}</td>
+                    <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{product.product_name}</td>
+                    <td className="px-4 py-3 text-right font-bold text-slate-800 dark:text-slate-100">{product.quantity.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right text-green-600 dark:text-green-400">{product.grade_a.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right text-yellow-600 dark:text-yellow-400">{product.grade_b.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right text-red-600 dark:text-red-400">{product.grade_c.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{product.machines.join(', ')}</td>
                   </tr>
                 ))}
                 {products.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={7} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                       Tidak ada data produk
                     </td>
                   </tr>
@@ -399,9 +399,9 @@ const WeeklyController: React.FC = () => {
         <div className="grid grid-cols-2 gap-6">
           {/* Top 10 Downtime - Single list with Unplanned/Planned badge */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-            <div className="p-4 border-b bg-red-50">
-              <h3 className="text-lg font-semibold text-red-800">Top 10 Downtime</h3>
-              <p className="text-sm text-red-600">Berdasarkan durasi (menit)</p>
+            <div className="p-4 border-b bg-red-50 dark:bg-red-900/20">
+              <h3 className="text-lg font-semibold text-red-800 dark:text-red-300">Top 10 Downtime</h3>
+              <p className="text-sm text-red-600 dark:text-red-400">Berdasarkan durasi (menit)</p>
             </div>
             <div className="p-4">
               {(() => {
@@ -421,22 +421,22 @@ const WeeklyController: React.FC = () => {
                           {index + 1}
                         </span>
                         <div>
-                          <p className="font-medium text-slate-800">{dt.reason}</p>
+                          <p className="font-medium text-slate-800 dark:text-slate-100">{dt.reason}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                            <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'}`}>
                               {isUnplanned ? 'Unplanned' : 'Planned'}
                             </span>
-                            <span className="text-xs text-slate-500">{dt.frequency}x kejadian</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">{dt.frequency}x kejadian</span>
                           </div>
                         </div>
                       </div>
-                      <span className="font-bold text-red-600">{dt.duration} menit</span>
+                      <span className="font-bold text-red-600 dark:text-red-400">{dt.duration} menit</span>
                     </div>
                   );
                 });
               })()}
               {top10Downtime.length === 0 && (
-                <p className="text-center text-slate-500 py-4">Tidak ada data downtime</p>
+                <p className="text-center text-slate-500 py-4 dark:text-slate-400">Tidak ada data downtime</p>
               )}
             </div>
           </div>
@@ -444,24 +444,24 @@ const WeeklyController: React.FC = () => {
           {/* All Downtime List */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
             <div className="p-4 border-b">
-              <h3 className="text-lg font-semibold text-slate-800">Semua Downtime</h3>
-              <p className="text-sm text-slate-500">Total {allDowntime.length} jenis, {allDowntime.reduce((sum, d) => sum + d.duration, 0).toLocaleString()} menit</p>
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Semua Downtime</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Total {allDowntime.length} jenis, {allDowntime.reduce((sum, d) => sum + d.duration, 0).toLocaleString()} menit</p>
             </div>
             <div className="max-h-96 overflow-y-auto">
               <table className="w-full">
-                <thead className="bg-slate-50 sticky top-0">
+                <thead className="bg-slate-50 sticky top-0 dark:bg-slate-900">
                   <tr>
-                    <th className="px-4 py-2 text-left text-sm font-semibold text-slate-600">Alasan</th>
-                    <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600">Durasi</th>
-                    <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600">Frekuensi</th>
+                    <th className="px-4 py-2 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Alasan</th>
+                    <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Durasi</th>
+                    <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Frekuensi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {allDowntime.map((dt) => (
-                    <tr key={dt.reason} className="hover:bg-slate-50">
-                      <td className="px-4 py-2 text-sm text-slate-800">{dt.reason}</td>
-                      <td className="px-4 py-2 text-right text-sm font-medium text-red-600">{dt.duration} menit</td>
-                      <td className="px-4 py-2 text-right text-sm text-slate-500">{dt.frequency}x</td>
+                    <tr key={dt.reason} className="hover:bg-slate-50 dark:hover:bg-slate-800">
+                      <td className="px-4 py-2 text-sm text-slate-800 dark:text-slate-100">{dt.reason}</td>
+                      <td className="px-4 py-2 text-right text-sm font-medium text-red-600 dark:text-red-400">{dt.duration} menit</td>
+                      <td className="px-4 py-2 text-right text-sm text-slate-500 dark:text-slate-400">{dt.frequency}x</td>
                     </tr>
                   ))}
                 </tbody>
@@ -476,7 +476,7 @@ const WeeklyController: React.FC = () => {
         <div className="grid grid-cols-2 gap-6">
           {/* Line Chart - Daily Trend */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Trend Harian</h3>
+            <h3 className="text-lg font-semibold text-slate-800 mb-4 dark:text-slate-100">Trend Harian</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -497,7 +497,7 @@ const WeeklyController: React.FC = () => {
 
           {/* Pie Chart - Downtime Distribution */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Distribusi Top 10 Downtime</h3>
+            <h3 className="text-lg font-semibold text-slate-800 mb-4 dark:text-slate-100">Distribusi Top 10 Downtime</h3>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -521,7 +521,7 @@ const WeeklyController: React.FC = () => {
 
           {/* Downtime vs Runtime Chart */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 col-span-2">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Downtime & Idle per Hari</h3>
+            <h3 className="text-lg font-semibold text-slate-800 mb-4 dark:text-slate-100">Downtime & Idle per Hari</h3>
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />

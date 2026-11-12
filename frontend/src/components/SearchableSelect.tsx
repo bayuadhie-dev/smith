@@ -197,11 +197,11 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         onClick={() => !disabled && setIsOpen(!isOpen)}
         className={`w-full px-3 py-2 border rounded-lg flex items-center justify-between transition-colors ${
           disabled 
-            ? 'bg-gray-100 cursor-not-allowed border-gray-200' 
-            : 'bg-white cursor-pointer border-gray-300 hover:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 shadow-sm'
+            ? 'bg-gray-100 cursor-not-allowed border-gray-200 dark:bg-gray-700 dark:border-gray-700' 
+            : 'bg-white cursor-pointer border-gray-300 hover:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 shadow-sm dark:bg-gray-800 dark:border-gray-600'
         } ${className.includes('text-xs') ? 'text-xs py-1.5 px-2' : 'text-sm py-2.5 px-3'}`}
       >
-        <span className={selectedOption ? 'text-gray-900 truncate' : 'text-gray-400'}>
+        <span className={selectedOption ? 'text-gray-900 truncate dark:text-white' : 'text-gray-400'}>
           {selectedOption ? getOptionDisplay(selectedOption) : placeholder}
         </span>
         <div className="flex items-center gap-1 flex-shrink-0">
@@ -209,9 +209,9 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
             <button
               type="button"
               onClick={handleClear}
-              className="p-0.5 hover:bg-gray-200 dark:bg-gray-700 rounded"
+              className="p-0.5 hover:bg-gray-200 dark:bg-gray-700 rounded dark:hover:bg-gray-600"
             >
-              <XMarkIcon className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:text-gray-300" />
+              <XMarkIcon className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white" />
             </button>
           )}
           <ChevronDownIcon className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -257,15 +257,15 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   onMouseEnter={() => setHighlightedIndex(index)}
                   className={`px-4 py-2.5 cursor-pointer transition-colors border-b border-gray-50 last:border-0 ${
                     index === highlightedIndex 
-                      ? 'bg-blue-100 text-blue-900' 
+                      ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-200' 
                       : option.id === value 
-                        ? 'bg-blue-50 text-blue-800' 
-                        : 'text-gray-900 hover:bg-gray-50'
+                        ? 'bg-blue-50 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300' 
+                        : 'text-gray-900 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white'
                   }`}
                 >
                   {option.code ? (
                     <div className="flex flex-col">
-                      <div className="font-semibold text-sm text-blue-700">{option.code}</div>
+                      <div className="font-semibold text-sm text-blue-700 dark:text-blue-300">{option.code}</div>
                       <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">{option.name}</div>
                     </div>
                   ) : (

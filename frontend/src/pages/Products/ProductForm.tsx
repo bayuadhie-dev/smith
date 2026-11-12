@@ -155,8 +155,8 @@ const { id } = useParams()
                   onClick={() => setActiveTab(tab.id)}
                   className={`${
                     activeTab === tab.id
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
                   } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
                 >
                   <span>{tab.icon}</span>
@@ -184,7 +184,7 @@ const { id } = useParams()
                       placeholder="e.g., PRD-001"
                     />
                     {errors.code && (
-                      <p className="mt-1 text-sm text-red-600">{errors.code.message}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.code.message}</p>
                     )}
                   </div>
 
@@ -199,7 +199,7 @@ const { id } = useParams()
                       placeholder="e.g., Wet Tissue Premium"
                     />
                     {errors.name && (
-                      <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name.message}</p>
                     )}
                   </div>
 
@@ -224,7 +224,7 @@ const { id } = useParams()
                       ))}
                     </select>
                     {errors.primary_uom && (
-                      <p className="mt-1 text-sm text-red-600">{errors.primary_uom.message}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.primary_uom.message}</p>
                     )}
                   </div>
 
@@ -239,7 +239,7 @@ const { id } = useParams()
                       ))}
                     </select>
                     {errors.material_type && (
-                      <p className="mt-1 text-sm text-red-600">{errors.material_type.message}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.material_type.message}</p>
                     )}
                   </div>
 
@@ -281,7 +281,7 @@ const { id } = useParams()
                     <input
                       type="checkbox"
                       {...register('is_active')}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded dark:text-primary-400"
                     />
                     <label className="ml-2 block text-sm text-gray-700 dark:text-gray-200">
                       Active Product
@@ -467,74 +467,74 @@ const { id } = useParams()
                 ) : (
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                      <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           BERAT KERING (Dry Weight)
                         </label>
-                        <div className="text-2xl font-bold text-blue-600">
+                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                           {calculated.berat_kering.toFixed(4)} kg
                         </div>
                         <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Per karton</p>
                       </div>
 
-                      <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                      <div className="bg-green-50 rounded-lg p-4 border border-green-200 dark:bg-green-900/20 dark:border-green-800">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           METER KAIN (Fabric Length)
                         </label>
-                        <div className="text-2xl font-bold text-green-600">
+                        <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                           {calculated.meter_kain.toFixed(4)} m
                         </div>
                         <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Required length</p>
                       </div>
 
-                      <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                      <div className="bg-purple-50 rounded-lg p-4 border border-purple-200 dark:bg-purple-900/20 dark:border-purple-800">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           KG KAIN (Fabric Weight)
                         </label>
-                        <div className="text-2xl font-bold text-purple-600">
+                        <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                           {calculated.kg_kain.toFixed(4)} kg
                         </div>
                         <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Required weight</p>
                       </div>
 
-                      <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                      <div className="bg-orange-50 rounded-lg p-4 border border-orange-200 dark:bg-orange-900/20 dark:border-orange-800">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           Total Sheets
                         </label>
-                        <div className="text-2xl font-bold text-orange-600">
+                        <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                           {calculated.total_sheets}
                         </div>
                         <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Per karton</p>
                       </div>
 
-                      <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+                      <div className="bg-red-50 rounded-lg p-4 border border-red-200 dark:bg-red-900/20 dark:border-red-800">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           KEBUTUHAN RAYON
                         </label>
-                        <div className="text-2xl font-bold text-red-600">
+                        <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                           {calculated.kebutuhan_rayon_kg.toFixed(4)} kg
                         </div>
                         <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Material requirement</p>
                       </div>
 
-                      <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
+                      <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                           KEBUTUHAN POLYESTER
                         </label>
-                        <div className="text-2xl font-bold text-indigo-600">
+                        <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                           {calculated.kebutuhan_polyester_kg.toFixed(4)} kg
                         </div>
                         <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Material requirement</p>
                       </div>
                     </div>
 
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
-                      <CheckCircleIcon className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3 dark:bg-green-900/20 dark:border-green-800">
+                      <CheckCircleIcon className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5 dark:text-green-400" />
                       <div>
-                        <p className="text-sm font-medium text-green-800">
+                        <p className="text-sm font-medium text-green-800 dark:text-green-300">
                           Calculations Complete
                         </p>
-                        <p className="text-xs text-green-700 mt-1">
+                        <p className="text-xs text-green-700 mt-1 dark:text-green-300">
                           All metrics have been calculated successfully based on your product specifications.
                         </p>
                       </div>

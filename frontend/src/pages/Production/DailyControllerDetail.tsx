@@ -162,14 +162,14 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'mesin': return 'bg-red-100 text-red-700 border-red-200';
-      case 'operator': return 'bg-orange-100 text-orange-700 border-orange-200';
-      case 'material': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'idle': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'design': return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'istirahat': return 'bg-green-100 text-green-700 border-green-200';
-      case 'others': return 'bg-gray-100 text-gray-700 border-gray-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
+      case 'mesin': return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
+      case 'operator': return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800';
+      case 'material': return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800';
+      case 'idle': return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
+      case 'design': return 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800';
+      case 'istirahat': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800';
+      case 'others': return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-700';
+      default: return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-700';
     }
   };
 
@@ -188,11 +188,11 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'in_progress': return 'bg-blue-100 text-blue-700';
-      case 'completed': return 'bg-green-100 text-green-700';
-      case 'on_hold': return 'bg-yellow-100 text-yellow-700';
-      case 'cancelled': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'in_progress': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'completed': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
+      case 'on_hold': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'cancelled': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300';
+      default: return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200';
     }
   };
 
@@ -234,9 +234,9 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
 
   if (machines.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 p-12 text-center dark:border-slate-700">
         <DocumentTextIcon className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-slate-600">Tidak ada data detail</h3>
+        <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-300">Tidak ada data detail</h3>
         <p className="text-slate-400 mt-1">Belum ada data produksi untuk tanggal ini</p>
       </div>
     );
@@ -277,13 +277,13 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
       </div>
 
       {/* Sub-tabs */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 p-4 dark:border-slate-700">
         <div className="flex items-center gap-4 mb-4">
           <button
             onClick={() => setActiveSubTab('downtime')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeSubTab === 'downtime'
               ? 'bg-red-500 text-white'
-              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-600'
               }`}
           >
             <ExclamationTriangleIcon className="h-4 w-4 inline mr-2" />
@@ -293,7 +293,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
             onClick={() => setActiveSubTab('timeline')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeSubTab === 'timeline'
               ? 'bg-blue-500 text-white'
-              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-600'
               }`}
           >
             <ClockIcon className="h-4 w-4 inline mr-2" />
@@ -303,7 +303,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
             onClick={() => setActiveSubTab('workorders')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeSubTab === 'workorders'
               ? 'bg-indigo-500 text-white'
-              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-600'
               }`}
           >
             <DocumentTextIcon className="h-4 w-4 inline mr-2" />
@@ -317,11 +317,11 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
             {/* Filter */}
             <div className="flex items-center gap-3 mb-4">
               <FunnelIcon className="h-5 w-5 text-slate-400" />
-              <span className="text-sm text-slate-600">Filter Kategori:</span>
+              <span className="text-sm text-slate-600 dark:text-slate-300">Filter Kategori:</span>
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm"
+                className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm dark:border-slate-600"
               >
                 <option value="all">Semua Kategori</option>
                 {allCategories.map(cat => (
@@ -340,9 +340,9 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                 if (filteredDowntime.length === 0) return null;
 
                 return (
-                  <div key={machine.machine_id} className="border border-slate-200 rounded-lg overflow-hidden">
+                  <div key={machine.machine_id} className="border border-slate-200 rounded-lg overflow-hidden dark:border-slate-700">
                     <div
-                      className="p-4 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors flex items-center justify-between"
+                      className="p-4 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors flex items-center justify-between dark:bg-slate-900 dark:hover:bg-slate-800"
                       onClick={() => toggleExpand(machine.machine_id)}
                     >
                       <div className="flex items-center gap-3">
@@ -350,8 +350,8 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                           <ExclamationTriangleIcon className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-slate-800">{machine.machine_name}</h4>
-                          <p className="text-sm text-slate-500">
+                          <h4 className="font-semibold text-slate-800 dark:text-slate-100">{machine.machine_name}</h4>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">
                             {filteredDowntime.length} downtime • Total: {filteredDowntime.reduce((s, d) => s + d.duration_minutes, 0)} menit
                           </p>
                         </div>
@@ -359,7 +359,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
                           <UserIcon className="h-4 w-4 text-slate-400" />
-                          <span className="text-sm text-slate-600">
+                          <span className="text-sm text-slate-600 dark:text-slate-300">
                             {machine.operators.length > 0 ? machine.operators.join(', ') : '-'}
                           </span>
                         </div>
@@ -372,7 +372,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                     </div>
 
                     {expandedMachine === machine.machine_id && (
-                      <div className="p-4 border-t border-slate-200 space-y-4">
+                      <div className="p-4 border-t border-slate-200 space-y-4 dark:border-slate-700">
                         {/* Top 3 Downtime Mesin */}
                         {(() => {
                           const mesinDowntime = filteredDowntime
@@ -383,25 +383,25 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                           if (mesinDowntime.length === 0) return null;
 
                           return (
-                            <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg p-4">
-                              <h5 className="text-sm font-bold text-red-800 mb-3 flex items-center gap-2">
+                            <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg p-4 dark:border-red-800">
+                              <h5 className="text-sm font-bold text-red-800 mb-3 flex items-center gap-2 dark:text-red-300">
                                 <ExclamationTriangleIcon className="h-4 w-4" />
                                 Top {mesinDowntime.length} Downtime Mesin
                               </h5>
                               <div className="grid grid-cols-3 gap-3">
                                 {mesinDowntime.map((dt, idx) => (
-                                  <div key={idx} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-red-200 shadow-sm relative">
+                                  <div key={idx} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-red-200 shadow-sm relative dark:border-red-800">
                                     <div className="absolute -top-2 -left-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold shadow">
                                       {idx + 1}
                                     </div>
-                                    <p className="font-semibold text-slate-800 text-sm mt-1">{dt.reason}</p>
+                                    <p className="font-semibold text-slate-800 text-sm mt-1 dark:text-slate-100">{dt.reason}</p>
                                     <div className="flex items-center justify-between mt-2">
-                                      <span className="text-xs text-slate-500">Shift {dt.shift}</span>
-                                      <span className="font-bold text-red-600 text-sm">{dt.duration_minutes} menit</span>
+                                      <span className="text-xs text-slate-500 dark:text-slate-400">Shift {dt.shift}</span>
+                                      <span className="font-bold text-red-600 text-sm dark:text-red-400">{dt.duration_minutes} menit</span>
                                     </div>
                                     <div className="flex items-center justify-between mt-1">
                                       <span className="text-xs text-slate-400">{dt.product_name || '-'}</span>
-                                      <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded text-[10px] font-medium">{dt.pic || '-'}</span>
+                                      <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded text-[10px] font-medium dark:bg-indigo-900/30 dark:text-indigo-300">{dt.pic || '-'}</span>
                                     </div>
                                   </div>
                                 ))}
@@ -426,14 +426,14 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                             const totalMin = shiftItems.reduce((s, d) => s + d.duration_minutes, 0);
 
                             return (
-                              <div key={shiftNum} className="border border-slate-200 rounded-lg overflow-hidden">
+                              <div key={shiftNum} className="border border-slate-200 rounded-lg overflow-hidden dark:border-slate-700">
                                 <div className={`px-4 py-2 bg-gradient-to-r ${shiftColors[shiftNum] || 'from-slate-500 to-slate-600'} text-white flex items-center justify-between`}>
                                   <span className="font-semibold text-sm">Shift {shiftNum}</span>
                                   <span className="text-xs opacity-90">{shiftItems.length} downtime • {totalMin} menit</span>
                                 </div>
                                 <table className="w-full text-sm">
                                   <thead>
-                                    <tr className="text-left text-slate-500 border-b bg-slate-50">
+                                    <tr className="text-left text-slate-500 border-b bg-slate-50 dark:bg-slate-900 dark:text-slate-400">
                                       <th className="px-4 py-2 font-medium">#</th>
                                       <th className="px-4 py-2 font-medium">Alasan</th>
                                       <th className="px-4 py-2 font-medium">Kategori</th>
@@ -445,24 +445,24 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                                   </thead>
                                   <tbody>
                                     {shiftItems.map((dt, idx) => (
-                                      <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
+                                      <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800">
                                         <td className="px-4 py-2 text-slate-400 text-xs">{idx + 1}</td>
-                                        <td className="px-4 py-2 font-medium text-slate-700">{dt.reason}</td>
+                                        <td className="px-4 py-2 font-medium text-slate-700 dark:text-slate-200">{dt.reason}</td>
                                         <td className="px-4 py-2">
                                           <span className={`px-2 py-0.5 rounded text-xs font-medium border ${getCategoryColor(dt.category)}`}>
                                             {getCategoryLabel(dt.category)}
                                           </span>
                                         </td>
                                         <td className="px-4 py-2">
-                                          <span className="font-bold text-red-600">{dt.duration_minutes} menit</span>
+                                          <span className="font-bold text-red-600 dark:text-red-400">{dt.duration_minutes} menit</span>
                                         </td>
                                         <td className="px-4 py-2">
-                                          <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-medium">
+                                          <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-medium dark:bg-indigo-900/30 dark:text-indigo-300">
                                             {dt.pic || '-'}
                                           </span>
                                         </td>
-                                        <td className="px-4 py-2 text-slate-500 text-xs">{dt.product_name || '-'}</td>
-                                        <td className="px-4 py-2 text-blue-600 text-xs">{dt.wo_number || '-'}</td>
+                                        <td className="px-4 py-2 text-slate-500 text-xs dark:text-slate-400">{dt.product_name || '-'}</td>
+                                        <td className="px-4 py-2 text-blue-600 text-xs dark:text-blue-400">{dt.wo_number || '-'}</td>
                                       </tr>
                                     ))}
                                   </tbody>
@@ -484,9 +484,9 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
         {activeSubTab === 'timeline' && (
           <div className="space-y-4">
             {machines.map((machine) => (
-              <div key={machine.machine_id} className="border border-slate-200 rounded-lg overflow-hidden">
-                <div className="p-4 bg-slate-50 border-b border-slate-200">
-                  <h4 className="font-semibold text-slate-800">{machine.machine_name}</h4>
+              <div key={machine.machine_id} className="border border-slate-200 rounded-lg overflow-hidden dark:border-slate-700">
+                <div className="p-4 bg-slate-50 border-b border-slate-200 dark:bg-slate-900 dark:border-slate-700">
+                  <h4 className="font-semibold text-slate-800 dark:text-slate-100">{machine.machine_name}</h4>
                 </div>
                 <div className="p-4">
                   {/* Timeline Visual */}
@@ -500,7 +500,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                     </div>
 
                     {/* Timeline bar */}
-                    <div className="h-12 bg-slate-100 rounded-lg flex overflow-hidden">
+                    <div className="h-12 bg-slate-100 rounded-lg flex overflow-hidden dark:bg-slate-800">
                       {machine.timeline.map((entry, idx) => {
                         const shiftWidth = entry.shift === 1 ? '35.4%' : entry.shift === 2 ? '33.3%' : '31.3%';
                         const shiftColors = {
@@ -555,7 +555,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                   {/* Detail Table */}
                   <table className="w-full text-sm mt-4">
                     <thead>
-                      <tr className="text-left text-slate-500 border-b">
+                      <tr className="text-left text-slate-500 border-b dark:text-slate-400">
                         <th className="pb-2 font-medium">Shift</th>
                         <th className="pb-2 font-medium">Waktu</th>
                         <th className="pb-2 font-medium">Produk</th>
@@ -571,18 +571,18 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                       {machine.timeline.map((entry, idx) => (
                         <tr key={idx} className="border-b border-slate-100">
                           <td className="py-2">
-                            <span className="px-2 py-0.5 bg-slate-100 rounded text-xs font-medium">
+                            <span className="px-2 py-0.5 bg-slate-100 rounded text-xs font-medium dark:bg-slate-800">
                               Shift {entry.shift}
                             </span>
                           </td>
-                          <td className="py-2 text-slate-600">{entry.start_time} - {entry.end_time}</td>
-                          <td className="py-2 font-medium text-slate-700">{entry.product_name}</td>
-                          <td className="py-2 font-bold text-slate-800">{entry.output.toLocaleString()}</td>
-                          <td className="py-2 text-green-600 font-medium">{entry.grade_a.toLocaleString()}</td>
-                          <td className="py-2 text-red-600">{entry.downtime}m</td>
-                          <td className="py-2 text-orange-600">{entry.idle}m</td>
-                          <td className="py-2 text-slate-600">{entry.operator || '-'}</td>
-                          <td className="py-2 text-slate-600">{entry.supervisor || '-'}</td>
+                          <td className="py-2 text-slate-600 dark:text-slate-300">{entry.start_time} - {entry.end_time}</td>
+                          <td className="py-2 font-medium text-slate-700 dark:text-slate-200">{entry.product_name}</td>
+                          <td className="py-2 font-bold text-slate-800 dark:text-slate-100">{entry.output.toLocaleString()}</td>
+                          <td className="py-2 text-green-600 font-medium dark:text-green-400">{entry.grade_a.toLocaleString()}</td>
+                          <td className="py-2 text-red-600 dark:text-red-400">{entry.downtime}m</td>
+                          <td className="py-2 text-orange-600 dark:text-orange-400">{entry.idle}m</td>
+                          <td className="py-2 text-slate-600 dark:text-slate-300">{entry.operator || '-'}</td>
+                          <td className="py-2 text-slate-600 dark:text-slate-300">{entry.supervisor || '-'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -660,7 +660,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
 
               if (!displayWOs && !displayDerivedWOs) {
                 return (
-                  <div className="text-center py-8 text-slate-500">
+                  <div className="text-center py-8 text-slate-500 dark:text-slate-400">
                     Tidak ada SPK pada tanggal ini
                   </div>
                 );
@@ -672,7 +672,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="text-left text-slate-500 border-b bg-slate-50">
+                        <tr className="text-left text-slate-500 border-b bg-slate-50 dark:bg-slate-900 dark:text-slate-400">
                           <th className="p-3 font-medium">WO Number</th>
                           <th className="p-3 font-medium">Mesin</th>
                           <th className="p-3 font-medium">Produk</th>
@@ -685,26 +685,26 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                       </thead>
                       <tbody>
                         {displayDerivedWOs.map((wo, idx) => (
-                          <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
+                          <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800">
                             <td className="p-3">
-                              <span className="font-medium text-blue-600">{wo.wo_number}</span>
+                              <span className="font-medium text-blue-600 dark:text-blue-400">{wo.wo_number}</span>
                             </td>
-                            <td className="p-3 text-slate-700">{wo.machine_name}</td>
-                            <td className="p-3 font-medium text-slate-800">{wo.product_name}</td>
-                            <td className="p-3 font-bold text-slate-800">{wo.total_output.toLocaleString()}</td>
-                            <td className="p-3 text-green-600 font-medium">{wo.grade_a.toLocaleString()}</td>
+                            <td className="p-3 text-slate-700 dark:text-slate-200">{wo.machine_name}</td>
+                            <td className="p-3 font-medium text-slate-800 dark:text-slate-100">{wo.product_name}</td>
+                            <td className="p-3 font-bold text-slate-800 dark:text-slate-100">{wo.total_output.toLocaleString()}</td>
+                            <td className="p-3 text-green-600 font-medium dark:text-green-400">{wo.grade_a.toLocaleString()}</td>
                             <td className="p-3">
-                              <span className={`px-2 py-1 rounded text-xs font-bold ${wo.efficiency >= 100 ? 'bg-green-100 text-green-700' :
-                                wo.efficiency >= 70 ? 'bg-yellow-100 text-yellow-700' :
-                                  'bg-red-100 text-red-700'
+                              <span className={`px-2 py-1 rounded text-xs font-bold ${wo.efficiency >= 100 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                                wo.efficiency >= 70 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                                  'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                                 }`}>
                                 {wo.efficiency}%
                               </span>
                             </td>
                             <td className="p-3">
-                              <span className={`px-2 py-1 rounded text-xs font-bold ${wo.efficiency_waktu >= 100 ? 'bg-green-100 text-green-700' :
-                                wo.efficiency_waktu >= 70 ? 'bg-yellow-100 text-yellow-700' :
-                                  'bg-red-100 text-red-700'
+                              <span className={`px-2 py-1 rounded text-xs font-bold ${wo.efficiency_waktu >= 100 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                                wo.efficiency_waktu >= 70 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                                  'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                                 }`}>
                                 {wo.efficiency_waktu}%
                               </span>
@@ -712,7 +712,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                             <td className="p-3">
                               <div className="flex gap-1">
                                 {wo.shifts.sort().map(s => (
-                                  <span key={s} className="px-2 py-0.5 bg-slate-100 rounded text-xs">S{s}</span>
+                                  <span key={s} className="px-2 py-0.5 bg-slate-100 rounded text-xs dark:bg-slate-800">S{s}</span>
                                 ))}
                               </div>
                             </td>
@@ -729,7 +729,7 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="text-left text-slate-500 border-b bg-slate-50">
+                      <tr className="text-left text-slate-500 border-b bg-slate-50 dark:bg-slate-900 dark:text-slate-400">
                         <th className="p-3 font-medium">WO Number</th>
                         <th className="p-3 font-medium">Mesin</th>
                         <th className="p-3 font-medium">Produk</th>
@@ -747,34 +747,34 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                     </thead>
                     <tbody>
                       {workOrders.map((wo) => (
-                        <tr key={wo.wo_id} className="border-b border-slate-100 hover:bg-slate-50">
+                        <tr key={wo.wo_id} className="border-b border-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800">
                           <td className="p-3">
-                            <span className="font-medium text-blue-600">{wo.wo_number}</span>
+                            <span className="font-medium text-blue-600 dark:text-blue-400">{wo.wo_number}</span>
                           </td>
-                          <td className="p-3 text-slate-700">{wo.machine_name}</td>
+                          <td className="p-3 text-slate-700 dark:text-slate-200">{wo.machine_name}</td>
                           <td className="p-3">
-                            <div className="font-medium text-slate-800">{wo.product_name}</div>
+                            <div className="font-medium text-slate-800 dark:text-slate-100">{wo.product_name}</div>
                             {wo.product_code && (
                               <div className="text-xs text-slate-400">{wo.product_code}</div>
                             )}
                           </td>
                           <td className="p-3 font-medium">{wo.target_quantity.toLocaleString()}</td>
-                          <td className="p-3 font-bold text-slate-800">{wo.actual_quantity.toLocaleString()}</td>
-                          <td className="p-3 text-green-600 font-medium">{wo.good_quantity.toLocaleString()}</td>
-                          <td className="p-3 text-red-600">{wo.reject_quantity.toLocaleString()}</td>
-                          <td className="p-3 text-yellow-600">{wo.rework_quantity.toLocaleString()}</td>
+                          <td className="p-3 font-bold text-slate-800 dark:text-slate-100">{wo.actual_quantity.toLocaleString()}</td>
+                          <td className="p-3 text-green-600 font-medium dark:text-green-400">{wo.good_quantity.toLocaleString()}</td>
+                          <td className="p-3 text-red-600 dark:text-red-400">{wo.reject_quantity.toLocaleString()}</td>
+                          <td className="p-3 text-yellow-600 dark:text-yellow-400">{wo.rework_quantity.toLocaleString()}</td>
                           <td className="p-3">
-                            <span className={`px-2 py-1 rounded text-xs font-bold ${wo.efficiency >= 100 ? 'bg-green-100 text-green-700' :
-                              wo.efficiency >= 70 ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-red-100 text-red-700'
+                            <span className={`px-2 py-1 rounded text-xs font-bold ${wo.efficiency >= 100 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                              wo.efficiency >= 70 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                               }`}>
                               {wo.efficiency}%
                             </span>
                           </td>
                           <td className="p-3">
-                            <span className={`px-2 py-1 rounded text-xs font-bold ${wo.quality_rate >= 95 ? 'bg-green-100 text-green-700' :
-                              wo.quality_rate >= 85 ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-red-100 text-red-700'
+                            <span className={`px-2 py-1 rounded text-xs font-bold ${wo.quality_rate >= 95 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                              wo.quality_rate >= 85 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                               }`}>
                               {wo.quality_rate}%
                             </span>
@@ -782,11 +782,11 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
                           <td className="p-3">
                             <div className="flex gap-1">
                               {wo.shifts_worked.map(s => (
-                                <span key={s} className="px-2 py-0.5 bg-slate-100 rounded text-xs">S{s}</span>
+                                <span key={s} className="px-2 py-0.5 bg-slate-100 rounded text-xs dark:bg-slate-800">S{s}</span>
                               ))}
                             </div>
                           </td>
-                          <td className="p-3 text-sm text-slate-600">
+                          <td className="p-3 text-sm text-slate-600 dark:text-slate-300">
                             {wo.operators.length > 0 ? wo.operators.join(', ') : '-'}
                           </td>
                           <td className="p-3">

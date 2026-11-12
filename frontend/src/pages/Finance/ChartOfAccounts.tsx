@@ -79,17 +79,17 @@ const [accounts, setAccounts] = useState<Account[]>([])
   const getTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case 'asset':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
       case 'liability':
-        return 'bg-red-100 text-red-800'
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
       case 'equity':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
       case 'revenue':
-        return 'bg-purple-100 text-purple-800'
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
       case 'expense':
-        return 'bg-orange-100 text-orange-800'
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
     }
   }
 
@@ -482,7 +482,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className={`text-sm font-medium ${
-                          account.balance >= 0 ? 'text-green-600' : 'text-red-600'
+                          account.balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                         }`}>
                           {formatRupiah(account.balance)}
                         </div>
@@ -491,20 +491,20 @@ const [accounts, setAccounts] = useState<Account[]>([])
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleViewAccount(account)}
-                            className="text-blue-600 hover:text-blue-900 inline-flex items-center"
+                            className="text-blue-600 hover:text-blue-900 inline-flex items-center dark:text-blue-400"
                             title="Lihat Riwayat Transaksi"
                           >
                             <EyeIcon className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => handleEditAccount(account)}
-                            className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
+                            className="text-indigo-600 hover:text-indigo-900 inline-flex items-center dark:text-indigo-400"
                             title="Edit Account"
                           >
                             <PencilIcon className="h-4 w-4 mr-1" />{t('common.edit')}</button>
                           <button 
                             onClick={() => handleDeleteAccount(account)}
-                            className="text-red-600 hover:text-red-900 inline-flex items-center"
+                            className="text-red-600 hover:text-red-900 inline-flex items-center dark:text-red-400"
                             title="Delete Account"
                           >
                             <TrashIcon className="h-4 w-4 mr-1" />{t('common.delete')}</button>
@@ -527,7 +527,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
               <h3 className="text-lg font-semibold">{editingAccount ? 'Edit Account' : 'Add New Account'}</h3>
               <button 
                 onClick={() => setShowAddModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white"
               >
                 ✕
               </button>
@@ -548,7 +548,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
                   required 
                 />
                 {!editingAccount && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">
                     {codeHint || 'Kode terisi otomatis setelah memilih akun induk atau jenis akun; boleh diubah.'}
                   </p>
                 )}
@@ -627,7 +627,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
                   <select className="input w-full" value={formData.currency} onChange={(e) => setFormData({...formData, currency: e.target.value})}>
                     {['IDR', 'USD', 'CNY', 'EUR', 'JPY', 'SGD'].map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
-                  {formData.currency !== 'IDR' && <p className="mt-1 text-xs text-gray-500">Transaksi di akun ini memakai kurs ke Rupiah. Mata uang tidak bisa diubah setelah ada jurnal.</p>}
+                  {formData.currency !== 'IDR' && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Transaksi di akun ini memakai kurs ke Rupiah. Mata uang tidak bisa diubah setelah ada jurnal.</p>}
                 </div>
               )}
 
@@ -704,7 +704,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
               </div>
               <button
                 onClick={handleCloseDetailModal}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl dark:hover:text-white"
               >
                 &times;
               </button>
@@ -716,11 +716,11 @@ const [accounts, setAccounts] = useState<Account[]>([])
 
             <div className="flex flex-wrap items-end gap-2 mb-3">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Dari</label>
+                <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Dari</label>
                 <input type="date" className="input" value={detailFrom} onChange={(e) => setDetailPeriod(e.target.value, detailTo)} />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Sampai</label>
+                <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Sampai</label>
                 <input type="date" className="input" value={detailTo} onChange={(e) => setDetailPeriod(detailFrom, e.target.value)} />
               </div>
               {[
@@ -754,9 +754,9 @@ const [accounts, setAccounts] = useState<Account[]>([])
             )}
 
             {loadingDetail ? (
-              <div className="text-gray-500 text-sm py-8 text-center">Memuat...</div>
+              <div className="text-gray-500 text-sm py-8 text-center dark:text-gray-400">Memuat...</div>
             ) : detailTransactions.length === 0 ? (
-              <div className="text-gray-500 text-sm py-8 text-center">
+              <div className="text-gray-500 text-sm py-8 text-center dark:text-gray-400">
                 Belum ada transaksi tercatat untuk akun ini.
               </div>
             ) : (
@@ -801,7 +801,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
                         <td className="py-2 pr-3 text-right">
                           {tx.credit_amount > 0 ? formatRupiah(tx.credit_amount) : '-'}
                         </td>
-                        <td className="py-2 text-blue-600">{link ? '→' : ''}</td>
+                        <td className="py-2 text-blue-600 dark:text-blue-400">{link ? '→' : ''}</td>
                       </tr>
                     )
                   })}
@@ -821,14 +821,14 @@ const [accounts, setAccounts] = useState<Account[]>([])
               </h3>
               <button
                 onClick={handleCloseRecurringTxDetail}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl dark:hover:text-white"
               >
                 &times;
               </button>
             </div>
 
             {loadingRecurringTxDetail ? (
-              <div className="text-gray-500 text-sm py-8 text-center">Memuat...</div>
+              <div className="text-gray-500 text-sm py-8 text-center dark:text-gray-400">Memuat...</div>
             ) : recurringTxDetail && (
               <>
                 {recurringTxDetail.recurring_payment && (
@@ -910,14 +910,14 @@ const [accounts, setAccounts] = useState<Account[]>([])
               </h3>
               <button
                 onClick={handleClosePayrollPeriodDetail}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl dark:hover:text-white"
               >
                 &times;
               </button>
             </div>
 
             {loadingPayrollPeriodDetail ? (
-              <div className="text-gray-500 text-sm py-8 text-center">Memuat...</div>
+              <div className="text-gray-500 text-sm py-8 text-center dark:text-gray-400">Memuat...</div>
             ) : payrollPeriodDetail && (
               <>
                 <div className="grid grid-cols-2 gap-3 text-sm mb-4 bg-gray-50 dark:bg-gray-900 rounded-md p-4">

@@ -153,21 +153,21 @@ const DemandPlanning: React.FC = () => {
 
   const getConfidenceColor = (confidence: number | undefined | null) => {
     if (confidence === undefined || confidence === null || isNaN(confidence)) {
-      return 'text-gray-600 bg-gray-100';
+      return 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
     }
-    if (confidence >= 90) return 'text-green-600 bg-green-100';
-    if (confidence >= 80) return 'text-blue-600 bg-blue-100';
-    if (confidence >= 70) return 'text-yellow-600 bg-yellow-100';
-    return 'text-red-600 bg-red-100';
+    if (confidence >= 90) return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
+    if (confidence >= 80) return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400';
+    if (confidence >= 70) return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
+    return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
   };
 
   const getAccuracyColor = (grade: string) => {
     switch (grade) {
-      case 'A': return 'text-green-600 bg-green-100';
-      case 'B': return 'text-blue-600 bg-blue-100';
-      case 'C': return 'text-yellow-600 bg-yellow-100';
-      case 'D': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'A': return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
+      case 'B': return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'C': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case 'D': return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
+      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
@@ -188,14 +188,14 @@ const DemandPlanning: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/mrp"
-            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to MRP Dashboard
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Demand Planning</h1>
-            <p className="text-gray-600 mt-1">Forecast demand and plan production requirements</p>
+            <p className="text-gray-600 mt-1 dark:text-gray-300">Forecast demand and plan production requirements</p>
           </div>
         </div>
         <div className="flex space-x-3">
@@ -360,7 +360,7 @@ const DemandPlanning: React.FC = () => {
                       const variance = forecast.variance_percent ?? 0;
                       return (
                         <span className={`font-medium ${
-                          variance >= 0 ? 'text-green-600' : 'text-red-600'
+                          variance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                         }`}>
                           {variance >= 0 ? '+' : ''}{formatPercent(forecast.variance_percent)}
                         </span>
@@ -408,15 +408,15 @@ const DemandPlanning: React.FC = () => {
               </div>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">MAPE:</span>
+                  <span className="text-gray-600 dark:text-gray-300">MAPE:</span>
                   <span className="font-medium">{formatPercent(accuracy.mape)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">MAD:</span>
+                  <span className="text-gray-600 dark:text-gray-300">MAD:</span>
                   <span className="font-medium">{formatNumber(accuracy.mad)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">MSE:</span>
+                  <span className="text-gray-600 dark:text-gray-300">MSE:</span>
                   <span className="font-medium">{formatNumber(accuracy.mse)}</span>
                 </div>
               </div>

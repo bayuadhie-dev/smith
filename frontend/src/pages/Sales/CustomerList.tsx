@@ -94,11 +94,11 @@ const [customers, setCustomers] = useState<Customer[]>([])
 
   const getTypeColor = (type: string) => {
     switch ((type || '').toLowerCase()) {
-      case 'retail': return 'bg-blue-100 text-blue-800'
-      case 'wholesale': return 'bg-green-100 text-green-800'
-      case 'distributor': return 'bg-purple-100 text-purple-800'
-      case 'corporate': return 'bg-orange-100 text-orange-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'retail': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+      case 'wholesale': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+      case 'distributor': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+      case 'corporate': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
     }
   }
 
@@ -269,8 +269,8 @@ const [customers, setCustomers] = useState<Customer[]>([])
                 <tr key={customer.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                        <BuildingOfficeIcon className="h-5 w-5 text-blue-600" />
+                      <div className="bg-blue-100 p-2 rounded-lg mr-3 dark:bg-blue-900/30">
+                        <BuildingOfficeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                       </div>
                       <div>
                         <div className="text-sm font-medium text-gray-900 dark:text-white">{customer.company_name}</div>
@@ -340,7 +340,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
                   
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                      customer.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      customer.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                     }`}>
                       {customer.is_active ? 'Active' : 'Inactive'}
                     </div>
@@ -350,12 +350,12 @@ const [customers, setCustomers] = useState<Customer[]>([])
                     <div className="flex gap-2">
                       <Link
                         to={`/app/sales/customers/${customer.id}`}
-                        className="text-indigo-600 hover:text-indigo-900"
+                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400"
                       >
                       </Link>
                       <Link
                         to={`/app/sales/customers/${customer.id}/edit`}
-                        className="text-green-600 hover:text-green-900"
+                        className="text-green-600 hover:text-green-900 dark:text-green-400"
                       >{t('common.edit')}</Link>
                     </div>
                   </td>

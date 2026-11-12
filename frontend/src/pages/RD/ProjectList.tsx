@@ -73,12 +73,12 @@ export default function ProjectList() {
 
   const getTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      research: 'text-blue-600 bg-blue-100',
-      development: 'text-green-600 bg-green-100',
-      innovation: 'text-purple-600 bg-purple-100',
-      improvement: 'text-orange-600 bg-orange-100'
+      research: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400',
+      development: 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400',
+      innovation: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30 dark:text-purple-400',
+      improvement: 'text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400'
     }
-    return colors[type] || 'text-gray-600 bg-gray-100'
+    return colors[type] || 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300'
   }
 
 
@@ -190,7 +190,7 @@ export default function ProjectList() {
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-blue-600">{summary.active_projects || 0}</div>
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{summary.active_projects || 0}</div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Active Projects</div>
             </div>
             <UsersIcon className="h-8 w-8 text-blue-400" />
@@ -199,7 +199,7 @@ export default function ProjectList() {
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-green-600">{summary.completed_projects || 0}</div>
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{summary.completed_projects || 0}</div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Completed</div>
             </div>
             <CalendarIcon className="h-8 w-8 text-green-400" />
@@ -208,7 +208,7 @@ export default function ProjectList() {
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-purple-600">
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                 Rp {((summary.total_budget || 0) / 1000000).toFixed(0)}M
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Total Budget</div>
@@ -302,21 +302,21 @@ export default function ProjectList() {
                     <div className="flex items-center justify-end gap-2">
                       <Link
                         to={`/app/rd/projects/${project.id}`}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
                         title="View Details"
                       >
                         <EyeIcon className="h-4 w-4" />
                       </Link>
                       <Link
                         to={`/app/rd/projects/${project.id}/edit`}
-                        className="text-indigo-600 hover:text-indigo-900"
+                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400"
                         title="Edit Project"
                       >
                         <PencilIcon className="h-4 w-4" />
                       </Link>
                       <button
                         onClick={() => handleDelete(project.id, project.project_name)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-red-600 hover:text-red-900 dark:text-red-400"
                         title="Delete Project"
                       >
                         <TrashIcon className="h-4 w-4" />

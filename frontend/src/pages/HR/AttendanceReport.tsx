@@ -158,11 +158,11 @@ const AttendanceReport: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'present':
-        return <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Hadir</span>;
+        return <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium dark:bg-green-900/30 dark:text-green-300">Hadir</span>;
       case 'late':
-        return <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">Terlambat</span>;
+        return <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium dark:bg-yellow-900/30 dark:text-yellow-300">Terlambat</span>;
       case 'absent':
-        return <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">Absen</span>;
+        return <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium dark:bg-red-900/30 dark:text-red-300">Absen</span>;
       default:
         return <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-full text-xs font-medium">{status}</span>;
     }
@@ -186,8 +186,8 @@ const AttendanceReport: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Users className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+                <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Hadir Hari Ini</p>
@@ -198,36 +198,36 @@ const AttendanceReport: React.FC = () => {
           
           <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <UserCheck className="w-5 h-5 text-green-600" />
+              <div className="p-2 bg-green-100 rounded-lg dark:bg-green-900/30">
+                <UserCheck className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Tepat Waktu</p>
-                <p className="text-2xl font-bold text-green-600">{dashboardStats.today.present}</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{dashboardStats.today.present}</p>
               </div>
             </div>
           </div>
           
           <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <AlertTriangle className="w-5 h-5 text-yellow-600" />
+              <div className="p-2 bg-yellow-100 rounded-lg dark:bg-yellow-900/30">
+                <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Terlambat Hari Ini</p>
-                <p className="text-2xl font-bold text-yellow-600">{dashboardStats.today.late}</p>
+                <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{dashboardStats.today.late}</p>
               </div>
             </div>
           </div>
           
           <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <TrendingUp className="w-5 h-5 text-purple-600" />
+              <div className="p-2 bg-purple-100 rounded-lg dark:bg-purple-900/30">
+                <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">% Terlambat Bulan Ini</p>
-                <p className="text-2xl font-bold text-purple-600">{dashboardStats.month.late_percentage}%</p>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{dashboardStats.month.late_percentage}%</p>
               </div>
             </div>
           </div>
@@ -236,14 +236,14 @@ const AttendanceReport: React.FC = () => {
 
       {/* Late Today Alert */}
       {lateToday.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-5 h-5 text-yellow-600" />
-            <h3 className="font-semibold text-yellow-800">Karyawan Terlambat Hari Ini ({lateToday.length})</h3>
+            <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+            <h3 className="font-semibold text-yellow-800 dark:text-yellow-300">Karyawan Terlambat Hari Ini ({lateToday.length})</h3>
           </div>
           <div className="flex flex-wrap gap-2">
             {lateToday.map((emp, idx) => (
-              <span key={idx} className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+              <span key={idx} className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm dark:bg-yellow-900/30 dark:text-yellow-300">
                 {emp.name} - {emp.clock_in}
               </span>
             ))}
@@ -259,8 +259,8 @@ const AttendanceReport: React.FC = () => {
               onClick={() => setActiveTab('daily')}
               className={`px-6 py-3 font-medium transition-colors ${
                 activeTab === 'daily' 
-                  ? 'text-blue-600 border-b-2 border-blue-600' 
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-blue-600 border-b-2 border-blue-600 dark:text-blue-400' 
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -272,8 +272,8 @@ const AttendanceReport: React.FC = () => {
               onClick={() => setActiveTab('monthly')}
               className={`px-6 py-3 font-medium transition-colors ${
                 activeTab === 'monthly' 
-                  ? 'text-blue-600 border-b-2 border-blue-600' 
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-blue-600 border-b-2 border-blue-600 dark:text-blue-400' 
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -365,7 +365,7 @@ const AttendanceReport: React.FC = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : error ? (
-            <div className="text-center py-12 text-red-600">{error}</div>
+            <div className="text-center py-12 text-red-600 dark:text-red-400">{error}</div>
           ) : activeTab === 'daily' ? (
             <>
               {/* Daily Records Table */}
@@ -460,10 +460,10 @@ const AttendanceReport: React.FC = () => {
                       <tr key={idx} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                         <td className="py-3 px-4 font-medium">{summary.name}</td>
                         <td className="py-3 px-4 text-center">{summary.total_days}</td>
-                        <td className="py-3 px-4 text-center text-green-600 font-medium">{summary.present_days}</td>
-                        <td className="py-3 px-4 text-center text-yellow-600 font-medium">{summary.late_days}</td>
+                        <td className="py-3 px-4 text-center text-green-600 font-medium dark:text-green-400">{summary.present_days}</td>
+                        <td className="py-3 px-4 text-center text-yellow-600 font-medium dark:text-yellow-400">{summary.late_days}</td>
                         <td className="py-3 px-4 text-center">{summary.total_worked_hours} jam</td>
-                        <td className="py-3 px-4 text-center text-purple-600">{summary.total_overtime_hours} jam</td>
+                        <td className="py-3 px-4 text-center text-purple-600 dark:text-purple-400">{summary.total_overtime_hours} jam</td>
                       </tr>
                     ))
                   )}

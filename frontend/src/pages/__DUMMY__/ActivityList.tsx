@@ -92,20 +92,20 @@ const ActivityList = () => {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'completed': return 'bg-green-100 text-green-800'
-      case 'in_progress': return 'bg-blue-100 text-blue-800'
-      case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'cancelled': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+      case 'in_progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+      case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
     }
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
-      case 'high': return 'text-red-600'
-      case 'medium': return 'text-yellow-600'
-      case 'low': return 'text-green-600'
-      default: return 'text-gray-600'
+      case 'high': return 'text-red-600 dark:text-red-400'
+      case 'medium': return 'text-yellow-600 dark:text-yellow-400'
+      case 'low': return 'text-green-600 dark:text-green-400'
+      default: return 'text-gray-600 dark:text-gray-300'
     }
   }
 
@@ -234,7 +234,7 @@ const ActivityList = () => {
         {activities.length === 0 ? (
           <div className="text-center py-12">
             <CalendarDaysIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No activities found</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No activities found</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {searchTerm || Object.values(filters).some(f => f) 
                 ? 'Try adjusting your search or filters'
@@ -278,16 +278,16 @@ const ActivityList = () => {
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
                           <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                            activity.activity_type === 'call' ? 'bg-blue-100 text-blue-600' :
-                            activity.activity_type === 'email' ? 'bg-green-100 text-green-600' :
-                            activity.activity_type === 'meeting' ? 'bg-purple-100 text-purple-600' :
-                            'bg-gray-100 text-gray-600'
+                            activity.activity_type === 'call' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' :
+                            activity.activity_type === 'email' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' :
+                            activity.activity_type === 'meeting' ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' :
+                            'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                           }`}>
                             {getActivityIcon(activity.activity_type)}
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {activity.subject}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -311,7 +311,7 @@ const ActivityList = () => {
                         {activity.priority}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {activity.customer_name && (
                         <div className="flex items-center">
                           <BuildingOfficeIcon className="h-4 w-4 text-gray-400 mr-1" />
@@ -334,7 +334,7 @@ const ActivityList = () => {
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {activity.assigned_user_name || <span className="text-gray-400">Unassigned</span>}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
@@ -389,8 +389,8 @@ const ActivityList = () => {
                         onClick={() => setCurrentPage(page)}
                         className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                           page === currentPage
-                            ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
-                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                            ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400'
+                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-400 dark:border-gray-600'
                         }`}
                       >
                         {page}

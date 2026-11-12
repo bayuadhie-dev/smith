@@ -50,7 +50,7 @@ interface DayDetail {
 const PAGE = 50
 const th = 'px-4 py-2.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400'
 const inputCls = 'rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white'
-const btnCls = 'rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-60 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'
+const btnCls = 'rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-60 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
 const MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -169,10 +169,10 @@ const DayModal = ({ deviceId, date, canEdit, onClose, onChanged }: {
             <h2 className="text-base font-semibold text-gray-900 dark:text-white">{row ? personName(row.employee, row.device_name, row.device_user_id) : `ID ${deviceId}`}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">{fmtDateLong(date)}</p>
           </div>
-          <button onClick={onClose} className="text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400">Tutup</button>
+          <button onClick={onClose} className="text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">Tutup</button>
         </div>
         <div className="space-y-5 p-5">
-          {loading && <p className="text-sm text-gray-500">Memuat...</p>}
+          {loading && <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>}
           {!loading && detail && (
             <>
               {row && (
@@ -187,7 +187,7 @@ const DayModal = ({ deviceId, date, canEdit, onClose, onChanged }: {
 
               <div>
                 <h3 className="mb-2 text-sm font-semibold text-gray-900 dark:text-white">Cap dari mesin</h3>
-                {detail.punches.length === 0 ? <p className="text-sm text-gray-500">Tidak ada cap pada hari ini.</p> : (
+                {detail.punches.length === 0 ? <p className="text-sm text-gray-500 dark:text-gray-400">Tidak ada cap pada hari ini.</p> : (
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50 text-left text-xs font-medium text-gray-500 dark:bg-gray-900 dark:text-gray-400">
                       <tr><th className="px-3 py-2">Jam</th><th className="px-3 py-2">Perlakuan</th></tr>
@@ -215,17 +215,17 @@ const DayModal = ({ deviceId, date, canEdit, onClose, onChanged }: {
 
               <div>
                 <h3 className="mb-2 text-sm font-semibold text-gray-900 dark:text-white">Keterangan</h3>
-                {!row || row.adjustments.length === 0 ? <p className="text-sm text-gray-500">Belum ada keterangan untuk hari ini.</p> : (
+                {!row || row.adjustments.length === 0 ? <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada keterangan untuk hari ini.</p> : (
                   <ul className="divide-y divide-gray-100 rounded-md border border-gray-200 dark:divide-gray-700 dark:border-gray-700">
                     {row.adjustments.map((a, i) => (
                       <li key={i} className="flex items-start justify-between gap-3 px-3 py-2 text-sm">
                         <div>
                           <span className="font-medium text-gray-900 dark:text-white">{a.label}</span>
-                          {a.letter_number && <span className="ml-2 text-gray-500">surat {a.letter_number}</span>}
-                          {(a.corrected_in || a.corrected_out) && <span className="ml-2 text-gray-500">koreksi {a.corrected_in || '-'} / {a.corrected_out || '-'}</span>}
+                          {a.letter_number && <span className="ml-2 text-gray-500 dark:text-gray-400">surat {a.letter_number}</span>}
+                          {(a.corrected_in || a.corrected_out) && <span className="ml-2 text-gray-500 dark:text-gray-400">koreksi {a.corrected_in || '-'} / {a.corrected_out || '-'}</span>}
                           {a.note && <div className="text-xs text-gray-500 dark:text-gray-400">{a.note}</div>}
                         </div>
-                        {a.source === 'sdm' ? <span className="whitespace-nowrap text-xs text-gray-500">dari modul SDM</span>
+                        {a.source === 'sdm' ? <span className="whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">dari modul SDM</span>
                           : canEdit && <button onClick={() => remove(a)} className="text-xs font-medium text-red-600 hover:underline dark:text-red-400">Hapus</button>}
                       </li>
                     ))}
@@ -320,8 +320,8 @@ const HolidayDialog = ({ defaultDate, onClose, onSaved }: { defaultDate: string;
 
 /* ------------------------------------------------------------------ kalender */
 const LEGEND: [string, string][] = [
-  ['bg-emerald-100 border-emerald-300', 'Hadir'], ['bg-emerald-300 border-emerald-500', 'Lembur'], ['bg-amber-100 border-amber-300', 'Terlambat / pulang cepat / cap tidak lengkap'],
-  ['bg-red-100 border-red-300', 'Tidak ada cap'], ['bg-sky-100 border-sky-300', 'Izin sah'], ['bg-gray-100 border-gray-300', 'Libur'],
+  ['bg-emerald-100 border-emerald-300 dark:bg-emerald-900/30', 'Hadir'], ['bg-emerald-300 border-emerald-500', 'Lembur'], ['bg-amber-100 border-amber-300 dark:bg-amber-900/30', 'Terlambat / pulang cepat / cap tidak lengkap'],
+  ['bg-red-100 border-red-300 dark:bg-red-900/30', 'Tidak ada cap'], ['bg-sky-100 border-sky-300 dark:bg-sky-900/30', 'Izin sah'], ['bg-gray-100 border-gray-300 dark:bg-gray-700 dark:border-gray-600', 'Libur'],
 ]
 const cellStyle = (d: Day | undefined): string => {
   if (!d) return 'bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700'
@@ -381,10 +381,10 @@ const CalendarView = ({ options, tick, onOpenDay }: {
         <span className="min-w-[8rem] text-center text-sm font-semibold text-gray-900 dark:text-white">{MONTHS[month.getMonth()]} {month.getFullYear()}</span>
         <button className={btnCls} onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}>Bulan berikutnya</button>
       </div>
-      {!sel && <p className="rounded-lg border border-gray-200 bg-white p-6 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800">Pilih satu karyawan untuk melihat kalender kehadirannya.</p>}
+      {!sel && <p className="rounded-lg border border-gray-200 bg-white p-6 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">Pilih satu karyawan untuk melihat kalender kehadirannya.</p>}
       {sel && (
         <div className="rounded-lg border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800 sm:p-3">
-          {loading && <p className="p-2 text-xs text-gray-500">Memuat...</p>}
+          {loading && <p className="p-2 text-xs text-gray-500 dark:text-gray-400">Memuat...</p>}
           <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-gray-500 dark:text-gray-400 sm:text-xs">
             {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((x) => <div key={x} className="py-1">{x}</div>)}
           </div>
@@ -578,7 +578,7 @@ const FingerprintAttendance = () => {
       />
 
       {(syncing || (lastPunch && Date.now() - new Date(lastPunch).getTime() > 36 * 3600 * 1000)) && (
-        <p className={`text-xs ${syncing ? 'text-emerald-700' : 'text-amber-600'}`}>
+        <p className={`text-xs ${syncing ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-600 dark:text-amber-400'}`}>
           {syncing ? syncMsg : 'Data dari mesin sudah lama. Klik Perbarui data untuk menarik data terbaru.'}
         </p>
       )}
@@ -586,12 +586,12 @@ const FingerprintAttendance = () => {
       <div className="flex flex-wrap items-center gap-2">
         {presets().map((p) => (
           <button key={p.label} onClick={() => { setFrom(p.from); setTo(p.to) }}
-            className={`rounded-md border px-3 py-1.5 text-sm ${from === p.from && to === p.to ? 'border-emerald-600 bg-emerald-50 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200'}`}>
+            className={`rounded-md border px-3 py-1.5 text-sm ${from === p.from && to === p.to ? 'border-emerald-600 bg-emerald-50 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'}`}>
             {p.label}
           </button>
         ))}
         <input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} className={inputCls} />
-        <span className="text-sm text-gray-500">sampai</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">sampai</span>
         <input type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} className={inputCls} />
         <div className="w-60">
           <SearchableSelect options={empOptions} value={employeeId} onChange={(v) => setEmployeeId(v ? Number(v) : null)} placeholder="Semua karyawan" />
@@ -643,7 +643,7 @@ const FingerprintAttendance = () => {
 
       <div className="flex items-center gap-1 border-b border-gray-200 dark:border-gray-700">
         {([['people', 'Per karyawan'], ['days', 'Harian'], ['calendar', 'Kalender']] as const).map(([k, l]) => (
-          <button key={k} onClick={() => setTab(k)} className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === k ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}>{l}</button>
+          <button key={k} onClick={() => setTab(k)} className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === k ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'}`}>{l}</button>
         ))}
       </div>
 
@@ -686,8 +686,8 @@ const FingerprintAttendance = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {loading && <tr><td colSpan={13} className="px-4 py-8 text-center text-sm text-gray-500">Memuat...</td></tr>}
-                {!loading && (data?.people.length ?? 0) === 0 && <tr><td colSpan={13} className="px-4 py-10 text-center text-sm text-gray-500">Belum ada data pada periode ini.</td></tr>}
+                {loading && <tr><td colSpan={13} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+                {!loading && (data?.people.length ?? 0) === 0 && <tr><td colSpan={13} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data pada periode ini.</td></tr>}
                 {data?.people.map((p) => (
                   <tr key={p.device_user_id} onClick={() => goDaily(p)} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/40">
                     <td className="px-4 py-2.5 text-sm">
@@ -776,11 +776,11 @@ const FingerprintAttendance = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {loading && <tr><td colSpan={11} className="px-4 py-8 text-center text-sm text-gray-500">Memuat...</td></tr>}
-                {!loading && pageRows.length === 0 && <tr><td colSpan={11} className="px-4 py-10 text-center text-sm text-gray-500">Tidak ada baris yang cocok.</td></tr>}
+                {loading && <tr><td colSpan={11} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+                {!loading && pageRows.length === 0 && <tr><td colSpan={11} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Tidak ada baris yang cocok.</td></tr>}
                 {pageRows.map((d) => (
                   <tr key={`${d.device_user_id}-${d.date}`} onClick={() => setDayModal({ deviceId: d.device_user_id, date: d.date })} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                    <td className="whitespace-nowrap px-4 py-2.5 text-sm"><span className="text-gray-900 dark:text-white">{fmtDate(d.date)}</span> <span className="text-xs text-gray-500">{d.weekday}</span></td>
+                    <td className="whitespace-nowrap px-4 py-2.5 text-sm"><span className="text-gray-900 dark:text-white">{fmtDate(d.date)}</span> <span className="text-xs text-gray-500 dark:text-gray-400">{d.weekday}</span></td>
                     <td className="px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200">{personName(d.employee, d.device_name, d.device_user_id)}{!d.employee && <span className="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">belum dipetakan</span>}</td>
                     <td className="px-4 py-2.5 text-sm tabular-nums">{d.first || '-'}</td>
                     <td className="px-4 py-2.5 text-sm tabular-nums">{d.last && d.punches > 1 ? d.last : '-'}</td>

@@ -41,7 +41,7 @@ export default function BatchRecord() {
   }
 
   if (!record) {
-    return <div className="p-6 text-center text-gray-500">Batch tidak ditemukan.</div>;
+    return <div className="p-6 text-center text-gray-500 dark:text-gray-400">Batch tidak ditemukan.</div>;
   }
 
   return (
@@ -84,7 +84,7 @@ export default function BatchRecord() {
         {/* Bahan Baku */}
         <Section title="Bahan Baku Terpakai">
           {record.materials.length === 0 ? (
-            <p className="text-sm text-gray-500 py-2">Belum ada data bahan aktual untuk batch ini.</p>
+            <p className="text-sm text-gray-500 py-2 dark:text-gray-400">Belum ada data bahan aktual untuk batch ini.</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
@@ -107,14 +107,14 @@ export default function BatchRecord() {
                   >
                     <td className="py-2 pr-3 font-medium text-gray-900 dark:text-white">
                       <span className="flex items-center gap-1.5">
-                        {m.material_id && <CubeIcon className="h-3.5 w-3.5 text-primary-600 flex-shrink-0 print:hidden" />}
+                        {m.material_id && <CubeIcon className="h-3.5 w-3.5 text-primary-600 flex-shrink-0 print:hidden dark:text-primary-400" />}
                         {m.item_name}
                       </span>
                     </td>
                     <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{m.actual_batch_number || '-'}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">{m.quantity_planned.toLocaleString('id-ID')}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">{m.quantity_actual != null ? m.quantity_actual.toLocaleString('id-ID') : '-'}</td>
-                    <td className={`py-2 pr-3 text-right tabular-nums ${m.variance != null && m.variance !== 0 ? 'text-amber-600' : ''}`}>
+                    <td className={`py-2 pr-3 text-right tabular-nums ${m.variance != null && m.variance !== 0 ? 'text-amber-600 dark:text-amber-400' : ''}`}>
                       {m.variance != null ? m.variance.toLocaleString('id-ID') : '-'}
                     </td>
                     <td className="py-2 text-gray-500 dark:text-gray-400">{m.uom}</td>
@@ -128,7 +128,7 @@ export default function BatchRecord() {
         {/* Parameter Proses & Hasil per Shift */}
         <Section title="Parameter Proses & Hasil Produksi (per Shift)">
           {record.shifts.length === 0 ? (
-            <p className="text-sm text-gray-500 py-2">Belum ada input shift untuk batch ini.</p>
+            <p className="text-sm text-gray-500 py-2 dark:text-gray-400">Belum ada input shift untuk batch ini.</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
@@ -151,22 +151,22 @@ export default function BatchRecord() {
                     <td className="py-2 pr-3">{s.supervisor_name || '-'}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">{s.target_quantity.toLocaleString('id-ID')}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">{s.actual_quantity.toLocaleString('id-ID')}</td>
-                    <td className="py-2 text-right tabular-nums text-red-600">{s.reject_quantity.toLocaleString('id-ID')}</td>
+                    <td className="py-2 text-right tabular-nums text-red-600 dark:text-red-400">{s.reject_quantity.toLocaleString('id-ID')}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
           <div className="flex justify-end gap-6 pt-3 mt-3 border-t border-gray-100 dark:border-gray-700 text-sm">
-            <p><span className="text-gray-500">Total Reject:</span> <strong>{record.summary.total_reject.toLocaleString('id-ID')}</strong></p>
-            <p><span className="text-gray-500">Yield:</span> <strong>{record.summary.yield_percent != null ? `${record.summary.yield_percent}%` : '-'}</strong></p>
+            <p><span className="text-gray-500 dark:text-gray-400">Total Reject:</span> <strong>{record.summary.total_reject.toLocaleString('id-ID')}</strong></p>
+            <p><span className="text-gray-500 dark:text-gray-400">Yield:</span> <strong>{record.summary.yield_percent != null ? `${record.summary.yield_percent}%` : '-'}</strong></p>
           </div>
         </Section>
 
         {/* Status QC */}
         <Section title="Status QC Hasil Produksi">
           {record.qc_status.length === 0 ? (
-            <p className="text-sm text-gray-500 py-2">Belum ada data stok/QC untuk nomor batch ini.</p>
+            <p className="text-sm text-gray-500 py-2 dark:text-gray-400">Belum ada data stok/QC untuk nomor batch ini.</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
@@ -184,8 +184,8 @@ export default function BatchRecord() {
                     <td className="py-2 pr-3">{q.location || '-'}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">{q.quantity_on_hand.toLocaleString('id-ID')}</td>
                     <td className="py-2 pr-3 capitalize">{q.stock_status}</td>
-                    <td className="py-2 pr-3 text-gray-500">{q.qc_date ? new Date(q.qc_date).toLocaleDateString('id-ID') : '-'}</td>
-                    <td className="py-2 text-gray-500">{q.qc_notes || '-'}</td>
+                    <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{q.qc_date ? new Date(q.qc_date).toLocaleDateString('id-ID') : '-'}</td>
+                    <td className="py-2 text-gray-500 dark:text-gray-400">{q.qc_notes || '-'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -215,13 +215,13 @@ export default function BatchRecord() {
         {materialModal.loading ? (
           <div className="flex justify-center py-8 text-gray-400"><ArrowPathIcon className="h-5 w-5 animate-spin" /></div>
         ) : !materialModal.data ? (
-          <p className="text-sm text-gray-500 text-center py-6">Gagal memuat data stok.</p>
+          <p className="text-sm text-gray-500 text-center py-6 dark:text-gray-400">Gagal memuat data stok.</p>
         ) : materialModal.data.locations?.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-6">Belum ada stok untuk bahan ini di gudang.</p>
+          <p className="text-sm text-gray-500 text-center py-6 dark:text-gray-400">Belum ada stok untuk bahan ini di gudang.</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700">
+              <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
                 <th className="pb-2 pr-3">Lokasi</th>
                 <th className="pb-2 pr-3">No. Batch</th>
                 <th className="pb-2 pr-3 text-right">Qty Tersedia</th>
@@ -232,7 +232,7 @@ export default function BatchRecord() {
               {materialModal.data.locations.map((loc: any) => (
                 <tr key={loc.inventory_id}>
                   <td className="py-2 pr-3">{loc.location_code || '-'}</td>
-                  <td className="py-2 pr-3 text-gray-500">{loc.batch_number || '-'}</td>
+                  <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{loc.batch_number || '-'}</td>
                   <td className="py-2 pr-3 text-right tabular-nums">{loc.quantity_available.toLocaleString('id-ID')}</td>
                   <td className="py-2 text-right tabular-nums">{loc.quantity_reserved.toLocaleString('id-ID')}</td>
                 </tr>

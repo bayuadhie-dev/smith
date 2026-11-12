@@ -473,7 +473,7 @@ export default function AccurateIntegration() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ArrowsRightLeftIcon className="w-8 h-8 text-blue-600" />
+            <ArrowsRightLeftIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             Integrasi Accurate Online API
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -512,7 +512,7 @@ export default function AccurateIntegration() {
           className={`pb-3 font-medium text-sm border-b-2 transition ${
             activeTab === 'config'
               ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
           1. Koneksi & Konfigurasi
@@ -522,7 +522,7 @@ export default function AccurateIntegration() {
           className={`pb-3 font-medium text-sm border-b-2 transition ${
             activeTab === 'mapping'
               ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
           2. Pemetaan Barang & BOM ({mappings.length})
@@ -532,7 +532,7 @@ export default function AccurateIntegration() {
           className={`pb-3 font-medium text-sm border-b-2 transition ${
             activeTab === 'dryrun'
               ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
           3. Simulasi Dry-Run
@@ -542,7 +542,7 @@ export default function AccurateIntegration() {
           className={`pb-3 font-medium text-sm border-b-2 transition ${
             activeTab === 'approval'
               ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
           4. Antrean Approval Sync ({logs.filter((l: any) => l.status === 'PENDING_APPROVAL').length})
@@ -552,7 +552,7 @@ export default function AccurateIntegration() {
           className={`pb-3 font-medium text-sm border-b-2 transition ${
             activeTab === 'modules'
               ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
           5. Data Modul (Live)
@@ -562,7 +562,7 @@ export default function AccurateIntegration() {
           className={`pb-3 font-medium text-sm border-b-2 transition ${
             activeTab === 'ejo'
               ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
           6. Cek EJO
@@ -572,7 +572,7 @@ export default function AccurateIntegration() {
           className={`pb-3 font-medium text-sm border-b-2 transition ${
             activeTab === 'warehouse'
               ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
           7. Gudang EPD/FG
@@ -582,7 +582,7 @@ export default function AccurateIntegration() {
           className={`pb-3 font-medium text-sm border-b-2 transition ${
             activeTab === 'transfer'
               ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
           }`}
         >
           8. Histori Transfer
@@ -874,7 +874,7 @@ export default function AccurateIntegration() {
                   ))}
                   {mappings.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="text-center py-6 text-gray-500">
+                      <td colSpan={5} className="text-center py-6 text-gray-500 dark:text-gray-400">
                         Belum ada pemetaan barang. Silakan isi form di atas.
                       </td>
                     </tr>
@@ -924,7 +924,7 @@ export default function AccurateIntegration() {
                       {log.status} (Dry-Run)
                     </span>
                   </div>
-                  <div className="text-xs text-gray-500">{log.created_at}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{log.created_at}</div>
                 </div>
 
                 {/* Diff Tables */}
@@ -947,17 +947,17 @@ export default function AccurateIntegration() {
                             <td>{item.accurate_qty} {item.accurate_unit}</td>
                             <td>
                               {item.is_mapped ? (
-                                <span className="inline-flex items-center gap-1 text-xs text-green-600 font-semibold">
+                                <span className="inline-flex items-center gap-1 text-xs text-green-600 font-semibold dark:text-green-400">
                                   <CheckCircleIcon className="w-4 h-4" /> Ter-map
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 text-xs text-red-600 font-semibold">
+                                <span className="inline-flex items-center gap-1 text-xs text-red-600 font-semibold dark:text-red-400">
                                   <ExclamationTriangleIcon className="w-4 h-4" /> Unmapped
                                 </span>
                               )}
                             </td>
                             <td className="font-medium">{item.smith_item_name}</td>
-                            <td className="font-bold text-green-600">+{item.converted_qty}</td>
+                            <td className="font-bold text-green-600 dark:text-green-400">+{item.converted_qty}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1027,7 +1027,7 @@ export default function AccurateIntegration() {
                             <td>{item.accurate_item_name}</td>
                             <td>{item.accurate_qty} {item.accurate_unit}</td>
                             <td>{item.smith_item_name}</td>
-                            <td className="font-bold text-green-600">+{item.converted_qty}</td>
+                            <td className="font-bold text-green-600 dark:text-green-400">+{item.converted_qty}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1059,9 +1059,9 @@ export default function AccurateIntegration() {
                         <strong>{Number(log.proposed_changes.smith_stock).toLocaleString('id-ID')}</strong>, stok Accurate:{' '}
                         <strong>{Number(log.proposed_changes.accurate_stock).toLocaleString('id-ID')}</strong>.{' '}
                         {log.proposed_changes.diff > 0 ? (
-                          <span className="text-green-600 font-semibold">Akan naik {Number(log.proposed_changes.diff).toLocaleString('id-ID')} unit.</span>
+                          <span className="text-green-600 font-semibold dark:text-green-400">Akan naik {Number(log.proposed_changes.diff).toLocaleString('id-ID')} unit.</span>
                         ) : (
-                          <span className="text-red-600 font-semibold">Akan turun {Number(Math.abs(log.proposed_changes.diff)).toLocaleString('id-ID')} unit.</span>
+                          <span className="text-red-600 font-semibold dark:text-red-400">Akan turun {Number(Math.abs(log.proposed_changes.diff)).toLocaleString('id-ID')} unit.</span>
                         )}
                       </p>
                     )}
@@ -1072,9 +1072,9 @@ export default function AccurateIntegration() {
                         <strong>Rp {Number(log.proposed_changes.smith_price).toLocaleString('id-ID')}</strong>, harga Accurate:{' '}
                         <strong>Rp {Number(log.proposed_changes.accurate_price).toLocaleString('id-ID')}</strong>.{' '}
                         {log.proposed_changes.diff > 0 ? (
-                          <span className="text-green-600 font-semibold">Akan naik Rp {Number(log.proposed_changes.diff).toLocaleString('id-ID')}.</span>
+                          <span className="text-green-600 font-semibold dark:text-green-400">Akan naik Rp {Number(log.proposed_changes.diff).toLocaleString('id-ID')}.</span>
                         ) : (
-                          <span className="text-red-600 font-semibold">Akan turun Rp {Number(Math.abs(log.proposed_changes.diff)).toLocaleString('id-ID')}.</span>
+                          <span className="text-red-600 font-semibold dark:text-red-400">Akan turun Rp {Number(Math.abs(log.proposed_changes.diff)).toLocaleString('id-ID')}.</span>
                         )}
                       </p>
                     )}
@@ -1173,7 +1173,7 @@ export default function AccurateIntegration() {
                 className={`px-3 py-1.5 text-xs font-semibold rounded-full transition ${
                   activeModule === key
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
                 {label}
@@ -1315,7 +1315,7 @@ export default function AccurateIntegration() {
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       {processedRows.length} data ditemukan
                       {searchQuery && (
-                        <span className="text-xs font-normal text-gray-500 ml-2">
+                        <span className="text-xs font-normal text-gray-500 ml-2 dark:text-gray-400">
                           (difilter dari total {rawRows.length})
                         </span>
                       )}
@@ -1454,7 +1454,7 @@ export default function AccurateIntegration() {
                             Formula: {d.name || d.number}
                           </div>
                           {materials.length === 0 ? (
-                            <div className="text-xs text-gray-500">Tidak ada komponen material.</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Tidak ada komponen material.</div>
                           ) : (
                             <table className="w-full text-xs">
                               <thead>
@@ -1757,7 +1757,7 @@ export default function AccurateIntegration() {
                         <div>
                           <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Konversi Satuan Kemasan</div>
                           {unitLevels.length === 0 ? (
-                            <div className="text-xs text-gray-500">Tidak ada konversi multi-unit untuk item ini.</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Tidak ada konversi multi-unit untuk item ini.</div>
                           ) : (
                             <table className="w-full text-xs">
                               <thead>
@@ -2583,7 +2583,7 @@ function MaterialTreeNode({ node, depth }: { node: any; depth: number }) {
     <div style={{ marginLeft: depth * 20 }}>
       <div className="flex items-center gap-2 text-sm py-1">
         {hasChildren ? (
-          <button onClick={() => setExpanded(!expanded)} className="text-gray-400 hover:text-gray-600">
+          <button onClick={() => setExpanded(!expanded)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white">
             {expanded ? <ChevronDownIcon className="w-4 h-4" /> : <ChevronUpIcon className="w-4 h-4 rotate-90" />}
           </button>
         ) : (

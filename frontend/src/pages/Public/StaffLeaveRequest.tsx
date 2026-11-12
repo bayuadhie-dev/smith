@@ -37,11 +37,11 @@ interface LeaveRequest {
 }
 
 const leaveTypes = [
-  { value: 'sakit', label: 'Sakit', color: 'bg-red-100 text-red-800' },
-  { value: 'izin', label: 'Izin', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'cuti_tahunan', label: 'Cuti Tahunan', color: 'bg-blue-100 text-blue-800' },
-  { value: 'cuti_khusus', label: 'Cuti Khusus', color: 'bg-purple-100 text-purple-800' },
-  { value: 'dinas_luar', label: 'Dinas Luar', color: 'bg-green-100 text-green-800' },
+  { value: 'sakit', label: 'Sakit', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' },
+  { value: 'izin', label: 'Izin', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' },
+  { value: 'cuti_tahunan', label: 'Cuti Tahunan', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
+  { value: 'cuti_khusus', label: 'Cuti Khusus', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' },
+  { value: 'dinas_luar', label: 'Dinas Luar', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
 ];
 
 const toProperCase = (name: string): string => {
@@ -231,15 +231,15 @@ const StaffLeaveRequest: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
       case 'approved':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       case 'rejected':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
       case 'cancelled':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -268,15 +268,15 @@ const StaffLeaveRequest: React.FC = () => {
 
         {/* Alerts */}
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3 dark:bg-red-900/20 dark:border-red-800">
             <XCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
-            <span className="text-red-700">{error}</span>
+            <span className="text-red-700 dark:text-red-300">{error}</span>
           </div>
         )}
         {success && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3 dark:bg-green-900/20 dark:border-green-800">
             <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-            <span className="text-green-700">{success}</span>
+            <span className="text-green-700 dark:text-green-300">{success}</span>
           </div>
         )}
 
@@ -284,7 +284,7 @@ const StaffLeaveRequest: React.FC = () => {
         {!isLoggedIn ? (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <User className="h-5 w-5 text-indigo-600" />
+              <User className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
               Masukkan Nama Anda
             </h2>
             <div className="space-y-4">
@@ -317,12 +317,12 @@ const StaffLeaveRequest: React.FC = () => {
             {/* User Info */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 mb-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <User className="h-5 w-5 text-indigo-600" />
+                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center dark:bg-indigo-900/30">
+                  <User className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
                   <p className="font-medium">{name}</p>
-                  <p className="text-sm text-gray-500">Staff</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Staff</p>
                 </div>
               </div>
               <button
@@ -331,7 +331,7 @@ const StaffLeaveRequest: React.FC = () => {
                   setName('');
                   setLeaveHistory([]);
                 }}
-                className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-200"
+                className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-200 dark:hover:text-white"
               >
                 Ganti
               </button>
@@ -344,7 +344,7 @@ const StaffLeaveRequest: React.FC = () => {
                 className={`flex-1 py-2 px-4 rounded-lg font-medium ${
                   !showHistory 
                     ? 'bg-indigo-600 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200'
                 }`}
               >
                 <FileText className="h-4 w-4 inline mr-2" />
@@ -355,7 +355,7 @@ const StaffLeaveRequest: React.FC = () => {
                 className={`flex-1 py-2 px-4 rounded-lg font-medium ${
                   showHistory 
                     ? 'bg-indigo-600 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200'
                 }`}
               >
                 <History className="h-4 w-4 inline mr-2" />
@@ -381,8 +381,8 @@ const StaffLeaveRequest: React.FC = () => {
                           onClick={() => setLeaveType(type.value)}
                           className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
                             leaveType === type.value
-                              ? 'border-indigo-500 bg-indigo-50'
-                              : 'border-gray-200 hover:border-gray-300'
+                              ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
                           }`}
                         >
                           <span className={`inline-block px-2 py-1 rounded text-xs ${type.color}`}>
@@ -423,8 +423,8 @@ const StaffLeaveRequest: React.FC = () => {
 
                   {/* Total Days */}
                   {totalDays > 0 && (
-                    <div className="p-3 bg-blue-50 rounded-lg">
-                      <p className="text-sm text-blue-700">
+                    <div className="p-3 bg-blue-50 rounded-lg dark:bg-blue-900/20">
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
                         <Clock className="h-4 w-4 inline mr-1" />
                         Total: <strong>{totalDays} hari kerja</strong>
                       </p>
@@ -466,7 +466,7 @@ const StaffLeaveRequest: React.FC = () => {
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                 <h2 className="text-lg font-semibold mb-4">Riwayat Pengajuan</h2>
                 {leaveHistory.length === 0 ? (
-                  <p className="text-center text-gray-500 py-8">
+                  <p className="text-center text-gray-500 py-8 dark:text-gray-400">
                     Belum ada riwayat pengajuan
                   </p>
                 ) : (
@@ -476,7 +476,7 @@ const StaffLeaveRequest: React.FC = () => {
                         <div className="flex justify-between items-start mb-2">
                           <div>
                             <p className="font-medium">{req.request_number}</p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
                               {new Date(req.created_at).toLocaleDateString('id-ID')}
                             </p>
                           </div>
@@ -486,24 +486,24 @@ const StaffLeaveRequest: React.FC = () => {
                         </div>
                         <div className="text-sm space-y-1">
                           <p>
-                            <span className="text-gray-500">Tipe:</span>{' '}
+                            <span className="text-gray-500 dark:text-gray-400">Tipe:</span>{' '}
                             <span className="font-medium">{req.leave_type_label}</span>
                           </p>
                           <p>
-                            <span className="text-gray-500">Tanggal:</span>{' '}
+                            <span className="text-gray-500 dark:text-gray-400">Tanggal:</span>{' '}
                             {new Date(req.start_date).toLocaleDateString('id-ID')} - {new Date(req.end_date).toLocaleDateString('id-ID')}
                           </p>
                           <p>
-                            <span className="text-gray-500">Durasi:</span>{' '}
+                            <span className="text-gray-500 dark:text-gray-400">Durasi:</span>{' '}
                             {req.total_days} hari kerja
                           </p>
                           <p>
-                            <span className="text-gray-500">Alasan:</span>{' '}
+                            <span className="text-gray-500 dark:text-gray-400">Alasan:</span>{' '}
                             {req.reason}
                           </p>
                           {req.rejection_reason && (
-                            <p className="text-red-600">
-                              <span className="text-gray-500">Alasan Ditolak:</span>{' '}
+                            <p className="text-red-600 dark:text-red-400">
+                              <span className="text-gray-500 dark:text-gray-400">Alasan Ditolak:</span>{' '}
                               {req.rejection_reason}
                             </p>
                           )}
@@ -511,7 +511,7 @@ const StaffLeaveRequest: React.FC = () => {
                         {req.status === 'pending' && (
                           <button
                             onClick={() => handleCancel(req.id)}
-                            className="mt-3 text-sm text-red-600 hover:text-red-700"
+                            className="mt-3 text-sm text-red-600 hover:text-red-700 dark:text-red-400"
                           >
                             Batalkan Pengajuan
                           </button>

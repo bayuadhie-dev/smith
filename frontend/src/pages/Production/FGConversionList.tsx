@@ -104,11 +104,11 @@ const FGConversionList: React.FC = () => {
       case 'draft':
         return <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">Draft</span>;
       case 'in_progress':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">In Progress</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">In Progress</span>;
       case 'completed':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Completed</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Completed</span>;
       case 'cancelled':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Cancelled</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Cancelled</span>;
       default:
         return <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">{status}</span>;
     }
@@ -117,11 +117,11 @@ const FGConversionList: React.FC = () => {
   const getQCStatusBadge = (qcStatus: string) => {
     switch (qcStatus) {
       case 'pass':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Pass</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Pass</span>;
       case 'fail':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Fail</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Fail</span>;
       case 'rework':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Rework</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">Rework</span>;
       default:
         return <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">{qcStatus}</span>;
     }
@@ -183,9 +183,9 @@ const FGConversionList: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Draft</p>
-                <p className="text-2xl font-bold text-gray-600">{summary.draft}</p>
+                <p className="text-2xl font-bold text-gray-600 dark:text-gray-300">{summary.draft}</p>
               </div>
-              <ClockIcon className="h-10 w-10 text-gray-500" />
+              <ClockIcon className="h-10 w-10 text-gray-500 dark:text-gray-400" />
             </div>
           </div>
 
@@ -196,7 +196,7 @@ const FGConversionList: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">In Progress</p>
-                <p className="text-2xl font-bold text-blue-600">{summary.in_progress}</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{summary.in_progress}</p>
               </div>
               <BeakerIcon className="h-10 w-10 text-blue-500" />
             </div>
@@ -209,7 +209,7 @@ const FGConversionList: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Completed</p>
-                <p className="text-2xl font-bold text-green-600">{summary.completed}</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{summary.completed}</p>
               </div>
               <CheckCircleIcon className="h-10 w-10 text-green-500" />
             </div>
@@ -219,7 +219,7 @@ const FGConversionList: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Loss Rate</p>
-                <p className="text-2xl font-bold text-red-600">{stats.totals.loss_percentage.toFixed(2)}%</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.totals.loss_percentage.toFixed(2)}%</p>
               </div>
               <ExclamationTriangleIcon className="h-10 w-10 text-red-500" />
             </div>
@@ -236,15 +236,15 @@ const FGConversionList: React.FC = () => {
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <p className="text-sm text-gray-500 dark:text-gray-400">Total FG Produced</p>
-            <p className="text-xl font-bold text-green-600">{stats.totals.total_fg_qty.toLocaleString()} pcs</p>
+            <p className="text-xl font-bold text-green-600 dark:text-green-400">{stats.totals.total_fg_qty.toLocaleString()} pcs</p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <p className="text-sm text-gray-500 dark:text-gray-400">Total Loss</p>
-            <p className="text-xl font-bold text-red-600">{stats.totals.total_loss_qty.toLocaleString()} pcs</p>
+            <p className="text-xl font-bold text-red-600 dark:text-red-400">{stats.totals.total_loss_qty.toLocaleString()} pcs</p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <p className="text-sm text-gray-500 dark:text-gray-400">Material Cost</p>
-            <p className="text-xl font-bold text-purple-600">{formatCurrency(stats.totals.total_material_cost)}</p>
+            <p className="text-xl font-bold text-purple-600 dark:text-purple-400">{formatCurrency(stats.totals.total_material_cost)}</p>
           </div>
         </div>
       )}
@@ -266,7 +266,7 @@ const FGConversionList: React.FC = () => {
               setStatusFilter('');
               setBatchFilter('');
             }}
-            className="px-4 py-2 text-sm text-blue-600 hover:underline"
+            className="px-4 py-2 text-sm text-blue-600 hover:underline dark:text-blue-400"
           >
             Clear Filters
           </button>
@@ -307,7 +307,7 @@ const FGConversionList: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Link
                         to={`/app/production/fg-conversion/${conversion.id}`}
-                        className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                        className="font-medium text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400"
                       >
                         {conversion.conversion_number}
                       </Link>
@@ -329,10 +329,10 @@ const FGConversionList: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
                       {conversion.total_wip_qty.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600 font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600 font-medium dark:text-green-400">
                       {conversion.total_fg_qty.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-red-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-red-600 dark:text-red-400">
                       {conversion.total_loss_qty.toLocaleString()}
                       {conversion.total_wip_qty > 0 && (
                         <span className="text-xs ml-1">
@@ -352,7 +352,7 @@ const FGConversionList: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <Link
                         to={`/app/production/fg-conversion/${conversion.id}`}
-                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300"
                       >
                         <EyeIcon className="h-4 w-4" />
                         Detail
@@ -372,14 +372,14 @@ const FGConversionList: React.FC = () => {
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
               >
                 Previous
               </button>
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
               >
                 Next
               </button>
@@ -395,14 +395,14 @@ const FGConversionList: React.FC = () => {
                   <button
                     onClick={() => setPage(Math.max(1, page - 1))}
                     disabled={page === 1}
-                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 dark:text-gray-400"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => setPage(Math.min(totalPages, page + 1))}
                     disabled={page === totalPages}
-                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 dark:text-gray-400"
                   >
                     Next
                   </button>

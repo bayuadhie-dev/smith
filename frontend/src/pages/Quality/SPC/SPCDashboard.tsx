@@ -217,13 +217,13 @@ export default function SPCDashboard() {
                       {c.cp ? c.cp.toFixed(3) : '-'}
                     </td>
                     <td className={`px-4 py-3 text-sm font-mono font-semibold ${
-                      c.cpk >= 1.33 ? 'text-green-600' : c.cpk >= 1.0 ? 'text-yellow-600' : c.cpk ? 'text-red-600' : 'text-gray-400'
+                      c.cpk >= 1.33 ? 'text-green-600 dark:text-green-400' : c.cpk >= 1.0 ? 'text-yellow-600 dark:text-yellow-400' : c.cpk ? 'text-red-600 dark:text-red-400' : 'text-gray-400'
                     }`}>
                       {c.cpk ? c.cpk.toFixed(3) : '-'}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{c.sample_count}</td>
                     <td className="px-4 py-3 text-sm">
-                      <span className={c.ooc_count > 0 ? 'text-red-600 font-semibold' : 'text-gray-400'}>
+                      <span className={c.ooc_count > 0 ? 'text-red-600 font-semibold dark:text-red-400' : 'text-gray-400'}>
                         {c.ooc_count}
                       </span>
                     </td>
@@ -285,9 +285,9 @@ export default function SPCDashboard() {
               {/* Capability Info */}
               {capability.cpk !== undefined && (
                 <div className="flex items-center gap-3 ml-auto text-sm">
-                  <span className="text-gray-500">Cp: <strong>{capability.cp?.toFixed(3) ?? '-'}</strong></span>
-                  <span className="text-gray-500">Cpk: <strong>{capability.cpk?.toFixed(3) ?? '-'}</strong></span>
-                  <span className="text-gray-500">σ: <strong>{capability.sigma?.toFixed(4) ?? '-'}</strong></span>
+                  <span className="text-gray-500 dark:text-gray-400">Cp: <strong>{capability.cp?.toFixed(3) ?? '-'}</strong></span>
+                  <span className="text-gray-500 dark:text-gray-400">Cpk: <strong>{capability.cpk?.toFixed(3) ?? '-'}</strong></span>
+                  <span className="text-gray-500 dark:text-gray-400">σ: <strong>{capability.sigma?.toFixed(4) ?? '-'}</strong></span>
                   <CapabilityBadge cpk={capability.cpk} />
                 </div>
               )}
@@ -300,12 +300,12 @@ export default function SPCDashboard() {
               <h3 className="text-base font-semibold text-gray-900 dark:text-white">
                 X-bar Chart
                 {chartData?.out_of_control_count > 0 && (
-                  <span className="ml-2 text-xs text-red-600 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full">
+                  <span className="ml-2 text-xs text-red-600 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full dark:text-red-400">
                     {chartData.out_of_control_count} OOC
                   </span>
                 )}
               </h3>
-              <div className="flex items-center gap-4 text-xs text-gray-500">
+              <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                 <span className="flex items-center gap-1">
                   <span className="inline-block w-3 h-3 rounded-full bg-blue-500" /> In Control
                 </span>
@@ -345,9 +345,9 @@ export default function SPCDashboard() {
                           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-3 shadow-lg text-sm">
                             <p className="font-semibold">{d.sample_number}</p>
                             <p>X̄ = <strong>{d.xbar?.toFixed(4)}</strong></p>
-                            <p className="text-gray-500 text-xs">{new Date(d.sample_time).toLocaleString('id-ID')}</p>
+                            <p className="text-gray-500 text-xs dark:text-gray-400">{new Date(d.sample_time).toLocaleString('id-ID')}</p>
                             {d.is_out_of_control && (
-                              <div className="mt-1 text-red-600 text-xs">
+                              <div className="mt-1 text-red-600 text-xs dark:text-red-400">
                                 {d.violations.map((v: string, i: number) => <p key={i}>⚠ {v}</p>)}
                               </div>
                             )}

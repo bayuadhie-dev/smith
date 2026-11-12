@@ -99,7 +99,7 @@ const KPITargetSettings: React.FC = () => {
       'Sales': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
       'Inventory': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200'
     };
-    return colors[category] || 'bg-gray-100 text-gray-800';
+    return colors[category] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
   };
 
   const groupedTargets = targets.reduce((acc, target) => {
@@ -115,7 +115,7 @@ const KPITargetSettings: React.FC = () => {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Memuat KPI Targets...</p>
+          <p className="text-gray-600 dark:text-gray-300">Memuat KPI Targets...</p>
         </div>
       </div>
     );
@@ -127,7 +127,7 @@ const KPITargetSettings: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ChartBarIcon className="h-7 w-7 text-blue-600" />
+            <ChartBarIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
             KPI Target Settings
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -146,7 +146,7 @@ const KPITargetSettings: React.FC = () => {
       {/* Info Card */}
       <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <InformationCircleIcon className="h-5 w-5 text-blue-600 mt-0.5" />
+          <InformationCircleIcon className="h-5 w-5 text-blue-600 mt-0.5 dark:text-blue-400" />
           <div>
             <h3 className="font-medium text-blue-900 dark:text-blue-100">Tentang KPI Targets</h3>
             <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
@@ -214,7 +214,7 @@ const KPITargetSettings: React.FC = () => {
                           className="w-20 px-2 py-1 border rounded text-sm"
                         />
                       ) : (
-                        <span className="flex items-center gap-1 text-yellow-600">
+                        <span className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400">
                           <ExclamationTriangleIcon className="h-4 w-4" />
                           {target.warning_threshold}%
                         </span>
@@ -228,7 +228,7 @@ const KPITargetSettings: React.FC = () => {
                           className="w-20 px-2 py-1 border rounded text-sm"
                         />
                       ) : (
-                        <span className="flex items-center gap-1 text-red-600">
+                        <span className="flex items-center gap-1 text-red-600 dark:text-red-400">
                           <XMarkIcon className="h-4 w-4" />
                           {target.critical_threshold}%
                         </span>
@@ -244,14 +244,14 @@ const KPITargetSettings: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => saveEdit(target.id)}
-                            className="p-1 text-green-600 hover:bg-green-100 rounded"
+                            className="p-1 text-green-600 hover:bg-green-100 rounded dark:text-green-400"
                             title="Simpan"
                           >
                             <CheckIcon className="h-5 w-5" />
                           </button>
                           <button
                             onClick={cancelEdit}
-                            className="p-1 text-red-600 hover:bg-red-100 rounded"
+                            className="p-1 text-red-600 hover:bg-red-100 rounded dark:text-red-400"
                             title="Batal"
                           >
                             <XMarkIcon className="h-5 w-5" />
@@ -260,7 +260,7 @@ const KPITargetSettings: React.FC = () => {
                       ) : (
                         <button
                           onClick={() => startEdit(target)}
-                          className="p-1 text-blue-600 hover:bg-blue-100 rounded"
+                          className="p-1 text-blue-600 hover:bg-blue-100 rounded dark:text-blue-400"
                           title="Edit"
                         >
                           <PencilIcon className="h-5 w-5" />
@@ -280,21 +280,21 @@ const KPITargetSettings: React.FC = () => {
         <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Keterangan Status</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
-            <CheckCircleIcon className="h-6 w-6 text-green-600" />
+            <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
             <div>
               <div className="font-medium text-green-800 dark:text-green-200">Good</div>
               <div className="text-sm text-green-600 dark:text-green-400">Achievement ≥ 100%</div>
             </div>
           </div>
           <div className="flex items-center gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg">
-            <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600" />
+            <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
             <div>
               <div className="font-medium text-yellow-800 dark:text-yellow-200">Warning</div>
               <div className="text-sm text-yellow-600 dark:text-yellow-400">Achievement ≥ Warning Threshold</div>
             </div>
           </div>
           <div className="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/30 rounded-lg">
-            <XMarkIcon className="h-6 w-6 text-red-600" />
+            <XMarkIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
             <div>
               <div className="font-medium text-red-800 dark:text-red-200">Critical</div>
               <div className="text-sm text-red-600 dark:text-red-400">Achievement &lt; Warning Threshold</div>

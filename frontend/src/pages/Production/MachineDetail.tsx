@@ -207,21 +207,21 @@ const MachineDetail: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'running': return 'bg-green-100 text-green-800';
-      case 'idle': return 'bg-yellow-100 text-yellow-800';
-      case 'maintenance': return 'bg-blue-100 text-blue-800';
-      case 'breakdown': return 'bg-red-100 text-red-800';
-      case 'offline': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'running': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'idle': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'maintenance': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'breakdown': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      case 'offline': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'running': return <PlayIcon className="w-5 h-5 text-green-600" />;
-      case 'idle': return <PauseIcon className="w-5 h-5 text-yellow-600" />;
-      case 'maintenance': return <WrenchScrewdriverIcon className="w-5 h-5 text-blue-600" />;
-      case 'breakdown': return <ExclamationTriangleIcon className="w-5 h-5 text-red-600" />;
+      case 'running': return <PlayIcon className="w-5 h-5 text-green-600 dark:text-green-400" />;
+      case 'idle': return <PauseIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />;
+      case 'maintenance': return <WrenchScrewdriverIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />;
+      case 'breakdown': return <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400" />;
       default: return <CogIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />;
     }
   };
@@ -238,7 +238,7 @@ const MachineDetail: React.FC = () => {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500 dark:text-gray-400">Machine not found</p>
-        <button onClick={() => navigate('/app/production/machines')} className="mt-4 text-blue-600 hover:underline">
+        <button onClick={() => navigate('/app/production/machines')} className="mt-4 text-blue-600 hover:underline dark:text-blue-400">
           Back to Machine List
         </button>
       </div>
@@ -295,8 +295,8 @@ const MachineDetail: React.FC = () => {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 py-4 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === tab.id
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               <tab.icon className="w-5 h-5" />
@@ -368,7 +368,7 @@ const MachineDetail: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Average OEE (30 days)</h3>
               <div className="flex items-end gap-2">
-                <span className="text-3xl font-bold text-blue-600">{avgOEE}%</span>
+                <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">{avgOEE}%</span>
               </div>
               <div className="mt-4 h-16">
                 <ResponsiveContainer width="100%" height="100%">
@@ -382,14 +382,14 @@ const MachineDetail: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Availability</h3>
               <div className="flex items-end gap-2">
-                <span className="text-3xl font-bold text-green-600">{machine.availability || 100}%</span>
+                <span className="text-3xl font-bold text-green-600 dark:text-green-400">{machine.availability || 100}%</span>
               </div>
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Total Downtime (30 days)</h3>
               <div className="flex items-end gap-2">
-                <span className="text-3xl font-bold text-red-600">{Math.round(totalDowntime / 60)}h</span>
+                <span className="text-3xl font-bold text-red-600 dark:text-red-400">{Math.round(totalDowntime / 60)}h</span>
                 <span className="text-gray-500 dark:text-gray-400 mb-1">{totalDowntime % 60}m</span>
               </div>
             </div>
@@ -492,8 +492,8 @@ const MachineDetail: React.FC = () => {
                           }
                           setExpandedDays(newExpanded);
                         }}
-                        className={`w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors ${
-                          isGood ? 'bg-green-50' : 'bg-red-50'
+                        className={`w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors dark:hover:bg-gray-700 ${
+                          isGood ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'
                         }`}
                       >
                         <div className="flex items-center gap-6">
@@ -508,19 +508,19 @@ const MachineDetail: React.FC = () => {
                           <div className="flex items-center gap-6">
                             <div className="text-center">
                               <p className="text-xs text-gray-400">Target</p>
-                              <p className="text-xl font-bold text-blue-600">{Math.round((day.target_quantity || 0) / (day.pack_per_karton || 50)).toLocaleString()}</p>
+                              <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{Math.round((day.target_quantity || 0) / (day.pack_per_karton || 50)).toLocaleString()}</p>
                               <p className="text-xs text-gray-400">karton</p>
                             </div>
                             <div className="text-center">
                               <p className="text-xs text-gray-400">Aktual</p>
-                              <p className="text-xl font-bold text-green-600">{Math.round((day.actual_quantity || 0) / (day.pack_per_karton || 50)).toLocaleString()}</p>
+                              <p className="text-xl font-bold text-green-600 dark:text-green-400">{Math.round((day.actual_quantity || 0) / (day.pack_per_karton || 50)).toLocaleString()}</p>
                               <p className="text-xs text-gray-400">karton</p>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
-                            <p className={`text-lg font-bold ${isGood ? 'text-green-600' : 'text-red-600'}`}>
+                            <p className={`text-lg font-bold ${isGood ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                               {efficiency.toFixed(1)}%
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">Efficiency</p>
@@ -553,38 +553,38 @@ const MachineDetail: React.FC = () => {
                                           ({shift.shift === 1 ? '06:30-15:00' : shift.shift === 2 ? '15:00-23:00' : '23:00-06:30'})
                                         </span>
                                       </span>
-                                      <span className="text-sm font-medium text-blue-600">Total: {shift.total.toLocaleString()} pcs</span>
+                                      <span className="text-sm font-medium text-blue-600 dark:text-blue-400">Total: {shift.total.toLocaleString()} pcs</span>
                                     </div>
                                     
                                     {/* Production Grades */}
                                     <div className="grid grid-cols-3 gap-2 text-sm mb-3">
-                                      <div className="p-2 bg-green-100 rounded text-center">
+                                      <div className="p-2 bg-green-100 rounded text-center dark:bg-green-900/30">
                                         <p className="text-xs text-gray-500 dark:text-gray-400">Grade A</p>
-                                        <p className="font-bold text-green-600">{shift.grade_a.toLocaleString()}</p>
+                                        <p className="font-bold text-green-600 dark:text-green-400">{shift.grade_a.toLocaleString()}</p>
                                       </div>
-                                      <div className="p-2 bg-yellow-100 rounded text-center">
+                                      <div className="p-2 bg-yellow-100 rounded text-center dark:bg-yellow-900/30">
                                         <p className="text-xs text-gray-500 dark:text-gray-400">Grade B</p>
-                                        <p className="font-bold text-yellow-600">{shift.grade_b.toLocaleString()}</p>
+                                        <p className="font-bold text-yellow-600 dark:text-yellow-400">{shift.grade_b.toLocaleString()}</p>
                                       </div>
-                                      <div className="p-2 bg-red-100 rounded text-center">
+                                      <div className="p-2 bg-red-100 rounded text-center dark:bg-red-900/30">
                                         <p className="text-xs text-gray-500 dark:text-gray-400">Grade C</p>
-                                        <p className="font-bold text-red-600">{shift.grade_c.toLocaleString()}</p>
+                                        <p className="font-bold text-red-600 dark:text-red-400">{shift.grade_c.toLocaleString()}</p>
                                       </div>
                                     </div>
                                     
                                     {/* Runtime, Downtime, Idle per Shift */}
                                     <div className="grid grid-cols-3 gap-2 text-sm">
-                                      <div className="p-2 bg-green-50 rounded text-center border border-green-200">
+                                      <div className="p-2 bg-green-50 rounded text-center border border-green-200 dark:bg-green-900/20 dark:border-green-800">
                                         <p className="text-xs text-gray-500 dark:text-gray-400">Runtime</p>
-                                        <p className="font-bold text-green-600">{shift.runtime_minutes || 480} menit</p>
+                                        <p className="font-bold text-green-600 dark:text-green-400">{shift.runtime_minutes || 480} menit</p>
                                       </div>
-                                      <div className="p-2 bg-red-50 rounded text-center border border-red-200">
+                                      <div className="p-2 bg-red-50 rounded text-center border border-red-200 dark:bg-red-900/20 dark:border-red-800">
                                         <p className="text-xs text-gray-500 dark:text-gray-400">Downtime</p>
-                                        <p className="font-bold text-red-600">{shift.downtime_minutes || 0} menit</p>
+                                        <p className="font-bold text-red-600 dark:text-red-400">{shift.downtime_minutes || 0} menit</p>
                                       </div>
-                                      <div className="p-2 bg-orange-50 rounded text-center border border-orange-200">
+                                      <div className="p-2 bg-orange-50 rounded text-center border border-orange-200 dark:bg-orange-900/20 dark:border-orange-800">
                                         <p className="text-xs text-gray-500 dark:text-gray-400">Idle Time</p>
-                                        <p className="font-bold text-orange-600">{shift.idle_time_minutes || 0} menit</p>
+                                        <p className="font-bold text-orange-600 dark:text-orange-400">{shift.idle_time_minutes || 0} menit</p>
                                       </div>
                                     </div>
                                   </div>
@@ -596,31 +596,31 @@ const MachineDetail: React.FC = () => {
                           </div>
 
                           {/* Daily Total Summary */}
-                          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                            <p className="text-sm font-semibold text-blue-800 mb-2">📊 Total Hari Ini</p>
+                          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+                            <p className="text-sm font-semibold text-blue-800 mb-2 dark:text-blue-300">📊 Total Hari Ini</p>
                             <div className="grid grid-cols-4 gap-3">
                               <div className="p-2 bg-white dark:bg-gray-800 rounded text-center">
                                 <p className="text-xs text-gray-500 dark:text-gray-400">Runtime</p>
-                                <p className="text-lg font-bold text-green-600">
+                                <p className="text-lg font-bold text-green-600 dark:text-green-400">
                                   {day.runtime_minutes !== undefined ? day.runtime_minutes : 
                                     Math.round((day.planned_runtime_minutes || 480))} menit
                                 </p>
                               </div>
                               <div className="p-2 bg-white dark:bg-gray-800 rounded text-center">
                                 <p className="text-xs text-gray-500 dark:text-gray-400">Total Downtime</p>
-                                <p className="text-lg font-bold text-red-600">
+                                <p className="text-lg font-bold text-red-600 dark:text-red-400">
                                   {day.total_downtime_minutes !== undefined ? day.total_downtime_minutes : 0} menit
                                 </p>
                               </div>
                               <div className="p-2 bg-white dark:bg-gray-800 rounded text-center">
                                 <p className="text-xs text-gray-500 dark:text-gray-400">Idle Time</p>
-                                <p className="text-lg font-bold text-orange-600">
+                                <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
                                   {day.idle_time_minutes || 0} menit
                                 </p>
                               </div>
                               <div className="p-2 bg-white dark:bg-gray-800 rounded text-center">
                                 <p className="text-xs text-gray-500 dark:text-gray-400">Quality</p>
-                                <p className="text-lg font-bold text-purple-600">{day.quality?.toFixed(1) || 0}%</p>
+                                <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{day.quality?.toFixed(1) || 0}%</p>
                               </div>
                             </div>
                           </div>
@@ -634,15 +634,15 @@ const MachineDetail: React.FC = () => {
                                   const runtimeVal = day.runtime_minutes || (day.planned_runtime_minutes || 480) - (day.total_downtime_minutes || 0);
                                   const percentage = runtimeVal > 0 ? ((dt.duration_minutes / runtimeVal) * 100).toFixed(1) : 0;
                                   return (
-                                    <div key={idx} className="flex items-center justify-between p-2 bg-red-50 rounded">
+                                    <div key={idx} className="flex items-center justify-between p-2 bg-red-50 rounded dark:bg-red-900/20">
                                       <div className="flex items-center gap-2">
-                                        <span className="w-5 h-5 flex items-center justify-center bg-red-100 text-red-600 text-xs font-bold rounded">
+                                        <span className="w-5 h-5 flex items-center justify-center bg-red-100 text-red-600 text-xs font-bold rounded dark:bg-red-900/30 dark:text-red-400">
                                           {idx + 1}
                                         </span>
                                         <span className="text-sm text-gray-700 dark:text-gray-200">{dt.reason}</span>
                                       </div>
                                       <div className="flex items-center gap-2">
-                                        <span className="text-sm font-medium text-red-600">{dt.duration_minutes} menit</span>
+                                        <span className="text-sm font-medium text-red-600 dark:text-red-400">{dt.duration_minutes} menit</span>
                                         <span className="text-xs text-red-500">({percentage}%)</span>
                                       </div>
                                     </div>

@@ -101,10 +101,10 @@ const MaintenanceForm: React.FC = () => {
   ];
 
   const priorities = [
-    { value: 'low', label: 'Rendah', color: 'text-green-600' },
-    { value: 'medium', label: 'Sedang', color: 'text-yellow-600' },
-    { value: 'high', label: 'Tinggi', color: 'text-orange-600' },
-    { value: 'critical', label: 'Kritis', color: 'text-red-600' }
+    { value: 'low', label: 'Rendah', color: 'text-green-600 dark:text-green-400' },
+    { value: 'medium', label: 'Sedang', color: 'text-yellow-600 dark:text-yellow-400' },
+    { value: 'high', label: 'Tinggi', color: 'text-orange-600 dark:text-orange-400' },
+    { value: 'critical', label: 'Kritis', color: 'text-red-600 dark:text-red-400' }
   ];
 
   useEffect(() => {
@@ -266,7 +266,7 @@ const MaintenanceForm: React.FC = () => {
   const machineLabel = machines.find(m => m.id === Number(formData.machine_id));
 
   if (loading) {
-    return <div className="p-6 text-sm text-gray-500">Memuat data...</div>;
+    return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Memuat data...</div>;
   }
 
   return (
@@ -274,7 +274,7 @@ const MaintenanceForm: React.FC = () => {
       <PageHeader
         title={isEdit ? 'Ubah SPK Perawatan' : 'SPK Perawatan Baru'}
         subtitle={isEdit ? 'Perbarui rincian pekerjaan perawatan' : 'Jadwalkan pekerjaan perawatan mesin'}
-        actions={<Link to="/app/maintenance/records" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Kembali ke daftar</Link>}
+        actions={<Link to="/app/maintenance/records" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Kembali ke daftar</Link>}
       />
 
       <form onSubmit={handleSubmit} className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
@@ -348,7 +348,7 @@ const MaintenanceForm: React.FC = () => {
               <div className="divide-y divide-gray-100 dark:divide-gray-700">
                 {formData.tasks.map((task, index) => (
                   <div key={index} className="grid grid-cols-12 items-center gap-2 p-3">
-                    <span className="col-span-12 text-xs font-medium text-gray-500 md:col-span-1">#{index + 1}</span>
+                    <span className="col-span-12 text-xs font-medium text-gray-500 md:col-span-1 dark:text-gray-400">#{index + 1}</span>
                     <input type="text" placeholder="Nama langkah" value={task.task_name} onChange={(e) => updateTask(index, 'task_name', e.target.value)} className={`${inputCls} col-span-12 md:col-span-4`} />
                     <input type="text" placeholder="Keterangan" value={task.description} onChange={(e) => updateTask(index, 'description', e.target.value)} className={`${inputCls} col-span-8 md:col-span-4`} />
                     <NumberInput placeholder="Jam" value={task.estimated_time_hours} onChange={(e) => updateTask(index, 'estimated_time_hours', parseFloat(e.target.value) || 0)} min="0" step="0.5" className={`${inputCls} col-span-3 text-right md:col-span-2`} />
@@ -386,7 +386,7 @@ const MaintenanceForm: React.FC = () => {
                       />
                       {part.spare_part_id ? (() => {
                         const sp = spareParts.find((x) => x.id === part.spare_part_id);
-                        return sp ? <p className={`mt-1 text-xs ${sp.current_stock < part.quantity ? 'text-red-600' : 'text-gray-500'}`}>Stok gudang: {sp.current_stock.toLocaleString('id-ID')} {sp.uom}{sp.current_stock < part.quantity ? ' (kurang)' : ''}</p> : null;
+                        return sp ? <p className={`mt-1 text-xs ${sp.current_stock < part.quantity ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>Stok gudang: {sp.current_stock.toLocaleString('id-ID')} {sp.uom}{sp.current_stock < part.quantity ? ' (kurang)' : ''}</p> : null;
                       })() : null}
                     </div>
                     <NumberInput placeholder="Jumlah" value={part.quantity} onChange={(e) => updatePart(index, 'quantity', parseFloat(e.target.value) || 0)} min="1" className={`${inputCls} col-span-5 text-right md:col-span-2`} />
@@ -420,7 +420,7 @@ const MaintenanceForm: React.FC = () => {
               <button type="submit" disabled={saving} className="w-full rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">
                 {saving ? 'Menyimpan...' : isEdit ? 'Simpan perubahan' : 'Buat SPK'}
               </button>
-              <Link to="/app/maintenance/records" className="block w-full rounded-md border border-gray-300 px-4 py-2 text-center text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200">Batal</Link>
+              <Link to="/app/maintenance/records" className="block w-full rounded-md border border-gray-300 px-4 py-2 text-center text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Batal</Link>
             </div>
           </Panel>
         </aside>

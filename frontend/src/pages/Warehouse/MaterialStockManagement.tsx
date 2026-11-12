@@ -119,10 +119,10 @@ const MaterialStockManagement: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const badges = {
-      in_stock: 'bg-green-100 text-green-800',
-      low_stock: 'bg-yellow-100 text-yellow-800',
-      reorder: 'bg-orange-100 text-orange-800',
-      out_of_stock: 'bg-red-100 text-red-800'
+      in_stock: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      low_stock: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+      reorder: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+      out_of_stock: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
     };
     
     const labels = {
@@ -133,7 +133,7 @@ const MaterialStockManagement: React.FC = () => {
     };
     
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${badges[status as keyof typeof badges] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`px-2 py-1 text-xs font-medium rounded-full ${badges[status as keyof typeof badges] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'}`}>
         {labels[status as keyof typeof labels] || status}
       </span>
     );

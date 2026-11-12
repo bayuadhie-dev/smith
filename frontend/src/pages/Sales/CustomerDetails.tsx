@@ -47,11 +47,11 @@ const CustomerDetails: React.FC = () => {
   if (error || !customer) {
     return (
       <div className="text-center py-12">
-        <div className="text-red-600 mb-4">
+        <div className="text-red-600 mb-4 dark:text-red-400">
           <UserIcon className="h-12 w-12 mx-auto" />
         </div>
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Customer Not Found</h3>
-        <p className="text-gray-500 mb-4">The customer you're looking for doesn't exist.</p>
+        <p className="text-gray-500 mb-4 dark:text-gray-400">The customer you're looking for doesn't exist.</p>
         <Link
           to="/app/sales/customers"
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
@@ -70,7 +70,7 @@ const CustomerDetails: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/sales/customers"
-            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-200"
+            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-200 dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-4 w-4 mr-1" />
             Back to Customers
@@ -89,12 +89,12 @@ const CustomerDetails: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center">
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <UserIcon className="h-8 w-8 text-blue-600" />
+            <div className="bg-blue-100 p-3 rounded-lg dark:bg-blue-900/30">
+              <UserIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="ml-4">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{customer.name}</h1>
-              <p className="text-sm text-gray-500">Customer ID: {customer.customer_number || customer.id}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Customer ID: {customer.customer_number || customer.id}</p>
             </div>
           </div>
         </div>
@@ -182,7 +182,7 @@ const CustomerDetails: React.FC = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{t('common.status')}</p>
                   <p className={`text-sm capitalize ${
-                    customer.status === 'active' ? 'text-green-600' : 'text-red-600'
+                    customer.status === 'active' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                   }`}>
                     {customer.status || 'Active'}
                   </p>
@@ -326,7 +326,7 @@ function PricingConditionsManager({ customerId }: { customerId: number }) {
             <div key={c.id} className="flex items-center justify-between text-sm border border-gray-200 dark:border-gray-700 rounded px-3 py-2">
               <span>
                 {c.name} - {c.condition_type} {c.calculation_type === 'percentage' ? `${c.value}%` : `Rp${Number(c.value).toLocaleString('id-ID')}`}
-                {c.product_name && <span className="ml-2 text-xs text-gray-500">({c.product_name} saja)</span>}
+                {c.product_name && <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">({c.product_name} saja)</span>}
               </span>
               <button onClick={() => handleDelete(c.id)} className="text-red-500 hover:text-red-700">
                 <TrashIcon className="h-4 w-4" />
@@ -417,7 +417,7 @@ function CustomerMaterialInfoManager({ customerId }: { customerId: number }) {
             <div key={r.id} className="flex items-center justify-between text-sm border border-gray-200 dark:border-gray-700 rounded px-3 py-2">
               <div>
                 <span className="font-medium">{r.product_name}</span>
-                {r.customer_material_code && <span className="ml-2 text-xs text-gray-500">Kode: {r.customer_material_code}</span>}
+                {r.customer_material_code && <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">Kode: {r.customer_material_code}</span>}
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   {r.special_price != null && <>Harga: Rp{Number(r.special_price).toLocaleString('id-ID')} </>}
                   {r.min_order_qty != null && <>| MOQ: {r.min_order_qty} </>}
@@ -433,25 +433,25 @@ function CustomerMaterialInfoManager({ customerId }: { customerId: number }) {
       )}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-2 items-end">
         <div className="md:col-span-2">
-          <label className="block text-xs text-gray-500 mb-1">Produk</label>
+          <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Produk</label>
           <SearchableSelect options={productOptions} value={productId} onChange={(v) => setProductId(v === null ? null : Number(v))} placeholder="Pilih produk..." />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Kode Customer</label>
+          <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Kode Customer</label>
           <input className="input-field" value={code} onChange={(e) => setCode(e.target.value)} placeholder="SKU customer" />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Harga Khusus</label>
+          <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Harga Khusus</label>
           <NumberInput currency className="input-field" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Rp" />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">MOQ</label>
+          <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">MOQ</label>
           <NumberInput className="input-field" value={moq} onChange={(e) => setMoq(e.target.value)} />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-5 gap-2 items-end mt-2">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Lead Time (hari)</label>
+          <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Lead Time (hari)</label>
           <NumberInput className="input-field" value={leadTime} onChange={(e) => setLeadTime(e.target.value)} />
         </div>
         <button className="btn-secondary" disabled={creating} onClick={handleAdd}>

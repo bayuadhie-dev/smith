@@ -327,21 +327,21 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
 
   const getAccountTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
-      case 'asset': return 'bg-blue-100 text-blue-800';
-      case 'liability': return 'bg-red-100 text-red-800';
-      case 'equity': return 'bg-green-100 text-green-800';
-      case 'revenue': return 'bg-purple-100 text-purple-800';
-      case 'expense': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'asset': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'liability': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      case 'equity': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'revenue': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+      case 'expense': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'posted': return 'bg-green-100 text-green-800';
-      case 'draft': return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'posted': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'draft': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -377,10 +377,10 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
           subtitle="Jurnal manual dan jurnal otomatis dari transaksi"
           actions={
             <>
-              <button className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200" onClick={loadData} title="Muat ulang">
+              <button className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700" onClick={loadData} title="Muat ulang">
                 <ArrowPathIcon className="h-4 w-4" />
               </button>
-              <Link to="/app/imports?kind=manual_journal" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Impor</Link>
+              <Link to="/app/imports?kind=manual_journal" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Impor</Link>
               <button onClick={() => setShowAddJournalModal(true)} className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Jurnal baru</button>
             </>
           }
@@ -394,8 +394,8 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
             onClick={() => setActiveTab('accounts')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'accounts'
-                ? 'border-emerald-600 text-emerald-700'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-emerald-600 text-emerald-700 dark:text-emerald-300'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
             }`}
           >
             Daftar Akun
@@ -404,8 +404,8 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
             onClick={() => setActiveTab('journal')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'journal'
-                ? 'border-emerald-600 text-emerald-700'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-emerald-600 text-emerald-700 dark:text-emerald-300'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
             }`}
           >
             Jurnal
@@ -488,9 +488,9 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
                     {entry.document_url ? (
-                      <Link to={entry.document_url} className="text-blue-600 hover:underline" title="Buka transaksi asal jurnal ini">{entry.description}</Link>
+                      <Link to={entry.document_url} className="text-blue-600 hover:underline dark:text-blue-400" title="Buka transaksi asal jurnal ini">{entry.description}</Link>
                     ) : entry.reference_type === 'manual_journal' ? (
-                      <span>{entry.description} <span className="ml-1 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700">Jurnal manual</span></span>
+                      <span>{entry.description} <span className="ml-1 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">Jurnal manual</span></span>
                     ) : entry.description}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right font-medium">
@@ -498,9 +498,9 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     {entry.kind === 'reversal' ? (
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800" title="Jurnal pembalik dari transaksi yang dibatalkan">Pembalik (void)</span>
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" title="Jurnal pembalik dari transaksi yang dibatalkan">Pembalik (void)</span>
                     ) : entry.kind === 'voided' ? (
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-600" title="Transaksi ini sudah dibatalkan; dinetralkan oleh jurnal pembalik">Dibatalkan</span>
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300" title="Transaksi ini sudah dibatalkan; dinetralkan oleh jurnal pembalik">Dibatalkan</span>
                     ) : (
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(entry.status)}`}>
                         {entry.status === 'posted' ? 'Terposting' : entry.status === 'draft' ? 'Draft' : entry.status === 'cancelled' ? 'Dibatalkan' : entry.status}
@@ -514,7 +514,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                     <div className="flex justify-center items-center space-x-2">
                       <button
                         onClick={() => handleOpenJournalDetail(entry.entry_number)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
                         title="Lihat detail"
                       >
                         <EyeIcon className="h-4 w-4" />
@@ -523,14 +523,14 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                         <>
                         <button
                           onClick={() => handleEditJournal(entry)}
-                          className="text-amber-600 hover:text-amber-800"
+                          className="text-amber-600 hover:text-amber-800 dark:text-amber-400"
                           title="Ubah jurnal manual ini"
                         >
                           <PencilIcon className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteJournal(entry)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 dark:text-red-400"
                           title="Hapus jurnal manual ini"
                         >
                           <TrashIcon className="h-4 w-4" />
@@ -583,7 +583,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {journalDetail ? (
                   journalDetail.document_url ? (
-                    <Link to={journalDetail.document_url} onClick={handleCloseJournalDetail} className="text-blue-600 hover:underline" title="Buka halaman transaksi">
+                    <Link to={journalDetail.document_url} onClick={handleCloseJournalDetail} className="text-blue-600 hover:underline dark:text-blue-400" title="Buka halaman transaksi">
                       {journalDetail.reference_number || 'Buka transaksi'} &rarr;
                     </Link>
                   ) : journalDetail.reference_number
@@ -591,14 +591,14 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
               </h3>
               <button
                 onClick={handleCloseJournalDetail}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl dark:hover:text-white"
               >
                 &times;
               </button>
             </div>
 
             {loadingJournalDetail ? (
-              <div className="text-gray-500 text-sm py-8 text-center">Memuat...</div>
+              <div className="text-gray-500 text-sm py-8 text-center dark:text-gray-400">Memuat...</div>
             ) : journalDetail && (
               <>
                 <div className="grid grid-cols-2 gap-3 text-sm mb-4 bg-gray-50 dark:bg-gray-900 rounded-md p-4">
@@ -622,7 +622,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                     <div className="text-gray-500 dark:text-gray-400">Deskripsi</div>
                     <div className="font-medium text-gray-900 dark:text-white">{journalDetail.description}</div>
                     {journalDetail.document_url && (
-                      <Link to={journalDetail.document_url} className="mt-1 inline-block text-sm text-blue-600 hover:underline">Buka transaksi asal &rarr;</Link>
+                      <Link to={journalDetail.document_url} className="mt-1 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400">Buka transaksi asal &rarr;</Link>
                     )}
                   </div>
                 </div>
@@ -683,7 +683,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{editingJournalId ? 'Ubah Jurnal Manual' : 'Jurnal Baru'}</h3>
               <button 
                 onClick={handleCloseJournalModal}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl dark:hover:text-white"
               >
                 ✕
               </button>
@@ -795,7 +795,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                             <button 
                               type="button"
                               onClick={() => removeJournalLine(index)}
-                              className="w-full px-2 py-2 text-red-600 hover:bg-red-50 rounded text-sm"
+                              className="w-full px-2 py-2 text-red-600 hover:bg-red-50 rounded text-sm dark:text-red-400"
                             >
                               <TrashIcon className="h-4 w-4 mx-auto" />
                             </button>
@@ -827,7 +827,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                     })}
                   </div>
 
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg dark:bg-blue-900/20">
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
                         <p className="text-gray-600 dark:text-gray-300">Total Debit:</p>
@@ -846,7 +846,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                         <p className={`text-lg font-bold ${
                           Math.abs(journalFormData.lines.reduce((sum, line) => sum + (line.debit || 0), 0) - 
                           journalFormData.lines.reduce((sum, line) => sum + (line.credit || 0), 0)) < 0.01 
-                          ? 'text-green-600' : 'text-red-600'
+                          ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                         }`}>
                           {formatRupiah(Math.abs(
                             journalFormData.lines.reduce((sum, line) => sum + (line.debit || 0), 0) - 
@@ -857,7 +857,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                     </div>
                     {Math.abs(journalFormData.lines.reduce((sum, line) => sum + (line.debit || 0), 0) - 
                       journalFormData.lines.reduce((sum, line) => sum + (line.credit || 0), 0)) >= 0.01 && (
-                      <p className="text-red-600 text-sm mt-2">⚠️ Entry must be balanced before posting</p>
+                      <p className="text-red-600 text-sm mt-2 dark:text-red-400">⚠️ Entry must be balanced before posting</p>
                     )}
                   </div>
                 </div>

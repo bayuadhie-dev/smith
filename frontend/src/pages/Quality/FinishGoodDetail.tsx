@@ -94,12 +94,12 @@ const shiftLabel = (s: string) => {
 
 const QCResultBadge = ({ result }: { result: string }) => {
   if (result === 'passed')
-    return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800"><CheckCircleIcon className="w-4 h-4" />Lulus QC</span>;
+    return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"><CheckCircleIcon className="w-4 h-4" />Lulus QC</span>;
   if (result === 'failed')
-    return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800"><XCircleIcon className="w-4 h-4" />Ditolak</span>;
+    return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"><XCircleIcon className="w-4 h-4" />Ditolak</span>;
   if (result === 'conditional')
-    return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800"><ExclamationTriangleIcon className="w-4 h-4" />Bersyarat</span>;
-  return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-gray-100 text-gray-700"><ClockIcon className="w-4 h-4" />Pending</span>;
+    return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"><ExclamationTriangleIcon className="w-4 h-4" />Bersyarat</span>;
+  return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200"><ClockIcon className="w-4 h-4" />Pending</span>;
 };
 
 export default function FinishGoodDetail() {
@@ -131,7 +131,7 @@ export default function FinishGoodDetail() {
   };
 
   if (loading) return <LoadingSpinner />;
-  if (!wo) return <div className="p-6 text-gray-500">SPK tidak ditemukan.</div>;
+  if (!wo) return <div className="p-6 text-gray-500 dark:text-gray-400">SPK tidak ditemukan.</div>;
 
   const progressColor = summary && summary.progress_pct >= 100
     ? 'bg-green-500' : summary && summary.progress_pct >= 60
@@ -150,7 +150,7 @@ export default function FinishGoodDetail() {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <ClipboardDocumentCheckIcon className="w-7 h-7 text-green-600" />
+              <ClipboardDocumentCheckIcon className="w-7 h-7 text-green-600 dark:text-green-400" />
               Detail QC — {wo.wo_number}
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">{wo.product_name} · {wo.product_code}</p>
@@ -201,7 +201,7 @@ export default function FinishGoodDetail() {
             )}
             {wo.notes && (
               <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
-                <p className="text-xs text-gray-500 mb-1">Catatan WO</p>
+                <p className="text-xs text-gray-500 mb-1 dark:text-gray-400">Catatan WO</p>
                 <p className="text-sm text-gray-700 dark:text-gray-300">{wo.notes}</p>
               </div>
             )}
@@ -222,7 +222,7 @@ export default function FinishGoodDetail() {
           <div className="card p-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Progress Produksi</span>
-              <span className={`text-sm font-bold ${summary && summary.progress_pct >= 100 ? 'text-green-600' : summary && summary.progress_pct >= 60 ? 'text-yellow-600' : 'text-red-500'}`}>
+              <span className={`text-sm font-bold ${summary && summary.progress_pct >= 100 ? 'text-green-600 dark:text-green-400' : summary && summary.progress_pct >= 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-500'}`}>
                 {summary?.progress_pct ?? 0}%
               </span>
             </div>
@@ -238,16 +238,16 @@ export default function FinishGoodDetail() {
           {/* Stats row */}
           <div className="grid grid-cols-3 gap-3">
             <div className="card p-3 text-center">
-              <p className="text-2xl font-bold text-blue-600">{summary?.shift_count ?? 0}</p>
-              <p className="text-xs text-gray-500 mt-0.5">Total Shift</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{summary?.shift_count ?? 0}</p>
+              <p className="text-xs text-gray-500 mt-0.5 dark:text-gray-400">Total Shift</p>
             </div>
             <div className="card p-3 text-center">
-              <p className="text-2xl font-bold text-purple-600">{wo.total_cartons > 0 ? wo.total_cartons.toLocaleString() : '—'}</p>
-              <p className="text-xs text-gray-500 mt-0.5">Karton {wo.pack_per_carton > 0 ? `(${wo.pack_per_carton}/ctn)` : ''}</p>
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{wo.total_cartons > 0 ? wo.total_cartons.toLocaleString() : '—'}</p>
+              <p className="text-xs text-gray-500 mt-0.5 dark:text-gray-400">Karton {wo.pack_per_carton > 0 ? `(${wo.pack_per_carton}/ctn)` : ''}</p>
             </div>
             <div className="card p-3 text-center">
               <p className="text-2xl font-bold text-orange-500">{summary ? Math.floor(summary.total_downtime_minutes / 60) + 'j ' + (summary.total_downtime_minutes % 60) + 'm' : '—'}</p>
-              <p className="text-xs text-gray-500 mt-0.5">Total Downtime</p>
+              <p className="text-xs text-gray-500 mt-0.5 dark:text-gray-400">Total Downtime</p>
             </div>
           </div>
         </div>
@@ -275,7 +275,7 @@ export default function FinishGoodDetail() {
                 </div>
               )}
               {qcTest.approved_by && (
-                <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
                   <CheckCircleIcon className="w-4 h-4 text-green-500" />
                   Disetujui oleh <strong>{qcTest.approved_by}</strong> · {fmtDate(qcTest.approved_at, true)}
                 </div>
@@ -289,7 +289,7 @@ export default function FinishGoodDetail() {
             )}
             {qcTest.notes && (
               <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                <p className="text-xs font-semibold text-gray-500 mb-1">Catatan QC</p>
+                <p className="text-xs font-semibold text-gray-500 mb-1 dark:text-gray-400">Catatan QC</p>
                 <p className="text-sm text-gray-700 dark:text-gray-300">{qcTest.notes}</p>
               </div>
             )}
@@ -297,7 +297,7 @@ export default function FinishGoodDetail() {
         ) : (
           <div className="text-center py-8">
             <BeakerIcon className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-            <p className="text-gray-500 text-sm">Belum ada inspeksi QC untuk SPK ini.</p>
+            <p className="text-gray-500 text-sm dark:text-gray-400">Belum ada inspeksi QC untuk SPK ini.</p>
             <Link
               to={`/app/quality/finish-good/${wo.id}/input`}
               className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700"
@@ -320,7 +320,7 @@ export default function FinishGoodDetail() {
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
                   {['Tanggal', 'Shift', 'Mesin', 'Operator', 'Aktual', 'Good', 'Scrap', 'Yield', 'Downtime', 'Catatan'].map(h => (
-                    <th key={h} className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{h}</th>
+                    <th key={h} className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -339,14 +339,14 @@ export default function FinishGoodDetail() {
                       <td className="px-3 py-2 text-xs font-medium text-green-700 dark:text-green-400 whitespace-nowrap">{sp.good_quantity.toLocaleString()}</td>
                       <td className="px-3 py-2 text-xs font-medium text-red-600 dark:text-red-400 whitespace-nowrap">{sp.scrap_quantity > 0 ? sp.scrap_quantity.toLocaleString() : '—'}</td>
                       <td className="px-3 py-2 text-xs whitespace-nowrap">
-                        <span className={`font-semibold ${parseFloat(yieldPct) >= 95 ? 'text-green-600' : parseFloat(yieldPct) >= 80 ? 'text-yellow-600' : 'text-red-500'}`}>
+                        <span className={`font-semibold ${parseFloat(yieldPct) >= 95 ? 'text-green-600 dark:text-green-400' : parseFloat(yieldPct) >= 80 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-500'}`}>
                           {yieldPct}{yieldPct !== '—' ? '%' : ''}
                         </span>
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-500 whitespace-nowrap">
+                      <td className="px-3 py-2 text-xs text-gray-500 whitespace-nowrap dark:text-gray-400">
                         {sp.downtime_minutes > 0 ? `${sp.downtime_minutes} mnt` : '—'}
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-500 max-w-[160px] truncate">{sp.notes || '—'}</td>
+                      <td className="px-3 py-2 text-xs text-gray-500 max-w-[160px] truncate dark:text-gray-400">{sp.notes || '—'}</td>
                     </tr>
                   );
                 })}
@@ -389,15 +389,15 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
 
 function MetricCard({ label, value, sub, color }: { label: string; value: string; sub: string; color: string }) {
   const colorMap: Record<string, string> = {
-    blue: 'text-blue-600',
-    green: 'text-green-600',
-    yellow: 'text-yellow-600',
+    blue: 'text-blue-600 dark:text-blue-400',
+    green: 'text-green-600 dark:text-green-400',
+    yellow: 'text-yellow-600 dark:text-yellow-400',
     red: 'text-red-500',
   };
   return (
     <div className="card p-3">
       <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
-      <p className={`text-xl font-bold mt-0.5 ${colorMap[color] || 'text-gray-800'}`}>{value}</p>
+      <p className={`text-xl font-bold mt-0.5 ${colorMap[color] || 'text-gray-800 dark:text-gray-100'}`}>{value}</p>
       <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
     </div>
   );

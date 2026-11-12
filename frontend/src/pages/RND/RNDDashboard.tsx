@@ -25,11 +25,11 @@ const stageLabels: Record<string, string> = {
 };
 
 const stageColors: Record<string, string> = {
-  'LAB_SCALE': 'bg-blue-100 text-blue-800',
-  'PILOT_SCALE': 'bg-yellow-100 text-yellow-800',
-  'VALIDATION': 'bg-purple-100 text-purple-800',
-  'COMPLETION': 'bg-green-100 text-green-800',
-  'CANCELLED': 'bg-red-100 text-red-800'
+  'LAB_SCALE': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  'PILOT_SCALE': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+  'VALIDATION': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  'COMPLETION': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  'CANCELLED': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
 };
 
 const RNDDashboard: React.FC = () => {
@@ -157,10 +157,10 @@ const RNDDashboard: React.FC = () => {
                     <p className="text-sm text-gray-500 dark:text-gray-400">{exp.trial_date}</p>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    exp.status === 'PASSED' ? 'bg-green-100 text-green-800' :
-                    exp.status === 'FAILED' ? 'bg-red-100 text-red-800' :
-                    exp.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800' :
-                    'bg-gray-100 text-gray-800'
+                    exp.status === 'PASSED' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                    exp.status === 'FAILED' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                    exp.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
                   }`}>
                     {exp.status}
                   </span>
@@ -205,7 +205,7 @@ const RNDDashboard: React.FC = () => {
           className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200"
         >
           <div className="flex items-center gap-3">
-            <FolderKanban className="w-5 h-5 text-blue-600" />
+            <FolderKanban className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <span className="font-medium text-gray-900 dark:text-white">Daftar Proyek</span>
           </div>
           <ArrowRight className="w-4 h-4 text-gray-400" />
@@ -216,7 +216,7 @@ const RNDDashboard: React.FC = () => {
           className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200"
         >
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-green-600" />
+            <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
             <span className="font-medium text-gray-900 dark:text-white">Approval Pending</span>
           </div>
           <ArrowRight className="w-4 h-4 text-gray-400" />
@@ -227,7 +227,7 @@ const RNDDashboard: React.FC = () => {
           className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200"
         >
           <div className="flex items-center gap-3">
-            <FlaskConical className="w-5 h-5 text-purple-600" />
+            <FlaskConical className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             <span className="font-medium text-gray-900 dark:text-white">Proyek Baru</span>
           </div>
           <ArrowRight className="w-4 h-4 text-gray-400" />

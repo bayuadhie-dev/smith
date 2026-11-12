@@ -171,13 +171,13 @@ const WIPDashboard: React.FC = () => {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'high':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
       case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
       case 'low':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -208,7 +208,7 @@ const WIPDashboard: React.FC = () => {
   if (error) {
     return (
       <div className="text-center py-12">
-        <div className="text-red-600 mb-4">
+        <div className="text-red-600 mb-4 dark:text-red-400">
           <ExclamationTriangleIcon className="h-12 w-12 mx-auto" />
         </div>
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Error Loading Dashboard</h3>
@@ -402,10 +402,10 @@ const WIPDashboard: React.FC = () => {
                       </td>
                       <td>
                         {bottleneck.is_bottleneck ? (
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
                           </span>
                         ) : (
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                           </span>
                         )}
                       </td>
@@ -451,7 +451,7 @@ const WIPDashboard: React.FC = () => {
                       <td>{batch.work_order_no}</td>
                       <td>{batch.product_name}</td>
                       <td>
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                           {batch.current_stage.replace('_', ' ').toUpperCase()}
                         </span>
                       </td>
@@ -478,7 +478,7 @@ const WIPDashboard: React.FC = () => {
                       <td>
                         <Link
                           to={`/app/production/wip-batches/${batch.id}`}
-                          className="text-blue-600 hover:text-blue-800 text-sm"
+                          className="text-blue-600 hover:text-blue-800 text-sm dark:text-blue-400"
                         >
                           View Details
                         </Link>
@@ -502,7 +502,7 @@ const WIPDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link to="/app/production/wip-batches/new" className="card hover:shadow-lg transition-shadow">
           <div className="card-body text-center">
-            <PlayIcon className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+            <PlayIcon className="h-8 w-8 text-blue-600 mx-auto mb-2 dark:text-blue-400" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Start New WIP Batch</h3>
             <p className="text-gray-500 dark:text-gray-400">Create WIP batch from SPK</p>
           </div>
@@ -510,7 +510,7 @@ const WIPDashboard: React.FC = () => {
 
         <Link to="/app/production/job-costs" className="card hover:shadow-lg transition-shadow">
           <div className="card-body text-center">
-            <CurrencyDollarIcon className="h-8 w-8 text-green-600 mx-auto mb-2" />
+            <CurrencyDollarIcon className="h-8 w-8 text-green-600 mx-auto mb-2 dark:text-green-400" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Job Costing</h3>
             <p className="text-gray-500 dark:text-gray-400">Track production costs</p>
           </div>
@@ -518,7 +518,7 @@ const WIPDashboard: React.FC = () => {
 
         <Link to="/app/production/wip-analytics" className="card hover:shadow-lg transition-shadow">
           <div className="card-body text-center">
-            <ChartBarIcon className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+            <ChartBarIcon className="h-8 w-8 text-purple-600 mx-auto mb-2 dark:text-purple-400" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">WIP Analytics</h3>
             <p className="text-gray-500 dark:text-gray-400">Advanced WIP analysis</p>
           </div>

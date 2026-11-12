@@ -146,19 +146,19 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-900">
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Total Pack</p>
-                <p className="text-2xl font-bold text-primary-600">{formatNumber(data.summary.total_pack)}</p>
+                <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">{formatNumber(data.summary.total_pack)}</p>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Total Karton</p>
-                <p className="text-2xl font-bold text-teal-600">{formatNumber(Math.round(data.summary.total_carton))}</p>
+                <p className="text-2xl font-bold text-teal-600 dark:text-teal-400">{formatNumber(Math.round(data.summary.total_carton))}</p>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Total Mesin</p>
-                <p className="text-2xl font-bold text-blue-600">{data.by_machine.length}</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{data.by_machine.length}</p>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Total Produk</p>
-                <p className="text-2xl font-bold text-green-600">{data.by_product.length}</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{data.by_product.length}</p>
               </div>
             </div>
           )}
@@ -167,13 +167,13 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
           {data && (
             <div className="px-4 pb-2">
               <div className="flex gap-4 text-sm">
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full dark:bg-blue-900/30 dark:text-blue-300">
                   Shift 1: {formatNumber(data.by_shift.shift_1)} pack
                 </span>
-                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full">
+                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full dark:bg-green-900/30 dark:text-green-300">
                   Shift 2: {formatNumber(data.by_shift.shift_2)} pack
                 </span>
-                <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full">
+                <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full dark:bg-purple-900/30 dark:text-purple-300">
                   Shift 3: {formatNumber(data.by_shift.shift_3)} pack
                 </span>
               </div>
@@ -186,8 +186,8 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
               onClick={() => setActiveTab('machine')}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'machine'
-                  ? 'border-primary-600 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-primary-600 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               <WrenchScrewdriverIcon className="w-4 h-4 inline mr-2" />
@@ -197,8 +197,8 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
               onClick={() => setActiveTab('product')}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'product'
-                  ? 'border-primary-600 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-primary-600 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               <CubeIcon className="w-4 h-4 inline mr-2" />
@@ -208,8 +208,8 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
               onClick={() => setActiveTab('detail')}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'detail'
-                  ? 'border-primary-600 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-primary-600 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               <ChartBarIcon className="w-4 h-4 inline mr-2" />
@@ -248,7 +248,7 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
                           <td className="px-4 py-3 text-right font-medium">{formatNumber(machine.pack)}</td>
                           <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(Math.round(machine.carton))}</td>
                           <td className="px-4 py-3 text-right">
-                            <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded">
+                            <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded dark:bg-purple-900/30 dark:text-purple-300">
                               {((machine.pack / data.summary.total_pack) * 100).toFixed(1)}%
                             </span>
                           </td>
@@ -281,7 +281,7 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
                           <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(Math.round(product.carton))}</td>
                           <td className="px-4 py-3 text-right text-gray-500 dark:text-gray-400">{product.packs_per_karton}</td>
                           <td className="px-4 py-3 text-right">
-                            <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">
+                            <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded dark:bg-green-900/30 dark:text-green-300">
                               {((product.pack / data.summary.total_pack) * 100).toFixed(1)}%
                             </span>
                           </td>
@@ -311,9 +311,9 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
                           <td className="px-3 py-2 whitespace-nowrap">{detail.date}</td>
                           <td className="px-3 py-2">
                             <span className={`px-2 py-0.5 text-xs rounded ${
-                              detail.shift === 'shift_1' ? 'bg-blue-100 text-blue-800' :
-                              detail.shift === 'shift_2' ? 'bg-green-100 text-green-800' :
-                              'bg-purple-100 text-purple-800'
+                              detail.shift === 'shift_1' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                              detail.shift === 'shift_2' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                              'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
                             }`}>
                               {detail.shift.replace('shift_', 'S')}
                             </span>
@@ -328,9 +328,9 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
                           <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">{formatNumber(Math.round(detail.carton_count))}</td>
                           <td className="px-3 py-2 text-right">
                             <span className={`px-2 py-0.5 text-xs rounded ${
-                              detail.oee >= 85 ? 'bg-green-100 text-green-800' :
-                              detail.oee >= 60 ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
+                              detail.oee >= 85 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                              detail.oee >= 60 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                              'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                             }`}>
                               {detail.oee}%
                             </span>

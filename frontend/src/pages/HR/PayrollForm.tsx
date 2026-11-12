@@ -97,9 +97,9 @@ const PayrollForm: React.FC = () => {
   const [error, setError] = useState('');
 
   const statusOptions = [
-    { value: 'calculated', label: 'Calculated', color: 'text-blue-600' },
-    { value: 'approved', label: 'Approved', color: 'text-green-600' },
-    { value: 'paid', label: 'Paid', color: 'text-purple-600' }
+    { value: 'calculated', label: 'Calculated', color: 'text-blue-600 dark:text-blue-400' },
+    { value: 'approved', label: 'Approved', color: 'text-green-600 dark:text-green-400' },
+    { value: 'paid', label: 'Paid', color: 'text-purple-600 dark:text-purple-400' }
   ];
 
   const paymentMethods = [
@@ -353,7 +353,7 @@ const PayrollForm: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
               <ExclamationCircleIcon className="h-5 w-5" />
               <span>{error}</span>
             </div>
@@ -658,19 +658,19 @@ const PayrollForm: React.FC = () => {
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                   IDR {getGrossSalary().toLocaleString('id-ID')}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Gross Salary</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">
+                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                   IDR {getTotalDeductions().toLocaleString('id-ID')}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Total Deductions</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                   IDR {getNetSalary().toLocaleString('id-ID')}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Net Salary</div>

@@ -222,7 +222,7 @@ const navigate = useNavigate()
                 ))}
               </select>
               {errors.test_type && (
-                <p className="mt-1 text-sm text-red-600">{errors.test_type.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.test_type.message}</p>
               )}
             </div>
 
@@ -242,7 +242,7 @@ const navigate = useNavigate()
                 required
               />
               {errors.product_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.product_id.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.product_id.message}</p>
               )}
             </div>
 
@@ -280,7 +280,7 @@ const navigate = useNavigate()
                 className="input-field"
               />
               {errors.test_date && (
-                <p className="mt-1 text-sm text-red-600">{errors.test_date.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.test_date.message}</p>
               )}
             </div>
 
@@ -325,23 +325,23 @@ const navigate = useNavigate()
 
           {/* Product Info Display */}
           {selectedProduct && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">Product Information</h4>
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
+              <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">Product Information</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <span className="text-blue-600">Category:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Category:</span>
                   <p className="font-medium">{selectedProduct.category || 'N/A'}</p>
                 </div>
                 <div>
-                  <span className="text-blue-600">Material Type:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Material Type:</span>
                   <p className="font-medium">{selectedProduct.material_type?.replace('_', ' ')}</p>
                 </div>
                 <div>
-                  <span className="text-blue-600">Nonwoven Category:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Nonwoven Category:</span>
                   <p className="font-medium">{selectedProduct.nonwoven_category || 'N/A'}</p>
                 </div>
                 <div>
-                  <span className="text-blue-600">UOM:</span>
+                  <span className="text-blue-600 dark:text-blue-400">UOM:</span>
                   <p className="font-medium">{selectedProduct.primary_uom}</p>
                 </div>
               </div>
@@ -537,10 +537,10 @@ const navigate = useNavigate()
             <div className="flex justify-between items-center">
               <span className="text-lg font-medium">Overall Test Result:</span>
               <span className={`px-4 py-2 rounded-lg font-medium ${
-                calculateOverallResult() === 'passed' ? 'bg-green-100 text-green-800' :
-                calculateOverallResult() === 'failed' ? 'bg-red-100 text-red-800' :
-                calculateOverallResult() === 'conditional' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-gray-100 text-gray-800'
+                calculateOverallResult() === 'passed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                calculateOverallResult() === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                calculateOverallResult() === 'conditional' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
               }`}>
                 {calculateOverallResult().toUpperCase()}
               </span>
@@ -578,9 +578,9 @@ const navigate = useNavigate()
       </form>
 
       {/* Quality Tips */}
-      <div className="card p-4 bg-purple-50 border border-purple-200">
-        <h4 className="font-medium text-purple-900 mb-2">🧪 Quality Control Tips</h4>
-        <ul className="text-sm text-purple-800 space-y-1">
+      <div className="card p-4 bg-purple-50 border border-purple-200 dark:bg-purple-900/20 dark:border-purple-800">
+        <h4 className="font-medium text-purple-900 mb-2 dark:text-purple-200">🧪 Quality Control Tips</h4>
+        <ul className="text-sm text-purple-800 space-y-1 dark:text-purple-300">
           <li>• Ensure proper calibration of testing equipment before use</li>
           <li>• Document environmental conditions during testing</li>
           <li>• Use appropriate sample sizes for statistical significance</li>

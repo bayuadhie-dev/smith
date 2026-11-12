@@ -51,26 +51,26 @@ const TVDisplaySelector: React.FC = () => {
     blue: {
       bg: 'bg-blue-600',
       hover: 'hover:bg-blue-700',
-      text: 'text-blue-600',
-      border: 'border-blue-200'
+      text: 'text-blue-600 dark:text-blue-400',
+      border: 'border-blue-200 dark:border-blue-800'
     },
     green: {
       bg: 'bg-green-600',
       hover: 'hover:bg-green-700',
-      text: 'text-green-600',
-      border: 'border-green-200'
+      text: 'text-green-600 dark:text-green-400',
+      border: 'border-green-200 dark:border-green-800'
     },
     purple: {
       bg: 'bg-purple-600',
       hover: 'hover:bg-purple-700',
-      text: 'text-purple-600',
-      border: 'border-purple-200'
+      text: 'text-purple-600 dark:text-purple-400',
+      border: 'border-purple-200 dark:border-purple-800'
     },
     yellow: {
       bg: 'bg-yellow-600',
       hover: 'hover:bg-yellow-700',
-      text: 'text-yellow-600',
-      border: 'border-yellow-200'
+      text: 'text-yellow-600 dark:text-yellow-400',
+      border: 'border-yellow-200 dark:border-yellow-800'
     }
   };
 
@@ -78,7 +78,7 @@ const TVDisplaySelector: React.FC = () => {
     <div className="min-h-screen bg-gray-100 dark:bg-gray-800 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <ComputerDesktopIcon className="h-16 w-16 text-primary-600 mx-auto mb-4" />
+          <ComputerDesktopIcon className="h-16 w-16 text-primary-600 mx-auto mb-4 dark:text-primary-400" />
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             TV Display System
           </h1>
@@ -96,7 +96,7 @@ const TVDisplaySelector: React.FC = () => {
               <Link
                 key={option.title}
                 to={option.href}
-                className={`block p-8 bg-white rounded-xl shadow-lg ${colors.border} border-2 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group`}
+                className={`block p-8 bg-white rounded-xl shadow-lg dark:bg-gray-800 ${colors.border} border-2 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group`}
               >
                 <div className="flex items-center justify-between mb-6">
                   <div className={`p-3 ${colors.bg} rounded-lg`}>

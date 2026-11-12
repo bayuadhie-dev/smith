@@ -56,11 +56,11 @@ interface DowntimeCategory {
 }
 
 const CATEGORY_CONFIG: Record<string, { label: string; color: string; bgColor: string; icon: any }> = {
-  mesin: { label: 'Mesin', color: 'text-red-600', bgColor: 'bg-red-100', icon: CogIcon },
-  operator: { label: 'Operator', color: 'text-orange-600', bgColor: 'bg-orange-100', icon: UserIcon },
-  material: { label: 'Material', color: 'text-yellow-600', bgColor: 'bg-yellow-100', icon: CubeIcon },
-  design: { label: 'Design', color: 'text-purple-600', bgColor: 'bg-purple-100', icon: SwatchIcon },
-  others: { label: 'Others', color: 'text-gray-600', bgColor: 'bg-gray-100', icon: EllipsisHorizontalCircleIcon }
+  mesin: { label: 'Mesin', color: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-100 dark:bg-red-900/30', icon: CogIcon },
+  operator: { label: 'Operator', color: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-100 dark:bg-orange-900/30', icon: UserIcon },
+  material: { label: 'Material', color: 'text-yellow-600 dark:text-yellow-400', bgColor: 'bg-yellow-100 dark:bg-yellow-900/30', icon: CubeIcon },
+  design: { label: 'Design', color: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-100 dark:bg-purple-900/30', icon: SwatchIcon },
+  others: { label: 'Others', color: 'text-gray-600 dark:text-gray-300', bgColor: 'bg-gray-100 dark:bg-gray-700', icon: EllipsisHorizontalCircleIcon }
 };
 
 export default function WorkOrderBreakdown() {
@@ -202,8 +202,8 @@ export default function WorkOrderBreakdown() {
 
   if (!workOrder) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">SPK tidak ditemukan</p>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
+        <p className="text-red-800 dark:text-red-300">SPK tidak ditemukan</p>
       </div>
     );
   }
@@ -221,7 +221,7 @@ export default function WorkOrderBreakdown() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <ChartBarIcon className="h-6 w-6 text-orange-600" />
+              <ChartBarIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
               Breakdown Analysis
             </h1>
             <p className="text-gray-600 dark:text-gray-300">{workOrder.wo_number} - {workOrder.product_name}</p>
@@ -288,7 +288,7 @@ export default function WorkOrderBreakdown() {
                     className={`w-full p-4 flex items-center justify-between ${cat.bgColor} hover:opacity-90 transition-opacity`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-full bg-white ${cat.color}`}>
+                      <div className={`p-2 rounded-full bg-white dark:bg-gray-800 ${cat.color}`}>
                         <Icon className="h-5 w-5" />
                       </div>
                       <div className="text-left">
@@ -324,7 +324,7 @@ export default function WorkOrderBreakdown() {
                         </thead>
                         <tbody>
                           {cat.items.map((item, idx) => (
-                            <tr key={idx} className="border-t border-gray-100">
+                            <tr key={idx} className="border-t border-gray-100 dark:border-gray-800">
                               <td className="py-2 text-gray-700 dark:text-gray-200">{item.reason}</td>
                               <td className="py-2 text-center text-gray-600 dark:text-gray-300">
                                 {new Date(item.date).toLocaleDateString('id-ID')}
@@ -434,8 +434,8 @@ export default function WorkOrderBreakdown() {
 
       {/* Recommendations */}
       {categories.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-yellow-800 mb-4 flex items-center gap-2">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 dark:bg-yellow-900/20 dark:border-yellow-800">
+          <h2 className="text-lg font-semibold text-yellow-800 mb-4 flex items-center gap-2 dark:text-yellow-300">
             <ExclamationTriangleIcon className="h-5 w-5" />
             Rekomendasi Perbaikan
           </h2>
@@ -451,14 +451,14 @@ export default function WorkOrderBreakdown() {
               
               return (
                 <div key={cat.category} className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-yellow-200 text-yellow-800 flex items-center justify-center text-sm font-bold">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-yellow-200 text-yellow-800 flex items-center justify-center text-sm font-bold dark:text-yellow-300">
                     {idx + 1}
                   </span>
                   <div>
-                    <p className="font-medium text-yellow-800">
+                    <p className="font-medium text-yellow-800 dark:text-yellow-300">
                       {cat.label}: {cat.totalMinutes} menit ({cat.percentage.toFixed(1)}%)
                     </p>
-                    <p className="text-sm text-yellow-700">{recommendations[cat.category]}</p>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-300">{recommendations[cat.category]}</p>
                   </div>
                 </div>
               );

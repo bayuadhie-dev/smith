@@ -93,8 +93,8 @@ export default function PositionManagement() {
             <div key={p.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 hover:shadow-md transition">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <BriefcaseIcon className="h-6 w-6 text-blue-600" />
+                  <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+                    <BriefcaseIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-white">{p.title}</h3>
@@ -102,13 +102,13 @@ export default function PositionManagement() {
                   </div>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => openEdit(p)} className="p-1 text-gray-500 hover:text-blue-600"><PencilIcon className="h-4 w-4" /></button>
-                  <button onClick={() => handleDelete(p)} className="p-1 text-gray-500 hover:text-red-600"><TrashIcon className="h-4 w-4" /></button>
+                  <button onClick={() => openEdit(p)} className="p-1 text-gray-500 hover:text-blue-600 dark:text-gray-400"><PencilIcon className="h-4 w-4" /></button>
+                  <button onClick={() => handleDelete(p)} className="p-1 text-gray-500 hover:text-red-600 dark:text-gray-400"><TrashIcon className="h-4 w-4" /></button>
                 </div>
               </div>
               <button
                 onClick={() => setDrillDown(p)}
-                className="mt-3 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                className="mt-3 text-sm text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400"
               >
                 {employeesInPosition(p.id).length} karyawan &rarr;
               </button>
@@ -151,10 +151,10 @@ export default function PositionManagement() {
           <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg p-6 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-lg font-semibold">{drillDown.title}</h3>
-              <button onClick={() => setDrillDown(null)} className="text-gray-400 hover:text-gray-600">&times;</button>
+              <button onClick={() => setDrillDown(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white">&times;</button>
             </div>
             {employeesInPosition(drillDown.id).length === 0 ? (
-              <p className="text-sm text-gray-500">Belum ada karyawan dengan jabatan ini.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada karyawan dengan jabatan ini.</p>
             ) : (
               <div className="space-y-1">
                 {employeesInPosition(drillDown.id).map((e: any) => (

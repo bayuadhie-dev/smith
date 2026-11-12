@@ -234,11 +234,11 @@ const BackupRestore: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Completed</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Completed</span>;
       case 'failed':
-        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Failed</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Failed</span>;
       case 'in_progress':
-        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">In Progress</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">In Progress</span>;
       default:
         return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">Unknown</span>;
     }
@@ -372,14 +372,14 @@ const BackupRestore: React.FC = () => {
                             <>
                               <button
                                 onClick={() => restoreBackup(backup.id, backup.filename)}
-                                className="text-green-600 hover:text-green-900"
+                                className="text-green-600 hover:text-green-900 dark:text-green-400"
                                 title="Restore"
                               >
                                 <PlayIcon className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => downloadBackup(backup.id, backup.filename)}
-                                className="text-blue-600 hover:text-blue-900"
+                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
                                 title="ArrowDownTrayIcon"
                               >
                                 <DocumentArrowDownIcon className="h-4 w-4" />
@@ -388,7 +388,7 @@ const BackupRestore: React.FC = () => {
                           )}
                           <button
                             onClick={() => deleteBackup(backup.id)}
-                            className="text-red-600 hover:text-red-900"
+                            className="text-red-600 hover:text-red-900 dark:text-red-400"
                             title={t('common.delete')}
                           >
                             <TrashIcon className="h-4 w-4" />
@@ -503,12 +503,12 @@ const BackupRestore: React.FC = () => {
           </div>
 
           {/* Backup Info */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6 dark:bg-blue-900/20 dark:border-blue-800">
             <div className="flex items-center">
-              <ExclamationTriangleIcon className="h-5 w-5 text-blue-600 mr-2" />
-              <h3 className="text-sm font-medium text-blue-900">Backup Information</h3>
+              <ExclamationTriangleIcon className="h-5 w-5 text-blue-600 mr-2 dark:text-blue-400" />
+              <h3 className="text-sm font-medium text-blue-900 dark:text-blue-200">Backup Information</h3>
             </div>
-            <div className="mt-2 text-sm text-blue-800">
+            <div className="mt-2 text-sm text-blue-800 dark:text-blue-300">
               <ul className="space-y-1">
                 <li>• Backups include all database data</li>
                 <li>• File backups include uploaded documents</li>

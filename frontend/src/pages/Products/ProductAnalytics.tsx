@@ -152,14 +152,14 @@ const ProductAnalytics: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/products/dashboard"
-            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to Dashboard
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics Produk</h1>
-            <p className="text-gray-600 mt-1">Deep insights into product performance and trends</p>
+            <p className="text-gray-600 mt-1 dark:text-gray-300">Deep insights into product performance and trends</p>
           </div>
         </div>
         <div className="flex space-x-3">
@@ -205,25 +205,25 @@ const ProductAnalytics: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-2 ml-auto">
-            <span className="text-sm text-gray-600">View:</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">View:</span>
             <div className="flex rounded-lg border border-gray-300 dark:border-gray-600">
               <button
                 onClick={() => setActiveChart('sales')}
                 className={`px-3 py-1 text-sm rounded-l-lg ${
-                  activeChart === 'sales' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'
+                  activeChart === 'sales' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200'
                 }`}
               >{t('navigation.sales')}</button>
               <button
                 onClick={() => setActiveChart('profit')}
                 className={`px-3 py-1 text-sm ${
-                  activeChart === 'profit' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'
+                  activeChart === 'profit' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200'
                 }`}
               >
               </button>
               <button
                 onClick={() => setActiveChart('performance')}
                 className={`px-3 py-1 text-sm rounded-r-lg ${
-                  activeChart === 'performance' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'
+                  activeChart === 'performance' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200'
                 }`}
               >
               </button>
@@ -278,7 +278,7 @@ const ProductAnalytics: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Product Performance</h3>
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-300">
             Showing {productPerformance.length} products
           </div>
         </div>
@@ -314,7 +314,7 @@ const ProductAnalytics: React.FC = () => {
                     <div className="font-medium text-gray-900 dark:text-white">{product.product_name}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                       {product.category}
                     </span>
                   </td>
@@ -326,8 +326,8 @@ const ProductAnalytics: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`text-sm font-medium ${
-                      product.profit_margin >= 25 ? 'text-green-600' :
-                      product.profit_margin >= 15 ? 'text-yellow-600' : 'text-red-600'
+                      product.profit_margin >= 25 ? 'text-green-600 dark:text-green-400' :
+                      product.profit_margin >= 15 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
                     }`}>
                       {formatPercent(product.profit_margin)}
                     </span>
@@ -340,7 +340,7 @@ const ProductAnalytics: React.FC = () => {
                         <ArrowTrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
                       )}
                       <span className={`text-sm font-medium ${
-                        product.growth_rate >= 0 ? 'text-green-600' : 'text-red-600'
+                        product.growth_rate >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                       }`}>
                         {formatPercent(Math.abs(product.growth_rate))}
                       </span>
@@ -352,7 +352,7 @@ const ProductAnalytics: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <Link
                       to={`/app/products/${product.product_id}`}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
                     >
                       <EyeIcon className="h-4 w-4" />
                     </Link>

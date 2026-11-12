@@ -36,8 +36,8 @@ const RoleTable: React.FC<RoleTableProps> = ({ roles, onEdit, onDelete }) => {
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <ShieldCheckIcon className="h-6 w-6 text-green-600" />
+                <div className="p-2 bg-green-100 rounded-lg dark:bg-green-900/30">
+                  <ShieldCheckIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div className="ml-3">
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white">{role.name}</h3>
@@ -47,14 +47,14 @@ const RoleTable: React.FC<RoleTableProps> = ({ roles, onEdit, onDelete }) => {
               <div className="flex items-center space-x-1">
                 <button
                   onClick={() => onEdit(role)}
-                  className="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-50"
+                  className="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-50 dark:text-indigo-400"
                   title="Edit Role"
                 >
                   <PencilIcon className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => onDelete(role)}
-                  className="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50"
+                  className="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50 dark:text-red-400"
                   title="Delete Role"
                 >
                   <TrashIcon className="h-4 w-4" />
@@ -66,8 +66,8 @@ const RoleTable: React.FC<RoleTableProps> = ({ roles, onEdit, onDelete }) => {
             <div className="flex items-center justify-between mb-4">
               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                 role.is_active 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                  : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
               }`}>
                 {role.is_active ? 'Active' : 'Inactive'}
               </span>
@@ -103,7 +103,7 @@ const RoleTable: React.FC<RoleTableProps> = ({ roles, onEdit, onDelete }) => {
             </div>
 
             {/* Created Date */}
-            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Created: {new Date(role.created_at).toLocaleDateString()}
               </p>

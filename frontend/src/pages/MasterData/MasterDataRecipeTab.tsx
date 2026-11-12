@@ -172,7 +172,7 @@ export default function MasterDataRecipeTab() {
                   <td>{r.duration_hours ? `${r.duration_hours} jam` : '-'}</td>
                   <td>{r.is_default ? '✓' : ''}</td>
                   <td className="flex items-center gap-2">
-                    <button onClick={() => handleEdit(r)} className="text-primary-600 hover:text-primary-700">
+                    <button onClick={() => handleEdit(r)} className="text-primary-600 hover:text-primary-700 dark:text-primary-400">
                       <PencilIcon className="h-4 w-4" />
                     </button>
                     <button onClick={() => handleDelete(r.id)} className="text-red-500 hover:text-red-700">

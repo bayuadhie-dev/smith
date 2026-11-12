@@ -122,8 +122,8 @@ export default function OutsourcingVendorList() {
     setShowForm(true)
   }
 
-  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1"
+  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm dark:border-gray-600"
+  const labelClass = "block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200"
 
   return (
     <div className="space-y-6">
@@ -188,14 +188,14 @@ export default function OutsourcingVendorList() {
                 )}
               </div>
 
-              <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+              <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between dark:border-gray-800">
                 <div className="flex items-center gap-1 text-sm">
                   <UserGroupIcon className="h-4 w-4 text-blue-500" />
-                  <span className="font-medium text-blue-700">{vendor.employee_count}</span>
+                  <span className="font-medium text-blue-700 dark:text-blue-300">{vendor.employee_count}</span>
                   <span className="text-gray-500 dark:text-gray-400">karyawan</span>
                 </div>
                 {vendor.management_fee_percent > 0 && (
-                  <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full dark:bg-amber-900/30 dark:text-amber-300">
                     Fee {vendor.management_fee_percent}%
                   </span>
                 )}

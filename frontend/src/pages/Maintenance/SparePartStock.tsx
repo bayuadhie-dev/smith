@@ -59,7 +59,7 @@ const Modal = ({ title, onClose, children }: { title: string; onClose: () => voi
     <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-white">{title}</h2>
-        <button type="button" onClick={onClose} className="text-sm text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">Tutup</button>
+        <button type="button" onClick={onClose} className="text-sm text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-400">Tutup</button>
       </div>
       {children}
     </div>
@@ -225,9 +225,9 @@ const SparePartStock = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {loading && parts.length === 0 && <tr><td colSpan={9} className="px-4 py-8 text-center text-sm text-gray-500">Memuat...</td></tr>}
+            {loading && parts.length === 0 && <tr><td colSpan={9} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
             {!loading && parts.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-10 text-center text-sm text-gray-500">{search || category || lowOnly ? 'Tidak ada sparepart yang cocok.' : 'Belum ada sparepart.'}</td></tr>
+              <tr><td colSpan={9} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{search || category || lowOnly ? 'Tidak ada sparepart yang cocok.' : 'Belum ada sparepart.'}</td></tr>
             )}
             {parts.map((p) => (
               <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
@@ -291,7 +291,7 @@ const SparePartStock = () => {
                 <SearchableSelect options={suppliers} value={form.primary_supplier_id} onChange={(v) => setForm((f) => ({ ...f, primary_supplier_id: v ? Number(v) : null }))} placeholder="Pilih pemasok" />
               </div>
             </div>
-            {editing !== 'new' && <p className="text-xs text-gray-500">Stok tidak diubah dari sini. Gunakan tombol Mutasi.</p>}
+            {editing !== 'new' && <p className="text-xs text-gray-500 dark:text-gray-400">Stok tidak diubah dari sini. Gunakan tombol Mutasi.</p>}
             <div className="flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
               <button type="button" onClick={() => setEditing(null)} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 dark:border-gray-600 dark:text-gray-200">Batal</button>
               <button type="submit" disabled={saving} className="rounded-md bg-emerald-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">{saving ? 'Menyimpan...' : 'Simpan'}</button>

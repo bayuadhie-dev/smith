@@ -182,7 +182,7 @@ const SettingsMain: React.FC = () => {
       {/* System Settings Section */}
       <div className="mb-8">
         <div className="flex items-center mb-6">
-          <ShieldCheckIcon className="h-6 w-6 text-blue-600 mr-3" />
+          <ShieldCheckIcon className="h-6 w-6 text-blue-600 mr-3 dark:text-blue-400" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">System Settings</h2>
         </div>
         
@@ -203,11 +203,11 @@ const SettingsMain: React.FC = () => {
                   className="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 dark:border-gray-700 hover:border-blue-300 group"
                 >
                   <div className="flex items-start justify-between mb-4">
-                    <div className="p-3 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
-                      <IconComponent className="h-6 w-6 text-blue-600" />
+                    <div className="p-3 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors dark:bg-blue-900/20">
+                      <IconComponent className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                     </div>
                     {setting.isNew && (
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                         New
                       </span>
                     )}
@@ -230,15 +230,15 @@ const SettingsMain: React.FC = () => {
                 className="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 dark:border-gray-700 hover:border-blue-300 group"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="p-3 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
-                    <IconComponent className="h-6 w-6 text-blue-600" />
+                  <div className="p-3 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors dark:bg-blue-900/20">
+                    <IconComponent className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   {setting.id === 'user-roles' && pendingUserCount > 0 ? (
                     <span className="inline-flex items-center px-2.5 py-1 text-xs font-black rounded-full bg-amber-500 text-white animate-pulse shadow-sm">
                       {pendingUserCount} Pending
                     </span>
                   ) : setting.isNew && (
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                       New
                     </span>
                   )}
@@ -259,7 +259,7 @@ const SettingsMain: React.FC = () => {
       {/* Integration Settings Section */}
       <div className="mb-8">
         <div className="flex items-center mb-6">
-          <KeyIcon className="h-6 w-6 text-purple-600 mr-3" />
+          <KeyIcon className="h-6 w-6 text-purple-600 mr-3 dark:text-purple-400" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Integration Settings</h2>
         </div>
         
@@ -273,11 +273,11 @@ const SettingsMain: React.FC = () => {
                 className="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-all duration-200 p-6 border border-gray-200 dark:border-gray-700 hover:border-purple-300 group"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="p-3 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors">
-                    <IconComponent className="h-6 w-6 text-purple-600" />
+                  <div className="p-3 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors dark:bg-purple-900/20">
+                    <IconComponent className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                   </div>
                   {setting.isNew && (
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                     </span>
                   )}
                 </div>
@@ -303,7 +303,7 @@ const SettingsMain: React.FC = () => {
             to="/app/settings/system-config"
             className="flex items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
           >
-            <CogIcon className="h-8 w-8 text-blue-600 mr-3" />
+            <CogIcon className="h-8 w-8 text-blue-600 mr-3 dark:text-blue-400" />
             <div>
               <div className="font-medium text-gray-900 dark:text-white">System Configuration</div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Configure system parameters</div>
@@ -314,7 +314,7 @@ const SettingsMain: React.FC = () => {
             to="/app/settings/backup-restore"
             className="flex items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
           >
-            <CloudArrowDownIcon className="h-8 w-8 text-green-600 mr-3" />
+            <CloudArrowDownIcon className="h-8 w-8 text-green-600 mr-3 dark:text-green-400" />
             <div>
               <div className="font-medium text-gray-900 dark:text-white">Create Backup</div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Backup system data</div>
@@ -325,7 +325,7 @@ const SettingsMain: React.FC = () => {
             to="/app/settings/audit-trail"
             className="flex items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
           >
-            <DocumentTextIcon className="h-8 w-8 text-purple-600 mr-3" />
+            <DocumentTextIcon className="h-8 w-8 text-purple-600 mr-3 dark:text-purple-400" />
             <div>
               <div className="font-medium text-gray-900 dark:text-white">View Audit Trail</div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Track system changes</div>
@@ -335,12 +335,12 @@ const SettingsMain: React.FC = () => {
       </div>
 
       {/* Info Panel */}
-      <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+      <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6 dark:bg-blue-900/20 dark:border-blue-800">
         <div className="flex items-center mb-3">
-          <CogIcon className="h-5 w-5 text-blue-600 mr-2" />
-          <h3 className="text-sm font-medium text-blue-900">Settings Information</h3>
+          <CogIcon className="h-5 w-5 text-blue-600 mr-2 dark:text-blue-400" />
+          <h3 className="text-sm font-medium text-blue-900 dark:text-blue-200">Settings Information</h3>
         </div>
-        <div className="text-sm text-blue-800">
+        <div className="text-sm text-blue-800 dark:text-blue-300">
           <ul className="space-y-1">
             <li>• System settings control core application behavior</li>
             <li>• User roles determine access permissions across modules</li>

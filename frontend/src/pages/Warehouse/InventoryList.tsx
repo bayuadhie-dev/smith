@@ -26,13 +26,13 @@ const { data: inventory, isLoading } = useGetInventoryQuery({})
     const group = getCategoryGroup(category);
     switch (group) {
       case 'Packaging':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       case 'Aksesoris':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
       case 'Chemical':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -64,7 +64,7 @@ const { data: inventory, isLoading } = useGetInventoryQuery({})
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Items</p>
-                <p className="text-2xl font-bold text-blue-600">{dashboard.summary.total_items || 0}</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{dashboard.summary.total_items || 0}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Products + Materials</p>
               </div>
               <Box className="h-8 w-8 text-blue-500" />
@@ -75,7 +75,7 @@ const { data: inventory, isLoading } = useGetInventoryQuery({})
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Products</p>
-                <p className="text-2xl font-bold text-green-600">{dashboard.summary.total_products || 0}</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{dashboard.summary.total_products || 0}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Finished Goods</p>
               </div>
               <Package className="h-8 w-8 text-green-500" />
@@ -86,7 +86,7 @@ const { data: inventory, isLoading } = useGetInventoryQuery({})
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Materials</p>
-                <p className="text-2xl font-bold text-purple-600">{dashboard.summary.total_materials || 0}</p>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{dashboard.summary.total_materials || 0}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Raw Materials</p>
               </div>
               <Layers className="h-8 w-8 text-purple-500" />
@@ -97,7 +97,7 @@ const { data: inventory, isLoading } = useGetInventoryQuery({})
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Quantity</p>
-                <p className="text-2xl font-bold text-orange-600">{dashboard.summary.total_quantity?.toLocaleString() || 0}</p>
+                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{dashboard.summary.total_quantity?.toLocaleString() || 0}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">All Units</p>
               </div>
               <Box className="h-8 w-8 text-orange-500" />
@@ -131,7 +131,7 @@ const { data: inventory, isLoading } = useGetInventoryQuery({})
                     <td>{(item.material_id || item.product_id) ? <Link to={`/app/warehouse/item-stock/${item.material_id ? 'material' : 'product'}/${item.material_id || item.product_id}`} className="hover:text-emerald-700 hover:underline" title="Lihat stok per gudang dan mutasi">{item.item_name}</Link> : item.item_name}</td>
                     <td>
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        item.item_type === 'product' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'
+                        item.item_type === 'product' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
                       }`}>
                         {item.item_type === 'product' ? 'Product' : 'Material'}
                       </span>
@@ -150,8 +150,8 @@ const { data: inventory, isLoading } = useGetInventoryQuery({})
                     </td>
                     <td>{item.location_code}</td>
                     <td>{item.quantity_on_hand}</td>
-                    <td className="text-green-600 font-medium">{item.quantity_available}</td>
-                    <td className="text-orange-600">{item.quantity_reserved}</td>
+                    <td className="text-green-600 font-medium dark:text-green-400">{item.quantity_available}</td>
+                    <td className="text-orange-600 dark:text-orange-400">{item.quantity_reserved}</td>
                   </tr>
                 ))}
               </tbody>

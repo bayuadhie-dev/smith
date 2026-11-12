@@ -162,7 +162,7 @@ const [isOpen, setIsOpen] = useState(false);
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-sm text-blue-600 hover:text-blue-700"
+                  className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400"
                 >
                   Mark all read
                 </button>
@@ -170,7 +170,7 @@ const [isOpen, setIsOpen] = useState(false);
               {notifications.length > 0 && (
                 <button
                   onClick={clearAllNotifications}
-                  className="text-sm text-red-600 hover:text-red-700"
+                  className="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
                 >
                   Clear all
                 </button>
@@ -190,8 +190,8 @@ const [isOpen, setIsOpen] = useState(false);
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`p-4 hover:bg-gray-50 transition-colors ${
-                      !notification.read ? 'bg-blue-50' : ''
+                    className={`p-4 hover:bg-gray-50 transition-colors dark:hover:bg-gray-700 ${
+                      !notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                     }`}
                   >
                     <div className="flex items-start space-x-3">
@@ -203,11 +203,11 @@ const [isOpen, setIsOpen] = useState(false);
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <p className={`text-sm font-medium ${
-                              !notification.read ? 'text-gray-900' : 'text-gray-700'
+                              !notification.read ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-200'
                             }`}>
                               {notification.title}
                             </p>
-                            <p className="text-sm text-gray-600 mt-1">
+                            <p className="text-sm text-gray-600 mt-1 dark:text-gray-300">
                               {notification.message}
                             </p>
                             <p className="text-xs text-gray-400 mt-2">
@@ -219,7 +219,7 @@ const [isOpen, setIsOpen] = useState(false);
                             {!notification.read && (
                               <button
                                 onClick={() => markAsRead(notification.id)}
-                                className="p-1 text-blue-600 hover:text-blue-700"
+                                className="p-1 text-blue-600 hover:text-blue-700 dark:text-blue-400"
                                 title="Mark as read"
                               >
                                 <CheckIcon className="h-4 w-4" />
@@ -247,7 +247,7 @@ const [isOpen, setIsOpen] = useState(false);
             <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-b-lg">
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-full text-center text-sm text-gray-600 hover:text-gray-800 dark:text-gray-100"
+                className="w-full text-center text-sm text-gray-600 hover:text-gray-800 dark:text-gray-100 dark:hover:text-white"
               >
                 Close notifications
               </button>

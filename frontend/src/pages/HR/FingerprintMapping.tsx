@@ -170,7 +170,7 @@ const FingerprintMapping = () => {
           <button
             key={t.key}
             onClick={() => { setFilter(t.key); setPage(1) }}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${filter === t.key ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${filter === t.key ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'}`}
           >
             {t.label}
           </button>
@@ -187,14 +187,14 @@ const FingerprintMapping = () => {
             <input value={empSearch} onChange={(e) => setEmpSearch(e.target.value)} placeholder="Cari nama atau nomor karyawan"
               className="w-full rounded-md border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
           </div>
-          {loading && freeEmps.length === 0 && <p className="text-sm text-gray-500">Memuat...</p>}
-          {!loading && shownEmps.length === 0 && <p className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800">{empSearch ? 'Tidak ada karyawan yang cocok.' : 'Semua karyawan aktif sudah punya ID alat.'}</p>}
+          {loading && freeEmps.length === 0 && <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>}
+          {!loading && shownEmps.length === 0 && <p className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">{empSearch ? 'Tidak ada karyawan yang cocok.' : 'Semua karyawan aktif sudah punya ID alat.'}</p>}
           <div className="grid gap-3 lg:grid-cols-2">
             {shownEmps.map((e) => (
               <div key={e.id} className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
                 <div className="flex items-baseline justify-between gap-2">
                   <p className="font-medium text-gray-900 dark:text-white">{e.name}</p>
-                  <span className="shrink-0 text-xs text-gray-500">{e.employee_number}</span>
+                  <span className="shrink-0 text-xs text-gray-500 dark:text-gray-400">{e.employee_number}</span>
                 </div>
                 {(e.candidates || []).length === 0 ? (
                   <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Tidak ada nama yang mirip di mesin. Mungkin belum didaftarkan fingerprint, atau pakai pencarian di tab Semua.</p>
@@ -251,8 +251,8 @@ const FingerprintMapping = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {loading && rows.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500">Memuat...</td></tr>}
-            {!loading && rows.length === 0 && <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500">{debounced || filter ? 'Tidak ada data yang cocok.' : 'Belum ada pengguna alat. Daftar diisi dari hasil pembacaan mesin.'}</td></tr>}
+            {loading && rows.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+            {!loading && rows.length === 0 && <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{debounced || filter ? 'Tidak ada data yang cocok.' : 'Belum ada pengguna alat. Daftar diisi dari hasil pembacaan mesin.'}</td></tr>}
             {visible.map((r) => (
               <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
                 <td className="whitespace-nowrap px-4 py-2.5 text-sm font-medium tabular-nums text-gray-900 dark:text-white">{r.device_user_id}</td>
@@ -294,7 +294,7 @@ const FingerprintMapping = () => {
                 </td>
                 {canEdit && (
                   <td className="whitespace-nowrap px-4 py-2.5 text-right text-sm">
-                    {r.employee && <button disabled={busy} onClick={() => release(r)} className="font-medium text-red-600 hover:underline disabled:opacity-50">Lepas</button>}
+                    {r.employee && <button disabled={busy} onClick={() => release(r)} className="font-medium text-red-600 hover:underline disabled:opacity-50 dark:text-red-400">Lepas</button>}
                   </td>
                 )}
               </tr>

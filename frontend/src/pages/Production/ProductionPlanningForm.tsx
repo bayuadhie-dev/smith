@@ -264,8 +264,8 @@ const ProductionPlanningForm: React.FC = () => {
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-800">{error}</p>
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-800">
+          <p className="text-red-800 dark:text-red-300">{error}</p>
         </div>
       )}
 
@@ -454,16 +454,16 @@ const ProductionPlanningForm: React.FC = () => {
                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">Loading BOM data...</p>
               </div>
             ) : bomData ? (
-              <div className="border border-green-200 bg-green-50 rounded-lg p-4">
+              <div className="border border-green-200 bg-green-50 rounded-lg p-4 dark:bg-green-900/20 dark:border-green-800">
                 {/* BOM Header */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                    <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
                     <div>
-                      <p className="font-medium text-green-900">
+                      <p className="font-medium text-green-900 dark:text-green-200">
                         BOM Available: {bomData.bom_number} (v{bomData.version})
                       </p>
-                      <p className="text-sm text-green-700">
+                      <p className="text-sm text-green-700 dark:text-green-300">
                         Batch Size: {bomData.batch_size} {bomData.batch_uom} | 
                         Materials: {bomData.items?.length || 0} items | 
                         Cost: {formatRupiah(bomData.total_cost)}
@@ -505,7 +505,7 @@ const ProductionPlanningForm: React.FC = () => {
                               {formatNumber(item.quantity)} {item.uom}
                             </td>
                             {formData.planned_quantity > 0 && (
-                              <td className="px-4 py-3 text-sm text-right font-bold text-blue-700">
+                              <td className="px-4 py-3 text-sm text-right font-bold text-blue-700 dark:text-blue-300">
                                 {formatNumber(calculateMaterialRequirement(item.quantity))} {item.uom}
                               </td>
                             )}
@@ -522,16 +522,16 @@ const ProductionPlanningForm: React.FC = () => {
 
                     {/* Cost Summary */}
                     {formData.planned_quantity > 0 && (
-                      <div className="bg-blue-50 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+                      <div className="bg-blue-50 px-4 py-3 border-t border-gray-200 dark:border-gray-700 dark:bg-blue-900/20">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-blue-900">
+                          <span className="text-sm font-medium text-blue-900 dark:text-blue-200">
                             Estimated Total Material Cost:
                           </span>
-                          <span className="text-lg font-bold text-blue-900">
+                          <span className="text-lg font-bold text-blue-900 dark:text-blue-200">
                             {formatRupiah((bomData.total_cost / bomData.batch_size) * formData.planned_quantity)}
                           </span>
                         </div>
-                        <p className="text-xs text-blue-700 mt-1">
+                        <p className="text-xs text-blue-700 mt-1 dark:text-blue-300">
                           Based on {(formData.planned_quantity / bomData.batch_size).toFixed(2)} batches
                         </p>
                       </div>
@@ -540,18 +540,18 @@ const ProductionPlanningForm: React.FC = () => {
                 )}
 
                 {/* Planning Alert */}
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
-                  <p className="text-sm text-blue-800">
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded dark:bg-blue-900/20 dark:border-blue-800">
+                  <p className="text-sm text-blue-800 dark:text-blue-300">
                     <strong>💡 Capacity Planning:</strong> Ensure material availability and production capacity 
                     before releasing this plan. Check inventory levels and procurement lead times.
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:border-yellow-800">
                 <div className="flex items-center gap-2">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600" />
-                  <p className="text-sm text-yellow-800">
+                  <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                  <p className="text-sm text-yellow-800 dark:text-yellow-300">
                     <strong>No BOM Available</strong> - This product doesn't have an active BOM. 
                     Material requirements cannot be calculated automatically.
                   </p>

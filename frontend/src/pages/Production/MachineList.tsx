@@ -65,12 +65,12 @@ const [machines, setMachines] = useState<Machine[]>([])
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'running': return 'bg-green-100 text-green-800'
-      case 'idle': return 'bg-yellow-100 text-yellow-800'
-      case 'maintenance': return 'bg-blue-100 text-blue-800'
-      case 'breakdown': return 'bg-red-100 text-red-800'
-      case 'offline': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'running': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+      case 'idle': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+      case 'maintenance': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+      case 'breakdown': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+      case 'offline': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
     }
   }
 
@@ -111,7 +111,7 @@ const [machines, setMachines] = useState<Machine[]>([])
         <div className="flex gap-3">
           <button
             onClick={() => setShowActivityLog(true)}
-            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 flex items-center gap-2"
+            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 flex items-center gap-2 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-600"
           >
             <DocumentTextIcon className="h-5 w-5" />
             Log Aktivitas
@@ -218,23 +218,23 @@ const [machines, setMachines] = useState<Machine[]>([])
               {/* Efficiency Metrics */}
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="text-center">
-                  <div className="text-lg font-bold text-green-600">{machine.efficiency}%</div>
+                  <div className="text-lg font-bold text-green-600 dark:text-green-400">{machine.efficiency}%</div>
                   <div className="text-xs text-gray-600 dark:text-gray-300">Efficiency</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-blue-600">{machine.availability}%</div>
+                  <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{machine.availability}%</div>
                   <div className="text-xs text-gray-600 dark:text-gray-300">Availability</div>
                 </div>
               </div>
 
               {/* Maintenance Info */}
               {machine.next_maintenance && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 dark:bg-yellow-900/20 dark:border-yellow-800">
                   <div className="flex items-center gap-2">
-                    <WrenchScrewdriverIcon className="h-4 w-4 text-yellow-600" />
-                    <span className="text-sm font-medium text-yellow-800">Next Maintenance</span>
+                    <WrenchScrewdriverIcon className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                    <span className="text-sm font-medium text-yellow-800 dark:text-yellow-300">Next Maintenance</span>
                   </div>
-                  <p className="text-sm text-yellow-700 mt-1">
+                  <p className="text-sm text-yellow-700 mt-1 dark:text-yellow-300">
                     {new Date(machine.next_maintenance).toLocaleDateString()}
                   </p>
                 </div>

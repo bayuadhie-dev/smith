@@ -17,7 +17,7 @@ export default function PartyStatements({ kind }: { kind: 'customer' | 'supplier
   return (
     <ReportShell title={isCustomer ? 'Kartu Piutang per Customer' : 'Kartu Hutang per Supplier'}
       subtitle={`${isCustomer ? 'Saldo piutang, faktur, retur, dan pembayaran' : 'Saldo hutang, faktur, dan pembayaran'} tiap ${label.toLowerCase()} · ${periodLabel(p.from, p.to)}`}
-      icon={isCustomer ? <UsersIcon className="h-7 w-7 text-emerald-600" /> : <TruckIcon className="h-7 w-7 text-emerald-600" />}
+      icon={isCustomer ? <UsersIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" /> : <TruckIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />}
       actions={<ExportButtons report={['party-statements', params]} />}>
       <PeriodFilter from={p.from} to={p.to} onChange={p.setRange} onReload={reload} loading={loading} extra={<SearchBox value={q} onChange={setQ} placeholder={`Cari ${label.toLowerCase()}`} />} />
       {t && <StatCards items={[
@@ -33,9 +33,9 @@ export default function PartyStatements({ kind }: { kind: 'customer' | 'supplier
           <tbody>
             {rows.map((r: any) => (
               <tr key={r.party_id} onClick={() => open(r)} className="cursor-pointer border-t border-gray-100 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/40">
-                <Td><div className="font-medium">{r.party_name}</div>{r.tax_id && <div className="text-xs text-gray-500">NPWP {r.tax_id}</div>}</Td>
+                <Td><div className="font-medium">{r.party_name}</div>{r.tax_id && <div className="text-xs text-gray-500 dark:text-gray-400">NPWP {r.tax_id}</div>}</Td>
                 <Td right><Money v={r.opening} colored /></Td><Td right><Money v={r.invoiced} /></Td>{isCustomer && <Td right><Money v={r.returns} /></Td>}
-                <Td right className="text-emerald-700"><Money v={r.payments} /></Td>{isCustomer && <Td right><Money v={r.refunds} /></Td>}
+                <Td right className="text-emerald-700 dark:text-emerald-300"><Money v={r.payments} /></Td>{isCustomer && <Td right><Money v={r.refunds} /></Td>}
                 <Td right className="font-semibold"><Money v={r.closing} zeroDash={false} colored /></Td><Td>{fmtDate(r.last_activity)}</Td>
               </tr>
             ))}
@@ -47,7 +47,7 @@ export default function PartyStatements({ kind }: { kind: 'customer' | 'supplier
             <td />
           </tr></tfoot>}
         </DataTable>
-        <p className="print-hide text-xs text-gray-500">Klik satu {label.toLowerCase()} untuk melihat kartu lengkapnya (setiap faktur, pembayaran, dan saldo berjalan).</p>
+        <p className="print-hide text-xs text-gray-500 dark:text-gray-400">Klik satu {label.toLowerCase()} untuk melihat kartu lengkapnya (setiap faktur, pembayaran, dan saldo berjalan).</p>
       </LoadState>
     </ReportShell>
   )

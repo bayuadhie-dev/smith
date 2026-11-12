@@ -100,7 +100,7 @@ export default function StockOpnameForm() {
         </button>
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ClipboardDocumentCheckIcon className="h-8 w-8 text-blue-600" />
+            <ClipboardDocumentCheckIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Buat Perintah Stok Opname
           </h1>
           <p className="text-gray-600 dark:text-gray-300">Buat perintah penghitungan fisik inventory</p>
@@ -198,9 +198,9 @@ export default function StockOpnameForm() {
         </div>
 
         {/* Info Box */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-medium text-blue-800 mb-2">ℹ️ Informasi</h4>
-          <ul className="text-sm text-blue-700 space-y-1">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
+          <h4 className="font-medium text-blue-800 mb-2 dark:text-blue-300">ℹ️ Informasi</h4>
+          <ul className="text-sm text-blue-700 space-y-1 dark:text-blue-300">
             <li>• Sistem akan otomatis membuat daftar item berdasarkan zona yang dipilih</li>
             <li>• Setelah dibuat, Anda dapat memulai proses penghitungan</li>
             <li>• Hasil penghitungan akan dibandingkan dengan data sistem</li>

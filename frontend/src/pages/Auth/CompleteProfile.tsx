@@ -329,12 +329,12 @@ export default function CompleteProfile() {
             {/* Info Cards */}
             <div className="grid grid-cols-2 gap-3 pt-2">
               {/* Skip Info */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 dark:bg-yellow-900/20 dark:border-yellow-800">
                 <div className="flex items-start gap-2">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5 dark:text-yellow-400" />
                   <div>
-                    <p className="text-xs font-medium text-yellow-800">Jika Lewati:</p>
-                    <ul className="text-xs text-yellow-700 mt-1 space-y-0.5">
+                    <p className="text-xs font-medium text-yellow-800 dark:text-yellow-300">Jika Lewati:</p>
+                    <ul className="text-xs text-yellow-700 mt-1 space-y-0.5 dark:text-yellow-300">
                       <li>• Akses sangat terbatas</li>
                       <li>• Hanya bisa lihat dashboard</li>
                       <li>• Perlu minta role ke Admin</li>
@@ -344,12 +344,12 @@ export default function CompleteProfile() {
               </div>
 
               {/* Continue Info */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 dark:bg-green-900/20 dark:border-green-800">
                 <div className="flex items-start gap-2">
-                  <CheckCircleIcon className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <CheckCircleIcon className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5 dark:text-green-400" />
                   <div>
-                    <p className="text-xs font-medium text-green-800">Jika Lanjutkan:</p>
-                    <ul className="text-xs text-green-700 mt-1 space-y-0.5">
+                    <p className="text-xs font-medium text-green-800 dark:text-green-300">Jika Lanjutkan:</p>
+                    <ul className="text-xs text-green-700 mt-1 space-y-0.5 dark:text-green-300">
                       <li>• Profil tersimpan lengkap</li>
                       <li>• Role akan ditinjau Admin</li>
                       <li>• Akses sesuai role dipilih</li>
@@ -397,8 +397,8 @@ export default function CompleteProfile() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
             <div className="text-center">
-              <div className="mx-auto w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
-                <ExclamationTriangleIcon className="h-8 w-8 text-yellow-600" />
+              <div className="mx-auto w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center mb-4 dark:bg-yellow-900/30">
+                <ExclamationTriangleIcon className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
               </div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
                 Yakin Ingin Melewati?
@@ -407,18 +407,18 @@ export default function CompleteProfile() {
                 Jika Anda melewati langkah ini, Anda akan masuk dengan <strong>akses sangat terbatas</strong>:
               </p>
               
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-left mb-4">
-                <ul className="text-sm text-yellow-800 space-y-2">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-left mb-4 dark:bg-yellow-900/20 dark:border-yellow-800">
+                <ul className="text-sm text-yellow-800 space-y-2 dark:text-yellow-300">
                   <li className="flex items-start gap-2">
-                    <span className="text-yellow-600">⚠️</span>
+                    <span className="text-yellow-600 dark:text-yellow-400">⚠️</span>
                     <span>Hanya bisa melihat dashboard dasar</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-yellow-600">⚠️</span>
+                    <span className="text-yellow-600 dark:text-yellow-400">⚠️</span>
                     <span>Tidak bisa mengakses modul apapun</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-yellow-600">⚠️</span>
+                    <span className="text-yellow-600 dark:text-yellow-400">⚠️</span>
                     <span>Harus menghubungi Admin untuk mendapatkan role</span>
                   </li>
                 </ul>

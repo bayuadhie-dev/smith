@@ -178,13 +178,13 @@ const LeadListUpgraded: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      'new': 'bg-blue-100 text-blue-800 border-blue-200',
-      'contacted': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      'qualified': 'bg-green-100 text-green-800 border-green-200',
-      'converted': 'bg-purple-100 text-purple-800 border-purple-200',
-      'lost': 'bg-red-100 text-red-800 border-red-200'
+      'new': 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+      'contacted': 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800',
+      'qualified': 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800',
+      'converted': 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
+      'lost': 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800'
     };
-    return colors[status] || 'bg-gray-100 text-gray-800 border-gray-200';
+    return colors[status] || 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-700';
   };
 
   const getSourceIcon = (source: string) => {
@@ -249,7 +249,7 @@ const LeadListUpgraded: React.FC = () => {
             </button>
             <Link
               to="/app/sales/leads/new"
-              className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors shadow-md"
+              className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors shadow-md dark:text-blue-400"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               Add Lead
@@ -264,25 +264,25 @@ const LeadListUpgraded: React.FC = () => {
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</div>
           <div className="text-sm text-gray-500 dark:text-gray-400">Total Leads</div>
         </div>
-        <div className="bg-blue-50 rounded-lg border border-blue-200 p-4">
-          <div className="text-2xl font-bold text-blue-600">{stats.new}</div>
-          <div className="text-sm text-blue-600">New</div>
+        <div className="bg-blue-50 rounded-lg border border-blue-200 p-4 dark:bg-blue-900/20 dark:border-blue-800">
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.new}</div>
+          <div className="text-sm text-blue-600 dark:text-blue-400">New</div>
         </div>
-        <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4">
-          <div className="text-2xl font-bold text-yellow-600">{stats.contacted}</div>
-          <div className="text-sm text-yellow-600">Contacted</div>
+        <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
+          <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.contacted}</div>
+          <div className="text-sm text-yellow-600 dark:text-yellow-400">Contacted</div>
         </div>
-        <div className="bg-green-50 rounded-lg border border-green-200 p-4">
-          <div className="text-2xl font-bold text-green-600">{stats.qualified}</div>
-          <div className="text-sm text-green-600">Qualified</div>
+        <div className="bg-green-50 rounded-lg border border-green-200 p-4 dark:bg-green-900/20 dark:border-green-800">
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.qualified}</div>
+          <div className="text-sm text-green-600 dark:text-green-400">Qualified</div>
         </div>
-        <div className="bg-purple-50 rounded-lg border border-purple-200 p-4">
-          <div className="text-2xl font-bold text-purple-600">{stats.converted}</div>
-          <div className="text-sm text-purple-600">Converted</div>
+        <div className="bg-purple-50 rounded-lg border border-purple-200 p-4 dark:bg-purple-900/20 dark:border-purple-800">
+          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.converted}</div>
+          <div className="text-sm text-purple-600 dark:text-purple-400">Converted</div>
         </div>
-        <div className="bg-red-50 rounded-lg border border-red-200 p-4">
-          <div className="text-2xl font-bold text-red-600">{stats.lost}</div>
-          <div className="text-sm text-red-600">Lost</div>
+        <div className="bg-red-50 rounded-lg border border-red-200 p-4 dark:bg-red-900/20 dark:border-red-800">
+          <div className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.lost}</div>
+          <div className="text-sm text-red-600 dark:text-red-400">Lost</div>
         </div>
         <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg p-4 text-white">
           <div className="text-2xl font-bold">{stats.conversion_rate}%</div>
@@ -335,15 +335,15 @@ const LeadListUpgraded: React.FC = () => {
           <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+              className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm dark:bg-gray-800' : 'hover:bg-gray-200 dark:hover:bg-gray-600'}`}
             >
-              <Squares2X2Icon className="h-5 w-5 text-gray-600" />
+              <Squares2X2Icon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-2 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+              className={`p-2 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white shadow-sm dark:bg-gray-800' : 'hover:bg-gray-200 dark:hover:bg-gray-600'}`}
             >
-              <ListBulletIcon className="h-5 w-5 text-gray-600" />
+              <ListBulletIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
             </button>
           </div>
         </div>
@@ -351,16 +351,16 @@ const LeadListUpgraded: React.FC = () => {
         {/* Bulk Actions */}
         {selectedLeads.length > 0 && (
           <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center gap-4">
-            <span className="text-sm text-gray-600">{selectedLeads.length} selected</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">{selectedLeads.length} selected</span>
             <button
               onClick={() => handleBulkAction('delete')}
-              className="text-sm text-red-600 hover:text-red-800"
+              className="text-sm text-red-600 hover:text-red-800 dark:text-red-400"
             >
               Delete Selected
             </button>
             <button
               onClick={() => handleBulkAction('export')}
-              className="text-sm text-blue-600 hover:text-blue-800"
+              className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
             >
               Export Selected
             </button>
@@ -377,7 +377,7 @@ const LeadListUpgraded: React.FC = () => {
               className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 overflow-hidden group"
             >
               {/* Card Header */}
-              <div className="p-5 border-b border-gray-100">
+              <div className="p-5 border-b border-gray-100 dark:border-gray-800">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -389,7 +389,7 @@ const LeadListUpgraded: React.FC = () => {
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
                       {lead.company_name}
                     </h3>
-                    <p className="text-sm text-gray-600">{lead.contact_person}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{lead.contact_person}</p>
                     <p className="text-xs text-gray-400 mt-1">{lead.lead_number}</p>
                   </div>
                   <div className="relative">
@@ -410,14 +410,14 @@ const LeadListUpgraded: React.FC = () => {
                         </Link>
                         <button
                           onClick={() => handleConvertToOpportunity(lead.id)}
-                          className="flex items-center w-full px-4 py-2 text-sm text-green-600 hover:bg-green-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-green-600 hover:bg-green-50 dark:text-green-400"
                         >
                           <ArrowTrendingUpIcon className="h-4 w-4 mr-2" />
                           Convert to Opportunity
                         </button>
                         <button
                           onClick={() => handleDeleteLead(lead.id)}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400"
                         >
                           <TrashIcon className="h-4 w-4 mr-2" />
                           Delete
@@ -438,13 +438,13 @@ const LeadListUpgraded: React.FC = () => {
                 {/* Contact Info */}
                 <div className="space-y-2 mb-4">
                   {lead.email && (
-                    <a href={`mailto:${lead.email}`} className="flex items-center text-sm text-gray-600 hover:text-blue-600">
+                    <a href={`mailto:${lead.email}`} className="flex items-center text-sm text-gray-600 hover:text-blue-600 dark:text-gray-300">
                       <EnvelopeIcon className="h-4 w-4 mr-2 text-gray-400" />
                       <span className="truncate">{lead.email}</span>
                     </a>
                   )}
                   {lead.phone && (
-                    <a href={`tel:${lead.phone}`} className="flex items-center text-sm text-gray-600 hover:text-blue-600">
+                    <a href={`tel:${lead.phone}`} className="flex items-center text-sm text-gray-600 hover:text-blue-600 dark:text-gray-300">
                       <PhoneIcon className="h-4 w-4 mr-2 text-gray-400" />
                       <span>{lead.phone}</span>
                     </a>
@@ -475,9 +475,9 @@ const LeadListUpgraded: React.FC = () => {
 
                 {/* Assignment */}
                 {lead.assigned_user_name && (
-                  <div className="flex items-center text-sm text-gray-600 mb-4">
-                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2">
-                      <span className="text-xs font-medium text-blue-600">
+                  <div className="flex items-center text-sm text-gray-600 mb-4 dark:text-gray-300">
+                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2 dark:bg-blue-900/30">
+                      <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
                         {lead.assigned_user_name.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -487,11 +487,11 @@ const LeadListUpgraded: React.FC = () => {
               </div>
 
               {/* Card Footer */}
-              <div className="px-5 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-100">
+              <div className="px-5 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
                 <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
                   <span>Created: {new Date(lead.created_at).toLocaleDateString()}</span>
                   {lead.next_followup && (
-                    <span className="flex items-center text-orange-600 font-medium">
+                    <span className="flex items-center text-orange-600 font-medium dark:text-orange-400">
                       <ClockIcon className="h-3 w-3 mr-1" />
                       {new Date(lead.next_followup).toLocaleDateString()}
                     </span>
@@ -586,19 +586,19 @@ const LeadListUpgraded: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <Link
                           to={`/app/sales/leads/${lead.id}`}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
                         >
                           <ArrowTopRightOnSquareIcon className="h-5 w-5" />
                         </Link>
                         <Link
                           to={`/app/sales/leads/${lead.id}/edit`}
-                          className="text-gray-600 hover:text-gray-800 dark:text-gray-100"
+                          className="text-gray-600 hover:text-gray-800 dark:text-gray-100 dark:hover:text-white"
                         >
                           <PencilIcon className="h-5 w-5" />
                         </Link>
                         <button
                           onClick={() => handleDeleteLead(lead.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 dark:text-red-400"
                         >
                           <TrashIcon className="h-5 w-5" />
                         </button>
@@ -656,7 +656,7 @@ const LeadListUpgraded: React.FC = () => {
                   className={`px-3 py-1 border rounded-md text-sm ${
                     pageNum === pagination.current_page
                       ? 'bg-blue-600 text-white border-blue-600'
-                      : 'border-gray-300 hover:bg-gray-50'
+                      : 'border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600'
                   }`}
                 >
                   {pageNum}

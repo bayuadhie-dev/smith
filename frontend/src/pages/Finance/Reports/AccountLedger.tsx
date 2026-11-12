@@ -37,13 +37,13 @@ export default function AccountLedger({ mode }: { mode: 'bank' | 'ledger' }) {
   return (
     <ReportShell title={title}
       subtitle={acc ? `${acc.code} - ${acc.name} · ${periodLabel(p.from, p.to)}${acc.is_header ? ' · gabungan semua akun di bawahnya' : ''}` : 'Pilih rekening untuk melihat mutasinya'}
-      icon={mode === 'bank' ? <BuildingLibraryIcon className="h-7 w-7 text-emerald-600" /> : <BookOpenIcon className="h-7 w-7 text-emerald-600" />}
+      icon={mode === 'bank' ? <BuildingLibraryIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" /> : <BookOpenIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />}
       backTo={mode === 'ledger' ? '/app/finance/reports/trial-balance' : undefined} backLabel="Neraca Saldo"
       actions={<ExportButtons report={accountId ? ['account-ledger', params] : undefined} />}>
       <PeriodFilter from={p.from} to={p.to} onChange={p.setRange} onReload={reload} loading={loading} extra={
         mode === 'bank' ? (
           <div className="min-w-[280px]">
-            <label className="mb-1 block text-xs font-medium text-gray-500">Rekening</label>
+            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Rekening</label>
             <SearchableSelect options={accounts.map((a) => ({ id: a.id, code: a.code, name: a.name }))} value={accountId ? Number(accountId) : null}
               onChange={(v) => setAccountId(v ? String(v) : '')} placeholder="Pilih rekening bank / kas" />
           </div>
@@ -88,10 +88,10 @@ export default function AccountLedger({ mode }: { mode: 'bank' | 'ledger' }) {
             </tfoot>
           </DataTable>
         )}
-        {data?.truncated && <p className="text-xs text-amber-600">Menampilkan 5.000 baris pertama dari {data.row_count}. Persempit periode untuk melihat sisanya.</p>}
+        {data?.truncated && <p className="text-xs text-amber-600 dark:text-amber-400">Menampilkan 5.000 baris pertama dari {data.row_count}. Persempit periode untuk melihat sisanya.</p>}
       </LoadState>
       {mode === 'ledger' && acc && (
-        <button type="button" className="print-hide text-sm text-emerald-700 hover:underline" onClick={() => navigate('/app/finance/reports/bank-mutation?account=' + acc.id)} hidden={!acc.is_cash_bank}>
+        <button type="button" className="print-hide text-sm text-emerald-700 hover:underline dark:text-emerald-300" onClick={() => navigate('/app/finance/reports/bank-mutation?account=' + acc.id)} hidden={!acc.is_cash_bank}>
           Buka sebagai mutasi bank
         </button>
       )}

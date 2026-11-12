@@ -10,19 +10,19 @@ import toast from 'react-hot-toast';
 import NumberInput from '../../components/ui/NumberInput'
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700' },
-  sent:      { label: 'Posted',     color: 'bg-blue-100 text-blue-700' },
-  partial:   { label: 'Sebagian',   color: 'bg-yellow-100 text-yellow-700' },
-  paid:      { label: 'Lunas',      color: 'bg-green-100 text-green-700' },
-  overdue:   { label: 'Lewat Tempo', color: 'bg-red-100 text-red-700' },
-  cancelled: { label: 'Batal',      color: 'bg-red-100 text-red-700' },
+  draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
+  sent:      { label: 'Posted',     color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+  partial:   { label: 'Sebagian',   color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' },
+  paid:      { label: 'Lunas',      color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+  overdue:   { label: 'Lewat Tempo', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
+  cancelled: { label: 'Batal',      color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
 };
 
 const PAY_CONFIG: Record<string, { label: string; color: string }> = {
-  unpaid:  { label: 'Belum Bayar', color: 'bg-orange-100 text-orange-700' },
-  partial: { label: 'Sebagian',    color: 'bg-yellow-100 text-yellow-700' },
-  paid:    { label: 'Lunas',       color: 'bg-green-100 text-green-700' },
-  overdue: { label: 'Lewat Tempo', color: 'bg-red-100 text-red-700' },
+  unpaid:  { label: 'Belum Bayar', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' },
+  partial: { label: 'Sebagian',    color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' },
+  paid:    { label: 'Lunas',       color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+  overdue: { label: 'Lewat Tempo', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
 };
 
 export default function InvoiceList() {
@@ -72,7 +72,7 @@ export default function InvoiceList() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Faktur Pembelian</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Tagihan supplier & 3-Way Matching — {total} total</p>
+          <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-400">Tagihan supplier & 3-Way Matching — {total} total</p>
         </div>
         <Link to="/app/purchasing/invoices/new" className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
           + Buat Faktur Pembelian
@@ -130,8 +130,8 @@ export default function InvoiceList() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {sortedInvoices.map((inv) => {
-                const status = STATUS_CONFIG[inv.status] || { label: inv.status, color: 'bg-gray-100 text-gray-700' };
-                const pay = PAY_CONFIG[inv.payment_status] || { label: inv.payment_status, color: 'bg-gray-100 text-gray-700' };
+                const status = STATUS_CONFIG[inv.status] || { label: inv.status, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' };
+                const pay = PAY_CONFIG[inv.payment_status] || { label: inv.payment_status, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' };
                 const isOverdue = inv.due_date && new Date(inv.due_date) < new Date() && inv.payment_status !== 'paid';
                 return (
                   <tr
@@ -145,7 +145,7 @@ export default function InvoiceList() {
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
                       {inv.invoice_date ? new Date(inv.invoice_date).toLocaleDateString('id-ID') : '—'}
                     </td>
-                    <td className={`px-4 py-3 text-sm ${isOverdue ? 'text-red-600 font-medium' : 'text-gray-600 dark:text-gray-400'}`}>
+                    <td className={`px-4 py-3 text-sm ${isOverdue ? 'text-red-600 font-medium dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`}>
                       {inv.due_date ? new Date(inv.due_date).toLocaleDateString('id-ID') : '—'}
                       {isOverdue && <span className="ml-1 text-xs">⚠️</span>}
                     </td>
@@ -153,7 +153,7 @@ export default function InvoiceList() {
                       Rp {Number(inv.total_amount).toLocaleString('id-ID')}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`text-xs font-medium ${(inv.grn_count || 0) > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                      <span className={`text-xs font-medium ${(inv.grn_count || 0) > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'}`}>
                         {inv.grn_count || 0} GRN
                       </span>
                     </td>
@@ -174,14 +174,14 @@ export default function InvoiceList() {
                     <td className="px-4 py-3 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                       <Link
                         to={`/app/purchasing/invoices/${inv.id}/match`}
-                        className="text-xs text-blue-600 hover:underline"
+                        className="text-xs text-blue-600 hover:underline dark:text-blue-400"
                       >
                         3-Way Match
                       </Link>
                       {inv.payment_status !== 'paid' && (
                         <button
                           onClick={() => navigate(`/app/finance/pembayaran-pembelian/new?invoice_id=${inv.id}`)}
-                          className="flex items-center gap-1 text-xs text-green-600 hover:underline"
+                          className="flex items-center gap-1 text-xs text-green-600 hover:underline dark:text-green-400"
                         >
                           <BanknotesIcon className="h-3.5 w-3.5" /> Bayar
                         </button>
@@ -198,7 +198,7 @@ export default function InvoiceList() {
       {total > 25 && (
         <div className="flex justify-center gap-2">
           <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 border rounded text-sm disabled:opacity-40">← Prev</button>
-          <span className="px-3 py-1 text-sm text-gray-600">Hal {page}</span>
+          <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-300">Hal {page}</span>
           <button disabled={invoices.length < 25} onClick={() => setPage(p => p + 1)} className="px-3 py-1 border rounded text-sm disabled:opacity-40">Next →</button>
         </div>
       )}

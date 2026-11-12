@@ -450,7 +450,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
       <PageHeader
         title={`${editId ? 'Ubah ' : ''}${FORM_TITLES[effectiveKind][0]}`}
         subtitle={FORM_TITLES[effectiveKind][1]}
-        actions={<button type="button" onClick={handleCancel} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Batal</button>}
+        actions={<button type="button" onClick={handleCancel} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Batal</button>}
       />
 
       {error && (
@@ -487,7 +487,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                   value={paymentNumber}
                   onChange={(e) => { numberTouched.current = true; setPaymentNumber(e.target.value); }}
                 />
-                <p className="mt-1 text-xs text-gray-500">Terisi nomor berikutnya secara otomatis; bisa diganti manual.</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Terisi nomor berikutnya secara otomatis; bisa diganti manual.</p>
               </div>
               {isStandalone && (
                 <div className="md:col-span-2">
@@ -555,13 +555,13 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
             >
               <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 p-3 dark:border-gray-700">
                 <NumberInput currency className={`${inputCls} !w-52`} placeholder="Nilai pembayaran" value={distributeAmount} onChange={(e) => setDistributeAmount(e.target.value)} />
-                <button type="button" className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200" onClick={distribute}>
+                <button type="button" className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700" onClick={distribute}>
                   Bagikan ke faktur terlama
                 </button>
               </div>
-              {loadingInvoices && <p className="p-4 text-sm text-gray-500">Memuat faktur...</p>}
+              {loadingInvoices && <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Memuat faktur...</p>}
               {!loadingInvoices && invoices.length === 0 && (
-                <p className="p-4 text-sm text-gray-500">Tidak ada faktur belum lunas untuk {partyWord.toLowerCase()} ini.</p>
+                <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Tidak ada faktur belum lunas untuk {partyWord.toLowerCase()} ini.</p>
               )}
               {invoices.length > 0 && (
                 <div className="overflow-x-auto">
@@ -590,8 +590,8 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
                             <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">{rp(inv.balance_due)}</td>
                             <td className="px-3 py-2">
                               <NumberInput className={`${inputCls} text-right`} disabled={!checked} value={alloc[inv.id] ?? ''} onChange={(e) => setAlloc((a) => ({ ...a, [inv.id]: e.target.value }))} />
-                              {(Number(effAlloc[inv.id]) || 0) > inv.balance_due + 0.01 && <p className="mt-1 text-xs text-red-600">Dibayar + diskon melebihi sisa faktur</p>}
-                              {(Number(alloc[inv.id]) || 0) < 0 && -(Number(alloc[inv.id]) || 0) > paidOf(inv) + 0.01 && <p className="mt-1 text-xs text-red-600">Melebihi yang sudah dibayar</p>}
+                              {(Number(effAlloc[inv.id]) || 0) > inv.balance_due + 0.01 && <p className="mt-1 text-xs text-red-600 dark:text-red-400">Dibayar + diskon melebihi sisa faktur</p>}
+                              {(Number(alloc[inv.id]) || 0) < 0 && -(Number(alloc[inv.id]) || 0) > paidOf(inv) + 0.01 && <p className="mt-1 text-xs text-red-600 dark:text-red-400">Melebihi yang sudah dibayar</p>}
                             </td>
                             <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-gray-600 dark:text-gray-300">{discOf[inv.id] ? rp(discOf[inv.id]) : '-'}</td>
                             <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-gray-600 dark:text-gray-300">{rp(inv.balance_due - (Number(effAlloc[inv.id]) || 0))}</td>
@@ -608,7 +608,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
           {!isStandalone && formData.party_id && (
             <Panel title="Informasi diskon / potongan (opsional)">
               <div className="space-y-2 p-4">
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Isi nilai potongan (positif) yang ikut melunasi faktur tanpa uang keluar dari kas/bank, misalnya diskon, pembulatan, atau uang muka. Kolom Dibayar di faktur adalah uang yang benar-benar keluar dari kas/bank; kolom Diskon adalah total potongan di sini.
                 </p>
                 {openAdv.length > 0 && (
@@ -659,7 +659,7 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
           {isStandalone && (
             <Panel title="Rincian akun">
               <div className="space-y-2 p-4">
-                <p className="text-xs text-gray-500">Satu nilai kas bisa dibagi ke beberapa akun. Nilai negatif dipakai sebagai pengurang.</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Satu nilai kas bisa dibagi ke beberapa akun. Nilai negatif dipakai sebagai pengurang.</p>
                 {lines.map((l, idx) => (
                   <div key={idx} className="grid grid-cols-12 gap-2">
                     <div className="col-span-12 md:col-span-5">

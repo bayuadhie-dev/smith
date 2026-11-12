@@ -121,7 +121,7 @@ const PickListPage: React.FC = () => {
                     <div className="flex items-center gap-3 mb-2">
                       <span className="font-mono font-bold text-gray-900 dark:text-white">{pl.pick_number}</span>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${cfg.color}`}>{pl.status.replace('_', ' ')}</span>
-                      <span className={`text-xs uppercase ${priorityColors[pl.priority] || 'text-gray-500'} dark:text-gray-400`}>{pl.priority}</span>
+                      <span className={`text-xs uppercase ${priorityColors[pl.priority] || 'text-gray-500 dark:text-gray-400'} dark:text-gray-400`}>{pl.priority}</span>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>

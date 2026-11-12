@@ -61,19 +61,19 @@ const LeaveForm: React.FC = () => {
   const [error, setError] = useState('');
 
   const leaveTypes = [
-    { value: 'annual', label: 'Annual Leave', color: 'text-blue-600', description: 'Paid vacation leave' },
-    { value: 'sick', label: 'Sick Leave', color: 'text-red-600', description: 'Medical leave' },
-    { value: 'personal', label: 'Personal Leave', color: 'text-purple-600', description: 'Personal matters' },
-    { value: 'maternity', label: 'Maternity Leave', color: 'text-pink-600', description: 'Maternity/paternity leave' },
-    { value: 'unpaid', label: 'Unpaid Leave', color: 'text-gray-600', description: 'Leave without pay' },
-    { value: 'emergency', label: 'Emergency Leave', color: 'text-orange-600', description: 'Emergency situations' }
+    { value: 'annual', label: 'Annual Leave', color: 'text-blue-600 dark:text-blue-400', description: 'Paid vacation leave' },
+    { value: 'sick', label: 'Sick Leave', color: 'text-red-600 dark:text-red-400', description: 'Medical leave' },
+    { value: 'personal', label: 'Personal Leave', color: 'text-purple-600 dark:text-purple-400', description: 'Personal matters' },
+    { value: 'maternity', label: 'Maternity Leave', color: 'text-pink-600 dark:text-pink-400', description: 'Maternity/paternity leave' },
+    { value: 'unpaid', label: 'Unpaid Leave', color: 'text-gray-600 dark:text-gray-300', description: 'Leave without pay' },
+    { value: 'emergency', label: 'Emergency Leave', color: 'text-orange-600 dark:text-orange-400', description: 'Emergency situations' }
   ];
 
   const statusOptions = [
-    { value: 'pending', label: 'Pending', color: 'text-yellow-600', icon: Pause },
-    { value: 'approved', label: 'Approved', color: 'text-green-600', icon: CheckCircle },
-    { value: 'rejected', label: 'Rejected', color: 'text-red-600', icon: XCircle },
-    { value: 'cancelled', label: 'Cancelled', color: 'text-gray-600', icon: X }
+    { value: 'pending', label: 'Pending', color: 'text-yellow-600 dark:text-yellow-400', icon: Pause },
+    { value: 'approved', label: 'Approved', color: 'text-green-600 dark:text-green-400', icon: CheckCircle },
+    { value: 'rejected', label: 'Rejected', color: 'text-red-600 dark:text-red-400', icon: XCircle },
+    { value: 'cancelled', label: 'Cancelled', color: 'text-gray-600 dark:text-gray-300', icon: X }
   ];
 
   useEffect(() => {
@@ -282,7 +282,7 @@ const LeaveForm: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
               <ExclamationCircleIcon className="h-5 w-5" />
               <span>{error}</span>
             </div>
@@ -430,7 +430,7 @@ const LeaveForm: React.FC = () => {
                   <ClockIcon className="inline h-4 w-4 mr-1" />
                   Business Days
                 </label>
-                <div className="px-3 py-2 bg-blue-50 border border-blue-300 rounded-lg text-blue-700 font-medium">
+                <div className="px-3 py-2 bg-blue-50 border border-blue-300 rounded-lg text-blue-700 font-medium dark:bg-blue-900/20 dark:text-blue-300">
                   {formData.total_days} days
                 </div>
               </div>
@@ -454,7 +454,7 @@ const LeaveForm: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-gray-600 dark:text-gray-300">Duration:</span>
-                  <div className="font-medium text-blue-600">{formData.total_days} business days</div>
+                  <div className="font-medium text-blue-600 dark:text-blue-400">{formData.total_days} business days</div>
                 </div>
                 <div>
                   <span className="text-gray-600 dark:text-gray-300">Calendar Days:</span>
@@ -502,28 +502,28 @@ const LeaveForm: React.FC = () => {
           </div>
 
           {/* Leave Type Information */}
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">Leave Type Information</h4>
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
+            <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">Leave Type Information</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
-                <span className="text-blue-600">Type:</span>
+                <span className="text-blue-600 dark:text-blue-400">Type:</span>
                 <div className={`font-medium ${selectedLeaveType?.color}`}>
                   {selectedLeaveType?.label}
                 </div>
               </div>
               <div>
-                <span className="text-blue-600">Duration:</span>
+                <span className="text-blue-600 dark:text-blue-400">Duration:</span>
                 <div className="font-medium">{formData.total_days} business days</div>
               </div>
               <div>
-                <span className="text-blue-600">Status:</span>
+                <span className="text-blue-600 dark:text-blue-400">Status:</span>
                 <div className={`font-medium ${selectedStatus?.color}`}>
                   {selectedStatus?.label}
                 </div>
               </div>
             </div>
             {selectedLeaveType && (
-              <div className="mt-2 text-sm text-blue-700">
+              <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
                 <strong>Description:</strong> {selectedLeaveType.description}
               </div>
             )}

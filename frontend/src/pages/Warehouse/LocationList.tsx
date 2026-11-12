@@ -123,7 +123,7 @@ const LocationList: React.FC = () => {
   });
 
   const getStatusColor = (isActive: boolean) => {
-    return isActive ? 'text-green-600' : 'text-red-600';
+    return isActive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
   };
 
   const getStatusIcon = (isActive: boolean) => {
@@ -132,21 +132,21 @@ const LocationList: React.FC = () => {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'storage': return 'bg-blue-100 text-blue-800';
-      case 'picking': return 'bg-green-100 text-green-800';
-      case 'receiving': return 'bg-purple-100 text-purple-800';
-      case 'shipping': return 'bg-orange-100 text-orange-800';
-      case 'staging': return 'bg-yellow-100 text-yellow-800';
-      case 'quarantine': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'storage': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'picking': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'receiving': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+      case 'shipping': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
+      case 'staging': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'quarantine': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
   const getUtilizationColor = (utilization: number) => {
-    if (utilization >= 90) return 'text-red-600';
-    if (utilization >= 75) return 'text-orange-600';
-    if (utilization >= 50) return 'text-yellow-600';
-    return 'text-green-600';
+    if (utilization >= 90) return 'text-red-600 dark:text-red-400';
+    if (utilization >= 75) return 'text-orange-600 dark:text-orange-400';
+    if (utilization >= 50) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-green-600 dark:text-green-400';
   };
 
   if (loading) {
@@ -253,8 +253,8 @@ const LocationList: React.FC = () => {
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <MapPinIcon className="h-5 w-5 text-blue-600" />
+                  <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+                    <MapPinIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900 dark:text-white">{location.code}</h3>
@@ -348,23 +348,23 @@ const LocationList: React.FC = () => {
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Location Summary</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{locations.length}</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{locations.length}</div>
             <div className="text-sm text-gray-600 dark:text-gray-300">Total Locations</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
               {locations.filter(l => l.is_active).length}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-300">Active Locations</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-orange-600">
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
               {locations.filter(l => l.current_utilization >= 75).length}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-300">High Utilization</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
               {zones.length}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-300">Total Zones</div>

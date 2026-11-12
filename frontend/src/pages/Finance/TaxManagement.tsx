@@ -180,15 +180,15 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
   const getTaxTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case 'vat input':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
       case 'vat output':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
       case 'income tax':
-        return 'bg-purple-100 text-purple-800'
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
       case 'withholding tax':
-        return 'bg-orange-100 text-orange-800'
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
     }
   }
 
@@ -196,19 +196,19 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
     switch (status.toLowerCase()) {
       case 'recorded':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
             <CheckCircleIcon className="w-3 h-3 mr-1" />
           </span>
         )
       case 'pending':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
             <ClockIcon className="w-3 h-3 mr-1" />
           </span>
         )
       case 'submitted':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
             <DocumentTextIcon className="w-3 h-3 mr-1" />
           </span>
         )
@@ -356,7 +356,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300">VAT Payable</p>
-                  <p className="text-2xl font-bold text-red-600">{formatRupiah(taxSummary.vat_payable)}</p>
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">{formatRupiah(taxSummary.vat_payable)}</p>
                 </div>
               </div>
             </div>
@@ -368,7 +368,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300">VAT Receivable</p>
-                  <p className="text-2xl font-bold text-green-600">{formatRupiah(taxSummary.vat_receivable)}</p>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{formatRupiah(taxSummary.vat_receivable)}</p>
                 </div>
               </div>
             </div>
@@ -380,7 +380,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Net VAT</p>
-                  <p className={`text-2xl font-bold ${taxSummary.net_vat >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  <p className={`text-2xl font-bold ${taxSummary.net_vat >= 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                     {formatRupiah(taxSummary.net_vat)}
                   </p>
                 </div>
@@ -396,7 +396,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Income Tax</p>
-                  <p className="text-2xl font-bold text-purple-600">{formatRupiah(taxSummary.income_tax)}</p>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{formatRupiah(taxSummary.income_tax)}</p>
                 </div>
               </div>
             </div>
@@ -408,7 +408,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Withholding Tax</p>
-                  <p className="text-2xl font-bold text-orange-600">{formatRupiah(taxSummary.withholding_tax)}</p>
+                  <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{formatRupiah(taxSummary.withholding_tax)}</p>
                 </div>
               </div>
             </div>
@@ -420,7 +420,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Tax Liability</p>
-                  <p className="text-2xl font-bold text-red-700">{formatRupiah(taxSummary.total_tax_liability)}</p>
+                  <p className="text-2xl font-bold text-red-700 dark:text-red-300">{formatRupiah(taxSummary.total_tax_liability)}</p>
                 </div>
               </div>
             </div>
@@ -488,7 +488,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-white">
                     {transaction.tax_rate}%
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-blue-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-blue-600 dark:text-blue-400">
                     {formatRupiah(transaction.tax_amount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -498,7 +498,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                     <div className="flex space-x-2">
                       <button 
                         onClick={() => handleEditTransaction(transaction)}
-                        className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
+                        className="text-indigo-600 hover:text-indigo-900 inline-flex items-center dark:text-indigo-400"
                         title="Edit Transaction"
                         disabled={(transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice')}
                       >
@@ -506,7 +506,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                       <button 
                         onClick={() => handleSubmitTransaction(transaction)}
                         className={`hover:text-green-900 inline-flex items-center ${
-                          (transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice') ? 'text-gray-400 cursor-not-allowed' : 'text-green-600'
+                          (transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice') ? 'text-gray-400 cursor-not-allowed' : 'text-green-600 dark:text-green-400'
                         }`}
                         title="Submit Transaction"
                         disabled={(transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice')}
@@ -517,7 +517,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                       <button 
                         onClick={() => handleDeleteTransaction(transaction)}
                         className={`hover:text-red-900 inline-flex items-center ${
-                          (transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice') ? 'text-gray-400 cursor-not-allowed' : 'text-red-600'
+                          (transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice') ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 dark:text-red-400'
                         }`}
                         title="Delete Transaction"
                         disabled={(transaction.status.toLowerCase() === 'submitted' || transaction.source === 'invoice')}
@@ -540,7 +540,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
               <h3 className="text-lg font-semibold">🧾 Record Tax Transaction</h3>
               <button 
                 onClick={() => setShowAddModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white"
               >
                 ✕
               </button>

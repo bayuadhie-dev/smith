@@ -43,9 +43,9 @@ interface AnswerState {
 }
 
 const SHIFT_CONFIG: { [key: string]: { name: string; time: string; color: string; bg: string; border: string } } = {
-  '1': { name: 'Shift 1', time: '07:00 - 15:00', color: 'text-blue-700', bg: 'bg-blue-100', border: 'border-blue-300' },
-  '2': { name: 'Shift 2', time: '15:00 - 23:00', color: 'text-purple-700', bg: 'bg-purple-100', border: 'border-purple-300' },
-  '3': { name: 'Shift 3', time: '23:00 - 07:00', color: 'text-indigo-700', bg: 'bg-indigo-100', border: 'border-indigo-300' },
+  '1': { name: 'Shift 1', time: '07:00 - 15:00', color: 'text-blue-700 dark:text-blue-300', bg: 'bg-blue-100 dark:bg-blue-900/30', border: 'border-blue-300' },
+  '2': { name: 'Shift 2', time: '15:00 - 23:00', color: 'text-purple-700 dark:text-purple-300', bg: 'bg-purple-100 dark:bg-purple-900/30', border: 'border-purple-300' },
+  '3': { name: 'Shift 3', time: '23:00 - 07:00', color: 'text-indigo-700 dark:text-indigo-300', bg: 'bg-indigo-100 dark:bg-indigo-900/30', border: 'border-indigo-300' },
 }
 
 const PreShiftChecklistForm = () => {
@@ -170,7 +170,7 @@ const PreShiftChecklistForm = () => {
       <div className="max-w-5xl mx-auto space-y-6">
         
         {/* Header Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden dark:border-gray-800">
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
@@ -198,13 +198,13 @@ const PreShiftChecklistForm = () => {
           </div>
           
           {/* Info Grid */}
-          <div className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-100">
+          <div className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {/* Machine */}
               <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <CogIcon className="w-5 h-5 text-blue-600" />
+                  <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+                    <CogIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Mesin</p>
@@ -217,8 +217,8 @@ const PreShiftChecklistForm = () => {
               {/* Date */}
               <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <CalendarIcon className="w-5 h-5 text-green-600" />
+                  <div className="p-2 bg-green-100 rounded-lg dark:bg-green-900/30">
+                    <CalendarIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Tanggal</p>
@@ -249,8 +249,8 @@ const PreShiftChecklistForm = () => {
               {/* Operator Input */}
               <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="flex items-start space-x-3">
-                  <div className="p-2 bg-amber-100 rounded-lg">
-                    <UserIcon className="w-5 h-5 text-amber-600" />
+                  <div className="p-2 bg-amber-100 rounded-lg dark:bg-amber-900/30">
+                    <UserIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                   </div>
                   <div className="flex-1">
                     <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Nama Operator *</p>
@@ -268,8 +268,8 @@ const PreShiftChecklistForm = () => {
               {/* Product Select */}
               <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm md:col-span-2">
                 <div className="flex items-start space-x-3">
-                  <div className="p-2 bg-emerald-100 rounded-lg">
-                    <CubeIcon className="w-5 h-5 text-emerald-600" />
+                  <div className="p-2 bg-emerald-100 rounded-lg dark:bg-emerald-900/30">
+                    <CubeIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div className="flex-1">
                     <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Nama Produk</p>
@@ -288,20 +288,20 @@ const PreShiftChecklistForm = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden dark:border-gray-800">
           <div className="flex border-b border-gray-200 dark:border-gray-700">
             <button
               onClick={() => setActiveTab('KONDISI_MESIN')}
               className={`flex-1 flex items-center justify-center space-x-2 py-4 px-6 font-medium transition-colors ${
                 activeTab === 'KONDISI_MESIN'
-                  ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600 dark:bg-blue-900/20 dark:text-blue-300'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               <CogIcon className="w-5 h-5" />
               <span>Kondisi Mesin</span>
               <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                activeTab === 'KONDISI_MESIN' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+                activeTab === 'KONDISI_MESIN' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
               }`}>
                 {kondisiMesinItems.length}
               </span>
@@ -310,14 +310,14 @@ const PreShiftChecklistForm = () => {
               onClick={() => setActiveTab('MANPOWER')}
               className={`flex-1 flex items-center justify-center space-x-2 py-4 px-6 font-medium transition-colors ${
                 activeTab === 'MANPOWER'
-                  ? 'bg-purple-50 text-purple-700 border-b-2 border-purple-600'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'bg-purple-50 text-purple-700 border-b-2 border-purple-600 dark:bg-purple-900/20 dark:text-purple-300'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               <UserGroupIcon className="w-5 h-5" />
               <span>Man Power</span>
               <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                activeTab === 'MANPOWER' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-600'
+                activeTab === 'MANPOWER' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
               }`}>
                 {manpowerItems.length}
               </span>
@@ -325,7 +325,7 @@ const PreShiftChecklistForm = () => {
           </div>
           
           {/* Checklist Items */}
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-gray-800">
             {(activeTab === 'KONDISI_MESIN' ? kondisiMesinItems : manpowerItems).map((item: ChecklistItem, index: number) => {
               const currentStatus = answers[item.id]?.status || 'OK'
               const isNG = currentStatus === 'NG'
@@ -333,14 +333,14 @@ const PreShiftChecklistForm = () => {
               return (
                 <div 
                   key={item.id} 
-                  className={`p-4 transition-colors ${isNG ? 'bg-red-50' : index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
+                  className={`p-4 transition-colors ${isNG ? 'bg-red-50 dark:bg-red-900/20' : index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50'}`}
                 >
                   <div className="flex items-start gap-4">
                     {/* Number */}
                     <div className={`w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center font-bold text-sm ${
                       activeTab === 'KONDISI_MESIN' 
-                        ? 'bg-blue-100 text-blue-700' 
-                        : 'bg-purple-100 text-purple-700'
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' 
+                        : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
                     }`}>
                       {index + 1}
                     </div>
@@ -360,7 +360,7 @@ const PreShiftChecklistForm = () => {
                             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                               currentStatus === 'OK'
                                 ? 'bg-green-600 text-white shadow-md scale-105'
-                                : 'bg-green-100 text-green-700 hover:bg-green-200'
+                                : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300'
                             }`}
                           >
                             <CheckCircleIcon className="w-4 h-4" />
@@ -371,7 +371,7 @@ const PreShiftChecklistForm = () => {
                             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                               currentStatus === 'NG'
                                 ? 'bg-red-600 text-white shadow-md scale-105'
-                                : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                : 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300'
                             }`}
                           >
                             <XCircleIcon className="w-4 h-4" />
@@ -382,7 +382,7 @@ const PreShiftChecklistForm = () => {
                             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                               currentStatus === 'NA'
                                 ? 'bg-gray-600 text-white shadow-md scale-105'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200'
                             }`}
                           >
                             <MinusCircleIcon className="w-4 h-4" />
@@ -402,8 +402,8 @@ const PreShiftChecklistForm = () => {
                             placeholder={isNG ? "Catatan wajib diisi untuk item NG" : "Catatan (opsional)"}
                             className={`w-full pl-10 pr-4 py-2 rounded-lg text-sm border transition-colors ${
                               isNG 
-                                ? 'border-red-300 bg-red-50 focus:ring-red-500 focus:border-red-500' 
-                                : 'border-gray-200 focus:ring-blue-500 focus:border-blue-500'
+                                ? 'border-red-300 bg-red-50 focus:ring-red-500 focus:border-red-500 dark:bg-red-900/20' 
+                                : 'border-gray-200 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-700'
                             }`}
                           />
                         </div>
@@ -417,7 +417,7 @@ const PreShiftChecklistForm = () => {
         </div>
 
         {/* Notes & Submit */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden dark:border-gray-800">
           <div className="p-6">
             <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
               <DocumentCheckIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
@@ -434,19 +434,19 @@ const PreShiftChecklistForm = () => {
           
           {/* Warning if NG exists */}
           {getNGCount() > 0 && (
-            <div className="mx-6 mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <div className="mx-6 mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl dark:bg-amber-900/20 dark:border-amber-800">
               <div className="flex items-start space-x-3">
-                <ExclamationTriangleIcon className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <ExclamationTriangleIcon className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5 dark:text-amber-400" />
                 <div>
-                  <p className="text-sm font-semibold text-amber-800">Perhatian: {getNGCount()} item berstatus NG</p>
-                  <p className="text-xs text-amber-700 mt-1">Pastikan sudah mengisi catatan untuk setiap item yang NG.</p>
+                  <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Perhatian: {getNGCount()} item berstatus NG</p>
+                  <p className="text-xs text-amber-700 mt-1 dark:text-amber-300">Pastikan sudah mengisi catatan untuk setiap item yang NG.</p>
                 </div>
               </div>
             </div>
           )}
           
           {/* Submit Actions */}
-          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-100">
+          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 <span className="font-medium text-gray-700 dark:text-gray-200">{kondisiMesinItems.length + manpowerItems.length}</span> item checklist

@@ -225,7 +225,7 @@ const MaterialForm: React.FC = () => {
         {/* Basic Information */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <CubeIcon className="w-5 h-5 text-orange-600" />
+            <CubeIcon className="w-5 h-5 text-orange-600 dark:text-orange-400" />
             Material Details
           </h2>
           
@@ -398,7 +398,7 @@ const MaterialForm: React.FC = () => {
         {/* Supplier Information */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <BuildingStorefrontIcon className="w-5 h-5 text-blue-600" />
+            <BuildingStorefrontIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             Supplier Information
           </h2>
           

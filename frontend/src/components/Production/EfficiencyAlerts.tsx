@@ -51,23 +51,23 @@ const EfficiencyAlerts: React.FC = () => {
   if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 animate-pulse">
-        <div className="h-6 bg-slate-200 rounded w-1/3 mb-4"></div>
-        <div className="h-4 bg-slate-200 rounded w-full mb-2"></div>
-        <div className="h-4 bg-slate-200 rounded w-2/3"></div>
+        <div className="h-6 bg-slate-200 rounded w-1/3 mb-4 dark:bg-slate-700"></div>
+        <div className="h-4 bg-slate-200 rounded w-full mb-2 dark:bg-slate-700"></div>
+        <div className="h-4 bg-slate-200 rounded w-2/3 dark:bg-slate-700"></div>
       </div>
     );
   }
 
   if (!data || data.total_alerts === 0) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+      <div className="bg-green-50 border border-green-200 rounded-xl p-4 dark:bg-green-900/20 dark:border-green-800">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-100 rounded-full">
-            <ChartBarIcon className="h-5 w-5 text-green-600" />
+          <div className="p-2 bg-green-100 rounded-full dark:bg-green-900/30">
+            <ChartBarIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-green-800">Semua Mesin On Target</h3>
-            <p className="text-sm text-green-600">Tidak ada alert efisiensi hari ini</p>
+            <h3 className="font-semibold text-green-800 dark:text-green-300">Semua Mesin On Target</h3>
+            <p className="text-sm text-green-600 dark:text-green-400">Tidak ada alert efisiensi hari ini</p>
           </div>
         </div>
       </div>
@@ -75,25 +75,25 @@ const EfficiencyAlerts: React.FC = () => {
   }
 
   return (
-    <div className={`rounded-xl shadow-sm overflow-hidden ${data.critical_count > 0 ? 'bg-red-50 border border-red-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+    <div className={`rounded-xl shadow-sm overflow-hidden ${data.critical_count > 0 ? 'bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800' : 'bg-yellow-50 border border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'}`}>
       {/* Header */}
       <div 
-        className={`p-4 flex items-center justify-between cursor-pointer ${data.critical_count > 0 ? 'bg-red-100' : 'bg-yellow-100'}`}
+        className={`p-4 flex items-center justify-between cursor-pointer ${data.critical_count > 0 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-yellow-100 dark:bg-yellow-900/30'}`}
         onClick={() => setCollapsed(!collapsed)}
       >
         <div className="flex items-center gap-3">
           <div className={`p-2 rounded-full ${data.critical_count > 0 ? 'bg-red-200' : 'bg-yellow-200'}`}>
             {data.critical_count > 0 ? (
-              <ExclamationCircleIcon className="h-5 w-5 text-red-600" />
+              <ExclamationCircleIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
             ) : (
-              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600" />
+              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
             )}
           </div>
           <div>
-            <h3 className={`font-semibold ${data.critical_count > 0 ? 'text-red-800' : 'text-yellow-800'}`}>
+            <h3 className={`font-semibold ${data.critical_count > 0 ? 'text-red-800 dark:text-red-300' : 'text-yellow-800 dark:text-yellow-300'}`}>
               Alert Efisiensi Hari Ini
             </h3>
-            <p className={`text-sm ${data.critical_count > 0 ? 'text-red-600' : 'text-yellow-600'}`}>
+            <p className={`text-sm ${data.critical_count > 0 ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
               {data.critical_count > 0 && <span className="font-medium">{data.critical_count} Critical</span>}
               {data.critical_count > 0 && data.warning_count > 0 && ' • '}
               {data.warning_count > 0 && <span>{data.warning_count} Warning</span>}
@@ -101,11 +101,11 @@ const EfficiencyAlerts: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`px-3 py-1 rounded-full text-sm font-bold ${data.critical_count > 0 ? 'bg-red-200 text-red-700' : 'bg-yellow-200 text-yellow-700'}`}>
+          <span className={`px-3 py-1 rounded-full text-sm font-bold ${data.critical_count > 0 ? 'bg-red-200 text-red-700 dark:text-red-300' : 'bg-yellow-200 text-yellow-700 dark:text-yellow-300'}`}>
             {data.total_alerts} Mesin
           </span>
           <svg 
-            className={`h-5 w-5 transition-transform ${collapsed ? '' : 'rotate-180'} ${data.critical_count > 0 ? 'text-red-600' : 'text-yellow-600'}`} 
+            className={`h-5 w-5 transition-transform ${collapsed ? '' : 'rotate-180'} ${data.critical_count > 0 ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'}`} 
             fill="none" 
             viewBox="0 0 24 24" 
             stroke="currentColor"
@@ -121,41 +121,41 @@ const EfficiencyAlerts: React.FC = () => {
           {data.alerts.slice(0, 5).map((alert) => (
             <div 
               key={alert.machine_id}
-              className={`flex items-center justify-between p-3 rounded-lg ${alert.level === 'critical' ? 'bg-red-100' : 'bg-yellow-100'}`}
+              className={`flex items-center justify-between p-3 rounded-lg ${alert.level === 'critical' ? 'bg-red-100 dark:bg-red-900/30' : 'bg-yellow-100 dark:bg-yellow-900/30'}`}
             >
               <div className="flex items-center gap-3">
                 {alert.level === 'critical' ? (
-                  <ExclamationCircleIcon className="h-5 w-5 text-red-600" />
+                  <ExclamationCircleIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
                 ) : (
-                  <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600" />
+                  <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                 )}
                 <div>
-                  <p className={`font-medium ${alert.level === 'critical' ? 'text-red-800' : 'text-yellow-800'}`}>
+                  <p className={`font-medium ${alert.level === 'critical' ? 'text-red-800 dark:text-red-300' : 'text-yellow-800 dark:text-yellow-300'}`}>
                     {alert.machine_name}
                   </p>
-                  <p className={`text-xs ${alert.level === 'critical' ? 'text-red-600' : 'text-yellow-600'}`}>
+                  <p className={`text-xs ${alert.level === 'critical' ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
                     Gap: -{alert.gap}% dari target
                   </p>
                 </div>
               </div>
               <div className="text-right">
-                <p className={`text-lg font-bold ${alert.level === 'critical' ? 'text-red-600' : 'text-yellow-600'}`}>
+                <p className={`text-lg font-bold ${alert.level === 'critical' ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
                   {alert.efficiency}%
                 </p>
-                <p className="text-xs text-slate-500">Target: {alert.target}%</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Target: {alert.target}%</p>
               </div>
             </div>
           ))}
           
           {data.alerts.length > 5 && (
-            <p className="text-center text-sm text-slate-500 py-2">
+            <p className="text-center text-sm text-slate-500 py-2 dark:text-slate-400">
               + {data.alerts.length - 5} mesin lainnya
             </p>
           )}
 
           <Link 
             to="/app/production/controller"
-            className={`flex items-center justify-center gap-2 w-full py-2 rounded-lg text-sm font-medium ${data.critical_count > 0 ? 'bg-red-200 text-red-700 hover:bg-red-300' : 'bg-yellow-200 text-yellow-700 hover:bg-yellow-300'}`}
+            className={`flex items-center justify-center gap-2 w-full py-2 rounded-lg text-sm font-medium ${data.critical_count > 0 ? 'bg-red-200 text-red-700 hover:bg-red-300 dark:text-red-300' : 'bg-yellow-200 text-yellow-700 hover:bg-yellow-300 dark:text-yellow-300'}`}
           >
             Lihat Detail Controller
             <ArrowRightIcon className="h-4 w-4" />

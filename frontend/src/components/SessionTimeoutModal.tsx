@@ -328,7 +328,7 @@ export default function SessionTimeoutModal({ onExtendSession }: SessionTimeoutM
           {showExpired ? (
             <>
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-red-900/30">
                   <ExclamationTriangleIcon className="h-10 w-10 text-red-500" />
                 </div>
                 <p className="text-gray-600 dark:text-gray-300">
@@ -350,14 +350,14 @@ export default function SessionTimeoutModal({ onExtendSession }: SessionTimeoutM
           ) : (
             <>
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 relative">
+                <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 relative dark:bg-orange-900/30">
                   <ClockIcon className="h-10 w-10 text-orange-500" />
                   <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                     {formatTime(remainingTime)}
                   </div>
                 </div>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Sesi login Anda akan berakhir dalam <span className="font-bold text-orange-600">{formatTime(remainingTime)}</span>
+                  Sesi login Anda akan berakhir dalam <span className="font-bold text-orange-600 dark:text-orange-400">{formatTime(remainingTime)}</span>
                 </p>
                 <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
                   Apakah Anda ingin tetap login?
@@ -375,7 +375,7 @@ export default function SessionTimeoutModal({ onExtendSession }: SessionTimeoutM
               <div className="flex gap-3">
                 <button
                   onClick={handleLogout}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-200 dark:bg-gray-700 transition-colors font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-200 dark:bg-gray-700 transition-colors font-medium dark:hover:bg-gray-600"
                 >
                   <ArrowRightOnRectangleIcon className="h-5 w-5" />
                   Logout

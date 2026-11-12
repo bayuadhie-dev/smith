@@ -295,7 +295,7 @@ const QuotationForm = () => {
                 className="w-full"
               />
               {errors.customer_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.customer_id.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.customer_id.message}</p>
               )}
             </div>
 
@@ -310,7 +310,7 @@ const QuotationForm = () => {
                 className="input"
               />
               {errors.quote_date && (
-                <p className="mt-1 text-sm text-red-600">{errors.quote_date.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.quote_date.message}</p>
               )}
             </div>
 
@@ -325,30 +325,30 @@ const QuotationForm = () => {
                 className="input"
               />
               {errors.valid_until && (
-                <p className="mt-1 text-sm text-red-600">{errors.valid_until.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.valid_until.message}</p>
               )}
             </div>
           </div>
 
           {/* Customer Info Display */}
           {selectedCustomer && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
               <div className="flex items-center gap-2 mb-3">
-                <InformationCircleIcon className="h-5 w-5 text-blue-600" />
-                <h4 className="font-medium text-blue-900">Customer Information</h4>
+                <InformationCircleIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <h4 className="font-medium text-blue-900 dark:text-blue-200">Customer Information</h4>
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <span className="text-blue-600">Company:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Company:</span>
                   <p className="font-medium">{selectedCustomer.company_name}</p>
                 </div>
                 <div>
-                  <span className="text-blue-600">Code:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Code:</span>
                   <p className="font-medium">{selectedCustomer.code}</p>
                 </div>
                 {selectedCustomer.contact_person && (
                   <div>
-                    <span className="text-blue-600">Contact:</span>
+                    <span className="text-blue-600 dark:text-blue-400">Contact:</span>
                     <p className="font-medium">{selectedCustomer.contact_person}</p>
                   </div>
                 )}
@@ -380,7 +380,7 @@ const QuotationForm = () => {
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 dark:text-red-400"
                     >
                       <TrashIcon className="h-4 w-4" />
                     </button>
@@ -499,10 +499,10 @@ const QuotationForm = () => {
                 PPN Ongkir: Rp {calculateShippingTax().toLocaleString()}
               </div>
             )}
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
               <div className="flex justify-between items-center">
-                <span className="text-lg font-medium text-blue-900">Grand Total:</span>
-                <span className="text-2xl font-bold text-blue-900">
+                <span className="text-lg font-medium text-blue-900 dark:text-blue-200">Grand Total:</span>
+                <span className="text-2xl font-bold text-blue-900 dark:text-blue-200">
                   Rp {calculateGrandTotal().toLocaleString()}
                 </span>
               </div>
@@ -555,12 +555,12 @@ const QuotationForm = () => {
       </form>
 
       {/* Guidelines */}
-      <div className="card p-4 bg-amber-50 border border-amber-200">
+      <div className="card p-4 bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
         <div className="flex items-start gap-3">
-          <ExclamationTriangleIcon className="h-5 w-5 text-amber-600 mt-0.5" />
+          <ExclamationTriangleIcon className="h-5 w-5 text-amber-600 mt-0.5 dark:text-amber-400" />
           <div>
-            <h4 className="font-medium text-amber-900 mb-2">💡 Quotation Guidelines</h4>
-            <ul className="text-sm text-amber-800 space-y-1">
+            <h4 className="font-medium text-amber-900 mb-2 dark:text-amber-200">💡 Quotation Guidelines</h4>
+            <ul className="text-sm text-amber-800 space-y-1 dark:text-amber-300">
               <li>• Select customer and set appropriate expiry date</li>
               <li>• Add products with accurate pricing and quantities</li>
               <li>• Apply discounts and taxes as needed</li>

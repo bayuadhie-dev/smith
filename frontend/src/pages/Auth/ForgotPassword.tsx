@@ -30,7 +30,7 @@ const ForgotPassword: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
             <div className="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4">
-              <EnvelopeIcon className="w-8 h-8 text-blue-600" />
+              <EnvelopeIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
               Forgot Password?
@@ -77,7 +77,7 @@ const ForgotPassword: React.FC = () => {
           ) : (
             <div className="text-center py-4">
               <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
@@ -90,7 +90,7 @@ const ForgotPassword: React.FC = () => {
           <div className="mt-6 text-center">
             <Link
               to="/login"
-              className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors"
+              className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors dark:text-blue-400"
             >
               <ArrowLeftIcon className="w-4 h-4 mr-2" />
               Back to Login

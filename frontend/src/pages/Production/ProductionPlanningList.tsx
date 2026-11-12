@@ -131,21 +131,21 @@ const ProductionPlanningList: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, string> = {
-      draft: 'bg-gray-100 text-gray-800',
-      approved: 'bg-green-100 text-green-800',
-      released: 'bg-blue-100 text-blue-800',
-      completed: 'bg-purple-100 text-purple-800',
-      cancelled: 'bg-red-100 text-red-800'
+      draft: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+      approved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      released: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      completed: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
     };
     return badges[status] || badges.draft;
   };
 
   const getPriorityBadge = (priority: string) => {
     const badges: Record<string, string> = {
-      low: 'bg-gray-100 text-gray-800',
-      normal: 'bg-blue-100 text-blue-800',
-      high: 'bg-orange-100 text-orange-800',
-      urgent: 'bg-red-100 text-red-800'
+      low: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+      normal: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      high: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+      urgent: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
     };
     return badges[priority] || badges.normal;
   };
@@ -214,7 +214,7 @@ const ProductionPlanningList: React.FC = () => {
 
           <button
             onClick={() => navigate('/app/production/planning/dashboard')}
-            className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:bg-gray-700 flex items-center gap-2 justify-center"
+            className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:bg-gray-700 flex items-center gap-2 justify-center dark:hover:bg-gray-600"
           >
             <TrendingUp size={20} />
             Dashboard
@@ -302,7 +302,7 @@ const ProductionPlanningList: React.FC = () => {
                       {plan.status === 'draft' && (
                         <button
                           onClick={() => handleApprovePlan(plan.id)}
-                          className="text-green-600 hover:text-green-800"
+                          className="text-green-600 hover:text-green-800 dark:text-green-400"
                           title="Approve"
                         >
                           <CheckCircle size={18} />
@@ -311,7 +311,7 @@ const ProductionPlanningList: React.FC = () => {
                       {plan.status === 'approved' && (
                         <button
                           onClick={() => setGenerateModal({ show: true, planId: plan.id, planNumber: plan.plan_number })}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
                           title="Generate SPK"
                         >
                           <Play size={18} />
@@ -319,14 +319,14 @@ const ProductionPlanningList: React.FC = () => {
                       )}
                       <button
                         onClick={() => navigate(`/app/production/planning/edit/${plan.id}`)}
-                        className="text-blue-600 hover:text-blue-800"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
                         title="Edit"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeletePlan(plan.id)}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-600 hover:text-red-800 dark:text-red-400"
                         title="Delete"
                       >
                         Delete

@@ -44,15 +44,15 @@ export default function DownPaymentDetail() {
   const chosen = invoices.find((i) => i.id === invoiceId)
   const maxAmt = chosen ? Math.min(Number(chosen.balance_due), dp?.remaining || 0) : 0
 
-  if (!dp) return <div className="p-6 text-sm text-gray-500">Memuat...</div>
+  if (!dp) return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Memuat...</div>
   const th = 'px-4 py-2.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400'
   return (
     <div className="space-y-4 p-6">
       <PageHeader title={dp.dp_number} subtitle={`${dp.supplier_name}${dp.po_number ? ' · PO ' + dp.po_number : ''} · ${fmtDate(dp.dp_date)}`}
         actions={<>
-          <Link to="/app/purchasing/down-payments" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Kembali</Link>
+          <Link to="/app/purchasing/down-payments" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Kembali</Link>
           {canApprove && dp.status === 'posted' && (
-            <button disabled={busy} className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
+            <button disabled={busy} className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50 dark:text-red-300"
               onClick={async () => { if (await confirmDialog('Batalkan uang muka ini? Jurnal pembalik akan dibuat. Tidak bisa dibatalkan bila sudah dialokasikan ke faktur.')) act(() => axiosInstance.post(`/api/purchasing/down-payments/${id}/cancel`), 'Uang muka dibatalkan.') }}>Batalkan</button>
           )}
         </>} />
@@ -79,7 +79,7 @@ export default function DownPaymentDetail() {
             <button disabled={busy || !invoiceId || !(Number(amount) > 0) || Number(amount) > maxAmt + 0.01} className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50"
               onClick={() => act(() => axiosInstance.post(`/api/purchasing/down-payments/${id}/allocate`, { invoice_id: invoiceId, amount: Number(amount) }).then(() => { setInvoiceId(null); setAmount('') }), 'Uang muka dialokasikan.')}>Alokasikan</button>
           </div>
-          {chosen && <p className="px-4 pb-3 text-xs text-gray-500">Maksimal {formatRupiah(maxAmt)} (yang lebih kecil antara sisa uang muka dan saldo faktur).</p>}
+          {chosen && <p className="px-4 pb-3 text-xs text-gray-500 dark:text-gray-400">Maksimal {formatRupiah(maxAmt)} (yang lebih kecil antara sisa uang muka dan saldo faktur).</p>}
         </Panel>
       )}
 
@@ -88,14 +88,14 @@ export default function DownPaymentDetail() {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900"><tr><th className={th}>Faktur</th><th className={th}>Tanggal</th><th className={`${th} text-right`}>Jumlah</th><th className={th}>Status</th><th className={`${th} text-right`}>Aksi</th></tr></thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {dp.allocations.length === 0 && <tr><td colSpan={5} className="px-4 py-6 text-center text-sm text-gray-500">Belum dialokasikan.</td></tr>}
+              {dp.allocations.length === 0 && <tr><td colSpan={5} className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">Belum dialokasikan.</td></tr>}
               {dp.allocations.map((a: any) => (
                 <tr key={a.id}>
                   <td className="px-4 py-2.5 text-sm"><Link to={`/app/purchasing/invoices/${a.invoice_id}`} className="text-emerald-700 hover:underline dark:text-emerald-400">{a.invoice_number}</Link></td>
                   <td className="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300">{fmtDate(a.allocated_at)}</td>
                   <td className="px-4 py-2.5 text-right text-sm tabular-nums">{formatRupiah(a.amount)}</td>
                   <td className="px-4 py-2.5 text-sm">{a.status === 'active' ? 'Aktif' : 'Dibatalkan'}</td>
-                  <td className="px-4 py-2.5 text-right text-sm">{canApprove && a.status === 'active' && <button disabled={busy} className="text-red-600 hover:underline disabled:opacity-50" onClick={async () => { if (await confirmDialog('Batalkan alokasi ini? Saldo faktur kembali seperti semula.')) act(() => axiosInstance.post(`/api/purchasing/down-payments/allocations/${a.id}/reverse`), 'Alokasi dibatalkan.') }}>Batalkan alokasi</button>}</td>
+                  <td className="px-4 py-2.5 text-right text-sm">{canApprove && a.status === 'active' && <button disabled={busy} className="text-red-600 hover:underline disabled:opacity-50 dark:text-red-400" onClick={async () => { if (await confirmDialog('Batalkan alokasi ini? Saldo faktur kembali seperti semula.')) act(() => axiosInstance.post(`/api/purchasing/down-payments/allocations/${a.id}/reverse`), 'Alokasi dibatalkan.') }}>Batalkan alokasi</button>}</td>
                 </tr>
               ))}
             </tbody>

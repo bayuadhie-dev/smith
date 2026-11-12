@@ -150,14 +150,14 @@ const MaterialCreate: React.FC = () => {
         <div className="flex items-center space-x-4">
           <button
             onClick={() => navigate('/app/warehouse/materials/list')}
-            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-1" />
             Back to Materials
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Material</h1>
-            <p className="text-gray-600">Add a new material to your inventory</p>
+            <p className="text-gray-600 dark:text-gray-300">Add a new material to your inventory</p>
           </div>
         </div>
         <div className="flex space-x-3">
@@ -424,7 +424,7 @@ const MaterialCreate: React.FC = () => {
                   name="is_excluded_from_mrp"
                   checked={formData.is_excluded_from_mrp}
                   onChange={handleInputChange}
-                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600 rounded"
+                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600 rounded dark:text-red-400"
                 />
                 <label className="ml-2 block text-sm text-gray-900 dark:text-white">
                   Exclude from MRP (jangan pernah auto-generate PR/PO untuk material ini)
@@ -445,7 +445,7 @@ const MaterialCreate: React.FC = () => {
                     name="is_active"
                     checked={formData.is_active}
                     onChange={handleInputChange}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:text-blue-400"
                   />
                   <label className="ml-2 block text-sm text-gray-900 dark:text-white">
                     Active Material
@@ -457,7 +457,7 @@ const MaterialCreate: React.FC = () => {
                     name="is_hazardous"
                     checked={formData.is_hazardous}
                     onChange={handleInputChange}
-                    className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600 rounded"
+                    className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600 rounded dark:text-red-400"
                   />
                   <label className="ml-2 block text-sm text-gray-900 dark:text-white">
                     Hazardous Material

@@ -123,18 +123,18 @@ const ProjectDetailsForm: React.FC = () => {
   ];
 
   const priorities = [
-    { value: 'low', label: 'Low', color: 'bg-blue-100 text-blue-800' },
-    { value: 'medium', label: 'Medium', color: 'bg-yellow-100 text-yellow-800' },
-    { value: 'high', label: 'High', color: 'bg-orange-100 text-orange-800' },
-    { value: 'critical', label: 'Critical', color: 'bg-red-100 text-red-800' }
+    { value: 'low', label: 'Low', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
+    { value: 'medium', label: 'Medium', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' },
+    { value: 'high', label: 'High', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' },
+    { value: 'critical', label: 'Critical', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' }
   ];
 
   const statuses = [
-    { value: 'planning', label: 'Planning', color: 'bg-gray-100 text-gray-800' },
-    { value: 'active', label: 'Active', color: 'bg-blue-100 text-blue-800' },
-    { value: 'on_hold', label: 'On Hold', color: 'bg-yellow-100 text-yellow-800' },
-    { value: 'completed', label: 'Completed', color: 'bg-green-100 text-green-800' },
-    { value: 'cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-800' }
+    { value: 'planning', label: 'Planning', color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100' },
+    { value: 'active', label: 'Active', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
+    { value: 'on_hold', label: 'On Hold', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' },
+    { value: 'completed', label: 'Completed', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
+    { value: 'cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' }
   ];
 
   const riskLevels = [
@@ -337,7 +337,7 @@ const ProjectDetailsForm: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-8">
           {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
               <AlertTriangle className="h-5 w-5" />
               <span>{error}</span>
             </div>
@@ -502,24 +502,24 @@ const ProjectDetailsForm: React.FC = () => {
 
           {/* Budget Summary */}
           {formData.budget_allocated > 0 && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-blue-900 mb-2">Budget Summary</h4>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
+              <h4 className="text-sm font-medium text-blue-900 mb-2 dark:text-blue-200">Budget Summary</h4>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <span className="text-blue-700">Allocated:</span>
-                  <div className="font-medium text-blue-900">{formatCurrency(formData.budget_allocated)}</div>
+                  <span className="text-blue-700 dark:text-blue-300">Allocated:</span>
+                  <div className="font-medium text-blue-900 dark:text-blue-200">{formatCurrency(formData.budget_allocated)}</div>
                 </div>
                 <div>
-                  <span className="text-blue-700">Spent:</span>
-                  <div className="font-medium text-blue-900">{formatCurrency(formData.budget_spent)}</div>
+                  <span className="text-blue-700 dark:text-blue-300">Spent:</span>
+                  <div className="font-medium text-blue-900 dark:text-blue-200">{formatCurrency(formData.budget_spent)}</div>
                 </div>
                 <div>
-                  <span className="text-blue-700">Remaining:</span>
-                  <div className="font-medium text-blue-900">{formatCurrency(formData.budget_allocated - formData.budget_spent)}</div>
+                  <span className="text-blue-700 dark:text-blue-300">Remaining:</span>
+                  <div className="font-medium text-blue-900 dark:text-blue-200">{formatCurrency(formData.budget_allocated - formData.budget_spent)}</div>
                 </div>
                 <div>
-                  <span className="text-blue-700">Utilization:</span>
-                  <div className="font-medium text-blue-900">{calculateBudgetUtilization().toFixed(1)}%</div>
+                  <span className="text-blue-700 dark:text-blue-300">Utilization:</span>
+                  <div className="font-medium text-blue-900 dark:text-blue-200">{calculateBudgetUtilization().toFixed(1)}%</div>
                 </div>
               </div>
             </div>
@@ -549,7 +549,7 @@ const ProjectDetailsForm: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => removeItem('objectives', index)}
-                    className="p-1 text-red-600 hover:text-red-800"
+                    className="p-1 text-red-600 hover:text-red-800 dark:text-red-400"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -604,9 +604,9 @@ const ProjectDetailsForm: React.FC = () => {
                         type="checkbox"
                         checked={objective.is_achieved}
                         onChange={(e) => updateItem('objectives', index, 'is_achieved', e.target.checked)}
-                        className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500"
+                        className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500 dark:text-green-400"
                       />
-                      <span className="ml-2 text-sm text-green-600">Achieved</span>
+                      <span className="ml-2 text-sm text-green-600 dark:text-green-400">Achieved</span>
                     </label>
                   </div>
                 </div>

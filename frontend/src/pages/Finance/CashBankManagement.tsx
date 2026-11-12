@@ -65,9 +65,9 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
   }
 
   const getHealthStatus = (balance: number) => {
-    if (balance > 100000) return { status: 'healthy', color: 'text-green-600', bg: 'bg-green-100' }
-    if (balance > 50000) return { status: 'moderate', color: 'text-yellow-600', bg: 'bg-yellow-100' }
-    return { status: 'low', color: 'text-red-600', bg: 'bg-red-100' }
+    if (balance > 100000) return { status: 'healthy', color: 'text-green-600 dark:text-green-400', bg: 'bg-green-100 dark:bg-green-900/30' }
+    if (balance > 50000) return { status: 'moderate', color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-100 dark:bg-yellow-900/30' }
+    return { status: 'low', color: 'text-red-600 dark:text-red-400', bg: 'bg-red-100 dark:bg-red-900/30' }
   }
 
   if (loading) {
@@ -194,7 +194,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
                     <ArrowDownIcon className="h-4 w-4" />
                   </button>
                 </div>
-                <button className="text-indigo-600 hover:text-indigo-900 inline-flex items-center text-sm">
+                <button className="text-indigo-600 hover:text-indigo-900 inline-flex items-center text-sm dark:text-indigo-400">
                   <EyeIcon className="h-4 w-4 mr-1" />
                   View Details
                 </button>
@@ -251,7 +251,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
               <h3 className="text-lg font-semibold">💸 Transfer Funds</h3>
               <button 
                 onClick={() => setShowTransferModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white"
               >
                 ✕
               </button>
@@ -331,7 +331,7 @@ const [cashAccounts, setCashAccounts] = useState<CashAccount[]>([])
               <h3 className="text-lg font-semibold">🏦 Add Bank Account</h3>
               <button 
                 onClick={() => setShowAddModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white"
               >
                 ✕
               </button>

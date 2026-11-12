@@ -159,10 +159,10 @@ const WIPBatchList: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { bg: string; text: string }> = {
-      open: { bg: 'bg-blue-100', text: 'text-blue-800' },
-      in_progress: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-      completed: { bg: 'bg-green-100', text: 'text-green-800' },
-      closed: { bg: 'bg-gray-100', text: 'text-gray-800' }
+      open: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300' },
+      in_progress: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
+      completed: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
+      closed: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-800 dark:text-gray-100' }
     };
     const config = statusConfig[status] || statusConfig.open;
     return `px-2 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`;
@@ -170,15 +170,15 @@ const WIPBatchList: React.FC = () => {
 
   const getStageBadge = (stage: string) => {
     const stageColors: Record<string, string> = {
-      ready_to_start: 'bg-gray-100 text-gray-800',
-      cutting: 'bg-blue-100 text-blue-800',
-      filling: 'bg-purple-100 text-purple-800',
-      sealing: 'bg-orange-100 text-orange-800',
-      packing: 'bg-green-100 text-green-800',
-      quality_check: 'bg-yellow-100 text-yellow-800',
-      finished: 'bg-green-100 text-green-800'
+      ready_to_start: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+      cutting: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      filling: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+      sealing: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+      packing: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      quality_check: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+      finished: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
     };
-    const color = stageColors[stage] || 'bg-gray-100 text-gray-800';
+    const color = stageColors[stage] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     return `px-2 py-1 rounded-full text-xs font-medium ${color}`;
   };
 
@@ -333,7 +333,7 @@ const WIPBatchList: React.FC = () => {
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <div className="text-red-600 mb-4">
+              <div className="text-red-600 mb-4 dark:text-red-400">
                 <ExclamationTriangleIcon className="h-12 w-12 mx-auto" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Error Loading WIP Batches</h3>
@@ -385,9 +385,9 @@ const WIPBatchList: React.FC = () => {
                       <td>
                         <div className="text-xs">
                           <div>Started: {batch.qty_started}</div>
-                          <div className="text-green-600">Good: {batch.qty_completed}</div>
-                          <div className="text-red-600">Rejected: {batch.qty_rejected}</div>
-                          <div className="text-blue-600">In Process: {batch.qty_in_process}</div>
+                          <div className="text-green-600 dark:text-green-400">Good: {batch.qty_completed}</div>
+                          <div className="text-red-600 dark:text-red-400">Rejected: {batch.qty_rejected}</div>
+                          <div className="text-blue-600 dark:text-blue-400">In Process: {batch.qty_in_process}</div>
                         </div>
                       </td>
                       <td>
@@ -419,7 +419,7 @@ const WIPBatchList: React.FC = () => {
                         <div className="flex items-center space-x-2">
                           <Link
                             to={`/app/production/wip-batches/${batch.id}`}
-                            className="text-blue-600 hover:text-blue-800"
+                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
                             title="View Details"
                           >
                             <EyeIcon className="h-4 w-4" />

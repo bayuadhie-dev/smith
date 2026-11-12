@@ -136,11 +136,11 @@ const AuditTrail: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'success':
-        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{t('common.success')}</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">{t('common.success')}</span>;
       case 'failed':
-        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Failed</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Failed</span>;
       case 'warning':
-        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Warning</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">Warning</span>;
       default:
         return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">Unknown</span>;
     }
@@ -277,7 +277,7 @@ const AuditTrail: React.FC = () => {
           <div className="flex justify-end space-x-3 mt-4">
             <button
               onClick={clearFilters}
-              className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
+              className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:bg-gray-600"
             >
               Hapus Filter
             </button>
@@ -398,7 +398,7 @@ const AuditTrail: React.FC = () => {
                         setSelectedLog(log);
                         setShowDetails(true);
                       }}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
                     >
                       <EyeIcon className="h-4 w-4" />
                     </button>
@@ -542,7 +542,7 @@ const AuditTrail: React.FC = () => {
                     setShowDetails(false);
                     setSelectedLog(null);
                   }}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
+                  className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:bg-gray-600"
                 >
                   Tutup
                 </button>

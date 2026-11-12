@@ -189,7 +189,7 @@ const navigate = useNavigate()
                 className="input-field"
               />
               {errors.shipping_date && (
-                <p className="mt-1 text-sm text-red-600">{errors.shipping_date.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.shipping_date.message}</p>
               )}
             </div>
 
@@ -264,9 +264,9 @@ const navigate = useNavigate()
 
           {/* Customer Info Display */}
           {selectedCustomer && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">Delivery Address</h4>
-              <div className="text-sm text-blue-800">
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
+              <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">Delivery Address</h4>
+              <div className="text-sm text-blue-800 dark:text-blue-300">
                 <p className="font-medium">{selectedCustomer.company_name}</p>
                 <p>{selectedCustomer.address || 'No address on file'}</p>
                 <p>{selectedCustomer.city} {selectedCustomer.postal_code}</p>
@@ -481,9 +481,9 @@ const navigate = useNavigate()
       </form>
 
       {/* Shipping Tips */}
-      <div className="card p-4 bg-orange-50 border border-orange-200">
-        <h4 className="font-medium text-orange-900 mb-2">🚚 Shipping Tips</h4>
-        <ul className="text-sm text-orange-800 space-y-1">
+      <div className="card p-4 bg-orange-50 border border-orange-200 dark:bg-orange-900/20 dark:border-orange-800">
+        <h4 className="font-medium text-orange-900 mb-2 dark:text-orange-200">🚚 Shipping Tips</h4>
+        <ul className="text-sm text-orange-800 space-y-1 dark:text-orange-300">
           <li>• Verify delivery address and contact information before shipping</li>
           <li>• Ensure proper packaging for fragile or sensitive items</li>
           <li>• Provide tracking numbers to customers for transparency</li>

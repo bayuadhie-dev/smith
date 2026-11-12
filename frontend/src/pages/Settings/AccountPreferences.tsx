@@ -64,8 +64,8 @@ const AccountPreferences: React.FC = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`w-full text-left px-4 py-3 rounded-lg flex items-center ${
                   activeTab === tab.id
-                    ? 'bg-primary-100 text-primary-700 border-l-4 border-primary-600'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'bg-primary-100 text-primary-700 border-l-4 border-primary-600 dark:bg-primary-900/30 dark:text-primary-300'
+                    : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300'
                 }`}
               >
                 {tab.name}
@@ -76,7 +76,7 @@ const AccountPreferences: React.FC = () => {
 
         {/* Content */}
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-800">
             {activeTab === 'barang_jasa' && <BarangJasaTab />}
             {activeTab === 'penjualan' && (
               <SingleRowSettingsTab
@@ -222,7 +222,7 @@ const BarangJasaTab: React.FC = () => {
       {message && (
         <div
           className={`p-3 rounded-md text-sm ${
-            message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+            message.type === 'success' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
           }`}
         >
           {message.text}
@@ -386,7 +386,7 @@ const NomorDokumenTab: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-gray-500">Memuat...</div>;
+    return <div className="text-gray-500 dark:text-gray-400">Memuat...</div>;
   }
 
   return (
@@ -400,7 +400,7 @@ const NomorDokumenTab: React.FC = () => {
       {message && (
         <div
           className={`p-3 rounded-md text-sm mb-4 ${
-            message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+            message.type === 'success' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
           }`}
         >
           {message.text}
@@ -432,7 +432,7 @@ const NomorDokumenTab: React.FC = () => {
                   s.prefix
                 )}
               </td>
-              <td className="py-2 text-gray-500">
+              <td className="py-2 text-gray-500 dark:text-gray-400">
                 {editingKey === s.sequence_key ? (
                   <input
                     type="text"
@@ -449,7 +449,7 @@ const NomorDokumenTab: React.FC = () => {
                   <button
                     onClick={() => handleSave(s.sequence_key, editForm.prefix, editForm.description)}
                     disabled={saving}
-                    className="text-primary-600 hover:underline"
+                    className="text-primary-600 hover:underline dark:text-primary-400"
                   >
                     Simpan
                   </button>
@@ -459,7 +459,7 @@ const NomorDokumenTab: React.FC = () => {
                       setEditingKey(s.sequence_key);
                       setEditForm({ prefix: s.prefix, description: s.description || '' });
                     }}
-                    className="text-gray-500 hover:underline"
+                    className="text-gray-500 hover:underline dark:text-gray-400"
                   >
                     Edit
                   </button>
@@ -583,7 +583,7 @@ const GlobalDefaultsTab: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-gray-500">Memuat...</div>;
+    return <div className="text-gray-500 dark:text-gray-400">Memuat...</div>;
   }
 
   const configuredRows = rows.filter((r) => r.account_id);
@@ -668,7 +668,7 @@ const GlobalDefaultsTab: React.FC = () => {
       </p>
 
       {message && (
-        <div className={`mb-4 px-4 py-2 rounded-md text-sm ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+        <div className={`mb-4 px-4 py-2 rounded-md text-sm ${message.type === 'success' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'}`}>
           {message.text}
         </div>
       )}
@@ -704,7 +704,7 @@ const GlobalDefaultsTab: React.FC = () => {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Transaction Key</label>
+            <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Transaction Key</label>
             <input
               type="text"
               value={newForm.transaction_key}
@@ -714,7 +714,7 @@ const GlobalDefaultsTab: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Akun</label>
+            <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Akun</label>
             <select
               value={newForm.account_id}
               onChange={(e) => setNewForm({ ...newForm, account_id: e.target.value ? Number(e.target.value) : '' })}
@@ -727,7 +727,7 @@ const GlobalDefaultsTab: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Keterangan</label>
+            <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Keterangan</label>
             <input
               type="text"
               value={newForm.description}

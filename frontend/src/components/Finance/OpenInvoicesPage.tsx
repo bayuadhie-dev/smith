@@ -104,7 +104,7 @@ const OpenInvoicesPage = ({ cfg }: { cfg: OpenInvoicesConfig }) => {
         subtitle={cfg.subtitle}
         actions={
           <>
-            <button onClick={exportCsv} className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
+            <button onClick={exportCsv} className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
               <Download className="h-4 w-4" /> Ekspor CSV
             </button>
             <Link to={cfg.newInvoicePath} className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">{cfg.newInvoiceLabel}</Link>
@@ -159,10 +159,10 @@ const OpenInvoicesPage = ({ cfg }: { cfg: OpenInvoicesConfig }) => {
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {loading && rows.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500">Memuat...</td></tr>
+              <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>
             )}
             {!loading && rows.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500">{search || status ? 'Tidak ada faktur yang cocok.' : 'Tidak ada faktur yang belum lunas.'}</td></tr>
+              <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{search || status ? 'Tidak ada faktur yang cocok.' : 'Tidak ada faktur yang belum lunas.'}</td></tr>
             )}
             {rows.map((r) => (
               <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">

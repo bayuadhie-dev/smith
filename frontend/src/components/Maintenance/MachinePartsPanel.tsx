@@ -150,9 +150,9 @@ const MachinePartsPanel = ({ machineId }: { machineId: number | string }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {loading && <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500">Memuat...</td></tr>}
+              {loading && <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
               {!loading && parts.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500">Belum ada sparepart yang didaftarkan untuk mesin ini.</td></tr>
+                <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada sparepart yang didaftarkan untuk mesin ini.</td></tr>
               )}
               {parts.map((p) => (
                 <tr key={p.link_id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">

@@ -11,11 +11,11 @@ import toast from 'react-hot-toast';
 import NumberInput from '../../components/ui/NumberInput'
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700' },
-  submitted: { label: 'Diajukan',   color: 'bg-blue-100 text-blue-700' },
-  approved:  { label: 'Disetujui',  color: 'bg-green-100 text-green-700' },
-  rejected:  { label: 'Ditolak',    color: 'bg-red-100 text-red-700' },
-  converted: { label: 'Jadi PO',    color: 'bg-purple-100 text-purple-700' },
+  draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
+  submitted: { label: 'Diajukan',   color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+  approved:  { label: 'Disetujui',  color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+  rejected:  { label: 'Ditolak',    color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
+  converted: { label: 'Jadi PO',    color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' },
 };
 
 interface PRItem {
@@ -283,7 +283,7 @@ export default function PRForm() {
   };
 
   const isEditable = isNew || pr?.status === 'draft';
-  const statusCfg = pr ? (STATUS_CONFIG[pr.status] || { label: pr.status, color: 'bg-gray-100 text-gray-700' }) : null;
+  const statusCfg = pr ? (STATUS_CONFIG[pr.status] || { label: pr.status, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' }) : null;
 
   if (loading) {
     return (
@@ -311,7 +311,7 @@ export default function PRForm() {
                   {statusCfg?.label}
                 </span>
                 {pr.converted_po_number && (
-                  <span className="text-xs text-purple-600">→ {pr.converted_po_number}</span>
+                  <span className="text-xs text-purple-600 dark:text-purple-400">→ {pr.converted_po_number}</span>
                 )}
               </div>
             )}
@@ -369,7 +369,7 @@ export default function PRForm() {
 
       {/* Rejection reason banner */}
       {pr?.status === 'rejected' && pr.rejection_reason && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
           <strong>Alasan Penolakan:</strong> {pr.rejection_reason}
         </div>
       )}
@@ -414,7 +414,7 @@ export default function PRForm() {
               <option value="CNY">CNY - Yuan</option>
             </select>
             {formData.currency !== 'IDR' && (
-              <p className={`mt-1 text-xs ${rateErr ? 'text-red-600' : 'text-emerald-700'}`}>
+              <p className={`mt-1 text-xs ${rateErr ? 'text-red-600 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-300'}`}>
                 {rateErr ? `Kurs ${formData.currency} hari ini belum tersedia.` : rate ? `Kurs hari ini: 1 ${formData.currency} = Rp ${rate.toLocaleString('id-ID')}` : 'Mengambil kurs...'}
               </p>
             )}
@@ -464,7 +464,7 @@ export default function PRForm() {
           {isEditable && (
             <button
               onClick={() => setItems(p => [...p, emptyItem()])}
-              className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+              className="flex items-center gap-1 text-sm text-blue-600 hover:underline dark:text-blue-400"
             >
               <PlusIcon className="h-4 w-4" /> Tambah Item
             </button>
@@ -472,7 +472,7 @@ export default function PRForm() {
         </div>
 
         {/* Item header */}
-        <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 uppercase px-1">
+        <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 uppercase px-1 dark:text-gray-400">
           <div className="col-span-3">Nama Item</div>
           <div className="col-span-1">Kode</div>
           <div className="col-span-1">Qty</div>
@@ -627,22 +627,22 @@ export default function PRForm() {
             <h3 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">🛒 Buat Purchase Order</h3>
 
             {distinctPreferredSuppliers.length > 1 ? (
-              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
                 Item di PR ini punya {distinctPreferredSuppliers.length} supplier berbeda (preferred supplier per
                 item) — akan dipecah otomatis jadi {distinctPreferredSuppliers.length} PO terpisah, satu per supplier.
               </p>
             ) : (
-              <p className="text-sm text-gray-500 mb-2">PR akan dikonversi menjadi PO.</p>
+              <p className="text-sm text-gray-500 mb-2 dark:text-gray-400">PR akan dikonversi menjadi PO.</p>
             )}
 
             {itemsMissingSupplier.length > 0 && (
-              <p className="text-sm text-red-600 mb-2">
+              <p className="text-sm text-red-600 mb-2 dark:text-red-400">
                 {itemsMissingSupplier.length} item belum punya preferred supplier: {itemsMissingSupplier.map((i) => i.item_name).join(', ')}.
                 Pilih supplier fallback di bawah untuk item-item itu, atau isi preferred supplier per item dulu.
               </p>
             )}
 
-            <label className="block text-xs text-gray-500 mb-1">
+            <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">
               Supplier Fallback {distinctPreferredSuppliers.length > 0 ? '(hanya untuk item yang belum punya preferred supplier)' : ''}
             </label>
             <select
@@ -656,26 +656,26 @@ export default function PRForm() {
               ))}
             </select>
             {!newSup ? (
-              <button type="button" className="mb-4 -mt-2 text-sm text-blue-600 hover:underline"
+              <button type="button" className="mb-4 -mt-2 text-sm text-blue-600 hover:underline dark:text-blue-400"
                 onClick={() => setNewSup({ name: (items.find((i) => i.preferred_supplier_name?.trim())?.preferred_supplier_name || '').trim(), currency: formData.currency || 'IDR', terms: '30' })}>
                 + Buat pemasok baru
               </button>
             ) : (
               <div className="mb-4 -mt-2 space-y-2 rounded-lg border border-gray-200 p-3 dark:border-gray-600">
-                <label className="block text-xs text-gray-500">Nama pemasok</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400">Nama pemasok</label>
                 <input className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white" placeholder="Nama pemasok" value={newSup.name} onChange={(e) => setNewSup({ ...newSup, name: e.target.value })} />
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <label className="mb-1 block text-xs text-gray-500">Mata uang</label>
+                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">Mata uang</label>
                     <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white" value={newSup.currency} onChange={(e) => setNewSup({ ...newSup, currency: e.target.value })}>
                       <option value="IDR">IDR</option><option value="USD">USD</option><option value="CNY">CNY</option>
                     </select>
                   </div>
                   <div className="w-40">
-                    <label className="mb-1 block text-xs text-gray-500">Termin pembayaran (hari)</label>
+                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">Termin pembayaran (hari)</label>
                     <div className="flex items-center gap-1">
                       <input type="number" min="0" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-700 dark:text-white" value={newSup.terms} onChange={(e) => setNewSup({ ...newSup, terms: e.target.value })} />
-                      <span className="text-xs text-gray-500">hari</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">hari</span>
                     </div>
                   </div>
                 </div>
@@ -683,7 +683,7 @@ export default function PRForm() {
                   <button type="button" className="px-3 py-1.5 border rounded-lg text-sm" onClick={() => setNewSup(null)}>Batal</button>
                   <button type="button" disabled={savingSup} className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm disabled:opacity-50" onClick={createSupplier}>{savingSup ? 'Menyimpan...' : 'Simpan pemasok'}</button>
                 </div>
-                <p className="text-xs text-gray-500">Data lengkap (alamat, NPWP, rekening) bisa dilengkapi nanti di master pemasok.</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Data lengkap (alamat, NPWP, rekening) bisa dilengkapi nanti di master pemasok.</p>
               </div>
             )}
             <div className="flex gap-2 justify-end">

@@ -140,7 +140,7 @@ export default function PendingQC() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ClipboardDocumentCheckIcon className="w-7 h-7 text-blue-600" />
+            <ClipboardDocumentCheckIcon className="w-7 h-7 text-blue-600 dark:text-blue-400" />
             QC SPK
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
@@ -238,7 +238,7 @@ export default function PendingQC() {
         <div className="overflow-x-auto">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <ArrowPathIcon className="w-8 h-8 animate-spin text-blue-600" />
+              <ArrowPathIcon className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
             </div>
           ) : (
             <table className="w-full">

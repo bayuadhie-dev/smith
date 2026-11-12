@@ -50,22 +50,22 @@ const [statusFilter, setStatusFilter] = useState('');
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'planned': return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'in_progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'planned': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
   const getRatingColor = (rating: string) => {
     switch (rating) {
-      case 'excellent': return 'text-green-600';
-      case 'good': return 'text-blue-600';
-      case 'satisfactory': return 'text-yellow-600';
-      case 'needs_improvement': return 'text-orange-600';
-      case 'unsatisfactory': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'excellent': return 'text-green-600 dark:text-green-400';
+      case 'good': return 'text-blue-600 dark:text-blue-400';
+      case 'satisfactory': return 'text-yellow-600 dark:text-yellow-400';
+      case 'needs_improvement': return 'text-orange-600 dark:text-orange-400';
+      case 'unsatisfactory': return 'text-red-600 dark:text-red-400';
+      default: return 'text-gray-600 dark:text-gray-300';
     }
   };
 
@@ -95,7 +95,7 @@ const [statusFilter, setStatusFilter] = useState('');
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Quality Audits</h1>
-          <p className="text-gray-600">Plan, conduct, and track quality audits</p>
+          <p className="text-gray-600 dark:text-gray-300">Plan, conduct, and track quality audits</p>
         </div>
         <button
           onClick={() => setShowNewAuditForm(true)}
@@ -111,7 +111,7 @@ const [statusFilter, setStatusFilter] = useState('');
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Audits</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Audits</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{displayAudits.length}</p>
             </div>
             <AcademicCapIcon className="h-8 w-8 text-blue-500" />
@@ -121,8 +121,8 @@ const [statusFilter, setStatusFilter] = useState('');
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Completed</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Completed</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {displayAudits.filter(a => a.status === 'completed').length}
               </p>
             </div>
@@ -133,8 +133,8 @@ const [statusFilter, setStatusFilter] = useState('');
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">In Progress</p>
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">In Progress</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {displayAudits.filter(a => a.status === 'in_progress').length}
               </p>
             </div>
@@ -145,8 +145,8 @@ const [statusFilter, setStatusFilter] = useState('');
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Critical Findings</p>
-              <p className="text-2xl font-bold text-red-600">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Critical Findings</p>
+              <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                 {displayAudits.reduce((sum, a) => sum + a.critical_findings, 0)}
               </p>
             </div>
@@ -275,22 +275,22 @@ const [statusFilter, setStatusFilter] = useState('');
                     <div className="text-sm text-gray-900 dark:text-white">
                       <div className="flex items-center gap-4">
                         {audit.critical_findings > 0 && (
-                          <span className="text-red-600 font-medium">
+                          <span className="text-red-600 font-medium dark:text-red-400">
                             {audit.critical_findings} Critical
                           </span>
                         )}
                         {audit.major_findings > 0 && (
-                          <span className="text-orange-600">
+                          <span className="text-orange-600 dark:text-orange-400">
                             {audit.major_findings} Major
                           </span>
                         )}
                         {audit.minor_findings > 0 && (
-                          <span className="text-yellow-600">
+                          <span className="text-yellow-600 dark:text-yellow-400">
                             {audit.minor_findings} Minor
                           </span>
                         )}
                         {audit.total_findings === 0 && audit.status === 'completed' && (
-                          <span className="text-green-600">No findings</span>
+                          <span className="text-green-600 dark:text-green-400">No findings</span>
                         )}
                       </div>
                       {audit.observations > 0 && (
@@ -302,10 +302,10 @@ const [statusFilter, setStatusFilter] = useState('');
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center gap-2">
-                      <button className="text-blue-600 hover:text-blue-900">
+                      <button className="text-blue-600 hover:text-blue-900 dark:text-blue-400">
                         <EyeIcon className="h-4 w-4" />
                       </button>
-                      <button className="text-gray-600 hover:text-gray-900 dark:text-white">
+                      <button className="text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white">
                         <PencilIcon className="h-4 w-4" />
                       </button>
                     </div>

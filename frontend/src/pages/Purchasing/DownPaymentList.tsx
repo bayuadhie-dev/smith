@@ -60,7 +60,7 @@ export default function DownPaymentList() {
         </select>
         <label className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300"><input type="checkbox" checked={onlyOpen} onChange={(e) => { setOnlyOpen(e.target.checked); setPage(1) }} /> Hanya yang masih bersisa</label>
       </div>
-      {poId && <p className="text-sm text-gray-500">Disaring untuk satu PO. <Link to="/app/purchasing/down-payments" className="text-emerald-700 hover:underline">Tampilkan semua</Link></p>}
+      {poId && <p className="text-sm text-gray-500 dark:text-gray-400">Disaring untuk satu PO. <Link to="/app/purchasing/down-payments" className="text-emerald-700 hover:underline dark:text-emerald-300">Tampilkan semua</Link></p>}
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-900"><tr>
@@ -68,8 +68,8 @@ export default function DownPaymentList() {
             <SortableTh label="Jumlah" k="amount" sort={sort} toggle={toggle} className={`${th} text-right`} /><SortableTh label="Terpakai" k="allocated_amount" sort={sort} toggle={toggle} className={`${th} text-right`} /><SortableTh label="Sisa" k="remaining" sort={sort} toggle={toggle} className={`${th} text-right`} /><SortableTh label="Status" k="status" sort={sort} toggle={toggle} className={th} />
           </tr></thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500">Memuat...</td></tr>}
-            {!loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500">Belum ada uang muka.</td></tr>}
+            {loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+            {!loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada uang muka.</td></tr>}
             {sortedRows.map((r) => (
               <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
                 <td className="whitespace-nowrap px-4 py-2.5 text-sm font-medium"><Link to={`/app/purchasing/down-payments/${r.id}`} className="text-emerald-700 hover:underline dark:text-emerald-400">{r.dp_number}</Link></td>

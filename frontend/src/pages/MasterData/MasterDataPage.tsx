@@ -32,8 +32,8 @@ export default function MasterDataPage() {
               onClick={() => setTab(key)}
               className={`flex items-center gap-2 pb-3 px-1 border-b-2 text-sm font-medium transition-colors ${
                 tab === key
-                  ? 'border-primary-600 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                  ? 'border-primary-600 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 dark:text-gray-400'
               }`}
             >
               <Icon className="h-5 w-5" />

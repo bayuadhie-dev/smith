@@ -22,9 +22,9 @@ import { useGetPreShiftChecklistSubmissionQuery, useAddSupervisorNoteMutation } 
 import { showError } from '../../components/ui'
 
 const SHIFT_CONFIG: { [key: number]: { name: string; time: string; color: string; bg: string; border: string; gradient: string } } = {
-  1: { name: 'Shift 1', time: '07:00 - 15:00', color: 'text-blue-700', bg: 'bg-blue-100', border: 'border-blue-300', gradient: 'from-blue-600 to-blue-700' },
-  2: { name: 'Shift 2', time: '15:00 - 23:00', color: 'text-purple-700', bg: 'bg-purple-100', border: 'border-purple-300', gradient: 'from-purple-600 to-purple-700' },
-  3: { name: 'Shift 3', time: '23:00 - 07:00', color: 'text-indigo-700', bg: 'bg-indigo-100', border: 'border-indigo-300', gradient: 'from-indigo-600 to-indigo-700' },
+  1: { name: 'Shift 1', time: '07:00 - 15:00', color: 'text-blue-700 dark:text-blue-300', bg: 'bg-blue-100 dark:bg-blue-900/30', border: 'border-blue-300', gradient: 'from-blue-600 to-blue-700' },
+  2: { name: 'Shift 2', time: '15:00 - 23:00', color: 'text-purple-700 dark:text-purple-300', bg: 'bg-purple-100 dark:bg-purple-900/30', border: 'border-purple-300', gradient: 'from-purple-600 to-purple-700' },
+  3: { name: 'Shift 3', time: '23:00 - 07:00', color: 'text-indigo-700 dark:text-indigo-300', bg: 'bg-indigo-100 dark:bg-indigo-900/30', border: 'border-indigo-300', gradient: 'from-indigo-600 to-indigo-700' },
 }
 
 const PRIORITY_OPTIONS = [
@@ -150,7 +150,7 @@ const PreShiftChecklistView = () => {
           >
             <ArrowLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
-          <ClipboardDocumentCheckIcon className="w-6 h-6 text-blue-600" />
+          <ClipboardDocumentCheckIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           <h1 className="text-lg font-bold text-gray-900 dark:text-white">Pre-Shift Checklist</h1>
         </div>
         <div className="flex items-center space-x-2 print:hidden">
@@ -187,7 +187,7 @@ const PreShiftChecklistView = () => {
             <span>{submission.operator_name || '-'}</span>
           </div>
           <div className="flex items-center space-x-2">
-            <CheckCircleSolid className="w-4 h-4 text-green-600" />
+            <CheckCircleSolid className="w-4 h-4 text-green-600 dark:text-green-400" />
             <span className="text-gray-600 dark:text-gray-300">
               {submission.submitted_at ? new Date(submission.submitted_at).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}
             </span>
@@ -198,37 +198,37 @@ const PreShiftChecklistView = () => {
       {/* Stats Row */}
       <div className="flex items-center justify-center gap-6 mb-4 print:mb-2 py-2 bg-gray-50 dark:bg-gray-900 rounded-lg">
         <div className="flex items-center space-x-2">
-          <CheckCircleSolid className="w-6 h-6 text-green-600" />
-          <span className="text-xl font-bold text-green-600">{stats.ok}</span>
+          <CheckCircleSolid className="w-6 h-6 text-green-600 dark:text-green-400" />
+          <span className="text-xl font-bold text-green-600 dark:text-green-400">{stats.ok}</span>
           <span className="text-sm text-gray-500 dark:text-gray-400">OK</span>
         </div>
-        <div className="w-px h-6 bg-gray-300"></div>
+        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
         <div className="flex items-center space-x-2">
-          <XCircleSolid className="w-6 h-6 text-red-600" />
-          <span className="text-xl font-bold text-red-600">{stats.ng}</span>
+          <XCircleSolid className="w-6 h-6 text-red-600 dark:text-red-400" />
+          <span className="text-xl font-bold text-red-600 dark:text-red-400">{stats.ng}</span>
           <span className="text-sm text-gray-500 dark:text-gray-400">NG</span>
         </div>
-        <div className="w-px h-6 bg-gray-300"></div>
+        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
         <div className="flex items-center space-x-2">
           <MinusCircleIcon className="w-6 h-6 text-gray-400" />
           <span className="text-xl font-bold text-gray-600 dark:text-gray-300">{stats.na}</span>
           <span className="text-sm text-gray-500 dark:text-gray-400">N/A</span>
         </div>
-        <div className="w-px h-6 bg-gray-300"></div>
+        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
         <div className="flex items-center space-x-2">
-          <DocumentCheckIcon className="w-6 h-6 text-blue-600" />
-          <span className="text-xl font-bold text-blue-600">{stats.total}</span>
+          <DocumentCheckIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          <span className="text-xl font-bold text-blue-600 dark:text-blue-400">{stats.total}</span>
           <span className="text-sm text-gray-500 dark:text-gray-400">Total</span>
         </div>
       </div>
 
       {/* NG Items Alert - Only show if there are NG items */}
       {ngItems.length > 0 && (
-        <div className="mb-4 print:mb-2 p-3 bg-red-50 border border-red-200 rounded-lg print:hidden">
+        <div className="mb-4 print:mb-2 p-3 bg-red-50 border border-red-200 rounded-lg print:hidden dark:bg-red-900/20 dark:border-red-800">
           <div className="flex items-start space-x-2">
-            <XCircleSolid className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <XCircleSolid className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0 dark:text-red-400" />
             <div className="flex-1">
-              <p className="font-semibold text-red-700 text-sm mb-2">Item NG - Perlu Tindakan (Klik untuk tambah keterangan):</p>
+              <p className="font-semibold text-red-700 text-sm mb-2 dark:text-red-300">Item NG - Perlu Tindakan (Klik untuk tambah keterangan):</p>
               <div className="space-y-2">
                 {ngItems.map((item: any, i: number) => {
                   const ca = item.corrective_action;
@@ -243,10 +243,10 @@ const PreShiftChecklistView = () => {
                   const priorityBadge = ca?.priority ? getPriorityBadge(ca.priority) : null;
                   
                   return (
-                    <div key={i} className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 p-2">
+                    <div key={i} className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 p-2 dark:border-red-800">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2 flex-1">
-                          <span className="text-red-600 font-medium text-sm">
+                          <span className="text-red-600 font-medium text-sm dark:text-red-400">
                             {item.item?.item_name}
                           </span>
                           {item.catatan && (
@@ -260,17 +260,17 @@ const PreShiftChecklistView = () => {
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className={`text-xs px-2 py-0.5 rounded-full whitespace-nowrap ${
-                            ca?.repair_status === 'completed' ? 'bg-green-100 text-green-700' :
-                            ca?.repair_status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                            ca?.repair_status === 'cannot_repair' ? 'bg-red-100 text-red-700' :
-                            'bg-yellow-100 text-yellow-700'
+                            ca?.repair_status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                            ca?.repair_status === 'in_progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+                            ca?.repair_status === 'cannot_repair' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
+                            'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
                           }`}>
                             {statusLabel}
                           </span>
                           {!isEditing && (
                             <button
                               onClick={() => handleEditNgItem(item)}
-                              className="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded hover:bg-amber-200"
+                              className="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300"
                             >
                               <ChatBubbleLeftEllipsisIcon className="w-4 h-4 inline mr-1" />
                               Tambah Keterangan
@@ -281,12 +281,12 @@ const PreShiftChecklistView = () => {
                       
                       {/* Supervisor Note Display */}
                       {ca?.supervisor_note && !isEditing && (
-                        <div className="mt-2 p-2 bg-amber-50 rounded border border-amber-200">
+                        <div className="mt-2 p-2 bg-amber-50 rounded border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
                           <div className="flex items-start space-x-2">
-                            <ExclamationTriangleIcon className="w-4 h-4 text-amber-600 mt-0.5" />
+                            <ExclamationTriangleIcon className="w-4 h-4 text-amber-600 mt-0.5 dark:text-amber-400" />
                             <div className="text-xs">
-                              <span className="font-medium text-amber-800">Catatan Supervisor:</span>
-                              <span className="text-amber-700 ml-1">{ca.supervisor_note}</span>
+                              <span className="font-medium text-amber-800 dark:text-amber-300">Catatan Supervisor:</span>
+                              <span className="text-amber-700 ml-1 dark:text-amber-300">{ca.supervisor_note}</span>
                               {ca.supervisor_name && (
                                 <span className="text-gray-500 dark:text-gray-400 ml-1">- {ca.supervisor_name}</span>
                               )}
@@ -307,7 +307,7 @@ const PreShiftChecklistView = () => {
                                     key={opt.value}
                                     onClick={() => setPriority(opt.value)}
                                     className={`text-xs px-2 py-1 rounded ${
-                                      priority === opt.value ? opt.color : 'bg-gray-200 text-gray-600'
+                                      priority === opt.value ? opt.color : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                                     }`}
                                   >
                                     {opt.label}
@@ -350,8 +350,8 @@ const PreShiftChecklistView = () => {
               
               {/* Maintenance Repair Notes */}
               {ngItems.some((item: any) => item.corrective_action?.repair_notes) && (
-                <div className="mt-3 pt-2 border-t border-red-200">
-                  <p className="text-xs font-medium text-red-700 mb-1">Catatan Perbaikan dari Maintenance:</p>
+                <div className="mt-3 pt-2 border-t border-red-200 dark:border-red-800">
+                  <p className="text-xs font-medium text-red-700 mb-1 dark:text-red-300">Catatan Perbaikan dari Maintenance:</p>
                   {ngItems.filter((item: any) => item.corrective_action?.repair_notes).map((item: any, i: number) => (
                     <p key={i} className="text-xs text-gray-700 dark:text-gray-200">
                       <span className="font-medium">{item.item?.item_name}:</span> {item.corrective_action.repair_notes}
@@ -371,8 +371,8 @@ const PreShiftChecklistView = () => {
       {Object.entries(groupedAnswers).map(([category, answers]) => (
         <div key={category} className="mb-3 print:mb-2">
           <div className="flex items-center space-x-2 mb-1">
-            {category === 'KONDISI_MESIN' && <CogIcon className="w-4 h-4 text-blue-600" />}
-            {category === 'MANPOWER' && <UserGroupIcon className="w-4 h-4 text-purple-600" />}
+            {category === 'KONDISI_MESIN' && <CogIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+            {category === 'MANPOWER' && <UserGroupIcon className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
             <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100">{getCategoryLabel(category)}</h3>
             <span className="text-xs text-gray-500 dark:text-gray-400">({answers.length} item)</span>
           </div>
@@ -387,16 +387,16 @@ const PreShiftChecklistView = () => {
                 <div 
                   key={answer.id}
                   className={`flex items-center justify-between p-1.5 rounded border ${
-                    isNG ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'
+                    isNG ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800' : 'bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-700'
                   }`}
                 >
                   <div className="flex items-center space-x-2 min-w-0 flex-1">
                     <span className={`w-5 h-5 flex-shrink-0 rounded flex items-center justify-center text-xs font-bold ${
-                      isNG ? 'bg-red-200 text-red-700' : isNA ? 'bg-gray-200 text-gray-600' : 'bg-green-200 text-green-700'
+                      isNG ? 'bg-red-200 text-red-700 dark:text-red-300' : isNA ? 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300' : 'bg-green-200 text-green-700 dark:text-green-300'
                     }`}>
                       {index + 1}
                     </span>
-                    <span className={`truncate ${isNG ? 'text-red-700 font-medium' : 'text-gray-700'}`}>
+                    <span className={`truncate ${isNG ? 'text-red-700 font-medium dark:text-red-300' : 'text-gray-700 dark:text-gray-200'}`}>
                       {answer.item?.item_name}
                     </span>
                   </div>
@@ -420,9 +420,9 @@ const PreShiftChecklistView = () => {
 
       {/* Notes */}
       {submission.notes && (
-        <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg text-sm">
-          <span className="font-semibold text-amber-800">Catatan: </span>
-          <span className="text-amber-700">{submission.notes}</span>
+        <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg text-sm dark:bg-amber-900/20 dark:border-amber-800">
+          <span className="font-semibold text-amber-800 dark:text-amber-300">Catatan: </span>
+          <span className="text-amber-700 dark:text-amber-300">{submission.notes}</span>
         </div>
       )}
 

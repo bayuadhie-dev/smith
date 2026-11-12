@@ -450,7 +450,7 @@ const ServerSettings: React.FC = () => {
                     type="checkbox"
                     checked={serverForm.is_public}
                     onChange={(e) => setServerForm({ ...serverForm, is_public: e.target.checked })}
-                    className="rounded border-gray-600 bg-gray-800 text-blue-600"
+                    className="rounded border-gray-600 bg-gray-800 text-blue-600 dark:text-blue-400"
                     disabled={!isOwner}
                   />
                   <span className="text-gray-300">Server Publik</span>
@@ -730,7 +730,7 @@ const ServerSettings: React.FC = () => {
                     type="checkbox"
                     checked={channelForm.is_private}
                     onChange={(e) => setChannelForm({ ...channelForm, is_private: e.target.checked })}
-                    className="rounded border-gray-600 bg-gray-900 text-blue-600"
+                    className="rounded border-gray-600 bg-gray-900 text-blue-600 dark:text-blue-400"
                   />
                   <span className="text-gray-300">Private</span>
                 </label>
@@ -739,7 +739,7 @@ const ServerSettings: React.FC = () => {
                     type="checkbox"
                     checked={channelForm.is_locked}
                     onChange={(e) => setChannelForm({ ...channelForm, is_locked: e.target.checked })}
-                    className="rounded border-gray-600 bg-gray-900 text-blue-600"
+                    className="rounded border-gray-600 bg-gray-900 text-blue-600 dark:text-blue-400"
                   />
                   <span className="text-gray-300">Locked</span>
                 </label>
@@ -863,7 +863,7 @@ const ServerSettings: React.FC = () => {
                         type="checkbox"
                         checked={(roleForm as any)[perm.key]}
                         onChange={(e) => setRoleForm({ ...roleForm, [perm.key]: e.target.checked })}
-                        className="rounded border-gray-600 bg-gray-900 text-blue-600"
+                        className="rounded border-gray-600 bg-gray-900 text-blue-600 dark:text-blue-400"
                       />
                       <span className="text-gray-300">{perm.label}</span>
                     </label>

@@ -26,7 +26,7 @@ export default function SortableTh({ label, k, sort, toggle, className = '' }: {
     <th className={className} aria-sort={active ? (sort!.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
       <button type="button" onClick={() => toggle(k)} className="inline-flex items-center gap-1 font-medium hover:text-gray-900 dark:hover:text-white" title="Klik untuk mengurutkan">
         {label}
-        <span className={active ? 'text-emerald-600' : 'text-gray-300'}>{active ? (sort!.dir === 'asc' ? '▲' : '▼') : '↕'}</span>
+        <span className={active ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-300'}>{active ? (sort!.dir === 'asc' ? '▲' : '▼') : '↕'}</span>
       </button>
     </th>
   )

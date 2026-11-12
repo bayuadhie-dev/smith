@@ -100,8 +100,8 @@ const WIPBatchForm: React.FC = () => {
       </div>
 
       {/* Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-        <p className="text-sm text-blue-800">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 dark:bg-blue-900/20 dark:border-blue-800">
+        <p className="text-sm text-blue-800 dark:text-blue-300">
           <strong>Info:</strong> WIP Batch akan otomatis dibuat saat SPK dimulai. 
           Form ini untuk membuat WIP Batch secara manual jika diperlukan.
         </p>

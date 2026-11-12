@@ -170,7 +170,7 @@ const AdvancedSystemConfig: React.FC = () => {
           <NumberInput
             value={currentValue}
             onChange={(e) => handleConfigChange(config.id, e.target.value)}
-            className={`w-full border rounded-md px-3 py-2 ${hasChanges ? 'border-yellow-400 bg-yellow-50' : 'border-gray-300'}`}
+            className={`w-full border rounded-md px-3 py-2 ${hasChanges ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20' : 'border-gray-300 dark:border-gray-600'}`}
           />
         );
       
@@ -180,7 +180,7 @@ const AdvancedSystemConfig: React.FC = () => {
             value={currentValue}
             onChange={(e) => handleConfigChange(config.id, e.target.value)}
             rows={4}
-            className={`w-full border rounded-md px-3 py-2 font-mono text-sm ${hasChanges ? 'border-yellow-400 bg-yellow-50' : 'border-gray-300'}`}
+            className={`w-full border rounded-md px-3 py-2 font-mono text-sm ${hasChanges ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20' : 'border-gray-300 dark:border-gray-600'}`}
           />
         );
       
@@ -190,7 +190,7 @@ const AdvancedSystemConfig: React.FC = () => {
             type={config.is_sensitive ? 'password' : 'text'}
             value={config.is_sensitive && !hasChanges ? '••••••••' : currentValue}
             onChange={(e) => handleConfigChange(config.id, e.target.value)}
-            className={`w-full border rounded-md px-3 py-2 ${hasChanges ? 'border-yellow-400 bg-yellow-50' : 'border-gray-300'}`}
+            className={`w-full border rounded-md px-3 py-2 ${hasChanges ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20' : 'border-gray-300 dark:border-gray-600'}`}
           />
         );
     }
@@ -224,10 +224,10 @@ const AdvancedSystemConfig: React.FC = () => {
         </p>
         
         {requiresRestart && (
-          <div className="mt-4 p-3 bg-yellow-100 border border-yellow-400 rounded-lg">
+          <div className="mt-4 p-3 bg-yellow-100 border border-yellow-400 rounded-lg dark:bg-yellow-900/30">
             <div className="flex items-center">
-              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2" />
-              <span className="text-yellow-800 font-medium">
+              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2 dark:text-yellow-400" />
+              <span className="text-yellow-800 font-medium dark:text-yellow-300">
                 Some changes require system restart to take effect
               </span>
             </div>
@@ -256,8 +256,8 @@ const AdvancedSystemConfig: React.FC = () => {
                     onClick={() => setSelectedCategory(category.name)}
                     className={`w-full flex items-center p-3 rounded-lg text-left transition-colors ${
                       isSelected 
-                        ? 'bg-blue-100 text-blue-900 border border-blue-200' 
-                        : 'hover:bg-gray-50'
+                        ? 'bg-blue-100 text-blue-900 border border-blue-200 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-200' 
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
                   >
                     <IconComponent className="h-5 w-5 mr-3" />
@@ -327,16 +327,16 @@ const AdvancedSystemConfig: React.FC = () => {
                             <div className="flex items-center">
                               <h4 className="font-medium text-gray-900 dark:text-white">{config.key}</h4>
                               {hasChanges && (
-                                <span className="ml-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
+                                <span className="ml-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded dark:bg-yellow-900/30 dark:text-yellow-300">
                                 </span>
                               )}
                               {config.requires_restart && (
-                                <span className="ml-2 px-2 py-1 text-xs bg-red-100 text-red-800 rounded">
+                                <span className="ml-2 px-2 py-1 text-xs bg-red-100 text-red-800 rounded dark:bg-red-900/30 dark:text-red-300">
                                   Requires Restart
                                 </span>
                               )}
                               {config.is_sensitive && (
-                                <span className="ml-2 px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded">
+                                <span className="ml-2 px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded dark:bg-orange-900/30 dark:text-orange-300">
                                 </span>
                               )}
                             </div>
@@ -362,7 +362,7 @@ const AdvancedSystemConfig: React.FC = () => {
         <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 shadow-lg">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center">
-              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2" />
+              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2 dark:text-yellow-400" />
               <span className="text-gray-900 dark:text-white font-medium">
                 You have unsaved changes ({Object.keys(pendingChanges).length} settings)
               </span>
@@ -371,7 +371,7 @@ const AdvancedSystemConfig: React.FC = () => {
             <div className="flex space-x-3">
               <button
                 onClick={() => setPendingChanges({})}
-                className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
+                className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:bg-gray-600"
               >
                 Discard Changes
               </button>

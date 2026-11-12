@@ -8,17 +8,17 @@ import {
 } from '@heroicons/react/24/outline';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700' },
-  submitted: { label: 'Diajukan',   color: 'bg-blue-100 text-blue-700' },
-  approved:  { label: 'Disetujui',  color: 'bg-green-100 text-green-700' },
-  rejected:  { label: 'Ditolak',    color: 'bg-red-100 text-red-700' },
-  completed: { label: 'Selesai',    color: 'bg-emerald-100 text-emerald-700' },
+  draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
+  submitted: { label: 'Diajukan',   color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+  approved:  { label: 'Disetujui',  color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+  rejected:  { label: 'Ditolak',    color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
+  completed: { label: 'Selesai',    color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
 };
 
 const APPROVAL_CONFIG: Record<string, { label: string; color: string }> = {
-  pending:  { label: 'Menunggu',  color: 'bg-yellow-100 text-yellow-700' },
-  approved: { label: 'Disetujui', color: 'bg-green-100 text-green-700' },
-  rejected: { label: 'Ditolak',   color: 'bg-red-100 text-red-700' },
+  pending:  { label: 'Menunggu',  color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' },
+  approved: { label: 'Disetujui', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+  rejected: { label: 'Ditolak',   color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
 };
 
 export default function PurchaseReturnList() {
@@ -68,7 +68,7 @@ export default function PurchaseReturnList() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Retur Pembelian</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Retur barang ke supplier dari Purchase Invoice</p>
+          <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-400">Retur barang ke supplier dari Purchase Invoice</p>
         </div>
         <Link
           to="/app/purchasing/returns/new"
@@ -127,8 +127,8 @@ export default function PurchaseReturnList() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {sortedReturns.map((ret) => {
-                const status = STATUS_CONFIG[ret.status] || { label: ret.status, color: 'bg-gray-100 text-gray-600' };
-                const approval = APPROVAL_CONFIG[ret.approval_status] || { label: ret.approval_status, color: 'bg-gray-100 text-gray-600' };
+                const status = STATUS_CONFIG[ret.status] || { label: ret.status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
+                const approval = APPROVAL_CONFIG[ret.approval_status] || { label: ret.approval_status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
                 return (
                   <tr
                     key={ret.id}

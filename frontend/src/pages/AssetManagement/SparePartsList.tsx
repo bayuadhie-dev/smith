@@ -64,7 +64,7 @@ const SparePartsList: React.FC = () => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-          <WrenchScrewdriverIcon className="h-8 w-8 text-orange-600" />
+          <WrenchScrewdriverIcon className="h-8 w-8 text-orange-600 dark:text-orange-400" />
           Suku Cadang
         </h1>
         <p className="text-slate-500 dark:text-gray-400 mt-1">
@@ -90,9 +90,9 @@ const SparePartsList: React.FC = () => {
               type="checkbox"
               checked={showLowStockOnly}
               onChange={(e) => setShowLowStockOnly(e.target.checked)}
-              className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+              className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 dark:border-gray-600 dark:text-orange-400"
             />
-            <ExclamationTriangleIcon className="h-5 w-5 text-orange-600" />
+            <ExclamationTriangleIcon className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             <span className="text-sm font-medium text-slate-700 dark:text-gray-300">
               Stok Rendah Saja
             </span>
@@ -108,29 +108,29 @@ const SparePartsList: React.FC = () => {
               <p className="text-sm text-slate-500 dark:text-gray-400">Total Items</p>
               <p className="text-2xl font-bold text-slate-800 dark:text-white">{parts.length}</p>
             </div>
-            <WrenchScrewdriverIcon className="h-8 w-8 text-blue-600" />
+            <WrenchScrewdriverIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500 dark:text-gray-400">Perlu Reorder</p>
-              <p className="text-2xl font-bold text-orange-600">
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                 {parts.filter(p => p.needs_reorder).length}
               </p>
             </div>
-            <ExclamationTriangleIcon className="h-8 w-8 text-orange-600" />
+            <ExclamationTriangleIcon className="h-8 w-8 text-orange-600 dark:text-orange-400" />
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500 dark:text-gray-400">Stok Aman</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {parts.filter(p => !p.needs_reorder).length}
               </p>
             </div>
-            <CheckCircleIcon className="h-8 w-8 text-green-600" />
+            <CheckCircleIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
           </div>
         </div>
       </div>

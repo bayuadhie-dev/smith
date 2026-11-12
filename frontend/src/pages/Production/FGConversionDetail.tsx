@@ -135,11 +135,11 @@ const FGConversionDetail: React.FC = () => {
       case 'draft':
         return <span className="px-3 py-1 text-sm font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">Draft</span>;
       case 'in_progress':
-        return <span className="px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800">In Progress</span>;
+        return <span className="px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">In Progress</span>;
       case 'completed':
-        return <span className="px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">Completed</span>;
+        return <span className="px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Completed</span>;
       case 'cancelled':
-        return <span className="px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">Cancelled</span>;
+        return <span className="px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Cancelled</span>;
       default:
         return <span className="px-3 py-1 text-sm font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">{status}</span>;
     }
@@ -148,11 +148,11 @@ const FGConversionDetail: React.FC = () => {
   const getQCStatusBadge = (qcStatus: string) => {
     switch (qcStatus) {
       case 'pass':
-        return <span className="px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">Pass</span>;
+        return <span className="px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Pass</span>;
       case 'fail':
-        return <span className="px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">Fail</span>;
+        return <span className="px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Fail</span>;
       case 'rework':
-        return <span className="px-3 py-1 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800">Rework</span>;
+        return <span className="px-3 py-1 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">Rework</span>;
       default:
         return <span className="px-3 py-1 text-sm font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">{qcStatus}</span>;
     }
@@ -186,7 +186,7 @@ const FGConversionDetail: React.FC = () => {
         <div className="text-center py-12">
           <XCircleIcon className="h-12 w-12 mx-auto text-red-500 mb-4" />
           <p className="text-gray-500 dark:text-gray-400">Konversi tidak ditemukan</p>
-          <Link to="/app/production/fg-conversion" className="text-blue-600 hover:underline mt-4 inline-block">
+          <Link to="/app/production/fg-conversion" className="text-blue-600 hover:underline mt-4 inline-block dark:text-blue-400">
             Kembali ke List
           </Link>
         </div>
@@ -243,19 +243,19 @@ const FGConversionDetail: React.FC = () => {
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">FG Produced</p>
-          <p className="text-2xl font-bold text-green-600">{conversion.total_fg_qty.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{conversion.total_fg_qty.toLocaleString()}</p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">pcs</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">Loss/Reject</p>
-          <p className="text-2xl font-bold text-red-600">{conversion.total_loss_qty.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-red-600 dark:text-red-400">{conversion.total_loss_qty.toLocaleString()}</p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             {conversion.total_wip_qty > 0 ? `${((conversion.total_loss_qty / conversion.total_wip_qty) * 100).toFixed(2)}%` : '0%'}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">Material Cost</p>
-          <p className="text-2xl font-bold text-purple-600">{formatCurrency(conversion.total_material_cost)}</p>
+          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{formatCurrency(conversion.total_material_cost)}</p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">packaging, labels, etc</p>
         </div>
       </div>
@@ -381,8 +381,8 @@ const FGConversionDetail: React.FC = () => {
                   <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{item.wip_product_name}</td>
                   <td className="px-6 py-4 text-sm text-right text-gray-900 dark:text-white">{item.wip_quantity.toLocaleString()}</td>
                   <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{item.fg_product_name}</td>
-                  <td className="px-6 py-4 text-sm text-right text-green-600 font-medium">{item.fg_quantity.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-sm text-right text-red-600">
+                  <td className="px-6 py-4 text-sm text-right text-green-600 font-medium dark:text-green-400">{item.fg_quantity.toLocaleString()}</td>
+                  <td className="px-6 py-4 text-sm text-right text-red-600 dark:text-red-400">
                     {item.loss_quantity.toLocaleString()} ({item.loss_percentage.toFixed(2)}%)
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{item.batch_number}</td>
@@ -446,9 +446,9 @@ const FGConversionDetail: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 text-center">
                       {material.deducted_from_inventory ? (
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Deducted</span>
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Deducted</span>
                       ) : (
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">Pending</span>
                       )}
                     </td>
                   </tr>
@@ -484,12 +484,12 @@ const FGConversionDetail: React.FC = () => {
                 {conversion.loss_details.map((loss) => (
                   <tr key={loss.id}>
                     <td className="px-6 py-4 text-sm text-gray-900 dark:text-white capitalize">{loss.loss_type}</td>
-                    <td className="px-6 py-4 text-sm text-right text-red-600 font-medium">
+                    <td className="px-6 py-4 text-sm text-right text-red-600 font-medium dark:text-red-400">
                       {loss.loss_quantity.toLocaleString()} {loss.uom}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{loss.loss_reason}</td>
                     <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 capitalize">{loss.loss_category || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-right text-red-600 font-medium">
+                    <td className="px-6 py-4 text-sm text-right text-red-600 font-medium dark:text-red-400">
                       {formatCurrency(loss.total_cost_impact)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">

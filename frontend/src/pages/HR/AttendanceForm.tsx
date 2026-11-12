@@ -71,10 +71,10 @@ const AttendanceForm: React.FC = () => {
   const [error, setError] = useState('');
 
   const statusOptions = [
-    { value: 'present', label: 'Present', color: 'text-green-600', icon: CheckCircle },
-    { value: 'absent', label: 'Absent', color: 'text-red-600', icon: XCircle },
-    { value: 'late', label: 'Late', color: 'text-orange-600', icon: ClockIcon },
-    { value: 'half_day', label: 'Half Day', color: 'text-blue-600', icon: Timer }
+    { value: 'present', label: 'Present', color: 'text-green-600 dark:text-green-400', icon: CheckCircle },
+    { value: 'absent', label: 'Absent', color: 'text-red-600 dark:text-red-400', icon: XCircle },
+    { value: 'late', label: 'Late', color: 'text-orange-600 dark:text-orange-400', icon: ClockIcon },
+    { value: 'half_day', label: 'Half Day', color: 'text-blue-600 dark:text-blue-400', icon: Timer }
   ];
 
   useEffect(() => {
@@ -278,7 +278,7 @@ const AttendanceForm: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
               <ExclamationCircleIcon className="h-5 w-5" />
               <span>{error}</span>
             </div>
@@ -411,7 +411,7 @@ const AttendanceForm: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setCurrentTime('clock_in')}
-                      className="px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                      className="px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:hover:bg-gray-600"
                     >
                     </button>
                   </div>
@@ -433,7 +433,7 @@ const AttendanceForm: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setCurrentTime('clock_out')}
-                      className="px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                      className="px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:hover:bg-gray-600"
                     >
                     </button>
                   </div>
@@ -476,7 +476,7 @@ const AttendanceForm: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Total Hours
                   </label>
-                  <div className="px-3 py-2 bg-blue-50 border border-blue-300 rounded-lg text-blue-700 font-medium">
+                  <div className="px-3 py-2 bg-blue-50 border border-blue-300 rounded-lg text-blue-700 font-medium dark:bg-blue-900/20 dark:text-blue-300">
                     {getTotalHours().toFixed(2)} hours
                   </div>
                 </div>
@@ -496,11 +496,11 @@ const AttendanceForm: React.FC = () => {
                   </div>
                   <div>
                     <span className="text-gray-600 dark:text-gray-300">Regular:</span>
-                    <div className="font-medium text-green-600">{formData.worked_hours}h</div>
+                    <div className="font-medium text-green-600 dark:text-green-400">{formData.worked_hours}h</div>
                   </div>
                   <div>
                     <span className="text-gray-600 dark:text-gray-300">Overtime:</span>
-                    <div className="font-medium text-orange-600">{formData.overtime_hours}h</div>
+                    <div className="font-medium text-orange-600 dark:text-orange-400">{formData.overtime_hours}h</div>
                   </div>
                 </div>
               </div>

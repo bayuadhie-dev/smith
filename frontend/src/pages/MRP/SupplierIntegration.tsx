@@ -98,18 +98,18 @@ const SupplierIntegration: React.FC = () => {
   };
 
   const getPerformanceColor = (percentage: number) => {
-    if (percentage >= 95) return 'text-green-600 bg-green-100';
-    if (percentage >= 85) return 'text-blue-600 bg-blue-100';
-    if (percentage >= 75) return 'text-yellow-600 bg-yellow-100';
-    return 'text-red-600 bg-red-100';
+    if (percentage >= 95) return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
+    if (percentage >= 85) return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400';
+    if (percentage >= 75) return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
+    return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'text-green-600 bg-green-100';
-      case 'inactive': return 'text-red-600 bg-red-100';
-      case 'pending': return 'text-yellow-600 bg-yellow-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'active': return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
+      case 'inactive': return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
+      case 'pending': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
+      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
@@ -143,14 +143,14 @@ const SupplierIntegration: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/mrp"
-            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to MRP Dashboard
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Supplier Integration</h1>
-            <p className="text-gray-600 mt-1">Manage supplier relationships and capacity planning</p>
+            <p className="text-gray-600 mt-1 dark:text-gray-300">Manage supplier relationships and capacity planning</p>
           </div>
         </div>
       </div>
@@ -278,7 +278,7 @@ const SupplierIntegration: React.FC = () => {
                   <td className="px-4 py-3">
                     <div className="flex items-center">
                       <div className="flex">{getRatingStars(supplier.quality_rating)}</div>
-                      <span className="ml-2 text-sm text-gray-600">({supplier.quality_rating})</span>
+                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">({supplier.quality_rating})</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-900 dark:text-white">
@@ -311,19 +311,19 @@ const SupplierIntegration: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Available:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Available:</span>
                   <span className="font-medium">{formatNumber(capacity.available_capacity)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Committed:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Committed:</span>
                   <span className="font-medium">{formatNumber(capacity.committed_capacity)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Utilization:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Utilization:</span>
                   <span className="font-medium">{formatPercent(capacity.utilization_percent)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Lead Time:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Lead Time:</span>
                   <span className="font-medium">{capacity.lead_time_days} days</span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">

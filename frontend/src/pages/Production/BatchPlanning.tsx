@@ -85,15 +85,15 @@ const DocumentPreviewModal: React.FC<{ documentId: number; onClose: () => void }
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="font-medium">{doc?.document_number || 'Memuat...'}</div>
           <div className="flex items-center gap-2">
-            <button onClick={handleDownload} className="p-2 text-gray-500 hover:text-blue-600" title="Unduh PDF">
+            <button onClick={handleDownload} className="p-2 text-gray-500 hover:text-blue-600 dark:text-gray-400" title="Unduh PDF">
               <Download className="w-4 h-4" />
             </button>
-            <button onClick={onClose} className="p-2 text-gray-500 hover:text-red-600">
+            <button onClick={onClose} className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400">
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
-        {loading && <div className="p-8 text-center text-gray-500">Memuat dokumen...</div>}
+        {loading && <div className="p-8 text-center text-gray-500 dark:text-gray-400">Memuat dokumen...</div>}
         {!loading && doc?.is_superseded && (
           <div className="m-4 p-4 bg-red-600 text-white font-bold text-center rounded-lg border-2 border-red-900">
             DOKUMEN INI SUDAH USANG — nomor batch sudah berubah, JANGAN DIPAKAI. Minta cetak ulang SPK yang berlaku saat ini.
@@ -257,7 +257,7 @@ const BatchPlanning: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Batch Planning</h1>
-          <p className="text-sm text-gray-500">Usulan jadwal batch produksi — hasil Generate/Re-plan, review lalu Approve.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Usulan jadwal batch produksi — hasil Generate/Re-plan, review lalu Approve.</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -293,10 +293,10 @@ const BatchPlanning: React.FC = () => {
         <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 text-sm rounded-lg">
           Selesai: {replanResult.released_draft_count} draft lama dilepas, {replanResult.created_count} batch baru dibuat.
           {replanResult.unplaceable?.length > 0 && (
-            <div className="mt-1 text-red-600">{replanResult.unplaceable.length} kebutuhan tidak bisa dijadwalkan (kapasitas mesin penuh 365 hari) — cek kalender mesin terkait.</div>
+            <div className="mt-1 text-red-600 dark:text-red-400">{replanResult.unplaceable.length} kebutuhan tidak bisa dijadwalkan (kapasitas mesin penuh 365 hari) — cek kalender mesin terkait.</div>
           )}
           {replanResult.skipped_no_recipe?.length > 0 && (
-            <div className="mt-1 text-amber-600">{replanResult.skipped_no_recipe.length} SPK dilewati karena belum ada resep produk+mesin.</div>
+            <div className="mt-1 text-amber-600 dark:text-amber-400">{replanResult.skipped_no_recipe.length} SPK dilewati karena belum ada resep produk+mesin.</div>
           )}
         </div>
       )}
@@ -321,13 +321,13 @@ const BatchPlanning: React.FC = () => {
               <th className="px-3 py-2 text-left">
                 <input type="checkbox" checked={selected.size > 0 && selected.size === eligibleForApprove} onChange={toggleSelectAll} />
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-500">Nomor Batch</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-500">WO / Produk</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-500">Mesin</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-500">Jadwal</th>
-              <th className="px-3 py-2 text-right font-medium text-gray-500">Qty</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-500">Status</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-500">SPK</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Nomor Batch</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">WO / Produk</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Mesin</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Jadwal</th>
+              <th className="px-3 py-2 text-right font-medium text-gray-500 dark:text-gray-400">Qty</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Status</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">SPK</th>
               <th className="px-3 py-2"></th>
             </tr>
           </thead>
@@ -353,7 +353,7 @@ const BatchPlanning: React.FC = () => {
                         onChange={(e) => setNumberDraft(e.target.value)}
                         className="w-32 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-xs"
                       />
-                      <button onClick={() => saveNumber(b)} className="text-green-600 text-xs">Simpan</button>
+                      <button onClick={() => saveNumber(b)} className="text-green-600 text-xs dark:text-green-400">Simpan</button>
                       <button onClick={() => setEditingNumberId(null)} className="text-gray-400 text-xs">Batal</button>
                     </div>
                   ) : (
@@ -365,7 +365,7 @@ const BatchPlanning: React.FC = () => {
                     </div>
                   )}
                   {b.is_over_capacity_warning && (
-                    <div className="flex items-center gap-1 text-amber-600 text-xs mt-1">
+                    <div className="flex items-center gap-1 text-amber-600 text-xs mt-1 dark:text-amber-400">
                       <AlertTriangle className="w-3 h-3" /> Lewat required date SO
                     </div>
                   )}
@@ -425,7 +425,7 @@ const BatchPlanning: React.FC = () => {
                 <td className="px-3 py-2 align-top">
                   {b.spk_document_id ? (
                     <div className="flex items-center gap-1">
-                      <button onClick={() => setPreviewDocId(b.spk_document_id)} className="text-blue-600 hover:underline text-xs flex items-center gap-1">
+                      <button onClick={() => setPreviewDocId(b.spk_document_id)} className="text-blue-600 hover:underline text-xs flex items-center gap-1 dark:text-blue-400">
                         <Eye className="w-3 h-3" /> Lihat
                       </button>
                       {b.spk_is_outdated && (
@@ -433,7 +433,7 @@ const BatchPlanning: React.FC = () => {
                           onClick={() => handleReprint(b)}
                           disabled={busyId === b.id}
                           title="SPK usang — nomor batch berubah, cetak ulang"
-                          className="text-red-600 hover:underline text-xs flex items-center gap-1"
+                          className="text-red-600 hover:underline text-xs flex items-center gap-1 dark:text-red-400"
                         >
                           <Printer className="w-3 h-3" /> Cetak Ulang
                         </button>
@@ -443,7 +443,7 @@ const BatchPlanning: React.FC = () => {
                     <span className="text-gray-400 text-xs">—</span>
                   )}
                   {b.spk_is_outdated && (
-                    <div className="text-red-600 text-xs font-medium mt-0.5">SPK usang</div>
+                    <div className="text-red-600 text-xs font-medium mt-0.5 dark:text-red-400">SPK usang</div>
                   )}
                 </td>
                 <td className="px-3 py-2"></td>

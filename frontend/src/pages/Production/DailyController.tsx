@@ -239,7 +239,7 @@ const DailyController: React.FC<DailyControllerProps> = ({
       {!embedded && (
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            <ChartBarIcon className="h-7 w-7 text-blue-600" />
+            <ChartBarIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
             Controller Harian
           </h1>
           <p className="text-slate-500 dark:text-gray-400 mt-1">Monitoring produksi semua mesin per hari</p>
@@ -258,7 +258,7 @@ const DailyController: React.FC<DailyControllerProps> = ({
             </button>
 
             <div className="flex items-center gap-3">
-              <CalendarIcon className="h-5 w-5 text-blue-600" />
+              <CalendarIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               <input
                 type="date"
                 value={selectedDate}
@@ -677,11 +677,11 @@ const DailyController: React.FC<DailyControllerProps> = ({
 
                           {/* Time Distribution Pie Chart */}
                           <div className="mt-4">
-                            <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                            <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2 dark:text-slate-200">
                               <ChartBarIcon className="h-4 w-4" />
                               Distribusi Waktu
                             </h4>
-                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200">
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
                               <div className="flex items-center gap-4">
                                 {/* Donut Chart */}
                                 <div className="relative w-32 h-32">
@@ -708,7 +708,7 @@ const DailyController: React.FC<DailyControllerProps> = ({
                                   </svg>
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="text-center">
-                                      <p className="text-lg font-bold text-slate-700">
+                                      <p className="text-lg font-bold text-slate-700 dark:text-slate-200">
                                         {(machine.runtime || 0) + (machine.total_downtime || 0) + (machine.total_idle || 0)}
                                       </p>
                                       <p className="text-xs text-slate-400">menit</p>
@@ -720,23 +720,23 @@ const DailyController: React.FC<DailyControllerProps> = ({
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                       <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                                      <span className="text-sm text-slate-600">Runtime</span>
+                                      <span className="text-sm text-slate-600 dark:text-slate-300">Runtime</span>
                                     </div>
-                                    <span className="font-semibold text-emerald-600">{machine.runtime || 0}m</span>
+                                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">{machine.runtime || 0}m</span>
                                   </div>
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                       <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                                      <span className="text-sm text-slate-600">Downtime</span>
+                                      <span className="text-sm text-slate-600 dark:text-slate-300">Downtime</span>
                                     </div>
-                                    <span className="font-semibold text-red-600">{machine.total_downtime || 0}m</span>
+                                    <span className="font-semibold text-red-600 dark:text-red-400">{machine.total_downtime || 0}m</span>
                                   </div>
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                       <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                                      <span className="text-sm text-slate-600">Idle</span>
+                                      <span className="text-sm text-slate-600 dark:text-slate-300">Idle</span>
                                     </div>
-                                    <span className="font-semibold text-orange-600">{machine.total_idle || 0}m</span>
+                                    <span className="font-semibold text-orange-600 dark:text-orange-400">{machine.total_idle || 0}m</span>
                                   </div>
                                   {/* Idle breakdown details */}
                                   {machine.idle_breakdown && machine.idle_breakdown.length > 0 && (
@@ -744,7 +744,7 @@ const DailyController: React.FC<DailyControllerProps> = ({
                                       {machine.idle_breakdown.sort((a, b) => b.duration_minutes - a.duration_minutes).map((item, idx) => (
                                         <div key={idx} className="flex items-center justify-between text-xs">
                                           <span className="text-orange-500 truncate mr-2">• {item.reason}</span>
-                                          <span className="text-orange-600 font-medium whitespace-nowrap">{item.duration_minutes}m</span>
+                                          <span className="text-orange-600 font-medium whitespace-nowrap dark:text-orange-400">{item.duration_minutes}m</span>
                                         </div>
                                       ))}
                                     </div>
@@ -756,11 +756,11 @@ const DailyController: React.FC<DailyControllerProps> = ({
 
                           {/* Quality Breakdown */}
                           <div className="mt-4">
-                            <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                            <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2 dark:text-slate-200">
                               <CubeIcon className="h-4 w-4" />
                               Quality Breakdown
                             </h4>
-                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200">
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
                               {(() => {
                                 const totalOutput = machine.total_output || 0;
                                 const gradeA = machine.total_grade_a || 0;
@@ -774,8 +774,8 @@ const DailyController: React.FC<DailyControllerProps> = ({
                                   <div className="space-y-3">
                                     <div>
                                       <div className="flex justify-between text-sm mb-1">
-                                        <span className="text-slate-600">Grade A</span>
-                                        <span className="font-semibold text-green-600">{pctA}%</span>
+                                        <span className="text-slate-600 dark:text-slate-300">Grade A</span>
+                                        <span className="font-semibold text-green-600 dark:text-green-400">{pctA}%</span>
                                       </div>
                                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                                         <div className="bg-green-500 h-3 rounded-full transition-all" style={{ width: `${pctA}%` }}></div>
@@ -783,8 +783,8 @@ const DailyController: React.FC<DailyControllerProps> = ({
                                     </div>
                                     <div>
                                       <div className="flex justify-between text-sm mb-1">
-                                        <span className="text-slate-600">Grade B</span>
-                                        <span className="font-semibold text-yellow-600">{pctB}%</span>
+                                        <span className="text-slate-600 dark:text-slate-300">Grade B</span>
+                                        <span className="font-semibold text-yellow-600 dark:text-yellow-400">{pctB}%</span>
                                       </div>
                                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                                         <div className="bg-yellow-500 h-3 rounded-full transition-all" style={{ width: `${pctB}%` }}></div>
@@ -792,14 +792,14 @@ const DailyController: React.FC<DailyControllerProps> = ({
                                     </div>
                                     <div>
                                       <div className="flex justify-between text-sm mb-1">
-                                        <span className="text-slate-600">Grade C</span>
-                                        <span className="font-semibold text-red-600">{pctC}%</span>
+                                        <span className="text-slate-600 dark:text-slate-300">Grade C</span>
+                                        <span className="font-semibold text-red-600 dark:text-red-400">{pctC}%</span>
                                       </div>
                                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                                         <div className="bg-red-500 h-3 rounded-full transition-all" style={{ width: `${pctC}%` }}></div>
                                       </div>
                                     </div>
-                                    <div className="pt-2 border-t text-xs text-slate-500 text-center">
+                                    <div className="pt-2 border-t text-xs text-slate-500 text-center dark:text-slate-400">
                                       Total: {totalOutput.toLocaleString()} pcs
                                     </div>
                                   </div>
@@ -813,61 +813,61 @@ const DailyController: React.FC<DailyControllerProps> = ({
                         <div className="space-y-4">
                           {/* Per-Shift Efficiency Calculation */}
                           <div>
-                            <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                            <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2 dark:text-slate-200">
                               <ChartBarIcon className="h-4 w-4" />
                               Efisiensi per Shift
                             </h4>
                             <div className="space-y-3">
                               {(machine.shift_summaries || []).map((ss) => {
                                 return (
-                                  <div key={ss.shift} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200">
+                                  <div key={ss.shift} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
                                     <div className="flex items-center justify-between mb-3">
-                                      <span className="font-bold text-slate-700 text-base">Shift {ss.shift} <span className="text-xs font-normal text-slate-400">({ss.shift === 1 ? '06:30-15:00' : ss.shift === 2 ? '15:00-23:00' : '23:00-06:30'})</span></span>
+                                      <span className="font-bold text-slate-700 text-base dark:text-slate-200">Shift {ss.shift} <span className="text-xs font-normal text-slate-400">({ss.shift === 1 ? '06:30-15:00' : ss.shift === 2 ? '15:00-23:00' : '23:00-06:30'})</span></span>
                                       <div className="flex items-center gap-3">
-                                        <span className={`px-2 py-1 rounded text-sm font-bold ${ss.efficiency >= 60 ? 'bg-green-100 text-green-700' : ss.efficiency >= 42 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                                        <span className={`px-2 py-1 rounded text-sm font-bold ${ss.efficiency >= 60 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : ss.efficiency >= 42 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}`}>
                                           Efisiensi: {ss.efficiency}%
                                         </span>
                                       </div>
                                     </div>
                                     {ss.products && ss.products.length > 0 && (
-                                      <p className="text-xs text-indigo-600 mb-2">📦 {ss.products.join(', ')}</p>
+                                      <p className="text-xs text-indigo-600 mb-2 dark:text-indigo-400">📦 {ss.products.join(', ')}</p>
                                     )}
                                     <div className="space-y-1.5 text-sm">
                                       <div className="flex justify-between">
-                                        <span className="text-slate-500">Speed Mesin:</span>
+                                        <span className="text-slate-500 dark:text-slate-400">Speed Mesin:</span>
                                         <span className="font-medium">{ss.machine_speed?.toLocaleString() || 0} pcs/menit</span>
                                       </div>
                                       <div className="flex justify-between">
-                                        <span className="text-slate-500">Grade A:</span>
-                                        <span className="font-medium text-green-600">{ss.grade_a?.toLocaleString() || 0} pcs</span>
+                                        <span className="text-slate-500 dark:text-slate-400">Grade A:</span>
+                                        <span className="font-medium text-green-600 dark:text-green-400">{ss.grade_a?.toLocaleString() || 0} pcs</span>
                                       </div>
                                       <div className="flex justify-between border-t pt-1.5">
-                                        <span className="text-slate-500">Available Time:</span>
-                                        <span className="font-bold text-slate-700">{ss.average_time} menit</span>
+                                        <span className="text-slate-500 dark:text-slate-400">Available Time:</span>
+                                        <span className="font-bold text-slate-700 dark:text-slate-200">{ss.average_time} menit</span>
                                       </div>
                                       <div className="flex justify-between">
-                                        <span className="text-slate-500">Runtime (A ÷ Speed):</span>
-                                        <span className="font-bold text-blue-600">{ss.runtime} menit</span>
+                                        <span className="text-slate-500 dark:text-slate-400">Runtime (A ÷ Speed):</span>
+                                        <span className="font-bold text-blue-600 dark:text-blue-400">{ss.runtime} menit</span>
                                       </div>
                                       <div className="flex justify-between">
-                                        <span className="text-slate-500">Downtime:</span>
-                                        <span className="font-medium text-red-600">{ss.downtime} menit</span>
+                                        <span className="text-slate-500 dark:text-slate-400">Downtime:</span>
+                                        <span className="font-medium text-red-600 dark:text-red-400">{ss.downtime} menit</span>
                                       </div>
                                       <div className="flex justify-between">
-                                        <span className="text-slate-500">Idle:</span>
-                                        <span className="font-medium text-orange-600">{ss.idle} menit</span>
+                                        <span className="text-slate-500 dark:text-slate-400">Idle:</span>
+                                        <span className="font-medium text-orange-600 dark:text-orange-400">{ss.idle} menit</span>
                                       </div>
                                       <div className="flex justify-between border-t pt-1.5">
-                                        <span className="text-slate-500">Waktu Tercatat:</span>
-                                        <span className="font-bold text-green-600">{ss.waktu_tercatat} menit</span>
+                                        <span className="text-slate-500 dark:text-slate-400">Waktu Tercatat:</span>
+                                        <span className="font-bold text-green-600 dark:text-green-400">{ss.waktu_tercatat} menit</span>
                                       </div>
                                       <div className="flex justify-between">
-                                        <span className="text-slate-500">Waktu Tidak Tercatat:</span>
-                                        <span className="font-bold text-red-600">{ss.waktu_tidak_tercatat} menit</span>
+                                        <span className="text-slate-500 dark:text-slate-400">Waktu Tidak Tercatat:</span>
+                                        <span className="font-bold text-red-600 dark:text-red-400">{ss.waktu_tidak_tercatat} menit</span>
                                       </div>
-                                      <div className={`flex justify-between p-2 rounded mt-1 ${ss.efficiency >= 60 ? 'bg-green-50' : ss.efficiency >= 42 ? 'bg-yellow-50' : 'bg-red-50'}`}>
-                                        <span className="font-semibold text-slate-700">Efisiensi Mesin:</span>
-                                        <span className={`text-lg font-bold ${ss.efficiency >= 60 ? 'text-green-600' : ss.efficiency >= 42 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                      <div className={`flex justify-between p-2 rounded mt-1 ${ss.efficiency >= 60 ? 'bg-green-50 dark:bg-green-900/20' : ss.efficiency >= 42 ? 'bg-yellow-50 dark:bg-yellow-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
+                                        <span className="font-semibold text-slate-700 dark:text-slate-200">Efisiensi Mesin:</span>
+                                        <span className={`text-lg font-bold ${ss.efficiency >= 60 ? 'text-green-600 dark:text-green-400' : ss.efficiency >= 42 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
                                           {ss.efficiency}% <span className="text-xs font-normal">({ss.runtime}/{ss.average_time})</span>
                                         </span>
                                       </div>
@@ -880,15 +880,15 @@ const DailyController: React.FC<DailyControllerProps> = ({
 
                           {/* Daily Summary */}
                           <div>
-                            <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                            <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2 dark:text-slate-200">
                               <CubeIcon className="h-4 w-4" />
                               Ringkasan Output
                             </h4>
-                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200">
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
                               <div className="grid grid-cols-4 gap-3">
                                 <div className="text-center">
                                   <p className="text-xs text-slate-400">Grade A</p>
-                                  <p className="text-xl font-bold text-green-600">{machine.total_grade_a?.toLocaleString() || 0}</p>
+                                  <p className="text-xl font-bold text-green-600 dark:text-green-400">{machine.total_grade_a?.toLocaleString() || 0}</p>
                                   {machine.shifts?.[0]?.pack_per_carton && machine.shifts[0].pack_per_carton > 0 && (
                                     <p className="text-xs text-green-500">
                                       {Math.floor((machine.total_grade_a || 0) / machine.shifts[0].pack_per_carton)} ctn
@@ -897,15 +897,15 @@ const DailyController: React.FC<DailyControllerProps> = ({
                                 </div>
                                 <div className="text-center">
                                   <p className="text-xs text-slate-400">Grade B</p>
-                                  <p className="text-xl font-bold text-yellow-600">{machine.total_grade_b?.toLocaleString() || 0}</p>
+                                  <p className="text-xl font-bold text-yellow-600 dark:text-yellow-400">{machine.total_grade_b?.toLocaleString() || 0}</p>
                                 </div>
                                 <div className="text-center">
                                   <p className="text-xs text-slate-400">Grade C</p>
-                                  <p className="text-xl font-bold text-red-600">{machine.total_grade_c?.toLocaleString() || 0}</p>
+                                  <p className="text-xl font-bold text-red-600 dark:text-red-400">{machine.total_grade_c?.toLocaleString() || 0}</p>
                                 </div>
                                 <div className="text-center">
                                   <p className="text-xs text-slate-400">Total</p>
-                                  <p className="text-xl font-bold text-blue-600">{machine.total_output?.toLocaleString() || 0}</p>
+                                  <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{machine.total_output?.toLocaleString() || 0}</p>
                                 </div>
                               </div>
                             </div>
@@ -913,11 +913,11 @@ const DailyController: React.FC<DailyControllerProps> = ({
 
                           {/* Top 3 Downtime */}
                           <div>
-                            <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                            <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2 dark:text-slate-200">
                               <ExclamationTriangleIcon className="h-4 w-4" />
                               Top 3 Downtime
                             </h4>
-                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200">
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
                               {machine.top_3_downtime && machine.top_3_downtime.length > 0 ? (
                                 <div className="space-y-2">
                                   {machine.top_3_downtime.map((dt, idx) => (
@@ -927,9 +927,9 @@ const DailyController: React.FC<DailyControllerProps> = ({
                                           }`}>
                                           {idx + 1}
                                         </span>
-                                        <span className="text-sm text-slate-700">{dt.reason}</span>
+                                        <span className="text-sm text-slate-700 dark:text-slate-200">{dt.reason}</span>
                                       </div>
-                                      <span className="text-sm font-medium text-red-600">
+                                      <span className="text-sm font-medium text-red-600 dark:text-red-400">
                                         {dt.duration_minutes} menit {dt.frequency && dt.frequency > 1 ? `(${dt.frequency}x)` : ''}
                                       </span>
                                     </div>

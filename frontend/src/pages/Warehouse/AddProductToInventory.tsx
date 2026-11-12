@@ -147,12 +147,12 @@ export default function AddProductToInventory() {
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link to="/app/warehouse/inventory" className="text-gray-600 hover:text-gray-900 dark:text-white">
+        <Link to="/app/warehouse/inventory" className="text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white">
           <ArrowLeftIcon className="h-6 w-6" />
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tambah Produk ke Inventori</h1>
-          <p className="text-gray-600">Input stok produk jadi ke gudang</p>
+          <p className="text-gray-600 dark:text-gray-300">Input stok produk jadi ke gudang</p>
         </div>
       </div>
 
@@ -160,7 +160,7 @@ export default function AddProductToInventory() {
         {/* Product Selection */}
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <CubeIcon className="h-5 w-5 text-blue-600" />
+            <CubeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             Pilih Produk
           </h2>
 
@@ -188,7 +188,7 @@ export default function AddProductToInventory() {
                   >
                     <div>
                       <span className="font-medium">{product.code}</span>
-                      <span className="text-gray-600 ml-2">{product.name}</span>
+                      <span className="text-gray-600 ml-2 dark:text-gray-300">{product.name}</span>
                     </div>
                     <span className="text-xs text-gray-500 dark:text-gray-400">{product.primary_uom}</span>
                   </button>
@@ -198,9 +198,9 @@ export default function AddProductToInventory() {
           </div>
 
           {formData.product_id && (
-            <div className="mt-3 p-3 bg-blue-50 rounded-lg flex items-center gap-2">
-              <CheckCircleIcon className="h-5 w-5 text-blue-600" />
-              <span className="text-blue-800">Produk dipilih: {formData.product_name}</span>
+            <div className="mt-3 p-3 bg-blue-50 rounded-lg flex items-center gap-2 dark:bg-blue-900/20">
+              <CheckCircleIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <span className="text-blue-800 dark:text-blue-300">Produk dipilih: {formData.product_name}</span>
             </div>
           )}
         </div>
@@ -208,7 +208,7 @@ export default function AddProductToInventory() {
         {/* Location & Quantity */}
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <MapPinIcon className="h-5 w-5 text-green-600" />
+            <MapPinIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
             Lokasi & Kuantitas
           </h2>
 

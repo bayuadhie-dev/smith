@@ -133,8 +133,8 @@ const MRP: React.FC = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
                 }`}
               >
                 <tab.icon className="h-5 w-5" />
@@ -191,10 +191,10 @@ const MRP: React.FC = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {req.net_requirement > 0 ? (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
                               </span>
                             ) : (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                               </span>
                             )}
                           </td>
@@ -228,32 +228,32 @@ const MRP: React.FC = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-lg border border-purple-200">
+                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-lg border border-purple-200 dark:border-purple-800">
                   <div className="flex items-center mb-3">
-                    <ChartBarIcon className="h-8 w-8 text-purple-600" />
-                    <h4 className="text-lg font-semibold text-purple-900 ml-2">Scenario Planning</h4>
+                    <ChartBarIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                    <h4 className="text-lg font-semibold text-purple-900 ml-2 dark:text-purple-200">Scenario Planning</h4>
                   </div>
-                  <p className="text-purple-700 text-sm">
+                  <p className="text-purple-700 text-sm dark:text-purple-300">
                     Create multiple scenarios with different demand levels, forecast confidence, and planning parameters
                   </p>
                 </div>
                 
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-lg border border-blue-200">
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-lg border border-blue-200 dark:border-blue-800">
                   <div className="flex items-center mb-3">
-                    <ExclamationTriangleIcon className="h-8 w-8 text-blue-600" />
-                    <h4 className="text-lg font-semibold text-blue-900 ml-2">Risk Analysis</h4>
+                    <ExclamationTriangleIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                    <h4 className="text-lg font-semibold text-blue-900 ml-2 dark:text-blue-200">Risk Analysis</h4>
                   </div>
-                  <p className="text-blue-700 text-sm">
+                  <p className="text-blue-700 text-sm dark:text-blue-300">
                     Compare best-case, worst-case, and most-likely scenarios to understand planning risks
                   </p>
                 </div>
                 
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-lg border border-green-200">
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-lg border border-green-200 dark:border-green-800">
                   <div className="flex items-center mb-3">
-                    <CheckCircleIcon className="h-8 w-8 text-green-600" />
-                    <h4 className="text-lg font-semibold text-green-900 ml-2">Optimization</h4>
+                    <CheckCircleIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
+                    <h4 className="text-lg font-semibold text-green-900 ml-2 dark:text-green-200">Optimization</h4>
                   </div>
-                  <p className="text-green-700 text-sm">
+                  <p className="text-green-700 text-sm dark:text-green-300">
                     Identify the optimal planning approach based on material availability and demand patterns
                   </p>
                 </div>
@@ -298,7 +298,7 @@ const MRP: React.FC = () => {
                             {forecast.most_likely?.toFixed(2)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${forecast.confidence_level === 'high' ? 'bg-green-100 text-green-800' : forecast.confidence_level === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${forecast.confidence_level === 'high' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : forecast.confidence_level === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'}`}>
                               {forecast.confidence_level}
                             </span>
                           </td>

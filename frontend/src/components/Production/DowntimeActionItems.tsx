@@ -537,14 +537,14 @@ const DowntimeActionItems: React.FC<DowntimeActionItemsProps> = ({
                           <>
                             <button
                               onClick={() => handleSave(item.product_name, item.reason, item.total_duration)}
-                              className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded transition-colors"
+                              className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded transition-colors dark:text-green-400"
                               title="Simpan"
                             >
                               <CheckCircleIcon className="h-5 w-5" />
                             </button>
                             <button
                               onClick={handleCancel}
-                              className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
+                              className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors dark:text-red-400"
                               title="Batal"
                             >
                               <XMarkIcon className="h-5 w-5" />
@@ -553,7 +553,7 @@ const DowntimeActionItems: React.FC<DowntimeActionItemsProps> = ({
                         ) : (
                           <button
                             onClick={() => handleEdit(item.product_name, item.reason)}
-                            className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors"
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors dark:text-blue-400"
                             title="Edit"
                           >
                             <PencilIcon className="h-5 w-5" />

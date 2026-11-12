@@ -139,14 +139,14 @@ const EmailSettings: React.FC = () => {
               Email Service Status
             </h2>
             
-            <div className={`p-4 rounded-lg ${status?.configured ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+            <div className={`p-4 rounded-lg ${status?.configured ? 'bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800' : 'bg-yellow-50 border border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'}`}>
               <div className="flex items-center">
                 {status?.configured ? (
                   <>
                     <CheckCircleIcon className="h-8 w-8 text-green-500 mr-3" />
                     <div>
-                      <p className="font-medium text-green-800">Email Service Configured</p>
-                      <p className="text-sm text-green-600">
+                      <p className="font-medium text-green-800 dark:text-green-300">Email Service Configured</p>
+                      <p className="text-sm text-green-600 dark:text-green-400">
                         Sending from: <span className="font-mono">{status.from_email}</span>
                       </p>
                     </div>
@@ -155,8 +155,8 @@ const EmailSettings: React.FC = () => {
                   <>
                     <XCircleIcon className="h-8 w-8 text-yellow-500 mr-3" />
                     <div>
-                      <p className="font-medium text-yellow-800">Email Service Not Configured</p>
-                      <p className="text-sm text-yellow-600">
+                      <p className="font-medium text-yellow-800 dark:text-yellow-300">Email Service Not Configured</p>
+                      <p className="text-sm text-yellow-600 dark:text-yellow-400">
                         Set up your email provider in the backend .env file
                       </p>
                     </div>
@@ -204,7 +204,7 @@ const EmailSettings: React.FC = () => {
               <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <h3 className="font-medium text-gray-900 dark:text-white mb-2">Option 1: Resend (Recommended)</h3>
                 <ol className="list-decimal list-inside text-sm text-gray-600 dark:text-gray-300 space-y-1">
-                  <li>Sign up at <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">resend.com</a></li>
+                  <li>Sign up at <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline dark:text-blue-400">resend.com</a></li>
                   <li>Create an API key in the dashboard</li>
                   <li>Add to your <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">backend/.env</code> file:</li>
                 </ol>
@@ -222,7 +222,7 @@ APP_URL=http://localhost:3000`}
                 <h3 className="font-medium text-gray-900 dark:text-white mb-2">Option 2: Gmail SMTP</h3>
                 <ol className="list-decimal list-inside text-sm text-gray-600 dark:text-gray-300 space-y-1">
                   <li>Enable 2-Factor Authentication on your Google account</li>
-                  <li>Generate an App Password at <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google App Passwords</a></li>
+                  <li>Generate an App Password at <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline dark:text-blue-400">Google App Passwords</a></li>
                   <li>Add to your <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">backend/.env</code> file:</li>
                 </ol>
                 <pre className="mt-2 bg-gray-900 text-green-400 p-3 rounded text-xs overflow-x-auto">
@@ -271,12 +271,12 @@ APP_URL=http://localhost:3000`}
           </div>
 
           {/* Important Notes */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
             <div className="flex items-center mb-2">
-              <InformationCircleIcon className="h-5 w-5 text-blue-600 mr-2" />
-              <h3 className="text-sm font-medium text-blue-900">Important Notes</h3>
+              <InformationCircleIcon className="h-5 w-5 text-blue-600 mr-2 dark:text-blue-400" />
+              <h3 className="text-sm font-medium text-blue-900 dark:text-blue-200">Important Notes</h3>
             </div>
-            <ul className="text-sm text-blue-800 space-y-2">
+            <ul className="text-sm text-blue-800 space-y-2 dark:text-blue-300">
               <li>• Email settings are configured in the backend .env file</li>
               <li>• Restart the backend after changing .env</li>
               <li>• For production, use a verified domain with Resend</li>
@@ -285,12 +285,12 @@ APP_URL=http://localhost:3000`}
           </div>
 
           {/* Warning */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6 dark:bg-yellow-900/20 dark:border-yellow-800">
             <div className="flex items-center mb-2">
-              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2" />
-              <h3 className="text-sm font-medium text-yellow-900">Security</h3>
+              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2 dark:text-yellow-400" />
+              <h3 className="text-sm font-medium text-yellow-900 dark:text-yellow-200">Security</h3>
             </div>
-            <p className="text-sm text-yellow-800">
+            <p className="text-sm text-yellow-800 dark:text-yellow-300">
               Never commit API keys or passwords to version control. Always use environment variables.
             </p>
           </div>

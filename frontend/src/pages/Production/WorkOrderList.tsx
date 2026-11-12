@@ -169,21 +169,21 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'planned': return 'bg-blue-100 text-blue-800'
-      case 'released': return 'bg-yellow-100 text-yellow-800'  
-      case 'in_progress': return 'bg-green-100 text-green-800'
-      case 'completed': return 'bg-green-100 text-green-800'
-      case 'cancelled': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'planned': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+      case 'released': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'  
+      case 'in_progress': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+      case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
     }
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800'
-      case 'medium': return 'bg-yellow-100 text-yellow-800'
-      case 'low': return 'bg-green-100 text-green-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+      case 'medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+      case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
     }
   }
 
@@ -229,7 +229,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
             <button
               onClick={() => { setViewMode('list'); localStorage.setItem('wo_view_mode', 'list') }}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-800 dark:text-blue-400' : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
               }`}
             >
               <ListBulletIcon className="h-4 w-4" />
@@ -238,7 +238,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
             <button
               onClick={() => { setViewMode('kanban'); localStorage.setItem('wo_view_mode', 'kanban') }}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                viewMode === 'kanban' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                viewMode === 'kanban' ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-800 dark:text-blue-400' : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
               }`}
             >
               <ViewColumnsIcon className="h-4 w-4" />
@@ -255,7 +255,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
           </button>
           <button
             onClick={() => setShowActivityLog(true)}
-            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 flex items-center gap-2"
+            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 flex items-center gap-2 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-600"
           >
             <DocumentTextIcon className="h-5 w-5" />
             Log Aktivitas
@@ -459,7 +459,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                     <td className="px-3 py-2.5 whitespace-nowrap">
                       <Link
                         to={`/app/production/work-orders/${wo.id}`}
-                        className="text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline"
+                        className="text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400"
                       >
                         {wo.wo_number}
                       </Link>
@@ -490,7 +490,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                         {isInProgress && (
                           <button
                             onClick={() => handleStatusChange(wo.id, 'completed')}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold bg-gray-100 text-gray-600 rounded hover:bg-green-100 hover:text-green-700 transition-colors"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold bg-gray-100 text-gray-600 rounded hover:bg-green-100 hover:text-green-700 transition-colors dark:bg-gray-700 dark:text-gray-300"
                           >
                             <CheckCircleIcon className="h-3 w-3" />Selesai
                           </button>
@@ -534,7 +534,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                               ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                               : wo.priority === 'medium'
                               ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                              : 'bg-gray-100 text-gray-500'
+                              : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                           }`}>
                             {wo.priority === 'urgent' ? '🔥' : wo.priority === 'high' ? '↑' : ''}{wo.priority}
                           </span>
@@ -570,7 +570,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                           />
                         </div>
                         <span className={`text-xs w-12 text-right font-medium ${
-                          progressNum >= 100 ? 'text-green-600' : progressNum >= 60 ? 'text-yellow-600' : 'text-red-500'
+                          progressNum >= 100 ? 'text-green-600 dark:text-green-400' : progressNum >= 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-500'
                         }`}>{progress}%</span>
                       </div>
                       <div className="text-xs text-gray-400 mt-0.5">

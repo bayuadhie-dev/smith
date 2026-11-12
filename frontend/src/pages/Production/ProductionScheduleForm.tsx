@@ -245,7 +245,7 @@ const ProductionScheduleForm: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
               <ExclamationCircleIcon className="h-5 w-5" />
               <span>{error}</span>
             </div>
@@ -308,19 +308,19 @@ const ProductionScheduleForm: React.FC = () => {
 
           {/* Schedule Summary */}
           {selectedWorkOrder && selectedMachine && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">Schedule Summary</h4>
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
+              <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">Schedule Summary</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <span className="text-blue-600">SPK:</span>
+                  <span className="text-blue-600 dark:text-blue-400">SPK:</span>
                   <div className="font-medium">{selectedWorkOrder.wo_number}</div>
                 </div>
                 <div>
-                  <span className="text-blue-600">Machine:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Machine:</span>
                   <div className="font-medium">{selectedMachine.name}</div>
                 </div>
                 <div>
-                  <span className="text-blue-600">Quantity:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Quantity:</span>
                   <div className="font-medium">{selectedWorkOrder.quantity} pcs</div>
                 </div>
               </div>

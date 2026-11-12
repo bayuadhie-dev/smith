@@ -297,10 +297,10 @@ const navigate = useNavigate()
   }
 
   const priorities = [
-    { value: 'low', label: 'Low', color: 'text-green-600', bg: 'bg-green-50' },
-    { value: 'medium', label: 'Medium', color: 'text-yellow-600', bg: 'bg-yellow-50' },
-    { value: 'high', label: 'High', color: 'text-orange-600', bg: 'bg-orange-50' },
-    { value: 'urgent', label: 'Urgent', color: 'text-red-600', bg: 'bg-red-50' }
+    { value: 'low', label: 'Low', color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20' },
+    { value: 'medium', label: 'Medium', color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
+    { value: 'high', label: 'High', color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/20' },
+    { value: 'urgent', label: 'Urgent', color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/20' }
   ]
 
   useEffect(() => {
@@ -522,7 +522,7 @@ const navigate = useNavigate()
                 )}
               />
               {errors.product_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.product_id.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.product_id.message}</p>
               )}
             </div>
 
@@ -546,26 +546,26 @@ const navigate = useNavigate()
 
             {/* Product Info Display */}
             {selectedProduct && (
-              <div className="lg:col-span-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="lg:col-span-2 p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
                 <div className="flex items-center gap-2 mb-3">
-                  <InformationCircleIcon className="h-5 w-5 text-blue-600" />
-                  <h4 className="font-medium text-blue-900">Product Information</h4>
+                  <InformationCircleIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <h4 className="font-medium text-blue-900 dark:text-blue-200">Product Information</h4>
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <span className="text-blue-600">Code:</span>
+                    <span className="text-blue-600 dark:text-blue-400">Code:</span>
                     <p className="font-medium">{selectedProduct.product_code}</p>
                   </div>
                   <div>
-                    <span className="text-blue-600">BOM Number:</span>
+                    <span className="text-blue-600 dark:text-blue-400">BOM Number:</span>
                     <p className="font-medium">{selectedProduct.bom_number}</p>
                   </div>
                   <div>
-                    <span className="text-blue-600">Batch Size:</span>
+                    <span className="text-blue-600 dark:text-blue-400">Batch Size:</span>
                     <p className="font-medium">{selectedProduct.batch_size} {selectedProduct.batch_uom}</p>
                   </div>
                   <div>
-                    <span className="text-blue-600">BOM Cost:</span>
+                    <span className="text-blue-600 dark:text-blue-400">BOM Cost:</span>
                     <p className="font-medium">
                       {selectedProduct.total_cost ? `Rp ${selectedProduct.total_cost.toLocaleString()}` : 'N/A'}
                     </p>
@@ -582,18 +582,18 @@ const navigate = useNavigate()
                     <p className="text-sm text-gray-600 dark:text-gray-300">Loading BOM information...</p>
                   </div>
                 ) : bom ? (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg dark:bg-green-900/20 dark:border-green-800">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <ClipboardDocumentListIcon className="h-5 w-5 text-green-600" />
-                        <h4 className="font-medium text-green-900">
+                        <ClipboardDocumentListIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        <h4 className="font-medium text-green-900 dark:text-green-200">
                           BOM Available: {bom.bom_number} (v{bom.version})
                         </h4>
                       </div>
                       <button
                         type="button"
                         onClick={() => setShowBOMDetails(!showBOMDetails)}
-                        className="flex items-center gap-1 text-sm text-green-700 hover:text-green-900"
+                        className="flex items-center gap-1 text-sm text-green-700 hover:text-green-900 dark:text-green-300"
                       >
                         {showBOMDetails ? (
                           <>
@@ -611,19 +611,19 @@ const navigate = useNavigate()
                     
                     <div className="grid grid-cols-4 gap-4 text-sm mb-3">
                       <div>
-                        <span className="text-green-600">Batch Size:</span>
+                        <span className="text-green-600 dark:text-green-400">Batch Size:</span>
                         <p className="font-medium">{bom.batch_size} {bom.batch_uom}</p>
                       </div>
                       <div>
-                        <span className="text-green-600">Pack/Karton (BOM):</span>
+                        <span className="text-green-600 dark:text-green-400">Pack/Karton (BOM):</span>
                         <p className="font-medium">{bom.pack_per_carton || 1} PCS</p>
                       </div>
                       <div>
-                        <span className="text-green-600">Total Materials:</span>
+                        <span className="text-green-600 dark:text-green-400">Total Materials:</span>
                         <p className="font-medium">{bom.items?.length || 0} items</p>
                       </div>
                       <div>
-                        <span className="text-green-600">BOM Cost/Karton:</span>
+                        <span className="text-green-600 dark:text-green-400">BOM Cost/Karton:</span>
                         <p className="font-medium">{formatRupiah(bom.total_cost)}</p>
                       </div>
                     </div>
@@ -631,7 +631,7 @@ const navigate = useNavigate()
                     {/* Material Requirements */}
                     {showBOMDetails && bom.items && bom.items.length > 0 && (
                       <div className="mt-4 border-t border-green-300 pt-3">
-                        <h5 className="text-sm font-medium text-green-900 mb-2">
+                        <h5 className="text-sm font-medium text-green-900 mb-2 dark:text-green-200">
                           Material Requirements {selectedQuantity > 0 && `(for ${selectedQuantity} ${selectedProduct.batch_uom})`}
                         </h5>
                         <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
@@ -658,7 +658,7 @@ const navigate = useNavigate()
                                     {formatNumber(item.quantity)} {item.uom}
                                   </td>
                                   {selectedQuantity > 0 && (
-                                    <td className="px-3 py-2 text-sm text-right font-medium text-green-700">
+                                    <td className="px-3 py-2 text-sm text-right font-medium text-green-700 dark:text-green-300">
                                       {formatNumber(calculateMaterialRequirement(item.quantity))} {item.uom}
                                     </td>
                                   )}
@@ -674,16 +674,16 @@ const navigate = useNavigate()
                           </table>
                         </div>
                         {selectedQuantity > 0 && totalCartonsNeeded > 0 && (
-                          <div className="mt-3 p-3 bg-green-100 rounded-lg">
+                          <div className="mt-3 p-3 bg-green-100 rounded-lg dark:bg-green-900/30">
                             <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium text-green-900">
+                              <span className="text-sm font-medium text-green-900 dark:text-green-200">
                                 Estimated Material Cost:
                               </span>
-                              <span className="text-lg font-bold text-green-900">
+                              <span className="text-lg font-bold text-green-900 dark:text-green-200">
                                 {formatRupiah((bom.total_cost / bom.batch_size) * totalCartonsNeeded)}
                               </span>
                             </div>
-                            <p className="text-xs text-green-700 mt-1">
+                            <p className="text-xs text-green-700 mt-1 dark:text-green-300">
                               {selectedQuantity.toLocaleString()} PCS ÷ {packPerKarton} pack/karton = {totalCartonsNeeded.toLocaleString('id-ID', { maximumFractionDigits: 2 })} karton
                             </p>
                           </div>
@@ -691,19 +691,19 @@ const navigate = useNavigate()
                         
                         {/* Batch Size Flexibility Warning */}
                         {selectedQuantity > 0 && bom && totalCartonsNeeded % bom.batch_size !== 0 && (
-                          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg dark:bg-amber-900/20 dark:border-amber-800">
                             <div className="flex items-start gap-2">
-                              <InformationCircleIcon className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                              <InformationCircleIcon className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5 dark:text-amber-400" />
                               <div>
-                                <p className="text-sm font-medium text-amber-800">
+                                <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
                                   Kuantitas Tidak Kelipatan Batch Size
                                 </p>
-                                <p className="text-xs text-amber-700 mt-1">
+                                <p className="text-xs text-amber-700 mt-1 dark:text-amber-300">
                                   BOM batch size: {bom.batch_size} {bom.batch_uom}. 
                                   Kuantitas {totalCartonsNeeded.toLocaleString('id-ID', { maximumFractionDigits: 2 })} karton 
                                   bukan kelipatan dari batch size.
                                 </p>
-                                <p className="text-xs text-amber-600 mt-1">
+                                <p className="text-xs text-amber-600 mt-1 dark:text-amber-400">
                                   <strong>Saran:</strong> Gunakan kelipatan {bom.batch_size} untuk efisiensi produksi 
                                   (contoh: {Math.ceil(totalCartonsNeeded / bom.batch_size) * bom.batch_size * packPerKarton} PCS = {Math.ceil(totalCartonsNeeded / bom.batch_size) * bom.batch_size} karton)
                                 </p>
@@ -729,19 +729,19 @@ const navigate = useNavigate()
                               </div>
                             ) : shortageAnalysis ? (
                               shortageAnalysis.total_shortage_items > 0 ? (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-3 dark:bg-red-900/20 dark:border-red-800">
                                   <div className="flex items-center gap-2 mb-2">
-                                    <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
-                                    <span className="font-medium text-red-800">
+                                    <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
+                                    <span className="font-medium text-red-800 dark:text-red-300">
                                       {shortageAnalysis.total_shortage_items} Material Shortage Detected!
                                     </span>
                                   </div>
                                   <div className="space-y-2 max-h-40 overflow-y-auto">
                                     {shortageAnalysis.shortage_items.map((item, idx) => (
-                                      <div key={idx} className={`p-2 rounded text-sm ${item.is_critical ? 'bg-red-100' : 'bg-orange-50'}`}>
+                                      <div key={idx} className={`p-2 rounded text-sm ${item.is_critical ? 'bg-red-100 dark:bg-red-900/30' : 'bg-orange-50 dark:bg-orange-900/20'}`}>
                                         <div className="flex justify-between items-start">
                                           <div>
-                                            <span className={`font-medium ${item.is_critical ? 'text-red-800' : 'text-orange-800'}`}>
+                                            <span className={`font-medium ${item.is_critical ? 'text-red-800 dark:text-red-300' : 'text-orange-800 dark:text-orange-300'}`}>
                                               {item.item_name}
                                             </span>
                                             {item.is_critical && (
@@ -753,7 +753,7 @@ const navigate = useNavigate()
                                             <p className="text-xs text-gray-600 dark:text-gray-300">
                                               Need: {formatNumber(item.required_quantity, 2)} | Have: {formatNumber(item.available_quantity, 2)}
                                             </p>
-                                            <p className={`font-bold ${item.is_critical ? 'text-red-700' : 'text-orange-700'}`}>
+                                            <p className={`font-bold ${item.is_critical ? 'text-red-700 dark:text-red-300' : 'text-orange-700 dark:text-orange-300'}`}>
                                               Shortage: {formatNumber(item.shortage_quantity, 2)}
                                             </p>
                                           </div>
@@ -766,23 +766,23 @@ const navigate = useNavigate()
                                       </div>
                                     ))}
                                   </div>
-                                  <div className="mt-2 pt-2 border-t border-red-200 flex justify-between items-center">
-                                    <span className="text-sm text-red-700">Est. Shortage Cost:</span>
-                                    <span className="font-bold text-red-800">{formatRupiah(shortageAnalysis.total_shortage_cost)}</span>
+                                  <div className="mt-2 pt-2 border-t border-red-200 flex justify-between items-center dark:border-red-800">
+                                    <span className="text-sm text-red-700 dark:text-red-300">Est. Shortage Cost:</span>
+                                    <span className="font-bold text-red-800 dark:text-red-300">{formatRupiah(shortageAnalysis.total_shortage_cost)}</span>
                                   </div>
-                                  <p className="text-xs text-red-600 mt-2">
+                                  <p className="text-xs text-red-600 mt-2 dark:text-red-400">
                                     ⚠️ Please ensure materials are available before starting production or create Purchase Requisition.
                                   </p>
                                 </div>
                               ) : (
-                                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+                                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 dark:bg-emerald-900/20 dark:border-emerald-800">
                                   <div className="flex items-center gap-2">
-                                    <CheckCircleIcon className="h-5 w-5 text-emerald-600" />
-                                    <span className="font-medium text-emerald-800">
+                                    <CheckCircleIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                                    <span className="font-medium text-emerald-800 dark:text-emerald-300">
                                       All materials available! ✓
                                     </span>
                                   </div>
-                                  <p className="text-xs text-emerald-600 mt-1">
+                                  <p className="text-xs text-emerald-600 mt-1 dark:text-emerald-400">
                                     Stock is sufficient for {totalCartonsNeeded.toLocaleString('id-ID', { maximumFractionDigits: 2 })} karton production.
                                   </p>
                                 </div>
@@ -794,10 +794,10 @@ const navigate = useNavigate()
                     )}
                   </div>
                 ) : (
-                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:border-yellow-800">
                     <div className="flex items-center gap-2">
-                      <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600" />
-                      <p className="text-sm text-yellow-800">
+                      <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                      <p className="text-sm text-yellow-800 dark:text-yellow-300">
                         <strong>No BOM found</strong> - This product doesn't have an active BOM. 
                         Material requirements cannot be calculated automatically.
                       </p>
@@ -816,7 +816,7 @@ const navigate = useNavigate()
                 <button
                   type="button"
                   onClick={() => setShowCalculator(!showCalculator)}
-                  className="text-sm text-green-600 hover:text-green-800 flex items-center gap-1"
+                  className="text-sm text-green-600 hover:text-green-800 flex items-center gap-1 dark:text-green-400"
                 >
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -827,8 +827,8 @@ const navigate = useNavigate()
               
               {/* Target Calculator */}
               {showCalculator && (
-                <div className="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-                  <h4 className="text-sm font-semibold text-green-800 mb-3 flex items-center gap-2">
+                <div className="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg dark:border-green-800">
+                  <h4 className="text-sm font-semibold text-green-800 mb-3 flex items-center gap-2 dark:text-green-300">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
@@ -836,7 +836,7 @@ const navigate = useNavigate()
                   </h4>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3">
                     <div>
-                      <label className="block text-xs font-medium text-green-700 mb-1">
+                      <label className="block text-xs font-medium text-green-700 mb-1 dark:text-green-300">
                         Speed Mesin (pack/menit)
                       </label>
                       <NumberInput
@@ -849,7 +849,7 @@ const navigate = useNavigate()
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-green-700 mb-1">
+                      <label className="block text-xs font-medium text-green-700 mb-1 dark:text-green-300">
                         Menit/Jam
                       </label>
                       <NumberInput
@@ -862,7 +862,7 @@ const navigate = useNavigate()
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-green-700 mb-1">
+                      <label className="block text-xs font-medium text-green-700 mb-1 dark:text-green-300">
                         Jam Kerja
                       </label>
                       <NumberInput
@@ -875,7 +875,7 @@ const navigate = useNavigate()
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-green-700 mb-1">
+                      <label className="block text-xs font-medium text-green-700 mb-1 dark:text-green-300">
                         Efisiensi (%)
                       </label>
                       <NumberInput
@@ -888,7 +888,7 @@ const navigate = useNavigate()
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-green-700 mb-1">
+                      <label className="block text-xs font-medium text-green-700 mb-1 dark:text-green-300">
                         Pack/Karton
                       </label>
                       <NumberInput
@@ -914,18 +914,18 @@ const navigate = useNavigate()
                     const targetKarton = packPerKarton > 0 ? Math.round((targetPack / packPerKarton) * 100) / 100 : 0;
                     
                     return (
-                      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-green-200">
-                        <div className="text-xs text-green-600 mb-2">
+                      <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-green-200 dark:border-green-800">
+                        <div className="text-xs text-green-600 mb-2 dark:text-green-400">
                           Formula: Speed × {minutesPerHour} menit × {workHours} jam × {efficiency}%
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                          <div className="text-center p-2 bg-green-100 rounded">
-                            <p className="text-xs text-green-600">Target Pack</p>
-                            <p className="text-xl font-bold text-green-800">{targetPack.toLocaleString()}</p>
+                          <div className="text-center p-2 bg-green-100 rounded dark:bg-green-900/30">
+                            <p className="text-xs text-green-600 dark:text-green-400">Target Pack</p>
+                            <p className="text-xl font-bold text-green-800 dark:text-green-300">{targetPack.toLocaleString()}</p>
                           </div>
-                          <div className="text-center p-2 bg-emerald-100 rounded">
-                            <p className="text-xs text-emerald-600">Target Karton</p>
-                            <p className="text-xl font-bold text-emerald-800">{targetKarton.toLocaleString()}</p>
+                          <div className="text-center p-2 bg-emerald-100 rounded dark:bg-emerald-900/30">
+                            <p className="text-xs text-emerald-600 dark:text-emerald-400">Target Karton</p>
+                            <p className="text-xl font-bold text-emerald-800 dark:text-emerald-300">{targetKarton.toLocaleString()}</p>
                           </div>
                         </div>
                         {targetPack > 0 && (
@@ -956,7 +956,7 @@ const navigate = useNavigate()
                     placeholder="0.00"
                   />
                   {errors.quantity && (
-                    <p className="mt-1 text-sm text-red-600">{errors.quantity.message}</p>
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.quantity.message}</p>
                   )}
                   {selectedProduct && (
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Unit: PCS (Pack)</p>
@@ -985,12 +985,12 @@ const navigate = useNavigate()
               
               {/* Karton Calculation Info */}
               {selectedQuantity > 0 && totalCartonsNeeded > 0 && (
-                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-blue-700">
+                    <span className="text-blue-700 dark:text-blue-300">
                       {selectedQuantity.toLocaleString()} PCS ÷ {packPerKarton} pack/karton
                     </span>
-                    <span className="font-bold text-blue-900">
+                    <span className="font-bold text-blue-900 dark:text-blue-200">
                       = {totalCartonsNeeded.toLocaleString('id-ID', { maximumFractionDigits: 2 })} Karton
                     </span>
                   </div>
@@ -1037,7 +1037,7 @@ const navigate = useNavigate()
                 </p>
               )}
               {eligibleMachineIds && eligibleMachineIds.length === 0 && (
-                <p className="mt-1 text-xs text-amber-600">
+                <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
                   Belum ada resep (ProductionRecipe) untuk produk ini - menampilkan semua mesin.
                 </p>
               )}
@@ -1138,12 +1138,12 @@ const navigate = useNavigate()
       </form>
 
       {/* Quick Tips */}
-      <div className="card p-4 bg-amber-50 border border-amber-200">
+      <div className="card p-4 bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
         <div className="flex items-start gap-3">
-          <ExclamationTriangleIcon className="h-5 w-5 text-amber-600 mt-0.5" />
+          <ExclamationTriangleIcon className="h-5 w-5 text-amber-600 mt-0.5 dark:text-amber-400" />
           <div>
-            <h4 className="font-medium text-amber-900 mb-2">💡 Production Guidelines</h4>
-            <ul className="text-sm text-amber-800 space-y-1">
+            <h4 className="font-medium text-amber-900 mb-2 dark:text-amber-200">💡 Production Guidelines</h4>
+            <ul className="text-sm text-amber-800 space-y-1 dark:text-amber-300">
               <li>• Only producible and active products can be selected</li>
               <li>• Machine assignment is optional - system will auto-assign if available</li>
               <li>• Higher priority SPK will be scheduled first</li>

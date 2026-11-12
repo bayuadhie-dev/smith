@@ -120,7 +120,7 @@ const RecurringPayment: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="p-6 text-gray-500">Memuat...</div>;
+    return <div className="p-6 text-gray-500 dark:text-gray-400">Memuat...</div>;
   }
 
   return (
@@ -134,7 +134,7 @@ const RecurringPayment: React.FC = () => {
       {message && (
         <div
           className={`p-3 rounded-md text-sm mb-6 ${
-            message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+            message.type === 'success' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
           }`}
         >
           {message.text}
@@ -149,7 +149,7 @@ const RecurringPayment: React.FC = () => {
               <h2 className="font-semibold text-gray-900 dark:text-white">Daftar Tagihan</h2>
               <button
                 onClick={() => setShowNewMasterForm(!showNewMasterForm)}
-                className="text-sm text-primary-600 hover:underline"
+                className="text-sm text-primary-600 hover:underline dark:text-primary-400"
               >
                 {showNewMasterForm ? 'Batal' : '+ Tambah'}
               </button>
@@ -202,7 +202,7 @@ const RecurringPayment: React.FC = () => {
 
             <div>
               {masters.length === 0 ? (
-                <p className="p-4 text-sm text-gray-500">Belum ada tagihan terdaftar.</p>
+                <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Belum ada tagihan terdaftar.</p>
               ) : (
                 masters.map((m) => (
                   <button
@@ -232,7 +232,7 @@ const RecurringPayment: React.FC = () => {
         {/* Transaction history for selected master */}
         <div className="lg:col-span-2">
           {!selectedMaster ? (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-8 text-center text-gray-500">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-8 text-center text-gray-500 dark:text-gray-400">
               Pilih tagihan di sebelah kiri untuk melihat riwayat pembayaran.
             </div>
           ) : (
@@ -241,7 +241,7 @@ const RecurringPayment: React.FC = () => {
                 <h2 className="font-semibold text-gray-900 dark:text-white">{selectedMaster.name}</h2>
                 <button
                   onClick={() => setShowNewTxForm(!showNewTxForm)}
-                  className="text-sm text-primary-600 hover:underline"
+                  className="text-sm text-primary-600 hover:underline dark:text-primary-400"
                 >
                   {showNewTxForm ? 'Batal' : '+ Catat Pembayaran'}
                 </button>
@@ -283,9 +283,9 @@ const RecurringPayment: React.FC = () => {
               )}
 
               {loadingTx ? (
-                <div className="p-4 text-gray-500 text-sm">Memuat...</div>
+                <div className="p-4 text-gray-500 text-sm dark:text-gray-400">Memuat...</div>
               ) : transactions.length === 0 ? (
-                <p className="p-4 text-sm text-gray-500">Belum ada riwayat pembayaran.</p>
+                <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Belum ada riwayat pembayaran.</p>
               ) : (
                 <table className="w-full text-sm">
                   <thead>
@@ -302,7 +302,7 @@ const RecurringPayment: React.FC = () => {
                         <td className="p-3">{new Date(t.payment_date).toLocaleDateString('id-ID')}</td>
                         <td className="p-3">{t.period_label}</td>
                         <td className="p-3 text-right">Rp{t.amount.toLocaleString('id-ID')}</td>
-                        <td className="p-3 text-gray-500">{t.notes}</td>
+                        <td className="p-3 text-gray-500 dark:text-gray-400">{t.notes}</td>
                       </tr>
                     ))}
                   </tbody>

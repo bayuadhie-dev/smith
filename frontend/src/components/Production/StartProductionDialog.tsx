@@ -68,21 +68,21 @@ const StartProductionDialog: React.FC<Props> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-full">
-              <PlayIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-blue-100 rounded-full dark:bg-blue-900/30">
+              <PlayIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-800">Start Production</h2>
-              <p className="text-sm text-slate-500">WO: {woNumber}</p>
+              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Start Production</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">WO: {woNumber}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-100 rounded-lg transition-colors dark:hover:bg-slate-800"
           >
-            <XMarkIcon className="h-6 w-6 text-slate-600" />
+            <XMarkIcon className="h-6 w-6 text-slate-600 dark:text-slate-300" />
           </button>
         </div>
 
@@ -90,7 +90,7 @@ const StartProductionDialog: React.FC<Props> = ({
         <div className="p-6 space-y-6">
           {/* Material Availability Check */}
           <div>
-            <h3 className="text-sm font-semibold text-slate-700 mb-3">Material Availability</h3>
+            <h3 className="text-sm font-semibold text-slate-700 mb-3 dark:text-slate-200">Material Availability</h3>
             <MaterialAvailabilityCheck
               workOrderId={workOrderId}
               onAvailabilityChange={setMaterialAvailable}
@@ -98,17 +98,17 @@ const StartProductionDialog: React.FC<Props> = ({
           </div>
 
           {/* Auto-Deduct Option */}
-          <div className="bg-slate-50 rounded-lg p-4">
+          <div className="bg-slate-50 rounded-lg p-4 dark:bg-slate-900">
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={autoDeduct}
                 onChange={(e) => setAutoDeduct(e.target.checked)}
-                className="mt-1 h-5 w-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                className="mt-1 h-5 w-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 dark:border-slate-600 dark:text-blue-400"
               />
               <div className="flex-1">
-                <p className="font-medium text-slate-800">Auto-deduct materials from warehouse</p>
-                <p className="text-sm text-slate-600 mt-1">
+                <p className="font-medium text-slate-800 dark:text-slate-100">Auto-deduct materials from warehouse</p>
+                <p className="text-sm text-slate-600 mt-1 dark:text-slate-300">
                   When enabled, materials will be automatically deducted from inventory when production starts.
                   If disabled, you'll need to manually issue materials.
                 </p>
@@ -118,12 +118,12 @@ const StartProductionDialog: React.FC<Props> = ({
 
           {/* Warning */}
           {autoDeduct && !materialAvailable && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
               <div className="flex items-start gap-3">
-                <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mt-0.5" />
+                <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mt-0.5 dark:text-yellow-400" />
                 <div>
-                  <p className="font-medium text-yellow-800">Cannot Start Production</p>
-                  <p className="text-sm text-yellow-700 mt-1">
+                  <p className="font-medium text-yellow-800 dark:text-yellow-300">Cannot Start Production</p>
+                  <p className="text-sm text-yellow-700 mt-1 dark:text-yellow-300">
                     Some materials are insufficient. Please ensure all materials are available before starting production,
                     or disable auto-deduction to manually manage materials.
                   </p>
@@ -134,12 +134,12 @@ const StartProductionDialog: React.FC<Props> = ({
 
           {/* Success Info */}
           {materialAvailable && autoDeduct && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 dark:bg-green-900/20 dark:border-green-800">
               <div className="flex items-start gap-3">
-                <CheckCircleIcon className="h-5 w-5 text-green-600 mt-0.5" />
+                <CheckCircleIcon className="h-5 w-5 text-green-600 mt-0.5 dark:text-green-400" />
                 <div>
-                  <p className="font-medium text-green-800">Ready to Start</p>
-                  <p className="text-sm text-green-700 mt-1">
+                  <p className="font-medium text-green-800 dark:text-green-300">Ready to Start</p>
+                  <p className="text-sm text-green-700 mt-1 dark:text-green-300">
                     All materials are available. Materials will be automatically deducted from inventory when you start production.
                   </p>
                 </div>
@@ -149,12 +149,12 @@ const StartProductionDialog: React.FC<Props> = ({
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
               <div className="flex items-start gap-3">
-                <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mt-0.5" />
+                <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mt-0.5 dark:text-red-400" />
                 <div>
-                  <p className="font-medium text-red-800">Error</p>
-                  <p className="text-sm text-red-700 mt-1">{error}</p>
+                  <p className="font-medium text-red-800 dark:text-red-300">Error</p>
+                  <p className="text-sm text-red-700 mt-1 dark:text-red-300">{error}</p>
                 </div>
               </div>
             </div>
@@ -162,10 +162,10 @@ const StartProductionDialog: React.FC<Props> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 bg-slate-50">
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 bg-slate-50 dark:bg-slate-900 dark:border-slate-700">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors"
+            className="px-4 py-2 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors dark:hover:bg-slate-600 dark:text-slate-200"
             disabled={loading}
           >
             Cancel
@@ -175,7 +175,7 @@ const StartProductionDialog: React.FC<Props> = ({
             disabled={loading || (autoDeduct && !materialAvailable)}
             className={`px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
               loading || (autoDeduct && !materialAvailable)
-                ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                ? 'bg-slate-300 text-slate-500 cursor-not-allowed dark:text-slate-400 dark:bg-slate-600'
                 : 'bg-blue-600 text-white hover:bg-blue-700'
             }`}
           >

@@ -80,13 +80,13 @@ export default function WIPLedger() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'open':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       case 'closed':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -121,7 +121,7 @@ export default function WIPLedger() {
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Saldo WIP di Buku Besar (akun {glWip.account_code})</h2>
             <span className="text-xl font-bold">{formatCurrency(glWip.gl_balance)}</span>
           </div>
-          <p className="text-sm text-gray-500 mb-3">
+          <p className="text-sm text-gray-500 mb-3 dark:text-gray-400">
             Bahan baku yang dikeluarkan ke SPK + biaya yang diserap - yang sudah dipindah ke barang jadi. Ini nilai WIP sebenarnya di pembukuan.
             {Math.abs(glWip.unallocated) > 1 && ` Sebesar ${formatCurrency(glWip.unallocated)} belum bisa dikaitkan ke SPK tertentu.`}
           </p>
@@ -138,7 +138,7 @@ export default function WIPLedger() {
               </thead>
               <tbody>
                 {glWip.rows.length === 0 && (
-                  <tr><td colSpan={5} className="text-center text-gray-500 py-4">Tidak ada WIP</td></tr>
+                  <tr><td colSpan={5} className="text-center text-gray-500 py-4 dark:text-gray-400">Tidak ada WIP</td></tr>
                 )}
                 {glWip.rows.map((r: any) => (
                   <tr key={r.work_order_id} className="border-t">
@@ -216,7 +216,7 @@ export default function WIPLedger() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filter === 'all'
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200'
             }`}
           >
             All WIP
@@ -226,7 +226,7 @@ export default function WIPLedger() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filter === 'open'
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200'
             }`}
           >
             Open
@@ -236,7 +236,7 @@ export default function WIPLedger() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filter === 'completed'
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200'
             }`}
           >
             Completed
@@ -246,7 +246,7 @@ export default function WIPLedger() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filter === 'closed'
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200'
             }`}
           >
             Closed
@@ -319,7 +319,7 @@ export default function WIPLedger() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className={`flex items-center justify-end space-x-1 ${
-                        ledger.total_variance > 0 ? 'text-red-600' : 'text-green-600'
+                        ledger.total_variance > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
                       }`}>
                         {ledger.total_variance > 0 ? (
                           <ArrowTrendingUpIcon className="h-4 w-4" />
@@ -339,16 +339,16 @@ export default function WIPLedger() {
                         {ledger.status.toUpperCase()}
                       </span>
                       {ledger.is_posted_to_gl && (
-                        <div className="text-xs text-green-600 mt-1">✓ Posted to GL</div>
+                        <div className="text-xs text-green-600 mt-1 dark:text-green-400">✓ Posted to GL</div>
                       )}
                       {ledger.cogm_posted && (
-                        <div className="text-xs text-blue-600 mt-1">✓ COGM Posted</div>
+                        <div className="text-xs text-blue-600 mt-1 dark:text-blue-400">✓ COGM Posted</div>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <Link
                         to={`/app/finance/wip-ledger/${ledger.id}`}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
                       >
                         View Details
                       </Link>

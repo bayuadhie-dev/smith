@@ -226,7 +226,7 @@ const RFQForm: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
               <ExclamationCircleIcon className="h-5 w-5" />
               <span>{error}</span>
             </div>
@@ -326,7 +326,7 @@ const RFQForm: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => removeItem(index)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-red-600 hover:text-red-700 dark:text-red-400"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>

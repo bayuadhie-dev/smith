@@ -197,7 +197,7 @@ const navigate = useNavigate()
                   type="checkbox"
                   checked={formData.qc_required}
                   onChange={(e) => setFormData({ ...formData, qc_required: e.target.checked })}
-                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:text-blue-400"
                 />
                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">QC Inspection Required</span>
               </label>
@@ -228,7 +228,7 @@ const navigate = useNavigate()
                     <button
                       type="button"
                       onClick={() => removeItem(item.id)}
-                      className="text-red-600 hover:text-red-800"
+                      className="text-red-600 hover:text-red-800 dark:text-red-400"
                     >
                       <TrashIcon className="h-5 w-5" />
                     </button>

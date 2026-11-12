@@ -154,35 +154,35 @@ export default function IncomingQC() {
     switch (status) {
       case 'passed':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
             <CheckCircleIcon className="w-3.5 h-3.5" />
             Lulus
           </span>
         );
       case 'rejected':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
             <XCircleIcon className="w-3.5 h-3.5" />
             Ditolak
           </span>
         );
       case 'conditional':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
             <ExclamationTriangleIcon className="w-3.5 h-3.5" />
             Bersyarat
           </span>
         );
       case 'inspecting':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
             <BeakerIcon className="w-3.5 h-3.5" />
             Sedang Inspeksi
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-100">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-100 dark:bg-gray-700">
             <ClipboardDocumentCheckIcon className="w-3.5 h-3.5" />
             Menunggu QC
           </span>
@@ -203,7 +203,7 @@ export default function IncomingQC() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ArrowDownTrayIcon className="w-7 h-7 text-blue-600" />
+            <ArrowDownTrayIcon className="w-7 h-7 text-blue-600 dark:text-blue-400" />
             QC Barang Masuk
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
@@ -217,52 +217,52 @@ export default function IncomingQC() {
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-              <ClipboardDocumentCheckIcon className="w-6 h-6 text-yellow-600" />
+              <ClipboardDocumentCheckIcon className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {materials.filter(m => m.qc_status === 'pending').length}
               </p>
-              <p className="text-sm text-gray-500">Menunggu QC</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Menunggu QC</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <CheckCircleIcon className="w-6 h-6 text-green-600" />
+              <CheckCircleIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {materials.filter(m => m.qc_status === 'passed').length}
               </p>
-              <p className="text-sm text-gray-500">Lulus QC</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Lulus QC</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-              <XCircleIcon className="w-6 h-6 text-red-600" />
+              <XCircleIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {materials.filter(m => m.qc_status === 'rejected').length}
               </p>
-              <p className="text-sm text-gray-500">Ditolak</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Ditolak</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-              <ExclamationTriangleIcon className="w-6 h-6 text-orange-600" />
+              <ExclamationTriangleIcon className="w-6 h-6 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {materials.filter(m => m.qc_status === 'conditional').length}
               </p>
-              <p className="text-sm text-gray-500">Bersyarat</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Bersyarat</p>
             </div>
           </div>
         </div>
@@ -311,7 +311,7 @@ export default function IncomingQC() {
         ) : filteredMaterials.length === 0 ? (
           <div className="text-center py-12">
             <CubeIcon className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">Tidak ada material yang perlu di-QC</p>
+            <p className="text-gray-500 dark:text-gray-400">Tidak ada material yang perlu di-QC</p>
           </div>
         ) : (
           <table className="w-full">
@@ -332,8 +332,8 @@ export default function IncomingQC() {
                   <td className="px-4 py-4">
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">{material.po_number}</p>
-                      {material.grn_id && <a href={`/app/purchasing/grn/${material.grn_id}`} className="text-xs text-emerald-700 hover:underline" target="_blank" rel="noreferrer">{material.gr_number} ({material.grn_status})</a>}
-                      <p className="text-sm text-gray-500 flex items-center gap-1">
+                      {material.grn_id && <a href={`/app/purchasing/grn/${material.grn_id}`} className="text-xs text-emerald-700 hover:underline dark:text-emerald-300" target="_blank" rel="noreferrer">{material.gr_number} ({material.grn_status})</a>}
+                      <p className="text-sm text-gray-500 flex items-center gap-1 dark:text-gray-400">
                         <TruckIcon className="w-4 h-4" />
                         {material.supplier_name}
                       </p>
@@ -342,7 +342,7 @@ export default function IncomingQC() {
                   <td className="px-4 py-4">
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">{material.material_code}</p>
-                      <p className="text-sm text-gray-500">{material.material_name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{material.material_name}</p>
                     </div>
                   </td>
                   <td className="px-4 py-4">
@@ -354,7 +354,7 @@ export default function IncomingQC() {
                     </span>
                   </td>
                   <td className="px-4 py-4">
-                    <span className="text-sm text-gray-500 flex items-center gap-1">
+                    <span className="text-sm text-gray-500 flex items-center gap-1 dark:text-gray-400">
                       <CalendarIcon className="w-4 h-4" />
                       {new Date(material.received_date).toLocaleDateString('id-ID')}
                     </span>
@@ -394,7 +394,7 @@ export default function IncomingQC() {
           <div className="bg-white dark:bg-gray-800 rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <BeakerIcon className="w-6 h-6 text-blue-600" />
+                <BeakerIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 Inspeksi QC Barang Masuk
               </h2>
               <p className="text-gray-500 dark:text-gray-400 mt-1">
@@ -438,7 +438,7 @@ export default function IncomingQC() {
                     <div className="flex gap-2">
                       <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
                         formData.visual_inspection === 'passed' 
-                          ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700' 
+                          ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' 
                           : 'border-gray-200 dark:border-gray-600 hover:border-green-300'
                       }`}>
                         <input
@@ -452,7 +452,7 @@ export default function IncomingQC() {
                       </label>
                       <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
                         formData.visual_inspection === 'failed' 
-                          ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700' 
+                          ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' 
                           : 'border-gray-200 dark:border-gray-600 hover:border-red-300'
                       }`}>
                         <input
@@ -490,7 +490,7 @@ export default function IncomingQC() {
                         type="checkbox"
                         checked={formData.quantity_verified}
                         onChange={(e) => setFormData(prev => ({ ...prev, quantity_verified: e.target.checked }))}
-                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:text-blue-400"
                       />
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Quantity sesuai dengan PO
@@ -505,7 +505,7 @@ export default function IncomingQC() {
                         type="checkbox"
                         checked={formData.lab_test_required}
                         onChange={(e) => setFormData(prev => ({ ...prev, lab_test_required: e.target.checked }))}
-                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:text-blue-400"
                       />
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Memerlukan pengujian lab
@@ -569,7 +569,7 @@ export default function IncomingQC() {
                         key={option.value}
                         className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                           formData.result === option.value
-                            ? `border-${option.color}-500 bg-${option.color}-50 dark:bg-${option.color}-900/20 text-${option.color}-700`
+                            ? `border-${option.color}-500 bg-${option.color}-50 dark:bg- ${option.color}-900/20 text-${option.color}-700`
                             : 'border-gray-200 dark:border-gray-600 hover:border-gray-400'
                         }`}
                       >

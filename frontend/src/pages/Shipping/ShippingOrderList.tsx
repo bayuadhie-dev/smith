@@ -75,7 +75,7 @@ const { data, isLoading } = useGetShippingOrdersQuery({})
                     <td>
                       <Link
                         to={`/app/shipping/orders/${order.id}`}
-                        className="text-primary-600 hover:text-primary-800 text-sm"
+                        className="text-primary-600 hover:text-primary-800 text-sm dark:text-primary-400"
                       >
                       </Link>
                     </td>

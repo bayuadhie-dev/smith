@@ -58,10 +58,10 @@ const MaterialAvailabilityCheck: React.FC<Props> = ({ workOrderId, onAvailabilit
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-slate-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
         <div className="flex items-center gap-2">
           <ArrowPathIcon className="h-5 w-5 text-slate-400 animate-spin" />
-          <span className="text-sm text-slate-600">Checking material availability...</span>
+          <span className="text-sm text-slate-600 dark:text-slate-300">Checking material availability...</span>
         </div>
       </div>
     );
@@ -69,10 +69,10 @@ const MaterialAvailabilityCheck: React.FC<Props> = ({ workOrderId, onAvailabilit
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
         <div className="flex items-center gap-2">
-          <XCircleIcon className="h-5 w-5 text-red-600" />
-          <span className="text-sm text-red-700">{error}</span>
+          <XCircleIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
+          <span className="text-sm text-red-700 dark:text-red-300">{error}</span>
         </div>
       </div>
     );
@@ -81,41 +81,41 @@ const MaterialAvailabilityCheck: React.FC<Props> = ({ workOrderId, onAvailabilit
   if (!data) return null;
 
   return (
-    <div className={`rounded-lg border ${data.available ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} p-4`}>
+    <div className={`rounded-lg border ${data.available ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'} p-4`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           {data.available ? (
-            <div className="p-2 bg-green-100 rounded-full">
-              <CheckCircleIcon className="h-6 w-6 text-green-600" />
+            <div className="p-2 bg-green-100 rounded-full dark:bg-green-900/30">
+              <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
           ) : (
-            <div className="p-2 bg-red-100 rounded-full">
-              <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
+            <div className="p-2 bg-red-100 rounded-full dark:bg-red-900/30">
+              <ExclamationTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
             </div>
           )}
           <div>
-            <h3 className={`font-semibold ${data.available ? 'text-green-800' : 'text-red-800'}`}>
+            <h3 className={`font-semibold ${data.available ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
               Material Availability
             </h3>
-            <p className={`text-sm ${data.available ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-sm ${data.available ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
               {data.message}
             </p>
           </div>
         </div>
         <button
           onClick={fetchAvailability}
-          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-slate-100 rounded-lg transition-colors dark:hover:bg-slate-800"
           title="Refresh"
         >
-          <ArrowPathIcon className="h-5 w-5 text-slate-600" />
+          <ArrowPathIcon className="h-5 w-5 text-slate-600 dark:text-slate-300" />
         </button>
       </div>
 
       {/* Summary */}
       {!data.available && (
-        <div className="bg-red-100 rounded-lg p-3 mb-4">
-          <p className="text-sm font-medium text-red-800">
+        <div className="bg-red-100 rounded-lg p-3 mb-4 dark:bg-red-900/30">
+          <p className="text-sm font-medium text-red-800 dark:text-red-300">
             ⚠️ {data.insufficient_count} of {data.total_items} materials are insufficient
           </p>
         </div>
@@ -127,16 +127,16 @@ const MaterialAvailabilityCheck: React.FC<Props> = ({ workOrderId, onAvailabilit
           <div
             key={`${item.type}-${item.id}`}
             className={`flex items-center justify-between p-3 rounded-lg ${
-              item.sufficient ? 'bg-white border border-slate-200' : 'bg-red-100 border border-red-300'
+              item.sufficient ? 'bg-white border border-slate-200 dark:bg-gray-800 dark:border-slate-700' : 'bg-red-100 border border-red-300 dark:bg-red-900/30'
             }`}
           >
             <div className="flex items-center gap-3 flex-1">
-              <CubeIcon className={`h-5 w-5 ${item.sufficient ? 'text-slate-400' : 'text-red-600'}`} />
+              <CubeIcon className={`h-5 w-5 ${item.sufficient ? 'text-slate-400' : 'text-red-600 dark:text-red-400'}`} />
               <div className="flex-1">
-                <p className={`font-medium ${item.sufficient ? 'text-slate-800' : 'text-red-800'}`}>
+                <p className={`font-medium ${item.sufficient ? 'text-slate-800 dark:text-slate-100' : 'text-red-800 dark:text-red-300'}`}>
                   {item.name}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {item.type === 'material' ? 'Raw Material' : 'Component'}
                 </p>
               </div>
@@ -144,20 +144,20 @@ const MaterialAvailabilityCheck: React.FC<Props> = ({ workOrderId, onAvailabilit
 
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm font-medium text-slate-700">
-                  Required: <span className="text-blue-600">{item.required.toLocaleString()}</span>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Required: <span className="text-blue-600 dark:text-blue-400">{item.required.toLocaleString()}</span>
                 </p>
-                <p className={`text-sm ${item.sufficient ? 'text-green-600' : 'text-red-600'}`}>
+                <p className={`text-sm ${item.sufficient ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                   Available: <span className="font-medium">{item.available.toLocaleString()}</span>
                 </p>
               </div>
 
               {item.sufficient ? (
-                <CheckCircleIcon className="h-6 w-6 text-green-600" />
+                <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
               ) : (
                 <div className="text-right">
-                  <XCircleIcon className="h-6 w-6 text-red-600" />
-                  <p className="text-xs text-red-600 font-medium mt-1">
+                  <XCircleIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
+                  <p className="text-xs text-red-600 font-medium mt-1 dark:text-red-400">
                     Short: {item.shortage.toLocaleString()}
                   </p>
                 </div>
@@ -169,8 +169,8 @@ const MaterialAvailabilityCheck: React.FC<Props> = ({ workOrderId, onAvailabilit
 
       {/* Action Hint */}
       {!data.available && (
-        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-sm text-yellow-800">
+        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:border-yellow-800">
+          <p className="text-sm text-yellow-800 dark:text-yellow-300">
             💡 <strong>Tip:</strong> You cannot start production until all materials are available. 
             Please check with warehouse or create a purchase requisition for shortage items.
           </p>

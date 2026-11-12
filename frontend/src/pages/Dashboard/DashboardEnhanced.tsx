@@ -478,7 +478,7 @@ export default function DashboardEnhanced() {
                 </svg>
                 <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pb-1">
                   <span className="text-3xl font-bold text-gray-900 dark:text-white">{oeeVal}/100</span>
-                  <span className="text-xs font-semibold text-orange-600">{statusLabel} &middot; {executiveData?.oee?.machine_utilization || 0}% utilisasi mesin</span>
+                  <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">{statusLabel} &middot; {executiveData?.oee?.machine_utilization || 0}% utilisasi mesin</span>
                 </div>
               </div>
               <button
@@ -496,7 +496,7 @@ export default function DashboardEnhanced() {
         <div className="xl:col-span-2 bg-gradient-to-br from-gray-900 to-slate-800 rounded-2xl shadow-md p-5 text-white flex flex-col">
           <div className="flex items-center justify-between mb-1">
             <h3 className="text-base font-bold text-white">Sorotan &amp; Peringatan</h3>
-            <ExclamationTriangleIcon className="w-5 h-5 text-orange-600" />
+            <ExclamationTriangleIcon className="w-5 h-5 text-orange-600 dark:text-orange-400" />
           </div>
           <p className="text-xs text-gray-400 mb-4">Isu prioritas yang butuh perhatian hari ini</p>
           {criticalIssues.length === 0 ? (
@@ -647,7 +647,7 @@ export default function DashboardEnhanced() {
               <h3 className="text-base font-bold text-gray-900 dark:text-white">Production & OEE</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">Output vs efficiency</p>
             </div>
-            <TrendUp className="w-5 h-5 text-primary-600" />
+            <TrendUp className="w-5 h-5 text-primary-600 dark:text-primary-400" />
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <ComposedChart data={trends?.production || []}>
@@ -690,7 +690,7 @@ export default function DashboardEnhanced() {
                 </div>
                 <div className="px-4">
                   <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Rata-rata OEE</p>
-                  <p className="text-lg font-bold text-primary-600">{avgOee.toFixed(1)}%</p>
+                  <p className="text-lg font-bold text-primary-600 dark:text-primary-400">{avgOee.toFixed(1)}%</p>
                 </div>
                 <div className="pl-4">
                   <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Periode Terbaik</p>
@@ -708,7 +708,7 @@ export default function DashboardEnhanced() {
               <h3 className="text-base font-bold text-gray-900 dark:text-white">Sales Trend</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">Last 7 days</p>
             </div>
-            <ShoppingCartIcon className="w-5 h-5 text-primary-600" />
+            <ShoppingCartIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
           </div>
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -757,7 +757,7 @@ export default function DashboardEnhanced() {
             </div>
             <div className="pl-4">
               <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Growth</p>
-              <p className={`text-lg font-bold ${(executiveData?.financial?.revenue_growth || 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              <p className={`text-lg font-bold ${(executiveData?.financial?.revenue_growth || 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
                 {(executiveData?.financial?.revenue_growth || 0) >= 0 ? '+' : ''}{executiveData?.financial?.revenue_growth || 0}%
               </p>
             </div>
@@ -836,7 +836,7 @@ export default function DashboardEnhanced() {
                   <p className="text-xs text-gray-500 dark:text-gray-400">Audit trail (superadmin tidak tercatat)</p>
                 </div>
               </div>
-              <Link to="/app/settings/audit-trail" className="text-sm font-medium text-primary-600 hover:underline flex-shrink-0">
+              <Link to="/app/settings/audit-trail" className="text-sm font-medium text-primary-600 hover:underline flex-shrink-0 dark:text-primary-400">
                 Lihat Semua
               </Link>
             </div>
@@ -851,7 +851,7 @@ export default function DashboardEnhanced() {
                   <p className="text-[11px] text-gray-400">7 Hari</p>
                 </div>
                 <div className="bg-white dark:bg-gray-800 px-4 py-2 text-center">
-                  <p className={`text-lg font-bold ${auditSummary.failed_today > 0 ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>{auditSummary.failed_today}</p>
+                  <p className={`text-lg font-bold ${auditSummary.failed_today > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>{auditSummary.failed_today}</p>
                   <p className="text-[11px] text-gray-400">Gagal</p>
                 </div>
               </div>

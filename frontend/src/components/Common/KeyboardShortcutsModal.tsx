@@ -50,7 +50,7 @@ export default function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShor
                     onClick={onClose}
                     className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
-                    <XMarkIcon className="h-5 w-5 text-gray-500" />
+                    <XMarkIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                   </button>
                 </div>
 

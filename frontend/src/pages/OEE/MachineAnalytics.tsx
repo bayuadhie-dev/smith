@@ -79,9 +79,9 @@ const { machineId } = useParams<{ machineId: string }>()
   }
 
   const getTrendColor = (value: number) => {
-    if (value > 0) return 'text-green-600'
-    if (value < 0) return 'text-red-600'
-    return 'text-gray-600'
+    if (value > 0) return 'text-green-600 dark:text-green-400'
+    if (value < 0) return 'text-red-600 dark:text-red-400'
+    return 'text-gray-600 dark:text-gray-300'
   }
 
   return (
@@ -130,10 +130,10 @@ const { machineId } = useParams<{ machineId: string }>()
             <div>
               <div className="text-sm text-gray-500 dark:text-gray-400">{t('common.status')}</div>
               <div className={`text-lg font-semibold ${
-                machine.status === 'running' ? 'text-green-600' :
-                machine.status === 'maintenance' ? 'text-yellow-600' :
-                machine.status === 'breakdown' ? 'text-red-600' :
-                'text-gray-600'
+                machine.status === 'running' ? 'text-green-600 dark:text-green-400' :
+                machine.status === 'maintenance' ? 'text-yellow-600 dark:text-yellow-400' :
+                machine.status === 'breakdown' ? 'text-red-600 dark:text-red-400' :
+                'text-gray-600 dark:text-gray-300'
               }`}>
                 {machine.status}
               </div>
@@ -330,7 +330,7 @@ const { machineId } = useParams<{ machineId: string }>()
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {impact.improvement ? (
                         <span className={`font-medium ${
-                          impact.improvement > 0 ? 'text-green-600' : 'text-red-600'
+                          impact.improvement > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                         }`}>
                           {impact.improvement > 0 ? '+' : ''}{impact.improvement.toFixed(1)}%
                         </span>
@@ -374,9 +374,9 @@ const { machineId } = useParams<{ machineId: string }>()
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`text-sm font-medium ${
-                      record.oee >= 85 ? 'text-green-600' :
-                      record.oee >= 70 ? 'text-yellow-600' :
-                      'text-red-600'
+                      record.oee >= 85 ? 'text-green-600 dark:text-green-400' :
+                      record.oee >= 70 ? 'text-yellow-600 dark:text-yellow-400' :
+                      'text-red-600 dark:text-red-400'
                     }`}>
                       {record.oee.toFixed(1)}%
                     </span>

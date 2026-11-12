@@ -176,11 +176,11 @@ const navigate = useNavigate();
 
   const getStatusBadge = (isActive: boolean) => {
     return isActive ? (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
         <CheckCircleIcon className="h-3 w-3 mr-1" />
       </span>
     ) : (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
         <XCircleIcon className="h-3 w-3 mr-1" />
       </span>
     );
@@ -284,8 +284,8 @@ const navigate = useNavigate();
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10">
-                      <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                        <TagIcon className="h-5 w-5 text-blue-600" />
+                      <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center dark:bg-blue-900/30">
+                        <TagIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                       </div>
                     </div>
                     <div className="ml-4">
@@ -302,7 +302,7 @@ const navigate = useNavigate();
                   {category.parent_name || '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                     {category.product_count} products
                   </span>
                 </td>
@@ -316,21 +316,21 @@ const navigate = useNavigate();
                   <div className="flex items-center justify-end space-x-2">
                     <button
                       onClick={() => navigate(`/app/products/categories/${category.id}`)}
-                      className="text-blue-600 hover:text-blue-900 p-1"
+                      className="text-blue-600 hover:text-blue-900 p-1 dark:text-blue-400"
                       title="View Details"
                     >
                       <EyeIcon className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => navigate(`/app/products/categories/${category.id}/edit`)}
-                      className="text-indigo-600 hover:text-indigo-900 p-1"
+                      className="text-indigo-600 hover:text-indigo-900 p-1 dark:text-indigo-400"
                       title="Edit Category"
                     >
                       <PencilIcon className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => toggleStatus(category.id, category.is_active)}
-                      className={`p-1 ${category.is_active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
+                      className={`p-1 ${category.is_active ? 'text-red-600 hover:text-red-900 dark:text-red-400' : 'text-green-600 hover:text-green-900 dark:text-green-400'}`}
                       title={category.is_active ? 'Deactivate' : 'Activate'}
                     >
                       {category.is_active ? (
@@ -341,7 +341,7 @@ const navigate = useNavigate();
                     </button>
                     <button
                       onClick={() => handleDelete(category.id, category.name)}
-                      className="text-red-600 hover:text-red-900 p-1"
+                      className="text-red-600 hover:text-red-900 p-1 dark:text-red-400"
                       title="Delete Category"
                     >
                       <TrashIcon className="h-4 w-4" />

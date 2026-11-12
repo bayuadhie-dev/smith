@@ -65,8 +65,8 @@ export default function DocActions({ docType, docId, number, listPath, onChanged
       )}
       {reasons !== null && (
         reasons.length === 0
-          ? <button type="button" disabled={busy} onClick={remove} className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50">Hapus</button>
-          : <span className="text-xs text-gray-500" title={reasons.join('; ')}>Tidak bisa dihapus: {reasons[0]}</span>
+          ? <button type="button" disabled={busy} onClick={remove} className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50 dark:text-red-300">Hapus</button>
+          : <span className="text-xs text-gray-500 dark:text-gray-400" title={reasons.join('; ')}>Tidak bisa dihapus: {reasons[0]}</span>
       )}
     </div>
   )

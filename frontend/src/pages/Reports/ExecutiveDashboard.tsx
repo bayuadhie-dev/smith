@@ -138,7 +138,7 @@ const ExecutiveDashboard: React.FC = () => {
   if (!metrics) {
     return (
       <div className="p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded dark:bg-red-900/30 dark:text-red-300">
           Failed to load executive metrics. Please try again.
         </div>
       </div>
@@ -247,12 +247,12 @@ const ExecutiveDashboard: React.FC = () => {
             
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-300">Cash Collected</span>
-              <span className="font-semibold text-green-600">{formatRupiah(metrics.financial.cash_collected)}</span>
+              <span className="font-semibold text-green-600 dark:text-green-400">{formatRupiah(metrics.financial.cash_collected)}</span>
             </div>
 
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-300">Outstanding AR</span>
-              <span className="font-semibold text-red-600">{formatRupiah(metrics.financial.outstanding_ar)}</span>
+              <span className="font-semibold text-red-600 dark:text-red-400">{formatRupiah(metrics.financial.outstanding_ar)}</span>
             </div>
 
             <div className="border-t pt-4">
@@ -338,7 +338,7 @@ const ExecutiveDashboard: React.FC = () => {
 
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-300">Low Stock Items</span>
-              <span className="font-semibold text-red-600">{metrics.inventory.low_stock_items}</span>
+              <span className="font-semibold text-red-600 dark:text-red-400">{metrics.inventory.low_stock_items}</span>
             </div>
 
             <div className="flex justify-between items-center">

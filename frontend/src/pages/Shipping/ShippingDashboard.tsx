@@ -154,7 +154,7 @@ export default function ShippingDashboard() {
       <div className="card p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <CheckCircleIcon className="h-5 w-5 text-emerald-700" />
+            <CheckCircleIcon className="h-5 w-5 text-emerald-700 dark:text-emerald-300" />
             Siap Kirim dari QC ({readyForShipping.length})
           </h2>
           <button
@@ -179,21 +179,21 @@ export default function ShippingDashboard() {
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-green-200">
-              <thead className="bg-green-100">
+              <thead className="bg-green-100 dark:bg-green-900/30">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase">SPK</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase">Produk</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase">Qty Lulus QC</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase">Customer</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase">Sales Order</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase">Tanggal QC</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase">Aksi</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase dark:text-green-300">SPK</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase dark:text-green-300">Produk</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase dark:text-green-300">Qty Lulus QC</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase dark:text-green-300">Customer</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase dark:text-green-300">Sales Order</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase dark:text-green-300">Tanggal QC</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-800 uppercase dark:text-green-300">Aksi</th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-green-100">
                 {readyForShipping.slice(0, 5).map((item) => (
                   <tr key={item.work_order_id} className="hover:bg-green-50">
-                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-blue-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-blue-600 dark:text-blue-400">
                       {item.work_order_number}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
@@ -215,7 +215,7 @@ export default function ShippingDashboard() {
                     <td className="px-4 py-3 whitespace-nowrap">
                       <button
                         onClick={() => navigate('/app/shipping/orders/from-qc')}
-                        className="text-green-600 hover:text-green-800 font-medium text-sm inline-flex items-center gap-1"
+                        className="text-green-600 hover:text-green-800 font-medium text-sm inline-flex items-center gap-1 dark:text-green-400"
                       >
                         Kirim <ArrowRightIcon className="h-4 w-4" />
                       </button>
@@ -225,10 +225,10 @@ export default function ShippingDashboard() {
               </tbody>
             </table>
             {readyForShipping.length > 5 && (
-              <div className="text-center py-3 border-t border-green-200">
+              <div className="text-center py-3 border-t border-green-200 dark:border-green-800">
                 <button
                   onClick={() => navigate('/app/shipping/orders/from-qc')}
-                  className="text-green-600 hover:text-green-800 font-medium text-sm"
+                  className="text-green-600 hover:text-green-800 font-medium text-sm dark:text-green-400"
                 >
                   Lihat semua {readyForShipping.length} item siap kirim →
                 </button>
@@ -311,17 +311,17 @@ export default function ShippingDashboard() {
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Peringatan</h3>
           <div className="space-y-3">
             {pending > 0 && (
-              <div className="flex items-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-3" />
-                <span className="text-sm text-yellow-800">
+              <div className="flex items-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:border-yellow-800">
+                <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-3 dark:text-yellow-400" />
+                <span className="text-sm text-yellow-800 dark:text-yellow-300">
                   {pending} pengiriman menunggu untuk diproses
                 </span>
               </div>
             )}
             {inTransit > 5 && (
-              <div className="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <TruckIcon className="h-5 w-5 text-blue-600 mr-3" />
-                <span className="text-sm text-blue-800">
+              <div className="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
+                <TruckIcon className="h-5 w-5 text-blue-600 mr-3 dark:text-blue-400" />
+                <span className="text-sm text-blue-800 dark:text-blue-300">
                   {inTransit} pengiriman sedang dalam perjalanan
                 </span>
               </div>

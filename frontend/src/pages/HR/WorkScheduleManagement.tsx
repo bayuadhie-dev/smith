@@ -162,19 +162,19 @@ const WorkScheduleManagement: React.FC = () => {
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center h-48"><Loader2 className="h-6 w-6 animate-spin text-blue-600" /></div>
+          <div className="flex items-center justify-center h-48"><Loader2 className="h-6 w-6 animate-spin text-blue-600 dark:text-blue-400" /></div>
         ) : schedules.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">Belum ada jadwal kerja. Karyawan tanpa jadwal memakai setting global.</div>
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">Belum ada jadwal kerja. Karyawan tanpa jadwal memakai setting global.</div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hari Kerja</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jam</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Toleransi Terlambat</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Karyawan</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Nama</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Hari Kerja</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Jam</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Toleransi Terlambat</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Karyawan</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -183,19 +183,19 @@ const WorkScheduleManagement: React.FC = () => {
                   <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
                     {s.name} {!s.is_active && <span className="text-xs text-gray-400">(nonaktif)</span>}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                     {s.days_of_week.map(d => DAY_LABELS[d]).join(', ')}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{s.start_time} - {s.end_time}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{s.late_tolerance_minutes} menit</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    <button onClick={() => openAssign(s)} className="flex items-center gap-1 text-blue-600 hover:underline">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{s.start_time} - {s.end_time}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{s.late_tolerance_minutes} menit</td>
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                    <button onClick={() => openAssign(s)} className="flex items-center gap-1 text-blue-600 hover:underline dark:text-blue-400">
                       <Users className="h-4 w-4" /> {s.employee_count} karyawan
                     </button>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
-                      <button onClick={() => openEdit(s)} className="p-1 text-gray-500 hover:bg-gray-100 rounded"><Pencil className="h-4 w-4" /></button>
+                      <button onClick={() => openEdit(s)} className="p-1 text-gray-500 hover:bg-gray-100 rounded dark:hover:bg-gray-700 dark:text-gray-400"><Pencil className="h-4 w-4" /></button>
                       <button onClick={() => handleDelete(s)} className="p-1 text-red-500 hover:bg-red-50 rounded"><Trash2 className="h-4 w-4" /></button>
                     </div>
                   </td>
@@ -211,7 +211,7 @@ const WorkScheduleManagement: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
             <h3 className="text-lg font-semibold mb-4">{editingId ? 'Edit' : 'Tambah'} Jadwal Kerja</h3>
-            {formError && <div className="mb-3 px-3 py-2 bg-red-50 text-red-700 text-sm rounded-lg">{formError}</div>}
+            {formError && <div className="mb-3 px-3 py-2 bg-red-50 text-red-700 text-sm rounded-lg dark:bg-red-900/20 dark:text-red-300">{formError}</div>}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Nama</label>
@@ -230,7 +230,7 @@ const WorkScheduleManagement: React.FC = () => {
                       key={idx}
                       type="button"
                       onClick={() => toggleDay(idx)}
-                      className={`px-2 py-1 text-xs rounded ${form.days_of_week.includes(idx) ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600'}`}
+                      className={`px-2 py-1 text-xs rounded ${form.days_of_week.includes(idx) ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
                     >
                       {label}
                     </button>
@@ -260,7 +260,7 @@ const WorkScheduleManagement: React.FC = () => {
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-5">
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Batal</button>
+              <button onClick={() => setShowForm(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg dark:text-gray-300">Batal</button>
               <button
                 onClick={handleSave}
                 disabled={saving}
@@ -280,7 +280,7 @@ const WorkScheduleManagement: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[80vh] flex flex-col">
             <div className="p-5 border-b flex justify-between items-center">
               <h3 className="text-lg font-semibold">Tugaskan ke "{assigningSchedule.name}"</h3>
-              <button onClick={() => setAssigningSchedule(null)} className="p-1 hover:bg-gray-100 rounded"><X className="h-5 w-5" /></button>
+              <button onClick={() => setAssigningSchedule(null)} className="p-1 hover:bg-gray-100 rounded dark:hover:bg-gray-700"><X className="h-5 w-5" /></button>
             </div>
             <div className="p-5 overflow-y-auto flex-1 space-y-1">
               {employees.map(emp => (
@@ -297,7 +297,7 @@ const WorkScheduleManagement: React.FC = () => {
               ))}
             </div>
             <div className="p-5 border-t flex justify-end gap-2">
-              <button onClick={() => setAssigningSchedule(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Batal</button>
+              <button onClick={() => setAssigningSchedule(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg dark:text-gray-300">Batal</button>
               <button
                 onClick={handleAssign}
                 disabled={assigning || selectedEmployeeIds.length === 0}

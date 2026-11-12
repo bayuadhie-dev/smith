@@ -60,9 +60,9 @@ interface ExceptionItem {
 }
 
 const EXCEPTION_CONFIG: Record<string, { label: string; color: string }> = {
-  reschedule_in: { label: 'Percepat (Reschedule In)', color: 'text-red-600 bg-red-50 dark:bg-red-900/20' },
-  reschedule_out: { label: 'Bisa Ditunda (Reschedule Out)', color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' },
-  cancel: { label: 'Pertimbangkan Batal', color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/20' },
+  reschedule_in: { label: 'Percepat (Reschedule In)', color: 'text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400' },
+  reschedule_out: { label: 'Bisa Ditunda (Reschedule Out)', color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400' },
+  cancel: { label: 'Pertimbangkan Batal', color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400' },
 };
 
 export default function MRPRun() {
@@ -194,7 +194,7 @@ export default function MRPRun() {
       {loading ? (
         <div className="text-center py-12">Menghitung MRP run...</div>
       ) : plannedOrders.length === 0 ? (
-        <div className="card p-8 text-center text-gray-500">
+        <div className="card p-8 text-center text-gray-500 dark:text-gray-400">
           Tidak ada planned order — semua kebutuhan tercukupi dalam horizon {horizonWeeks} minggu ini.
         </div>
       ) : (
@@ -235,9 +235,9 @@ export default function MRPRun() {
                     <td className="font-medium">{po.material_code} - {po.material_name}</td>
                     <td>
                       {po.procurement_type === 'make' ? (
-                        <span className="text-xs font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded">Buat (WIP)</span>
+                        <span className="text-xs font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded dark:text-amber-400">Buat (WIP)</span>
                       ) : (
-                        <span className="text-xs font-medium text-gray-500">Beli</span>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Beli</span>
                       )}
                     </td>
                     <td>{po.quantity.toLocaleString()} {po.uom}</td>
@@ -246,27 +246,27 @@ export default function MRPRun() {
                     <td>{po.lead_time_days} hari</td>
                     <td>
                       {po.is_overdue && (
-                        <span className="inline-flex items-center gap-1 text-red-600 text-xs font-medium">
+                        <span className="inline-flex items-center gap-1 text-red-600 text-xs font-medium dark:text-red-400">
                           <ExclamationTriangleIcon className="h-4 w-4" /> Terlambat pesan
                         </span>
                       )}
                       {po.covered_by_moq && (
-                        <span className="text-xs text-blue-600 block">Dibulatkan ke MOQ kontrak</span>
+                        <span className="text-xs text-blue-600 block dark:text-blue-400">Dibulatkan ke MOQ kontrak</span>
                       )}
                       {po.procurement_type === 'make' && (
-                        <span className="text-xs text-amber-600 block">Butuh Work Order, bukan PR</span>
+                        <span className="text-xs text-amber-600 block dark:text-amber-400">Butuh Work Order, bukan PR</span>
                       )}
                     </td>
                     <td className="space-x-2 whitespace-nowrap">
                       <button
-                        className="text-primary-600 hover:text-primary-800 text-xs font-medium"
+                        className="text-primary-600 hover:text-primary-800 text-xs font-medium dark:text-primary-400"
                         onClick={() => setDetailMaterial(materials.find((m) => m.material_id === po.material_id && m.entity_kind === po.entity_kind) || null)}
                       >
                         Detail Mingguan
                       </button>
                       {po.procurement_type === 'make' && (
                         <button
-                          className="text-amber-600 hover:text-amber-800 text-xs font-medium disabled:opacity-50"
+                          className="text-amber-600 hover:text-amber-800 text-xs font-medium disabled:opacity-50 dark:text-amber-400"
                           disabled={creatingWoIdx === idx}
                           onClick={() => handleCreateWO(po, idx)}
                         >
@@ -292,7 +292,7 @@ export default function MRPRun() {
           </p>
         </div>
         {exceptions.length === 0 ? (
-          <div className="p-6 text-center text-gray-500 text-sm">
+          <div className="p-6 text-center text-gray-500 text-sm dark:text-gray-400">
             Tidak ada exception - semua PO/SPK yang sudah berjalan sesuai dengan kebutuhan terkini.
           </div>
         ) : (
@@ -326,7 +326,7 @@ export default function MRPRun() {
                       <td>{exc.needed_week_index !== null ? `Minggu ${exc.needed_week_index + 1}` : '-'}</td>
                       <td>
                         <button
-                          className="text-primary-600 hover:text-primary-800 text-xs font-medium"
+                          className="text-primary-600 hover:text-primary-800 text-xs font-medium dark:text-primary-400"
                           onClick={() => setDetailException(exc)}
                         >
                           Detail
@@ -349,7 +349,7 @@ export default function MRPRun() {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Detail Exception</h3>
                 <button
                   onClick={() => setDetailException(null)}
-                  className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl dark:hover:text-white"
                 >
                   &times;
                 </button>
@@ -384,7 +384,7 @@ export default function MRPRun() {
                 </div>
                 <button
                   onClick={() => setDetailMaterial(null)}
-                  className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl dark:hover:text-white"
                 >
                   &times;
                 </button>
@@ -413,13 +413,13 @@ export default function MRPRun() {
                     <tr>
                       <td className="font-medium">Penerimaan Terjadwal</td>
                       {detailMaterial.buckets.map((b) => (
-                        <td key={b.index} className="text-right text-green-600">{b.scheduled_receipt > 0 ? b.scheduled_receipt.toLocaleString() : '-'}</td>
+                        <td key={b.index} className="text-right text-green-600 dark:text-green-400">{b.scheduled_receipt > 0 ? b.scheduled_receipt.toLocaleString() : '-'}</td>
                       ))}
                     </tr>
                     <tr>
                       <td className="font-medium">Saldo Proyeksi</td>
                       {detailMaterial.buckets.map((b) => (
-                        <td key={b.index} className={`text-right ${b.projected_balance < 0 ? 'text-red-600 font-semibold' : ''}`}>
+                        <td key={b.index} className={`text-right ${b.projected_balance < 0 ? 'text-red-600 font-semibold dark:text-red-400' : ''}`}>
                           {b.projected_balance.toLocaleString()}
                         </td>
                       ))}
@@ -427,7 +427,7 @@ export default function MRPRun() {
                     <tr>
                       <td className="font-medium">Net Requirement</td>
                       {detailMaterial.buckets.map((b) => (
-                        <td key={b.index} className="text-right">{b.net_requirement > 0 ? <span className="text-red-600 font-semibold">{b.net_requirement.toLocaleString()}</span> : '-'}</td>
+                        <td key={b.index} className="text-right">{b.net_requirement > 0 ? <span className="text-red-600 font-semibold dark:text-red-400">{b.net_requirement.toLocaleString()}</span> : '-'}</td>
                       ))}
                     </tr>
                   </tbody>

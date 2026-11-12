@@ -68,7 +68,7 @@ const FinanceSearch: React.FC = () => {
     <div className="space-y-4 p-1">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pencarian Transaksi</h1>
-        <p className="text-sm text-gray-500">Cari faktur, penerimaan, pembayaran, nota kredit, jurnal, dan akun dalam satu tempat.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Cari faktur, penerimaan, pembayaran, nota kredit, jurnal, dan akun dalam satu tempat.</p>
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
@@ -79,41 +79,41 @@ const FinanceSearch: React.FC = () => {
               placeholder="Nomor, nama pelanggan/supplier, keterangan, akun... pisahkan kata dengan %  (contoh: maju%INV-2026)" />
           </div>
           <button type="button" onClick={() => setShowFilter((v) => !v)}
-            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium ${activeFilters ? 'border-emerald-600 text-emerald-700' : 'border-gray-300 text-gray-700 dark:text-gray-200'}`}>
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium ${activeFilters ? 'border-emerald-600 text-emerald-700 dark:text-emerald-300' : 'border-gray-300 text-gray-700 dark:text-gray-200 dark:border-gray-600'}`}>
             <FunnelIcon className="h-4 w-4" /> Penyaringan{activeFilters ? ` (${activeFilters})` : ''}
           </button>
         </div>
-        <p className="mt-2 text-xs text-gray-500">Tanda <b>%</b> memisahkan kata kunci: hasil harus memuat semua kata, urutan bebas, huruf besar/kecil tidak berpengaruh.</p>
+        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">Tanda <b>%</b> memisahkan kata kunci: hasil harus memuat semua kata, urutan bebas, huruf besar/kecil tidak berpengaruh.</p>
 
         {showFilter && (
           <div className="mt-4 space-y-4 border-t border-gray-100 pt-4 dark:border-gray-700">
             <div>
-              <div className="mb-1 text-xs font-medium text-gray-500">Jenis dokumen (kosong = semua)</div>
+              <div className="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">Jenis dokumen (kosong = semua)</div>
               <div className="flex flex-wrap gap-2">
                 {TYPES.map(([k, label]) => {
                   const on = types.includes(k)
                   return <button key={k} type="button" onClick={() => setTypes(on ? types.filter((t) => t !== k) : [...types, k])}
-                    className={`rounded-full border px-3 py-1 text-xs ${on ? 'border-emerald-600 bg-emerald-50 text-emerald-700' : 'border-gray-300 text-gray-600'}`}>{label}</button>
+                    className={`rounded-full border px-3 py-1 text-xs ${on ? 'border-emerald-600 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300' : 'border-gray-300 text-gray-600 dark:text-gray-300 dark:border-gray-600'}`}>{label}</button>
                 })}
               </div>
             </div>
             <div className="grid gap-3 md:grid-cols-4">
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500">Dari tanggal</label>
+                <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Dari tanggal</label>
                 <input type="date" className="input w-full" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500">Sampai tanggal</label>
+                <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Sampai tanggal</label>
                 <input type="date" className="input w-full" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500">Status</label>
+                <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Status</label>
                 <select className="input w-full" value={status} onChange={(e) => setStatus(e.target.value)}>
                   {STATUSES.map((s) => <option key={s} value={s}>{s || 'Semua status'}</option>)}
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500">Nilai (Rp) dari - sampai</label>
+                <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Nilai (Rp) dari - sampai</label>
                 <div className="flex gap-1">
                   <input type="number" className="input w-full" value={amountMin} onChange={(e) => setAmountMin(e.target.value)} placeholder="min" />
                   <input type="number" className="input w-full" value={amountMax} onChange={(e) => setAmountMax(e.target.value)} placeholder="maks" />
@@ -121,36 +121,36 @@ const FinanceSearch: React.FC = () => {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="text-gray-500">Cepat:</span>
+              <span className="text-gray-500 dark:text-gray-400">Cepat:</span>
               <button type="button" className="rounded border px-2 py-1" onClick={() => preset(0)}>Hari ini</button>
               <button type="button" className="rounded border px-2 py-1" onClick={() => preset(7)}>7 hari</button>
               <button type="button" className="rounded border px-2 py-1" onClick={() => preset('month')}>Bulan ini</button>
-              <button type="button" className="ml-auto inline-flex items-center gap-1 text-red-600" onClick={clearFilters}><XMarkIcon className="h-4 w-4" /> Reset penyaringan</button>
+              <button type="button" className="ml-auto inline-flex items-center gap-1 text-red-600 dark:text-red-400" onClick={clearFilters}><XMarkIcon className="h-4 w-4" /> Reset penyaringan</button>
             </div>
           </div>
         )}
       </div>
 
-      {!hasInput && <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-sm text-gray-500">Ketik kata kunci atau pilih penyaringan untuk mulai mencari.</div>}
+      {!hasInput && <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-sm text-gray-500 dark:text-gray-400 dark:border-gray-600">Ketik kata kunci atau pilih penyaringan untuk mulai mencari.</div>}
 
       {hasInput && (
         <LoadState loading={loading} error={error} empty={!!data && data.total === 0} emptyText="Tidak ada transaksi yang cocok. Coba kurangi kata kunci atau penyaringan.">
           {data && (
             <>
               <div className="flex flex-wrap items-center gap-2">
-                <button type="button" onClick={() => setActiveType('')} className={`rounded-full border px-3 py-1 text-xs ${!activeType ? 'border-emerald-600 bg-emerald-50 text-emerald-700' : 'border-gray-300 text-gray-600'}`}>Semua ({data.total})</button>
+                <button type="button" onClick={() => setActiveType('')} className={`rounded-full border px-3 py-1 text-xs ${!activeType ? 'border-emerald-600 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300' : 'border-gray-300 text-gray-600 dark:text-gray-300 dark:border-gray-600'}`}>Semua ({data.total})</button>
                 {TYPES.filter(([k]) => data.counts[k]).map(([k, label]) => (
-                  <button key={k} type="button" onClick={() => setActiveType(k)} className={`rounded-full border px-3 py-1 text-xs ${activeType === k ? 'border-emerald-600 bg-emerald-50 text-emerald-700' : 'border-gray-300 text-gray-600'}`}>{label} ({data.counts[k]})</button>
+                  <button key={k} type="button" onClick={() => setActiveType(k)} className={`rounded-full border px-3 py-1 text-xs ${activeType === k ? 'border-emerald-600 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300' : 'border-gray-300 text-gray-600 dark:text-gray-300 dark:border-gray-600'}`}>{label} ({data.counts[k]})</button>
                 ))}
-                {Object.values(data.counts).some((c) => c > data.limit) && <span className="text-xs text-amber-600">Hanya {data.limit} teratas per jenis yang ditampilkan. Persempit pencarian untuk hasil lebih tepat.</span>}
+                {Object.values(data.counts).some((c) => c > data.limit) && <span className="text-xs text-amber-600 dark:text-amber-400">Hanya {data.limit} teratas per jenis yang ditampilkan. Persempit pencarian untuk hasil lebih tepat.</span>}
               </div>
               <DataTable maxHeight="65vh">
                 <thead><tr><Th>Jenis</Th><Th>Nomor</Th><Th>Tanggal</Th><Th>Pihak / Akun</Th><Th>Keterangan</Th><Th right>Nilai</Th><Th>Status</Th></tr></thead>
                 <tbody>
                   {rows.map((r) => (
                     <tr key={`${r.type}-${r.id}`} onClick={() => navigate(r.url)} className="cursor-pointer border-t border-gray-100 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/40">
-                      <Td className="whitespace-nowrap text-xs text-gray-500">{r.type_label}</Td>
-                      <Td className="whitespace-nowrap font-medium text-emerald-700"><Highlight text={r.number} terms={data.terms} /></Td>
+                      <Td className="whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">{r.type_label}</Td>
+                      <Td className="whitespace-nowrap font-medium text-emerald-700 dark:text-emerald-300"><Highlight text={r.number} terms={data.terms} /></Td>
                       <Td className="whitespace-nowrap">{fmtDate(r.date)}</Td>
                       <Td><Highlight text={r.party || '-'} terms={data.terms} /></Td>
                       <Td className="max-w-xs truncate"><Highlight text={r.description} terms={data.terms} /></Td>

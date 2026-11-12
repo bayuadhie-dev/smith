@@ -77,21 +77,21 @@ const ProductionPlanningDashboard: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, string> = {
-      draft: 'bg-gray-100 text-gray-800',
-      approved: 'bg-green-100 text-green-800',
-      released: 'bg-blue-100 text-blue-800',
-      completed: 'bg-purple-100 text-purple-800',
-      cancelled: 'bg-red-100 text-red-800'
+      draft: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+      approved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      released: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      completed: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
     };
     return badges[status] || badges.draft;
   };
 
   const getPriorityBadge = (priority: string) => {
     const badges: Record<string, string> = {
-      low: 'bg-gray-100 text-gray-800',
-      normal: 'bg-blue-100 text-blue-800',
-      high: 'bg-orange-100 text-orange-800',
-      urgent: 'bg-red-100 text-red-800'
+      low: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+      normal: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      high: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+      urgent: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
     };
     return badges[priority] || badges.normal;
   };

@@ -125,7 +125,7 @@ const LiveMonitoringView: React.FC = () => {
               >
                 <ArrowLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
               </button>
-              <SignalIcon className="w-6 h-6 text-emerald-600 print:w-5 print:h-5" />
+              <SignalIcon className="w-6 h-6 text-emerald-600 print:w-5 print:h-5 dark:text-emerald-400" />
               <h1 className="text-lg font-bold text-gray-900 dark:text-white print:text-base">Live Monitoring Check</h1>
             </div>
             <div className="flex items-center space-x-2 print:hidden">
@@ -167,8 +167,8 @@ const LiveMonitoringView: React.FC = () => {
             <div className="flex items-center space-x-2">
               <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
                 data.machine_status === 'running' 
-                  ? 'bg-green-100 text-green-700' 
-                  : 'bg-red-100 text-red-700'
+                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' 
+                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
               }`}>
                 {data.machine_status === 'running' ? '🟢 Running' : '🔴 Stopped'}
               </span>
@@ -183,13 +183,13 @@ const LiveMonitoringView: React.FC = () => {
         {/* Status Summary */}
         <div className="flex items-center justify-center gap-6 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border mb-4 print:shadow-none print:mb-2 print:py-2">
           <div className="flex items-center space-x-2">
-            <CheckCircleIcon className="w-5 h-5 text-green-600" />
-            <span className="text-xl font-bold text-green-600 print:text-lg">{okCount}</span>
+            <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <span className="text-xl font-bold text-green-600 print:text-lg dark:text-green-400">{okCount}</span>
             <span className="text-sm text-gray-500 dark:text-gray-400">OK</span>
           </div>
           <div className="flex items-center space-x-2">
-            <XCircleIcon className="w-5 h-5 text-red-600" />
-            <span className="text-xl font-bold text-red-600 print:text-lg">{ngCount}</span>
+            <XCircleIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+            <span className="text-xl font-bold text-red-600 print:text-lg dark:text-red-400">{ngCount}</span>
             <span className="text-sm text-gray-500 dark:text-gray-400">NG</span>
           </div>
           <div className="flex items-center space-x-2">
@@ -205,32 +205,32 @@ const LiveMonitoringView: React.FC = () => {
 
         {/* Stop Info */}
         {data.machine_status === 'stopped' && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 print:p-2 print:mb-2">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 print:p-2 print:mb-2 dark:bg-red-900/20 dark:border-red-800">
             <div className="flex items-center space-x-2 mb-2">
-              <StopIcon className="w-5 h-5 text-red-600" />
-              <h3 className="font-semibold text-red-800">Mesin Berhenti</h3>
+              <StopIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+              <h3 className="font-semibold text-red-800 dark:text-red-300">Mesin Berhenti</h3>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm print:text-xs">
               <div>
-                <span className="text-red-600">Dari:</span>
+                <span className="text-red-600 dark:text-red-400">Dari:</span>
                 <span className="ml-2 font-medium">{data.stop_from || '-'}</span>
               </div>
               <div>
-                <span className="text-red-600">Sampai:</span>
+                <span className="text-red-600 dark:text-red-400">Sampai:</span>
                 <span className="ml-2 font-medium">{data.stop_to || '-'}</span>
               </div>
               <div>
-                <span className="text-red-600">Durasi:</span>
+                <span className="text-red-600 dark:text-red-400">Durasi:</span>
                 <span className="ml-2 font-medium">{data.stop_duration_minutes || 0} menit</span>
               </div>
               <div>
-                <span className="text-red-600">Kategori:</span>
+                <span className="text-red-600 dark:text-red-400">Kategori:</span>
                 <span className="ml-2 font-medium capitalize">{data.stop_category || '-'}</span>
               </div>
             </div>
             {data.stop_reason && (
               <div className="mt-2 text-sm print:text-xs">
-                <span className="text-red-600">Alasan:</span>
+                <span className="text-red-600 dark:text-red-400">Alasan:</span>
                 <span className="ml-2">{data.stop_reason}</span>
               </div>
             )}
@@ -239,14 +239,14 @@ const LiveMonitoringView: React.FC = () => {
 
         {/* NG Items Alert */}
         {ngItems.length > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 print:p-2 print:mb-2">
-            <h3 className="font-semibold text-red-800 mb-2 flex items-center">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 print:p-2 print:mb-2 dark:bg-red-900/20 dark:border-red-800">
+            <h3 className="font-semibold text-red-800 mb-2 flex items-center dark:text-red-300">
               <XCircleIcon className="w-5 h-5 mr-2" />
               Item NG - Perlu Tindakan:
             </h3>
             <ul className="space-y-1">
               {ngItems.map(item => (
-                <li key={item.id} className="text-sm text-red-700 print:text-xs">
+                <li key={item.id} className="text-sm text-red-700 print:text-xs dark:text-red-300">
                   • {item.item_name}{item.catatan && `: ${item.catatan}`}
                 </li>
               ))}
@@ -260,14 +260,14 @@ const LiveMonitoringView: React.FC = () => {
           {kondisiMesinItems.length > 0 && (
             <div className="p-4 print:p-2">
               <div className="flex items-center space-x-2 mb-3 print:mb-2">
-                <CogIcon className="w-5 h-5 text-blue-600 print:w-4 print:h-4" />
+                <CogIcon className="w-5 h-5 text-blue-600 print:w-4 print:h-4 dark:text-blue-400" />
                 <h3 className="font-semibold text-gray-800 dark:text-gray-100">Kondisi Mesin</h3>
                 <span className="text-xs text-gray-500 dark:text-gray-400">({kondisiMesinItems.length} item)</span>
               </div>
               <div className="grid grid-cols-2 gap-2 print:gap-1">
                 {kondisiMesinItems.map((item, idx) => (
                   <div key={item.id} className={`flex items-center justify-between p-2 rounded-lg border print:p-1 ${
-                    item.status === 'NG' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'
+                    item.status === 'NG' ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800' : 'bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-700'
                   }`}>
                     <div className="flex items-center space-x-2">
                       <span className="text-xs text-gray-500 dark:text-gray-400 font-medium print:text-[10px]">{idx + 1}</span>
@@ -290,14 +290,14 @@ const LiveMonitoringView: React.FC = () => {
           {manpowerItems.length > 0 && (
             <div className="p-4 border-t print:p-2">
               <div className="flex items-center space-x-2 mb-3 print:mb-2">
-                <UserGroupIcon className="w-5 h-5 text-purple-600 print:w-4 print:h-4" />
+                <UserGroupIcon className="w-5 h-5 text-purple-600 print:w-4 print:h-4 dark:text-purple-400" />
                 <h3 className="font-semibold text-gray-800 dark:text-gray-100">Man Power</h3>
                 <span className="text-xs text-gray-500 dark:text-gray-400">({manpowerItems.length} item)</span>
               </div>
               <div className="grid grid-cols-2 gap-2 print:gap-1">
                 {manpowerItems.map((item, idx) => (
                   <div key={item.id} className={`flex items-center justify-between p-2 rounded-lg border print:p-1 ${
-                    item.status === 'NG' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'
+                    item.status === 'NG' ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800' : 'bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-700'
                   }`}>
                     <div className="flex items-center space-x-2">
                       <span className="text-xs text-gray-500 dark:text-gray-400 font-medium print:text-[10px]">{idx + 1}</span>
@@ -318,10 +318,10 @@ const LiveMonitoringView: React.FC = () => {
 
           {/* Notes */}
           {data.notes && (
-            <div className="p-4 border-t bg-amber-50 print:p-2">
+            <div className="p-4 border-t bg-amber-50 print:p-2 dark:bg-amber-900/20">
               <p className="text-sm print:text-xs">
-                <span className="font-semibold text-amber-800">Catatan:</span>
-                <span className="text-amber-700 ml-2">{data.notes}</span>
+                <span className="font-semibold text-amber-800 dark:text-amber-300">Catatan:</span>
+                <span className="text-amber-700 ml-2 dark:text-amber-300">{data.notes}</span>
               </p>
             </div>
           )}

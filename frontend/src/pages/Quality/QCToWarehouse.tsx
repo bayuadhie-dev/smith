@@ -206,21 +206,21 @@ export default function QCToWarehouse() {
     switch (disposition) {
       case 'released':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
             <CheckCircleIcon className="h-3 w-3" />
             Released
           </span>
         )
       case 'quarantine':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
             <ExclamationTriangleIcon className="h-3 w-3" />
             Quarantine
           </span>
         )
       case 'reject':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
             <XCircleIcon className="h-3 w-3" />
             Reject
           </span>
@@ -261,50 +261,50 @@ export default function QCToWarehouse() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="card p-4 bg-blue-50 border-blue-200">
+        <div className="card p-4 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <ClipboardDocumentCheckIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+              <ClipboardDocumentCheckIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-sm text-blue-600">Pending Transfer</p>
-              <p className="text-2xl font-bold text-blue-900">{pendingTransfers.length}</p>
+              <p className="text-sm text-blue-600 dark:text-blue-400">Pending Transfer</p>
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-200">{pendingTransfers.length}</p>
             </div>
           </div>
         </div>
 
-        <div className="card p-4 bg-green-50 border-green-200">
+        <div className="card p-4 bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CheckCircleIcon className="h-6 w-6 text-green-600" />
+            <div className="p-2 bg-green-100 rounded-lg dark:bg-green-900/30">
+              <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-sm text-green-600">Stok Released</p>
-              <p className="text-2xl font-bold text-green-900">{inventorySummary.released.toLocaleString()}</p>
+              <p className="text-sm text-green-600 dark:text-green-400">Stok Released</p>
+              <p className="text-2xl font-bold text-green-900 dark:text-green-200">{inventorySummary.released.toLocaleString()}</p>
             </div>
           </div>
         </div>
 
-        <div className="card p-4 bg-yellow-50 border-yellow-200">
+        <div className="card p-4 bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600" />
+            <div className="p-2 bg-yellow-100 rounded-lg dark:bg-yellow-900/30">
+              <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div>
-              <p className="text-sm text-yellow-600">Stok Quarantine</p>
-              <p className="text-2xl font-bold text-yellow-900">{inventorySummary.quarantine.toLocaleString()}</p>
+              <p className="text-sm text-yellow-600 dark:text-yellow-400">Stok Quarantine</p>
+              <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-200">{inventorySummary.quarantine.toLocaleString()}</p>
             </div>
           </div>
         </div>
 
-        <div className="card p-4 bg-red-50 border-red-200">
+        <div className="card p-4 bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <XCircleIcon className="h-6 w-6 text-red-600" />
+            <div className="p-2 bg-red-100 rounded-lg dark:bg-red-900/30">
+              <XCircleIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <p className="text-sm text-red-600">Stok Reject</p>
-              <p className="text-2xl font-bold text-red-900">{inventorySummary.reject.toLocaleString()}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">Stok Reject</p>
+              <p className="text-2xl font-bold text-red-900 dark:text-red-200">{inventorySummary.reject.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -413,7 +413,7 @@ export default function QCToWarehouse() {
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredItems.map((item) => (
-                  <tr key={item.id} className={`hover:bg-gray-50 ${selectedItems.includes(item.id) ? 'bg-blue-50' : ''}`}>
+                  <tr key={item.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${selectedItems.includes(item.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
                     <td className="px-4 py-3">
                       <input
                         type="checkbox"
@@ -423,7 +423,7 @@ export default function QCToWarehouse() {
                       />
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="font-medium text-blue-600">{item.inspection_number}</span>
+                      <span className="font-medium text-blue-600 dark:text-blue-400">{item.inspection_number}</span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div>
@@ -442,7 +442,7 @@ export default function QCToWarehouse() {
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-1 text-sm">
-                        <span className="text-green-600">{item.passed_checklist_items}</span>
+                        <span className="text-green-600 dark:text-green-400">{item.passed_checklist_items}</span>
                         <span className="text-gray-400">/</span>
                         <span className="text-gray-600 dark:text-gray-300">{item.total_checklist_items}</span>
                         {item.failed_checklist_items > 0 && (
@@ -460,7 +460,7 @@ export default function QCToWarehouse() {
                       <button
                         onClick={() => handleTransfer(item.id)}
                         disabled={!selectedLocation || isTransferring}
-                        className="text-blue-600 hover:text-blue-800 font-medium text-sm inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-blue-600 hover:text-blue-800 font-medium text-sm inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed dark:text-blue-400"
                       >
                         Transfer <ArrowRightIcon className="h-3 w-3" />
                       </button>
@@ -478,23 +478,23 @@ export default function QCToWarehouse() {
         <h3 className="font-medium text-gray-900 dark:text-white mb-3">Keterangan Disposition:</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="flex items-start gap-2">
-            <CheckCircleIcon className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <CheckCircleIcon className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5 dark:text-green-400" />
             <div>
-              <p className="font-medium text-green-800">Released</p>
+              <p className="font-medium text-green-800 dark:text-green-300">Released</p>
               <p className="text-gray-600 dark:text-gray-300">Semua checklist PASS. Produk siap dijual/kirim.</p>
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5 dark:text-yellow-400" />
             <div>
-              <p className="font-medium text-yellow-800">Quarantine</p>
+              <p className="font-medium text-yellow-800 dark:text-yellow-300">Quarantine</p>
               <p className="text-gray-600 dark:text-gray-300">Sebagian checklist FAIL. Perlu review sebelum release.</p>
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <XCircleIcon className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <XCircleIcon className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5 dark:text-red-400" />
             <div>
-              <p className="font-medium text-red-800">Reject</p>
+              <p className="font-medium text-red-800 dark:text-red-300">Reject</p>
               <p className="text-gray-600 dark:text-gray-300">Semua checklist FAIL. Perlu rework, tidak bisa transfer.</p>
             </div>
           </div>

@@ -218,8 +218,8 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
                   <button type="button" onClick={() => toggleSort('payment_number')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
                     No. Transaksi
                     <span className="flex flex-col leading-none">
-                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'payment_number' && sort.dir === 'asc' ? 'text-green-700' : 'text-gray-300'} dark:text-green-300`} />
-                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'payment_number' && sort.dir === 'desc' ? 'text-green-700' : 'text-gray-300'} dark:text-green-300`} />
+                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'payment_number' && sort.dir === 'asc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
+                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'payment_number' && sort.dir === 'desc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
                     </span>
                   </button>
                 </th>
@@ -227,8 +227,8 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
                   <button type="button" onClick={() => toggleSort('payment_date')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
                     Tanggal
                     <span className="flex flex-col leading-none">
-                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'payment_date' && sort.dir === 'asc' ? 'text-green-700' : 'text-gray-300'} dark:text-green-300`} />
-                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'payment_date' && sort.dir === 'desc' ? 'text-green-700' : 'text-gray-300'} dark:text-green-300`} />
+                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'payment_date' && sort.dir === 'asc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
+                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'payment_date' && sort.dir === 'desc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
                     </span>
                   </button>
                 </th>
@@ -236,8 +236,8 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
                   <button type="button" onClick={() => toggleSort('bank')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
                     Kas/Bank
                     <span className="flex flex-col leading-none">
-                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'bank' && sort.dir === 'asc' ? 'text-green-700' : 'text-gray-300'} dark:text-green-300`} />
-                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'bank' && sort.dir === 'desc' ? 'text-green-700' : 'text-gray-300'} dark:text-green-300`} />
+                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'bank' && sort.dir === 'asc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
+                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'bank' && sort.dir === 'desc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
                     </span>
                   </button>
                 </th>
@@ -245,8 +245,8 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
                   <button type="button" onClick={() => toggleSort('party_name')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
                     {partyLabel}
                     <span className="flex flex-col leading-none">
-                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'party_name' && sort.dir === 'asc' ? 'text-green-700' : 'text-gray-300'} dark:text-green-300`} />
-                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'party_name' && sort.dir === 'desc' ? 'text-green-700' : 'text-gray-300'} dark:text-green-300`} />
+                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'party_name' && sort.dir === 'asc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
+                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'party_name' && sort.dir === 'desc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
                     </span>
                   </button>
                 </th>
@@ -254,8 +254,8 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
                   <button type="button" onClick={() => toggleSort('description')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
                     Keterangan
                     <span className="flex flex-col leading-none">
-                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'description' && sort.dir === 'asc' ? 'text-green-700' : 'text-gray-300'} dark:text-green-300`} />
-                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'description' && sort.dir === 'desc' ? 'text-green-700' : 'text-gray-300'} dark:text-green-300`} />
+                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'description' && sort.dir === 'asc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
+                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'description' && sort.dir === 'desc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
                     </span>
                   </button>
                 </th>
@@ -264,8 +264,8 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
                   <button type="button" onClick={() => toggleSort('amount')} className="inline-flex w-full items-center gap-1 justify-end font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
                     Nilai
                     <span className="flex flex-col leading-none">
-                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'amount' && sort.dir === 'asc' ? 'text-green-700' : 'text-gray-300'} dark:text-green-300`} />
-                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'amount' && sort.dir === 'desc' ? 'text-green-700' : 'text-gray-300'} dark:text-green-300`} />
+                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'amount' && sort.dir === 'asc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
+                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'amount' && sort.dir === 'desc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
                     </span>
                   </button>
                 </th>
@@ -273,8 +273,8 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
                   <button type="button" onClick={() => toggleSort('status')} className="inline-flex w-full items-center gap-1 justify-center font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
                     Status
                     <span className="flex flex-col leading-none">
-                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'status' && sort.dir === 'asc' ? 'text-green-700' : 'text-gray-300'} dark:text-green-300`} />
-                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'status' && sort.dir === 'desc' ? 'text-green-700' : 'text-gray-300'} dark:text-green-300`} />
+                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'status' && sort.dir === 'asc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
+                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'status' && sort.dir === 'desc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
                     </span>
                   </button>
                 </th>
@@ -315,10 +315,10 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
                     <span
                       className={`text-xs px-2 py-1 rounded ${
                         r.status === 'cancelled'
-                          ? 'bg-red-50 text-red-600'
+                          ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
                           : r.status === 'cleared'
-                          ? 'bg-green-50 text-green-700'
-                          : 'bg-yellow-50 text-yellow-700'
+                          ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300'
+                          : 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300'
                       } dark:bg-red-900/20 dark:bg-green-900/20 dark:bg-yellow-900/20 dark:text-red-400 dark:text-green-300 dark:text-yellow-300`}
                       title={r.status === 'pending' ? 'Transaksi sudah dijurnal (tidak perlu approval). Status berubah otomatis setelah dicocokkan dengan mutasi bank di Rekonsiliasi Bank.' : undefined}
                     >

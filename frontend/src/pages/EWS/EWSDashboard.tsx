@@ -47,9 +47,9 @@ export default function EWSDashboard() {
   }
 
   const getProbColor = (prob: number) => {
-    if (prob >= 0.7) return 'text-red-600 font-semibold'
+    if (prob >= 0.7) return 'text-red-600 font-semibold dark:text-red-400'
     if (prob >= 0.4) return 'text-orange-500 font-semibold'
-    return 'text-green-600'
+    return 'text-green-600 dark:text-green-400'
   }
 
   // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
@@ -113,9 +113,9 @@ export default function EWSDashboard() {
               <div key={m.machine_id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                 <p className="text-xs text-gray-500 dark:text-gray-400">Mesin {m.machine_id}</p>
                 <p className="text-sm">
-                  <span className="text-red-600 font-semibold">{m.bahaya}</span>
+                  <span className="text-red-600 font-semibold dark:text-red-400">{m.bahaya}</span>
                   {' / '}
-                  <span className="text-green-600">{m.aman}</span>
+                  <span className="text-green-600 dark:text-green-400">{m.aman}</span>
                 </p>
               </div>
             ))}
@@ -181,7 +181,7 @@ export default function EWSDashboard() {
                     </td>
                     <td>
                       <button
-                        className="text-xs text-blue-600 hover:underline disabled:opacity-50"
+                        className="text-xs text-blue-600 hover:underline disabled:opacity-50 dark:text-blue-400"
                         disabled={isRescoring}
                         onClick={(e) => handleRescore(e, item.shift_production_id)}
                       >

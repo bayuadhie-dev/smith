@@ -71,7 +71,7 @@ const SalesOrderDetails: React.FC = () => {
   if (error || !order) {
     return (
       <div className="text-center py-12">
-        <div className="text-red-600 mb-4">
+        <div className="text-red-600 mb-4 dark:text-red-400">
           <DocumentTextIcon className="h-12 w-12 mx-auto" />
         </div>
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Sales Order Not Found</h3>
@@ -85,13 +85,13 @@ const SalesOrderDetails: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { bg: string; text: string }> = {
-      draft: { bg: 'bg-gray-100', text: 'text-gray-800' },
-      confirmed: { bg: 'bg-blue-100', text: 'text-blue-800' },
-      in_production: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-      ready: { bg: 'bg-green-100', text: 'text-green-800' },
-      shipped: { bg: 'bg-purple-100', text: 'text-purple-800' },
-      delivered: { bg: 'bg-green-100', text: 'text-green-800' },
-      cancelled: { bg: 'bg-red-100', text: 'text-red-800' }
+      draft: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-800 dark:text-gray-100' },
+      confirmed: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300' },
+      in_production: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
+      ready: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
+      shipped: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-800 dark:text-purple-300' },
+      delivered: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
+      cancelled: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-300' }
     };
     const config = statusConfig[status] || statusConfig.draft;
     return `px-2 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`;
@@ -99,10 +99,10 @@ const SalesOrderDetails: React.FC = () => {
 
   const getPriorityBadge = (priority: string) => {
     const priorityConfig: Record<string, { bg: string; text: string }> = {
-      low: { bg: 'bg-gray-100', text: 'text-gray-800' },
-      normal: { bg: 'bg-blue-100', text: 'text-blue-800' },
-      high: { bg: 'bg-orange-100', text: 'text-orange-800' },
-      urgent: { bg: 'bg-red-100', text: 'text-red-800' }
+      low: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-800 dark:text-gray-100' },
+      normal: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300' },
+      high: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-800 dark:text-orange-300' },
+      urgent: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-300' }
     };
     const config = priorityConfig[priority] || priorityConfig.normal;
     return `px-2 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`;
@@ -139,8 +139,8 @@ const SalesOrderDetails: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <DocumentTextIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+              <DocumentTextIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.status')}</p>
@@ -151,8 +151,8 @@ const SalesOrderDetails: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <ClipboardDocumentListIcon className="h-6 w-6 text-orange-600" />
+            <div className="p-2 bg-orange-100 rounded-lg dark:bg-orange-900/30">
+              <ClipboardDocumentListIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Priority</p>
@@ -163,8 +163,8 @@ const SalesOrderDetails: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
+            <div className="p-2 bg-green-100 rounded-lg dark:bg-green-900/30">
+              <CurrencyDollarIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Total Amount</p>
@@ -173,8 +173,8 @@ const SalesOrderDetails: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <CalendarIcon className="h-6 w-6 text-purple-600" />
+            <div className="p-2 bg-purple-100 rounded-lg dark:bg-purple-900/30">
+              <CalendarIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Order Date</p>
@@ -357,7 +357,7 @@ const SalesOrderDetails: React.FC = () => {
                       const none = shipped <= 0;
                       return (
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          full ? 'bg-green-100 text-green-800' : none ? 'bg-gray-100 text-gray-600' : 'bg-yellow-100 text-yellow-800'
+                          full ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : none ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
                         }`}>
                           {shipped} / {qty} {item.uom}
                         </span>

@@ -134,13 +134,13 @@ const MaterialsList: React.FC = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'raw_materials':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
       case 'chemical_materials':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
       case 'packaging_materials':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -176,15 +176,15 @@ const MaterialsList: React.FC = () => {
     const group = getCategoryGroup(category);
     switch (group) {
       case 'Kain':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
       case 'Packaging':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       case 'Aksesoris':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
       case 'Chemical':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -302,8 +302,8 @@ const MaterialsList: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                          <CubeIcon className="h-5 w-5 text-blue-600" />
+                        <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center dark:bg-blue-900/30">
+                          <CubeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         </div>
                       </div>
                       <div className="ml-4">
@@ -334,8 +334,8 @@ const MaterialsList: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       material.is_active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                     }`}>
                       {material.is_active ? 'Active' : 'Inactive'}
                     </span>
@@ -351,21 +351,21 @@ const MaterialsList: React.FC = () => {
                       </button>
                       <button 
                         onClick={() => navigate(`/app/warehouse/materials/${material.id}`)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
                         title="View Material"
                       >
                         <EyeIcon className="h-4 w-4" />
                       </button>
                       <button 
                         onClick={() => navigate(`/app/warehouse/materials/${material.id}/edit`)}
-                        className="text-green-600 hover:text-green-900"
+                        className="text-green-600 hover:text-green-900 dark:text-green-400"
                         title="Edit Material"
                       >
                         <PencilIcon className="h-4 w-4" />
                       </button>
                       <button 
                         onClick={() => handleDelete(material.id, material.name)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-red-600 hover:text-red-900 dark:text-red-400"
                         title="Delete Material"
                       >
                         <TrashIcon className="h-4 w-4" />
@@ -430,8 +430,8 @@ const MaterialsList: React.FC = () => {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">{error}</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
+          <p className="text-red-800 dark:text-red-300">{error}</p>
         </div>
       )}
 

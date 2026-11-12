@@ -50,17 +50,17 @@ const COLUMNS_CONFIG: Omit<KanbanColumn, 'items'>[] = [
     id: 'planned',
     title: 'Planned',
     icon: <ClipboardDocumentListIcon className="h-5 w-5" />,
-    color: 'text-slate-700',
-    bgColor: 'bg-slate-50',
-    borderColor: 'border-slate-300',
+    color: 'text-slate-700 dark:text-slate-200',
+    bgColor: 'bg-slate-50 dark:bg-slate-900',
+    borderColor: 'border-slate-300 dark:border-slate-600',
     headerBg: 'bg-gradient-to-r from-slate-100 to-slate-200',
   },
   {
     id: 'released',
     title: 'Released',
     icon: <PlayIcon className="h-5 w-5" />,
-    color: 'text-blue-700',
-    bgColor: 'bg-blue-50',
+    color: 'text-blue-700 dark:text-blue-300',
+    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
     borderColor: 'border-blue-300',
     headerBg: 'bg-gradient-to-r from-blue-100 to-blue-200',
   },
@@ -68,8 +68,8 @@ const COLUMNS_CONFIG: Omit<KanbanColumn, 'items'>[] = [
     id: 'in_progress',
     title: 'In Progress',
     icon: <WrenchScrewdriverIcon className="h-5 w-5" />,
-    color: 'text-amber-700',
-    bgColor: 'bg-amber-50',
+    color: 'text-amber-700 dark:text-amber-300',
+    bgColor: 'bg-amber-50 dark:bg-amber-900/20',
     borderColor: 'border-amber-300',
     headerBg: 'bg-gradient-to-r from-amber-100 to-amber-200',
   },
@@ -77,8 +77,8 @@ const COLUMNS_CONFIG: Omit<KanbanColumn, 'items'>[] = [
     id: 'completed',
     title: 'Completed',
     icon: <CheckCircleIcon className="h-5 w-5" />,
-    color: 'text-green-700',
-    bgColor: 'bg-green-50',
+    color: 'text-green-700 dark:text-green-300',
+    bgColor: 'bg-green-50 dark:bg-green-900/20',
     borderColor: 'border-green-300',
     headerBg: 'bg-gradient-to-r from-green-100 to-green-200',
   },
@@ -86,18 +86,18 @@ const COLUMNS_CONFIG: Omit<KanbanColumn, 'items'>[] = [
     id: 'cancelled',
     title: 'Cancelled',
     icon: <XCircleIcon className="h-5 w-5" />,
-    color: 'text-red-700',
-    bgColor: 'bg-red-50',
+    color: 'text-red-700 dark:text-red-300',
+    bgColor: 'bg-red-50 dark:bg-red-900/20',
     borderColor: 'border-red-300',
     headerBg: 'bg-gradient-to-r from-red-100 to-red-200',
   },
 ];
 
 const PRIORITY_STYLES: Record<string, { badge: string; dot: string }> = {
-  urgent: { badge: 'bg-red-100 text-red-800', dot: 'bg-red-500' },
-  high: { badge: 'bg-orange-100 text-orange-800', dot: 'bg-orange-500' },
-  normal: { badge: 'bg-blue-100 text-blue-800', dot: 'bg-blue-500' },
-  low: { badge: 'bg-gray-100 text-gray-600', dot: 'bg-gray-400' },
+  urgent: { badge: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', dot: 'bg-red-500' },
+  high: { badge: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300', dot: 'bg-orange-500' },
+  normal: { badge: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', dot: 'bg-blue-500' },
+  low: { badge: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300', dot: 'bg-gray-400' },
 };
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
@@ -378,7 +378,7 @@ const WorkOrderKanban: React.FC = () => {
               setMachineFilter('');
               setPriorityFilter('');
             }}
-            className="px-3 py-2 text-sm text-red-600 hover:text-red-800 font-medium"
+            className="px-3 py-2 text-sm text-red-600 hover:text-red-800 font-medium dark:text-red-400"
           >
             Reset Filter
           </button>
@@ -387,7 +387,7 @@ const WorkOrderKanban: React.FC = () => {
 
       {/* Drag Error */}
       {dragError && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-2 text-sm animate-pulse">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-2 text-sm animate-pulse dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
           <ExclamationTriangleIcon className="h-5 w-5 flex-shrink-0" />
           {dragError}
         </div>
@@ -449,10 +449,10 @@ const WorkOrderKanban: React.FC = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`bg-white rounded-lg border shadow-sm p-3 transition-all cursor-grab active:cursor-grabbing ${
+                            className={`bg-white rounded-lg border shadow-sm p-3 transition-all cursor-grab active:cursor-grabbing dark:bg-gray-800 ${
                               snapshot.isDragging
                                 ? 'shadow-lg ring-2 ring-blue-400 rotate-1 scale-105'
-                                : 'hover:shadow-md border-gray-200'
+                                : 'hover:shadow-md border-gray-200 dark:border-gray-700'
                             } ${updatingWO === wo.id ? 'opacity-60' : ''} ${
                               isOverdue(wo) ? 'border-l-4 border-l-red-500' : ''
                             }`}
@@ -461,7 +461,7 @@ const WorkOrderKanban: React.FC = () => {
                             <div className="flex items-start justify-between mb-2">
                               <button
                                 onClick={() => navigate(`/app/production/work-orders/${wo.id}`)}
-                                className="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                                className="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400"
                               >
                                 {wo.wo_number}
                               </button>
@@ -523,7 +523,7 @@ const WorkOrderKanban: React.FC = () => {
                             )}
 
                             {/* Footer */}
-                            <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                            <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
                               <div className="flex items-center gap-2 text-[10px] text-gray-400">
                                 {wo.required_date && (
                                   <span className={isOverdue(wo) ? 'text-red-500 font-medium' : ''}>

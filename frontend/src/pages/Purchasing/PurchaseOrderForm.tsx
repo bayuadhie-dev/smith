@@ -365,7 +365,7 @@ const navigate = useNavigate()
                 disabled={isEdit}
                 maxLength={100}
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 {isEdit ? 'Nomor PO tidak bisa diubah setelah dibuat.' : 'Diisi = dipakai sebagai nomor PO. Kosong = nomor otomatis.'}
               </p>
             </div>
@@ -384,7 +384,7 @@ const navigate = useNavigate()
                 className="w-full"
               />
               {errors.supplier_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.supplier_id.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.supplier_id.message}</p>
               )}
             </div>
 
@@ -398,7 +398,7 @@ const navigate = useNavigate()
                 className="input-field"
               />
               {errors.order_date && (
-                <p className="mt-1 text-sm text-red-600">{errors.order_date.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.order_date.message}</p>
               )}
             </div>
 
@@ -451,7 +451,7 @@ const navigate = useNavigate()
                 ))}
               </select>
               {isNotDraft && (
-                <p className="mt-1 text-xs text-gray-500">Mata uang terkunci karena PO sudah bukan draft.</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Mata uang terkunci karena PO sudah bukan draft.</p>
               )}
               {watchedCurrency !== 'IDR' && (
                 <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
@@ -482,7 +482,7 @@ const navigate = useNavigate()
                     </div>
                   )}
                   {watchedUseManual && (
-                    <p className="text-xs text-amber-600">Kurs manual dipakai menggantikan kurs otomatis saat PO di-submit untuk approval, lalu terkunci.</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400">Kurs manual dipakai menggantikan kurs otomatis saat PO di-submit untuk approval, lalu terkunci.</p>
                   )}
                 </div>
               )}
@@ -736,9 +736,9 @@ const navigate = useNavigate()
       </form>
 
       {/* Quick Tips */}
-      <div className="card p-4 bg-green-50 border border-green-200">
-        <h4 className="font-medium text-green-900 mb-2">💡 Purchasing Tips</h4>
-        <ul className="text-sm text-green-800 space-y-1">
+      <div className="card p-4 bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800">
+        <h4 className="font-medium text-green-900 mb-2 dark:text-green-200">💡 Purchasing Tips</h4>
+        <ul className="text-sm text-green-800 space-y-1 dark:text-green-300">
           <li>• Verify supplier information and payment terms before creating PO</li>
           <li>• Check current market prices for accurate cost estimation</li>
           <li>• Set realistic required dates considering supplier lead times</li>

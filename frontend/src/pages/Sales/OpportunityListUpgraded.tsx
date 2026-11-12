@@ -258,7 +258,7 @@ const OpportunityListUpgraded: React.FC = () => {
             </button>
             <Link
               to="/app/sales/opportunities/new"
-              className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-purple-600 rounded-lg font-medium hover:bg-purple-50 transition-colors shadow-md"
+              className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-purple-600 rounded-lg font-medium hover:bg-purple-50 transition-colors shadow-md dark:text-purple-400"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               New Opportunity
@@ -277,13 +277,13 @@ const OpportunityListUpgraded: React.FC = () => {
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(stats.total_value)}</div>
           <div className="text-sm text-gray-500 dark:text-gray-400">Pipeline Value</div>
         </div>
-        <div className="bg-blue-50 rounded-lg border border-blue-200 p-4 col-span-2">
-          <div className="text-2xl font-bold text-blue-600">{formatCurrency(stats.weighted_value)}</div>
-          <div className="text-sm text-blue-600">Weighted Value</div>
+        <div className="bg-blue-50 rounded-lg border border-blue-200 p-4 col-span-2 dark:bg-blue-900/20 dark:border-blue-800">
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{formatCurrency(stats.weighted_value)}</div>
+          <div className="text-sm text-blue-600 dark:text-blue-400">Weighted Value</div>
         </div>
-        <div className="bg-green-50 rounded-lg border border-green-200 p-4">
-          <div className="text-2xl font-bold text-green-600">{stats.won_count}</div>
-          <div className="text-sm text-green-600">Won</div>
+        <div className="bg-green-50 rounded-lg border border-green-200 p-4 dark:bg-green-900/20 dark:border-green-800">
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.won_count}</div>
+          <div className="text-sm text-green-600 dark:text-green-400">Won</div>
         </div>
         <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg p-4 text-white">
           <div className="text-2xl font-bold">{stats.win_rate}%</div>
@@ -328,17 +328,17 @@ const OpportunityListUpgraded: React.FC = () => {
           <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button
               onClick={() => setViewMode('kanban')}
-              className={`p-2 rounded-md transition-colors ${viewMode === 'kanban' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+              className={`p-2 rounded-md transition-colors ${viewMode === 'kanban' ? 'bg-white shadow-sm dark:bg-gray-800' : 'hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               title="Kanban View"
             >
-              <Squares2X2Icon className="h-5 w-5 text-gray-600" />
+              <Squares2X2Icon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+              className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm dark:bg-gray-800' : 'hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               title="List View"
             >
-              <ListBulletIcon className="h-5 w-5 text-gray-600" />
+              <ListBulletIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
             </button>
           </div>
         </div>
@@ -372,11 +372,11 @@ const OpportunityListUpgraded: React.FC = () => {
                           />
                           <h3 className="font-semibold text-gray-900 dark:text-white">{stage.name}</h3>
                         </div>
-                        <span className="text-sm font-medium text-gray-600">
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
                           {stageOpps.length}
                         </span>
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 dark:text-gray-300">
                         {formatCurrency(stageTotal)}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -427,14 +427,14 @@ const OpportunityListUpgraded: React.FC = () => {
                                     <>
                                       <button
                                         onClick={() => handleMarkWon(opp.id)}
-                                        className="flex items-center w-full px-3 py-2 text-sm text-green-600 hover:bg-green-50"
+                                        className="flex items-center w-full px-3 py-2 text-sm text-green-600 hover:bg-green-50 dark:text-green-400"
                                       >
                                         <CheckCircleIcon className="h-4 w-4 mr-2" />
                                         Mark Won
                                       </button>
                                       <button
                                         onClick={() => handleMarkLost(opp.id)}
-                                        className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                                        className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400"
                                       >
                                         <XCircleIcon className="h-4 w-4 mr-2" />
                                         Mark Lost
@@ -443,7 +443,7 @@ const OpportunityListUpgraded: React.FC = () => {
                                   )}
                                   <button
                                     onClick={() => handleDeleteOpportunity(opp.id)}
-                                    className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                                    className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400"
                                   >
                                     <TrashIcon className="h-4 w-4 mr-2" />
                                     Delete
@@ -460,7 +460,7 @@ const OpportunityListUpgraded: React.FC = () => {
 
                           {/* Customer */}
                           {opp.customer_name && (
-                            <div className="flex items-center text-sm text-gray-600 mb-2">
+                            <div className="flex items-center text-sm text-gray-600 mb-2 dark:text-gray-300">
                               <UserIcon className="h-4 w-4 mr-1 text-gray-400" />
                               {opp.customer_name}
                             </div>
@@ -493,13 +493,13 @@ const OpportunityListUpgraded: React.FC = () => {
 
                           {/* Assigned */}
                           {opp.assigned_user_name && (
-                            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center">
-                              <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mr-2">
-                                <span className="text-xs font-medium text-purple-600">
+                            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center dark:border-gray-800">
+                              <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mr-2 dark:bg-purple-900/30">
+                                <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
                                   {opp.assigned_user_name.charAt(0).toUpperCase()}
                                 </span>
                               </div>
-                              <span className="text-xs text-gray-600">{opp.assigned_user_name}</span>
+                              <span className="text-xs text-gray-600 dark:text-gray-300">{opp.assigned_user_name}</span>
                             </div>
                           )}
                         </div>
@@ -572,7 +572,7 @@ const OpportunityListUpgraded: React.FC = () => {
                             style={{ width: `${opp.probability}%` }}
                           />
                         </div>
-                        <span className="text-sm text-gray-600">{opp.probability}%</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">{opp.probability}%</span>
                       </div>
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
@@ -587,19 +587,19 @@ const OpportunityListUpgraded: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <Link
                           to={`/app/sales/opportunities/${opp.id}`}
-                          className="text-purple-600 hover:text-purple-800"
+                          className="text-purple-600 hover:text-purple-800 dark:text-purple-400"
                         >
                           View
                         </Link>
                         <Link
                           to={`/app/sales/opportunities/${opp.id}/edit`}
-                          className="text-gray-600 hover:text-gray-800 dark:text-gray-100"
+                          className="text-gray-600 hover:text-gray-800 dark:text-gray-100 dark:hover:text-white"
                         >
                           <PencilIcon className="h-4 w-4" />
                         </Link>
                         <button
                           onClick={() => handleDeleteOpportunity(opp.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 dark:text-red-400"
                         >
                           <TrashIcon className="h-4 w-4" />
                         </button>

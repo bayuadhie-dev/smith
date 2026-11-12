@@ -16,6 +16,8 @@
   --brand-800: 52 58 65;
   --brand-900: 38 43 49;
   --spinner-inner: 52 58 65;
+  --toast-bg: #ffffff;
+  --toast-fg: #1e293b;
   --sidebar-bg: 52 58 65;
   --spinner-inner-dark: 138 174 238;
   --accent-50: 255 247 237;
@@ -385,3 +387,15 @@ input[type=number] {
 :where(.dark) .text-emerald-700 {
   color: rgb(var(--brand-300));
 }
+
+/* Mode gelap: kontrol bawaan browser (tanggal, select, scrollbar) dan grafik mengikuti tema. */
+html.dark { color-scheme: dark; --toast-bg: rgb(var(--gray-800)); --toast-fg: #f1f5f9; }
+html.dark { --sidebar-bg: 21 24 28; }
+html[data-company='fengsheng'].dark { --sidebar-bg: 14 22 18; }
+.dark .recharts-default-tooltip {
+  background-color: rgb(var(--gray-800)) !important;
+  border-color: rgb(var(--gray-700)) !important;
+}
+.dark .recharts-cartesian-axis-tick-value { fill: rgb(156 163 175); }
+.dark .recharts-cartesian-grid line { stroke: rgb(var(--gray-700)); }
+.dark .recharts-legend-item-text { color: rgb(209 213 219) !important; }

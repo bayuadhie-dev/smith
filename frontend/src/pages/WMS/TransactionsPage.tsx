@@ -515,9 +515,9 @@ const TransactionsPage: React.FC = () => {
           <div className="font-sans">
             <div className="text-gray-900 text-xs dark:text-white">{txn.resolved_account.code}</div>
             <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
-              txn.resolved_account.source === 'item_override' ? 'bg-blue-50 text-blue-600' :
-              txn.resolved_account.source === 'category_default' ? 'bg-purple-50 text-purple-600' :
-              'bg-gray-100 text-gray-500'
+              txn.resolved_account.source === 'item_override' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
+              txn.resolved_account.source === 'category_default' ? 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' :
+              'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
             } dark:bg-gray-700 dark:text-gray-400 dark:bg-blue-900/20 dark:bg-purple-900/20 dark:text-blue-400 dark:text-purple-400`}>
               {ACCOUNT_SOURCE_LABEL[txn.resolved_account.source] || txn.resolved_account.source}
             </span>
@@ -596,7 +596,7 @@ const TransactionsPage: React.FC = () => {
               <span className="text-sm font-medium">Mutasi Bersih (Net)</span>
             </div>
             <div className="text-2xl font-bold text-gray-900 mt-1 dark:text-white">{summary.net >= 0 ? '+' : ''}{summary.net.toLocaleString('id-ID')}</div>
-            <div className={`text-sm mt-0.5 ${summary.net_amount >= 0 ? 'text-blue-700' : 'text-red-700'} dark:text-blue-300 dark:text-red-300`}>
+            <div className={`text-sm mt-0.5 ${summary.net_amount >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-red-700 dark:text-red-300'} dark:text-blue-300 dark:text-red-300`}>
               {summary.net_amount >= 0 ? '+' : ''}{formatRupiah(summary.net_amount)}
             </div>
           </div>
@@ -617,9 +617,9 @@ const TransactionsPage: React.FC = () => {
               <span className="text-gray-400 text-sm">s/d</span>
               <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
                 className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm dark:border-gray-600" />
-              <button onClick={() => applyDateShortcut('today')} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md text-gray-600 dark:bg-gray-700 dark:text-gray-300">Hari Ini</button>
-              <button onClick={() => applyDateShortcut('7days')} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md text-gray-600 dark:bg-gray-700 dark:text-gray-300">7 Hari</button>
-              <button onClick={() => applyDateShortcut('month')} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md text-gray-600 dark:bg-gray-700 dark:text-gray-300">Bulan Ini</button>
+              <button onClick={() => applyDateShortcut('today')} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md text-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Hari Ini</button>
+              <button onClick={() => applyDateShortcut('7days')} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md text-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">7 Hari</button>
+              <button onClick={() => applyDateShortcut('month')} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md text-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">Bulan Ini</button>
             </div>
           </div>
 
@@ -712,7 +712,7 @@ const TransactionsPage: React.FC = () => {
             <button onClick={runSearch} className="flex-1 px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium">
               Jalankan Pencarian
             </button>
-            <button onClick={resetFilters} className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-300">
+            <button onClick={resetFilters} className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
               Reset
             </button>
           </div>
@@ -749,8 +749,8 @@ const TransactionsPage: React.FC = () => {
                     <div key={key} className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
                       <input type="checkbox" checked={true} onChange={() => toggleColumn(key)} className="cursor-pointer" />
                       <span className="flex-1 text-sm text-gray-700 dark:text-gray-200">{col.label}</span>
-                      <button onClick={() => moveColumn(key, -1)} className="text-gray-400 hover:text-gray-700 px-1">↑</button>
-                      <button onClick={() => moveColumn(key, 1)} className="text-gray-400 hover:text-gray-700 px-1">↓</button>
+                      <button onClick={() => moveColumn(key, -1)} className="text-gray-400 hover:text-gray-700 px-1 dark:hover:text-white">↑</button>
+                      <button onClick={() => moveColumn(key, 1)} className="text-gray-400 hover:text-gray-700 px-1 dark:hover:text-white">↓</button>
                     </div>
                   );
                 })}
@@ -761,8 +761,8 @@ const TransactionsPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-              <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100">
-                <button onClick={resetColumnCatalog} className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400">Reset Default</button>
+              <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+                <button onClick={resetColumnCatalog} className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">Reset Default</button>
                 <button
                   onClick={saveColumnCatalog}
                   disabled={catalogSaving}
@@ -808,7 +808,7 @@ const TransactionsPage: React.FC = () => {
                       <th
                         key={key}
                         onClick={() => handleSort(col)}
-                        className={`px-3 py-2.5 ${alignClass} text-[11px] font-semibold text-gray-500 uppercase ${col.sortKey ? 'cursor-pointer hover:text-gray-800 select-none' : ''} dark:text-gray-400`}
+                        className={`px-3 py-2.5 ${alignClass} text-[11px] font-semibold text-gray-500 uppercase ${col.sortKey ? 'cursor-pointer hover:text-gray-800 select-none dark:hover:text-white' : ''} dark:text-gray-400`}
                       >
                         <span className="inline-flex items-center gap-1">
                           {col.label}
@@ -892,7 +892,7 @@ const TransactionsPage: React.FC = () => {
                   key={tab.key}
                   onClick={() => setDrawerTab(tab.key as any)}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-sm font-medium border-b-2 ${
-                    drawerTab === tab.key ? 'border-green-600 text-green-700' : 'border-transparent text-gray-500 hover:text-gray-700'
+                    drawerTab === tab.key ? 'border-green-600 text-green-700 dark:text-green-300' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
                   } dark:text-gray-400 dark:text-green-300`}
                 >
                   <tab.icon className="h-4 w-4" /> {tab.label}
@@ -981,7 +981,7 @@ const TransactionsPage: React.FC = () => {
                               Dokumen sumber tercatat tapi belum bisa ditautkan otomatis ke halaman detailnya dari sini.
                             </p>
                           )}
-                          <div className="pt-3 border-t border-gray-100">
+                          <div className="pt-3 border-t border-gray-100 dark:border-gray-800">
                             <div className="flex items-center gap-2 text-sm">
                               <span className="px-2 py-1 rounded bg-gray-100 text-gray-700 font-mono text-xs dark:bg-gray-700 dark:text-gray-200">
                                 {drawerData.document_flow.reference_number || drawerData.document_flow.reference_type || 'Dokumen Sumber'}
@@ -1017,7 +1017,7 @@ const TransactionsPage: React.FC = () => {
 };
 
 const DrawerRow: React.FC<{ label: string; value: any }> = ({ label, value }) => (
-  <div className="flex justify-between py-2 border-b border-gray-100 last:border-0 text-sm">
+  <div className="flex justify-between py-2 border-b border-gray-100 last:border-0 text-sm dark:border-gray-800">
     <span className="text-gray-500 dark:text-gray-400">{label}</span>
     <span className="font-medium text-gray-900 text-right dark:text-white">{value || '-'}</span>
   </div>

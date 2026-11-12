@@ -149,7 +149,7 @@ const StockByWorkOrder: React.FC = () => {
                         <div className="text-xs text-gray-400">{wo.product_code}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[wo.status] || 'bg-gray-100 text-gray-600'} dark:bg-gray-700 dark:text-gray-300`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[wo.status] || 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'} dark:bg-gray-700 dark:text-gray-300`}>
                           {wo.status?.replace('_', ' ')}
                         </span>
                       </td>

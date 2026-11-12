@@ -247,11 +247,11 @@ const FinancialReports = () => {
         <div className="card p-6">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <h3 className="text-xl font-semibold">📊 Laporan Laba Rugi</h3>
-            <span className="text-sm text-gray-500">{incomeRange.from} s/d {incomeRange.to}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{incomeRange.from} s/d {incomeRange.to}</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
-            <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex flex-wrap items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg dark:bg-gray-900">
+            <div className="flex gap-1 bg-gray-100 rounded-lg p-1 dark:bg-gray-700">
               {([
                 ['harian', 'Harian'],
                 ['mingguan', 'Mingguan'],
@@ -262,7 +262,7 @@ const FinancialReports = () => {
                 <button
                   key={mode}
                   onClick={() => setIncomePeriodMode(mode)}
-                  className={`px-3 py-1.5 rounded-md text-sm transition-colors ${incomePeriodMode === mode ? 'bg-white shadow text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`px-3 py-1.5 rounded-md text-sm transition-colors ${incomePeriodMode === mode ? 'bg-white shadow text-gray-900 font-medium dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'}`}
                 >
                   {label}
                 </button>
@@ -282,7 +282,7 @@ const FinancialReports = () => {
               <input type="month" value={incomeMonth} onChange={(e) => setIncomeMonth(e.target.value)} className="border rounded px-3 py-2 text-sm" />
             )}
             {incomePeriodMode === 'tahunan' && (
-              <span className="text-sm text-gray-500">Tahun {selectedYear} — ubah di dropdown kanan atas</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Tahun {selectedYear} — ubah di dropdown kanan atas</span>
             )}
             {incomePeriodMode === 'bebas' && (
               <div className="flex items-center gap-2">
@@ -296,7 +296,7 @@ const FinancialReports = () => {
           <div className="space-y-4">
             {/* Revenue Section - per actual CoA account */}
             <div className="border-b pb-4">
-              <h4 className="font-semibold text-green-700 mb-2">PENDAPATAN</h4>
+              <h4 className="font-semibold text-green-700 mb-2 dark:text-green-300">PENDAPATAN</h4>
               <div className="ml-4 space-y-1">
                 {(incomeStatement.revenue?.accounts || []).map((acc) => (
                   <div key={acc.code} className="flex justify-between">
@@ -306,7 +306,7 @@ const FinancialReports = () => {
                         {acc.name}
                       </Link>
                     </span>
-                    <span className={acc.balance < 0 ? 'text-red-600' : ''}>
+                    <span className={acc.balance < 0 ? 'text-red-600 dark:text-red-400' : ''}>
                       {acc.balance < 0 ? `(${formatRupiah(Math.abs(acc.balance))})` : formatRupiah(acc.balance)}
                     </span>
                   </div>
@@ -320,7 +320,7 @@ const FinancialReports = () => {
 
             {/* Cost of Sales - per actual CoA account */}
             <div className="border-b pb-4">
-              <h4 className="font-semibold text-red-700 mb-2">BEBAN POKOK PENJUALAN (HPP)</h4>
+              <h4 className="font-semibold text-red-700 mb-2 dark:text-red-300">BEBAN POKOK PENJUALAN (HPP)</h4>
               <div className="ml-4 space-y-1">
                 {(incomeStatement.cost_of_sales?.accounts || []).length === 0 && (
                   <div className="text-gray-400 italic">Belum ada posting HPP periode ini</div>
@@ -344,14 +344,14 @@ const FinancialReports = () => {
             </div>
 
             {/* Gross Profit */}
-            <div className="flex justify-between font-bold text-lg bg-blue-50 p-2 rounded">
+            <div className="flex justify-between font-bold text-lg bg-blue-50 p-2 rounded dark:bg-blue-900/20">
               <span>LABA KOTOR</span>
-              <span className="text-blue-600">{formatRupiah(incomeStatement.gross_profit || 0)}</span>
+              <span className="text-blue-600 dark:text-blue-400">{formatRupiah(incomeStatement.gross_profit || 0)}</span>
             </div>
 
             {/* Operating Expenses - per actual CoA account, selling + admin */}
             <div className="border-b pb-4">
-              <h4 className="font-semibold text-orange-700 mb-2">BEBAN OPERASIONAL</h4>
+              <h4 className="font-semibold text-orange-700 mb-2 dark:text-orange-300">BEBAN OPERASIONAL</h4>
               <div className="ml-4 space-y-1">
                 <div className="text-xs uppercase tracking-wide text-gray-400 mt-1">Beban Penjualan</div>
                 {(incomeStatement.operating_expenses?.selling_accounts || []).length === 0 && (
@@ -391,15 +391,15 @@ const FinancialReports = () => {
             </div>
 
             {/* Operating Income */}
-            <div className="flex justify-between font-bold text-lg bg-green-50 p-2 rounded">
+            <div className="flex justify-between font-bold text-lg bg-green-50 p-2 rounded dark:bg-green-900/20">
               <span>LABA USAHA</span>
-              <span className="text-green-600">{formatRupiah(incomeStatement.operating_income || 0)}</span>
+              <span className="text-green-600 dark:text-green-400">{formatRupiah(incomeStatement.operating_income || 0)}</span>
             </div>
 
             {/* Other Income/Expenses - per actual CoA account (9-xxxx) */}
             {(incomeStatement.other_expenses?.accounts || []).length > 0 && (
               <div className="border-b pb-4">
-                <h4 className="font-semibold text-purple-700 mb-2">PENDAPATAN / BEBAN LAIN-LAIN</h4>
+                <h4 className="font-semibold text-purple-700 mb-2 dark:text-purple-300">PENDAPATAN / BEBAN LAIN-LAIN</h4>
                 <div className="ml-4 space-y-1">
                   {(incomeStatement.other_expenses?.accounts || []).map((acc) => (
                     <div key={acc.code} className="flex justify-between">
@@ -426,9 +426,9 @@ const FinancialReports = () => {
                 <span>Pajak Penghasilan</span>
                 <span>({formatRupiah(incomeStatement.income_tax || 0)})</span>
               </div>
-              <div className="flex justify-between font-bold text-xl bg-indigo-50 p-3 rounded mt-2">
+              <div className="flex justify-between font-bold text-xl bg-indigo-50 p-3 rounded mt-2 dark:bg-indigo-900/20">
                 <span>LABA BERSIH</span>
-                <span className="text-indigo-600">{formatRupiah(incomeStatement.net_income || 0)}</span>
+                <span className="text-indigo-600 dark:text-indigo-400">{formatRupiah(incomeStatement.net_income || 0)}</span>
               </div>
             </div>
           </div>
@@ -447,7 +447,7 @@ const FinancialReports = () => {
     return (
       <div className="space-y-6">
         {hasWarnings && (
-          <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-red-800">
+          <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-red-800 dark:bg-red-900/20 dark:text-red-300">
             <div className="flex items-center gap-2 font-semibold mb-2">
               <span>⚠️</span>
               <span>
@@ -480,7 +480,7 @@ const FinancialReports = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Assets */}
             <div>
-              <h4 className="font-bold text-green-700 mb-4 text-lg">ASSETS</h4>
+              <h4 className="font-bold text-green-700 mb-4 text-lg dark:text-green-300">ASSETS</h4>
               
               <div className="space-y-3">
                 <div>
@@ -527,7 +527,7 @@ const FinancialReports = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-between font-bold text-lg bg-green-50 p-2 rounded">
+                <div className="flex justify-between font-bold text-lg bg-green-50 p-2 rounded dark:bg-green-900/20">
                   <span>TOTAL ASSETS</span>
                   <span>{formatRupiah(balanceSheet.assets.total_assets)}</span>
                 </div>
@@ -536,7 +536,7 @@ const FinancialReports = () => {
 
             {/* Liabilities & Equity */}
             <div>
-              <h4 className="font-bold text-red-700 mb-4 text-lg">LIABILITIES & EQUITY</h4>
+              <h4 className="font-bold text-red-700 mb-4 text-lg dark:text-red-300">LIABILITIES & EQUITY</h4>
               
               <div className="space-y-3">
                 <div>
@@ -575,7 +575,7 @@ const FinancialReports = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-between font-semibold bg-red-50 p-2 rounded">
+                <div className="flex justify-between font-semibold bg-red-50 p-2 rounded dark:bg-red-900/20">
                   <span>TOTAL LIABILITIES</span>
                   <span>{formatRupiah(balanceSheet.liabilities.total_liabilities)}</span>
                 </div>
@@ -593,7 +593,7 @@ const FinancialReports = () => {
                     </div>
                     <div className="flex justify-between">
                       <span>Laba/Rugi Tahun Berjalan</span>
-                      <span className={(balanceSheet.equity.current_year_earnings || 0) < 0 ? 'text-red-600' : ''}>{formatRupiah(balanceSheet.equity.current_year_earnings || 0)}</span>
+                      <span className={(balanceSheet.equity.current_year_earnings || 0) < 0 ? 'text-red-600 dark:text-red-400' : ''}>{formatRupiah(balanceSheet.equity.current_year_earnings || 0)}</span>
                     </div>
                     <div className="flex justify-between font-semibold border-t pt-1">
                       <span>Total Equity</span>
@@ -602,7 +602,7 @@ const FinancialReports = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-between font-bold text-lg bg-blue-50 p-2 rounded">
+                <div className="flex justify-between font-bold text-lg bg-blue-50 p-2 rounded dark:bg-blue-900/20">
                   <span>TOTAL LIABILITIES & EQUITY</span>
                   <span>{formatRupiah(balanceSheet.total_liabilities_equity)}</span>
                 </div>
@@ -613,7 +613,7 @@ const FinancialReports = () => {
         {balanceSheet.account_detail && (
           <div className="card p-6">
             <h3 className="text-lg font-semibold mb-1">Rincian per Akun</h3>
-            <p className="text-xs text-gray-500 mb-4">Klik akun untuk melihat jurnalnya di Buku Besar.</p>
+            <p className="text-xs text-gray-500 mb-4 dark:text-gray-400">Klik akun untuk melihat jurnalnya di Buku Besar.</p>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-sm">
               {([['Aset', 'assets'], ['Liabilitas', 'liabilities'], ['Ekuitas', 'equity']] as const).map(([title, key]) => (
                 <div key={key}>
@@ -625,7 +625,7 @@ const FinancialReports = () => {
                         <Link to={glLink(acc.code, false)} className="hover:text-green-700 hover:underline" title="Buka di Buku Besar">
                           <span className="text-gray-400 mr-2">{acc.code}</span>{acc.name}
                         </Link>
-                        <span className={acc.balance < 0 ? 'text-red-600' : ''}>{acc.balance < 0 ? `(${formatRupiah(Math.abs(acc.balance))})` : formatRupiah(acc.balance)}</span>
+                        <span className={acc.balance < 0 ? 'text-red-600 dark:text-red-400' : ''}>{acc.balance < 0 ? `(${formatRupiah(Math.abs(acc.balance))})` : formatRupiah(acc.balance)}</span>
                       </div>
                     ))}
                   </div>
@@ -649,7 +649,7 @@ const FinancialReports = () => {
           <div className="space-y-6">
             {/* Operating Activities */}
             <div className="border-b pb-4">
-              <h4 className="font-semibold text-blue-700 mb-3">OPERATING ACTIVITIES</h4>
+              <h4 className="font-semibold text-blue-700 mb-3 dark:text-blue-300">OPERATING ACTIVITIES</h4>
               <div className="ml-4 space-y-2">
                 <div className="flex justify-between">
                   <span>Kas Masuk</span>
@@ -659,20 +659,20 @@ const FinancialReports = () => {
                   <span>Kas Keluar</span>
                   <span>({formatRupiah(cashFlow.operating_activities.cash_out)})</span>
                 </div>
-                <div className="flex justify-between font-semibold border-t pt-2 bg-blue-50 p-2 rounded">
+                <div className="flex justify-between font-semibold border-t pt-2 bg-blue-50 p-2 rounded dark:bg-blue-900/20">
                   <span>Net Cash from Operations</span>
-                  <span className="text-blue-600">{formatRupiah(cashFlow.operating_activities.net_cash_from_operations)}</span>
+                  <span className="text-blue-600 dark:text-blue-400">{formatRupiah(cashFlow.operating_activities.net_cash_from_operations)}</span>
                 </div>
               </div>
             </div>
 
             {/* Investing Activities */}
             <div className="border-b pb-4">
-              <h4 className="font-semibold text-green-700 mb-3">INVESTING ACTIVITIES</h4>
+              <h4 className="font-semibold text-green-700 mb-3 dark:text-green-300">INVESTING ACTIVITIES</h4>
               <div className="ml-4 space-y-2">
-                <div className="flex justify-between font-semibold border-t pt-2 bg-green-50 p-2 rounded">
+                <div className="flex justify-between font-semibold border-t pt-2 bg-green-50 p-2 rounded dark:bg-green-900/20">
                   <span>Net Cash from Investing</span>
-                  <span className="text-green-600">{formatRupiah(cashFlow.investing_activities.net_cash_from_investing)}</span>
+                  <span className="text-green-600 dark:text-green-400">{formatRupiah(cashFlow.investing_activities.net_cash_from_investing)}</span>
                 </div>
                 {cashFlow.investing_activities.net_cash_from_investing === 0 && (
                   <p className="text-xs text-gray-400 italic">Belum ada transaksi investasi (pembelian/penjualan aset tetap) yang tercatat ke GL.</p>
@@ -682,11 +682,11 @@ const FinancialReports = () => {
 
             {/* Financing Activities */}
             <div className="border-b pb-4">
-              <h4 className="font-semibold text-purple-700 mb-3">FINANCING ACTIVITIES</h4>
+              <h4 className="font-semibold text-purple-700 mb-3 dark:text-purple-300">FINANCING ACTIVITIES</h4>
               <div className="ml-4 space-y-2">
-                <div className="flex justify-between font-semibold border-t pt-2 bg-purple-50 p-2 rounded">
+                <div className="flex justify-between font-semibold border-t pt-2 bg-purple-50 p-2 rounded dark:bg-purple-900/20">
                   <span>Net Cash from Financing</span>
-                  <span className="text-purple-600">{formatRupiah(cashFlow.financing_activities.net_cash_from_financing)}</span>
+                  <span className="text-purple-600 dark:text-purple-400">{formatRupiah(cashFlow.financing_activities.net_cash_from_financing)}</span>
                 </div>
                 {cashFlow.financing_activities.net_cash_from_financing === 0 && (
                   <p className="text-xs text-gray-400 italic">Belum ada transaksi pendanaan (pinjaman/dividen) yang tercatat ke GL.</p>
@@ -698,7 +698,7 @@ const FinancialReports = () => {
             <div className="space-y-2">
               <div className="flex justify-between font-bold text-lg">
                 <span>Net Change in Cash</span>
-                <span className={cashFlow.net_change_in_cash >= 0 ? 'text-green-600' : 'text-red-600'}>
+                <span className={cashFlow.net_change_in_cash >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                   {formatRupiah(cashFlow.net_change_in_cash)}
                 </span>
               </div>
@@ -706,9 +706,9 @@ const FinancialReports = () => {
                 <span>Beginning Cash</span>
                 <span>{formatRupiah(cashFlow.beginning_cash)}</span>
               </div>
-              <div className="flex justify-between font-bold text-xl bg-indigo-50 p-3 rounded">
+              <div className="flex justify-between font-bold text-xl bg-indigo-50 p-3 rounded dark:bg-indigo-900/20">
                 <span>ENDING CASH</span>
-                <span className="text-indigo-600">{formatRupiah(cashFlow.ending_cash)}</span>
+                <span className="text-indigo-600 dark:text-indigo-400">{formatRupiah(cashFlow.ending_cash)}</span>
               </div>
             </div>
           </div>
@@ -806,8 +806,8 @@ const FinancialReports = () => {
               onClick={() => setActiveReport('income')}
               className={`py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2 ${
                 activeReport === 'income'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               <ChartBarIcon className="h-5 w-5" />
@@ -817,8 +817,8 @@ const FinancialReports = () => {
               onClick={() => setActiveReport('balance')}
               className={`py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2 ${
                 activeReport === 'balance'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               <ClipboardDocumentListIcon className="h-5 w-5" />
@@ -828,8 +828,8 @@ const FinancialReports = () => {
               onClick={() => setActiveReport('cashflow')}
               className={`py-4 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2 ${
                 activeReport === 'cashflow'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               <BanknotesIcon className="h-5 w-5" />

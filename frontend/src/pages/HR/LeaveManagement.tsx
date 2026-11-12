@@ -138,64 +138,64 @@ const navigate = useNavigate()
 
       {/* Leave Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="card bg-yellow-50 border-yellow-200">
+        <div className="card bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                <CheckIcon className="w-5 h-5 text-yellow-600" />
+              <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center dark:bg-yellow-900/30">
+                <CheckIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-yellow-600">Pending</p>
-              <p className="text-2xl font-bold text-yellow-900">
+              <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">Pending</p>
+              <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-200">
                 {data?.leaves?.filter((l: any) => l.status === 'pending').length || 0}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="card bg-green-50 border-green-200">
+        <div className="card bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <CheckIcon className="w-5 h-5 text-green-600" />
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center dark:bg-green-900/30">
+                <CheckIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-green-600">Approved</p>
-              <p className="text-2xl font-bold text-green-900">
+              <p className="text-sm font-medium text-green-600 dark:text-green-400">Approved</p>
+              <p className="text-2xl font-bold text-green-900 dark:text-green-200">
                 {data?.leaves?.filter((l: any) => l.status === 'approved').length || 0}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="card bg-red-50 border-red-200">
+        <div className="card bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                <XMarkIcon className="w-5 h-5 text-red-600" />
+              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center dark:bg-red-900/30">
+                <XMarkIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-red-600">Rejected</p>
-              <p className="text-2xl font-bold text-red-900">
+              <p className="text-sm font-medium text-red-600 dark:text-red-400">Rejected</p>
+              <p className="text-2xl font-bold text-red-900 dark:text-red-200">
                 {data?.leaves?.filter((l: any) => l.status === 'rejected').length || 0}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="card bg-blue-50 border-blue-200">
+        <div className="card bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <EyeIcon className="w-5 h-5 text-blue-600" />
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center dark:bg-blue-900/30">
+                <EyeIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-blue-600">Total Days</p>
-              <p className="text-2xl font-bold text-blue-900">
+              <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Days</p>
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-200">
                 {data?.leaves?.reduce((sum: number, l: any) => sum + l.total_days, 0) || 0}
               </p>
             </div>

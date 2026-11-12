@@ -241,8 +241,8 @@ export default function WorkOrderTimeline() {
 
   if (!workOrder) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">SPK tidak ditemukan</p>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
+        <p className="text-red-800 dark:text-red-300">SPK tidak ditemukan</p>
       </div>
     );
   }
@@ -260,7 +260,7 @@ export default function WorkOrderTimeline() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <ClockIcon className="h-6 w-6 text-blue-600" />
+              <ClockIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               Timeline Produksi
             </h1>
             <p className="text-gray-600 dark:text-gray-300">{workOrder.wo_number} - {workOrder.product_name}</p>
@@ -283,19 +283,19 @@ export default function WorkOrderTimeline() {
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">Grade A</p>
-          <p className="text-2xl font-bold text-green-600">{totals.gradeA.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{totals.gradeA.toLocaleString()}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">Total Runtime</p>
-          <p className="text-2xl font-bold text-blue-600">{totals.totalRuntime} m</p>
+          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{totals.totalRuntime} m</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">Total Downtime</p>
-          <p className="text-2xl font-bold text-orange-600">{totals.totalDowntime} m</p>
+          <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{totals.totalDowntime} m</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">Avg Efficiency</p>
-          <p className={`text-2xl font-bold ${overallEfficiency >= 60 ? 'text-green-600' : 'text-red-600'}`}>
+          <p className={`text-2xl font-bold ${overallEfficiency >= 60 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
             {overallEfficiency.toFixed(1)}%
           </p>
         </div>
@@ -326,7 +326,7 @@ export default function WorkOrderTimeline() {
                     </div>
                     
                     {/* Content */}
-                    <div className={`bg-gray-50 rounded-lg p-4 border-l-4 ${event.color.replace('bg-', 'border-')}`}>
+                    <div className={`bg-gray-50 rounded-lg p-4 border-l-4 dark:bg-gray-900 ${event.color.replace('bg-', 'border-')}`}>
                       <div className="flex items-start justify-between">
                         <div>
                           <h3 className="font-semibold text-gray-900 dark:text-white">{event.title}</h3>
@@ -354,35 +354,35 @@ export default function WorkOrderTimeline() {
                               <p className="text-xs text-gray-500 dark:text-gray-400">Average Time</p>
                               <p className="text-lg font-bold text-gray-700 dark:text-gray-200">{event.data.average_time}m</p>
                             </div>
-                            <div className="bg-blue-50 rounded-lg p-2 text-center">
-                              <p className="text-xs text-blue-600">Runtime</p>
-                              <p className="text-lg font-bold text-blue-600">{event.data.runtime}m</p>
+                            <div className="bg-blue-50 rounded-lg p-2 text-center dark:bg-blue-900/20">
+                              <p className="text-xs text-blue-600 dark:text-blue-400">Runtime</p>
+                              <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{event.data.runtime}m</p>
                             </div>
-                            <div className="bg-orange-50 rounded-lg p-2 text-center">
-                              <p className="text-xs text-orange-600">Downtime</p>
-                              <p className="text-lg font-bold text-orange-600">{event.data.downtime_minutes || 0}m</p>
+                            <div className="bg-orange-50 rounded-lg p-2 text-center dark:bg-orange-900/20">
+                              <p className="text-xs text-orange-600 dark:text-orange-400">Downtime</p>
+                              <p className="text-lg font-bold text-orange-600 dark:text-orange-400">{event.data.downtime_minutes || 0}m</p>
                             </div>
-                            <div className={`rounded-lg p-2 text-center ${event.data.waktu_tercatat > event.data.average_time ? 'bg-red-50' : 'bg-green-50'}`}>
-                              <p className={`text-xs ${event.data.waktu_tercatat > event.data.average_time ? 'text-red-600' : 'text-green-600'}`}>Tercatat</p>
-                              <p className={`text-lg font-bold ${event.data.waktu_tercatat > event.data.average_time ? 'text-red-600' : 'text-green-600'}`}>
+                            <div className={`rounded-lg p-2 text-center ${event.data.waktu_tercatat > event.data.average_time ? 'bg-red-50 dark:bg-red-900/20' : 'bg-green-50 dark:bg-green-900/20'}`}>
+                              <p className={`text-xs ${event.data.waktu_tercatat > event.data.average_time ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>Tercatat</p>
+                              <p className={`text-lg font-bold ${event.data.waktu_tercatat > event.data.average_time ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                                 {event.data.waktu_tercatat}m
                                 {event.data.waktu_tercatat > event.data.average_time && <span className="text-xs ml-1">⚠</span>}
                               </p>
                             </div>
-                            <div className="bg-red-50 rounded-lg p-2 text-center">
-                              <p className="text-xs text-red-600">Tidak Tercatat</p>
-                              <p className="text-lg font-bold text-red-600">{event.data.waktu_tidak_tercatat}m</p>
+                            <div className="bg-red-50 rounded-lg p-2 text-center dark:bg-red-900/20">
+                              <p className="text-xs text-red-600 dark:text-red-400">Tidak Tercatat</p>
+                              <p className="text-lg font-bold text-red-600 dark:text-red-400">{event.data.waktu_tidak_tercatat}m</p>
                             </div>
-                            <div className="bg-purple-50 rounded-lg p-2 text-center">
-                              <p className="text-xs text-purple-600">Quality</p>
-                              <p className="text-lg font-bold text-purple-600">{event.data.quality_rate?.toFixed(1) || 0}%</p>
+                            <div className="bg-purple-50 rounded-lg p-2 text-center dark:bg-purple-900/20">
+                              <p className="text-xs text-purple-600 dark:text-purple-400">Quality</p>
+                              <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{event.data.quality_rate?.toFixed(1) || 0}%</p>
                             </div>
                           </div>
                           
                           {/* Downtime Issues - Parsed and Categorized */}
                           {event.data.issues && (
-                            <div className="bg-orange-50 rounded-lg p-3">
-                              <p className="text-sm font-semibold text-orange-800 mb-2 flex items-center gap-1">
+                            <div className="bg-orange-50 rounded-lg p-3 dark:bg-orange-900/20">
+                              <p className="text-sm font-semibold text-orange-800 mb-2 flex items-center gap-1 dark:text-orange-300">
                                 <ExclamationTriangleIcon className="h-4 w-4" />
                                 Detail Downtime
                               </p>
@@ -392,12 +392,12 @@ export default function WorkOrderTimeline() {
                                   if (!match) return null;
                                   const [, minutes, reason, category] = match;
                                   const categoryColors: Record<string, string> = {
-                                    mesin: 'bg-red-100 text-red-700 border-red-200',
-                                    operator: 'bg-orange-100 text-orange-700 border-orange-200',
-                                    material: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-                                    design: 'bg-purple-100 text-purple-700 border-purple-200',
-                                    idle: 'bg-gray-100 text-gray-700 border-gray-200',
-                                    others: 'bg-gray-100 text-gray-700 border-gray-200'
+                                    mesin: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800',
+                                    operator: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800',
+                                    material: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800',
+                                    design: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
+                                    idle: 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-700',
+                                    others: 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-700'
                                   };
                                   const colorClass = categoryColors[category.toLowerCase()] || categoryColors.others;
                                   
@@ -469,28 +469,28 @@ export default function WorkOrderTimeline() {
                     <td className="px-4 py-3 text-sm text-center text-gray-700 dark:text-gray-200">
                       {sp.shift?.replace('shift_', '')}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right font-medium text-green-600">
+                    <td className="px-4 py-3 text-sm text-right font-medium text-green-600 dark:text-green-400">
                       {sp.good_quantity?.toLocaleString() || 0}
                     </td>
                     <td className="px-4 py-3 text-sm text-right text-gray-700 dark:text-gray-200">
                       {avgTime}m
                     </td>
-                    <td className="px-4 py-3 text-sm text-right font-medium text-blue-600">
+                    <td className="px-4 py-3 text-sm text-right font-medium text-blue-600 dark:text-blue-400">
                       {runtime}m
                     </td>
-                    <td className="px-4 py-3 text-sm text-right font-medium text-orange-600">
+                    <td className="px-4 py-3 text-sm text-right font-medium text-orange-600 dark:text-orange-400">
                       {sp.downtime_minutes || 0}m
                     </td>
-                    <td className={`px-4 py-3 text-sm text-right font-medium ${waktuTercatat > avgTime ? 'text-red-600' : 'text-green-600'}`}>
+                    <td className={`px-4 py-3 text-sm text-right font-medium ${waktuTercatat > avgTime ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                       {waktuTercatat}m
                       {waktuTercatat > avgTime && (
                         <span className="text-xs ml-1">⚠</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right text-red-600">
+                    <td className="px-4 py-3 text-sm text-right text-red-600 dark:text-red-400">
                       {waktuTidakTercatat}m
                     </td>
-                    <td className={`px-4 py-3 text-sm text-right font-bold ${efficiency >= 60 ? 'text-green-600' : 'text-red-600'}`}>
+                    <td className={`px-4 py-3 text-sm text-right font-bold ${efficiency >= 60 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                       {efficiency.toFixed(1)}%
                     </td>
                   </tr>
@@ -508,13 +508,13 @@ export default function WorkOrderTimeline() {
               <tfoot className="bg-gray-100 dark:bg-gray-800">
                 <tr className="font-semibold">
                   <td className="px-4 py-3 text-sm text-gray-900 dark:text-white" colSpan={2}>TOTAL</td>
-                  <td className="px-4 py-3 text-sm text-right text-green-600">{totals.gradeA.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-sm text-right text-green-600 dark:text-green-400">{totals.gradeA.toLocaleString()}</td>
                   <td className="px-4 py-3 text-sm text-right text-gray-700 dark:text-gray-200">{totals.totalAvgTime}m</td>
-                  <td className="px-4 py-3 text-sm text-right text-blue-600">{totals.totalRuntime}m</td>
-                  <td className="px-4 py-3 text-sm text-right text-orange-600">{totals.totalDowntime}m</td>
+                  <td className="px-4 py-3 text-sm text-right text-blue-600 dark:text-blue-400">{totals.totalRuntime}m</td>
+                  <td className="px-4 py-3 text-sm text-right text-orange-600 dark:text-orange-400">{totals.totalDowntime}m</td>
                   <td className="px-4 py-3 text-sm text-right text-gray-700 dark:text-gray-200">{totals.totalRuntime + totals.totalDowntime}m</td>
-                  <td className="px-4 py-3 text-sm text-right text-red-600">{Math.max(0, totals.totalAvgTime - totals.totalRuntime - totals.totalDowntime)}m</td>
-                  <td className={`px-4 py-3 text-sm text-right font-bold ${overallEfficiency >= 60 ? 'text-green-600' : 'text-red-600'}`}>
+                  <td className="px-4 py-3 text-sm text-right text-red-600 dark:text-red-400">{Math.max(0, totals.totalAvgTime - totals.totalRuntime - totals.totalDowntime)}m</td>
+                  <td className={`px-4 py-3 text-sm text-right font-bold ${overallEfficiency >= 60 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                     {overallEfficiency.toFixed(1)}%
                   </td>
                 </tr>

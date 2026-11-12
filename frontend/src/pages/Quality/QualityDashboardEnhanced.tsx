@@ -96,18 +96,18 @@ export default function QualityDashboardEnhanced() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'critical': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
+      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800';
+      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-700';
     }
   };
 
   const getPassRateColor = (rate: number) => {
-    if (rate >= 95) return 'text-green-600';
-    if (rate >= 85) return 'text-yellow-600';
-    return 'text-red-600';
+    if (rate >= 95) return 'text-green-600 dark:text-green-400';
+    if (rate >= 85) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
   };
 
   if (loading) {
@@ -142,17 +142,17 @@ export default function QualityDashboardEnhanced() {
         subtitle={`Pemantauan mutu${dashboardData ? ` · diperbarui ${new Date(dashboardData.last_updated).toLocaleTimeString('id-ID')}` : ''}`}
         actions={
           <>
-            <button onClick={fetchDashboardData} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Muat ulang</button>
+            <button onClick={fetchDashboardData} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Muat ulang</button>
             <Link to="/app/quality/to-warehouse" className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Transfer ke Gudang</Link>
           </>
         }
       />
 
       {dashboardData?.summary.critical_alerts > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
           <div className="flex items-center mb-3">
             <BellIcon className="h-5 w-5 text-red-500 mr-2" />
-            <h3 className="text-sm font-semibold text-red-800">
+            <h3 className="text-sm font-semibold text-red-800 dark:text-red-300">
               {dashboardData.summary.critical_alerts} peringatan mutu kritis
             </h3>
           </div>

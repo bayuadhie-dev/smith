@@ -44,14 +44,14 @@ export default function ApprovalEmail() {
     </div>
   )
 
-  if (done) return shell(<><h1 className="text-xl font-semibold mb-2">Selesai</h1><p>{done}</p><p className="text-sm text-gray-500 mt-4">Halaman ini boleh ditutup.</p></>)
+  if (done) return shell(<><h1 className="text-xl font-semibold mb-2">Selesai</h1><p>{done}</p><p className="text-sm text-gray-500 mt-4 dark:text-gray-400">Halaman ini boleh ditutup.</p></>)
   if (error && !data) return shell(<><h1 className="text-xl font-semibold mb-2">Tautan tidak bisa dipakai</h1><p>{error}</p></>)
   if (!data) return shell(<p>Memuat...</p>)
   const d = data.details
 
   return shell(
     <>
-      <p className="text-sm text-gray-500">{review ? 'Peninjauan' : 'Persetujuan'} untuk {data.approver}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{review ? 'Peninjauan' : 'Persetujuan'} untuk {data.approver}</p>
       <h1 className="text-xl font-semibold mb-1">{d.title} {d.number}</h1>
       <p className="mb-4">Total: <strong>{d.amount}</strong></p>
       <table className="w-full text-sm mb-4"><tbody>
@@ -65,7 +65,7 @@ export default function ApprovalEmail() {
               {d.items.map((it, i) => (
                 <tr key={i} className="border-b border-gray-100 dark:border-gray-700 align-top">
                   <td className="py-1.5">{i + 1}</td>
-                  <td>{it.nama}{it.master && <div className="text-xs text-gray-500">{it.master}</div>}{it.keterangan && <div className="text-xs text-gray-500">Ket: {it.keterangan}</div>}</td>
+                  <td>{it.nama}{it.master && <div className="text-xs text-gray-500 dark:text-gray-400">{it.master}</div>}{it.keterangan && <div className="text-xs text-gray-500 dark:text-gray-400">Ket: {it.keterangan}</div>}</td>
                   <td className="text-right whitespace-nowrap">{it.qty} {it.uom}</td><td className="text-right whitespace-nowrap">{it.harga}</td><td className="text-right whitespace-nowrap">{it.total}</td>
                 </tr>
               ))}
@@ -83,7 +83,7 @@ export default function ApprovalEmail() {
       <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3}
         placeholder={choice === 'reject' ? 'Alasan penolakan (wajib)' : 'Catatan (opsional)'}
         className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm mb-3" />
-      {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+      {error && <p className="text-sm text-red-600 mb-3 dark:text-red-400">{error}</p>}
       <button type="button" disabled={busy || (choice === 'reject' && !notes.trim())} onClick={submit}
         className={`w-full py-2.5 rounded-md text-white font-medium disabled:opacity-50 ${choice === 'reject' ? 'bg-red-700' : 'bg-[#1f4e5a]'}`}>
         {busy ? 'Memproses...' : choice === 'reject' ? 'Konfirmasi tolak' : review ? 'Konfirmasi teruskan' : 'Konfirmasi setujui'}

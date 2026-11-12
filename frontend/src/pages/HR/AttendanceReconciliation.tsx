@@ -136,13 +136,13 @@ const AttendanceReconciliation: React.FC = () => {
       <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
         <button
           onClick={() => setTab('correction')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 ${tab === 'correction' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'}`}
+          className={`px-4 py-2 text-sm font-medium border-b-2 ${tab === 'correction' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400'}`}
         >
           Pengajuan Koreksi {corrections.length > 0 && `(${corrections.length})`}
         </button>
         <button
           onClick={() => setTab('reconciliation')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 ${tab === 'reconciliation' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'}`}
+          className={`px-4 py-2 text-sm font-medium border-b-2 ${tab === 'reconciliation' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400'}`}
         >
           Rekonsiliasi vs Log Produksi {flags.length > 0 && `(${flags.length})`}
         </button>
@@ -151,26 +151,26 @@ const AttendanceReconciliation: React.FC = () => {
       {tab === 'correction' && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
           {loadingCorrections ? (
-            <div className="flex items-center justify-center h-48"><Loader2 className="h-6 w-6 animate-spin text-blue-600" /></div>
+            <div className="flex items-center justify-center h-48"><Loader2 className="h-6 w-6 animate-spin text-blue-600 dark:text-blue-400" /></div>
           ) : corrections.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">Tidak ada pengajuan koreksi menunggu approval</div>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">Tidak ada pengajuan koreksi menunggu approval</div>
           ) : (
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Karyawan</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Perubahan Diajukan</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alasan</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Karyawan</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Tanggal</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Perubahan Diajukan</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Alasan</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Aksi</th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {corrections.map(c => (
                   <tr key={c.id}>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{c.employee_name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{new Date(c.correction_date).toLocaleDateString('id-ID')}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{new Date(c.correction_date).toLocaleDateString('id-ID')}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                       {c.requested_change.clock_in && (
                         <div>In: {formatDT(c.requested_change.clock_in.old)} &rarr; {formatDT(c.requested_change.clock_in.new)}</div>
                       )}
@@ -178,13 +178,13 @@ const AttendanceReconciliation: React.FC = () => {
                         <div>Out: {formatDT(c.requested_change.clock_out.old)} &rarr; {formatDT(c.requested_change.clock_out.new)}</div>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">{c.reason}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs dark:text-gray-400">{c.reason}</td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
-                        <button onClick={() => approveCorrection(c.id)} className="p-1 text-green-600 hover:bg-green-50 rounded" title="Setujui">
+                        <button onClick={() => approveCorrection(c.id)} className="p-1 text-green-600 hover:bg-green-50 rounded dark:text-green-400" title="Setujui">
                           <CheckCircle className="h-5 w-5" />
                         </button>
-                        <button onClick={() => rejectCorrection(c.id)} className="p-1 text-red-600 hover:bg-red-50 rounded" title="Tolak">
+                        <button onClick={() => rejectCorrection(c.id)} className="p-1 text-red-600 hover:bg-red-50 rounded dark:text-red-400" title="Tolak">
                           <XCircle className="h-5 w-5" />
                         </button>
                       </div>
@@ -222,33 +222,33 @@ const AttendanceReconciliation: React.FC = () => {
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
             {loadingFlags ? (
-              <div className="flex items-center justify-center h-48"><Loader2 className="h-6 w-6 animate-spin text-blue-600" /></div>
+              <div className="flex items-center justify-center h-48"><Loader2 className="h-6 w-6 animate-spin text-blue-600 dark:text-blue-400" /></div>
             ) : flags.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">Tidak ada mismatch terbuka. Jalankan cross-check untuk memeriksa rentang tanggal di atas.</div>
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">Tidak ada mismatch terbuka. Jalankan cross-check untuk memeriksa rentang tanggal di atas.</div>
             ) : (
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Karyawan</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis Mismatch</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Karyawan</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Tanggal</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Jenis Mismatch</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {flags.map(f => (
                     <tr key={f.id}>
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{f.employee_name}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{new Date(f.flag_date).toLocaleDateString('id-ID')}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{new Date(f.flag_date).toLocaleDateString('id-ID')}</td>
                       <td className="px-6 py-4 text-sm">
-                        <span className="flex items-center gap-1 text-amber-700">
+                        <span className="flex items-center gap-1 text-amber-700 dark:text-amber-300">
                           <AlertTriangle className="h-4 w-4" /> {MISMATCH_LABEL[f.mismatch_type] || f.mismatch_type}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <button
                           onClick={() => reviewFlag(f.id)}
-                          className="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-lg"
+                          className="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-lg dark:hover:bg-gray-600"
                         >
                           Tandai Sudah Direview
                         </button>

@@ -118,8 +118,8 @@ const CashFlowManagement: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center">
-              <div className="bg-green-100 p-2 rounded-lg">
-                <ArrowTrendingUpIcon className="h-5 w-5 text-green-600" />
+              <div className="bg-green-100 p-2 rounded-lg dark:bg-green-900/30">
+                <ArrowTrendingUpIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
               <div className="ml-3">
                 <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Operating CF</p>
@@ -130,8 +130,8 @@ const CashFlowManagement: React.FC = () => {
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center">
-              <div className="bg-red-100 p-2 rounded-lg">
-                <ArrowTrendingDownIcon className="h-5 w-5 text-red-600" />
+              <div className="bg-red-100 p-2 rounded-lg dark:bg-red-900/30">
+                <ArrowTrendingDownIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
               </div>
               <div className="ml-3">
                 <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Investing CF</p>
@@ -142,8 +142,8 @@ const CashFlowManagement: React.FC = () => {
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center">
-              <div className="bg-blue-100 p-2 rounded-lg">
-                <BanknotesIcon className="h-5 w-5 text-blue-600" />
+              <div className="bg-blue-100 p-2 rounded-lg dark:bg-blue-900/30">
+                <BanknotesIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="ml-3">
                 <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Financing CF</p>
@@ -154,8 +154,8 @@ const CashFlowManagement: React.FC = () => {
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center">
-              <div className="bg-purple-100 p-2 rounded-lg">
-                <CurrencyDollarIcon className="h-5 w-5 text-purple-600" />
+              <div className="bg-purple-100 p-2 rounded-lg dark:bg-purple-900/30">
+                <CurrencyDollarIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div className="ml-3">
                 <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Net Cash Flow</p>
@@ -166,8 +166,8 @@ const CashFlowManagement: React.FC = () => {
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center">
-              <div className="bg-orange-100 p-2 rounded-lg">
-                <ClockIcon className="h-5 w-5 text-orange-600" />
+              <div className="bg-orange-100 p-2 rounded-lg dark:bg-orange-900/30">
+                <ClockIcon className="h-5 w-5 text-orange-600 dark:text-orange-400" />
               </div>
               <div className="ml-3">
                 <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Days Sales Outstanding</p>
@@ -178,8 +178,8 @@ const CashFlowManagement: React.FC = () => {
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center">
-              <div className="bg-indigo-100 p-2 rounded-lg">
-                <ChartBarIcon className="h-5 w-5 text-indigo-600" />
+              <div className="bg-indigo-100 p-2 rounded-lg dark:bg-indigo-900/30">
+                <ChartBarIcon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div className="ml-3">
                 <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Free Cash Flow</p>
@@ -289,14 +289,14 @@ const CashFlowManagement: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">
                       {formatRupiah(item.opening_balance)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 text-right font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 text-right font-medium dark:text-green-400">
                       {formatRupiah(item.cash_in)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right font-medium dark:text-red-400">
                       {formatRupiah(item.cash_out)}
                     </td>
                     <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-medium ${
-                      netFlow >= 0 ? 'text-green-600' : 'text-red-600'
+                      netFlow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                     }`}>
                       {formatRupiah(netFlow)}
                     </td>
@@ -315,12 +315,12 @@ const CashFlowManagement: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="bg-green-100 p-3 rounded-lg">
-              <ArrowTrendingUpIcon className="h-6 w-6 text-green-600" />
+            <div className="bg-green-100 p-3 rounded-lg dark:bg-green-900/30">
+              <ArrowTrendingUpIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Cash In</p>
-              <p className="text-xl font-bold text-green-600">
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">
                 {formatRupiah(forecast.reduce((sum, f) => sum + f.cash_in, 0))}
               </p>
             </div>
@@ -329,12 +329,12 @@ const CashFlowManagement: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="bg-red-100 p-3 rounded-lg">
-              <ArrowTrendingDownIcon className="h-6 w-6 text-red-600" />
+            <div className="bg-red-100 p-3 rounded-lg dark:bg-red-900/30">
+              <ArrowTrendingDownIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Cash Out</p>
-              <p className="text-xl font-bold text-red-600">
+              <p className="text-xl font-bold text-red-600 dark:text-red-400">
                 {formatRupiah(forecast.reduce((sum, f) => sum + f.cash_out, 0))}
               </p>
             </div>
@@ -343,12 +343,12 @@ const CashFlowManagement: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <CurrencyDollarIcon className="h-6 w-6 text-blue-600" />
+            <div className="bg-blue-100 p-3 rounded-lg dark:bg-blue-900/30">
+              <CurrencyDollarIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Net Cash Flow</p>
-              <p className="text-xl font-bold text-blue-600">
+              <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
                 {formatRupiah(forecast.reduce((sum, f) => sum + (f.cash_in - f.cash_out), 0))}
               </p>
             </div>
@@ -357,8 +357,8 @@ const CashFlowManagement: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="bg-purple-100 p-3 rounded-lg">
-              <BanknotesIcon className="h-6 w-6 text-purple-600" />
+            <div className="bg-purple-100 p-3 rounded-lg dark:bg-purple-900/30">
+              <BanknotesIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Ending Balance</p>

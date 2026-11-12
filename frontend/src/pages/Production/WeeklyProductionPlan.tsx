@@ -466,17 +466,17 @@ const WeeklyProductionPlan: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'submitted':
-        return { bg: 'bg-yellow-100 text-yellow-700', icon: ClockIcon, label: 'Menunggu Approval' };
+        return { bg: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300', icon: ClockIcon, label: 'Menunggu Approval' };
       case 'approved':
-        return { bg: 'bg-green-100 text-green-700', icon: CheckCircleIcon, label: 'Approved' };
+        return { bg: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300', icon: CheckCircleIcon, label: 'Approved' };
       case 'wo_created':
-        return { bg: 'bg-blue-100 text-blue-700', icon: CheckCircleIcon, label: 'WO Dibuat' };
+        return { bg: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300', icon: CheckCircleIcon, label: 'WO Dibuat' };
       case 'in_progress':
-        return { bg: 'bg-amber-100 text-amber-700', icon: ClockIcon, label: 'Proses' };
+        return { bg: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', icon: ClockIcon, label: 'Proses' };
       case 'completed':
-        return { bg: 'bg-emerald-100 text-emerald-700', icon: CheckCircleIcon, label: 'Selesai' };
+        return { bg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300', icon: CheckCircleIcon, label: 'Selesai' };
       default:
-        return { bg: 'bg-slate-100 text-slate-600', icon: ClockIcon, label: 'Rencana' };
+        return { bg: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300', icon: ClockIcon, label: 'Rencana' };
     }
   };
 
@@ -525,37 +525,37 @@ const WeeklyProductionPlan: React.FC = () => {
         </div>
         
         {/* Info Bar */}
-        <div className="px-6 py-4 bg-gradient-to-r from-slate-50 to-white border-b">
+        <div className="px-6 py-4 bg-gradient-to-r from-slate-50 to-white border-b dark:to-gray-800">
           <div className="flex items-center justify-between flex-wrap gap-4">
             {/* Week Navigation */}
             <div className="flex items-center gap-3 print:hidden">
               <button
                 onClick={() => navigateWeek(-1)}
-                className="p-2 rounded-xl bg-white dark:bg-gray-800 border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all shadow-sm"
+                className="p-2 rounded-xl bg-white dark:bg-gray-800 border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all shadow-sm dark:border-slate-700"
               >
-                <ChevronLeftIcon className="h-5 w-5 text-slate-600" />
+                <ChevronLeftIcon className="h-5 w-5 text-slate-600 dark:text-slate-300" />
               </button>
               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-xl font-bold shadow-md">
                 Week {weekNumber}
               </div>
               <button
                 onClick={() => navigateWeek(1)}
-                className="p-2 rounded-xl bg-white dark:bg-gray-800 border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all shadow-sm"
+                className="p-2 rounded-xl bg-white dark:bg-gray-800 border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all shadow-sm dark:border-slate-700"
               >
-                <ChevronRightIcon className="h-5 w-5 text-slate-600" />
+                <ChevronRightIcon className="h-5 w-5 text-slate-600 dark:text-slate-300" />
               </button>
             </div>
             
             {/* Period Info */}
             <div className="flex items-center gap-6">
               <div className="text-center">
-                <p className="text-xs text-slate-500 uppercase tracking-wider">Periode</p>
-                <p className="font-bold text-slate-800">{getWeekPeriod()}</p>
+                <p className="text-xs text-slate-500 uppercase tracking-wider dark:text-slate-400">Periode</p>
+                <p className="font-bold text-slate-800 dark:text-slate-100">{getWeekPeriod()}</p>
               </div>
-              <div className="h-8 w-px bg-slate-200"></div>
+              <div className="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
               <div className="text-center">
-                <p className="text-xs text-slate-500 uppercase tracking-wider">Tanggal</p>
-                <p className="font-bold text-blue-600">{formatDateRange()}</p>
+                <p className="text-xs text-slate-500 uppercase tracking-wider dark:text-slate-400">Tanggal</p>
+                <p className="font-bold text-blue-600 dark:text-blue-400">{formatDateRange()}</p>
               </div>
             </div>
             
@@ -589,9 +589,9 @@ const WeeklyProductionPlan: React.FC = () => {
               )}
               <button
                 onClick={handlePrint}
-                className="px-4 py-2.5 bg-white dark:bg-gray-800 border-2 border-slate-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 flex items-center gap-2 font-medium transition-all"
+                className="px-4 py-2.5 bg-white dark:bg-gray-800 border-2 border-slate-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 flex items-center gap-2 font-medium transition-all dark:border-slate-700"
               >
-                <PrinterIcon className="h-5 w-5 text-slate-600" />
+                <PrinterIcon className="h-5 w-5 text-slate-600 dark:text-slate-300" />
                 Print
               </button>
             </div>
@@ -603,45 +603,45 @@ const WeeklyProductionPlan: React.FC = () => {
       <div className="grid grid-cols-4 gap-4 mb-6 print:hidden">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-blue-500">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-100 p-2 rounded-lg">
-              <Cog6ToothIcon className="h-6 w-6 text-blue-600" />
+            <div className="bg-blue-100 p-2 rounded-lg dark:bg-blue-900/30">
+              <Cog6ToothIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-slate-800">{Object.keys(groupedByMachine).length}</p>
-              <p className="text-xs text-slate-500">Mesin Aktif</p>
+              <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{Object.keys(groupedByMachine).length}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Mesin Aktif</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-emerald-500">
           <div className="flex items-center gap-3">
-            <div className="bg-emerald-100 p-2 rounded-lg">
-              <ClipboardDocumentListIcon className="h-6 w-6 text-emerald-600" />
+            <div className="bg-emerald-100 p-2 rounded-lg dark:bg-emerald-900/30">
+              <ClipboardDocumentListIcon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-slate-800">{scheduleItems.length}</p>
-              <p className="text-xs text-slate-500">Total Jadwal</p>
+              <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{scheduleItems.length}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Total Jadwal</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-amber-500">
           <div className="flex items-center gap-3">
-            <div className="bg-amber-100 p-2 rounded-lg">
-              <DocumentTextIcon className="h-6 w-6 text-amber-600" />
+            <div className="bg-amber-100 p-2 rounded-lg dark:bg-amber-900/30">
+              <DocumentTextIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-slate-800">{scheduleItems.reduce((sum, i) => sum + (i.order_ctn || 0), 0).toLocaleString()}</p>
-              <p className="text-xs text-slate-500">Total CTN</p>
+              <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{scheduleItems.reduce((sum, i) => sum + (i.order_ctn || 0), 0).toLocaleString()}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Total CTN</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-purple-500">
           <div className="flex items-center gap-3">
-            <div className="bg-purple-100 p-2 rounded-lg">
-              <CalendarDaysIcon className="h-6 w-6 text-purple-600" />
+            <div className="bg-purple-100 p-2 rounded-lg dark:bg-purple-900/30">
+              <CalendarDaysIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-slate-800">5</p>
-              <p className="text-xs text-slate-500">Hari Kerja</p>
+              <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">5</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Hari Kerja</p>
             </div>
           </div>
         </div>
@@ -723,8 +723,8 @@ const WeeklyProductionPlan: React.FC = () => {
                 <tr>
                   <td colSpan={18} className="text-center py-12">
                     <div className="flex flex-col items-center gap-3">
-                      <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-200 border-t-blue-600"></div>
-                      <p className="text-slate-500">Memuat jadwal...</p>
+                      <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-200 border-t-blue-600 dark:border-blue-800"></div>
+                      <p className="text-slate-500 dark:text-slate-400">Memuat jadwal...</p>
                     </div>
                   </td>
                 </tr>
@@ -732,11 +732,11 @@ const WeeklyProductionPlan: React.FC = () => {
                 <tr>
                   <td colSpan={18} className="text-center py-16">
                     <div className="flex flex-col items-center gap-4">
-                      <div className="bg-slate-100 p-4 rounded-full">
+                      <div className="bg-slate-100 p-4 rounded-full dark:bg-slate-800">
                         <CalendarDaysIcon className="h-12 w-12 text-slate-400" />
                       </div>
                       <div>
-                        <p className="text-lg font-semibold text-slate-600">Belum Ada Jadwal</p>
+                        <p className="text-lg font-semibold text-slate-600 dark:text-slate-300">Belum Ada Jadwal</p>
                         <p className="text-slate-400">Klik "Tambah Jadwal" untuk membuat jadwal produksi</p>
                       </div>
                       <button
@@ -753,9 +753,9 @@ const WeeklyProductionPlan: React.FC = () => {
                 Object.entries(groupedByMachine).map(([machineCode, items], groupIdx) => (
                   <React.Fragment key={machineCode}>
                     {items.map((item, itemIdx) => (
-                      <tr key={item.id} className={`hover:bg-blue-50/50 transition-colors ${groupIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
+                      <tr key={item.id} className={`hover:bg-blue-50/50 transition-colors ${groupIdx % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-slate-50/50'}`}>
                         {itemIdx === 0 && (
-                          <td className="px-3 py-3 align-top border-r border-slate-200" rowSpan={items.length}>
+                          <td className="px-3 py-3 align-top border-r border-slate-200 dark:border-slate-700" rowSpan={items.length}>
                             <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-white text-xs font-bold shadow-sm ${item.color || 'bg-slate-500'}`}>
                               <Cog6ToothIcon className="h-4 w-4" />
                               {machineCode}
@@ -799,23 +799,23 @@ const WeeklyProductionPlan: React.FC = () => {
                               <CubeIcon className="h-4 w-4 text-white" />
                             </div>
                             <div>
-                              <div className="font-semibold text-slate-800 text-sm leading-tight">{item.product_name}</div>
+                              <div className="font-semibold text-slate-800 text-sm leading-tight dark:text-slate-100">{item.product_name}</div>
                               <div className="text-[10px] text-slate-400 font-mono">{item.product_code}</div>
                             </div>
                           </div>
                         </td>
                         <td className="px-3 py-2 text-center">
-                          <span className="inline-flex items-center px-2.5 py-1 bg-amber-50 text-amber-700 rounded-lg font-bold text-sm">
+                          <span className="inline-flex items-center px-2.5 py-1 bg-amber-50 text-amber-700 rounded-lg font-bold text-sm dark:bg-amber-900/20 dark:text-amber-300">
                             {item.order_ctn?.toLocaleString() || 0}
                           </span>
                         </td>
-                        <td className="px-3 py-2 text-center text-slate-600 font-medium">{item.qty_per_ctn || 0}</td>
+                        <td className="px-3 py-2 text-center text-slate-600 font-medium dark:text-slate-300">{item.qty_per_ctn || 0}</td>
                         <td className="px-3 py-2 text-center">
-                          <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg font-bold text-sm">
+                          <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg font-bold text-sm dark:bg-blue-900/20 dark:text-blue-300">
                             {item.order_pack?.toLocaleString() || 0}
                           </span>
                         </td>
-                        <td className="px-3 py-2 text-center text-xs text-slate-500">{item.spek_kain || '-'}</td>
+                        <td className="px-3 py-2 text-center text-xs text-slate-500 dark:text-slate-400">{item.spek_kain || '-'}</td>
                         <td className="px-3 py-2 text-center">
                           {item.no_spk ? (
                             <button
@@ -846,7 +846,7 @@ const WeeklyProductionPlan: React.FC = () => {
                                     <span className="text-[8px] font-bold text-white/90">S1</span>
                                   </div>
                                 ) : (
-                                  <div className="mx-auto w-6 h-6 rounded-lg border-2 border-dashed border-slate-200"></div>
+                                  <div className="mx-auto w-6 h-6 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-700"></div>
                                 )}
                               </td>
                               <td className="px-0.5 py-1.5">
@@ -855,7 +855,7 @@ const WeeklyProductionPlan: React.FC = () => {
                                     <span className="text-[8px] font-bold text-white/90">S2</span>
                                   </div>
                                 ) : (
-                                  <div className="mx-auto w-6 h-6 rounded-lg border-2 border-dashed border-slate-200"></div>
+                                  <div className="mx-auto w-6 h-6 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-700"></div>
                                 )}
                               </td>
                               <td className="px-0.5 py-1.5">
@@ -864,7 +864,7 @@ const WeeklyProductionPlan: React.FC = () => {
                                     <span className="text-[8px] font-bold text-white/90">S3</span>
                                   </div>
                                 ) : (
-                                  <div className="mx-auto w-6 h-6 rounded-lg border-2 border-dashed border-slate-200"></div>
+                                  <div className="mx-auto w-6 h-6 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-700"></div>
                                 )}
                               </td>
                             </React.Fragment>
@@ -920,18 +920,18 @@ const WeeklyProductionPlan: React.FC = () => {
       {/* Notes Section */}
       <div className="mt-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 print:shadow-none print:p-4 print:rounded-none">
         <div className="flex items-center gap-2 mb-4">
-          <div className="bg-red-100 p-2 rounded-lg">
-            <DocumentTextIcon className="h-5 w-5 text-red-600" />
+          <div className="bg-red-100 p-2 rounded-lg dark:bg-red-900/30">
+            <DocumentTextIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
           </div>
-          <h3 className="font-bold text-slate-800">Catatan Penting</h3>
+          <h3 className="font-bold text-slate-800 dark:text-slate-100">Catatan Penting</h3>
         </div>
         
         {notes.length > 0 ? (
           <div className="space-y-2 mb-4">
             {notes.map((note, idx) => (
-              <div key={idx} className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-lg px-4 py-2">
+              <div key={idx} className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-lg px-4 py-2 dark:bg-red-900/20">
                 <span className="bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">{idx + 1}</span>
-                <span className="flex-1 text-red-700 text-sm">{note}</span>
+                <span className="flex-1 text-red-700 text-sm dark:text-red-300">{note}</span>
                 <button
                   onClick={() => handleRemoveNote(idx)}
                   className="text-red-300 hover:text-red-600 transition-colors print:hidden"
@@ -951,7 +951,7 @@ const WeeklyProductionPlan: React.FC = () => {
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
             placeholder="Tulis catatan baru..."
-            className="flex-1 px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-red-400 focus:outline-none transition-colors"
+            className="flex-1 px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-red-400 focus:outline-none transition-colors dark:border-slate-700"
             onKeyPress={(e) => e.key === 'Enter' && handleAddNote()}
           />
           <button
@@ -993,11 +993,11 @@ const WeeklyProductionPlan: React.FC = () => {
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Mesin <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-200">Mesin <span className="text-red-500">*</span></label>
                   <select
                     value={formData.machine_id}
                     onChange={(e) => setFormData({ ...formData, machine_id: e.target.value })}
-                    className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors"
+                    className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors dark:border-slate-700"
                   >
                     <option value="">Pilih Mesin</option>
                     {machines.map((m) => (
@@ -1007,7 +1007,7 @@ const WeeklyProductionPlan: React.FC = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Produk <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-200">Produk <span className="text-red-500">*</span></label>
                   <SearchableSelect
                     options={products.map(p => ({
                       id: p.id,
@@ -1032,44 +1032,44 @@ const WeeklyProductionPlan: React.FC = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Order (CTN)</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-200">Order (CTN)</label>
                   <NumberInput
                     value={formData.order_ctn}
                     onChange={(e) => setFormData({ ...formData, order_ctn: e.target.value })}
-                    className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors"
+                    className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors dark:border-slate-700"
                     placeholder="0"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Q/CTN (dari Produk)</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-200">Q/CTN (dari Produk)</label>
                   <NumberInput
                     value={formData.qty_per_ctn}
                     onChange={(e) => setFormData({ ...formData, qty_per_ctn: e.target.value })}
-                    className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors bg-gray-50 dark:bg-gray-900"
+                    className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors bg-gray-50 dark:bg-gray-900 dark:border-slate-700"
                     placeholder="Auto dari produk"
                     readOnly
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Spek Kain</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-200">Spek Kain</label>
                   <input
                     type="text"
                     value={formData.spek_kain}
                     onChange={(e) => setFormData({ ...formData, spek_kain: e.target.value })}
-                    className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors"
+                    className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors dark:border-slate-700"
                     placeholder="Contoh: 60x60"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">No SPK</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-200">No SPK</label>
                   <input
                     type="text"
                     value={formData.no_spk}
                     onChange={(e) => setFormData({ ...formData, no_spk: e.target.value })}
-                    className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors"
+                    className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-400 focus:outline-none transition-colors dark:border-slate-700"
                     placeholder="Contoh: SPK-001"
                   />
                 </div>
@@ -1077,7 +1077,7 @@ const WeeklyProductionPlan: React.FC = () => {
               
               {/* Color Picker */}
               <div className="mt-5">
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Warna Penanda</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2 dark:text-slate-200">Warna Penanda</label>
                 <div className="flex gap-2 flex-wrap">
                   {SCHEDULE_COLORS.map((color) => (
                     <button
@@ -1091,24 +1091,24 @@ const WeeklyProductionPlan: React.FC = () => {
               
               {/* Schedule Grid */}
               <div className="mt-5">
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Jadwal Shift</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2 dark:text-slate-200">Jadwal Shift</label>
                 <p className="text-xs text-slate-400 mb-3">Klik tombol shift untuk mengaktifkan/menonaktifkan</p>
-                <div className="bg-slate-50 rounded-xl p-4">
+                <div className="bg-slate-50 rounded-xl p-4 dark:bg-slate-900">
                   <div className="grid grid-cols-5 gap-3">
                     {weekDates.map((date, idx) => {
                       const dateStr = toLocalDateString(date);
                       const shifts = formData.schedule_days[dateStr] || [];
                       return (
                         <div key={dateStr} className="text-center">
-                          <div className="text-xs font-bold text-slate-500 mb-1">{DAYS[idx]}</div>
-                          <div className="text-lg font-bold text-slate-800 mb-2">{date.getDate()}</div>
+                          <div className="text-xs font-bold text-slate-500 mb-1 dark:text-slate-400">{DAYS[idx]}</div>
+                          <div className="text-lg font-bold text-slate-800 mb-2 dark:text-slate-100">{date.getDate()}</div>
                           <div className="flex gap-1 justify-center flex-wrap">
                             <button
                               onClick={() => toggleScheduleDay(dateStr, 1)}
                               className={`w-9 h-9 rounded-lg text-xs font-bold transition-all ${
                                 shifts.includes(1) 
                                   ? formData.color + ' text-white shadow-md scale-105' 
-                                  : 'bg-white border-2 border-slate-200 text-slate-400 hover:border-slate-300'
+                                  : 'bg-white border-2 border-slate-200 text-slate-400 hover:border-slate-300 dark:bg-gray-800 dark:border-slate-700'
                               }`}
                             >
                               S1
@@ -1118,7 +1118,7 @@ const WeeklyProductionPlan: React.FC = () => {
                               className={`w-9 h-9 rounded-lg text-xs font-bold transition-all ${
                                 shifts.includes(2) 
                                   ? formData.color + ' text-white shadow-md scale-105' 
-                                  : 'bg-white border-2 border-slate-200 text-slate-400 hover:border-slate-300'
+                                  : 'bg-white border-2 border-slate-200 text-slate-400 hover:border-slate-300 dark:bg-gray-800 dark:border-slate-700'
                               }`}
                             >
                               S2
@@ -1128,7 +1128,7 @@ const WeeklyProductionPlan: React.FC = () => {
                               className={`w-9 h-9 rounded-lg text-xs font-bold transition-all ${
                                 shifts.includes(3) 
                                   ? formData.color + ' text-white shadow-md scale-105' 
-                                  : 'bg-white border-2 border-slate-200 text-slate-400 hover:border-slate-300'
+                                  : 'bg-white border-2 border-slate-200 text-slate-400 hover:border-slate-300 dark:bg-gray-800 dark:border-slate-700'
                               }`}
                             >
                               S3
@@ -1143,10 +1143,10 @@ const WeeklyProductionPlan: React.FC = () => {
             </div>
             
             {/* Modal Footer */}
-            <div className="px-6 py-4 bg-slate-50 border-t flex justify-end gap-3">
+            <div className="px-6 py-4 bg-slate-50 border-t flex justify-end gap-3 dark:bg-slate-900">
               <button
                 onClick={() => { setShowAddModal(false); setEditingItem(null); }}
-                className="px-5 py-2.5 border-2 border-slate-200 rounded-xl hover:bg-slate-100 font-medium transition-colors"
+                className="px-5 py-2.5 border-2 border-slate-200 rounded-xl hover:bg-slate-100 font-medium transition-colors dark:hover:bg-slate-800 dark:border-slate-700"
               >
                 Batal
               </button>
@@ -1210,8 +1210,8 @@ const WeeklyProductionPlan: React.FC = () => {
                         onClick={() => setSelectedMonthly(item)}
                         className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
                           selectedMonthly?.id === item.id 
-                            ? 'border-purple-500 bg-purple-50' 
-                            : 'border-gray-200 hover:border-purple-300'
+                            ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' 
+                            : 'border-gray-200 hover:border-purple-300 dark:border-gray-700'
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -1224,7 +1224,7 @@ const WeeklyProductionPlan: React.FC = () => {
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                              Sisa: <span className="text-orange-600 font-bold">{item.remaining_ctn.toLocaleString()}</span> CTN
+                              Sisa: <span className="text-orange-600 font-bold dark:text-orange-400">{item.remaining_ctn.toLocaleString()}</span> CTN
                             </p>
                             <p className="text-xs text-gray-400">
                               dari {item.target_ctn.toLocaleString()} CTN ({item.qty_per_ctn}/ctn)
@@ -1239,8 +1239,8 @@ const WeeklyProductionPlan: React.FC = () => {
                   </div>
 
                   {selectedMonthly && (
-                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 space-y-4">
-                      <h4 className="font-semibold text-purple-800">
+                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 space-y-4 dark:bg-purple-900/20 dark:border-purple-800">
+                      <h4 className="font-semibold text-purple-800 dark:text-purple-300">
                         Jadwalkan: {selectedMonthly.product_name}
                       </h4>
                       
@@ -1254,7 +1254,7 @@ const WeeklyProductionPlan: React.FC = () => {
                             <option value="">Pilih mesin</option>
                             {machines.map((m) => <option key={m.id} value={m.id}>{m.code} - {m.name}</option>)}
                           </select>
-                          <p className="mt-1 text-xs text-gray-500">Target bulanan ini belum punya mesin, pilih mesin untuk jadwal minggu ini.</p>
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Target bulanan ini belum punya mesin, pilih mesin untuk jadwal minggu ini.</p>
                         </div>
                       )}
                       <div>
@@ -1293,7 +1293,7 @@ const WeeklyProductionPlan: React.FC = () => {
                                       className={`w-7 h-7 rounded text-[10px] font-bold transition-all ${
                                         shifts.includes(1) 
                                           ? 'bg-purple-500 text-white' 
-                                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600'
                                       }`}
                                     >
                                       S1
@@ -1303,7 +1303,7 @@ const WeeklyProductionPlan: React.FC = () => {
                                       className={`w-7 h-7 rounded text-[10px] font-bold transition-all ${
                                         shifts.includes(2) 
                                           ? 'bg-purple-500 text-white' 
-                                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600'
                                       }`}
                                     >
                                       S2
@@ -1313,7 +1313,7 @@ const WeeklyProductionPlan: React.FC = () => {
                                       className={`w-7 h-7 rounded text-[10px] font-bold transition-all ${
                                         shifts.includes(3) 
                                           ? 'bg-purple-500 text-white' 
-                                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600'
                                       }`}
                                     >
                                       S3
@@ -1335,7 +1335,7 @@ const WeeklyProductionPlan: React.FC = () => {
             <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t flex justify-between">
               <button
                 onClick={() => navigate('/app/production/monthly-schedule')}
-                className="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg font-medium"
+                className="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg font-medium dark:text-purple-400"
               >
                 Kelola Target Bulanan
               </button>

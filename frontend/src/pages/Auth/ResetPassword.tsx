@@ -53,7 +53,7 @@ const ResetPassword: React.FC = () => {
         <div className="max-w-md w-full mx-4">
           <div className="bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-2xl shadow-xl p-8 text-center">
             <div className="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
@@ -63,7 +63,7 @@ const ResetPassword: React.FC = () => {
             </p>
             <Link
               to="/forgot-password"
-              className="inline-flex items-center text-blue-600 hover:text-blue-500 font-medium"
+              className="inline-flex items-center text-blue-600 hover:text-blue-500 font-medium dark:text-blue-400"
             >
               <ArrowLeftIcon className="w-4 h-4 mr-2" />
               Request a new link
@@ -80,7 +80,7 @@ const ResetPassword: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 dark:bg-slate-800 rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
             <div className="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4">
-              <LockClosedIcon className="w-8 h-8 text-blue-600" />
+              <LockClosedIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
               {success ? 'Password Reset!' : 'Create New Password'}
@@ -152,7 +152,7 @@ const ResetPassword: React.FC = () => {
           ) : (
             <div className="text-center py-4">
               <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
@@ -165,7 +165,7 @@ const ResetPassword: React.FC = () => {
           <div className="mt-6 text-center">
             <Link
               to="/login"
-              className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors"
+              className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors dark:text-blue-400"
             >
               <ArrowLeftIcon className="w-4 h-4 mr-2" />
               Back to Login

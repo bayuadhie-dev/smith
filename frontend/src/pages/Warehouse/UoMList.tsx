@@ -203,7 +203,7 @@ const UoMList: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ScaleIcon className="h-7 w-7 text-blue-600" />
+            <ScaleIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
             Satuan Barang (UoM)
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -220,7 +220,7 @@ const UoMList: React.FC = () => {
             className={`py-3 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'units'
                 ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
             }`}
           >
             <ScaleIcon className="h-4 w-4 inline mr-1" />
@@ -231,7 +231,7 @@ const UoMList: React.FC = () => {
             className={`py-3 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'conversions'
                 ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
             }`}
           >
             <ArrowsRightLeftIcon className="h-4 w-4 inline mr-1" />
@@ -302,7 +302,7 @@ const UoMList: React.FC = () => {
                     <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{unit.description || '-'}</td>
                     <td className="px-4 py-3 text-sm">
                       {unit.is_active
-                        ? <span className="text-green-600 font-medium">Aktif</span>
+                        ? <span className="text-green-600 font-medium dark:text-green-400">Aktif</span>
                         : <span className="text-red-500 font-medium">Nonaktif</span>
                       }
                     </td>
@@ -407,7 +407,7 @@ const UoMList: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {editingUnit ? 'Edit Satuan' : 'Tambah Satuan'}
               </h3>
-              <button onClick={() => setShowUnitModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowUnitModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white">
                 <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
@@ -455,7 +455,7 @@ const UoMList: React.FC = () => {
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setShowUnitModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 transition">
+              <button onClick={() => setShowUnitModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 transition dark:hover:text-white">
                 Batal
               </button>
               <button onClick={handleSaveUnit} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
@@ -474,7 +474,7 @@ const UoMList: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {editingConversion ? 'Edit Konversi' : 'Tambah Konversi'}
               </h3>
-              <button onClick={() => setShowConversionModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowConversionModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white">
                 <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
@@ -550,7 +550,7 @@ const UoMList: React.FC = () => {
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setShowConversionModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 transition">
+              <button onClick={() => setShowConversionModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 transition dark:hover:text-white">
                 Batal
               </button>
               <button onClick={handleSaveConversion} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">

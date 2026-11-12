@@ -350,10 +350,10 @@ export default function WorkOrderQCForm() {
   if (!workOrder) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">SPK tidak ditemukan</p>
+        <p className="text-gray-500 dark:text-gray-400">SPK tidak ditemukan</p>
         <button
           onClick={() => navigate('/app/quality/pending-qc')}
-          className="mt-4 text-blue-600 hover:text-blue-700"
+          className="mt-4 text-blue-600 hover:text-blue-700 dark:text-blue-400"
         >
           Kembali ke daftar
         </button>
@@ -374,7 +374,7 @@ export default function WorkOrderQCForm() {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <ClipboardDocumentCheckIcon className="w-7 h-7 text-blue-600" />
+              <ClipboardDocumentCheckIcon className="w-7 h-7 text-blue-600 dark:text-blue-400" />
               QC Inspection
             </h1>
             <p className="text-gray-500 dark:text-gray-400">
@@ -475,7 +475,7 @@ export default function WorkOrderQCForm() {
         {/* Quick Checks */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <BeakerIcon className="w-5 h-5 text-blue-600" />
+            <BeakerIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             Checklist Inspeksi
           </h3>
 
@@ -671,14 +671,14 @@ export default function WorkOrderQCForm() {
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-600 dark:text-gray-400">Sudah diinspeksi</p>
-                <p className={`text-xl font-bold ${totalInspectedRejects === workOrder.quantity_scrap ? 'text-green-600' : 'text-orange-600'}`}>
+                <p className={`text-xl font-bold ${totalInspectedRejects === workOrder.quantity_scrap ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}`}>
                   {totalInspectedRejects} / {workOrder.quantity_scrap}
                 </p>
                 {remainingRejects > 0 && (
-                  <p className="text-xs text-orange-600">Sisa: {remainingRejects}</p>
+                  <p className="text-xs text-orange-600 dark:text-orange-400">Sisa: {remainingRejects}</p>
                 )}
                 {remainingRejects < 0 && (
-                  <p className="text-xs text-red-600">Melebihi: {Math.abs(remainingRejects)}</p>
+                  <p className="text-xs text-red-600 dark:text-red-400">Melebihi: {Math.abs(remainingRejects)}</p>
                 )}
               </div>
             </div>
@@ -736,7 +736,7 @@ export default function WorkOrderQCForm() {
                     <button
                       type="button"
                       onClick={() => removeRejectEntry(entry.id)}
-                      className="flex-shrink-0 p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                      className="flex-shrink-0 p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors dark:text-red-400"
                     >
                       <XCircleIcon className="w-5 h-5" />
                     </button>
@@ -832,9 +832,9 @@ export default function WorkOrderQCForm() {
                   {...register('result')}
                   className="sr-only"
                 />
-                {result === 'passed' && <CheckCircleIcon className="w-5 h-5 text-green-600" />}
-                {result === 'failed' && <XCircleIcon className="w-5 h-5 text-red-600" />}
-                {result === 'conditional' && <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600" />}
+                {result === 'passed' && <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400" />}
+                {result === 'failed' && <XCircleIcon className="w-5 h-5 text-red-600 dark:text-red-400" />}
+                {result === 'conditional' && <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />}
                 <span className="font-medium capitalize">{result}</span>
               </label>
             ))}

@@ -91,11 +91,11 @@ const NotificationsPage: React.FC = () => {
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'success': return 'bg-green-100 text-green-800 border-green-200';
-      case 'warning': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'error': return 'bg-red-100 text-red-800 border-red-200';
-      case 'info': return 'bg-blue-100 text-blue-800 border-blue-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'success': return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800';
+      case 'warning': return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800';
+      case 'error': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
+      case 'info': return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-700';
     }
   };
 
@@ -141,7 +141,7 @@ const NotificationsPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <BellIcon className="h-8 w-8 text-blue-600" />
+          <BellIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Notifikasi</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -169,8 +169,8 @@ const NotificationsPage: React.FC = () => {
               onClick={() => setFilter(f as 'all' | 'unread' | 'read')}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                 filter === f 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-800 dark:text-blue-400' 
+                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
               }`}
             >
               {f === 'all' ? 'Semua' : f === 'unread' ? 'Belum Dibaca' : 'Sudah Dibaca'}
@@ -213,8 +213,8 @@ const NotificationsPage: React.FC = () => {
               onClick={() => handleNotificationClick(notification)}
               className={`p-4 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${
                 !notification.is_read 
-                  ? 'bg-blue-50 border-blue-200' 
-                  : 'bg-white border-gray-100 hover:border-gray-200'
+                  ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800' 
+                  : 'bg-white border-gray-100 hover:border-gray-200 dark:bg-gray-800 dark:border-gray-800'
               }`}
             >
               <div className="flex items-start gap-4">
@@ -226,7 +226,7 @@ const NotificationsPage: React.FC = () => {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className={`text-base ${!notification.is_read ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}`}>
+                    <h3 className={`text-base ${!notification.is_read ? 'font-semibold text-gray-900 dark:text-white' : 'font-medium text-gray-700 dark:text-gray-200'}`}>
                       {notification.title}
                     </h3>
                     <div className="flex items-center gap-2 flex-shrink-0">
@@ -247,7 +247,7 @@ const NotificationsPage: React.FC = () => {
                     <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded">{notification.category}</span>
                     <span>{formatDate(notification.created_at)}</span>
                     {notification.action_url && (
-                      <span className="text-blue-600">Klik untuk detail →</span>
+                      <span className="text-blue-600 dark:text-blue-400">Klik untuk detail →</span>
                     )}
                   </div>
                 </div>

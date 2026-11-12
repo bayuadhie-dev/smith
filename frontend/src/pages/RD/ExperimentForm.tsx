@@ -213,7 +213,7 @@ const ExperimentForm: React.FC = () => {
         {/* Basic Information */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <BeakerIcon className="w-5 h-5 text-purple-600" />
+            <BeakerIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             Experiment Details
           </h2>
           
@@ -332,7 +332,7 @@ const ExperimentForm: React.FC = () => {
                   onClick={() => handleSuccessChange(true)}
                   className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
                     formData.success === true
-                      ? 'bg-green-100 border-green-500 text-green-700'
+                      ? 'bg-green-100 border-green-500 text-green-700 dark:bg-green-900/30 dark:text-green-300'
                       : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
@@ -344,7 +344,7 @@ const ExperimentForm: React.FC = () => {
                   onClick={() => handleSuccessChange(false)}
                   className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
                     formData.success === false
-                      ? 'bg-red-100 border-red-500 text-red-700'
+                      ? 'bg-red-100 border-red-500 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                       : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
@@ -356,7 +356,7 @@ const ExperimentForm: React.FC = () => {
                   onClick={() => handleSuccessChange(null)}
                   className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
                     formData.success === null
-                      ? 'bg-gray-100 border-gray-500 text-gray-700'
+                      ? 'bg-gray-100 border-gray-500 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
                       : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
@@ -370,7 +370,7 @@ const ExperimentForm: React.FC = () => {
         {/* Hypothesis & Methodology */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <ClipboardDocumentListIcon className="w-5 h-5 text-blue-600" />
+            <ClipboardDocumentListIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             Hypothesis & Methodology
           </h2>
           
@@ -437,7 +437,7 @@ const ExperimentForm: React.FC = () => {
         {/* Results & Conclusions */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <DocumentTextIcon className="w-5 h-5 text-green-600" />
+            <DocumentTextIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
             Results & Conclusions
           </h2>
           

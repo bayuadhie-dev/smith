@@ -78,7 +78,7 @@ export default function PeriodSelectModal({ initialWindow, initialCount, onConfi
 
         {mode === 'single' && (
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Bulan</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1 dark:text-gray-400">Bulan</label>
             <input
               type="month"
               value={singleMonth}
@@ -91,7 +91,7 @@ export default function PeriodSelectModal({ initialWindow, initialCount, onConfi
         {mode === 'range' && (
           <div className="flex items-center gap-2">
             <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Dari</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1 dark:text-gray-400">Dari</label>
               <input
                 type="month"
                 value={rangeStart}
@@ -101,7 +101,7 @@ export default function PeriodSelectModal({ initialWindow, initialCount, onConfi
             </div>
             <span className="text-gray-400 mt-5">&rarr;</span>
             <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Sampai</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1 dark:text-gray-400">Sampai</label>
               <input
                 type="month"
                 value={rangeEnd}

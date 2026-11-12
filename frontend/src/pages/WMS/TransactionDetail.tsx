@@ -69,7 +69,7 @@ const TransactionDetail: React.FC = () => {
   }
 
   const InfoRow = ({ label, value, className = '' }: { label: string; value: any; className?: string }) => (
-    <div className="flex justify-between py-2 border-b border-gray-100 last:border-0">
+    <div className="flex justify-between py-2 border-b border-gray-100 last:border-0 dark:border-gray-800">
       <span className="text-sm text-gray-500 dark:text-gray-400">{label}</span>
       <span className={`text-sm font-medium text-gray-900 ${className} dark:text-white`}>{value || '-'}</span>
     </div>
@@ -109,9 +109,9 @@ const TransactionDetail: React.FC = () => {
           <InfoRow label="Arah" value={txn.direction === 'in' ? 'Masuk (IN)' : 'Keluar (OUT)'} />
           <InfoRow label="Status" value={
             <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-              txn.status === 'completed' ? 'bg-green-100 text-green-700' :
-              txn.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-              'bg-gray-100 text-gray-600'
+              txn.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+              txn.status === 'pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+              'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
             } dark:bg-gray-700 dark:text-gray-300 dark:bg-green-900/30 dark:bg-yellow-900/30 dark:text-green-300 dark:text-yellow-300`}>{txn.status}</span>
           } />
           <InfoRow label="Tanggal" value={txn.transaction_date ? new Date(txn.transaction_date).toLocaleString('id-ID') : '-'} />

@@ -61,7 +61,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-500">{t('common.loading')}</p>
+          <p className="mt-2 text-gray-500 dark:text-gray-400">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -70,7 +70,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
   if (data.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="p-8 text-center text-gray-500">
+        <div className="p-8 text-center text-gray-500 dark:text-gray-400">
           {emptyMessage}
         </div>
       </div>
@@ -87,13 +87,13 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
                 >
                   {column.label}
                 </th>
               ))}
               {(onView || onEdit || onDelete) && (
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">{t('common.actions')}</th>
               )}
             </tr>
           </thead>
@@ -106,12 +106,12 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
                   </td>
                 ))}
                 {(onView || onEdit || onDelete) && (
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     <div className="flex items-center space-x-2">
                       {onView && (
                         <button
                           onClick={() => onView(row)}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
                         >
                           <Eye className="h-4 w-4" />
                         </button>
@@ -119,7 +119,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
                       {onEdit && (
                         <button
                           onClick={() => onEdit(row)}
-                          className="text-green-600 hover:text-green-900"
+                          className="text-green-600 hover:text-green-900 dark:text-green-400"
                         >
                           <Edit className="h-4 w-4" />
                         </button>
@@ -127,7 +127,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
                       {onDelete && (
                         <button
                           onClick={() => onDelete(row)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 dark:text-red-400"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -154,7 +154,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
                 <div className="space-y-2">
                   {highPriorityColumns.map((column) => (
                     <div key={column.key} className="flex justify-between items-start">
-                      <span className="text-sm font-medium text-gray-500">{column.label}:</span>
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{column.label}:</span>
                       <span className="text-sm text-gray-900 dark:text-white text-right flex-1 ml-2">
                         {column.render ? column.render(row[column.key], row) : row[column.key]}
                       </span>
@@ -164,10 +164,10 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
 
                 {/* Medium Priority Fields - Tablet Visible */}
                 {mediumPriorityColumns.length > 0 && (
-                  <div className="hidden sm:block lg:hidden mt-3 pt-3 border-t border-gray-100 space-y-2">
+                  <div className="hidden sm:block lg:hidden mt-3 pt-3 border-t border-gray-100 space-y-2 dark:border-gray-800">
                     {mediumPriorityColumns.map((column) => (
                       <div key={column.key} className="flex justify-between items-start">
-                        <span className="text-sm font-medium text-gray-500">{column.label}:</span>
+                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{column.label}:</span>
                         <span className="text-sm text-gray-900 dark:text-white text-right flex-1 ml-2">
                           {column.render ? column.render(row[column.key], row) : row[column.key]}
                         </span>
@@ -177,14 +177,14 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
                 )}
 
                 {/* Expand Button & Actions */}
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
                   <div className="flex items-center space-x-2">
                     {(onView || onEdit || onDelete) && (
                       <>
                         {onView && (
                           <button
                             onClick={() => onView(row)}
-                            className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg"
+                            className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg dark:text-blue-400"
                           >
                             <Eye className="h-4 w-4" />
                           </button>
@@ -192,7 +192,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
                         {onEdit && (
                           <button
                             onClick={() => onEdit(row)}
-                            className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-lg"
+                            className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-lg dark:text-green-400"
                           >
                             <Edit className="h-4 w-4" />
                           </button>
@@ -200,7 +200,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
                         {onDelete && (
                           <button
                             onClick={() => onDelete(row)}
-                            className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg"
+                            className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg dark:text-red-400"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -212,7 +212,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
                   {lowPriorityColumns.length > 0 && (
                     <button
                       onClick={() => toggleRow(index)}
-                      className="flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-200"
+                      className="flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-200 dark:hover:text-white"
                     >
                       {isExpanded ? 'Less' : 'More'}
                       {isExpanded ? (
@@ -226,10 +226,10 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
 
                 {/* Expanded Content - Low Priority Fields */}
                 {isExpanded && lowPriorityColumns.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                  <div className="mt-3 pt-3 border-t border-gray-100 space-y-2 dark:border-gray-800">
                     {lowPriorityColumns.map((column) => (
                       <div key={column.key} className="flex justify-between items-start">
-                        <span className="text-sm font-medium text-gray-500">{column.label}:</span>
+                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{column.label}:</span>
                         <span className="text-sm text-gray-900 dark:text-white text-right flex-1 ml-2">
                           {column.render ? column.render(row[column.key], row) : row[column.key]}
                         </span>

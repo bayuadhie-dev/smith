@@ -109,9 +109,9 @@ const BudgetPlanning: React.FC = () => {
   };
 
   const getVarianceColor = (variance: number) => {
-    if (variance > 0) return 'text-green-600';
-    if (variance < -10) return 'text-red-600';
-    return 'text-yellow-600';
+    if (variance > 0) return 'text-green-600 dark:text-green-400';
+    if (variance < -10) return 'text-red-600 dark:text-red-400';
+    return 'text-yellow-600 dark:text-yellow-400';
   };
 
   const handleCloseModal = () => {
@@ -165,9 +165,9 @@ const BudgetPlanning: React.FC = () => {
   const budgetLinesTotal = budgetLines.reduce((sum, l) => sum + (Number(l.budget_amount) || 0), 0);
 
   const getVarianceBgColor = (variance: number) => {
-    if (variance > 0) return 'bg-green-100 text-green-800';
-    if (variance < -10) return 'bg-red-100 text-red-800';
-    return 'bg-yellow-100 text-yellow-800';
+    if (variance > 0) return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+    if (variance < -10) return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+    return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
   };
 
   const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
@@ -231,7 +231,7 @@ const BudgetPlanning: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-300">Available:</span>
-                <span className={`text-sm font-medium ${(budget.total_available ?? budget.total_budget) < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                <span className={`text-sm font-medium ${(budget.total_available ?? budget.total_budget) < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                   {formatRupiah(budget.total_available ?? budget.total_budget)}
                 </span>
               </div>
@@ -374,8 +374,8 @@ const BudgetPlanning: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <ChartBarIcon className="h-6 w-6 text-blue-600" />
+            <div className="bg-blue-100 p-3 rounded-lg dark:bg-blue-900/30">
+              <ChartBarIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Budget</p>
@@ -388,8 +388,8 @@ const BudgetPlanning: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="bg-green-100 p-3 rounded-lg">
-              <ChartBarIcon className="h-6 w-6 text-green-600" />
+            <div className="bg-green-100 p-3 rounded-lg dark:bg-green-900/30">
+              <ChartBarIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Actual</p>
@@ -402,12 +402,12 @@ const BudgetPlanning: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="bg-red-100 p-3 rounded-lg">
-              <ArrowTrendingDownIcon className="h-6 w-6 text-red-600" />
+            <div className="bg-red-100 p-3 rounded-lg dark:bg-red-900/30">
+              <ArrowTrendingDownIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Variance</p>
-              <p className="text-xl font-bold text-red-900">
+              <p className="text-xl font-bold text-red-900 dark:text-red-200">
                 {formatRupiah(budgets.reduce((sum, b) => sum + b.variance, 0))}
               </p>
             </div>
@@ -416,8 +416,8 @@ const BudgetPlanning: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="bg-purple-100 p-3 rounded-lg">
-              <CheckCircleIcon className="h-6 w-6 text-purple-600" />
+            <div className="bg-purple-100 p-3 rounded-lg dark:bg-purple-900/30">
+              <CheckCircleIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Budget Utilization</p>
@@ -437,7 +437,7 @@ const BudgetPlanning: React.FC = () => {
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Create New Budget</h3>
               <button 
                 onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl dark:hover:text-white"
               >
                 ✕
               </button>
@@ -589,7 +589,7 @@ const BudgetPlanning: React.FC = () => {
                   <button
                     type="button"
                     onClick={addBudgetLine}
-                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium dark:text-blue-400"
                   >
                     + Tambah Baris
                   </button>
@@ -621,7 +621,7 @@ const BudgetPlanning: React.FC = () => {
                         type="button"
                         onClick={() => removeBudgetLine(idx)}
                         disabled={budgetLines.length === 1}
-                        className="px-3 py-2 text-red-600 hover:text-red-800 disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="px-3 py-2 text-red-600 hover:text-red-800 disabled:opacity-30 disabled:cursor-not-allowed dark:text-red-400"
                       >
                         &times;
                       </button>

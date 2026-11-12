@@ -133,7 +133,7 @@ const StockByWODetail: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{wo.wo_number}</h1>
           <p className="text-gray-500 dark:text-gray-400">{wo.product_name} ({wo.product_code})</p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[wo.status] || 'bg-gray-100'} dark:bg-gray-700`}>
+        <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[wo.status] || 'bg-gray-100 dark:bg-gray-700'} dark:bg-gray-700`}>
           {wo.status?.replace('_', ' ')}
         </span>
       </div>
@@ -228,9 +228,9 @@ const StockByWODetail: React.FC = () => {
                   </td>
                   <td className="px-4 py-2 text-sm">
                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                      mc.status === 'completed' ? 'bg-green-100 text-green-700' :
-                      mc.status === 'partial' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-gray-100 text-gray-600'
+                      mc.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                      mc.status === 'partial' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                      'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                     } dark:bg-gray-700 dark:text-gray-300 dark:bg-green-900/30 dark:bg-yellow-900/30 dark:text-green-300 dark:text-yellow-300`}>{mc.status}</span>
                   </td>
                   <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">{mc.from_batch_number || '-'}</td>
@@ -304,7 +304,7 @@ const StockByWODetail: React.FC = () => {
                   <td className="px-4 py-2 text-sm text-right font-medium">{t.quantity.toLocaleString()}</td>
                   <td className="px-4 py-2 text-center">
                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                      t.direction === 'in' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      t.direction === 'in' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                     } dark:bg-green-900/30 dark:bg-red-900/30 dark:text-green-300 dark:text-red-300`}>{t.direction.toUpperCase()}</span>
                   </td>
                   <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">

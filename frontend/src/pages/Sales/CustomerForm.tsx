@@ -159,7 +159,7 @@ const CustomerForm = () => {
         {/* Basic Information */}
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
-            <BuildingOfficeIcon className="h-5 w-5 text-blue-600" />
+            <BuildingOfficeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h3>
           </div>
 
@@ -175,7 +175,7 @@ const CustomerForm = () => {
                 placeholder="e.g., CUST-001"
               />
               {errors.code && (
-                <p className="mt-1 text-sm text-red-600">{errors.code.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.code.message}</p>
               )}
             </div>
 
@@ -190,7 +190,7 @@ const CustomerForm = () => {
                 placeholder="Company or business name"
               />
               {errors.company_name && (
-                <p className="mt-1 text-sm text-red-600">{errors.company_name.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.company_name.message}</p>
               )}
             </div>
 
@@ -254,7 +254,7 @@ const CustomerForm = () => {
         {/* Contact Information */}
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
-            <UserIcon className="h-5 w-5 text-green-600" />
+            <UserIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Contact Information</h3>
           </div>
 
@@ -275,7 +275,7 @@ const CustomerForm = () => {
                 placeholder="customer@example.com"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
               )}
             </div>
 
@@ -353,7 +353,7 @@ const CustomerForm = () => {
         {/* Business Information */}
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
-            <BanknotesIcon className="h-5 w-5 text-purple-600" />
+            <BanknotesIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Business Information</h3>
           </div>
 
@@ -404,7 +404,7 @@ const CustomerForm = () => {
                 <input
                   type="checkbox"
                   {...register('is_active')}
-                  className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded"
+                  className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded dark:text-blue-400"
                 />
               </div>
               <div className="ml-3 text-sm">
@@ -454,12 +454,12 @@ const CustomerForm = () => {
       </form>
 
       {/* Guidelines */}
-      <div className="card p-4 bg-blue-50 border border-blue-200">
+      <div className="card p-4 bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
         <div className="flex items-start gap-3">
-          <ExclamationTriangleIcon className="h-5 w-5 text-blue-600 mt-0.5" />
+          <ExclamationTriangleIcon className="h-5 w-5 text-blue-600 mt-0.5 dark:text-blue-400" />
           <div>
-            <h4 className="font-medium text-blue-900 mb-2">📋 Customer Guidelines</h4>
-            <ul className="text-sm text-blue-800 space-y-1">
+            <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">📋 Customer Guidelines</h4>
+            <ul className="text-sm text-blue-800 space-y-1 dark:text-blue-300">
               <li>• Customer code should be unique and easy to remember</li>
               <li>• Complete contact information helps with communication</li>
               <li>• Set appropriate credit limits to manage financial risk</li>

@@ -303,9 +303,9 @@ const navigate = useNavigate()
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
               <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
-                invoiceData.status === 'posted' ? 'bg-green-100 text-green-800' :
-                invoiceData.status === 'draft' ? 'bg-gray-100 text-gray-800' :
-                'bg-blue-100 text-blue-800'
+                invoiceData.status === 'posted' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                invoiceData.status === 'draft' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100' :
+                'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
               }`}>
                 {invoiceData.status?.toUpperCase()}
               </span>
@@ -314,9 +314,9 @@ const navigate = useNavigate()
 
           {/* SPK Reference */}
           {invoiceData.work_order_number && (
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-600">SPK Reference</p>
-              <p className="text-lg font-semibold text-blue-800">{invoiceData.work_order_number}</p>
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg dark:bg-blue-900/20">
+              <p className="text-sm text-blue-600 dark:text-blue-400">SPK Reference</p>
+              <p className="text-lg font-semibold text-blue-800 dark:text-blue-300">{invoiceData.work_order_number}</p>
             </div>
           )}
 
@@ -365,9 +365,9 @@ const navigate = useNavigate()
                       <td className="py-3 px-4 text-right">{formatCurrency(invoiceData.tax_amount || 0)}</td>
                     </tr>
                   )}
-                  <tr className="bg-blue-50">
+                  <tr className="bg-blue-50 dark:bg-blue-900/20">
                     <td colSpan={3} className="py-4 px-4 text-right text-lg font-bold">Total</td>
-                    <td className="py-4 px-4 text-right text-lg font-bold text-blue-600">
+                    <td className="py-4 px-4 text-right text-lg font-bold text-blue-600 dark:text-blue-400">
                       {formatCurrency(invoiceData.total_amount || 0)}
                     </td>
                   </tr>
@@ -377,7 +377,7 @@ const navigate = useNavigate()
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <p>Tidak ada rincian item</p>
                 <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                  <p className="text-2xl font-bold text-blue-600">
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {formatCurrency(invoiceData.total_amount || 0)}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Total Biaya Produksi</p>
@@ -425,11 +425,11 @@ const navigate = useNavigate()
                 <option value="sales">Sales Invoice</option>
                 <option value="purchase">Purchase Invoice (Faktur Pembelian)</option>
               </select>
-              <p className="mt-1 text-xs text-gray-500">
-                Memilih Purchase Invoice membuka form <Link to="/app/purchasing/invoices/new" className="text-blue-600 hover:underline">Faktur Pembelian</Link> (terhubung ke PO dan GRN, jurnal hutang otomatis).
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Memilih Purchase Invoice membuka form <Link to="/app/purchasing/invoices/new" className="text-blue-600 hover:underline dark:text-blue-400">Faktur Pembelian</Link> (terhubung ke PO dan GRN, jurnal hutang otomatis).
               </p>
               {errors.invoice_type && (
-                <p className="mt-1 text-sm text-red-600">{errors.invoice_type.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.invoice_type.message}</p>
               )}
             </div>
 
@@ -519,7 +519,7 @@ const navigate = useNavigate()
                 className="input-field"
               />
               {errors.invoice_date && (
-                <p className="mt-1 text-sm text-red-600">{errors.invoice_date.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.invoice_date.message}</p>
               )}
             </div>
 
@@ -534,7 +534,7 @@ const navigate = useNavigate()
                 min={watch('invoice_date')}
               />
               {errors.due_date && (
-                <p className="mt-1 text-sm text-red-600">{errors.due_date.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.due_date.message}</p>
               )}
             </div>
 
@@ -552,25 +552,25 @@ const navigate = useNavigate()
 
           {/* Customer/Supplier Info Display */}
           {(selectedCustomer || selectedSupplier) && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
+              <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">
                 {watchedInvoiceType === 'sales' ? 'Customer' : 'Supplier'} Information
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <span className="text-blue-600">Company:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Company:</span>
                   <p className="font-medium">{selectedCustomer?.company_name || selectedSupplier?.company_name}</p>
                 </div>
                 <div>
-                  <span className="text-blue-600">Contact:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Contact:</span>
                   <p className="font-medium">{selectedCustomer?.contact_person || selectedSupplier?.contact_person || 'N/A'}</p>
                 </div>
                 <div>
-                  <span className="text-blue-600">Email:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Email:</span>
                   <p className="font-medium">{selectedCustomer?.email || selectedSupplier?.email || 'N/A'}</p>
                 </div>
                 <div>
-                  <span className="text-blue-600">Payment Terms:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Payment Terms:</span>
                   <p className="font-medium">
                     {selectedCustomer?.payment_terms_days || selectedSupplier?.payment_terms_days || 30} days
                   </p>
@@ -756,9 +756,9 @@ const navigate = useNavigate()
       </form>
 
       {/* Finance Tips */}
-      <div className="card p-4 bg-green-50 border border-green-200">
-        <h4 className="font-medium text-green-900 mb-2">💰 Invoice Tips</h4>
-        <ul className="text-sm text-green-800 space-y-1">
+      <div className="card p-4 bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800">
+        <h4 className="font-medium text-green-900 mb-2 dark:text-green-200">💰 Invoice Tips</h4>
+        <ul className="text-sm text-green-800 space-y-1 dark:text-green-300">
           <li>• Include clear payment terms and due dates to avoid confusion</li>
           <li>• Verify tax calculations comply with local tax regulations</li>
           <li>• Keep detailed records for accounting and audit purposes</li>

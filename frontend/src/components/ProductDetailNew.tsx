@@ -138,7 +138,7 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
   if (!product) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-600">Produk tidak ditemukan</p>
+        <p className="text-gray-600 dark:text-gray-300">Produk tidak ditemukan</p>
         <button
           onClick={onBack}
           className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
@@ -155,24 +155,24 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
         <div className="flex items-center space-x-4">
           <button
             onClick={onBack}
-            className="p-2 text-gray-600 hover:text-gray-900 dark:text-white transition-colors"
+            className="p-2 text-gray-600 hover:text-gray-900 dark:text-white transition-colors dark:hover:text-white"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{product.nama_produk}</h1>
-            <p className="text-gray-600">{product.kode_produk}</p>
+            <p className="text-gray-600 dark:text-gray-300">{product.kode_produk}</p>
           </div>
         </div>
         <div className="flex items-center space-x-3">
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${
             product.is_active 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-red-100 text-red-800'
+              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
           }`}>
             {product.is_active ? 'Aktif' : 'Tidak Aktif'}
           </span>
-          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium dark:bg-blue-900/30 dark:text-blue-300">
             Versi {product.version}
           </span>
           <button
@@ -192,8 +192,8 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
             onClick={() => setActiveTab('detail')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'detail'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
             }`}
           >
             <div className="flex items-center space-x-2">
@@ -205,8 +205,8 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
             onClick={() => setActiveTab('versions')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'versions'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
             }`}
           >
             <div className="flex items-center space-x-2">
@@ -514,17 +514,17 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
           <div className="p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Riwayat Perubahan Versi</h3>
             {versions.length === 0 ? (
-              <p className="text-gray-600">Belum ada riwayat perubahan versi</p>
+              <p className="text-gray-600 dark:text-gray-300">Belum ada riwayat perubahan versi</p>
             ) : (
               <div className="space-y-4">
                 {versions.map((version) => (
                   <div key={version.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-3">
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-medium">
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-medium dark:bg-blue-900/30 dark:text-blue-300">
                           Versi {version.version}
                         </span>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
                           {formatDate(version.created_at)}
                         </span>
                       </div>
@@ -535,7 +535,7 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
                     </div>
                     {version.previous_data && (
                       <details className="text-sm">
-                        <summary className="cursor-pointer text-blue-600 hover:text-blue-800">
+                        <summary className="cursor-pointer text-blue-600 hover:text-blue-800 dark:text-blue-400">
                           Lihat Data Sebelumnya
                         </summary>
                         <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded text-xs">

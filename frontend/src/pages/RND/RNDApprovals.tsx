@@ -110,7 +110,7 @@ const RNDApprovals: React.FC = () => {
 
       {/* Approvals List */}
       {approvals.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 border border-gray-100 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 border border-gray-100 text-center dark:border-gray-800">
           <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Tidak ada permintaan pending</h3>
           <p className="text-gray-500 dark:text-gray-400">Semua permintaan approval telah diproses</p>
@@ -120,17 +120,17 @@ const RNDApprovals: React.FC = () => {
           {approvals.map((approval) => (
             <div
               key={approval.id}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-800"
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium dark:bg-yellow-900/30 dark:text-yellow-300">
                       Pending Approval
                     </span>
                     <Link
                       to={`/app/rnd/projects/${approval.project_id}`}
-                      className="text-blue-600 hover:underline font-medium"
+                      className="text-blue-600 hover:underline font-medium dark:text-blue-400"
                     >
                       Lihat Proyek
                     </Link>
@@ -141,7 +141,7 @@ const RNDApprovals: React.FC = () => {
                       {stageLabels[approval.from_stage || ''] || approval.from_stage}
                     </span>
                     <ChevronRight className="w-5 h-5 text-gray-400" />
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded dark:bg-blue-900/30 dark:text-blue-300">
                       {stageLabels[approval.to_stage || ''] || approval.to_stage}
                     </span>
                   </div>

@@ -46,7 +46,7 @@ function ContextMenu({ menu, onClose, closeTabs }: { menu: MenuState; onClose: (
       role="menuitem"
       disabled={opts.disabled}
       onClick={() => { onClose(); onClick() }}
-      className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] disabled:cursor-not-allowed disabled:opacity-40 ${opts.danger ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700'}`}
+      className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] disabled:cursor-not-allowed disabled:opacity-40 ${opts.danger ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:text-red-400' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700'}`}
     >
       <span className="flex h-4 w-4 items-center justify-center text-gray-400">{opts.icon}</span>
       <span className="flex-1">{label}</span>
@@ -120,7 +120,7 @@ function TabSwitcher({ onClose }: { onClose: () => void }) {
                 onClick={() => pick(i)}
                 className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] ${i === hi ? 'bg-emerald-50 dark:bg-emerald-900/20' : ''}`}
               >
-                {tab.pinned && <Pin size={12} className="shrink-0 text-emerald-600" />}
+                {tab.pinned && <Pin size={12} className="shrink-0 text-emerald-600 dark:text-emerald-400" />}
                 <span className={`min-w-0 flex-1 truncate ${active ? 'font-semibold text-emerald-700 dark:text-emerald-400' : 'text-gray-700 dark:text-gray-200'}`}>{tab.title}</span>
                 {isTabDirty(tab.id) && <span className="h-2 w-2 shrink-0 rounded-full bg-amber-500" title="Belum disimpan" />}
                 <span className="shrink-0 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500 dark:bg-gray-700 dark:text-gray-300">{moduleById(moduleId)?.label || moduleId}</span>
@@ -201,7 +201,7 @@ export default function TabBar({ goModule, closeModule, closeTabs }: Props) {
                 {tabs.length > 1 && <span className={`rounded-full px-1.5 text-[10px] font-bold ${active ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-300'}`}>{tabs.length}</span>}
                 {anyDirty && <span className="h-2 w-2 rounded-full bg-amber-500" title="Ada isian belum disimpan" />}
               </button>
-              <button type="button" onClick={() => closeModule(id)} className={`rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-600 ${active ? '' : 'opacity-0 group-hover:opacity-100'}`} aria-label={`Tutup modul ${mod?.label}`}>
+              <button type="button" onClick={() => closeModule(id)} className={`rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-600 dark:hover:text-white ${active ? '' : 'opacity-0 group-hover:opacity-100'}`} aria-label={`Tutup modul ${mod?.label}`}>
                 <X size={13} />
               </button>
             </div>
@@ -239,7 +239,7 @@ export default function TabBar({ goModule, closeModule, closeTabs }: Props) {
                       : 'border-transparent text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
                   } ${dragId === tab.id ? 'opacity-40' : ''} ${overId === tab.id && dragId !== tab.id ? 'ring-2 ring-inset ring-emerald-400' : ''}`}
                 >
-                  {tab.pinned && <Pin size={12} className="shrink-0 text-emerald-600" aria-label="Tersemat" />}
+                  {tab.pinned && <Pin size={12} className="shrink-0 text-emerald-600 dark:text-emerald-400" aria-label="Tersemat" />}
                   <button type="button" className="min-w-0 truncate" onClick={() => ws.activateTab(activeModuleId, tab.id)}>
                     {tab.title}
                   </button>
@@ -248,7 +248,7 @@ export default function TabBar({ goModule, closeModule, closeTabs }: Props) {
                     <button
                       type="button"
                       onClick={() => void closeTabs(activeModuleId, [tab])}
-                      className={`shrink-0 rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-700 ${active ? '' : 'opacity-0 group-hover:opacity-100'}`}
+                      className={`shrink-0 rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-white ${active ? '' : 'opacity-0 group-hover:opacity-100'}`}
                       aria-label={`Tutup ${tab.title}`}
                     >
                       <X size={12} />

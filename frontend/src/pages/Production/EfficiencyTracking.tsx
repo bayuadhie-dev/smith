@@ -114,9 +114,9 @@ const [machines, setMachines] = useState<Machine[]>([])
     }
     
     const threshold = thresholds[type]
-    if (value >= threshold.good) return 'text-green-600'
-    if (value >= threshold.average) return 'text-yellow-600'
-    return 'text-red-600'
+    if (value >= threshold.good) return 'text-green-600 dark:text-green-400'
+    if (value >= threshold.average) return 'text-yellow-600 dark:text-yellow-400'
+    return 'text-red-600 dark:text-red-400'
   }
 
   const getEfficiencyIcon = (value: number, previousValue?: number) => {
@@ -193,7 +193,7 @@ const [machines, setMachines] = useState<Machine[]>([])
           <div className="card p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <CogIcon className="h-8 w-8 text-blue-600" />
+                <CogIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{selectedMachineData.name}</h2>
                   <p className="text-gray-600 dark:text-gray-300">{selectedMachineData.code}</p>
@@ -216,15 +216,15 @@ const [machines, setMachines] = useState<Machine[]>([])
             <div className="card p-6 bg-gradient-to-br from-blue-50 to-blue-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600">Overall Equipment Effectiveness</p>
+                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Overall Equipment Effectiveness</p>
                   <p className={`text-3xl font-bold ${getEfficiencyColor(efficiencyData.efficiency.oee, 'oee')}`}>
                     {efficiencyData.efficiency.oee}%
                   </p>
-                  <p className="text-xs text-blue-600 mt-1">
+                  <p className="text-xs text-blue-600 mt-1 dark:text-blue-400">
                     Target: 75%+
                   </p>
                 </div>
-                <ChartBarIcon className="h-10 w-10 text-blue-600" />
+                <ChartBarIcon className="h-10 w-10 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
 
@@ -291,14 +291,14 @@ const [machines, setMachines] = useState<Machine[]>([])
                 
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-300">Good Parts</span>
-                  <span className="font-semibold text-green-600">
+                  <span className="font-semibold text-green-600 dark:text-green-400">
                     {efficiencyData.production.total_good.toLocaleString()} units
                   </span>
                 </div>
                 
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-300">Scrap Parts</span>
-                  <span className="font-semibold text-red-600">
+                  <span className="font-semibold text-red-600 dark:text-red-400">
                     {efficiencyData.production.total_scrap.toLocaleString()} units
                   </span>
                 </div>
@@ -313,7 +313,7 @@ const [machines, setMachines] = useState<Machine[]>([])
                   
                   <div className="flex justify-between items-center mt-2">
                     <span className="text-gray-600 dark:text-gray-300">Scrap Rate</span>
-                    <span className="font-semibold text-red-600">
+                    <span className="font-semibold text-red-600 dark:text-red-400">
                       {efficiencyData.production.scrap_rate}%
                     </span>
                   </div>
@@ -334,14 +334,14 @@ const [machines, setMachines] = useState<Machine[]>([])
                 
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-300">Actual Runtime</span>
-                  <span className="font-semibold text-green-600">
+                  <span className="font-semibold text-green-600 dark:text-green-400">
                     {efficiencyData.availability.actual_runtime_hours.toFixed(1)}h
                   </span>
                 </div>
                 
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-300">Total Downtime</span>
-                  <span className="font-semibold text-red-600">
+                  <span className="font-semibold text-red-600 dark:text-red-400">
                     {efficiencyData.availability.total_downtime_hours.toFixed(1)}h
                   </span>
                 </div>
@@ -363,7 +363,7 @@ const [machines, setMachines] = useState<Machine[]>([])
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">OEE Components Breakdown</h3>
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600 mb-1">
+                <div className="text-2xl font-bold text-blue-600 mb-1 dark:text-blue-400">
                   {efficiencyData.availability.availability_rate}%
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Availability</div>
@@ -373,7 +373,7 @@ const [machines, setMachines] = useState<Machine[]>([])
               </div>
               
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600 mb-1">
+                <div className="text-2xl font-bold text-green-600 mb-1 dark:text-green-400">
                   {efficiencyData.efficiency.performance_rate}%
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Performance</div>
@@ -383,7 +383,7 @@ const [machines, setMachines] = useState<Machine[]>([])
               </div>
               
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600 mb-1">
+                <div className="text-2xl font-bold text-purple-600 mb-1 dark:text-purple-400">
                   {efficiencyData.production.quality_rate}%
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">{t('navigation.quality')}</div>
@@ -409,27 +409,27 @@ const [machines, setMachines] = useState<Machine[]>([])
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Improvement Opportunities</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {efficiencyData.availability.availability_rate < 85 && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <h4 className="font-medium text-red-800 mb-2">Improve Availability</h4>
-                  <p className="text-sm text-red-700">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
+                  <h4 className="font-medium text-red-800 mb-2 dark:text-red-300">Improve Availability</h4>
+                  <p className="text-sm text-red-700 dark:text-red-300">
                     High downtime detected. Consider preventive maintenance scheduling.
                   </p>
                 </div>
               )}
               
               {efficiencyData.efficiency.performance_rate < 75 && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <h4 className="font-medium text-yellow-800 mb-2">Boost Performance</h4>
-                  <p className="text-sm text-yellow-700">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
+                  <h4 className="font-medium text-yellow-800 mb-2 dark:text-yellow-300">Boost Performance</h4>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
                     Machine running below optimal speed. Check for bottlenecks.
                   </p>
                 </div>
               )}
               
               {efficiencyData.production.quality_rate < 95 && (
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                  <h4 className="font-medium text-orange-800 mb-2">Enhance Quality</h4>
-                  <p className="text-sm text-orange-700">
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 dark:bg-orange-900/20 dark:border-orange-800">
+                  <h4 className="font-medium text-orange-800 mb-2 dark:text-orange-300">Enhance Quality</h4>
+                  <p className="text-sm text-orange-700 dark:text-orange-300">
                     High scrap rate. Review process parameters and operator training.
                   </p>
                 </div>

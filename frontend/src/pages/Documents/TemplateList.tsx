@@ -264,7 +264,7 @@ export default function TemplateList() {
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center px-4 py-2 bg-white text-purple-600 rounded-lg font-medium hover:bg-purple-50 transition-colors shadow-md"
+            className="inline-flex items-center px-4 py-2 bg-white text-purple-600 rounded-lg font-medium hover:bg-purple-50 transition-colors shadow-md dark:bg-gray-800 dark:text-purple-400"
           >
             <PlusIcon className="h-5 w-5 mr-2" /> Template Baru
           </button>
@@ -273,11 +273,11 @@ export default function TemplateList() {
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => setTypeFilter('')} className={`px-4 py-2 rounded-lg font-medium transition-colors ${typeFilter === '' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200'}`}>
+          <button onClick={() => setTypeFilter('')} className={`px-4 py-2 rounded-lg font-medium transition-colors ${typeFilter === '' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
             Semua Tipe
           </button>
           {DOCUMENT_TYPES.map((type) => (
-            <button key={type.value} onClick={() => setTypeFilter(type.value)} className={`px-4 py-2 rounded-lg font-medium transition-colors ${typeFilter === type.value ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200'}`}>
+            <button key={type.value} onClick={() => setTypeFilter(type.value)} className={`px-4 py-2 rounded-lg font-medium transition-colors ${typeFilter === type.value ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
               {type.label}
             </button>
           ))}
@@ -289,7 +289,7 @@ export default function TemplateList() {
           <div className="col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
             <DocumentDuplicateIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
             <p className="text-gray-500 dark:text-gray-400 mb-4">Belum ada template</p>
-            <button onClick={() => setShowCreateModal(true)} className="inline-flex items-center text-indigo-600 hover:text-indigo-800">
+            <button onClick={() => setShowCreateModal(true)} className="inline-flex items-center text-indigo-600 hover:text-indigo-800 dark:text-indigo-400">
               <PlusIcon className="h-4 w-4 mr-1" /> Buat template pertama
             </button>
           </div>
@@ -299,11 +299,11 @@ export default function TemplateList() {
               <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-6 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-start justify-between">
                   <div className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-                    <DocumentTextIcon className="h-8 w-8 text-indigo-600" />
+                    <DocumentTextIcon className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
                   </div>
                   <div className="flex items-center gap-2">
                     {template.is_default && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium dark:bg-yellow-900/30 dark:text-yellow-300">
                         <StarSolidIcon className="h-3 w-3" /> Default
                       </span>
                     )}
@@ -348,18 +348,18 @@ export default function TemplateList() {
                     <button
                       onClick={() => handlePreview(template)}
                       disabled={!template.current_version_id}
-                      className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                      className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors disabled:opacity-30 disabled:hover:bg-transparent dark:text-blue-400"
                       title={template.current_version_id ? 'Preview PDF (versi live)' : 'Belum ada versi live'}
                     >
                       <EyeIcon className="h-5 w-5" />
                     </button>
-                    <button onClick={() => toggleHistory(template.id)} className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Riwayat Versi">
+                    <button onClick={() => toggleHistory(template.id)} className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors dark:text-gray-400" title="Riwayat Versi">
                       <ClockIcon className="h-5 w-5" />
                     </button>
                     <button onClick={() => handleEdit(template)} className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Edit">
                       <PencilIcon className="h-5 w-5" />
                     </button>
-                    <button onClick={() => handleDelete(template.id)} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Hapus">
+                    <button onClick={() => handleDelete(template.id)} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors dark:text-red-400" title="Hapus">
                       <TrashIcon className="h-5 w-5" />
                     </button>
                   </div>
@@ -367,7 +367,7 @@ export default function TemplateList() {
 
                 {expanded === template.id && (
                   <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                    <p className="text-xs font-medium text-gray-500 mb-2">Riwayat Versi</p>
+                    <p className="text-xs font-medium text-gray-500 mb-2 dark:text-gray-400">Riwayat Versi</p>
                     <div className="space-y-1 max-h-40 overflow-y-auto">
                       {versions.map((v) => (
                         <div key={v.id} className="flex items-center justify-between text-xs px-2 py-1.5 rounded bg-gray-50 dark:bg-gray-900">
@@ -376,7 +376,7 @@ export default function TemplateList() {
                             <span className={`px-1.5 py-0.5 rounded text-[10px] ${STATUS_BADGE[v.status] || ''}`}>{v.status}</span>
                           </div>
                           {v.status === 'archived' && (
-                            <button onClick={() => handleRollback(template.id, v.id)} className="text-indigo-600 hover:underline">Rollback</button>
+                            <button onClick={() => handleRollback(template.id, v.id)} className="text-indigo-600 hover:underline dark:text-indigo-400">Rollback</button>
                           )}
                         </div>
                       ))}
@@ -462,7 +462,7 @@ export default function TemplateList() {
               <h3 className="font-medium text-gray-900 dark:text-gray-100">Atur Akses — {accessTemplate.template_name}</h3>
               <button onClick={() => setAccessTemplate(null)}><XMarkIcon className="w-5 h-5 text-gray-400" /></button>
             </div>
-            <p className="text-xs text-gray-500 mb-4">Admin/Super Admin selalu bisa lihat & edit semua template, apa pun pengaturan di sini.</p>
+            <p className="text-xs text-gray-500 mb-4 dark:text-gray-400">Admin/Super Admin selalu bisa lihat & edit semua template, apa pun pengaturan di sini.</p>
             <div className="space-y-3">
               <select
                 value={accessDraft.access_scope}
@@ -515,14 +515,14 @@ export default function TemplateList() {
                     <ArrowDownTrayIcon className="w-3.5 h-3.5" /> Unduh
                   </a>
                 )}
-                <button onClick={closePreview} className="p-1.5 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
+                <button onClick={closePreview} className="p-1.5 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-400">
                   <XMarkIcon className="w-4 h-4" />
                 </button>
               </div>
             </div>
             <div className="flex-1 bg-gray-100 dark:bg-gray-950 overflow-hidden">
               {previewLoading && (
-                <div className="h-full flex items-center justify-center text-sm text-gray-500">Membuat preview PDF...</div>
+                <div className="h-full flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">Membuat preview PDF...</div>
               )}
               {!previewLoading && previewUrl && (
                 <iframe title="Preview PDF" src={previewUrl} className="w-full h-full border-0" />

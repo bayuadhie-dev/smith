@@ -141,9 +141,9 @@ const MonthlyController: React.FC = () => {
   };
 
   const getEfficiencyColor = (efficiency: number, target: number) => {
-    if (efficiency >= target) return 'text-green-600 bg-green-50';
-    if (efficiency >= target * 0.7) return 'text-yellow-600 bg-yellow-50';
-    return 'text-red-600 bg-red-50';
+    if (efficiency >= target) return 'text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400';
+    if (efficiency >= target * 0.7) return 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400';
+    return 'text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400';
   };
 
   const getWeeks = () => {
@@ -173,23 +173,23 @@ const MonthlyController: React.FC = () => {
   }
 
   return (
-    <div className="p-6 bg-slate-50 min-h-screen">
+    <div className="p-6 bg-slate-50 min-h-screen dark:bg-slate-900">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Controller Bulanan</h1>
-          <p className="text-slate-500">Ringkasan efisiensi bulanan per mesin</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Controller Bulanan</h1>
+          <p className="text-slate-500 dark:text-slate-400">Ringkasan efisiensi bulanan per mesin</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate('/app/production/controller')}
-            className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300"
+            className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 dark:text-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600"
           >
             Daily
           </button>
           <button
             onClick={() => navigate('/app/production/weekly-controller')}
-            className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300"
+            className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 dark:text-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600"
           >
             Weekly
           </button>
@@ -204,21 +204,21 @@ const MonthlyController: React.FC = () => {
         <div className="flex items-center justify-between">
           <button
             onClick={() => changeMonth(-1)}
-            className="p-2 hover:bg-slate-100 rounded-lg"
+            className="p-2 hover:bg-slate-100 rounded-lg dark:hover:bg-slate-800"
           >
-            <ChevronLeftIcon className="h-5 w-5 text-slate-600" />
+            <ChevronLeftIcon className="h-5 w-5 text-slate-600 dark:text-slate-300" />
           </button>
           <div className="flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5 text-blue-600" />
-            <span className="font-semibold text-slate-800 text-xl">
+            <CalendarIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <span className="font-semibold text-slate-800 text-xl dark:text-slate-100">
               {monthName} {year}
             </span>
           </div>
           <button
             onClick={() => changeMonth(1)}
-            className="p-2 hover:bg-slate-100 rounded-lg"
+            className="p-2 hover:bg-slate-100 rounded-lg dark:hover:bg-slate-800"
           >
-            <ChevronRightIcon className="h-5 w-5 text-slate-600" />
+            <ChevronRightIcon className="h-5 w-5 text-slate-600 dark:text-slate-300" />
           </button>
         </div>
       </div>
@@ -226,36 +226,36 @@ const MonthlyController: React.FC = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-6 gap-4 mb-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-          <p className="text-sm text-slate-500">Total Mesin</p>
-          <p className="text-2xl font-bold text-slate-800">{totalMachines}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Total Mesin</p>
+          <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{totalMachines}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-          <p className="text-sm text-slate-500">Rata-rata Efisiensi</p>
-          <p className={`text-2xl font-bold ${avgEfficiency >= 85 ? 'text-green-600' : avgEfficiency >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Rata-rata Efisiensi</p>
+          <p className={`text-2xl font-bold ${avgEfficiency >= 85 ? 'text-green-600 dark:text-green-400' : avgEfficiency >= 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
             {avgEfficiency}%
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2">
-            <ArrowTrendingUpIcon className="h-5 w-5 text-green-600" />
-            <p className="text-sm text-slate-500">On Target</p>
+            <ArrowTrendingUpIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <p className="text-sm text-slate-500 dark:text-slate-400">On Target</p>
           </div>
-          <p className="text-2xl font-bold text-green-600">{machinesOnTarget}</p>
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{machinesOnTarget}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2">
-            <ArrowTrendingDownIcon className="h-5 w-5 text-red-600" />
-            <p className="text-sm text-slate-500">Below Target</p>
+            <ArrowTrendingDownIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
+            <p className="text-sm text-slate-500 dark:text-slate-400">Below Target</p>
           </div>
-          <p className="text-2xl font-bold text-red-600">{machinesBelowTarget}</p>
+          <p className="text-2xl font-bold text-red-600 dark:text-red-400">{machinesBelowTarget}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-          <p className="text-sm text-slate-500">Total Output</p>
-          <p className="text-2xl font-bold text-slate-800">{totalOutput.toLocaleString()}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Total Output</p>
+          <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{totalOutput.toLocaleString()}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-          <p className="text-sm text-slate-500">Total Grade A</p>
-          <p className="text-2xl font-bold text-green-600">{totalGradeA.toLocaleString()}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Total Grade A</p>
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{totalGradeA.toLocaleString()}</p>
         </div>
       </div>
 
@@ -263,35 +263,35 @@ const MonthlyController: React.FC = () => {
       <div className="flex gap-2 mb-6">
         <button
           onClick={() => setActiveTab('machines')}
-          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'machines' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'machines' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-gray-800 dark:hover:bg-slate-800 dark:text-slate-300'}`}
         >
           <CogIcon className="h-5 w-5 inline mr-2" />
           Mesin
         </button>
         <button
           onClick={() => setActiveTab('products')}
-          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'products' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'products' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-gray-800 dark:hover:bg-slate-800 dark:text-slate-300'}`}
         >
           <CubeIcon className="h-5 w-5 inline mr-2" />
           Produk ({products.length})
         </button>
         <button
           onClick={() => setActiveTab('products_machine')}
-          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'products_machine' ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'products_machine' ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-gray-800 dark:hover:bg-slate-800 dark:text-slate-300'}`}
         >
           <CogIcon className="h-5 w-5 inline mr-2" />
           Per Mesin ({productsPerMachine.length})
         </button>
         <button
           onClick={() => setActiveTab('downtime')}
-          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'downtime' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'downtime' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-gray-800 dark:hover:bg-slate-800 dark:text-slate-300'}`}
         >
           <ExclamationTriangleIcon className="h-5 w-5 inline mr-2" />
           Downtime ({allDowntime.length})
         </button>
         <button
           onClick={() => setActiveTab('charts')}
-          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'charts' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+          className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'charts' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-gray-800 dark:hover:bg-slate-800 dark:text-slate-300'}`}
         >
           <ChartBarIcon className="h-5 w-5 inline mr-2" />
           Grafik
@@ -303,27 +303,27 @@ const MonthlyController: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50">
+              <thead className="bg-slate-50 dark:bg-slate-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">Mesin</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Mesin</th>
                   {getWeeks().map(week => (
-                    <th key={week} className="px-3 py-3 text-center text-sm font-semibold text-slate-600">{week}</th>
+                    <th key={week} className="px-3 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">{week}</th>
                   ))}
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 bg-blue-50">Rata-rata</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Target</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Quality</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Status</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 bg-blue-50 dark:text-slate-300 dark:bg-blue-900/20">Rata-rata</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Target</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Quality</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600 dark:text-slate-300">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {machines.map((machine) => (
-                  <tr key={machine.machine_id} className="hover:bg-slate-50">
+                  <tr key={machine.machine_id} className="hover:bg-slate-50 dark:hover:bg-slate-800">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <CogIcon className="h-5 w-5 text-slate-400" />
                         <div>
-                          <p className="font-medium text-slate-800">{machine.machine_name}</p>
-                          <p className="text-xs text-slate-500">Output: {machine.total_output.toLocaleString()}</p>
+                          <p className="font-medium text-slate-800 dark:text-slate-100">{machine.machine_name}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Output: {machine.total_output.toLocaleString()}</p>
                         </div>
                       </div>
                     </td>
@@ -341,26 +341,26 @@ const MonthlyController: React.FC = () => {
                         </td>
                       );
                     })}
-                    <td className="px-4 py-3 text-center bg-blue-50">
+                    <td className="px-4 py-3 text-center bg-blue-50 dark:bg-blue-900/20">
                       <span className={`inline-block px-3 py-1 rounded-lg text-lg font-bold ${getEfficiencyColor(machine.avg_efficiency, machine.target_efficiency)}`}>
                         {machine.avg_efficiency}%
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className="text-slate-600">{machine.target_efficiency}%</span>
+                      <span className="text-slate-600 dark:text-slate-300">{machine.target_efficiency}%</span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`font-medium ${machine.quality >= 95 ? 'text-green-600' : machine.quality >= 85 ? 'text-yellow-600' : 'text-red-600'}`}>
+                      <span className={`font-medium ${machine.quality >= 95 ? 'text-green-600 dark:text-green-400' : machine.quality >= 85 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
                         {machine.quality}%
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
                       {machine.avg_efficiency >= machine.target_efficiency ? (
-                        <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                        <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium dark:bg-green-900/30 dark:text-green-300">
                           ✓ Tercapai
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                        <span className="inline-flex items-center px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium dark:bg-red-900/30 dark:text-red-300">
                           ✗ Belum
                         </span>
                       )}
@@ -369,7 +369,7 @@ const MonthlyController: React.FC = () => {
                 ))}
                 {machines.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan={10} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                       Tidak ada data produksi bulan ini
                     </td>
                   </tr>
@@ -384,37 +384,37 @@ const MonthlyController: React.FC = () => {
       {activeTab === 'products' && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b">
-            <h3 className="text-lg font-semibold text-slate-800">Produk yang Diproduksi - {monthName} {year}</h3>
-            <p className="text-sm text-slate-500">Total {products.length} produk, {products.reduce((sum, p) => sum + p.quantity, 0).toLocaleString()} pcs</p>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Produk yang Diproduksi - {monthName} {year}</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Total {products.length} produk, {products.reduce((sum, p) => sum + p.quantity, 0).toLocaleString()} pcs</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50">
+              <thead className="bg-slate-50 dark:bg-slate-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">#</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">Nama Produk</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600">Total Output</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600">Grade A</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600">Grade B</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600">Grade C</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600">Mesin</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">#</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Nama Produk</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Total Output</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Grade A</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Grade B</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Grade C</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Mesin</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {products.map((product, index) => (
-                  <tr key={product.product_name} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 text-slate-500">{index + 1}</td>
-                    <td className="px-4 py-3 font-medium text-slate-800">{product.product_name}</td>
-                    <td className="px-4 py-3 text-right font-bold text-slate-800">{product.quantity.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right text-green-600">{product.grade_a.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right text-yellow-600">{product.grade_b.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right text-red-600">{product.grade_c.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-sm text-slate-500">{product.machines.join(', ')}</td>
+                  <tr key={product.product_name} className="hover:bg-slate-50 dark:hover:bg-slate-800">
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{index + 1}</td>
+                    <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{product.product_name}</td>
+                    <td className="px-4 py-3 text-right font-bold text-slate-800 dark:text-slate-100">{product.quantity.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right text-green-600 dark:text-green-400">{product.grade_a.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right text-yellow-600 dark:text-yellow-400">{product.grade_b.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right text-red-600 dark:text-red-400">{product.grade_c.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{product.machines.join(', ')}</td>
                   </tr>
                 ))}
                 {products.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-slate-500">Tidak ada data produk</td>
+                    <td colSpan={7} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">Tidak ada data produk</td>
                   </tr>
                 )}
               </tbody>
@@ -428,42 +428,42 @@ const MonthlyController: React.FC = () => {
         <div className="space-y-4">
           {productsPerMachine.map((machine) => (
             <div key={machine.machine_name} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-              <div className="p-4 border-b bg-purple-50">
+              <div className="p-4 border-b bg-purple-50 dark:bg-purple-900/20">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <CogIcon className="h-6 w-6 text-purple-600" />
+                    <CogIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                     <div>
-                      <h3 className="text-lg font-semibold text-purple-800">{machine.machine_name}</h3>
-                      <p className="text-sm text-purple-600">{machine.products.length} produk</p>
+                      <h3 className="text-lg font-semibold text-purple-800 dark:text-purple-300">{machine.machine_name}</h3>
+                      <p className="text-sm text-purple-600 dark:text-purple-400">{machine.products.length} produk</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-purple-600">Total Output</p>
-                    <p className="text-xl font-bold text-purple-800">{machine.total_output.toLocaleString()} pcs</p>
+                    <p className="text-sm text-purple-600 dark:text-purple-400">Total Output</p>
+                    <p className="text-xl font-bold text-purple-800 dark:text-purple-300">{machine.total_output.toLocaleString()} pcs</p>
                   </div>
                 </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-slate-50">
+                  <thead className="bg-slate-50 dark:bg-slate-900">
                     <tr>
-                      <th className="px-4 py-2 text-left text-sm font-semibold text-slate-600">#</th>
-                      <th className="px-4 py-2 text-left text-sm font-semibold text-slate-600">Nama Produk</th>
-                      <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600">Total</th>
-                      <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600">Grade A</th>
-                      <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600">Grade B</th>
-                      <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600">Grade C</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">#</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Nama Produk</th>
+                      <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Total</th>
+                      <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Grade A</th>
+                      <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Grade B</th>
+                      <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Grade C</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {machine.products.map((product, index) => (
-                      <tr key={product.product_name} className="hover:bg-slate-50">
-                        <td className="px-4 py-2 text-slate-500">{index + 1}</td>
-                        <td className="px-4 py-2 font-medium text-slate-800">{product.product_name}</td>
-                        <td className="px-4 py-2 text-right font-bold text-slate-800">{product.quantity.toLocaleString()}</td>
-                        <td className="px-4 py-2 text-right text-green-600">{product.grade_a.toLocaleString()}</td>
-                        <td className="px-4 py-2 text-right text-yellow-600">{product.grade_b.toLocaleString()}</td>
-                        <td className="px-4 py-2 text-right text-red-600">{product.grade_c.toLocaleString()}</td>
+                      <tr key={product.product_name} className="hover:bg-slate-50 dark:hover:bg-slate-800">
+                        <td className="px-4 py-2 text-slate-500 dark:text-slate-400">{index + 1}</td>
+                        <td className="px-4 py-2 font-medium text-slate-800 dark:text-slate-100">{product.product_name}</td>
+                        <td className="px-4 py-2 text-right font-bold text-slate-800 dark:text-slate-100">{product.quantity.toLocaleString()}</td>
+                        <td className="px-4 py-2 text-right text-green-600 dark:text-green-400">{product.grade_a.toLocaleString()}</td>
+                        <td className="px-4 py-2 text-right text-yellow-600 dark:text-yellow-400">{product.grade_b.toLocaleString()}</td>
+                        <td className="px-4 py-2 text-right text-red-600 dark:text-red-400">{product.grade_c.toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -472,7 +472,7 @@ const MonthlyController: React.FC = () => {
             </div>
           ))}
           {productsPerMachine.length === 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 text-center text-slate-500">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 text-center text-slate-500 dark:text-slate-400">
               Tidak ada data produk per mesin
             </div>
           )}
@@ -484,9 +484,9 @@ const MonthlyController: React.FC = () => {
         <div className="grid grid-cols-2 gap-6">
           {/* Top 10 Downtime - Single list with Unplanned/Planned badge */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-            <div className="p-4 border-b bg-red-50">
-              <h3 className="text-lg font-semibold text-red-800">Top 10 Downtime</h3>
-              <p className="text-sm text-red-600">Berdasarkan durasi (menit)</p>
+            <div className="p-4 border-b bg-red-50 dark:bg-red-900/20">
+              <h3 className="text-lg font-semibold text-red-800 dark:text-red-300">Top 10 Downtime</h3>
+              <p className="text-sm text-red-600 dark:text-red-400">Berdasarkan durasi (menit)</p>
             </div>
             <div className="p-4">
               {(() => {
@@ -506,46 +506,46 @@ const MonthlyController: React.FC = () => {
                           {index + 1}
                         </span>
                         <div>
-                          <p className="font-medium text-slate-800">{dt.reason}</p>
+                          <p className="font-medium text-slate-800 dark:text-slate-100">{dt.reason}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                            <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${isUnplanned ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'}`}>
                               {isUnplanned ? 'Unplanned' : 'Planned'}
                             </span>
-                            <span className="text-xs text-slate-500">{dt.frequency}x kejadian</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">{dt.frequency}x kejadian</span>
                           </div>
                         </div>
                       </div>
-                      <span className="font-bold text-red-600">{dt.duration} menit</span>
+                      <span className="font-bold text-red-600 dark:text-red-400">{dt.duration} menit</span>
                     </div>
                   );
                 });
               })()}
               {top10Downtime.length === 0 && (
-                <p className="text-center text-slate-500 py-4">Tidak ada data downtime</p>
+                <p className="text-center text-slate-500 py-4 dark:text-slate-400">Tidak ada data downtime</p>
               )}
             </div>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
             <div className="p-4 border-b">
-              <h3 className="text-lg font-semibold text-slate-800">Semua Downtime</h3>
-              <p className="text-sm text-slate-500">Total {allDowntime.length} jenis, {allDowntime.reduce((sum, d) => sum + d.duration, 0).toLocaleString()} menit</p>
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Semua Downtime</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Total {allDowntime.length} jenis, {allDowntime.reduce((sum, d) => sum + d.duration, 0).toLocaleString()} menit</p>
             </div>
             <div className="max-h-96 overflow-y-auto">
               <table className="w-full">
-                <thead className="bg-slate-50 sticky top-0">
+                <thead className="bg-slate-50 sticky top-0 dark:bg-slate-900">
                   <tr>
-                    <th className="px-4 py-2 text-left text-sm font-semibold text-slate-600">Alasan</th>
-                    <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600">Durasi</th>
-                    <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600">Frekuensi</th>
+                    <th className="px-4 py-2 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Alasan</th>
+                    <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Durasi</th>
+                    <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Frekuensi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {allDowntime.map((dt) => (
-                    <tr key={dt.reason} className="hover:bg-slate-50">
-                      <td className="px-4 py-2 text-sm text-slate-800">{dt.reason}</td>
-                      <td className="px-4 py-2 text-right text-sm font-medium text-red-600">{dt.duration} menit</td>
-                      <td className="px-4 py-2 text-right text-sm text-slate-500">{dt.frequency}x</td>
+                    <tr key={dt.reason} className="hover:bg-slate-50 dark:hover:bg-slate-800">
+                      <td className="px-4 py-2 text-sm text-slate-800 dark:text-slate-100">{dt.reason}</td>
+                      <td className="px-4 py-2 text-right text-sm font-medium text-red-600 dark:text-red-400">{dt.duration} menit</td>
+                      <td className="px-4 py-2 text-right text-sm text-slate-500 dark:text-slate-400">{dt.frequency}x</td>
                     </tr>
                   ))}
                 </tbody>
@@ -559,7 +559,7 @@ const MonthlyController: React.FC = () => {
       {activeTab === 'charts' && (
         <div className="grid grid-cols-2 gap-6">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Trend Mingguan</h3>
+            <h3 className="text-lg font-semibold text-slate-800 mb-4 dark:text-slate-100">Trend Mingguan</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -575,7 +575,7 @@ const MonthlyController: React.FC = () => {
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Distribusi Top 10 Downtime</h3>
+            <h3 className="text-lg font-semibold text-slate-800 mb-4 dark:text-slate-100">Distribusi Top 10 Downtime</h3>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -598,20 +598,20 @@ const MonthlyController: React.FC = () => {
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-            <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <ArrowTrendingUpIcon className="h-5 w-5 text-green-600" />
+            <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2 dark:text-slate-100">
+              <ArrowTrendingUpIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
               Top 5 Mesin Efisien
             </h3>
             <div className="space-y-3">
               {[...machines].sort((a, b) => b.avg_efficiency - a.avg_efficiency).slice(0, 5).map((m, i) => (
                 <div key={m.machine_id} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${i === 0 ? 'bg-yellow-400 text-yellow-900' : i === 1 ? 'bg-slate-300 text-slate-700' : i === 2 ? 'bg-orange-400 text-orange-900' : 'bg-slate-100 text-slate-600'}`}>
+                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${i === 0 ? 'bg-yellow-400 text-yellow-900 dark:text-yellow-200' : i === 1 ? 'bg-slate-300 text-slate-700 dark:text-slate-200 dark:bg-slate-600' : i === 2 ? 'bg-orange-400 text-orange-900 dark:text-orange-200' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>
                       {i + 1}
                     </span>
-                    <span className="font-medium text-slate-700">{m.machine_name}</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-200">{m.machine_name}</span>
                   </div>
-                  <span className={`font-bold ${m.avg_efficiency >= m.target_efficiency ? 'text-green-600' : 'text-yellow-600'}`}>
+                  <span className={`font-bold ${m.avg_efficiency >= m.target_efficiency ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
                     {m.avg_efficiency}%
                   </span>
                 </div>
@@ -620,25 +620,25 @@ const MonthlyController: React.FC = () => {
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-            <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <ArrowTrendingDownIcon className="h-5 w-5 text-red-600" />
+            <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2 dark:text-slate-100">
+              <ArrowTrendingDownIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
               Perlu Perbaikan
             </h3>
             <div className="space-y-3">
               {[...machines].filter(m => m.avg_efficiency < m.target_efficiency).sort((a, b) => a.avg_efficiency - b.avg_efficiency).slice(0, 5).map((m) => (
                 <div key={m.machine_id} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center text-xs font-bold text-red-600">!</span>
-                    <span className="font-medium text-slate-700">{m.machine_name}</span>
+                    <span className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center text-xs font-bold text-red-600 dark:bg-red-900/30 dark:text-red-400">!</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-200">{m.machine_name}</span>
                   </div>
                   <div className="text-right">
-                    <span className="font-bold text-red-600">{m.avg_efficiency}%</span>
+                    <span className="font-bold text-red-600 dark:text-red-400">{m.avg_efficiency}%</span>
                     <span className="text-xs text-slate-400 ml-2">/ {m.target_efficiency}%</span>
                   </div>
                 </div>
               ))}
               {machines.filter(m => m.avg_efficiency < m.target_efficiency).length === 0 && (
-                <p className="text-center text-green-600 py-4">🎉 Semua mesin mencapai target!</p>
+                <p className="text-center text-green-600 py-4 dark:text-green-400">🎉 Semua mesin mencapai target!</p>
               )}
             </div>
           </div>

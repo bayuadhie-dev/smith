@@ -200,12 +200,12 @@ const RecipeTab: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="text-center py-10 text-gray-500">Memuat...</div>;
+  if (loading) return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Memuat...</div>;
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <div className="text-sm text-gray-500">{recipes.length} resep aktif</div>
+        <div className="text-sm text-gray-500 dark:text-gray-400">{recipes.length} resep aktif</div>
         <button
           onClick={() => {
             if (showForm) {
@@ -226,12 +226,12 @@ const RecipeTab: React.FC = () => {
       {showForm && (
         <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4">
           <div className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{editingId ? 'Edit Resep' : 'Resep Baru'}</div>
-          {error && <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-2 rounded">{error}</div>}
+          {error && <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-2 rounded dark:text-red-400">{error}</div>}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Produk</label>
               {editingId ? (
-                <div className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm text-gray-500">
+                <div className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm text-gray-500 dark:text-gray-400">
                   {products.find((p) => p.id === form.product_id)?.name || form.product_id}
                 </div>
               ) : (
@@ -246,7 +246,7 @@ const RecipeTab: React.FC = () => {
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Mesin</label>
               {editingId ? (
-                <div className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm text-gray-500">
+                <div className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm text-gray-500 dark:text-gray-400">
                   {machines.find((m) => m.id === form.machine_id)?.name || form.machine_id}
                 </div>
               ) : (
@@ -298,12 +298,12 @@ const RecipeTab: React.FC = () => {
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th className="px-3 py-2 text-left font-medium text-gray-500">Produk</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-500">Mesin</th>
-              <th className="px-3 py-2 text-right font-medium text-gray-500">Batch Size</th>
-              <th className="px-3 py-2 text-right font-medium text-gray-500">Rate/Jam</th>
-              <th className="px-3 py-2 text-right font-medium text-gray-500">Durasi</th>
-              <th className="px-3 py-2 text-center font-medium text-gray-500">Default</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Produk</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Mesin</th>
+              <th className="px-3 py-2 text-right font-medium text-gray-500 dark:text-gray-400">Batch Size</th>
+              <th className="px-3 py-2 text-right font-medium text-gray-500 dark:text-gray-400">Rate/Jam</th>
+              <th className="px-3 py-2 text-right font-medium text-gray-500 dark:text-gray-400">Durasi</th>
+              <th className="px-3 py-2 text-center font-medium text-gray-500 dark:text-gray-400">Default</th>
               <th className="px-3 py-2"></th>
             </tr>
           </thead>
@@ -372,19 +372,19 @@ const GlobalCalendarTab: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="text-center py-10 text-gray-500">Memuat...</div>;
+  if (loading) return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Memuat...</div>;
 
   return (
     <div>
-      <p className="text-sm text-gray-500 mb-4">Pola mingguan baseline pabrik (7 baris tetap). Durasi shift seragam untuk semua shift di hari itu.</p>
+      <p className="text-sm text-gray-500 mb-4 dark:text-gray-400">Pola mingguan baseline pabrik (7 baris tetap). Durasi shift seragam untuk semua shift di hari itu.</p>
       <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th className="px-3 py-2 text-left font-medium text-gray-500">Hari</th>
-              <th className="px-3 py-2 text-center font-medium text-gray-500">Hari Kerja</th>
-              <th className="px-3 py-2 text-center font-medium text-gray-500">Jumlah Shift</th>
-              <th className="px-3 py-2 text-center font-medium text-gray-500">Durasi Shift (jam)</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Hari</th>
+              <th className="px-3 py-2 text-center font-medium text-gray-500 dark:text-gray-400">Hari Kerja</th>
+              <th className="px-3 py-2 text-center font-medium text-gray-500 dark:text-gray-400">Jumlah Shift</th>
+              <th className="px-3 py-2 text-center font-medium text-gray-500 dark:text-gray-400">Durasi Shift (jam)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -483,12 +483,12 @@ const ExceptionTab: React.FC = () => {
     load();
   };
 
-  if (loading) return <div className="text-center py-10 text-gray-500">Memuat...</div>;
+  if (loading) return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Memuat...</div>;
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <p className="text-sm text-gray-500">Override per tanggal, berlaku untuk seluruh pabrik (mis. libur nasional). Kosongkan shift kalau ingin ikut kalender Global.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Override per tanggal, berlaku untuk seluruh pabrik (mis. libur nasional). Kosongkan shift kalau ingin ikut kalender Global.</p>
         <button
           onClick={() => setShowForm(!showForm)}
           className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 whitespace-nowrap"
@@ -499,7 +499,7 @@ const ExceptionTab: React.FC = () => {
 
       {showForm && (
         <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4">
-          {error && <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-2 rounded">{error}</div>}
+          {error && <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-2 rounded dark:text-red-400">{error}</div>}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Tanggal</label>
@@ -537,10 +537,10 @@ const ExceptionTab: React.FC = () => {
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th className="px-3 py-2 text-left font-medium text-gray-500">Tanggal</th>
-              <th className="px-3 py-2 text-center font-medium text-gray-500">Hari Kerja</th>
-              <th className="px-3 py-2 text-center font-medium text-gray-500">Shift</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-500">Alasan</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Tanggal</th>
+              <th className="px-3 py-2 text-center font-medium text-gray-500 dark:text-gray-400">Hari Kerja</th>
+              <th className="px-3 py-2 text-center font-medium text-gray-500 dark:text-gray-400">Shift</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Alasan</th>
               <th className="px-3 py-2"></th>
             </tr>
           </thead>

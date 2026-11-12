@@ -165,13 +165,13 @@ const ImportCenter: React.FC = () => {
 
   const okCount = result?.summary.ok ?? 0;
 
-  if (loading) return <div className="p-8 text-gray-500">Memuat...</div>;
+  if (loading) return <div className="p-8 text-gray-500 dark:text-gray-400">Memuat...</div>;
 
   return (
     <div className="mx-auto max-w-7xl space-y-4 p-4">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pusat Impor &amp; Ekspor Data</h1>
-        <p className="text-sm text-gray-500">Masukkan banyak transaksi atau data master sekaligus dari Excel (.xlsx) atau CSV (selalu diperiksa dulu, baru disimpan), atau unduh datanya ke Excel dengan format yang sama dengan template impor.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Masukkan banyak transaksi atau data master sekaligus dari Excel (.xlsx) atau CSV (selalu diperiksa dulu, baru disimpan), atau unduh datanya ke Excel dengan format yang sama dengan template impor.</p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[18rem_1fr]">
@@ -191,13 +191,13 @@ const ImportCenter: React.FC = () => {
 
         <section className="space-y-4 rounded-xl border bg-white p-5 dark:bg-gray-800">
           {!kind ? (
-            <p className="text-gray-500">Pilih jenis impor di sebelah kiri.</p>
+            <p className="text-gray-500 dark:text-gray-400">Pilih jenis impor di sebelah kiri.</p>
           ) : (
             <>
               <div>
                 <h2 className="text-lg font-semibold">{kind.label}</h2>
-                {kind.description && <p className="text-sm text-gray-500">{kind.description}</p>}
-                <p className="mt-2 text-xs text-gray-500">
+                {kind.description && <p className="text-sm text-gray-500 dark:text-gray-400">{kind.description}</p>}
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                   Kolom: {kind.columns.map((c) => (c.required ? `${c.label}*` : c.label)).join(', ')} (* wajib)
                 </p>
               </div>
@@ -205,57 +205,57 @@ const ImportCenter: React.FC = () => {
               <div className="flex gap-1 border-b">
                 {([['import', 'Impor', kind.can_import], ['export', 'Ekspor', kind.can_export]] as const).map(([m, label, ok]) => (
                   <button key={m} type="button" disabled={!ok} onClick={() => setMode(m)}
-                    className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium disabled:opacity-40 ${mode === m ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                    className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium disabled:opacity-40 ${mode === m ? 'border-emerald-600 text-emerald-700 dark:text-emerald-300' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'}`}>
                     {label}
                   </button>
                 ))}
               </div>
 
               {mode === 'export' && kind.can_export && (
-                <div className="space-y-3 rounded-lg border border-emerald-200 bg-emerald-50/40 p-4">
+                <div className="space-y-3 rounded-lg border border-emerald-200 bg-emerald-50/40 p-4 dark:border-emerald-800">
                   {kind.export_by_date ? (
                     <>
                       <div className="flex flex-wrap items-end gap-3">
                         <div>
-                          <label className="mb-1 block text-xs text-gray-600">Dari tanggal</label>
+                          <label className="mb-1 block text-xs text-gray-600 dark:text-gray-300">Dari tanggal</label>
                           <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded border px-3 py-2 text-sm" />
                         </div>
                         <div>
-                          <label className="mb-1 block text-xs text-gray-600">Sampai tanggal</label>
+                          <label className="mb-1 block text-xs text-gray-600 dark:text-gray-300">Sampai tanggal</label>
                           <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded border px-3 py-2 text-sm" />
                         </div>
                         <div className="flex flex-wrap gap-1">
                           {PRESETS.map((p) => (
                             <button key={p.label} type="button" onClick={() => { const [a, b] = p.range(); setDateFrom(a); setDateTo(b); }}
-                              className="rounded border border-gray-300 bg-white px-2.5 py-1.5 text-xs hover:bg-gray-50">{p.label}</button>
+                              className="rounded border border-gray-300 bg-white px-2.5 py-1.5 text-xs hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-600">{p.label}</button>
                           ))}
                         </div>
                       </div>
-                      <p className="text-xs text-gray-500">Tanggal kosong = tanpa batas. Tanggal yang dipakai: tanggal dokumen (pesanan, faktur, bukti, jurnal, pengiriman).</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Tanggal kosong = tanpa batas. Tanggal yang dipakai: tanggal dokumen (pesanan, faktur, bukti, jurnal, pengiriman).</p>
                     </>
                   ) : (
-                    <p className="text-sm text-gray-600">Data master diekspor seluruhnya (tidak memakai rentang tanggal).</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Data master diekspor seluruhnya (tidak memakai rentang tanggal).</p>
                   )}
                   <button type="button" disabled={exporting} onClick={downloadExport}
                     className="inline-flex items-center gap-1.5 rounded bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700 disabled:opacity-50">
                     <ArrowDownTrayIcon className="h-4 w-4" /> {exporting ? 'Menyiapkan...' : 'Unduh Excel (.xlsx)'}
                   </button>
-                  <p className="text-xs text-gray-500">Kolom file sama dengan template impor, jadi bisa diedit lalu diimpor kembali. Dokumen yang dibatalkan tidak ikut.</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Kolom file sama dengan template impor, jadi bisa diedit lalu diimpor kembali. Dokumen yang dibatalkan tidak ikut.</p>
                 </div>
               )}
 
               {mode === 'import' && kind.can_import && (<>
               <div className="flex flex-wrap items-center gap-3">
-                <button type="button" onClick={downloadTemplate} className="inline-flex items-center gap-1.5 rounded border border-emerald-600 px-3 py-2 text-sm text-emerald-700 hover:bg-emerald-50">
+                <button type="button" onClick={downloadTemplate} className="inline-flex items-center gap-1.5 rounded border border-emerald-600 px-3 py-2 text-sm text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300">
                   <ArrowDownTrayIcon className="h-4 w-4" /> Unduh Template
                 </button>
                 <input ref={input} type="file" accept=".xlsx,.csv" className="hidden" onChange={(e) => { setFile(e.target.files?.[0] || null); setResult(null); }} />
-                <button type="button" onClick={() => input.current?.click()} className="inline-flex items-center gap-1.5 rounded border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50">
+                <button type="button" onClick={() => input.current?.click()} className="inline-flex items-center gap-1.5 rounded border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600">
                   <ArrowUpTrayIcon className="h-4 w-4" /> {file ? 'Ganti file' : 'Pilih file'}
                 </button>
-                {file && <span className="text-sm text-gray-700">{file.name}</span>}
+                {file && <span className="text-sm text-gray-700 dark:text-gray-200">{file.name}</span>}
                 <div className="ml-auto flex gap-2">
-                  <button type="button" disabled={!file || busy} onClick={() => send(false)} className="rounded border border-gray-400 px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50">
+                  <button type="button" disabled={!file || busy} onClick={() => send(false)} className="rounded border border-gray-400 px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50 dark:hover:bg-gray-700">
                     {busy && !result ? 'Memeriksa...' : 'Periksa'}
                   </button>
                   <button type="button" disabled={!file || busy || !result || result.committed || okCount === 0} onClick={() => send(true)} className="rounded bg-green-700 px-4 py-2 text-sm text-white hover:bg-green-800 disabled:opacity-50">
@@ -266,7 +266,7 @@ const ImportCenter: React.FC = () => {
 
               {result && (
                 <div className="space-y-2">
-                  <div className={`flex items-center gap-2 rounded p-3 text-sm ${result.summary.error ? 'bg-amber-50 text-amber-800' : 'bg-green-50 text-green-800'}`}>
+                  <div className={`flex items-center gap-2 rounded p-3 text-sm ${result.summary.error ? 'bg-amber-50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300' : 'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300'}`}>
                     {result.summary.error ? <ExclamationTriangleIcon className="h-5 w-5" /> : <CheckCircleIcon className="h-5 w-5" />}
                     <span>
                       {result.committed ? 'Hasil impor' : 'Hasil pemeriksaan (belum disimpan)'}: {result.summary.total} dokumen, {result.summary.ok} {result.committed ? 'tersimpan' : 'valid'}
@@ -278,7 +278,7 @@ const ImportCenter: React.FC = () => {
                   </div>
                   <div className="max-h-[28rem] overflow-auto rounded border">
                     <table className="min-w-full text-xs">
-                      <thead className="sticky top-0 bg-gray-50">
+                      <thead className="sticky top-0 bg-gray-50 dark:bg-gray-900">
                         <tr>
                           <th className="px-3 py-2 text-left">Baris</th>
                           <th className="px-3 py-2 text-left">Dokumen</th>
@@ -293,8 +293,8 @@ const ImportCenter: React.FC = () => {
                             <td className="px-3 py-1.5">{t.created || t.number || 'otomatis'}</td>
                             {kind.summary_columns.map((c) => <td key={c.key} className={`px-3 py-1.5 ${c.type === 'money' ? 'text-right' : ''}`}>{cell(t, c)}</td>)}
                             <td className="px-3 py-1.5">
-                              {t.errors.length ? <span className="text-red-600">{t.errors.join('; ')}</span>
-                                : <span className="text-green-700">{result.committed ? 'Tersimpan' : 'Valid'}</span>}
+                              {t.errors.length ? <span className="text-red-600 dark:text-red-400">{t.errors.join('; ')}</span>
+                                : <span className="text-green-700 dark:text-green-300">{result.committed ? 'Tersimpan' : 'Valid'}</span>}
                             </td>
                           </tr>
                         ))}

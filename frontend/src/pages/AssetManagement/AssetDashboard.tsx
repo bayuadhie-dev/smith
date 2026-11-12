@@ -118,7 +118,7 @@ const AssetDashboard: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug flex items-center gap-2">
-            <BuildingOfficeIcon className="h-7 w-7 text-emerald-600" />
+            <BuildingOfficeIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
             Dashboard Aset
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
@@ -189,7 +189,7 @@ const AssetDashboard: React.FC = () => {
             {summary?.by_type.map((item) => (
               <div key={item.asset_type} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-gray-700/50 rounded-lg">
                 <div className="flex items-center gap-3">
-                  <div className="text-blue-600">
+                  <div className="text-blue-600 dark:text-blue-400">
                     {getAssetTypeIcon(item.asset_type)}
                   </div>
                   <div>
@@ -217,7 +217,7 @@ const AssetDashboard: React.FC = () => {
         {/* Maintenance Alerts */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-            <WrenchScrewdriverIcon className="h-5 w-5 text-orange-600" />
+            <WrenchScrewdriverIcon className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             Maintenance Alert
           </h2>
           

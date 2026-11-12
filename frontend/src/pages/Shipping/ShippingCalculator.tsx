@@ -140,12 +140,12 @@ export default function ShippingCalculator() {
 
   const getServiceTypeColor = (serviceType: string) => {
     const colors = {
-      same_day: 'bg-red-100 text-red-800',
-      next_day: 'bg-orange-100 text-orange-800',
-      express: 'bg-blue-100 text-blue-800',
-      regular: 'bg-green-100 text-green-800'
+      same_day: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+      next_day: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+      express: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      regular: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
     }
-    return colors[serviceType as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+    return colors[serviceType as keyof typeof colors] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
   }
 
   return (
@@ -351,9 +351,9 @@ export default function ShippingCalculator() {
       </div>
 
       {/* Tips */}
-      <div className="card bg-blue-50 border-blue-200">
-        <h3 className="text-lg font-medium text-blue-900 mb-3">Tips Pengiriman</h3>
-        <div className="text-sm text-blue-800 space-y-2">
+      <div className="card bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+        <h3 className="text-lg font-medium text-blue-900 mb-3 dark:text-blue-200">Tips Pengiriman</h3>
+        <div className="text-sm text-blue-800 space-y-2 dark:text-blue-300">
           <p>• <strong>Same Day:</strong> Pengiriman dalam hari yang sama (area terbatas)</p>
           <p>• <strong>Next Day:</strong> Pengiriman keesokan hari</p>
           <p>• <strong>Express:</strong> Pengiriman cepat 1-2 hari kerja</p>

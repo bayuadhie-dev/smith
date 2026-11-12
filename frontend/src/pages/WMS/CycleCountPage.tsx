@@ -105,13 +105,13 @@ const CycleCountPage: React.FC = () => {
             return (
               <div
                 key={cc.id}
-                className={`bg-white rounded-xl shadow-sm border p-5 ${overdue ? 'border-red-300 bg-red-50' : 'border-gray-200'} dark:bg-gray-800 dark:border-gray-700 dark:bg-red-900/20`}
+                className={`bg-white rounded-xl shadow-sm border p-5 ${overdue ? 'border-red-300 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-gray-700'} dark:bg-gray-800 dark:border-gray-700 dark:bg-red-900/20`}
               >
                 <div className="flex items-start justify-between mb-3">
                   <span className="font-mono text-sm font-bold text-gray-700 dark:text-gray-200">{cc.schedule_number}</span>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    cc.status === 'active' ? (overdue ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700') :
-                    cc.status === 'paused' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'
+                    cc.status === 'active' ? (overdue ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300') :
+                    cc.status === 'paused' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
                   } dark:bg-gray-700 dark:text-gray-200 dark:bg-red-900/30 dark:bg-green-900/30 dark:bg-yellow-900/30 dark:text-red-300 dark:text-green-300 dark:text-yellow-300`}>
                     {overdue ? 'Overdue' : cc.status}
                   </span>
@@ -139,11 +139,11 @@ const CycleCountPage: React.FC = () => {
                 </div>
 
                 {/* Next count */}
-                <div className={`mt-3 p-3 rounded-lg ${overdue ? 'bg-red-100' : 'bg-gray-50'} dark:bg-gray-900 dark:bg-red-900/30`}>
+                <div className={`mt-3 p-3 rounded-lg ${overdue ? 'bg-red-100 dark:bg-red-900/30' : 'bg-gray-50 dark:bg-gray-900'} dark:bg-gray-900 dark:bg-red-900/30`}>
                   <div className="flex items-center gap-2 text-sm">
                     <CalendarDaysIcon className="h-4 w-4 text-gray-400" />
                     <span className="text-gray-500 dark:text-gray-400">Counting berikutnya:</span>
-                    <span className={`font-medium ${overdue ? 'text-red-700' : 'text-gray-900'} dark:text-white dark:text-red-300`}>
+                    <span className={`font-medium ${overdue ? 'text-red-700 dark:text-red-300' : 'text-gray-900 dark:text-white'} dark:text-white dark:text-red-300`}>
                       {new Date(cc.next_count_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </span>
                   </div>

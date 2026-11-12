@@ -68,16 +68,16 @@ const QualityCheckForm: React.FC = () => {
   ];
 
   const statusOptions = [
-    { value: 'pending', label: 'Pending', color: 'text-yellow-600' },
-    { value: 'in_progress', label: 'In Progress', color: 'text-blue-600' },
-    { value: 'completed', label: 'Completed', color: 'text-green-600' }
+    { value: 'pending', label: 'Pending', color: 'text-yellow-600 dark:text-yellow-400' },
+    { value: 'in_progress', label: 'In Progress', color: 'text-blue-600 dark:text-blue-400' },
+    { value: 'completed', label: 'Completed', color: 'text-green-600 dark:text-green-400' }
   ];
 
   const resultOptions = [
-    { value: '', label: 'Not Determined', color: 'text-gray-600' },
-    { value: 'accepted', label: 'Accepted', color: 'text-green-600' },
-    { value: 'rejected', label: 'Rejected', color: 'text-red-600' },
-    { value: 'rework', label: 'Rework Required', color: 'text-orange-600' }
+    { value: '', label: 'Not Determined', color: 'text-gray-600 dark:text-gray-300' },
+    { value: 'accepted', label: 'Accepted', color: 'text-green-600 dark:text-green-400' },
+    { value: 'rejected', label: 'Rejected', color: 'text-red-600 dark:text-red-400' },
+    { value: 'rework', label: 'Rework Required', color: 'text-orange-600 dark:text-orange-400' }
   ];
 
   useEffect(() => {
@@ -195,10 +195,10 @@ const QualityCheckForm: React.FC = () => {
   const passRate = 100 - defectRate;
 
   const getQualityStatus = () => {
-    if (defectRate === 0) return { label: 'Excellent', color: 'text-green-600', icon: CheckCircle };
-    if (defectRate <= 2) return { label: 'Good', color: 'text-blue-600', icon: CheckCircle };
-    if (defectRate <= 5) return { label: 'Acceptable', color: 'text-yellow-600', icon: AlertTriangle };
-    return { label: 'Poor', color: 'text-red-600', icon: XCircle };
+    if (defectRate === 0) return { label: 'Excellent', color: 'text-green-600 dark:text-green-400', icon: CheckCircle };
+    if (defectRate <= 2) return { label: 'Good', color: 'text-blue-600 dark:text-blue-400', icon: CheckCircle };
+    if (defectRate <= 5) return { label: 'Acceptable', color: 'text-yellow-600 dark:text-yellow-400', icon: AlertTriangle };
+    return { label: 'Poor', color: 'text-red-600 dark:text-red-400', icon: XCircle };
   };
 
   const qualityStatus = getQualityStatus();
@@ -222,7 +222,7 @@ const QualityCheckForm: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
               <ExclamationCircleIcon className="h-5 w-5" />
               <span>{error}</span>
             </div>
@@ -344,11 +344,11 @@ const QualityCheckForm: React.FC = () => {
                 <h4 className="font-medium text-gray-900 dark:text-white mb-3">Quality Metrics</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">{passRate.toFixed(1)}%</div>
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">{passRate.toFixed(1)}%</div>
                     <div className="text-sm text-gray-600 dark:text-gray-300">Pass Rate</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-red-600">{defectRate.toFixed(1)}%</div>
+                    <div className="text-2xl font-bold text-red-600 dark:text-red-400">{defectRate.toFixed(1)}%</div>
                     <div className="text-sm text-gray-600 dark:text-gray-300">Defect Rate</div>
                   </div>
                   <div className="text-center">
@@ -413,9 +413,9 @@ const QualityCheckForm: React.FC = () => {
             {formData.result && (
               <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div className="flex items-center gap-2">
-                  {formData.result === 'accepted' && <CheckCircle className="h-5 w-5 text-green-600" />}
-                  {formData.result === 'rejected' && <XCircle className="h-5 w-5 text-red-600" />}
-                  {formData.result === 'rework' && <AlertTriangle className="h-5 w-5 text-orange-600" />}
+                  {formData.result === 'accepted' && <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />}
+                  {formData.result === 'rejected' && <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />}
+                  {formData.result === 'rework' && <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />}
                   <span className={`font-medium ${resultOptions.find(r => r.value === formData.result)?.color}`}>
                     {resultOptions.find(r => r.value === formData.result)?.label}
                   </span>
@@ -457,23 +457,23 @@ const QualityCheckForm: React.FC = () => {
 
           {/* Summary */}
           {selectedProduct && formData.sample_size > 0 && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">Inspection Summary</h4>
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
+              <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">Inspection Summary</h4>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <span className="text-blue-600">Product:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Product:</span>
                   <div className="font-medium">{selectedProduct.name}</div>
                 </div>
                 <div>
-                  <span className="text-blue-600">Sample Size:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Sample Size:</span>
                   <div className="font-medium">{formData.sample_size} units</div>
                 </div>
                 <div>
-                  <span className="text-blue-600">Defects:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Defects:</span>
                   <div className="font-medium">{formData.defect_count} units</div>
                 </div>
                 <div>
-                  <span className="text-blue-600">Pass Rate:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Pass Rate:</span>
                   <div className="font-medium">{passRate.toFixed(1)}%</div>
                 </div>
               </div>

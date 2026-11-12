@@ -41,10 +41,10 @@ interface Adjustment {
 }
 
 const statusMap: Record<string, { color: string; label: string }> = {
-  pending: { color: 'bg-gray-100 text-gray-700', label: 'Draft' },
-  pending_approval: { color: 'bg-amber-100 text-amber-700', label: 'Menunggu Persetujuan' },
-  applied: { color: 'bg-green-100 text-green-700', label: 'Diterapkan' },
-  rejected: { color: 'bg-red-100 text-red-700', label: 'Ditolak' },
+  pending: { color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200', label: 'Draft' },
+  pending_approval: { color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', label: 'Menunggu Persetujuan' },
+  applied: { color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300', label: 'Diterapkan' },
+  rejected: { color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', label: 'Ditolak' },
 };
 
 export default function AdjustmentDetail() {
@@ -122,7 +122,7 @@ export default function AdjustmentDetail() {
     return (
       <div className="p-6 text-center py-12 text-gray-400">
         <p>Data tidak ditemukan</p>
-        <button onClick={() => navigate(-1)} className="mt-4 text-blue-600 hover:underline">Kembali</button>
+        <button onClick={() => navigate(-1)} className="mt-4 text-blue-600 hover:underline dark:text-blue-400">Kembali</button>
       </div>
     );
   }
@@ -138,7 +138,7 @@ export default function AdjustmentDetail() {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <ScaleIcon className="h-6 w-6 text-orange-600" />
+              <ScaleIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
               {adj.adjustment_number}
             </h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">Detail Penyesuaian Stok</p>
@@ -148,8 +148,8 @@ export default function AdjustmentDetail() {
       </div>
 
       {adj.status === 'pending' && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
-          <p className="text-sm text-blue-700">Penyesuaian ini masih draft, belum diajukan untuk persetujuan.</p>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between dark:bg-blue-900/20 dark:border-blue-800">
+          <p className="text-sm text-blue-700 dark:text-blue-300">Penyesuaian ini masih draft, belum diajukan untuk persetujuan.</p>
           <button
             onClick={handleSubmitApproval}
             disabled={submitting}
@@ -161,8 +161,8 @@ export default function AdjustmentDetail() {
       )}
 
       {adj.status === 'pending_approval' && pendingWorkflowId && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between">
-          <p className="text-sm text-amber-700 flex items-center gap-2">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between dark:bg-amber-900/20 dark:border-amber-800">
+          <p className="text-sm text-amber-700 flex items-center gap-2 dark:text-amber-300">
             <ClockIcon className="h-5 w-5" /> Menunggu proses review/approval.
           </p>
           <button
@@ -193,9 +193,9 @@ export default function AdjustmentDetail() {
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">Mode</span>
               {adj.is_value_adjustment ? (
-                <span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">Value Adjustment</span>
+                <span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">Value Adjustment</span>
               ) : (
-                <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">Quantity Adjustment</span>
+                <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">Quantity Adjustment</span>
               )}
             </div>
             <div className="flex justify-between">
@@ -224,7 +224,7 @@ export default function AdjustmentDetail() {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">Selisih Quantity</span>
-              <span className={`font-medium ${adj.adjustment_quantity > 0 ? 'text-green-600' : adj.adjustment_quantity < 0 ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>
+              <span className={`font-medium ${adj.adjustment_quantity > 0 ? 'text-green-600 dark:text-green-400' : adj.adjustment_quantity < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
                 {adj.adjustment_quantity > 0 ? '+' : ''}{adj.adjustment_quantity}
               </span>
             </div>
@@ -237,7 +237,7 @@ export default function AdjustmentDetail() {
             {adj.total_cost_impact !== null && (
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Total Cost Impact</span>
-                <span className={`font-medium ${adj.total_cost_impact > 0 ? 'text-green-600' : adj.total_cost_impact < 0 ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>
+                <span className={`font-medium ${adj.total_cost_impact > 0 ? 'text-green-600 dark:text-green-400' : adj.total_cost_impact < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
                   {adj.total_cost_impact > 0 ? '+' : ''}{adj.total_cost_impact.toLocaleString('id-ID')}
                 </span>
               </div>
@@ -249,7 +249,7 @@ export default function AdjustmentDetail() {
       {adj.status === 'applied' && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Persetujuan</h3>
-          <div className="flex items-center gap-2 text-green-600 text-sm">
+          <div className="flex items-center gap-2 text-green-600 text-sm dark:text-green-400">
             <CheckCircleIcon className="h-5 w-5" />
             Diterapkan pada {adj.approved_at ? new Date(adj.approved_at).toLocaleString('id-ID') : '-'}
             {!adj.is_value_adjustment && ' — stok telah disesuaikan dan jurnal telah diposting.'}

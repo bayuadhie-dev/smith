@@ -362,16 +362,16 @@ const BOMManagement: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/products/dashboard"
-            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to Dashboard
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('products.bom.title')}</h1>
-            <p className="text-gray-600 mt-1">{t('products.bom.description')}</p>
-            <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800">
+            <p className="text-gray-600 mt-1 dark:text-gray-300">{t('products.bom.description')}</p>
+            <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+              <p className="text-sm text-blue-800 dark:text-blue-300">
                 <strong>💡 Tip:</strong> {t('products.bom.tip')}
               </p>
             </div>
@@ -406,21 +406,21 @@ const BOMManagement: React.FC = () => {
           <div key={bom.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <ClipboardDocumentListIcon className="h-6 w-6 text-blue-600" />
+                <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+                  <ClipboardDocumentListIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="ml-4">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     {bom.product_name} ({bom.product_code})
                   </h3>
-                  <p className="text-sm text-gray-600">{bom.bom_number} - Version {bom.version}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{bom.bom_number} - Version {bom.version}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
                 <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                   bom.is_active 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                    : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                 }`}>
                   {bom.is_active ? 'Active' : 'Inactive'}
                 </span>
@@ -445,11 +445,11 @@ const BOMManagement: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                <div className="text-sm text-gray-600">{t('products.bom.total_materials')}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">{t('products.bom.total_materials')}</div>
                 <div className="text-lg font-semibold text-gray-900 dark:text-white">{bom.total_materials}</div>
               </div>
               <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                <div className="text-sm text-gray-600">{t('products.bom.total_cost')}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">{t('products.bom.total_cost')}</div>
                 <div className="text-lg font-semibold text-gray-900 dark:text-white">{formatRupiah(bom.total_cost)}</div>
               </div>
             </div>
@@ -459,7 +459,7 @@ const BOMManagement: React.FC = () => {
               <div className="flex justify-between items-center mb-3">
                 <button
                   onClick={() => toggleBOMExpand(bom.id)}
-                  className="flex items-center text-gray-700 hover:text-gray-900 dark:text-white font-medium"
+                  className="flex items-center text-gray-700 hover:text-gray-900 dark:text-white font-medium dark:hover:text-white"
                 >
                   {expandedBOMs.has(bom.id) ? (
                     <ChevronDownIcon className="h-5 w-5 mr-2" />
@@ -484,7 +484,7 @@ const BOMManagement: React.FC = () => {
                   {loadingItems.has(bom.id) ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <span className="ml-3 text-gray-600">Loading materials...</span>
+                      <span className="ml-3 text-gray-600 dark:text-gray-300">Loading materials...</span>
                     </div>
                   ) : (
                     <table className="w-full text-sm">
@@ -553,7 +553,7 @@ const BOMManagement: React.FC = () => {
         <div className="text-center py-12">
           <ClipboardDocumentListIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('products.bom.not_found')}</h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600 mb-4 dark:text-gray-300">
             {searchTerm 
               ? t('products.bom.adjust_search')
               : t('products.bom.start_creating')
@@ -582,7 +582,7 @@ const BOMManagement: React.FC = () => {
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('production.product')}</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('production.product')}</label>
                   <SearchableSelect
                     options={products}
                     value={bomForm.product_id || null}
@@ -594,7 +594,7 @@ const BOMManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Version</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Version</label>
                   <input
                     type="text"
                     value={bomForm.version}
@@ -610,9 +610,9 @@ const BOMManagement: React.FC = () => {
                       type="checkbox"
                       checked={bomForm.is_active}
                       onChange={(e) => setBomForm({...bomForm, is_active: e.target.checked})}
-                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
+                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:text-blue-400"
                     />
-                    <span className="text-sm text-gray-700">Active BOM</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-200">Active BOM</span>
                   </label>
                 </div>
               </div>
@@ -620,7 +620,7 @@ const BOMManagement: React.FC = () => {
               <div className="flex justify-end space-x-3 pt-6 mt-6 border-t">
                 <button
                   onClick={closeBOMModal}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200"
                 >{t('common.cancel')}</button>
                 <button
                   onClick={saveBOM}
@@ -646,7 +646,7 @@ const BOMManagement: React.FC = () => {
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('products.bom.material')}</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('products.bom.material')}</label>
                   <select
                     value={itemForm.material_id}
                     onChange={(e) => setItemForm({...itemForm, material_id: parseInt(e.target.value)})}
@@ -662,7 +662,7 @@ const BOMManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('common.quantity')}</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.quantity')}</label>
                   <NumberInput
                     step="0.01"
                     value={itemForm.quantity}
@@ -673,7 +673,7 @@ const BOMManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Waste Percentage</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Waste Percentage</label>
                   <NumberInput
                     step="0.1"
                     value={itemForm.scrap_percent}
@@ -684,7 +684,7 @@ const BOMManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Notes</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Notes</label>
                   <textarea
                     value={itemForm.notes}
                     onChange={(e) => setItemForm({...itemForm, notes: e.target.value})}
@@ -695,9 +695,9 @@ const BOMManagement: React.FC = () => {
                 </div>
 
                 {itemForm.material_id > 0 && itemForm.quantity > 0 && (
-                  <div className="bg-blue-50 rounded-lg p-3">
-                    <div className="text-sm text-blue-600">Estimated Cost</div>
-                    <div className="text-lg font-semibold text-blue-900">
+                  <div className="bg-blue-50 rounded-lg p-3 dark:bg-blue-900/20">
+                    <div className="text-sm text-blue-600 dark:text-blue-400">Estimated Cost</div>
+                    <div className="text-lg font-semibold text-blue-900 dark:text-blue-200">
                       {formatRupiah(calculateItemCost())}
                     </div>
                   </div>
@@ -707,7 +707,7 @@ const BOMManagement: React.FC = () => {
               <div className="flex justify-end space-x-3 pt-6 mt-6 border-t">
                 <button
                   onClick={closeItemModal}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200"
                 >{t('common.cancel')}</button>
                 <button
                   onClick={saveItem}

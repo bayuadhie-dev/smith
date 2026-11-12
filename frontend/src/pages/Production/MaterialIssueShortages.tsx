@@ -35,11 +35,11 @@ interface ShortageRow {
 const reservationStatusBadge = (status: string) => {
   switch (status) {
     case 'partial':
-      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">Partial</span>
+      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">Partial</span>
     case 'insufficient':
-      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Insufficient</span>
+      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Insufficient</span>
     default:
-      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">{status}</span>
+      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">{status}</span>
   }
 }
 
@@ -98,7 +98,7 @@ const MaterialIssueShortages: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ExclamationTriangleIcon className="h-7 w-7 text-orange-600" />
+            <ExclamationTriangleIcon className="h-7 w-7 text-orange-600 dark:text-orange-400" />
             Laporan Kekurangan Material
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
@@ -143,18 +143,18 @@ const MaterialIssueShortages: React.FC = () => {
                 {rows.map((row) => (
                   <tr key={row.material_issue_item_id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <Link to={`/app/production/material-issues/${row.material_issue_id}`} className="font-medium text-blue-600 hover:underline">
+                      <Link to={`/app/production/material-issues/${row.material_issue_id}`} className="font-medium text-blue-600 hover:underline dark:text-blue-400">
                         {row.issue_number}
                       </Link>
                     </td>
                     <td className="px-4 py-3">
                       <p className="font-medium text-gray-900 dark:text-white">{row.material_name}</p>
-                      <p className="text-xs text-gray-500">{row.material_code}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{row.material_code}</p>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-right font-medium">
                       {row.required_quantity.toLocaleString()} {row.uom}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-right text-red-600 font-medium">
+                    <td className="px-4 py-3 whitespace-nowrap text-right text-red-600 font-medium dark:text-red-400">
                       {row.shortage_quantity.toLocaleString()} {row.uom}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
@@ -173,7 +173,7 @@ const MaterialIssueShortages: React.FC = () => {
                       ) : '-'}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700">
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
                         {row.trigger_source === 'auto_reserve' ? 'Auto-Reserve' : 'Manual'}
                       </span>
                     </td>

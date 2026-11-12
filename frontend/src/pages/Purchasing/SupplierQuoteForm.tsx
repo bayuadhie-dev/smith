@@ -319,7 +319,7 @@ const SupplierQuoteForm: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
               <ExclamationCircleIcon className="h-5 w-5" />
               <span>{error}</span>
             </div>
@@ -483,7 +483,7 @@ const SupplierQuoteForm: React.FC = () => {
                       Line {item.line_number}
                     </h4>
                     {formData.items.length > 1 && (
-                      <button type="button" onClick={() => removeItem(index)} className="text-red-600">
+                      <button type="button" onClick={() => removeItem(index)} className="text-red-600 dark:text-red-400">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     )}
@@ -586,7 +586,7 @@ const SupplierQuoteForm: React.FC = () => {
             <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-medium text-gray-900 dark:text-white">Grand Total:</span>
-                <span className="text-xl font-bold text-blue-600">
+                <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
                   {formData.currency} {getGrandTotal().toLocaleString('id-ID')}
                 </span>
               </div>

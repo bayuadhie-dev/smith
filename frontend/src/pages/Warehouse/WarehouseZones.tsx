@@ -141,8 +141,8 @@ const [showModal, setShowModal] = useState(false)
           return (
             <div key={type.value} className="card p-4">
               <div className="flex items-center">
-                <div className="p-2 bg-primary-100 rounded-lg">
-                  <BuildingStorefrontIcon className="h-5 w-5 text-primary-600" />
+                <div className="p-2 bg-primary-100 rounded-lg dark:bg-primary-900/30">
+                  <BuildingStorefrontIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                 </div>
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{type.label}</p>
@@ -163,8 +163,8 @@ const [showModal, setShowModal] = useState(false)
             <div key={zone.id} className="card p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <BuildingStorefrontIcon className="h-6 w-6 text-blue-600" />
+                  <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+                    <BuildingStorefrontIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="ml-3">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white"><Link to={`/app/warehouse/gudang/${zone.id}`} className="hover:text-emerald-700 hover:underline" title="Lihat stok, lokasi, dan mutasi gudang">{zone.name}</Link></h3>
@@ -215,7 +215,7 @@ const [showModal, setShowModal] = useState(false)
                 <div className="pt-3 border-t">
                   <Link
                     to={`/warehouse/zones/${zone.id}/locations`}
-                    className="text-primary-600 hover:text-primary-800 text-sm font-medium"
+                    className="text-primary-600 hover:text-primary-800 text-sm font-medium dark:text-primary-400"
                   >
                     View Locations →
                   </Link>

@@ -214,15 +214,15 @@ const ProductionApprovalList: React.FC = () => {
 
   const getStatusBadge = (status: string, forwarded: boolean) => {
     if (forwarded) {
-      return <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">Forwarded to Finance</span>;
+      return <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">Forwarded to Finance</span>;
     }
     switch (status) {
       case 'pending':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Menunggu Approval</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">Menunggu Approval</span>;
       case 'approved':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Disetujui</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Disetujui</span>;
       case 'rejected':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Ditolak</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Ditolak</span>;
       default:
         return <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">{status}</span>;
     }
@@ -233,15 +233,15 @@ const ProductionApprovalList: React.FC = () => {
       case 'draft':
         return <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">Draft</span>;
       case 'submitted':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Menunggu Approval</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">Menunggu Approval</span>;
       case 'approved':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Disetujui</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Disetujui</span>;
       case 'rejected':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Ditolak</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Ditolak</span>;
       case 'in_progress':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Sedang Berjalan</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Sedang Berjalan</span>;
       case 'completed':
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">Selesai</span>;
+        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">Selesai</span>;
       default:
         return <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">{status}</span>;
     }
@@ -271,7 +271,7 @@ const ProductionApprovalList: React.FC = () => {
         </div>
         <button
           onClick={fetchApprovals}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-lg"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-lg dark:hover:bg-gray-600"
         >
           <ArrowPathIcon className="h-5 w-5" />
           Refresh
@@ -285,8 +285,8 @@ const ProductionApprovalList: React.FC = () => {
             onClick={() => setActiveTab('production')}
             className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
               activeTab === 'production'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
             }`}
           >
             <CubeIcon className="h-5 w-5" />
@@ -296,8 +296,8 @@ const ProductionApprovalList: React.FC = () => {
             onClick={() => setActiveTab('schedule')}
             className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
               activeTab === 'schedule'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
             }`}
           >
             <CalendarDaysIcon className="h-5 w-5" />
@@ -307,8 +307,8 @@ const ProductionApprovalList: React.FC = () => {
             onClick={() => setActiveTab('monthly')}
             className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
               activeTab === 'monthly'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
             }`}
           >
             <CalendarDaysIcon className="h-5 w-5" />
@@ -318,8 +318,8 @@ const ProductionApprovalList: React.FC = () => {
             onClick={() => setActiveTab('scheduleGrid')}
             className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
               activeTab === 'scheduleGrid'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
             }`}
           >
             <CalendarDaysIcon className="h-5 w-5" />
@@ -332,39 +332,39 @@ const ProductionApprovalList: React.FC = () => {
       {activeTab === 'production' && (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div 
-          className={`bg-white rounded-lg shadow p-4 cursor-pointer border-2 ${statusFilter === 'pending' ? 'border-yellow-500' : 'border-transparent'}`}
+          className={`bg-white rounded-lg shadow p-4 cursor-pointer border-2 dark:bg-gray-800 ${statusFilter === 'pending' ? 'border-yellow-500' : 'border-transparent'}`}
           onClick={() => setStatusFilter(statusFilter === 'pending' ? '' : 'pending')}
         >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Menunggu Approval</p>
-              <p className="text-2xl font-bold text-yellow-600">{summary.pending}</p>
+              <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{summary.pending}</p>
             </div>
             <ClockIcon className="h-10 w-10 text-yellow-500" />
           </div>
         </div>
         
         <div 
-          className={`bg-white rounded-lg shadow p-4 cursor-pointer border-2 ${statusFilter === 'approved' ? 'border-green-500' : 'border-transparent'}`}
+          className={`bg-white rounded-lg shadow p-4 cursor-pointer border-2 dark:bg-gray-800 ${statusFilter === 'approved' ? 'border-green-500' : 'border-transparent'}`}
           onClick={() => setStatusFilter(statusFilter === 'approved' ? '' : 'approved')}
         >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Disetujui</p>
-              <p className="text-2xl font-bold text-green-600">{summary.approved}</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{summary.approved}</p>
             </div>
             <CheckCircleIcon className="h-10 w-10 text-green-500" />
           </div>
         </div>
         
         <div 
-          className={`bg-white rounded-lg shadow p-4 cursor-pointer border-2 ${statusFilter === 'rejected' ? 'border-red-500' : 'border-transparent'}`}
+          className={`bg-white rounded-lg shadow p-4 cursor-pointer border-2 dark:bg-gray-800 ${statusFilter === 'rejected' ? 'border-red-500' : 'border-transparent'}`}
           onClick={() => setStatusFilter(statusFilter === 'rejected' ? '' : 'rejected')}
         >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Ditolak</p>
-              <p className="text-2xl font-bold text-red-600">{summary.rejected}</p>
+              <p className="text-2xl font-bold text-red-600 dark:text-red-400">{summary.rejected}</p>
             </div>
             <XCircleIcon className="h-10 w-10 text-red-500" />
           </div>
@@ -374,7 +374,7 @@ const ProductionApprovalList: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Diteruskan ke Finance</p>
-              <p className="text-2xl font-bold text-purple-600">{summary.forwarded}</p>
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{summary.forwarded}</p>
             </div>
             <BanknotesIcon className="h-10 w-10 text-purple-500" />
           </div>
@@ -389,7 +389,7 @@ const ProductionApprovalList: React.FC = () => {
           <span className="text-sm text-gray-600 dark:text-gray-300">Filter: {statusFilter}</span>
           <button 
             onClick={() => setStatusFilter('')}
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm text-blue-600 hover:underline dark:text-blue-400"
           >
             Clear
           </button>
@@ -430,7 +430,7 @@ const ProductionApprovalList: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Link 
                       to={`/app/production/approvals/${approval.id}`}
-                      className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                      className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer dark:text-blue-400"
                     >
                       {approval.approval_number}
                     </Link>
@@ -460,7 +460,7 @@ const ProductionApprovalList: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <Link
                       to={`/app/production/approvals/${approval.id}`}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300"
                     >
                       <EyeIcon className="h-4 w-4" />
                       Detail
@@ -484,7 +484,7 @@ const ProductionApprovalList: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Menunggu Approval</p>
-                <p className="text-2xl font-bold text-yellow-600">{scheduleSummary.pending}</p>
+                <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{scheduleSummary.pending}</p>
               </div>
               <ClockIcon className="h-10 w-10 text-yellow-500" />
             </div>
@@ -493,7 +493,7 @@ const ProductionApprovalList: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Disetujui</p>
-                <p className="text-2xl font-bold text-green-600">{scheduleSummary.approved}</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{scheduleSummary.approved}</p>
               </div>
               <CheckCircleIcon className="h-10 w-10 text-green-500" />
             </div>
@@ -502,7 +502,7 @@ const ProductionApprovalList: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Ditolak</p>
-                <p className="text-2xl font-bold text-red-600">{scheduleSummary.rejected}</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">{scheduleSummary.rejected}</p>
               </div>
               <XCircleIcon className="h-10 w-10 text-red-500" />
             </div>
@@ -511,7 +511,7 @@ const ProductionApprovalList: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Sedang Berjalan</p>
-                <p className="text-2xl font-bold text-blue-600">{scheduleSummary.in_progress}</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{scheduleSummary.in_progress}</p>
               </div>
               <CubeIcon className="h-10 w-10 text-blue-500" />
             </div>
@@ -548,7 +548,7 @@ const ProductionApprovalList: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Link 
                         to={`/app/production/weekly-plans/${plan.id}`}
-                        className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                        className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer dark:text-blue-400"
                       >
                         {plan.plan_number}
                       </Link>
@@ -575,7 +575,7 @@ const ProductionApprovalList: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <Link
                         to={`/app/production/weekly-plans/${plan.id}`}
-                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300"
                       >
                         <EyeIcon className="h-4 w-4" />
                         Detail
@@ -599,7 +599,7 @@ const ProductionApprovalList: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Menunggu Approval</p>
-              <p className="text-2xl font-bold text-yellow-600">{monthlyPlanSummary.pending}</p>
+              <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{monthlyPlanSummary.pending}</p>
             </div>
             <ClockIcon className="h-10 w-10 text-yellow-500" />
           </div>
@@ -642,7 +642,7 @@ const ProductionApprovalList: React.FC = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                          <span className="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
                             Menunggu Approval
                           </span>
                           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -691,12 +691,12 @@ const ProductionApprovalList: React.FC = () => {
                                   <td className="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-300">{item.machine_name}</td>
                                   <td className="px-4 py-3 text-sm text-right font-semibold text-gray-900 dark:text-white">{item.target_ctn?.toLocaleString()}</td>
                                   <td className="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-300">{item.qty_per_ctn}</td>
-                                  <td className="px-4 py-3 text-sm text-right font-semibold text-blue-600">{item.target_pack?.toLocaleString()}</td>
+                                  <td className="px-4 py-3 text-sm text-right font-semibold text-blue-600 dark:text-blue-400">{item.target_pack?.toLocaleString()}</td>
                                   <td className="px-4 py-3 text-center">
                                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                      item.priority === 'urgent' ? 'bg-red-100 text-red-700' :
-                                      item.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-                                      'bg-gray-100 text-gray-700'
+                                      item.priority === 'urgent' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
+                                      item.priority === 'high' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
+                                      'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
                                     }`}>
                                       {item.priority?.toUpperCase()}
                                     </span>
@@ -704,12 +704,12 @@ const ProductionApprovalList: React.FC = () => {
                                 </tr>
                               ))}
                             </tbody>
-                            <tfoot className="bg-blue-50">
+                            <tfoot className="bg-blue-50 dark:bg-blue-900/20">
                               <tr>
                                 <td colSpan={4} className="px-4 py-3 text-sm font-bold text-right text-gray-900 dark:text-white">TOTAL</td>
                                 <td className="px-4 py-3 text-sm text-right font-bold text-gray-900 dark:text-white">{plan.total_quantity?.toLocaleString()}</td>
                                 <td className="px-4 py-3"></td>
-                                <td className="px-4 py-3 text-sm text-right font-bold text-blue-600">{plan.total_pack?.toLocaleString()}</td>
+                                <td className="px-4 py-3 text-sm text-right font-bold text-blue-600 dark:text-blue-400">{plan.total_pack?.toLocaleString()}</td>
                                 <td className="px-4 py-3"></td>
                               </tr>
                             </tfoot>
@@ -734,7 +734,7 @@ const ProductionApprovalList: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Menunggu Approval</p>
-              <p className="text-2xl font-bold text-yellow-600">{scheduleGridSummary.pending}</p>
+              <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{scheduleGridSummary.pending}</p>
             </div>
             <ClockIcon className="h-10 w-10 text-yellow-500" />
           </div>
@@ -776,7 +776,7 @@ const ProductionApprovalList: React.FC = () => {
                       {plan.total_ctn?.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
                         Menunggu Approval
                       </span>
                     </td>
@@ -784,14 +784,14 @@ const ProductionApprovalList: React.FC = () => {
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleApproveScheduleGrid(plan.week_start, 'approve')}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-lg hover:bg-green-200"
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300"
                         >
                           <CheckCircleIcon className="h-4 w-4" />
                           Approve
                         </button>
                         <button
                           onClick={() => handleApproveScheduleGrid(plan.week_start, 'reject')}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300"
                         >
                           <XCircleIcon className="h-4 w-4" />
                           Reject

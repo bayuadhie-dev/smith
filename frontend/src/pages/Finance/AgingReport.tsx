@@ -64,10 +64,10 @@ const AgingReport: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-2">
-        <ClockIcon className="w-6 h-6 text-green-700" />
+        <ClockIcon className="w-6 h-6 text-green-700 dark:text-green-300" />
         <h1 className="text-2xl font-bold">Umur Piutang &amp; Hutang</h1>
       </div>
-      <p className="text-gray-500 text-sm">
+      <p className="text-gray-500 text-sm dark:text-gray-400">
         Sisa tagihan yang belum lunas dikelompokkan menurut keterlambatan dari jatuh tempo, dalam Rupiah (faktur valas
         dikonversi dengan kurs faktur). Total dicocokkan dengan saldo akun {label.toLowerCase()} di buku besar.
       </p>
@@ -78,14 +78,14 @@ const AgingReport: React.FC = () => {
             <button
               key={k}
               onClick={() => setKind(k)}
-              className={`px-3 py-1.5 rounded text-sm ${kind === k ? 'bg-white dark:bg-gray-900 shadow font-medium' : 'text-gray-500'}`}
+              className={`px-3 py-1.5 rounded text-sm ${kind === k ? 'bg-white dark:bg-gray-900 shadow font-medium' : 'text-gray-500 dark:text-gray-400'}`}
             >
               {k === 'receivable' ? 'Umur Piutang' : 'Umur Hutang'}
             </button>
           ))}
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Per Tanggal</label>
+          <label className="block text-sm text-gray-600 mb-1 dark:text-gray-300">Per Tanggal</label>
           <input type="date" value={asOf} onChange={(e) => setAsOf(e.target.value)} className="border rounded px-3 py-2" />
         </div>
         <button onClick={fetchReport} className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800">
@@ -94,18 +94,18 @@ const AgingReport: React.FC = () => {
       </div>
 
       {loading && <LoadingSpinner />}
-      {error && <div className="bg-red-50 text-red-700 rounded p-3">{error}</div>}
+      {error && <div className="bg-red-50 text-red-700 rounded p-3 dark:bg-red-900/20 dark:text-red-300">{error}</div>}
 
       {data && !loading && (
         <>
           {!!data.credit_memo_balance && (
-            <div className="bg-blue-50 text-blue-800 rounded p-3 text-sm">
+            <div className="bg-blue-50 text-blue-800 rounded p-3 text-sm dark:bg-blue-900/20 dark:text-blue-300">
               Ada Nota Kredit customer yang belum dipakai sebesar {formatRupiah(data.credit_memo_balance)}; ini mengurangi saldo piutang di buku besar
               tetapi tidak muncul di daftar faktur di bawah. Pakai ke faktur atau kembalikan lewat menu Nota Kredit Customer.
             </div>
           )}
           {Math.abs(data.unexplained_difference ?? data.difference) > 1 && (
-            <div className="bg-yellow-50 text-yellow-800 rounded p-3 text-sm">
+            <div className="bg-yellow-50 text-yellow-800 rounded p-3 text-sm dark:bg-yellow-900/20 dark:text-yellow-300">
               Total daftar {label.toLowerCase()} ({formatRupiah(data.totals.total)}) berbeda {formatRupiah(data.unexplained_difference ?? data.difference)} dari saldo
               buku besar ({formatRupiah(data.gl_control_balance)}) di luar nota kredit. Biasanya karena jurnal manual ke akun kontrol atau data lama.
             </div>
@@ -123,7 +123,7 @@ const AgingReport: React.FC = () => {
               </thead>
               <tbody>
                 {data.parties.length === 0 && (
-                  <tr><td colSpan={data.buckets.length + 2} className="text-center text-gray-500 py-6">Tidak ada {label.toLowerCase()} terbuka</td></tr>
+                  <tr><td colSpan={data.buckets.length + 2} className="text-center text-gray-500 py-6 dark:text-gray-400">Tidak ada {label.toLowerCase()} terbuka</td></tr>
                 )}
                 {data.parties.map((p) => (
                   <Fragment key={String(p.party_id)}>

@@ -29,7 +29,7 @@ export default function StockTransferDetail() {
     finally { setBusy(false) }
   }
 
-  if (!t) return <div className="p-6 text-sm text-gray-500">Memuat...</div>
+  if (!t) return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Memuat...</div>
   const st = TRANSFER_STATUS[t.status] || { label: t.status, cls: '' }
   const canReceive = t.status === 'shipped' || t.status === 'partial'
   const th = 'px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400'
@@ -88,7 +88,7 @@ export default function StockTransferDetail() {
         </Panel>
       )}
       {t.notes && <p className="text-sm text-gray-600 dark:text-gray-300">Catatan: {t.notes}</p>}
-      <Link to="/app/warehouse/transfers" className="text-sm text-emerald-700 hover:underline">Kembali ke daftar</Link>
+      <Link to="/app/warehouse/transfers" className="text-sm text-emerald-700 hover:underline dark:text-emerald-300">Kembali ke daftar</Link>
     </div>
   )
 }

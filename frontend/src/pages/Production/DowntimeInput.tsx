@@ -12,7 +12,7 @@ import axiosInstance from '../../utils/axiosConfig';
 
 // Simple UI Components (replacing shadcn/ui)
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={`bg-white rounded-lg border border-gray-200 shadow-sm ${className}`}>{children}</div>
+  <div className={`bg-white rounded-lg border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700 ${className}`}>{children}</div>
 );
 
 const CardHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -20,7 +20,7 @@ const CardHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 const CardTitle: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <h3 className={`text-lg font-semibold text-gray-900 ${className}`}>{children}</h3>
+  <h3 className={`text-lg font-semibold text-gray-900 dark:text-white ${className}`}>{children}</h3>
 );
 
 const CardContent: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
@@ -32,11 +32,11 @@ const Label: React.FC<{ children: React.ReactNode; htmlFor?: string }> = ({ chil
 );
 
 const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
-  <input {...props} className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${props.className || ''}`} />
+  <input {...props} className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 ${props.className || ''}`} />
 );
 
 const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => (
-  <textarea {...props} className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${props.className || ''}`} />
+  <textarea {...props} className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 ${props.className || ''}`} />
 );
 
 const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, className = '', ...props }) => (
@@ -247,8 +247,8 @@ const DowntimeInput: React.FC = () => {
       </div>
 
       {message && (
-        <Alert className={message.type === 'success' ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}>
-          <AlertDescription className={message.type === 'success' ? 'text-green-700' : 'text-red-700'}>
+        <Alert className={message.type === 'success' ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-red-500 bg-red-50 dark:bg-red-900/20'}>
+          <AlertDescription className={message.type === 'success' ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}>
             {message.text}
           </AlertDescription>
         </Alert>
@@ -370,8 +370,8 @@ const DowntimeInput: React.FC = () => {
               </div>
 
               {duration > 0 && (
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm font-medium text-blue-800">
+                <div className="p-3 bg-blue-50 rounded-lg dark:bg-blue-900/20">
+                  <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
                     Durasi Downtime: {duration} menit ({(duration / 60).toFixed(1)} jam)
                   </p>
                 </div>

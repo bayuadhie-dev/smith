@@ -100,7 +100,7 @@ const PendingUserTable: React.FC<PendingUserTableProps> = ({ pendingUsers, onRef
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-900/80">
             <tr>
-              <th scope="col" className="w-10 px-3 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider"></th>
+              <th scope="col" className="w-10 px-3 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider dark:text-gray-400"></th>
               <th scope="col" className="px-4 py-3.5 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nama Lengkap</th>
               <th scope="col" className="px-4 py-3.5 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role Diminta</th>
               <th scope="col" className="px-4 py-3.5 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tanggal Daftar</th>
@@ -257,14 +257,14 @@ const PendingUserTable: React.FC<PendingUserTableProps> = ({ pendingUsers, onRef
         <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 dark:border-gray-700 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center gap-3 mb-4">
-              <div className={`p-3 rounded-full ${confirmModal.action === 'approve' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+              <div className={`p-3 rounded-full ${confirmModal.action === 'approve' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'}`}>
                 {confirmModal.action === 'approve' ? <CheckIcon className="w-6 h-6" /> : <XMarkIcon className="w-6 h-6" />}
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                   {confirmModal.action === 'approve' ? 'Setujui Pendaftaran Akun?' : 'Tolak Pendaftaran Akun?'}
                 </h3>
-                <p className="text-xs text-gray-500">Konfirmasi aksi verifikasi pengguna</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Konfirmasi aksi verifikasi pengguna</p>
               </div>
             </div>
 

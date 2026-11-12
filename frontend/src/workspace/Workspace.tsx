@@ -54,7 +54,7 @@ function TabPane({ tab, active }: { tab: TabState; active: boolean }) {
         {isList && (
           <div className="flex justify-end px-4 pt-2">
             <button type="button" onClick={refresh} title="Muat ulang data daftar ini"
-              className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
+              className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
               <RefreshCw size={13} className={spin ? 'animate-spin' : ''} /> Perbarui
             </button>
           </div>

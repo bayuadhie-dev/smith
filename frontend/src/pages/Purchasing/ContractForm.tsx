@@ -137,7 +137,7 @@ export default function ContractForm() {
   }
 
   if (isEdit && loadingExisting) {
-    return <div className="p-6 text-gray-500">Memuat...</div>
+    return <div className="p-6 text-gray-500 dark:text-gray-400">Memuat...</div>
   }
 
   return (
@@ -146,7 +146,7 @@ export default function ContractForm() {
         {isEdit ? 'Edit Kontrak Supplier' : 'Kontrak Supplier Baru'}
       </h1>
       {locked && (
-        <p className="text-sm text-red-600 mb-4">
+        <p className="text-sm text-red-600 mb-4 dark:text-red-400">
           Kontrak berstatus "{status}" tidak bisa diedit lagi.
         </p>
       )}
@@ -242,14 +242,14 @@ export default function ContractForm() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Item Kontrak</h2>
             {!locked && (
-              <button type="button" onClick={addItem} className="text-sm text-primary-600 hover:underline">+ Tambah Item</button>
+              <button type="button" onClick={addItem} className="text-sm text-primary-600 hover:underline dark:text-primary-400">+ Tambah Item</button>
             )}
           </div>
           <div className="space-y-3">
             {items.map((it, idx) => (
               <div key={idx} className="grid grid-cols-12 gap-2 items-end border-b border-gray-100 dark:border-gray-700 pb-3">
                 <div className="col-span-3">
-                  <label className="block text-xs text-gray-500 mb-1">Produk</label>
+                  <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Produk</label>
                   <SearchableSelect
                     options={(products?.products || products || []).map((p: any) => ({ id: p.id, code: p.code, name: p.name }))}
                     value={it.product_id ?? null}
@@ -259,27 +259,27 @@ export default function ContractForm() {
                   />
                 </div>
                 <div className="col-span-3">
-                  <label className="block text-xs text-gray-500 mb-1">Deskripsi *</label>
+                  <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Deskripsi *</label>
                   <input type="text" value={it.description} onChange={e => updateItem(idx, { description: e.target.value })} disabled={locked}
                     className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
                 </div>
                 <div className="col-span-1">
-                  <label className="block text-xs text-gray-500 mb-1">Qty</label>
+                  <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Qty</label>
                   <NumberInput value={it.quantity ?? ''} onChange={e => updateItem(idx, { quantity: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
                     className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
                 </div>
                 <div className="col-span-1">
-                  <label className="block text-xs text-gray-500 mb-1">UOM *</label>
+                  <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">UOM *</label>
                   <input type="text" value={it.uom} onChange={e => updateItem(idx, { uom: e.target.value })} disabled={locked}
                     className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-xs text-gray-500 mb-1">Harga Satuan *</label>
+                  <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Harga Satuan *</label>
                   <NumberInput currency value={it.unit_price} onChange={e => updateItem(idx, { unit_price: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
                     className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
                 </div>
                 <div className="col-span-1">
-                  <label className="block text-xs text-gray-500 mb-1">Lead Time (hari)</label>
+                  <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Lead Time (hari)</label>
                   <NumberInput value={it.lead_time_days ?? ''} onChange={e => updateItem(idx, { lead_time_days: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
                     className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
                 </div>

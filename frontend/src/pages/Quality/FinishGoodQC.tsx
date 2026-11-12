@@ -101,35 +101,35 @@ export default function FinishGoodQC() {
     switch (status) {
       case 'passed':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
             <CheckCircleIcon className="w-3.5 h-3.5" />
             Lulus QC
           </span>
         );
       case 'failed':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
             <XCircleIcon className="w-3.5 h-3.5" />
             Ditolak
           </span>
         );
       case 'conditional':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
             <ExclamationTriangleIcon className="w-3.5 h-3.5" />
             Bersyarat
           </span>
         );
       case 'inspecting':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
             <BeakerIcon className="w-3.5 h-3.5" />
             Sedang Inspeksi
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-100">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:text-gray-100 dark:bg-gray-700">
             <ClipboardDocumentCheckIcon className="w-3.5 h-3.5" />
             Menunggu QC
           </span>
@@ -161,7 +161,7 @@ export default function FinishGoodQC() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ClipboardDocumentCheckIcon className="w-7 h-7 text-green-600" />
+            <ClipboardDocumentCheckIcon className="w-7 h-7 text-green-600 dark:text-green-400" />
             QC Barang Jadi
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
@@ -183,52 +183,52 @@ export default function FinishGoodQC() {
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-              <ClipboardDocumentCheckIcon className="w-6 h-6 text-yellow-600" />
+              <ClipboardDocumentCheckIcon className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {workOrders.length}
               </p>
-              <p className="text-sm text-gray-500">Menunggu QC</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Menunggu QC</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <CheckCircleIcon className="w-6 h-6 text-green-600" />
+              <CheckCircleIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {completedQC.filter(w => w.qc_status === 'passed').length}
               </p>
-              <p className="text-sm text-gray-500">Lulus QC</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Lulus QC</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-              <XCircleIcon className="w-6 h-6 text-red-600" />
+              <XCircleIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {completedQC.filter(w => w.qc_status === 'failed').length}
               </p>
-              <p className="text-sm text-gray-500">Ditolak</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Ditolak</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <TruckIcon className="w-6 h-6 text-blue-600" />
+              <TruckIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {workOrders.length + completedQC.length}
               </p>
-              <p className="text-sm text-gray-500">Total WO Selesai</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total WO Selesai</p>
             </div>
           </div>
         </div>
@@ -281,7 +281,7 @@ export default function FinishGoodQC() {
         ) : filteredList.length === 0 ? (
           <div className="text-center py-12">
             <CubeIcon className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">
+            <p className="text-gray-500 dark:text-gray-400">
               {activeTab === 'pending' 
                 ? 'Tidak ada SPK yang menunggu QC' 
                 : 'Belum ada SPK yang sudah di-QC'}
@@ -306,13 +306,13 @@ export default function FinishGoodQC() {
                   <td className="px-4 py-4">
                     <p className="font-medium text-blue-600 dark:text-blue-400">{wo.wo_number}</p>
                     {wo.batch_number && (
-                      <p className="text-xs text-gray-500">Batch: {wo.batch_number}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Batch: {wo.batch_number}</p>
                     )}
                   </td>
                   <td className="px-4 py-4">
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">{wo.product_code}</p>
-                      <p className="text-sm text-gray-500">{wo.product_name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{wo.product_name}</p>
                     </div>
                   </td>
                   <td className="px-4 py-4">
@@ -321,9 +321,9 @@ export default function FinishGoodQC() {
                         {wo.quantity_produced.toLocaleString()} {wo.uom}
                       </p>
                       <div className="flex gap-2 text-xs mt-1">
-                        <span className="text-green-600">Good: {wo.quantity_good.toLocaleString()}</span>
+                        <span className="text-green-600 dark:text-green-400">Good: {wo.quantity_good.toLocaleString()}</span>
                         {wo.quantity_scrap > 0 && (
-                          <span className="text-red-600">Scrap: {wo.quantity_scrap}</span>
+                          <span className="text-red-600 dark:text-red-400">Scrap: {wo.quantity_scrap}</span>
                         )}
                       </div>
                       {wo.pack_per_carton > 0 && (
@@ -337,7 +337,7 @@ export default function FinishGoodQC() {
                     <span className="text-gray-900 dark:text-white">{wo.machine_name || '-'}</span>
                   </td>
                   <td className="px-4 py-4">
-                    <span className="text-sm text-gray-500 flex items-center gap-1">
+                    <span className="text-sm text-gray-500 flex items-center gap-1 dark:text-gray-400">
                       <CalendarIcon className="w-4 h-4" />
                       {formatDate(wo.completed_date)}
                     </span>
@@ -368,14 +368,14 @@ export default function FinishGoodQC() {
                             <>
                               <button
                                 onClick={() => handlePrintCoA(wo)}
-                                className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                                className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg dark:text-blue-400"
                                 title="Cetak CoA"
                               >
                                 <PrinterIcon className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleSendToWarehouse(wo)}
-                                className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg"
+                                className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg dark:text-green-400"
                                 title="Kirim ke Gudang"
                               >
                                 <TruckIcon className="w-4 h-4" />

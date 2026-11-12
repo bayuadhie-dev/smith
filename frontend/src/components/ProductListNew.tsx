@@ -236,8 +236,8 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
               onClick={() => setViewMode('compact')}
               className={`px-3 py-1 rounded text-sm flex items-center space-x-1 ${
                 viewMode === 'compact' 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white' 
+                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
               }`}
               title="View Ringkas"
             >
@@ -248,8 +248,8 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
               onClick={() => setViewMode('detailed')}
               className={`px-3 py-1 rounded text-sm flex items-center space-x-1 ${
                 viewMode === 'detailed' 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white' 
+                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
               }`}
               title="View Lengkap (Excel)"
             >
@@ -542,8 +542,8 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
                         <td className="px-4 py-3 whitespace-nowrap">
                           <span className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full ${
                             product.is_active 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                           }`}>
                             {product.is_active ? 'Aktif' : 'Nonaktif'}
                           </span>
@@ -553,14 +553,14 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
                           <div className="flex space-x-1">
                             <button
                               onClick={() => onView(product)}
-                              className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded"
+                              className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded dark:text-blue-400"
                               title="Lihat Detail"
                             >
                               <Eye className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => onEdit(product)}
-                              className="p-1 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded"
+                              className="p-1 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded dark:text-indigo-400"
                               title={t('common.edit')}
                             >
                               <Edit className="w-4 h-4" />
@@ -568,7 +568,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
                             {onViewVersions && (
                               <button
                                 onClick={() => onViewVersions(product)}
-                                className="p-1 text-purple-600 hover:text-purple-900 hover:bg-purple-50 rounded"
+                                className="p-1 text-purple-600 hover:text-purple-900 hover:bg-purple-50 rounded dark:text-purple-400"
                                 title="Lihat Versi"
                               >
                                 <History className="w-4 h-4" />
@@ -576,7 +576,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
                             )}
                             <button
                               onClick={() => handleDelete(product)}
-                              className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded"
+                              className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded dark:text-red-400"
                               title="Hapus"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -630,8 +630,8 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
                         <td className="px-4 py-2 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                             product.is_active 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                           }`}>
                             {product.is_active ? 'Aktif' : 'Tidak Aktif'}
                           </span>
@@ -643,14 +643,14 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
                           <div className="flex space-x-1">
                             <button
                               onClick={() => onView(product)}
-                              className="text-blue-600 hover:text-blue-900"
+                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
                               title="Lihat Detail"
                             >
                               <Eye className="w-3 h-3" />
                             </button>
                             <button
                               onClick={() => onEdit(product)}
-                              className="text-indigo-600 hover:text-indigo-900"
+                              className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400"
                               title={t('common.edit')}
                             >
                               <Edit className="w-3 h-3" />
@@ -658,7 +658,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
                             {onViewVersions && (
                               <button
                                 onClick={() => onViewVersions(product)}
-                                className="text-purple-600 hover:text-purple-900"
+                                className="text-purple-600 hover:text-purple-900 dark:text-purple-400"
                                 title="Lihat Versi"
                               >
                                 <History className="w-3 h-3" />
@@ -666,7 +666,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
                             )}
                             <button
                               onClick={() => handleDelete(product)}
-                              className="text-red-600 hover:text-red-900"
+                              className="text-red-600 hover:text-red-900 dark:text-red-400"
                               title="Hapus"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -723,8 +723,8 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
                         onClick={() => setCurrentPage(page)}
                         className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                           currentPage === page
-                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-400 dark:border-gray-600'
                         }`}
                       >
                         {page}

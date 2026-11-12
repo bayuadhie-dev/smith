@@ -74,8 +74,8 @@ const { data, isLoading } = useGetInvoicesQuery({})
                     <td>{formatDateSafe(invoice.invoice_date)}</td>
                     <td>{formatDateSafe(invoice.due_date)}</td>
                     <td className="font-medium">Rp {invoice.total_amount?.toLocaleString() || '0'}</td>
-                    <td className="text-green-600">Rp {invoice.paid_amount?.toLocaleString() || '0'}</td>
-                    <td className="text-red-600">Rp {invoice.balance_due?.toLocaleString() || '0'}</td>
+                    <td className="text-green-600 dark:text-green-400">Rp {invoice.paid_amount?.toLocaleString() || '0'}</td>
+                    <td className="text-red-600 dark:text-red-400">Rp {invoice.balance_due?.toLocaleString() || '0'}</td>
                     <td>
                       <span className={`badge ${getStatusBadge(invoice.status)}`}>
                         {invoice.status}
@@ -85,7 +85,7 @@ const { data, isLoading } = useGetInvoicesQuery({})
                       {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
                         <Link
                           to={`/app/finance/payments/new?invoice_id=${invoice.id}`}
-                          className="text-primary-600 hover:text-primary-800 text-sm whitespace-nowrap"
+                          className="text-primary-600 hover:text-primary-800 text-sm whitespace-nowrap dark:text-primary-400"
                         >
                           Catat Pembayaran
                         </Link>

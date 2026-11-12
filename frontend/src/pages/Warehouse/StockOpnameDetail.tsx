@@ -50,11 +50,11 @@ interface StockOpnameItem {
 }
 
 const STATUS_COLORS: { [key: string]: string } = {
-  draft: 'bg-gray-100 text-gray-700',
-  scheduled: 'bg-blue-100 text-blue-700',
-  in_progress: 'bg-yellow-100 text-yellow-700',
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
+  draft: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
+  scheduled: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+  in_progress: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+  completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+  cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
 };
 
 const STATUS_LABELS: { [key: string]: string } = {
@@ -292,7 +292,7 @@ export default function StockOpnameDetail() {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <ClipboardDocumentCheckIcon className="h-8 w-8 text-blue-600" />
+              <ClipboardDocumentCheckIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
               {order.opname_number}
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
@@ -313,17 +313,17 @@ export default function StockOpnameDetail() {
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">Sudah Dihitung</p>
-          <p className="text-2xl font-bold text-blue-600">{order.counted_items}</p>
+          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{order.counted_items}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">Item Selisih</p>
-          <p className={`text-2xl font-bold ${order.variance_items > 0 ? 'text-red-600' : 'text-green-600'}`}>
+          <p className={`text-2xl font-bold ${order.variance_items > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
             {order.variance_items}
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">Nilai Selisih</p>
-          <p className={`text-xl font-bold ${order.total_variance_value !== 0 ? 'text-red-600' : 'text-green-600'}`}>
+          <p className={`text-xl font-bold ${order.total_variance_value !== 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
             {formatCurrency(order.total_variance_value)}
           </p>
         </div>
@@ -375,14 +375,14 @@ export default function StockOpnameDetail() {
         {order.status === 'completed' && !order.approved_by_name && pendingWorkflowId && (
           <button
             onClick={() => { setApprovalError(null); setApprovalNotes(''); setShowApprovalModal(true); }}
-            className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200"
+            className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300"
           >
             <CheckCircleIcon className="h-5 w-5" />
             Menunggu Approval ({pendingWorkflowStep === 'review' ? 'Review' : 'Approval'}) — Proses di Sini
           </button>
         )}
         {order.approved_by_name && (
-          <div className="text-sm text-green-600">
+          <div className="text-sm text-green-600 dark:text-green-400">
             ✓ Diapprove oleh {order.approved_by_name} pada {order.approved_at ? formatDate(order.approved_at) : '-'}
           </div>
         )}
@@ -429,7 +429,7 @@ export default function StockOpnameDetail() {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {items.map((item) => (
-                <tr key={item.id} className={`hover:bg-gray-50 ${item.variance_qty && item.variance_qty !== 0 ? 'bg-red-50' : ''}`}>
+                <tr key={item.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${item.variance_qty && item.variance_qty !== 0 ? 'bg-red-50 dark:bg-red-900/20' : ''}`}>
                   <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{item.item_code}</td>
                   <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">{item.item_name}</td>
                   <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{item.location_code}</td>
@@ -439,7 +439,7 @@ export default function StockOpnameDetail() {
                     {item.counted_qty !== null ? `${item.counted_qty} ${item.uom}` : '-'}
                   </td>
                   <td className={`px-4 py-3 text-sm text-right font-medium ${
-                    item.variance_qty && item.variance_qty !== 0 ? 'text-red-600' : 'text-green-600'
+                    item.variance_qty && item.variance_qty !== 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
                   }`}>
                     {item.variance_qty !== null ? (
                       <>
@@ -449,7 +449,7 @@ export default function StockOpnameDetail() {
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                      item.status === 'counted' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                      item.status === 'counted' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
                     }`}>
                       {item.status === 'counted' ? 'Dihitung' : 'Pending'}
                     </span>
@@ -484,9 +484,9 @@ export default function StockOpnameDetail() {
                 <p className="text-sm text-gray-600 dark:text-gray-300">Lokasi: {countingItem.location_code}</p>
               </div>
 
-              <div className="bg-blue-50 p-3 rounded-lg">
-                <p className="text-sm text-blue-600">Qty di Sistem</p>
-                <p className="text-xl font-bold text-blue-800">{countingItem.system_qty} {countingItem.uom}</p>
+              <div className="bg-blue-50 p-3 rounded-lg dark:bg-blue-900/20">
+                <p className="text-sm text-blue-600 dark:text-blue-400">Qty di Sistem</p>
+                <p className="text-xl font-bold text-blue-800 dark:text-blue-300">{countingItem.system_qty} {countingItem.uom}</p>
               </div>
 
               <div>
@@ -503,11 +503,11 @@ export default function StockOpnameDetail() {
               </div>
 
               {countedQty && parseFloat(countedQty) !== countingItem.system_qty && (
-                <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg flex items-start gap-2">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg flex items-start gap-2 dark:bg-yellow-900/20 dark:border-yellow-800">
+                  <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5 dark:text-yellow-400" />
                   <div>
-                    <p className="text-sm font-medium text-yellow-800">Selisih Terdeteksi</p>
-                    <p className="text-sm text-yellow-700">
+                    <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300">Selisih Terdeteksi</p>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-300">
                       {parseFloat(countedQty) - countingItem.system_qty > 0 ? '+' : ''}
                       {(parseFloat(countedQty) - countingItem.system_qty).toFixed(2)} {countingItem.uom}
                     </p>
@@ -559,7 +559,7 @@ export default function StockOpnameDetail() {
               total nilai selisih Rp {order.total_variance_value?.toLocaleString('id-ID') || 0}
             </p>
             {approvalError && (
-              <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded">{approvalError}</div>
+              <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded dark:text-red-400">{approvalError}</div>
             )}
             <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Catatan</label>
             <textarea

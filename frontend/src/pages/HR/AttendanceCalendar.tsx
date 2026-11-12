@@ -202,7 +202,7 @@ const AttendanceCalendar: React.FC = () => {
 
         {loading ? (
           <div className="flex items-center justify-center h-96">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
           </div>
         ) : (
           <>
@@ -224,12 +224,12 @@ const AttendanceCalendar: React.FC = () => {
                 <div
                   key={index}
                   onClick={() => handleDayClick(day)}
-                  className={`min-h-24 p-2 border-b border-r cursor-pointer hover:bg-gray-50 ${
-                    !day.isCurrentMonth ? 'bg-gray-50 text-gray-400' : ''
-                  } ${day.isToday ? 'bg-blue-50' : ''}`}
+                  className={`min-h-24 p-2 border-b border-r cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                    !day.isCurrentMonth ? 'bg-gray-50 text-gray-400 dark:bg-gray-900' : ''
+                  } ${day.isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
                 >
                   <div className={`text-sm font-medium mb-1 ${
-                    day.isToday ? 'text-blue-600' : ''
+                    day.isToday ? 'text-blue-600 dark:text-blue-400' : ''
                   }`}>
                     {day.date.getDate()}
                   </div>
@@ -242,10 +242,10 @@ const AttendanceCalendar: React.FC = () => {
                           key={i}
                           className={`text-xs px-1 py-0.5 rounded truncate ${
                             att.status === 'present' 
-                              ? 'bg-green-100 text-green-700'
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
                               : att.status === 'late'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : 'bg-red-100 text-red-700'
+                              ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                           }`}
                         >
                           {extractName(att)}
@@ -364,10 +364,10 @@ const AttendanceCalendar: React.FC = () => {
                           </div>
                           <span className={`px-2 py-1 rounded text-xs font-medium ${
                             att.status === 'present' 
-                              ? 'bg-green-100 text-green-700'
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
                               : att.status === 'late'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : 'bg-red-100 text-red-700'
+                              ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                           }`}>
                             {att.status === 'present' ? 'Hadir' : att.status === 'late' ? 'Terlambat' : att.status}
                           </span>

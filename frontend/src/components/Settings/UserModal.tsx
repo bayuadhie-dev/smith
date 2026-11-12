@@ -196,11 +196,11 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
                     value={formData.username}
                     onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
                     className={`mt-1 block w-full border rounded-md px-3 py-2 ${
-                      errors.username ? 'border-red-300' : 'border-gray-300'
+                      errors.username ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
                     } focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                     placeholder="Enter username"
                   />
-                  {errors.username && <p className="mt-1 text-sm text-red-600">{errors.username}</p>}
+                  {errors.username && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.username}</p>}
                 </div>
 
                 {/* Email */}
@@ -211,11 +211,11 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                     className={`mt-1 block w-full border rounded-md px-3 py-2 ${
-                      errors.email ? 'border-red-300' : 'border-gray-300'
+                      errors.email ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
                     } focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                     placeholder="Enter email"
                   />
-                  {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+                  {errors.email && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>}
                 </div>
 
                   {/* Full Name */}
@@ -226,11 +226,11 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
                       value={formData.full_name}
                       onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
                       className={`mt-1 block w-full border rounded-md px-3 py-2 ${
-                        errors.full_name ? 'border-red-300' : 'border-gray-300'
+                        errors.full_name ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
                       } focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                       placeholder="Enter full name"
                     />
-                    {errors.full_name && <p className="mt-1 text-sm text-red-600">{errors.full_name}</p>}
+                    {errors.full_name && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.full_name}</p>}
                   </div>
 
                   {/* Phone */}
@@ -284,11 +284,11 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
                     value={formData.password}
                     onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                     className={`mt-1 block w-full border rounded-md px-3 py-2 ${
-                      errors.password ? 'border-red-300' : 'border-gray-300'
+                      errors.password ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
                     } focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                     placeholder="Enter password"
                   />
-                  {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+                  {errors.password && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password}</p>}
                 </div>
 
                   {/* Confirm Password */}
@@ -300,11 +300,11 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
                         value={formData.confirmPassword}
                         onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                         className={`mt-1 block w-full border rounded-md px-3 py-2 ${
-                          errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                          errors.confirmPassword ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
                         } focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                         placeholder="Confirm password"
                       />
-                      {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>}
+                      {errors.confirmPassword && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.confirmPassword}</p>}
                     </div>
                   )}
 
@@ -316,7 +316,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
                         type="checkbox"
                         checked={formData.is_active}
                         onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.checked }))}
-                        className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                        className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 h-4 w-4 dark:text-blue-400"
                       />
                       <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">Active User</span>
                     </label>
@@ -325,7 +325,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
                         type="checkbox"
                         checked={formData.is_admin}
                         onChange={(e) => setFormData(prev => ({ ...prev, is_admin: e.target.checked }))}
-                        className="rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500 h-4 w-4"
+                        className="rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500 h-4 w-4 dark:text-red-400"
                       />
                       <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">System Administrator</span>
                     </label>
@@ -342,7 +342,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
                               type="checkbox"
                               checked={formData.selectedRoles.includes(role.id)}
                               onChange={() => handleRoleToggle(role.id)}
-                              className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 mt-0.5 h-4 w-4"
+                              className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 mt-0.5 h-4 w-4 dark:text-blue-400"
                             />
                             <div className="ml-3">
                               <span className="text-sm font-medium text-gray-900 dark:text-white">{role.name}</span>
@@ -364,7 +364,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
               </div>
 
               {errors.submit && (
-                <div className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 p-3 rounded-md">
+                <div className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 p-3 rounded-md dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">
                   {errors.submit}
                 </div>
               )}

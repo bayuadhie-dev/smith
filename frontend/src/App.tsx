@@ -1193,11 +1193,11 @@ function App() {
               <Route path="/app/debug/roster" element={
                 <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                   <div className="p-6">
-                    <h1 className="text-2xl font-bold text-purple-600">🔧 DEBUG ROSTER (Bypass Auth)</h1>
+                    <h1 className="text-2xl font-bold text-purple-600 dark:text-purple-400">🔧 DEBUG ROSTER (Bypass Auth)</h1>
                     <p className="mt-2">This route completely bypasses authentication.</p>
-                    <div className="mt-4 p-4 bg-purple-100 border border-purple-400 rounded">
-                      <p className="text-purple-800">Authentication Status: {isAuthenticated ? '✅ Authenticated' : '❌ Not Authenticated'}</p>
-                      <p className="text-purple-800">Token: {localStorage.getItem('token') ? '✅ Present' : '❌ Missing'}</p>
+                    <div className="mt-4 p-4 bg-purple-100 border border-purple-400 rounded dark:bg-purple-900/30">
+                      <p className="text-purple-800 dark:text-purple-300">Authentication Status: {isAuthenticated ? '✅ Authenticated' : '❌ Not Authenticated'}</p>
+                      <p className="text-purple-800 dark:text-purple-300">Token: {localStorage.getItem('token') ? '✅ Present' : '❌ Missing'}</p>
                       <button
                         onClick={() => window.location.href = '/app/hr/roster/integrated'}
                         className="mt-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"

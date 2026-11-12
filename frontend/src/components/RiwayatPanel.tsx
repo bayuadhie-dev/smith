@@ -28,17 +28,17 @@ export default function RiwayatPanel({ table, id }: { table: string; id: number 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
       <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Riwayat ({rows.length})</h3>
-      {rows.length === 0 && <p className="text-sm text-gray-500">Belum ada perubahan setelah dibuat.</p>}
+      {rows.length === 0 && <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada perubahan setelah dibuat.</p>}
       <ul className="divide-y divide-gray-100 dark:divide-gray-700">
         {rows.map((e) => (
           <li key={e.id} className="py-2 text-sm">
             <div className="flex items-center justify-between text-gray-600 dark:text-gray-300">
               <span className="font-medium">{e.user}</span>
-              <span className="text-xs text-gray-500">{e.timestamp ? new Date(e.timestamp).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) : ''}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{e.timestamp ? new Date(e.timestamp).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) : ''}</span>
             </div>
             <ul className="mt-1 space-y-0.5 text-xs text-gray-600 dark:text-gray-400">
               {e.changes.map((c, i) => (
-                <li key={i}><span className="font-medium">{label(c.field)}</span>: <span className="line-through text-red-600">{val(c.old)}</span> → <span className="text-green-700">{val(c.new)}</span></li>
+                <li key={i}><span className="font-medium">{label(c.field)}</span>: <span className="line-through text-red-600 dark:text-red-400">{val(c.old)}</span> → <span className="text-green-700 dark:text-green-300">{val(c.new)}</span></li>
               ))}
             </ul>
           </li>

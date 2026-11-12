@@ -374,14 +374,14 @@ export default function GRNForm() {
         <Link to="/app/purchasing/grn" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><ArrowLeftIcon className="h-5 w-5" /></Link>
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{isEdit ? `Koreksi GRN ${grnNumber}` : 'Penerimaan Barang (GRN)'}</h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {isEdit ? 'Data pengiriman, lot, tanggal, dan catatan bisa diubah (juga setelah disetujui). Jumlah dan gudang terkunci setelah disetujui atau difaktur.' : 'Pilih pemasok, lalu ambil dari PO atau tambahkan barang manual. Stok bertambah saat disimpan; jasa tidak perlu gudang.'}
           </p>
         </div>
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">
+        <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
           <ExclamationTriangleIcon className="h-5 w-5 flex-shrink-0" />
           <span>{error}</span>
         </div>
@@ -397,7 +397,7 @@ export default function GRNForm() {
             ) : (
               <input className="input-field" value={manualNumber} onChange={(e) => setManualNumber(e.target.value)} placeholder={nextNumber ? `${nextNumber} (otomatis)` : 'Otomatis'} />
             )}
-            {!isEdit && <p className="mt-1 text-xs text-gray-500">Kosongkan untuk nomor otomatis (BPB-tahun-bulan-urut), atau isi nomor sendiri.</p>}
+            {!isEdit && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Kosongkan untuk nomor otomatis (BPB-tahun-bulan-urut), atau isi nomor sendiri.</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Pemasok *</label>
@@ -426,7 +426,7 @@ export default function GRNForm() {
                 className="w-full"
               />
             )}
-            {!isEdit && <p className="mt-1 text-xs text-gray-500">{loadError || 'Kosongkan bila barang datang tanpa PO, lalu tambahkan barang di bawah.'}</p>}
+            {!isEdit && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{loadError || 'Kosongkan bila barang datang tanpa PO, lalu tambahkan barang di bawah.'}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Tanggal Terima *</label>
@@ -460,7 +460,7 @@ export default function GRNForm() {
               <h2 className="text-lg font-medium text-gray-900 dark:text-white">Barang Diterima</h2>
               {!isEdit && (
                 <div className="w-full sm:w-80">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Terapkan lokasi gudang ke semua baris barang</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1 dark:text-gray-400">Terapkan lokasi gudang ke semua baris barang</label>
                   <SearchableSelect options={locationOptions} value={bulkLocation} onChange={(v) => applyBulk(v ? Number(v) : null)} placeholder="Pilih lokasi" className="w-full" />
                 </div>
               )}
@@ -468,7 +468,7 @@ export default function GRNForm() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700">
+                  <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
                     <th className="pb-2 pr-3">Nama</th>
                     {!isEdit && <th className="pb-2 pr-3 text-right">Dipesan</th>}
                     {!isEdit && <th className="pb-2 pr-3 text-right">Sudah Diterima</th>}
@@ -500,7 +500,7 @@ export default function GRNForm() {
                                   : (r.dispFactor && r.dispFactor > 1
                                     ? <NumberInput className="input-field text-right" value={String(Math.round((num(r.qty) / r.dispFactor) * 1000) / 1000) as any} onChange={(e: any) => update(i, { qty: String(num(e.target.value) * (r.dispFactor || 1)) })} />
                                     : <NumberInput className="input-field text-right" value={r.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />)}
-                                <p className="mt-1 text-right text-xs text-gray-500">{r.dispFactor && r.dispFactor > 1 ? `${r.dispUom} (= ${num(r.qty).toLocaleString('id-ID')} ${r.uom})` : r.uom}</p>
+                                <p className="mt-1 text-right text-xs text-gray-500 dark:text-gray-400">{r.dispFactor && r.dispFactor > 1 ? `${r.dispUom} (= ${num(r.qty).toLocaleString('id-ID')} ${r.uom})` : r.uom}</p>
                               </>
                             ) : (
                               <>
@@ -512,8 +512,8 @@ export default function GRNForm() {
                                     </select>
                                   )}
                                 </div>
-                                {factorOf(r) !== 1 && <p className="mt-1 text-right text-xs text-emerald-700">= {(num(r.qty) * factorOf(r)).toLocaleString('id-ID')} {r.uom}</p>}
-                                {over && <p className="mt-1 text-xs text-amber-600">Melebihi sisa PO ({outstanding.toLocaleString('id-ID')})</p>}
+                                {factorOf(r) !== 1 && <p className="mt-1 text-right text-xs text-emerald-700 dark:text-emerald-300">= {(num(r.qty) * factorOf(r)).toLocaleString('id-ID')} {r.uom}</p>}
+                                {over && <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">Melebihi sisa PO ({outstanding.toLocaleString('id-ID')})</p>}
                               </>
                             )}
                           </td>
@@ -524,10 +524,10 @@ export default function GRNForm() {
                             {isEdit ? (
                               <div>
                                 <div className="text-sm">{locationOptions.find((l) => l.id === r.location_id)?.name || '-'}</div>
-                                {r.location_id && <a href={`/app/warehouse/transfers/new?grn=${id}`} target="_blank" rel="noreferrer" className="text-xs text-emerald-700 hover:underline">Pindahkan ke gudang lain</a>}
+                                {r.location_id && <a href={`/app/warehouse/transfers/new?grn=${id}`} target="_blank" rel="noreferrer" className="text-xs text-emerald-700 hover:underline dark:text-emerald-300">Pindahkan ke gudang lain</a>}
                               </div>
                             ) : r.is_service ? (
-                              <div className="text-xs text-gray-500">Jasa, tidak masuk gudang</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">Jasa, tidak masuk gudang</div>
                             ) : (
                               <SearchableSelect options={locationOptions} value={r.location_id} onChange={(v) => update(i, { location_id: v ? Number(v) : null })} placeholder="Pilih lokasi" className="w-full" />
                             )}
@@ -543,8 +543,8 @@ export default function GRNForm() {
                               )}
                           </td>
                           <td className="py-2 whitespace-nowrap">
-                            {!isEdit && r.po_item_id === null && <button type="button" onClick={() => removeRow(i)} className="p-1 text-xs text-red-600 hover:underline" title="Hapus baris">Hapus</button>}
-                            <button type="button" onClick={() => update(i, { open: !r.open })} className="p-1 text-gray-500 hover:text-gray-800" title="Lot, tanggal, catatan">
+                            {!isEdit && r.po_item_id === null && <button type="button" onClick={() => removeRow(i)} className="p-1 text-xs text-red-600 hover:underline dark:text-red-400" title="Hapus baris">Hapus</button>}
+                            <button type="button" onClick={() => update(i, { open: !r.open })} className="p-1 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white" title="Lot, tanggal, catatan">
                               {r.open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
                             </button>
                           </td>
@@ -553,9 +553,9 @@ export default function GRNForm() {
                           <tr key={`${r.key}-d`} className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
                             <td colSpan={8} className="p-3">
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <div><label className="block text-xs text-gray-500 mb-1">No. Lot</label><input data-col="lot" className="input-field" value={r.lot_number} onChange={(e) => update(i, { lot_number: e.target.value })} /></div>
-                                <div><label className="block text-xs text-gray-500 mb-1">Tanggal Produksi</label><input type="date" className="input-field" value={r.production_date} onChange={(e) => update(i, { production_date: e.target.value })} /></div>
-                                <div><label className="block text-xs text-gray-500 mb-1">Tanggal Kadaluarsa{r.requireExpiry ? ' *' : ''}</label><input type="date" className="input-field" value={r.expiry_date} onChange={(e) => update(i, { expiry_date: e.target.value })} /></div>
+                                <div><label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">No. Lot</label><input data-col="lot" className="input-field" value={r.lot_number} onChange={(e) => update(i, { lot_number: e.target.value })} /></div>
+                                <div><label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Tanggal Produksi</label><input type="date" className="input-field" value={r.production_date} onChange={(e) => update(i, { production_date: e.target.value })} /></div>
+                                <div><label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Tanggal Kadaluarsa{r.requireExpiry ? ' *' : ''}</label><input type="date" className="input-field" value={r.expiry_date} onChange={(e) => update(i, { expiry_date: e.target.value })} /></div>
                               </div>
                             </td>
                           </tr>
@@ -568,12 +568,12 @@ export default function GRNForm() {
             </div>
             {!isEdit && (
               <div className="w-full sm:w-96">
-                <label className="block text-xs font-medium text-gray-500 mb-1">Tambah barang manual (tanpa PO)</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1 dark:text-gray-400">Tambah barang manual (tanpa PO)</label>
                 <SearchableSelect options={materialOptions} value={null} onChange={(v) => addManualRow(v ? Number(v) : null)} placeholder="Cari kode atau nama barang" className="w-full" />
               </div>
             )}
             {!isEdit && (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Jumlah terisi otomatis sesuai sisa PO. Kosongkan (0) untuk baris yang belum datang. Barang yang ternyata cacat ditolak lewat Inspeksi setelah GRN disimpan.
               </p>
             )}
@@ -598,18 +598,18 @@ export default function GRNForm() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setBatchEdit(null)}>
             <div className="w-full max-w-lg rounded-lg bg-white p-5 shadow-xl dark:bg-gray-800" onClick={(e) => e.stopPropagation()}>
               <h3 className="text-base font-semibold text-gray-900 dark:text-white">Nomor batch</h3>
-              <p className="mb-3 text-xs text-gray-500">{r.name}. Satu baris per batch. Kalau lebih dari satu, isi jumlah tiap batch; totalnya harus {num(r.qty).toLocaleString('id-ID')} {r.uom}.</p>
+              <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">{r.name}. Satu baris per batch. Kalau lebih dari satu, isi jumlah tiap batch; totalnya harus {num(r.qty).toLocaleString('id-ID')} {r.uom}.</p>
               <div className="max-h-80 space-y-2 overflow-y-auto">
                 {batchEdit.list.map((b, k) => (
                   <div key={k} className="flex items-center gap-2">
                     <input autoFocus={k === batchEdit.list.length - 1} className="input-field flex-1" value={b.batch} placeholder="No. batch" onChange={(e) => setItem(k, { batch: e.target.value })} />
                     {multi && <NumberInput className="input-field w-32 text-right" value={b.qty as any} onChange={(e: any) => setItem(k, { qty: e.target.value })} />}
-                    {multi && <button type="button" className="text-xs text-red-600 hover:underline" onClick={() => setBatchEdit({ ...batchEdit, list: batchEdit.list.filter((_, idx) => idx !== k) })}>Hapus</button>}
+                    {multi && <button type="button" className="text-xs text-red-600 hover:underline dark:text-red-400" onClick={() => setBatchEdit({ ...batchEdit, list: batchEdit.list.filter((_, idx) => idx !== k) })}>Hapus</button>}
                   </div>
                 ))}
               </div>
-              <button type="button" className="mt-3 text-sm text-blue-600 hover:underline" onClick={() => setBatchEdit({ ...batchEdit, list: [...batchEdit.list, { id: null, batch: '', qty: '0' }] })}>+ Tambah batch</button>
-              {multi && <p className={`mt-2 text-xs ${Math.abs(sum - (editMode ? num(r.qty) / (r.dispFactor && r.dispFactor > 1 ? r.dispFactor : 1) : num(r.qty))) > 0.01 ? 'text-red-600' : 'text-gray-500'}`}>Total batch: {sum.toLocaleString('id-ID')} dari {(editMode ? num(r.qty) / (r.dispFactor && r.dispFactor > 1 ? r.dispFactor : 1) : num(r.qty)).toLocaleString('id-ID')}</p>}
+              <button type="button" className="mt-3 text-sm text-blue-600 hover:underline dark:text-blue-400" onClick={() => setBatchEdit({ ...batchEdit, list: [...batchEdit.list, { id: null, batch: '', qty: '0' }] })}>+ Tambah batch</button>
+              {multi && <p className={`mt-2 text-xs ${Math.abs(sum - (editMode ? num(r.qty) / (r.dispFactor && r.dispFactor > 1 ? r.dispFactor : 1) : num(r.qty))) > 0.01 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>Total batch: {sum.toLocaleString('id-ID')} dari {(editMode ? num(r.qty) / (r.dispFactor && r.dispFactor > 1 ? r.dispFactor : 1) : num(r.qty)).toLocaleString('id-ID')}</p>}
               <div className="mt-4 flex justify-end gap-2">
                 <button type="button" className="btn-secondary" onClick={() => setBatchEdit(null)}>Batal</button>
                 <button type="button" className="btn-primary" onClick={saveBatch}>Simpan batch</button>

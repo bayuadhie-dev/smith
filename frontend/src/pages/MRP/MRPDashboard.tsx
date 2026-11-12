@@ -321,11 +321,11 @@ const MRPDashboard: React.FC = () => {
 
   const getImpactColor = (level: string) => {
     switch (level) {
-      case 'critical': return 'text-red-600 bg-red-100';
-      case 'high': return 'text-orange-600 bg-orange-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'low': return 'text-green-600 bg-green-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'critical': return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
+      case 'high': return 'text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400';
+      case 'medium': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case 'low': return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
+      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
@@ -355,7 +355,7 @@ const MRPDashboard: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-amber-300 dark:border-amber-700 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-amber-50 dark:bg-amber-900/20">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <ExclamationTriangleIcon className="h-6 w-6 text-amber-600" />
+              <ExclamationTriangleIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
               Time-Phased Check — SO #{timePhaseSoId}
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
@@ -403,7 +403,7 @@ const MRPDashboard: React.FC = () => {
                           <td className="py-2 pr-4 text-right">{m.total_required.toLocaleString()} {m.uom}</td>
                           <td className="py-2 pr-4 text-right">{m.available_stock.toLocaleString()}</td>
                           <td className="py-2 pr-4 text-right">{m.incoming_po_qty.toLocaleString()}</td>
-                          <td className={`py-2 pr-4 text-right font-semibold ${m.shortage_qty > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                          <td className={`py-2 pr-4 text-right font-semibold ${m.shortage_qty > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                             {m.shortage_qty > 0 ? m.shortage_qty.toLocaleString() : 'Cukup'}
                             {m.shortage_qty > 0 && m.shortage_source && (
                               <span
@@ -466,7 +466,7 @@ const MRPDashboard: React.FC = () => {
                                           {isForecast ? (
                                             <span>{c.forecast_number || '-'}</span>
                                           ) : (
-                                            <Link to={`/app/sales/orders/${c.sales_order_id}/edit`} className="text-blue-600 hover:underline">{c.order_number}</Link>
+                                            <Link to={`/app/sales/orders/${c.sales_order_id}/edit`} className="text-blue-600 hover:underline dark:text-blue-400">{c.order_number}</Link>
                                           )}
                                         </td>
                                         <td className="py-1 pr-4">{c.product_name || '-'}</td>
@@ -590,7 +590,7 @@ const MRPDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Capacity Utilization - Custom Bar Chart */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Resource Capacity Utilization</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 dark:text-white">Resource Capacity Utilization</h3>
           {capacityData.length > 0 ? (
             <div className="space-y-4">
               {capacityData.map((item: any, index: number) => {
@@ -604,9 +604,9 @@ const MRPDashboard: React.FC = () => {
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{resource}</span>
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-600">{utilization.toFixed(1)}%</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">{utilization.toFixed(1)}%</span>
                         {isBottleneck && (
-                          <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
+                          <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full dark:bg-red-900/30 dark:text-red-300">
                           </span>
                         )}
                       </div>
@@ -645,8 +645,8 @@ const MRPDashboard: React.FC = () => {
         {/* Material Shortages */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Material Shortages</h3>
-            <Link to="/app/mrp/material-requirements" className="text-sm text-blue-600 hover:text-blue-800">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Material Shortages</h3>
+            <Link to="/app/mrp/material-requirements" className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">
               View All →
             </Link>
           </div>
@@ -654,8 +654,8 @@ const MRPDashboard: React.FC = () => {
             {materialShortages.map((shortage) => (
               <div key={shortage.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div className="flex-1">
-                  <p className="font-medium text-gray-900">{shortage.material_name}</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="font-medium text-gray-900 dark:text-white">{shortage.material_name}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
                     Need: {formatNumber(shortage.required_qty ?? 0)} | Available: {formatNumber(shortage.available_qty ?? 0)}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Expected: {shortage.expected_delivery}</p>
@@ -672,7 +672,7 @@ const MRPDashboard: React.FC = () => {
 
         {/* Demand Forecast */}
         <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Demand Forecast vs Current</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 dark:text-white">Demand Forecast vs Current</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 dark:bg-gray-900">
@@ -687,12 +687,12 @@ const MRPDashboard: React.FC = () => {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {demandForecast.map((item, index) => (
                   <tr key={index}>
-                    <td className="px-4 py-2 font-medium text-gray-900">{item.product_name}</td>
-                    <td className="px-4 py-2 text-gray-900">{formatNumber(item.current_demand ?? 0)}</td>
-                    <td className="px-4 py-2 text-gray-900">{formatNumber(item.forecasted_demand ?? 0)}</td>
+                    <td className="px-4 py-2 font-medium text-gray-900 dark:text-white">{item.product_name}</td>
+                    <td className="px-4 py-2 text-gray-900 dark:text-white">{formatNumber(item.current_demand ?? 0)}</td>
+                    <td className="px-4 py-2 text-gray-900 dark:text-white">{formatNumber(item.forecasted_demand ?? 0)}</td>
                     <td className="px-4 py-2">
                       <span className={`font-medium ${
-                        (item.variance ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                        (item.variance ?? 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                       }`}>
                         {(item.variance ?? 0) >= 0 ? '+' : ''}{formatPercent(item.variance ?? 0)}
                       </span>
@@ -713,7 +713,7 @@ const MRPDashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 dark:text-white">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link
             to="/app/mrp/demand-planning"
@@ -721,7 +721,7 @@ const MRPDashboard: React.FC = () => {
           >
             <div className="text-center">
               <ChartBarIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600">Demand Planning</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Demand Planning</span>
             </div>
           </Link>
           
@@ -731,7 +731,7 @@ const MRPDashboard: React.FC = () => {
           >
             <div className="text-center">
               <CogIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600">Capacity Planning</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Capacity Planning</span>
             </div>
           </Link>
           
@@ -741,7 +741,7 @@ const MRPDashboard: React.FC = () => {
           >
             <div className="text-center">
               <CubeIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600">Material Requirements</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Material Requirements</span>
             </div>
           </Link>
           
@@ -751,7 +751,7 @@ const MRPDashboard: React.FC = () => {
           >
             <div className="text-center">
               <TruckIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600">Supplier Integration</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Supplier Integration</span>
             </div>
           </Link>
         </div>

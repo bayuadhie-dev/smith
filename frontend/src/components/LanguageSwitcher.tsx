@@ -45,8 +45,8 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
             className={`
               px-2 py-1 rounded-md text-sm font-medium transition-colors duration-200
               ${language === lang.code
-                ? 'bg-primary-100 text-primary-700 border border-primary-200'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                ? 'bg-primary-100 text-primary-700 border border-primary-200 dark:bg-primary-900/30 dark:text-primary-300 dark:border-primary-800'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 dark:hover:text-white'
               }
             `}
             title={lang.name}

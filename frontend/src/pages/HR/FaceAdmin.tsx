@@ -64,8 +64,8 @@ const FaceAdmin: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <Camera className="w-6 h-6 text-blue-600" />
+          <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+            <Camera className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Kelola Data Wajah</h1>
@@ -75,7 +75,7 @@ const FaceAdmin: React.FC = () => {
         <button
           onClick={fetchRegisteredFaces}
           disabled={loading}
-          className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:bg-gray-700 flex items-center gap-2"
+          className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:bg-gray-700 flex items-center gap-2 dark:hover:bg-gray-600"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           Refresh
@@ -85,8 +85,8 @@ const FaceAdmin: React.FC = () => {
       {/* Stats */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-blue-100 rounded-full">
-            <Users className="w-6 h-6 text-blue-600" />
+          <div className="p-3 bg-blue-100 rounded-full dark:bg-blue-900/30">
+            <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
             <p className="text-2xl font-bold text-gray-900 dark:text-white">{registeredFaces.length}</p>
@@ -97,18 +97,18 @@ const FaceAdmin: React.FC = () => {
 
       {/* Messages */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-          <p className="text-red-800">{error}</p>
-          <button onClick={() => setError(null)} className="ml-auto text-red-600 hover:text-red-800">×</button>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3 dark:bg-red-900/20 dark:border-red-800">
+          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 dark:text-red-400" />
+          <p className="text-red-800 dark:text-red-300">{error}</p>
+          <button onClick={() => setError(null)} className="ml-auto text-red-600 hover:text-red-800 dark:text-red-400">×</button>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-          <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-          <p className="text-green-800">{success}</p>
-          <button onClick={() => setSuccess(null)} className="ml-auto text-green-600 hover:text-green-800">×</button>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3 dark:bg-green-900/20 dark:border-green-800">
+          <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 dark:text-green-400" />
+          <p className="text-green-800 dark:text-green-300">{success}</p>
+          <button onClick={() => setSuccess(null)} className="ml-auto text-green-600 hover:text-green-800 dark:text-green-400">×</button>
         </div>
       )}
 
@@ -154,7 +154,7 @@ const FaceAdmin: React.FC = () => {
                 <button
                   onClick={() => handleDeleteFace(face.id, face.name)}
                   disabled={deletingId === face.id}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50"
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50 dark:text-red-400"
                   title="Hapus"
                 >
                   {deletingId === face.id ? (
@@ -170,10 +170,10 @@ const FaceAdmin: React.FC = () => {
       </div>
 
       {/* Info */}
-      <div className="bg-blue-50 rounded-xl p-4">
-        <h4 className="font-medium text-blue-900 mb-2">Informasi:</h4>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Staff mendaftar wajah di halaman <code className="bg-blue-100 px-1 rounded">/public/face-registration</code></li>
+      <div className="bg-blue-50 rounded-xl p-4 dark:bg-blue-900/20">
+        <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">Informasi:</h4>
+        <ul className="text-sm text-blue-700 space-y-1 dark:text-blue-300">
+          <li>• Staff mendaftar wajah di halaman <code className="bg-blue-100 px-1 rounded dark:bg-blue-900/30">/public/face-registration</code></li>
           <li>• Untuk update foto: hapus data lama, staff daftar ulang dengan foto baru</li>
           <li>• Data yang dihapus tidak dapat dikembalikan</li>
         </ul>

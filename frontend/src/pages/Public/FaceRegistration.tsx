@@ -184,11 +184,11 @@ const FaceRegistration: React.FC = () => {
 
         {/* Success Message */}
         {success && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start gap-3 dark:bg-green-900/20 dark:border-green-800">
+            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5 dark:text-green-400" />
             <div>
-              <p className="text-green-800 font-medium">{success}</p>
-              <p className="text-green-600 text-sm mt-1">
+              <p className="text-green-800 font-medium dark:text-green-300">{success}</p>
+              <p className="text-green-600 text-sm mt-1 dark:text-green-400">
                 Anda sekarang dapat menggunakan fitur absensi dengan pengenalan wajah.
               </p>
             </div>
@@ -197,9 +197,9 @@ const FaceRegistration: React.FC = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-red-800">{error}</p>
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 dark:bg-red-900/20 dark:border-red-800">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5 dark:text-red-400" />
+            <p className="text-red-800 dark:text-red-300">{error}</p>
           </div>
         )}
 
@@ -323,9 +323,9 @@ const FaceRegistration: React.FC = () => {
           </div>
 
           {/* Tips */}
-          <div className="bg-blue-50 rounded-xl p-4">
-            <h4 className="font-medium text-blue-900 mb-2">Tips untuk foto yang baik:</h4>
-            <ul className="text-sm text-blue-700 space-y-1">
+          <div className="bg-blue-50 rounded-xl p-4 dark:bg-blue-900/20">
+            <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">Tips untuk foto yang baik:</h4>
+            <ul className="text-sm text-blue-700 space-y-1 dark:text-blue-300">
               <li>• Pastikan wajah terlihat jelas dan tidak terhalang</li>
               <li>• Hadap langsung ke kamera</li>
               <li>• Pastikan pencahayaan cukup</li>

@@ -226,7 +226,7 @@ export default function RemainingStock() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ArchiveBoxIcon className="h-7 w-7 text-orange-600" />
+            <ArchiveBoxIcon className="h-7 w-7 text-orange-600 dark:text-orange-400" />
             Sisa Order
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Stok produk sisa produksi lama</p>
@@ -251,15 +251,15 @@ export default function RemainingStock() {
       </div>
 
       {/* Summary Card */}
-      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 dark:bg-orange-900/20 dark:border-orange-800">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-orange-600">Total Item</p>
-            <p className="text-2xl font-bold text-orange-800">{filteredStocks.length}</p>
+            <p className="text-sm text-orange-600 dark:text-orange-400">Total Item</p>
+            <p className="text-2xl font-bold text-orange-800 dark:text-orange-300">{filteredStocks.length}</p>
           </div>
           <div>
-            <p className="text-sm text-orange-600">Total Karton</p>
-            <p className="text-2xl font-bold text-orange-800">{totalKarton.toLocaleString('id-ID')}</p>
+            <p className="text-sm text-orange-600 dark:text-orange-400">Total Karton</p>
+            <p className="text-2xl font-bold text-orange-800 dark:text-orange-300">{totalKarton.toLocaleString('id-ID')}</p>
           </div>
         </div>
       </div>
@@ -336,14 +336,14 @@ export default function RemainingStock() {
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => handleEdit(stock)}
-                        className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                        className="p-1 text-blue-600 hover:bg-blue-50 rounded dark:text-blue-400"
                         title="Edit"
                       >
                         <PencilIcon className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => handleDelete(stock.id)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        className="p-1 text-red-600 hover:bg-red-50 rounded dark:text-red-400"
                         title="Hapus"
                       >
                         <TrashIcon className="h-5 w-5" />

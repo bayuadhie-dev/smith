@@ -48,9 +48,9 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
         <div className="flex items-center space-x-3">
-          <ShieldCheckIcon className="h-8 w-8 text-blue-600" />
+          <ShieldCheckIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">System Permissions</h2>
             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
@@ -75,7 +75,7 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
               <span className="text-sm text-gray-600 dark:text-gray-300">Active</span>
               <CheckCircleIcon className="h-5 w-5 text-green-500" />
             </div>
-            <div className="text-2xl font-bold text-green-600 mt-2">
+            <div className="text-2xl font-bold text-green-600 mt-2 dark:text-green-400">
               {permissions.filter(p => p.is_active).length}
             </div>
           </div>
@@ -85,7 +85,7 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
               <span className="text-sm text-gray-600 dark:text-gray-300">Modules</span>
               <LockClosedIcon className="h-5 w-5 text-indigo-500" />
             </div>
-            <div className="text-2xl font-bold text-indigo-600 mt-2">
+            <div className="text-2xl font-bold text-indigo-600 mt-2 dark:text-indigo-400">
               {Object.keys(groupedPermissions).length}
             </div>
           </div>
@@ -96,7 +96,7 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
       {Object.entries(groupedPermissions).map(([module, modulePermissions]) => (
         <div key={module} className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
           {/* Module Header */}
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200 dark:border-gray-700 dark:from-gray-900 dark:to-gray-800">
             <div className="flex items-center space-x-3">
               <span className="text-2xl">{getModuleIcon(module)}</span>
               <div>
@@ -116,15 +116,15 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
                   key={permission.id}
                   className={`border rounded-lg p-4 transition-all ${
                     permission.is_active
-                      ? 'border-green-200 bg-green-50 hover:shadow-md'
-                      : 'border-gray-200 bg-gray-50'
+                      ? 'border-green-200 bg-green-50 hover:shadow-md dark:bg-green-900/20 dark:border-green-800'
+                      : 'border-gray-200 bg-gray-50 dark:bg-gray-900 dark:border-gray-700'
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
                         <KeyIcon className={`h-4 w-4 ${
-                          permission.is_active ? 'text-green-600' : 'text-gray-400'
+                          permission.is_active ? 'text-green-600 dark:text-green-400' : 'text-gray-400'
                         }`} />
                         <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
                           {permission.name}
@@ -144,7 +144,7 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
                     
                     <div>
                       {permission.is_active ? (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                           <CheckCircleIcon className="h-3 w-3 mr-1" />
                           Active
                         </span>
@@ -163,12 +163,12 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
       ))}
 
       {/* Info Box */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
         <div className="flex items-start space-x-3">
-          <ShieldCheckIcon className="h-5 w-5 text-blue-600 mt-0.5" />
+          <ShieldCheckIcon className="h-5 w-5 text-blue-600 mt-0.5 dark:text-blue-400" />
           <div className="flex-1">
-            <h4 className="text-sm font-semibold text-blue-900">About Permissions</h4>
-            <p className="text-sm text-blue-700 mt-1">
+            <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-200">About Permissions</h4>
+            <p className="text-sm text-blue-700 mt-1 dark:text-blue-300">
               Permissions are automatically generated based on system modules and actions. 
               They control what users can view, create, edit, or delete in each module.
               Assign permissions to roles to control user access.

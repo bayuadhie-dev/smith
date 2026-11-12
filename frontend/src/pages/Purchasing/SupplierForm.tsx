@@ -322,7 +322,7 @@ const { id } = useParams()
               <datalist id="supplier-type-options">
                 {typeOptions.map((t: string) => <option key={t} value={t} />)}
               </datalist>
-              <p className="mt-1 text-xs text-gray-500">Memudahkan procurement mencari pemasok (mis. PACKAGING, SPAREPART, CHEMICAL).</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Memudahkan procurement mencari pemasok (mis. PACKAGING, SPAREPART, CHEMICAL).</p>
             </div>
 
             <div>
@@ -344,7 +344,7 @@ const { id } = useParams()
                 <option value="USD">USD - Dolar AS</option>
                 <option value="CNY">CNY - Yuan</option>
               </select>
-              <p className="mt-1 text-xs text-gray-500">PO baru ke pemasok ini otomatis memakai mata uang ini, dengan kurs terbaru.</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">PO baru ke pemasok ini otomatis memakai mata uang ini, dengan kurs terbaru.</p>
             </div>
 
             <div>
@@ -396,7 +396,7 @@ const { id } = useParams()
               <input
                 type="checkbox"
                 {...register('is_active')}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:border-gray-600 dark:text-blue-400"
               />
               <label className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                 Pemasok aktif

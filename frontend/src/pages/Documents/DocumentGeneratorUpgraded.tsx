@@ -284,7 +284,7 @@ export default function DocumentGeneratorUpgraded() {
             className={`p-5 rounded-xl border-2 text-left transition-all hover:shadow-md ${
               selectedType === type.value
                 ? `border-${type.color}-500 bg-${type.color}-50 shadow-md`
-                : 'border-gray-200 hover:border-gray-300'
+                : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
             }`}
           >
             <span className="text-3xl block mb-3">{type.icon}</span>
@@ -307,7 +307,7 @@ export default function DocumentGeneratorUpgraded() {
         </h2>
         <button
           onClick={() => setStep(3)}
-          className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+          className="text-indigo-600 hover:text-indigo-800 text-sm font-medium dark:text-indigo-400"
         >
           Skip - Create Manual Document →
         </button>
@@ -336,7 +336,7 @@ export default function DocumentGeneratorUpgraded() {
           <p className="text-gray-500 dark:text-gray-400">No {selectedTypeConfig?.referenceLabel} found</p>
           <button
             onClick={() => setStep(3)}
-            className="mt-4 text-indigo-600 hover:text-indigo-800"
+            className="mt-4 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400"
           >
             Create manual document instead
           </button>
@@ -352,8 +352,8 @@ export default function DocumentGeneratorUpgraded() {
               }}
               className={`p-4 rounded-xl border-2 text-left transition-all hover:shadow-md ${
                 selectedReference?.id === ref.id
-                  ? 'border-indigo-500 bg-indigo-50'
-                  : 'border-gray-200 hover:border-indigo-300'
+                  ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                  : 'border-gray-200 hover:border-indigo-300 dark:border-gray-700'
               }`}
             >
               <div className="flex items-start justify-between">
@@ -363,10 +363,10 @@ export default function DocumentGeneratorUpgraded() {
                 </div>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                   ref.status === 'confirmed' || ref.status === 'completed'
-                    ? 'bg-green-100 text-green-700'
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
                     : ref.status === 'draft'
-                    ? 'bg-gray-100 text-gray-700'
-                    : 'bg-blue-100 text-blue-700'
+                    ? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+                    : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                 }`}>
                   {ref.status}
                 </span>
@@ -392,10 +392,10 @@ export default function DocumentGeneratorUpgraded() {
 
       {/* Selected Reference Info */}
       {selectedReference && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-          <p className="text-sm text-indigo-600 font-medium mb-1">Reference Document</p>
-          <p className="font-semibold text-indigo-900">{selectedReference.number}</p>
-          <p className="text-sm text-indigo-700">{selectedReference.title || selectedReference.customer}</p>
+        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 dark:bg-indigo-900/20 dark:border-indigo-800">
+          <p className="text-sm text-indigo-600 font-medium mb-1 dark:text-indigo-400">Reference Document</p>
+          <p className="font-semibold text-indigo-900 dark:text-indigo-200">{selectedReference.number}</p>
+          <p className="text-sm text-indigo-700 dark:text-indigo-300">{selectedReference.title || selectedReference.customer}</p>
         </div>
       )}
 
@@ -405,12 +405,12 @@ export default function DocumentGeneratorUpgraded() {
           Select Template
         </label>
         {templates.length === 0 ? (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-yellow-700 text-sm">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
+            <p className="text-yellow-700 text-sm dark:text-yellow-300">
               No templates available for {selectedTypeConfig?.label}. 
               <button
                 onClick={() => navigate('/app/documents/templates')}
-                className="ml-1 text-yellow-800 underline"
+                className="ml-1 text-yellow-800 underline dark:text-yellow-300"
               >
                 Create one
               </button>
@@ -424,14 +424,14 @@ export default function DocumentGeneratorUpgraded() {
                 onClick={() => setSelectedTemplate(template.id)}
                 className={`p-4 rounded-xl border-2 text-left transition-all ${
                   selectedTemplate === template.id
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : 'border-gray-200 hover:border-indigo-300'
+                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                    : 'border-gray-200 hover:border-indigo-300 dark:border-gray-700'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <DocumentDuplicateIcon className="h-6 w-6 text-indigo-600" />
+                  <DocumentDuplicateIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                   {template.is_default && (
-                    <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">
+                    <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full dark:bg-yellow-900/30 dark:text-yellow-300">
                       Default
                     </span>
                   )}
@@ -555,7 +555,7 @@ export default function DocumentGeneratorUpgraded() {
                     ? 'bg-indigo-600 text-white'
                     : step > s.num
                     ? 'bg-green-500 text-white'
-                    : 'bg-gray-200 text-gray-500'
+                    : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                 }`}>
                   {step > s.num ? (
                     <CheckCircleIcon className="h-6 w-6" />
@@ -563,12 +563,12 @@ export default function DocumentGeneratorUpgraded() {
                     s.num
                   )}
                 </div>
-                <span className={`font-medium ${step >= s.num ? 'text-gray-900' : 'text-gray-400'}`}>
+                <span className={`font-medium ${step >= s.num ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
                   {s.label}
                 </span>
               </button>
               {idx < 2 && (
-                <div className={`flex-1 h-1 mx-4 rounded ${step > s.num ? 'bg-green-500' : 'bg-gray-200'}`} />
+                <div className={`flex-1 h-1 mx-4 rounded ${step > s.num ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'}`} />
               )}
             </React.Fragment>
           ))}

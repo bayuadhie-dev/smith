@@ -140,7 +140,7 @@ export default function QualityInspectionDetail() {
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400">Work Order</p>
             {inspection.wo_number ? (
-              <a href={`/app/production/work-orders/${inspection.work_order_id}`} className="text-base font-semibold text-blue-600 hover:underline">
+              <a href={`/app/production/work-orders/${inspection.work_order_id}`} className="text-base font-semibold text-blue-600 hover:underline dark:text-blue-400">
                 {inspection.wo_number}
               </a>
             ) : <p className="text-base text-gray-900 dark:text-white">-</p>}

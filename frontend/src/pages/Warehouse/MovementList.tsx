@@ -54,13 +54,13 @@ const MovementList: React.FC = () => {
   const itemsPerPage = 20;
 
   const movementTypes = [
-    { value: 'stock_in', label: 'Stock In', color: 'text-green-600', icon: ArrowDownTrayIcon },
-    { value: 'stock_out', label: 'Stock Out', color: 'text-red-600', icon: ArrowUpTrayIcon },
-    { value: 'receive', label: 'Receive', color: 'text-green-600', icon: ArrowDownTrayIcon },
-    { value: 'issue', label: 'Issue', color: 'text-red-600', icon: ArrowUpTrayIcon },
-    { value: 'transfer', label: 'Transfer', color: 'text-blue-600', icon: ArrowUpDown },
-    { value: 'adjust', label: 'Adjustment', color: 'text-purple-600', icon: DocumentTextIcon },
-    { value: 'production_receipt', label: 'Produksi Masuk', color: 'text-emerald-600', icon: CubeIcon }
+    { value: 'stock_in', label: 'Stock In', color: 'text-green-600 dark:text-green-400', icon: ArrowDownTrayIcon },
+    { value: 'stock_out', label: 'Stock Out', color: 'text-red-600 dark:text-red-400', icon: ArrowUpTrayIcon },
+    { value: 'receive', label: 'Receive', color: 'text-green-600 dark:text-green-400', icon: ArrowDownTrayIcon },
+    { value: 'issue', label: 'Issue', color: 'text-red-600 dark:text-red-400', icon: ArrowUpTrayIcon },
+    { value: 'transfer', label: 'Transfer', color: 'text-blue-600 dark:text-blue-400', icon: ArrowUpDown },
+    { value: 'adjust', label: 'Adjustment', color: 'text-purple-600 dark:text-purple-400', icon: DocumentTextIcon },
+    { value: 'production_receipt', label: 'Produksi Masuk', color: 'text-emerald-600 dark:text-emerald-400', icon: CubeIcon }
   ];
 
   const statusOptions = [
@@ -107,16 +107,16 @@ const MovementList: React.FC = () => {
   };
 
   const getMovementTypeInfo = (type: string) => {
-    return movementTypes.find(t => t.value === type) || { value: type, label: type, color: 'text-gray-600', icon: DocumentTextIcon };
+    return movementTypes.find(t => t.value === type) || { value: type, label: type, color: 'text-gray-600 dark:text-gray-300', icon: DocumentTextIcon };
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'confirmed': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'confirmed': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -262,7 +262,7 @@ const MovementList: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={clearFilters}
-              className="px-3 py-2 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="px-3 py-2 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:hover:bg-gray-600"
             >
             </button>
             <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
@@ -302,15 +302,15 @@ const MovementList: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Movement</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('production.product')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.quantity')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nilai</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.date')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.actions')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">No. Movement</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">{t('production.product')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Tipe</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">{t('common.quantity')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Nilai</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Lokasi</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">{t('common.date')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">{t('common.status')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -325,7 +325,7 @@ const MovementList: React.FC = () => {
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {movement.movement_number}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
                             {movement.reference_type}: {movement.reference_number}
                           </div>
                         </div>
@@ -337,7 +337,7 @@ const MovementList: React.FC = () => {
                             <div className="text-sm font-medium text-gray-900 dark:text-white">
                               {movement.product_code}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               {(movement.material_id || movement.product_id) ? <Link to={`/app/warehouse/item-stock/${movement.material_id ? 'material' : 'product'}/${movement.material_id || movement.product_id}`} className="hover:text-emerald-700 hover:underline" title="Lihat stok per gudang dan mutasi">{movement.product_name}</Link> : movement.product_name}
                             </div>
                           </div>
@@ -360,7 +360,7 @@ const MovementList: React.FC = () => {
                         <div className="text-sm font-medium text-gray-900 dark:text-white">
                           {formatCurrency(movement.total_value)}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
                           @ {formatCurrency(movement.unit_cost)}
                         </div>
                       </td>
@@ -369,9 +369,9 @@ const MovementList: React.FC = () => {
                           <MapPinIcon className="h-4 w-4 text-gray-400 mr-2" />
                           <div>
                             <div className="text-sm font-medium text-gray-900 dark:text-white">
-                              {movement.location_id ? <Link to={`/app/warehouse/locations/${movement.location_id}`} className="text-emerald-700 hover:underline">{movement.location_code}</Link> : movement.location_code}
+                              {movement.location_id ? <Link to={`/app/warehouse/locations/${movement.location_id}`} className="text-emerald-700 hover:underline dark:text-emerald-300">{movement.location_code}</Link> : movement.location_code}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               {movement.location_name}
                             </div>
                           </div>
@@ -384,7 +384,7 @@ const MovementList: React.FC = () => {
                             <div className="text-sm text-gray-900 dark:text-white">
                               {new Date(movement.movement_date).toLocaleDateString()}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               {new Date(movement.movement_date).toLocaleTimeString()}
                             </div>
                           </div>
@@ -399,13 +399,13 @@ const MovementList: React.FC = () => {
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             to={`/app/warehouse/movements/${movement.id}`}
-                            className="text-blue-600 hover:text-blue-900" title="Detail"
+                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400" title="Detail"
                           >
                             <Eye className="h-4 w-4" />
                           </Link>
                           <Link
                             to={`/app/warehouse/movements/${movement.id}/edit`}
-                            className="text-gray-500 hover:text-gray-900 dark:text-white" title="Edit"
+                            className="text-gray-500 hover:text-gray-900 dark:text-white dark:hover:text-white" title="Edit"
                           >
                             <Edit className="h-4 w-4" />
                           </Link>
@@ -447,13 +447,13 @@ const MovementList: React.FC = () => {
                     <button
                       onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                       disabled={currentPage === 1}
-                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400"
                     >
                     </button>
                     <button
                       onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                       disabled={currentPage === totalPages}
-                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400"
                     >
                     </button>
                   </nav>

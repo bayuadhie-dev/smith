@@ -103,8 +103,8 @@ const ProductDashboardNew: React.FC = () => {
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Produk</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_products.toLocaleString('id-ID')}</p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-full">
-              <CubeIcon className="w-6 h-6 text-blue-600" />
+            <div className="p-3 bg-blue-100 rounded-full dark:bg-blue-900/30">
+              <CubeIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </div>
@@ -113,13 +113,13 @@ const ProductDashboardNew: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Produk Aktif</p>
-              <p className="text-2xl font-bold text-green-600">{stats.active_products.toLocaleString('id-ID')}</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.active_products.toLocaleString('id-ID')}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {((stats.active_products / stats.total_products) * 100).toFixed(1)}% dari total
               </p>
             </div>
-            <div className="p-3 bg-green-100 rounded-full">
-              <CheckCircleIcon className="w-6 h-6 text-green-600" />
+            <div className="p-3 bg-green-100 rounded-full dark:bg-green-900/30">
+              <CheckCircleIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
         </div>
@@ -128,13 +128,13 @@ const ProductDashboardNew: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Produk Tidak Aktif</p>
-              <p className="text-2xl font-bold text-red-600">{stats.inactive_products.toLocaleString('id-ID')}</p>
+              <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.inactive_products.toLocaleString('id-ID')}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {((stats.inactive_products / stats.total_products) * 100).toFixed(1)}% dari total
               </p>
             </div>
-            <div className="p-3 bg-red-100 rounded-full">
-              <ExclamationCircleIcon className="w-6 h-6 text-red-600" />
+            <div className="p-3 bg-red-100 rounded-full dark:bg-red-900/30">
+              <ExclamationCircleIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
             </div>
           </div>
         </div>
@@ -146,8 +146,8 @@ const ProductDashboardNew: React.FC = () => {
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.spunlace_distribution?.length || 0}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Tipe berbeda</p>
             </div>
-            <div className="p-3 bg-purple-100 rounded-full">
-              <ChartBarIcon className="w-6 h-6 text-purple-600" />
+            <div className="p-3 bg-purple-100 rounded-full dark:bg-purple-900/30">
+              <ChartBarIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
         </div>
@@ -267,8 +267,8 @@ const ProductDashboardNew: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                           product.is_active 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                         }`}>
                           {product.is_active ? 'Aktif' : 'Tidak Aktif'}
                         </span>
@@ -287,17 +287,17 @@ const ProductDashboardNew: React.FC = () => {
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Aksi Cepat</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors text-left">
-            <CubeIcon className="w-6 h-6 text-blue-600 mb-2" />
+            <CubeIcon className="w-6 h-6 text-blue-600 mb-2 dark:text-blue-400" />
             <p className="font-medium text-gray-900 dark:text-white">Tambah Produk Baru</p>
             <p className="text-sm text-gray-600 dark:text-gray-300">Tambah produk master baru</p>
           </button>
           <button className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors text-left">
-            <FunnelIcon className="w-6 h-6 text-green-600 mb-2" />
+            <FunnelIcon className="w-6 h-6 text-green-600 mb-2 dark:text-green-400" />
             <p className="font-medium text-gray-900 dark:text-white">FunnelIcon Produk</p>
             <p className="text-sm text-gray-600 dark:text-gray-300">Cari dan filter produk</p>
           </button>
           <button className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors text-left">
-            <ChartBarIcon className="w-6 h-6 text-purple-600 mb-2" />
+            <ChartBarIcon className="w-6 h-6 text-purple-600 mb-2 dark:text-purple-400" />
             <p className="font-medium text-gray-900 dark:text-white">Lihat Analitik</p>
             <p className="text-sm text-gray-600 dark:text-gray-300">Analisis data produk</p>
           </button>

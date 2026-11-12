@@ -66,34 +66,34 @@ const { id } = useParams<{ id: string }>()
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, string> = {
-      planning: 'bg-yellow-100 text-yellow-800',
-      in_progress: 'bg-blue-100 text-blue-800',
-      testing: 'bg-purple-100 text-purple-800',
-      completed: 'bg-green-100 text-green-800',
-      on_hold: 'bg-gray-100 text-gray-800',
-      cancelled: 'bg-red-100 text-red-800'
+      planning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+      in_progress: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      testing: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+      completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      on_hold: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
     }
-    return badges[status] || 'bg-gray-100 text-gray-800'
+    return badges[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
   }
 
   const getPriorityBadge = (priority: string) => {
     const badges: Record<string, string> = {
-      low: 'bg-green-100 text-green-800',
-      normal: 'bg-blue-100 text-blue-800',
-      high: 'bg-yellow-100 text-yellow-800',
-      urgent: 'bg-red-100 text-red-800'
+      low: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      normal: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      high: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+      urgent: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
     }
-    return badges[priority] || 'bg-blue-100 text-blue-800'
+    return badges[priority] || 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
   }
 
   const getTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      research: 'bg-blue-100 text-blue-800',
-      development: 'bg-green-100 text-green-800',
-      innovation: 'bg-purple-100 text-purple-800',
-      improvement: 'bg-orange-100 text-orange-800'
+      research: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      development: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      innovation: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+      improvement: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
     }
-    return colors[type] || 'bg-gray-100 text-gray-800'
+    return colors[type] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
   }
 
   return (
@@ -186,7 +186,7 @@ const { id } = useParams<{ id: string }>()
                   <div className="space-y-2">
                     {project.milestones.map((milestone: any, index: number) => (
                       <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                        <div className={`w-3 h-3 rounded-full ${milestone.completed ? 'bg-green-500' : 'bg-gray-300'}`} />
+                        <div className={`w-3 h-3 rounded-full ${milestone.completed ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
                         <div className="flex-1">
                           <div className="text-sm font-medium text-gray-900 dark:text-white">{milestone.title}</div>
                           {milestone.description && (

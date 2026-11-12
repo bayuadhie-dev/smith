@@ -333,7 +333,7 @@ const ManualAdmin: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                  <FolderIcon className="h-6 w-6 text-blue-600" />
+                  <FolderIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_categories}</p>
@@ -344,7 +344,7 @@ const ManualAdmin: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                  <DocumentTextIcon className="h-6 w-6 text-green-600" />
+                  <DocumentTextIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_articles}</p>
@@ -355,7 +355,7 @@ const ManualAdmin: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                  <QuestionMarkCircleIcon className="h-6 w-6 text-purple-600" />
+                  <QuestionMarkCircleIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_faqs}</p>
@@ -366,7 +366,7 @@ const ManualAdmin: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
-                  <ChartBarIcon className="h-6 w-6 text-orange-600" />
+                  <ChartBarIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -393,8 +393,8 @@ const ManualAdmin: React.FC = () => {
                   onClick={() => setActiveTab(tab.id as TabType)}
                   className={`flex items-center gap-2 px-6 py-4 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === tab.id
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
                   }`}
                 >
                   <tab.icon className="h-5 w-5" />
@@ -444,13 +444,13 @@ const ManualAdmin: React.FC = () => {
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => openCategoryModal(category)}
-                                className="p-1 text-blue-600 hover:bg-blue-100 rounded"
+                                className="p-1 text-blue-600 hover:bg-blue-100 rounded dark:text-blue-400"
                               >
                                 <PencilIcon className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => handleDeleteCategory(category.id)}
-                                className="p-1 text-red-600 hover:bg-red-100 rounded"
+                                className="p-1 text-red-600 hover:bg-red-100 rounded dark:text-red-400"
                               >
                                 <TrashIcon className="h-4 w-4" />
                               </button>
@@ -502,8 +502,8 @@ const ManualAdmin: React.FC = () => {
                           <td className="px-4 py-3">
                             <span className={`px-2 py-1 rounded-full text-xs ${
                               article.is_published
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                                : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
                             }`}>
                               {article.is_published ? 'Published' : 'Draft'}
                             </span>
@@ -512,19 +512,19 @@ const ManualAdmin: React.FC = () => {
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => navigate(`/app/manual/article/${article.slug}`)}
-                                className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+                                className="p-1 text-gray-600 hover:bg-gray-100 rounded dark:hover:bg-gray-700 dark:text-gray-300"
                               >
                                 <EyeIcon className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => openArticleModal(article)}
-                                className="p-1 text-blue-600 hover:bg-blue-100 rounded"
+                                className="p-1 text-blue-600 hover:bg-blue-100 rounded dark:text-blue-400"
                               >
                                 <PencilIcon className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => handleDeleteArticle(article.id)}
-                                className="p-1 text-red-600 hover:bg-red-100 rounded"
+                                className="p-1 text-red-600 hover:bg-red-100 rounded dark:text-red-400"
                               >
                                 <TrashIcon className="h-4 w-4" />
                               </button>
@@ -571,8 +571,8 @@ const ManualAdmin: React.FC = () => {
                           <td className="px-4 py-3">
                             <span className={`px-2 py-1 rounded-full text-xs ${
                               faq.is_published
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                                : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
                             }`}>
                               {faq.is_published ? 'Published' : 'Draft'}
                             </span>
@@ -581,13 +581,13 @@ const ManualAdmin: React.FC = () => {
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => openFaqModal(faq)}
-                                className="p-1 text-blue-600 hover:bg-blue-100 rounded"
+                                className="p-1 text-blue-600 hover:bg-blue-100 rounded dark:text-blue-400"
                               >
                                 <PencilIcon className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => handleDeleteFaq(faq.id)}
-                                className="p-1 text-red-600 hover:bg-red-100 rounded"
+                                className="p-1 text-red-600 hover:bg-red-100 rounded dark:text-red-400"
                               >
                                 <TrashIcon className="h-4 w-4" />
                               </button>
@@ -614,7 +614,7 @@ const ManualAdmin: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {editingItem ? 'Edit Kategori' : 'Tambah Kategori'}
                 </h3>
-                <button onClick={() => setModalType(null)} className="text-gray-400 hover:text-gray-600">
+                <button onClick={() => setModalType(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white">
                   <XMarkIcon className="h-6 w-6" />
                 </button>
               </div>
@@ -689,7 +689,7 @@ const ManualAdmin: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {editingItem ? 'Edit Artikel' : 'Tambah Artikel'}
                 </h3>
-                <button onClick={() => setModalType(null)} className="text-gray-400 hover:text-gray-600">
+                <button onClick={() => setModalType(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white">
                   <XMarkIcon className="h-6 w-6" />
                 </button>
               </div>
@@ -753,7 +753,7 @@ const ManualAdmin: React.FC = () => {
                       type="checkbox"
                       checked={articleForm.is_published}
                       onChange={(e) => setArticleForm({ ...articleForm, is_published: e.target.checked })}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:text-blue-400"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">Publish artikel</span>
                   </label>
@@ -788,7 +788,7 @@ const ManualAdmin: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {editingItem ? 'Edit FAQ' : 'Tambah FAQ'}
                 </h3>
-                <button onClick={() => setModalType(null)} className="text-gray-400 hover:text-gray-600">
+                <button onClick={() => setModalType(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white">
                   <XMarkIcon className="h-6 w-6" />
                 </button>
               </div>
@@ -842,7 +842,7 @@ const ManualAdmin: React.FC = () => {
                       type="checkbox"
                       checked={faqForm.is_published}
                       onChange={(e) => setFaqForm({ ...faqForm, is_published: e.target.checked })}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:text-blue-400"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">Publish</span>
                   </label>

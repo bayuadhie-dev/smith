@@ -41,7 +41,7 @@ export default function QualityAnalytics() {
     } else if (trend === 'declining') {
       return <ArrowTrendingDownIcon className="h-5 w-5 text-red-500" />;
     }
-    return <div className="h-5 w-5 bg-gray-300 rounded-full"></div>;
+    return <div className="h-5 w-5 bg-gray-300 rounded-full dark:bg-gray-600"></div>;
   };
 
   if (isLoading) {
@@ -96,11 +96,11 @@ export default function QualityAnalytics() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Overall Pass Rate</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {summary.overall_pass_rate ? `${summary.overall_pass_rate}%` : 'No Data'}
               </p>
             </div>
-            {summary.overall_pass_rate ? getTrendIcon('improving') : <div className="h-5 w-5 bg-gray-300 rounded-full"></div>}
+            {summary.overall_pass_rate ? getTrendIcon('improving') : <div className="h-5 w-5 bg-gray-300 rounded-full dark:bg-gray-600"></div>}
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
             {summary.overall_pass_rate ? '+2.3% from last period' : 'No data available'}
@@ -111,7 +111,7 @@ export default function QualityAnalytics() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Inspections</p>
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {summary.total_inspected || 0}
               </p>
             </div>
@@ -124,11 +124,11 @@ export default function QualityAnalytics() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Defect Rate</p>
-              <p className="text-2xl font-bold text-red-600">
+              <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                 {summary.defect_rate ? `${summary.defect_rate}%` : 'No Data'}
               </p>
             </div>
-            {summary.defect_rate ? getTrendIcon('declining') : <div className="h-5 w-5 bg-gray-300 rounded-full"></div>}
+            {summary.defect_rate ? getTrendIcon('declining') : <div className="h-5 w-5 bg-gray-300 rounded-full dark:bg-gray-600"></div>}
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
             {summary.defect_rate ? '-0.5% from last period' : 'No data available'}
@@ -139,11 +139,11 @@ export default function QualityAnalytics() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Cost of Quality</p>
-              <p className="text-2xl font-bold text-purple-600">
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                 {summary.cost_of_quality ? `$${summary.cost_of_quality}` : 'No Data'}
               </p>
             </div>
-            {summary.cost_of_quality ? getTrendIcon('improving') : <div className="h-5 w-5 bg-gray-300 rounded-full"></div>}
+            {summary.cost_of_quality ? getTrendIcon('improving') : <div className="h-5 w-5 bg-gray-300 rounded-full dark:bg-gray-600"></div>}
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
             {summary.cost_of_quality ? '-8.2% from last period' : 'No data available'}
@@ -292,7 +292,7 @@ export default function QualityAnalytics() {
                     {item.inspections || item.total_inspected || 0}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    <span className={`font-medium ${item.pass_rate >= 95 ? 'text-green-600' : item.pass_rate >= 90 ? 'text-yellow-600' : 'text-red-600'}`}>
+                    <span className={`font-medium ${item.pass_rate >= 95 ? 'text-green-600 dark:text-green-400' : item.pass_rate >= 90 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
                       {item.pass_rate || item.overall_pass_rate || 0}%
                     </span>
                   </td>

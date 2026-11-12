@@ -24,8 +24,8 @@ const DocumentVerifyPage = () => {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 max-w-md w-full text-center">
         {result?.valid ? (
           <>
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-green-600 text-3xl">✓</span>
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-green-900/30">
+              <span className="text-green-600 text-3xl dark:text-green-400">✓</span>
             </div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Dokumen Valid</h2>
             <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">Dokumen ini adalah salinan terkendali yang sah</p>
@@ -49,9 +49,9 @@ const DocumentVerifyPage = () => {
             </div>
             <div className="text-right">
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                s.status === 'approved' ? 'bg-green-100 text-green-700' :
-                s.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                'bg-blue-100 text-blue-700'
+                s.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                s.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
+                'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
               }`}>
                 {s.status === 'approved' ? '✓ Disetujui' : s.status === 'rejected' ? '✗ Ditolak' : '✓ Ditandatangani'}
               </span>
@@ -71,8 +71,8 @@ const DocumentVerifyPage = () => {
           </>
         ) : (
           <>
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-red-600 text-3xl">✗</span>
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-red-900/30">
+              <span className="text-red-600 text-3xl dark:text-red-400">✗</span>
             </div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Dokumen Tidak Valid</h2>
             <p className="text-gray-500 dark:text-gray-400 text-sm">Token tidak ditemukan atau dokumen sudah tidak berlaku</p>

@@ -308,11 +308,11 @@ const AttendancePage: React.FC = () => {
             <Clock className="w-7 h-7 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Absensi (Foto)</h1>
-            <p className="text-sm text-slate-500">Sistem absensi dengan verifikasi foto</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Absensi (Foto)</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Sistem absensi dengan verifikasi foto</p>
           </div>
         </div>
-        <div className="mt-4 flex items-center gap-4 text-slate-600">
+        <div className="mt-4 flex items-center gap-4 text-slate-600 dark:text-slate-300">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             <span>{currentDate}</span>
@@ -327,9 +327,9 @@ const AttendancePage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Camera Section */}
         <div className="lg:col-span-2">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-4 border-b border-slate-200 bg-slate-50">
-              <h2 className="font-semibold text-slate-900 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 overflow-hidden dark:border-slate-700">
+            <div className="p-4 border-b border-slate-200 bg-slate-50 dark:bg-slate-900 dark:border-slate-700">
+              <h2 className="font-semibold text-slate-900 flex items-center gap-2 dark:text-white">
                 <Camera className="w-5 h-5" />
                 Verifikasi Foto
               </h2>
@@ -338,7 +338,7 @@ const AttendancePage: React.FC = () => {
             <div className="p-6">
               {/* Loading models indicator */}
               {loadingModels && (
-                <div className="flex items-center justify-center gap-2 mb-4 text-blue-600">
+                <div className="flex items-center justify-center gap-2 mb-4 text-blue-600 dark:text-blue-400">
                   <Loader2 className="w-5 h-5 animate-spin" />
                   <span>Memuat model face detection...</span>
                 </div>
@@ -400,7 +400,7 @@ const AttendancePage: React.FC = () => {
               
               {/* Error message */}
               {error && (
-                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 flex items-start gap-3">
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 flex items-start gap-3 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
                   <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -429,7 +429,7 @@ const AttendancePage: React.FC = () => {
                     </button>
                     <button
                       onClick={stopCamera}
-                      className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium transition-colors"
+                      className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium transition-colors dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200"
                     >
                       Matikan Kamera
                     </button>
@@ -440,7 +440,7 @@ const AttendancePage: React.FC = () => {
                   <>
                     <button
                       onClick={retakePhoto}
-                      className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium transition-colors flex items-center gap-2"
+                      className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium transition-colors flex items-center gap-2 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200"
                     >
                       <RefreshCw className="w-5 h-5" />
                       Ulangi
@@ -495,9 +495,9 @@ const AttendancePage: React.FC = () => {
         {/* Status & History Section */}
         <div className="space-y-6">
           {/* Today's Status */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-4 border-b border-slate-200 bg-slate-50">
-              <h2 className="font-semibold text-slate-900 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 overflow-hidden dark:border-slate-700">
+            <div className="p-4 border-b border-slate-200 bg-slate-50 dark:bg-slate-900 dark:border-slate-700">
+              <h2 className="font-semibold text-slate-900 flex items-center gap-2 dark:text-white">
                 <User className="w-5 h-5" />
                 Status Hari Ini
               </h2>
@@ -505,30 +505,30 @@ const AttendancePage: React.FC = () => {
             <div className="p-4">
               {loadingToday ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400" />
                 </div>
               ) : (
                 <div className="space-y-4">
                   {/* Clock In Status */}
                   <div className={`p-4 rounded-xl ${
-                    hasClockIn ? 'bg-green-50 border border-green-200' : 'bg-slate-50 border border-slate-200'
+                    hasClockIn ? 'bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800' : 'bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-700'
                   }`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-slate-600">Clock In</span>
+                      <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Clock In</span>
                       {hasClockIn ? (
                         <CheckCircle className="w-5 h-5 text-green-500" />
                       ) : (
                         <Clock className="w-5 h-5 text-slate-400" />
                       )}
                     </div>
-                    <p className={`text-2xl font-bold mt-1 ${hasClockIn ? 'text-green-700' : 'text-slate-400'}`}>
+                    <p className={`text-2xl font-bold mt-1 ${hasClockIn ? 'text-green-700 dark:text-green-300' : 'text-slate-400'}`}>
                       {hasClockIn 
                         ? new Date(attendance.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
                         : '--:--'
                       }
                     </p>
                     {attendance?.status === 'late' && (
-                      <span className="inline-block mt-2 px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full">
+                      <span className="inline-block mt-2 px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full dark:bg-amber-900/30 dark:text-amber-300">
                         Terlambat
                       </span>
                     )}
@@ -536,17 +536,17 @@ const AttendancePage: React.FC = () => {
                   
                   {/* Clock Out Status */}
                   <div className={`p-4 rounded-xl ${
-                    hasClockOut ? 'bg-orange-50 border border-orange-200' : 'bg-slate-50 border border-slate-200'
+                    hasClockOut ? 'bg-orange-50 border border-orange-200 dark:bg-orange-900/20 dark:border-orange-800' : 'bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-700'
                   }`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-slate-600">Clock Out</span>
+                      <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Clock Out</span>
                       {hasClockOut ? (
                         <CheckCircle className="w-5 h-5 text-orange-500" />
                       ) : (
                         <Clock className="w-5 h-5 text-slate-400" />
                       )}
                     </div>
-                    <p className={`text-2xl font-bold mt-1 ${hasClockOut ? 'text-orange-700' : 'text-slate-400'}`}>
+                    <p className={`text-2xl font-bold mt-1 ${hasClockOut ? 'text-orange-700 dark:text-orange-300' : 'text-slate-400'}`}>
                       {hasClockOut 
                         ? new Date(attendance.clock_out).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
                         : '--:--'
@@ -556,9 +556,9 @@ const AttendancePage: React.FC = () => {
                   
                   {/* Worked Hours */}
                   {hasClockIn && hasClockOut && (
-                    <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
-                      <span className="text-sm font-medium text-slate-600">Jam Kerja</span>
-                      <p className="text-2xl font-bold text-blue-700 mt-1">
+                    <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+                      <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Jam Kerja</span>
+                      <p className="text-2xl font-bold text-blue-700 mt-1 dark:text-blue-300">
                         {attendance.worked_hours?.toFixed(1)} jam
                       </p>
                     </div>
@@ -569,9 +569,9 @@ const AttendancePage: React.FC = () => {
           </div>
 
           {/* Recent History */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-4 border-b border-slate-200 bg-slate-50">
-              <h2 className="font-semibold text-slate-900 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 overflow-hidden dark:border-slate-700">
+            <div className="p-4 border-b border-slate-200 bg-slate-50 dark:bg-slate-900 dark:border-slate-700">
+              <h2 className="font-semibold text-slate-900 flex items-center gap-2 dark:text-white">
                 <History className="w-5 h-5" />
                 Riwayat Terakhir
               </h2>
@@ -579,28 +579,28 @@ const AttendancePage: React.FC = () => {
             <div className="divide-y divide-slate-100">
               {loadingHistory ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400" />
                 </div>
               ) : history?.attendances?.length > 0 ? (
                 history.attendances.map((record: AttendanceRecord) => (
-                  <div key={record.id} className="p-4 hover:bg-slate-50 transition-colors">
+                  <div key={record.id} className="p-4 hover:bg-slate-50 transition-colors dark:hover:bg-slate-800">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-slate-900">
+                      <span className="text-sm font-medium text-slate-900 dark:text-white">
                         {new Date(record.attendance_date).toLocaleDateString('id-ID', { 
                           weekday: 'short', day: 'numeric', month: 'short' 
                         })}
                       </span>
                       <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        record.status === 'present' ? 'bg-green-100 text-green-700' :
-                        record.status === 'late' ? 'bg-amber-100 text-amber-700' :
-                        'bg-slate-100 text-slate-600'
+                        record.status === 'present' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                        record.status === 'late' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
+                        'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
                       }`}>
                         {record.status === 'present' ? 'Hadir' : 
                          record.status === 'late' ? 'Terlambat' : record.status}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-4 text-sm text-slate-500">
+                      <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
                         <span>
                           In: {record.clock_in
                             ? new Date(record.clock_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
@@ -616,7 +616,7 @@ const AttendancePage: React.FC = () => {
                       </div>
                       <button
                         onClick={() => openCorrectionModal(record)}
-                        className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                        className="text-xs text-blue-600 hover:underline flex items-center gap-1 dark:text-blue-400"
                       >
                         <Pencil className="w-3 h-3" /> Ajukan Koreksi
                       </button>
@@ -624,7 +624,7 @@ const AttendancePage: React.FC = () => {
                   </div>
                 ))
               ) : (
-                <div className="p-8 text-center text-slate-500">
+                <div className="p-8 text-center text-slate-500 dark:text-slate-400">
                   Belum ada riwayat absensi
                 </div>
               )}
@@ -636,51 +636,51 @@ const AttendancePage: React.FC = () => {
       {/* Correction Request Modal */}
       {correctingRecord && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 dark:bg-gray-800">
             <h3 className="text-lg font-semibold mb-1">Ajukan Koreksi Absensi</h3>
-            <p className="text-sm text-slate-500 mb-4">
+            <p className="text-sm text-slate-500 mb-4 dark:text-slate-400">
               {new Date(correctingRecord.attendance_date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
             {correctionError && (
-              <div className="mb-3 px-3 py-2 bg-red-50 text-red-700 text-sm rounded-lg">{correctionError}</div>
+              <div className="mb-3 px-3 py-2 bg-red-50 text-red-700 text-sm rounded-lg dark:bg-red-900/20 dark:text-red-300">{correctionError}</div>
             )}
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Clock In (baru)</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-200">Clock In (baru)</label>
                   <input
                     type="datetime-local"
                     value={correctionForm.clock_in}
                     onChange={(e) => setCorrectionForm(prev => ({ ...prev, clock_in: e.target.value }))}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm dark:border-slate-600"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Clock Out (baru)</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-200">Clock Out (baru)</label>
                   <input
                     type="datetime-local"
                     value={correctionForm.clock_out}
                     onChange={(e) => setCorrectionForm(prev => ({ ...prev, clock_out: e.target.value }))}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm dark:border-slate-600"
                   />
                 </div>
               </div>
               <p className="text-xs text-slate-400">Kosongkan field yang tidak perlu dikoreksi.</p>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Alasan</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-200">Alasan</label>
                 <textarea
                   value={correctionForm.reason}
                   onChange={(e) => setCorrectionForm(prev => ({ ...prev, reason: e.target.value }))}
                   rows={3}
                   placeholder="Contoh: lupa clock in karena HP mati"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm dark:border-slate-600"
                 />
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-5">
               <button
                 onClick={() => { setCorrectingRecord(null); setCorrectionError(null); }}
-                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm"
+                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm dark:hover:bg-slate-800 dark:text-slate-300"
               >
                 Batal
               </button>

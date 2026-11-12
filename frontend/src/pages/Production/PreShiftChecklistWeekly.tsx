@@ -64,7 +64,7 @@ const PreShiftChecklistWeekly = () => {
       <div className="max-w-full mx-auto space-y-4">
         
         {/* Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 overflow-hidden dark:border-gray-800">
           <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
@@ -113,10 +113,10 @@ const PreShiftChecklistWeekly = () => {
           </div>
           
           {/* Stats */}
-          <div className="px-6 py-3 bg-indigo-50 border-b border-indigo-100 flex items-center justify-between">
+          <div className="px-6 py-3 bg-indigo-50 border-b border-indigo-100 flex items-center justify-between dark:bg-indigo-900/20">
             <div className="flex items-center space-x-6 text-sm">
               <div className="flex items-center space-x-2">
-                <CheckCircleSolid className="w-5 h-5 text-green-600" />
+                <CheckCircleSolid className="w-5 h-5 text-green-600 dark:text-green-400" />
                 <span className="text-gray-700 dark:text-gray-200"><strong>{stats.submitted}</strong> Submitted</span>
               </div>
               <div className="flex items-center space-x-2">
@@ -131,7 +131,7 @@ const PreShiftChecklistWeekly = () => {
         </div>
 
         {/* Submissions List */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 overflow-hidden dark:border-gray-800">
           <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b">
             <h3 className="font-semibold text-gray-700 dark:text-gray-200">Daftar Checklist yang Sudah Diinput</h3>
           </div>
@@ -142,7 +142,7 @@ const PreShiftChecklistWeekly = () => {
               <p>Belum ada checklist yang diinput minggu ini</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {data?.submissions?.map((submission: any) => (
                 <SubmissionItem 
                   key={submission.id}
@@ -172,9 +172,9 @@ const SubmissionItem: React.FC<SubmissionItemProps> = ({ submission, isExpanded,
   })
 
   const shiftColors: Record<number, string> = {
-    1: 'bg-blue-100 text-blue-700',
-    2: 'bg-purple-100 text-purple-700',
-    3: 'bg-indigo-100 text-indigo-700'
+    1: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    2: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+    3: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
   }
   const shiftTimes: Record<number, string> = {
     1: '07:00-15:00',
@@ -211,7 +211,7 @@ const SubmissionItem: React.FC<SubmissionItemProps> = ({ submission, isExpanded,
   }
 
   return (
-    <div className="border-b border-gray-100 last:border-b-0">
+    <div className="border-b border-gray-100 last:border-b-0 dark:border-gray-800">
       {/* Header Row - Clickable */}
       <div 
         className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 cursor-pointer flex items-center justify-between"
@@ -263,9 +263,9 @@ const SubmissionItem: React.FC<SubmissionItemProps> = ({ submission, isExpanded,
                     <th className="px-2 py-1.5 text-left font-medium text-gray-600 dark:text-gray-300">Catatan</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                   {detail.answers.map((answer: any, idx: number) => (
-                    <tr key={answer.id} className={answer.status === 'NG' ? 'bg-red-50' : ''}>
+                    <tr key={answer.id} className={answer.status === 'NG' ? 'bg-red-50 dark:bg-red-900/20' : ''}>
                       <td className="px-2 py-1 text-gray-400">{idx + 1}</td>
                       <td className="px-2 py-1 text-gray-700 dark:text-gray-200">{answer.item?.item_name}</td>
                       <td className="px-2 py-1">
@@ -288,10 +288,10 @@ const SubmissionItem: React.FC<SubmissionItemProps> = ({ submission, isExpanded,
               {/* Summary Stats */}
               <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-900 border-t flex items-center justify-between text-[10px]">
                 <div className="flex items-center space-x-3">
-                  <span className="text-green-600 font-medium">
+                  <span className="text-green-600 font-medium dark:text-green-400">
                     ✓ OK: {detail.answers.filter((a: any) => a.status === 'OK').length}
                   </span>
-                  <span className="text-red-600 font-medium">
+                  <span className="text-red-600 font-medium dark:text-red-400">
                     ✗ NG: {detail.answers.filter((a: any) => a.status === 'NG').length}
                   </span>
                   <span className="text-gray-500 dark:text-gray-400">

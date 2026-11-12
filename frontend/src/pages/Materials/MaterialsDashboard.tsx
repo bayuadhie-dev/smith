@@ -60,15 +60,15 @@ const MaterialsDashboard: React.FC = () => {
   const getMovementTypeColor = (type: string) => {
     switch (type) {
       case 'stock_in':
-        return 'text-green-600 bg-green-100';
+        return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
       case 'stock_out':
-        return 'text-red-600 bg-red-100';
+        return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
       case 'transfer':
-        return 'text-blue-600 bg-blue-100';
+        return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400';
       case 'adjustment':
-        return 'text-yellow-600 bg-yellow-100';
+        return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
@@ -97,8 +97,8 @@ const MaterialsDashboard: React.FC = () => {
 
   if (error || !dashboardData) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">{error || 'Failed to load dashboard data'}</p>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
+        <p className="text-red-800 dark:text-red-300">{error || 'Failed to load dashboard data'}</p>
       </div>
     );
   }
@@ -275,17 +275,17 @@ const MaterialsDashboard: React.FC = () => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-left">
-            <CubeIcon className="h-8 w-8 text-blue-600 mb-2" />
+            <CubeIcon className="h-8 w-8 text-blue-600 mb-2 dark:text-blue-400" />
             <h4 className="font-medium text-gray-900 dark:text-white">Add New Material</h4>
             <p className="text-sm text-gray-500 dark:text-gray-400">Create a new material record</p>
           </button>
           <button className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-left">
-            <ArrowTrendingUpIcon className="h-8 w-8 text-green-600 mb-2" />
+            <ArrowTrendingUpIcon className="h-8 w-8 text-green-600 mb-2 dark:text-green-400" />
             <h4 className="font-medium text-gray-900 dark:text-white">Stock Input</h4>
             <p className="text-sm text-gray-500 dark:text-gray-400">Record material stock receipt</p>
           </button>
           <button className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-left">
-            <AlertTriangle className="h-8 w-8 text-yellow-600 mb-2" />
+            <AlertTriangle className="h-8 w-8 text-yellow-600 mb-2 dark:text-yellow-400" />
             <h4 className="font-medium text-gray-900 dark:text-white">Low Stock Report</h4>
             <p className="text-sm text-gray-500 dark:text-gray-400">View materials with low stock</p>
           </button>

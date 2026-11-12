@@ -216,7 +216,7 @@ export default function LogisticsProviders() {
                   name="is_active"
                   checked={formData.is_active}
                   onChange={handleInputChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:text-blue-400"
                 />
                 <label className="ml-2 block text-sm text-gray-700 dark:text-gray-200">
                   Provider Aktif
@@ -301,8 +301,8 @@ export default function LogisticsProviders() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       provider.is_active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                     }`}>
                       {provider.is_active ? (
                         <>
@@ -320,13 +320,13 @@ export default function LogisticsProviders() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleEdit(provider)}
-                        className="text-blue-600 hover:text-blue-500"
+                        className="text-blue-600 hover:text-blue-500 dark:text-blue-400"
                       >
                         <PencilIcon className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(provider.id)}
-                        className="text-red-600 hover:text-red-500"
+                        className="text-red-600 hover:text-red-500 dark:text-red-400"
                       >
                         <TrashIcon className="h-4 w-4" />
                       </button>

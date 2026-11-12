@@ -242,7 +242,7 @@ const navigate = useNavigate()
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Report Scheduler</h1>
-          <p className="text-gray-600">Automate report generation and delivery</p>
+          <p className="text-gray-600 dark:text-gray-300">Automate report generation and delivery</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -278,7 +278,7 @@ const navigate = useNavigate()
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {scheduledReports.filter(r => r.isActive).length}
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Active</div>
@@ -290,7 +290,7 @@ const navigate = useNavigate()
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-gray-600">
+              <div className="text-2xl font-bold text-gray-600 dark:text-gray-300">
                 {scheduledReports.filter(r => !r.isActive).length}
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Paused</div>
@@ -302,7 +302,7 @@ const navigate = useNavigate()
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {scheduledReports.reduce((sum, r) => sum + r.recipients.length, 0)}
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Recipients</div>
@@ -353,7 +353,7 @@ const navigate = useNavigate()
                       <span className={`badge ${getFrequencyBadge(report.schedule.frequency)}`}>
                         {report.schedule.frequency}
                       </span>
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">
                         at {report.schedule.time}
                       </span>
                     </div>
@@ -379,28 +379,28 @@ const navigate = useNavigate()
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => runReportNow(report)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
                         title="Run now"
                       >
                         <PlayIcon className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => toggleReportStatus(report.id)}
-                        className={`${report.isActive ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900'}`}
+                        className={`${report.isActive ? 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400' : 'text-green-600 hover:text-green-900 dark:text-green-400'}`}
                         title={report.isActive ? 'Pause' : 'Resume'}
                       >
                         {report.isActive ? <PauseIcon className="h-4 w-4" /> : <PlayIcon className="h-4 w-4" />}
                       </button>
                       <button
                         onClick={() => setEditingReport(report)}
-                        className="text-gray-600 hover:text-gray-900 dark:text-white"
+                        className="text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
                         title={t('common.edit')}
                       >
                         <PencilIcon className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => deleteScheduledReport(report.id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-red-600 hover:text-red-900 dark:text-red-400"
                         title={t('common.delete')}
                       >
                         <TrashIcon className="h-4 w-4" />
@@ -546,7 +546,7 @@ const navigate = useNavigate()
                   </label>
                   <button
                     onClick={addRecipient}
-                    className="text-blue-600 hover:text-blue-700 text-sm"
+                    className="text-blue-600 hover:text-blue-700 text-sm dark:text-blue-400"
                   >
                     <PlusIcon className="h-4 w-4 inline mr-1" />
                     Add Recipient

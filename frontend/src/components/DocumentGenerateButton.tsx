@@ -197,7 +197,7 @@ export default function DocumentGenerateButton({
               >
                 Cetak
               </button>
-              <button onClick={() => setPreviewHtml(null)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+              <button onClick={() => setPreviewHtml(null)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none dark:hover:text-white">
                 &times;
               </button>
             </div>

@@ -108,7 +108,7 @@ export default function ForcePasswordChange() {
               {RULES.map((r) => {
                 const ok = r.test(next)
                 return (
-                  <li key={r.label} className={`flex items-center gap-1 ${ok ? 'text-emerald-600' : 'text-gray-500 dark:text-gray-400'}`}>
+                  <li key={r.label} className={`flex items-center gap-1 ${ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}>
                     {ok ? <CheckCircleIcon className="h-4 w-4" /> : <XCircleIcon className="h-4 w-4" />}
                     {r.label}
                   </li>
@@ -119,10 +119,10 @@ export default function ForcePasswordChange() {
         )}
 
         <PasswordField value={confirm} onChange={setConfirm} placeholder="Ulangi password baru" autoComplete="new-password" onCaps={setCaps} />
-        {mismatch && <p className="text-xs text-red-600">Konfirmasi belum sama dengan password baru</p>}
-        {confirm.length > 0 && !mismatch && allRules && <p className="text-xs text-emerald-600">Password cocok</p>}
-        {caps && <p className="text-xs text-amber-600">Caps Lock sedang aktif</p>}
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {mismatch && <p className="text-xs text-red-600 dark:text-red-400">Konfirmasi belum sama dengan password baru</p>}
+        {confirm.length > 0 && !mismatch && allRules && <p className="text-xs text-emerald-600 dark:text-emerald-400">Password cocok</p>}
+        {caps && <p className="text-xs text-amber-600 dark:text-amber-400">Caps Lock sedang aktif</p>}
+        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
         <div className="flex justify-between gap-3">
           <button type="button" className="btn-secondary" onClick={() => dispatch(logout())}>Keluar</button>

@@ -128,7 +128,7 @@ const LiveMonitoringWeekly: React.FC = () => {
       <div className="max-w-full mx-auto space-y-4 print:space-y-2">
         
         {/* Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 overflow-hidden print:shadow-none print:border">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 overflow-hidden print:shadow-none print:border dark:border-gray-800">
           <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 print:py-2 print:bg-emerald-600">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
@@ -204,10 +204,10 @@ const LiveMonitoringWeekly: React.FC = () => {
           </div>
           
           {/* Stats */}
-          <div className="px-6 py-3 print:py-2 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between flex-wrap gap-2">
+          <div className="px-6 py-3 print:py-2 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between flex-wrap gap-2 dark:bg-emerald-900/20">
             <div className="flex items-center space-x-6 text-sm print:text-xs">
               <div className="flex items-center space-x-2">
-                <CheckCircleSolid className="w-5 h-5 text-green-600 print:w-4 print:h-4" />
+                <CheckCircleSolid className="w-5 h-5 text-green-600 print:w-4 print:h-4 dark:text-green-400" />
                 <span className="text-gray-700 dark:text-gray-200"><strong>{stats.runningCount}</strong> Running</span>
               </div>
               <div className="flex items-center space-x-2">
@@ -226,7 +226,7 @@ const LiveMonitoringWeekly: React.FC = () => {
         </div>
 
         {/* Weekly Grid */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 overflow-hidden print:shadow-none print:border">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 overflow-hidden print:shadow-none print:border dark:border-gray-800">
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
@@ -250,8 +250,8 @@ const LiveMonitoringWeekly: React.FC = () => {
                       {data?.slots?.map((slot, idx) => (
                         <th 
                           key={`${dateStr}-${slot.slot}`} 
-                          className={`px-1 py-1 text-center text-[9px] font-medium text-gray-600 ${
-                            idx === (data?.slots?.length || 0) - 1 ? 'border-r border-gray-200' : ''
+                          className={`px-1 py-1 text-center text-[9px] font-medium text-gray-600 dark:text-gray-300 ${
+                            idx === (data?.slots?.length || 0) - 1 ? 'border-r border-gray-200 dark:border-gray-700' : ''
                           }`}
                         >
                           {slot.label}
@@ -263,7 +263,7 @@ const LiveMonitoringWeekly: React.FC = () => {
               </thead>
               <tbody>
                 {data?.summary?.map((machineData) => (
-                  <tr key={machineData.machine_id} className="border-b border-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 print:hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800">
+                  <tr key={machineData.machine_id} className="border-b border-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 print:hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800 dark:border-gray-800">
                     <td className="sticky left-0 bg-white dark:bg-gray-800 px-2 py-1.5 font-medium text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-700 text-[10px] print:text-[9px]">
                       {machineData.machine_name}
                     </td>
@@ -276,15 +276,15 @@ const LiveMonitoringWeekly: React.FC = () => {
                           return (
                             <td 
                               key={`${dateStr}-${slot.slot}`} 
-                              className={`px-0.5 py-0.5 text-center ${isLastSlot ? 'border-r border-gray-200' : ''}`}
+                              className={`px-0.5 py-0.5 text-center ${isLastSlot ? 'border-r border-gray-200 dark:border-gray-700' : ''}`}
                             >
                               {check ? (
                                 <button
                                   onClick={() => navigate(`/app/production/live-monitoring/view/${check.id}`)}
                                   className={`w-full h-6 rounded flex items-center justify-center cursor-pointer hover:opacity-80 transition ${
                                     check.machine_status === 'running' 
-                                      ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                                      : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                      ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300' 
+                                      : 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300'
                                   }`}
                                 >
                                   {check.machine_status === 'running' ? (
@@ -295,7 +295,7 @@ const LiveMonitoringWeekly: React.FC = () => {
                                 </button>
                               ) : (
                                 <div className="w-full h-6 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                  <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                                  <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600"></div>
                                 </div>
                               )}
                             </td>
@@ -311,23 +311,23 @@ const LiveMonitoringWeekly: React.FC = () => {
         </div>
 
         {/* Legend */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-100 px-4 py-3 print:shadow-none print:py-2">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-100 px-4 py-3 print:shadow-none print:py-2 dark:border-gray-800">
           <div className="flex items-center justify-center space-x-6 text-xs print:text-[10px]">
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center print:w-5 print:h-5">
-                <CheckCircleSolid className="w-4 h-4 text-green-600 print:w-3 print:h-3" />
+              <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center print:w-5 print:h-5 dark:bg-green-900/30">
+                <CheckCircleSolid className="w-4 h-4 text-green-600 print:w-3 print:h-3 dark:text-green-400" />
               </div>
               <span className="text-gray-600 dark:text-gray-300">Running</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-red-100 rounded flex items-center justify-center print:w-5 print:h-5">
-                <XCircleIcon className="w-4 h-4 text-red-600 print:w-3 print:h-3" />
+              <div className="w-6 h-6 bg-red-100 rounded flex items-center justify-center print:w-5 print:h-5 dark:bg-red-900/30">
+                <XCircleIcon className="w-4 h-4 text-red-600 print:w-3 print:h-3 dark:text-red-400" />
               </div>
               <span className="text-gray-600 dark:text-gray-300">Stopped</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center print:w-5 print:h-5">
-                <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600"></div>
               </div>
               <span className="text-gray-600 dark:text-gray-300">Belum dicek</span>
             </div>

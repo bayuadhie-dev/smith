@@ -42,13 +42,13 @@ const iconMap: Record<string, any> = {
 }
 
 const colorMap: Record<string, string> = {
-  'blue': 'bg-blue-100 text-blue-600',
-  'green': 'bg-green-100 text-green-600',
-  'purple': 'bg-purple-100 text-purple-600',
-  'orange': 'bg-orange-100 text-orange-600',
-  'red': 'bg-red-100 text-red-600',
-  'indigo': 'bg-indigo-100 text-indigo-600',
-  'teal': 'bg-teal-100 text-teal-600',
+  'blue': 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
+  'green': 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
+  'purple': 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
+  'orange': 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
+  'red': 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+  'indigo': 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
+  'teal': 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400',
 }
 
 const modules = [
@@ -166,14 +166,14 @@ export default function GlobalSearchPage() {
         <div className="mb-8">
           <button
             onClick={() => navigate('/app')}
-            className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 mb-4 flex items-center gap-2"
+            className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 mb-4 flex items-center gap-2 dark:hover:text-white"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Back to Dashboard
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">Global Search</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Global Search</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Search across all modules and data</p>
         </div>
 
@@ -197,7 +197,7 @@ export default function GlobalSearchPage() {
                     setQuery('')
                     setResults([])
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white"
                 >
                   <XMarkIcon className="w-5 h-5" />
                 </button>
@@ -226,7 +226,7 @@ export default function GlobalSearchPage() {
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                       moduleFilter === module.value
                         ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200'
                     }`}
                   >
                     {module.label}
@@ -253,7 +253,7 @@ export default function GlobalSearchPage() {
               </h2>
               <button
                 onClick={clearRecentSearches}
-                className="text-sm text-red-600 hover:text-red-700"
+                className="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
               >
                 Clear All
               </button>
@@ -263,7 +263,7 @@ export default function GlobalSearchPage() {
                 <button
                   key={index}
                   onClick={() => handleRecentSearchClick(recentQuery)}
-                  className="px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-200 transition-colors"
+                  className="px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-200 transition-colors dark:hover:bg-gray-600"
                 >
                   {recentQuery}
                 </button>
@@ -285,7 +285,7 @@ export default function GlobalSearchPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             {/* Results Header */}
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {results.length} {results.length === 1 ? 'Result' : 'Results'} for "{query}"
               </h2>
             </div>
@@ -295,7 +295,7 @@ export default function GlobalSearchPage() {
               <div className="divide-y">
                 {results.map((result, index) => {
                   const Icon = iconMap[result.icon] || CubeIcon
-                  const colorClass = colorMap[result.color] || 'bg-gray-100 text-gray-600'
+                  const colorClass = colorMap[result.color] || 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
 
                   return (
                     <button
@@ -312,7 +312,7 @@ export default function GlobalSearchPage() {
                         {/* Content */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold text-gray-900">{result.title}</h3>
+                            <h3 className="font-semibold text-gray-900 dark:text-white">{result.title}</h3>
                             <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs rounded-full">
                               {result.type}
                             </span>

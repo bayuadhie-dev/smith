@@ -83,11 +83,11 @@ const [batchNumber, setBatchNumber] = useState('')
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800'
-      case 'in_progress': return 'bg-yellow-100 text-yellow-800'
-      case 'planned': return 'bg-blue-100 text-blue-800'
-      case 'cancelled': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+      case 'in_progress': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+      case 'planned': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+      case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
     }
   }
 
@@ -156,8 +156,8 @@ const [batchNumber, setBatchNumber] = useState('')
         </div>
         
         {error && (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800 text-sm">{error}</p>
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-800">
+            <p className="text-red-800 text-sm dark:text-red-300">{error}</p>
           </div>
         )}
       </div>
@@ -168,7 +168,7 @@ const [batchNumber, setBatchNumber] = useState('')
           {/* Batch Overview */}
           <div className="card p-6">
             <div className="flex items-center gap-3 mb-4">
-              <TagIcon className="h-6 w-6 text-blue-600" />
+              <TagIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Batch: {traceData.batch_number}</h2>
               <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(traceData.work_order.status)}`}>
                 {traceData.work_order.status}
@@ -360,11 +360,11 @@ const [batchNumber, setBatchNumber] = useState('')
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="space-y-1">
                           <div className="text-sm">
-                            <span className="text-green-600 font-medium">
+                            <span className="text-green-600 font-medium dark:text-green-400">
                               {record.quantity_good.toLocaleString()}
                             </span>
                             <span className="text-gray-400 mx-1">/</span>
-                            <span className="text-red-600 font-medium">
+                            <span className="text-red-600 font-medium dark:text-red-400">
                               {record.quantity_scrap.toLocaleString()}
                             </span>
                           </div>
@@ -377,9 +377,9 @@ const [batchNumber, setBatchNumber] = useState('')
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900 dark:text-white">
                           {record.downtime_minutes > 0 ? (
-                            <span className="text-red-600 font-medium">{record.downtime_minutes}m</span>
+                            <span className="text-red-600 font-medium dark:text-red-400">{record.downtime_minutes}m</span>
                           ) : (
-                            <span className="text-green-600 font-medium">0m</span>
+                            <span className="text-green-600 font-medium dark:text-green-400">0m</span>
                           )}
                         </div>
                       </td>

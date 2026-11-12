@@ -8,16 +8,16 @@ import {
 } from '@heroicons/react/24/outline';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  pending:   { label: 'Pending',    color: 'bg-gray-100 text-gray-700' },
-  inspected: { label: 'Inspeksi',   color: 'bg-blue-100 text-blue-700' },
-  approved:  { label: 'Disetujui',  color: 'bg-green-100 text-green-700' },
-  rejected:  { label: 'Ditolak',    color: 'bg-red-100 text-red-700' },
+  pending:   { label: 'Pending',    color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
+  inspected: { label: 'Inspeksi',   color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+  approved:  { label: 'Disetujui',  color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+  rejected:  { label: 'Ditolak',    color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
 };
 
 const QC_CONFIG: Record<string, { label: string; color: string }> = {
-  passed:   { label: 'Lulus QC',    color: 'bg-green-100 text-green-700' },
-  partial:  { label: 'Sebagian',    color: 'bg-yellow-100 text-yellow-700' },
-  failed:   { label: 'Gagal QC',    color: 'bg-red-100 text-red-700' },
+  passed:   { label: 'Lulus QC',    color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+  partial:  { label: 'Sebagian',    color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' },
+  failed:   { label: 'Gagal QC',    color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
 };
 
 export default function GRNList() {
@@ -61,7 +61,7 @@ export default function GRNList() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Penerimaan Barang (GRN)</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Penerimaan barang + QC Inspection</p>
+          <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-400">Penerimaan barang + QC Inspection</p>
         </div>
         <Link
           to="/app/purchasing/grn/new"
@@ -108,7 +108,7 @@ export default function GRNList() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {sortedGrns.map((grn) => {
-                const status = STATUS_CONFIG[grn.status] || { label: grn.status, color: 'bg-gray-100 text-gray-600' };
+                const status = STATUS_CONFIG[grn.status] || { label: grn.status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
                 const qc = grn.quality_status ? QC_CONFIG[grn.quality_status] : null;
                 return (
                   <tr
@@ -141,7 +141,7 @@ export default function GRNList() {
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <Link
                         to={`/app/purchasing/grn/${grn.id}`}
-                        className="text-xs text-blue-600 hover:underline"
+                        className="text-xs text-blue-600 hover:underline dark:text-blue-400"
                       >
                         {grn.status === 'pending' ? 'Inspeksi' : 'Detail'}
                       </Link>

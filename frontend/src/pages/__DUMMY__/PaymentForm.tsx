@@ -187,7 +187,7 @@ const PaymentForm = () => {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 text-sm">
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 text-sm dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
           {error}
         </div>
       )}
@@ -249,7 +249,7 @@ const PaymentForm = () => {
                 ))}
               </select>
               {formData.party_id && !loadingInvoices && invoices.length === 0 && (
-                <p className="text-sm text-gray-500 mt-1">Tidak ada faktur belum lunas untuk pihak ini.</p>
+                <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">Tidak ada faktur belum lunas untuk pihak ini.</p>
               )}
             </div>
 
@@ -266,7 +266,7 @@ const PaymentForm = () => {
                 required
               />
               {selectedInvoice && (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">
                   Sisa tagihan: Rp{selectedInvoice.balance_due.toLocaleString('id-ID')}
                 </p>
               )}
@@ -367,36 +367,36 @@ const PaymentForm = () => {
       <div className="card p-6">
         <h3 className="text-lg font-semibold mb-4">💰 Payment Summary</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="bg-blue-50 p-4 rounded-lg dark:bg-blue-900/20">
             <div className="flex items-center">
-              <BanknotesIcon className="h-8 w-8 text-blue-600 mr-3" />
+              <BanknotesIcon className="h-8 w-8 text-blue-600 mr-3 dark:text-blue-400" />
               <div>
-                <p className="text-sm text-blue-600">Amount to Pay</p>
-                <p className="text-xl font-bold text-blue-800">
+                <p className="text-sm text-blue-600 dark:text-blue-400">Amount to Pay</p>
+                <p className="text-xl font-bold text-blue-800 dark:text-blue-300">
                   {formData.amount ? `Rp ${Number(formData.amount).toLocaleString('id-ID')}` : 'Rp 0'}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-green-50 p-4 rounded-lg">
+          <div className="bg-green-50 p-4 rounded-lg dark:bg-green-900/20">
             <div className="flex items-center">
-              <CalendarDaysIcon className="h-8 w-8 text-green-600 mr-3" />
+              <CalendarDaysIcon className="h-8 w-8 text-green-600 mr-3 dark:text-green-400" />
               <div>
-                <p className="text-sm text-green-600">Payment Date</p>
-                <p className="text-xl font-bold text-green-800">
+                <p className="text-sm text-green-600 dark:text-green-400">Payment Date</p>
+                <p className="text-xl font-bold text-green-800 dark:text-green-300">
                   {formData.payment_date || 'Not set'}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-purple-50 p-4 rounded-lg">
+          <div className="bg-purple-50 p-4 rounded-lg dark:bg-purple-900/20">
             <div className="flex items-center">
-              <CreditCardIcon className="h-8 w-8 text-purple-600 mr-3" />
+              <CreditCardIcon className="h-8 w-8 text-purple-600 mr-3 dark:text-purple-400" />
               <div>
-                <p className="text-sm text-purple-600">Bank Account</p>
-                <p className="text-xl font-bold text-purple-800">
+                <p className="text-sm text-purple-600 dark:text-purple-400">Bank Account</p>
+                <p className="text-xl font-bold text-purple-800 dark:text-purple-300">
                   {cashBankAccounts.find(a => a.id === Number(formData.bank_account_id))?.name || 'Not selected'}
                 </p>
               </div>

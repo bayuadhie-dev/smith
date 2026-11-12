@@ -234,32 +234,32 @@ const StaffLeaveManagement: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
       case 'approved':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       case 'rejected':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
       case 'cancelled':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
   const getLeaveTypeBadge = (type: string) => {
     switch (type) {
       case 'sakit':
-        return 'bg-red-100 text-red-700';
+        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300';
       case 'izin':
-        return 'bg-yellow-100 text-yellow-700';
+        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300';
       case 'cuti_tahunan':
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
       case 'cuti_khusus':
-        return 'bg-purple-100 text-purple-700';
+        return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300';
       case 'dinas_luar':
-        return 'bg-green-100 text-green-700';
+        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200';
     }
   };
 
@@ -275,7 +275,7 @@ const StaffLeaveManagement: React.FC = () => {
             Pengajuan Izin/Cuti Staff
           </h1>
           {pendingCount > 0 && (
-            <p className="text-sm text-yellow-600 mt-1">
+            <p className="text-sm text-yellow-600 mt-1 dark:text-yellow-400">
               {pendingCount} pengajuan menunggu persetujuan
             </p>
           )}
@@ -290,7 +290,7 @@ const StaffLeaveManagement: React.FC = () => {
           </button>
           <button
             onClick={() => setShowLocationModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-lg"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-lg dark:hover:bg-gray-600"
           >
             <Settings className="h-4 w-4" />
             Lokasi Kantor
@@ -343,7 +343,7 @@ const StaffLeaveManagement: React.FC = () => {
           <div className="flex items-end">
             <button
               onClick={() => setFilter({ status: '', staff_name: '', leave_type: '' })}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-100"
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-100 dark:hover:text-white"
             >
               Reset Filter
             </button>
@@ -355,7 +355,7 @@ const StaffLeaveManagement: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
           </div>
         ) : requests.length === 0 ? (
           <div className="text-center py-12 text-gray-500 dark:text-gray-400">
@@ -401,26 +401,26 @@ const StaffLeaveManagement: React.FC = () => {
                       <span className="text-xs text-gray-400">-</span>
                     ) : req.manager_status === 'pending' ? (
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                        <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
                           Menunggu {req.required_manager_name || 'Manager'}
                         </span>
                         <button
                           onClick={() => handleManagerApprove(req.id, 'approved')}
-                          className="p-1 text-green-600 hover:bg-green-50 rounded"
+                          className="p-1 text-green-600 hover:bg-green-50 rounded dark:text-green-400"
                           title="Setujui (sebagai manager)"
                         >
                           <CheckCircle className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleManagerApprove(req.id, 'rejected')}
-                          className="p-1 text-red-600 hover:bg-red-50 rounded"
+                          className="p-1 text-red-600 hover:bg-red-50 rounded dark:text-red-400"
                           title="Tolak (sebagai manager)"
                         >
                           <XCircle className="h-4 w-4" />
                         </button>
                       </div>
                     ) : (
-                      <span className={`px-2 py-1 text-xs rounded-full ${req.manager_status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      <span className={`px-2 py-1 text-xs rounded-full ${req.manager_status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'}`}>
                         {req.manager_status === 'approved' ? 'Disetujui manager' : 'Ditolak manager'}
                       </span>
                     )}
@@ -437,7 +437,7 @@ const StaffLeaveManagement: React.FC = () => {
                           onClick={() => handleApprove(req.id)}
                           disabled={req.manager_status === 'pending'}
                           title={req.manager_status === 'pending' ? 'Menunggu approval manager terlebih dahulu' : 'Setujui'}
-                          className="p-1 text-green-600 hover:bg-green-50 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="p-1 text-green-600 hover:bg-green-50 rounded disabled:opacity-30 disabled:cursor-not-allowed dark:text-green-400"
                         >
                           <CheckCircle className="h-5 w-5" />
                         </button>
@@ -446,7 +446,7 @@ const StaffLeaveManagement: React.FC = () => {
                             setRejectingId(req.id);
                             setShowRejectModal(true);
                           }}
-                          className="p-1 text-red-600 hover:bg-red-50 rounded"
+                          className="p-1 text-red-600 hover:bg-red-50 rounded dark:text-red-400"
                           title="Tolak"
                         >
                           <XCircle className="h-5 w-5" />
@@ -512,7 +512,7 @@ const StaffLeaveManagement: React.FC = () => {
                   setRejectingId(null);
                   setRejectReason('');
                 }}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg dark:text-gray-300"
               >
                 Batal
               </button>
@@ -533,7 +533,7 @@ const StaffLeaveManagement: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
             <h3 className="text-lg font-semibold mb-4">Ajukan Cuti/Izin</h3>
             {submitError && (
-              <div className="mb-3 px-3 py-2 bg-red-50 text-red-700 text-sm rounded-lg">{submitError}</div>
+              <div className="mb-3 px-3 py-2 bg-red-50 text-red-700 text-sm rounded-lg dark:bg-red-900/20 dark:text-red-300">{submitError}</div>
             )}
             <div className="space-y-4">
               <div>
@@ -551,7 +551,7 @@ const StaffLeaveManagement: React.FC = () => {
                   <option value="dinas_luar">Dinas Luar</option>
                 </select>
                 {submitForm.leave_type === 'cuti_tahunan' && leaveBalance && (
-                  <p className={`mt-1 text-xs ${leaveBalance.remaining === 0 ? 'text-red-600' : 'text-gray-500 dark:text-gray-400'}`}>
+                  <p className={`mt-1 text-xs ${leaveBalance.remaining === 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
                     Sisa jatah cuti tahunan {leaveBalance.year}: <strong>{leaveBalance.remaining} hari</strong> (dari {leaveBalance.entitlement} hari, terpakai {leaveBalance.used})
                   </p>
                 )}
@@ -589,7 +589,7 @@ const StaffLeaveManagement: React.FC = () => {
             <div className="flex justify-end gap-2 mt-4">
               <button
                 onClick={() => { setShowSubmitModal(false); setSubmitError(''); }}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg dark:text-gray-300"
               >
                 Batal
               </button>
@@ -634,7 +634,7 @@ const StaffLeaveManagement: React.FC = () => {
                           <p className="font-medium">
                             {loc.name}
                             {loc.is_default && (
-                              <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">Default</span>
+                              <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded dark:bg-blue-900/30 dark:text-blue-300">Default</span>
                             )}
                           </p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">

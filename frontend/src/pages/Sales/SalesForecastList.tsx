@@ -125,7 +125,7 @@ export default function SalesForecastList() {
                 <div className="p-5">
                   <div className="flex items-start justify-between mb-3">
                     <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20">
-                      <Calendar className="w-5 h-5 text-blue-600" />
+                      <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                   </div>
 
@@ -151,7 +151,7 @@ export default function SalesForecastList() {
                       </div>
                       <div className="h-1.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full ${realizationPct >= 100 ? 'bg-green-500' : realizationPct > 0 ? 'bg-orange-400' : 'bg-gray-300'}`}
+                          className={`h-full rounded-full ${realizationPct >= 100 ? 'bg-green-500' : realizationPct > 0 ? 'bg-orange-400' : 'bg-gray-300 dark:bg-gray-600'}`}
                           style={{ width: `${realizationPct}%` }}
                         />
                       </div>
@@ -182,7 +182,7 @@ export default function SalesForecastList() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Forecast Baru</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Berlaku 12 bulan berturut-turut dari bulan yang dipilih.</p>
-            {error && <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-2 rounded">{error}</div>}
+            {error && <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-2 rounded dark:text-red-400">{error}</div>}
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Bulan Mulai</label>

@@ -132,8 +132,8 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
                 onClick={() => setActiveTab(tab.id)}
                 className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
                 }`}
               >
                 <Icon className={`mr-2 h-5 w-5 ${
@@ -144,8 +144,8 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
                   tab.isPending && tab.count > 0
                     ? 'bg-amber-500 text-white animate-pulse'
                     : activeTab === tab.id 
-                    ? 'bg-blue-100 text-blue-600' 
-                    : 'bg-gray-100 text-gray-900'
+                    ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' 
+                    : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white'
                 }`}>
                   {tab.count}
                 </span>

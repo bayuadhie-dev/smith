@@ -273,7 +273,7 @@ const PeriodClose: React.FC = () => {
   );
 
   if (loading) {
-    return <div className="p-6 text-gray-500">Memuat...</div>;
+    return <div className="p-6 text-gray-500 dark:text-gray-400">Memuat...</div>;
   }
 
   return (
@@ -287,13 +287,13 @@ const PeriodClose: React.FC = () => {
       </p>
 
       {message && (
-        <div className={`p-3 rounded-md text-sm mb-4 ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+        <div className={`p-3 rounded-md text-sm mb-4 ${message.type === 'success' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'}`}>
           {message.text}
         </div>
       )}
 
       {negativeStockWarning && (
-        <div className="p-4 rounded-md text-sm mb-6 bg-amber-50 border border-amber-200 text-amber-800">
+        <div className="p-4 rounded-md text-sm mb-6 bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
           <p className="font-medium mb-2">⚠️ Peringatan: {negativeStockWarning.length} item stok bernilai negatif (advisory, periode tetap berhasil ditutup)</p>
           <ul className="list-disc list-inside space-y-0.5">
             {negativeStockWarning.slice(0, 10).map((item) => (
@@ -336,7 +336,7 @@ const PeriodClose: React.FC = () => {
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             Checklist Closing - {MONTH_NAMES[selectedMonth - 1]} {selectedYear}
           </h2>
-          <button onClick={() => setShowAddTask((v) => !v)} className="text-sm text-primary-600 hover:underline">
+          <button onClick={() => setShowAddTask((v) => !v)} className="text-sm text-primary-600 hover:underline dark:text-primary-400">
             {showAddTask ? 'Batal' : '+ Tambah Item'}
           </button>
         </div>
@@ -366,15 +366,15 @@ const PeriodClose: React.FC = () => {
         )}
 
         {checklistLoading ? (
-          <p className="text-sm text-gray-500">Memuat checklist...</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Memuat checklist...</p>
         ) : checklist.length === 0 ? (
-          <p className="text-sm text-gray-500">Belum ada item checklist. Tambahkan lewat "+ Tambah Item" di atas.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada item checklist. Tambahkan lewat "+ Tambah Item" di atas.</p>
         ) : (
           <div className="space-y-2">
             {checklist.map((item) => {
               const isMissing = missingRequired?.some((m) => m.code === item.code);
               return (
-                <div key={item.code} className={`flex items-start justify-between p-2 rounded-md ${isMissing ? 'bg-red-50 border border-red-200' : ''}`}>
+                <div key={item.code} className={`flex items-start justify-between p-2 rounded-md ${isMissing ? 'bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800' : ''}`}>
                   <label className="flex items-start gap-2 cursor-pointer flex-1">
                     <input
                       type="checkbox"
@@ -410,7 +410,7 @@ const PeriodClose: React.FC = () => {
         </p>
 
         {locksLoading ? (
-          <p className="text-sm text-gray-500">Memuat...</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>
         ) : (
           <>
             {locks.length > 0 && (
@@ -463,7 +463,7 @@ const PeriodClose: React.FC = () => {
         </p>
 
         {bucketLocksLoading ? (
-          <p className="text-sm text-gray-500">Memuat...</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>
         ) : (
           <>
             {bucketLocks.length > 0 && (
@@ -524,8 +524,8 @@ const PeriodClose: React.FC = () => {
             Tutup {MONTH_NAMES[selectedMonth - 1]} {selectedYear}
           </button>
         ) : (
-          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-            <p className="text-sm text-yellow-800 mb-3">
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md dark:bg-yellow-900/20 dark:border-yellow-800">
+            <p className="text-sm text-yellow-800 mb-3 dark:text-yellow-300">
               Yakin ingin menutup periode {MONTH_NAMES[selectedMonth - 1]} {selectedYear}? Setelah ditutup,
               transaksi baru dengan tanggal di bulan ini tidak bisa dibuat sampai periode dibuka kembali
               secara manual.
@@ -540,7 +540,7 @@ const PeriodClose: React.FC = () => {
               </button>
               <button
                 onClick={() => setConfirmingClose(false)}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
               >
                 Batal
               </button>
@@ -549,8 +549,8 @@ const PeriodClose: React.FC = () => {
         )}
 
         {missingRequired && missingRequired.length > 0 && (
-          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-700 mb-2">Checklist wajib belum selesai (dicentang merah di atas). Bisa lanjut tutup paksa tanpa checklist lengkap:</p>
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/20 dark:border-red-800">
+            <p className="text-sm text-red-700 mb-2 dark:text-red-300">Checklist wajib belum selesai (dicentang merah di atas). Bisa lanjut tutup paksa tanpa checklist lengkap:</p>
             <button
               onClick={() => handleClose(true)}
               disabled={closing}
@@ -565,7 +565,7 @@ const PeriodClose: React.FC = () => {
       <div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Riwayat Penutupan</h2>
         {records.length === 0 ? (
-          <p className="text-sm text-gray-500">Belum ada periode yang ditutup.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada periode yang ditutup.</p>
         ) : (
           <div className="space-y-3">
             {records.map((r) => (
@@ -599,7 +599,7 @@ const PeriodClose: React.FC = () => {
                     </button>
                     <button
                       onClick={() => setReopeningId(null)}
-                      className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200"
+                      className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
                     >
                       Batal
                     </button>
@@ -607,7 +607,7 @@ const PeriodClose: React.FC = () => {
                 ) : (
                   <button
                     onClick={() => setReopeningId(r.id)}
-                    className="px-3 py-1.5 text-sm text-gray-500 hover:text-red-600 hover:underline"
+                    className="px-3 py-1.5 text-sm text-gray-500 hover:text-red-600 hover:underline dark:text-gray-400"
                   >
                     Buka Kembali
                   </button>

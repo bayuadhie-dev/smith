@@ -110,21 +110,21 @@ const MaterialRequirements: React.FC = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'text-red-600 bg-red-100';
-      case 'high': return 'text-orange-600 bg-orange-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'low': return 'text-green-600 bg-green-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'critical': return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
+      case 'high': return 'text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400';
+      case 'medium': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case 'low': return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
+      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'planned': return 'text-blue-600 bg-blue-100';
-      case 'ordered': return 'text-yellow-600 bg-yellow-100';
-      case 'received': return 'text-green-600 bg-green-100';
-      case 'shortage': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'planned': return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'ordered': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case 'received': return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
+      case 'shortage': return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
+      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
@@ -151,14 +151,14 @@ const MaterialRequirements: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/mrp"
-            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to MRP Dashboard
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Material Requirements</h1>
-            <p className="text-gray-600 mt-1">Track material needs and shortages</p>
+            <p className="text-gray-600 mt-1 dark:text-gray-300">Track material needs and shortages</p>
           </div>
         </div>
       </div>
@@ -167,9 +167,9 @@ const MaterialRequirements: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
-            <CubeIcon className="h-8 w-8 text-blue-600" />
+            <CubeIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Materials</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Materials</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(summary.total_materials)}</p>
             </div>
           </div>
@@ -177,9 +177,9 @@ const MaterialRequirements: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
-            <ExclamationTriangleIcon className="h-8 w-8 text-red-600" />
+            <ExclamationTriangleIcon className="h-8 w-8 text-red-600 dark:text-red-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Shortage Items</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Shortage Items</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(summary.total_shortage_items)}</p>
             </div>
           </div>
@@ -187,9 +187,9 @@ const MaterialRequirements: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
-            <TruckIcon className="h-8 w-8 text-orange-600" />
+            <TruckIcon className="h-8 w-8 text-orange-600 dark:text-orange-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Critical Shortages</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Critical Shortages</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(summary.critical_shortages)}</p>
             </div>
           </div>
@@ -197,9 +197,9 @@ const MaterialRequirements: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
-            <ClockIcon className="h-8 w-8 text-yellow-600" />
+            <ClockIcon className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Avg Lead Time</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Avg Lead Time</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{summary.avg_lead_time} days</p>
             </div>
           </div>
@@ -207,9 +207,9 @@ const MaterialRequirements: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center">
-            <CalendarIcon className="h-8 w-8 text-green-600" />
+            <CalendarIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Shortage Value</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Shortage Value</p>
               <p className="text-lg font-bold text-gray-900 dark:text-white">{formatRupiah(summary.total_shortage_value)}</p>
             </div>
           </div>
@@ -305,7 +305,7 @@ const MaterialRequirements: React.FC = () => {
                     {formatNumber(req.available_qty)} {req.unit}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="font-medium text-red-600">
+                    <span className="font-medium text-red-600 dark:text-red-400">
                       {formatNumber(req.shortage_qty)} {req.unit}
                     </span>
                   </td>

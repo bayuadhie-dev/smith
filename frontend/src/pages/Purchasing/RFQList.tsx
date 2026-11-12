@@ -28,12 +28,12 @@ const [search, setSearch] = useState('')
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { class: string; label: string }> = {
-      draft: { class: 'bg-gray-100 text-gray-800', label: 'Draft' },
-      issued: { class: 'bg-blue-100 text-blue-800', label: 'Issued' },
-      closed: { class: 'bg-green-100 text-green-800', label: 'Closed' },
-      cancelled: { class: 'bg-red-100 text-red-800', label: 'Cancelled' }
+      draft: { class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: 'Draft' },
+      issued: { class: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', label: 'Issued' },
+      closed: { class: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', label: 'Closed' },
+      cancelled: { class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Cancelled' }
     }
-    return badges[status] || { class: 'bg-gray-100 text-gray-800', label: status }
+    return badges[status] || { class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: status }
   }
 
   const handleSearch = (e: React.FormEvent) => {
@@ -94,7 +94,7 @@ const [search, setSearch] = useState('')
           <div className="flex items-end">
             <button
               type="submit"
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-200 dark:bg-gray-700 transition-colors"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-200 dark:bg-gray-700 transition-colors dark:hover:bg-gray-600"
             >
               <FunnelIcon className="h-5 w-5" />{t('common.filter')}</button>
           </div>
@@ -180,7 +180,7 @@ const [search, setSearch] = useState('')
                         <div className="flex items-center justify-end space-x-2">
                           <Link
                             to={`/app/purchasing/rfqs/${rfq.id}`}
-                            className="text-blue-600 hover:text-blue-900 p-1"
+                            className="text-blue-600 hover:text-blue-900 p-1 dark:text-blue-400"
                             title="View Details"
                           >
                             <EyeIcon className="h-4 w-4" />
@@ -189,7 +189,7 @@ const [search, setSearch] = useState('')
                           {rfq.status === 'draft' && (
                             <Link
                               to={`/app/purchasing/rfqs/${rfq.id}/edit`}
-                              className="text-indigo-600 hover:text-indigo-900 p-1"
+                              className="text-indigo-600 hover:text-indigo-900 p-1 dark:text-indigo-400"
                               title={t('common.edit')}
                             >
                               <PencilIcon className="h-4 w-4" />

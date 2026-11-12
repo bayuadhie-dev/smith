@@ -175,10 +175,10 @@ export default function BatchStatusChange() {
                       )}
                     </td>
                     <td className="flex gap-2">
-                      <button className="text-primary-600 hover:text-primary-800 text-sm" onClick={() => openChangeStatus(b)}>
+                      <button className="text-primary-600 hover:text-primary-800 text-sm dark:text-primary-400" onClick={() => openChangeStatus(b)}>
                         Ubah Status
                       </button>
-                      <button className="text-gray-500 hover:text-gray-700" onClick={() => setShowHistoryFor(b)} title="Riwayat">
+                      <button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white" onClick={() => setShowHistoryFor(b)} title="Riwayat">
                         <ClockIcon className="h-5 w-5" />
                       </button>
                     </td>
@@ -186,13 +186,13 @@ export default function BatchStatusChange() {
                 ))}
                 {batches.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="text-center py-8 text-gray-500">Tidak ada batch ditemukan</td>
+                    <td colSpan={8} className="text-center py-8 text-gray-500 dark:text-gray-400">Tidak ada batch ditemukan</td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
-          <div className="flex justify-between items-center p-3 text-sm text-gray-500">
+          <div className="flex justify-between items-center p-3 text-sm text-gray-500 dark:text-gray-400">
             <button className="btn-secondary" disabled={page <= 1} onClick={() => setPage(page - 1)}>Sebelumnya</button>
             <span>Halaman {page} dari {totalPages}</span>
             <button className="btn-secondary" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Berikutnya</button>
@@ -206,7 +206,7 @@ export default function BatchStatusChange() {
             <h2 className="text-lg font-bold">
               Disposisi Batch: {selected.item_code} - {selected.item_name}
             </h2>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               Batch: {selected.batch_number || '-'} · Status saat ini: <span className="font-semibold">{selected.stock_status}</span> · Qty on hand: <span className="font-semibold">{selected.quantity_on_hand}</span>
             </div>
 
@@ -241,10 +241,10 @@ export default function BatchStatusChange() {
                   )}
                 </div>
               ))}
-              <button type="button" className="text-primary-600 hover:text-primary-800 text-sm" onClick={addSplitRow}>
+              <button type="button" className="text-primary-600 hover:text-primary-800 text-sm dark:text-primary-400" onClick={addSplitRow}>
                 + Tambah baris split
               </button>
-              <div className={`text-sm ${splitTotal > selected.quantity_on_hand ? 'text-red-600' : 'text-gray-500'}`}>
+              <div className={`text-sm ${splitTotal > selected.quantity_on_hand ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
                 Total: {splitTotal} / {selected.quantity_on_hand}
               </div>
             </div>

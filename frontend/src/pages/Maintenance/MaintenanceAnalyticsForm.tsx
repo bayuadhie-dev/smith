@@ -192,7 +192,7 @@ const MaintenanceAnalyticsForm: React.FC = () => {
             <button
               onClick={exportExcel}
               disabled={exporting}
-              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-60 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-60 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
             >
               {exporting ? 'Menyiapkan...' : 'Ekspor Excel'}
             </button>

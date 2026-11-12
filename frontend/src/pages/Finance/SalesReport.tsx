@@ -125,13 +125,13 @@ const SalesReport: React.FC = () => {
         <div className="flex gap-1 bg-gray-100 rounded p-1 dark:bg-gray-700">
           <button
             onClick={() => setView('invoice')}
-            className={`px-3 py-1.5 rounded text-sm ${view === 'invoice' ? 'bg-white shadow font-medium' : 'text-gray-500'} dark:bg-gray-800 dark:text-gray-400`}
+            className={`px-3 py-1.5 rounded text-sm ${view === 'invoice' ? 'bg-white shadow font-medium dark:bg-gray-800' : 'text-gray-500 dark:text-gray-400'} dark:bg-gray-800 dark:text-gray-400`}
           >
             Per Invoice
           </button>
           <button
             onClick={() => setView('product')}
-            className={`px-3 py-1.5 rounded text-sm ${view === 'product' ? 'bg-white shadow font-medium' : 'text-gray-500'} dark:bg-gray-800 dark:text-gray-400`}
+            className={`px-3 py-1.5 rounded text-sm ${view === 'product' ? 'bg-white shadow font-medium dark:bg-gray-800' : 'text-gray-500 dark:text-gray-400'} dark:bg-gray-800 dark:text-gray-400`}
           >
             Per Produk
           </button>

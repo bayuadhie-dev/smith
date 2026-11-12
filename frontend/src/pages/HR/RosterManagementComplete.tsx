@@ -452,7 +452,7 @@ const RosterManagementComplete: React.FC = () => {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded dark:bg-red-900/30 dark:text-red-300">
           <div className="flex items-center">
             <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
             <strong>Error:</strong> {error}
@@ -480,42 +480,42 @@ const RosterManagementComplete: React.FC = () => {
         
         {/* Statistics */}
         <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-blue-100 p-4 rounded-lg">
+          <div className="bg-blue-100 p-4 rounded-lg dark:bg-blue-900/30">
             <div className="flex items-center">
-              <UserIcon className="h-8 w-8 text-blue-600 mr-3" />
+              <UserIcon className="h-8 w-8 text-blue-600 mr-3 dark:text-blue-400" />
               <div>
-                <div className="text-2xl font-bold text-blue-900">{employees.length}</div>
-                <div className="text-sm text-blue-700">Active Employees</div>
+                <div className="text-2xl font-bold text-blue-900 dark:text-blue-200">{employees.length}</div>
+                <div className="text-sm text-blue-700 dark:text-blue-300">Active Employees</div>
               </div>
             </div>
           </div>
           
-          <div className="bg-green-100 p-4 rounded-lg">
+          <div className="bg-green-100 p-4 rounded-lg dark:bg-green-900/30">
             <div className="flex items-center">
-              <CogIcon className="h-8 w-8 text-green-600 mr-3" />
+              <CogIcon className="h-8 w-8 text-green-600 mr-3 dark:text-green-400" />
               <div>
-                <div className="text-2xl font-bold text-green-900">{machines.length}</div>
-                <div className="text-sm text-green-700">Production Machines</div>
+                <div className="text-2xl font-bold text-green-900 dark:text-green-200">{machines.length}</div>
+                <div className="text-sm text-green-700 dark:text-green-300">Production Machines</div>
               </div>
             </div>
           </div>
           
-          <div className="bg-purple-100 p-4 rounded-lg">
+          <div className="bg-purple-100 p-4 rounded-lg dark:bg-purple-900/30">
             <div className="flex items-center">
-              <ClockIcon className="h-8 w-8 text-purple-600 mr-3" />
+              <ClockIcon className="h-8 w-8 text-purple-600 mr-3 dark:text-purple-400" />
               <div>
-                <div className="text-2xl font-bold text-purple-900">{shifts.length}</div>
-                <div className="text-sm text-purple-700">Work Shifts</div>
+                <div className="text-2xl font-bold text-purple-900 dark:text-purple-200">{shifts.length}</div>
+                <div className="text-sm text-purple-700 dark:text-purple-300">Work Shifts</div>
               </div>
             </div>
           </div>
           
-          <div className="bg-orange-100 p-4 rounded-lg">
+          <div className="bg-orange-100 p-4 rounded-lg dark:bg-orange-900/30">
             <div className="flex items-center">
-              <CalendarIcon className="h-8 w-8 text-orange-600 mr-3" />
+              <CalendarIcon className="h-8 w-8 text-orange-600 mr-3 dark:text-orange-400" />
               <div>
-                <div className="text-2xl font-bold text-orange-900">{assignments.length}</div>
-                <div className="text-sm text-orange-700">This Week Assignments</div>
+                <div className="text-2xl font-bold text-orange-900 dark:text-orange-200">{assignments.length}</div>
+                <div className="text-sm text-orange-700 dark:text-orange-300">This Week Assignments</div>
               </div>
             </div>
           </div>
@@ -523,9 +523,9 @@ const RosterManagementComplete: React.FC = () => {
         
         {/* Debug Info */}
         {assignments.length > 0 && (
-          <div className="mt-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
-            <h3 className="font-semibold text-yellow-800 mb-2">🔍 Debug: Current Assignments</h3>
-            <div className="text-sm text-yellow-700">
+          <div className="mt-4 p-4 bg-yellow-100 border border-yellow-400 rounded dark:bg-yellow-900/30">
+            <h3 className="font-semibold text-yellow-800 mb-2 dark:text-yellow-300">🔍 Debug: Current Assignments</h3>
+            <div className="text-sm text-yellow-700 dark:text-yellow-300">
               {assignments.map((assignment, index) => (
                 <div key={assignment.id} className="mb-1">
                   <strong>#{index + 1}:</strong> {assignment.employee_name} → Machine {assignment.machine_id} 
@@ -545,7 +545,7 @@ const RosterManagementComplete: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
               <div className="p-4 border-b">
                 <div className="flex items-center">
-                  <UserIcon className="h-5 w-5 text-blue-600 mr-2" />
+                  <UserIcon className="h-5 w-5 text-blue-600 mr-2 dark:text-blue-400" />
                   <h2 className="text-lg font-semibold">Available Employees</h2>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -560,7 +560,7 @@ const RosterManagementComplete: React.FC = () => {
                       {...provided.droppableProps}
                       ref={provided.innerRef}
                       className={`min-h-[300px] transition-colors ${
-                        snapshot.isDraggingOver ? 'bg-blue-50' : ''
+                        snapshot.isDraggingOver ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                       }`}
                     >
                       {employees.map((employee, index) => {
@@ -580,31 +580,31 @@ const RosterManagementComplete: React.FC = () => {
                                 {...provided.dragHandleProps}
                                 className={`p-3 mb-3 border-2 rounded-lg transition-all ${
                                   isAssignedThisWeek
-                                    ? 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-60'
+                                    ? 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-60 dark:bg-gray-700 dark:border-gray-600'
                                     : snapshot.isDragging 
-                                      ? 'bg-white border-blue-400 shadow-lg transform rotate-2 cursor-move' 
-                                      : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-md cursor-move'
+                                      ? 'bg-white border-blue-400 shadow-lg transform rotate-2 cursor-move dark:bg-gray-800' 
+                                      : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-md cursor-move dark:bg-gray-800 dark:border-gray-700'
                                 }`}
                               >
                                 <div className="flex items-center">
                                   <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
-                                    isAssignedThisWeek ? 'bg-gray-200' : 'bg-blue-100'
+                                    isAssignedThisWeek ? 'bg-gray-200 dark:bg-gray-700' : 'bg-blue-100 dark:bg-blue-900/30'
                                   }`}>
                                     {isAssignedThisWeek ? (
                                       <CheckCircleIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                     ) : (
-                                      <UserIcon className="h-5 w-5 text-blue-600" />
+                                      <UserIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                     )}
                                   </div>
                                   <div className="flex-1">
-                                    <div className={`font-medium ${isAssignedThisWeek ? 'text-gray-600' : 'text-gray-900'}`}>
+                                    <div className={`font-medium ${isAssignedThisWeek ? 'text-gray-600 dark:text-gray-300' : 'text-gray-900 dark:text-white'}`}>
                                       {employee.full_name}
                                       {isAssignedThisWeek && (
-                                        <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                                        <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded dark:bg-green-900/30 dark:text-green-300">
                                         </span>
                                       )}
                                     </div>
-                                    <div className={`text-sm ${isAssignedThisWeek ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    <div className={`text-sm ${isAssignedThisWeek ? 'text-gray-400' : 'text-gray-500 dark:text-gray-400'}`}>
                                       {employee.employee_number}
                                     </div>
                                     <div className={`text-xs ${isAssignedThisWeek ? 'text-gray-400' : 'text-gray-400'}`}>
@@ -725,8 +725,8 @@ const RosterManagementComplete: React.FC = () => {
                       <tr key={machine.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                         <td className="px-4 py-4">
                           <div className="flex items-center">
-                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                              <CogIcon className="h-5 w-5 text-green-600" />
+                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3 dark:bg-green-900/30">
+                              <CogIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
                             </div>
                             <div>
                               <div className="font-medium text-gray-900 dark:text-white">{machine.name}</div>
@@ -752,23 +752,23 @@ const RosterManagementComplete: React.FC = () => {
                                     ref={provided.innerRef}
                                     className={`min-h-[100px] p-2 rounded-lg border-2 border-dashed transition-all ${
                                       isSlotOccupied
-                                        ? 'border-orange-300 bg-orange-50'
+                                        ? 'border-orange-300 bg-orange-50 dark:bg-orange-900/20'
                                         : snapshot.isDraggingOver 
-                                          ? 'border-green-400 bg-green-50' 
-                                          : 'border-gray-200 hover:border-gray-300'
+                                          ? 'border-green-400 bg-green-50 dark:bg-green-900/20' 
+                                          : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
                                     }`}
                                   >
                                     {slotAssignments.map((assignment) => (
                                       <div
                                         key={assignment.id}
-                                        className="p-2 mb-2 bg-blue-100 border border-blue-200 rounded-lg group"
+                                        className="p-2 mb-2 bg-blue-100 border border-blue-200 rounded-lg group dark:bg-blue-900/30 dark:border-blue-800"
                                       >
                                         <div className="flex items-center justify-between">
                                           <div className="flex-1">
-                                            <div className="font-medium text-blue-900 text-sm">
+                                            <div className="font-medium text-blue-900 text-sm dark:text-blue-200">
                                               {assignment.employee_name}
                                             </div>
-                                            <div className="text-xs text-blue-700">
+                                            <div className="text-xs text-blue-700 dark:text-blue-300">
                                               {assignment.shift_name}
                                             </div>
                                           </div>

@@ -63,8 +63,8 @@ export default function SalesOrderSourcePicker() {
 
 function SourceCard({ icon, title, desc, color, onClick }: { icon: React.ReactNode; title: string; desc: string; color: string; onClick: () => void }) {
   const colorMap: Record<string, string> = {
-    blue: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600',
-    emerald: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600',
+    blue: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
+    emerald: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400',
   };
   return (
     <button
@@ -123,9 +123,9 @@ function FromQuotationFlow({ onBack }: { onBack: () => void }) {
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">No. Quotation</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Customer</th>
-                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Total</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">No. Quotation</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Customer</th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Total</th>
                 <th className="px-3 py-2"></th>
               </tr>
             </thead>

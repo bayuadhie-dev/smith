@@ -36,10 +36,10 @@ export default function AttachmentsPanel({ entityType, entityId }: { entityType:
         {items.map((a) => (
           <li key={a.id} className="flex items-center justify-between py-2 text-sm">
             <span className="truncate text-gray-800 dark:text-gray-200">{a.filename}</span>
-            <span className="flex items-center gap-3 shrink-0 text-gray-500">
+            <span className="flex items-center gap-3 shrink-0 text-gray-500 dark:text-gray-400">
               <span>{sizeLabel(a.file_size)}</span>
               <span>{a.created_at ? new Date(a.created_at).toLocaleDateString('id-ID') : ''}</span>
-              <button type="button" onClick={() => download(a)} className="text-blue-600 hover:underline">Unduh</button>
+              <button type="button" onClick={() => download(a)} className="text-blue-600 hover:underline dark:text-blue-400">Unduh</button>
             </span>
           </li>
         ))}
@@ -89,24 +89,24 @@ export function PendingAttachments({ files, onChange, entityType, entityId }: { 
           onChange={(e) => { onChange([...files, ...Array.from(e.target.files || [])]); if (input.current) input.current.value = '' }} />
       </div>
       {existing.length + files.length === 0 ? (
-        <p className="text-sm text-gray-500">Opsional. Diunggah otomatis saat disimpan. Maksimal 10 MB per file.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Opsional. Diunggah otomatis saat disimpan. Maksimal 10 MB per file.</p>
       ) : (
         <ul className="divide-y divide-gray-100 dark:divide-gray-700">
           {existing.map((a) => (
             <li key={`e${a.id}`} className="flex items-center justify-between py-2 text-sm">
               <span className="truncate text-gray-800 dark:text-gray-200">{a.filename}</span>
-              <span className="flex items-center gap-3 shrink-0 text-gray-500">
+              <span className="flex items-center gap-3 shrink-0 text-gray-500 dark:text-gray-400">
                 <span>{sizeLabel(a.file_size)}</span>
-                <button type="button" onClick={() => removeExisting(a)} className="text-red-600 hover:underline">Hapus</button>
+                <button type="button" onClick={() => removeExisting(a)} className="text-red-600 hover:underline dark:text-red-400">Hapus</button>
               </span>
             </li>
           ))}
           {files.map((f, i) => (
             <li key={i} className="flex items-center justify-between py-2 text-sm">
-              <span className="truncate text-gray-800 dark:text-gray-200">{f.name} <span className="text-xs text-green-700">(baru)</span></span>
-              <span className="flex items-center gap-3 shrink-0 text-gray-500">
+              <span className="truncate text-gray-800 dark:text-gray-200">{f.name} <span className="text-xs text-green-700 dark:text-green-300">(baru)</span></span>
+              <span className="flex items-center gap-3 shrink-0 text-gray-500 dark:text-gray-400">
                 <span>{sizeLabel(f.size)}</span>
-                <button type="button" onClick={() => onChange(files.filter((_, j) => j !== i))} className="text-red-600 hover:underline">Hapus</button>
+                <button type="button" onClick={() => onChange(files.filter((_, j) => j !== i))} className="text-red-600 hover:underline dark:text-red-400">Hapus</button>
               </span>
             </li>
           ))}

@@ -125,7 +125,7 @@ export function ReportShell({ title, subtitle, icon, backTo, backLabel, actions,
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           {backTo && (
-            <button type="button" onClick={() => navigate(backTo)} className="print-hide mb-1 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-emerald-700">
+            <button type="button" onClick={() => navigate(backTo)} className="print-hide mb-1 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-emerald-700 dark:text-gray-400">
               <ArrowLeftIcon className="h-4 w-4" /> {backLabel || 'Pusat Laporan'}
             </button>
           )}
@@ -147,10 +147,10 @@ export function ExportButtons({ report }: { report?: [string, Record<string, any
   const base = 'inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium disabled:opacity-60'
   return (
     <>
-      <button type="button" disabled={!!busy} onClick={() => run('xlsx', () => downloadExcel(path, params))} className={`${base} border-emerald-600 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20`}>
+      <button type="button" disabled={!!busy} onClick={() => run('xlsx', () => downloadExcel(path, params))} className={`${base} border-emerald-600 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 dark:text-emerald-300`}>
         <ArrowDownTrayIcon className="h-4 w-4" /> {busy === 'xlsx' ? 'Menyiapkan…' : 'Excel'}
       </button>
-      <button type="button" disabled={!!busy} onClick={() => run('pdf', () => downloadPdf(path, params))} className={`${base} border-rose-500 text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/20`}>
+      <button type="button" disabled={!!busy} onClick={() => run('pdf', () => downloadPdf(path, params))} className={`${base} border-rose-500 text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/20 dark:text-rose-300`}>
         <ArrowDownTrayIcon className="h-4 w-4" /> {busy === 'pdf' ? 'Menyiapkan…' : 'PDF'}
       </button>
       <button type="button" disabled={!!busy} onClick={() => run('print', () => printPdf(path, params))} className={`${base} border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700`}>
@@ -166,12 +166,12 @@ export function PeriodFilter({ from, to, onChange, onReload, loading, extra, sin
   return (
     <div className="print-hide flex flex-wrap items-end gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <div>
-        <label className="mb-1 block text-xs font-medium text-gray-500">{single ? 'Per tanggal' : 'Dari'}</label>
+        <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">{single ? 'Per tanggal' : 'Dari'}</label>
         <input type="date" className="input" value={single ? to : from} onChange={(e) => (single ? onChange(e.target.value, e.target.value) : onChange(e.target.value, to))} />
       </div>
       {!single && (
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Sampai</label>
+          <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Sampai</label>
           <input type="date" className="input" value={to} onChange={(e) => onChange(from, e.target.value)} />
         </div>
       )}
@@ -237,7 +237,7 @@ export const Td = ({ children, right, className = '', colSpan }: { children?: Re
   <td colSpan={colSpan} className={`px-3 py-2 align-top ${right ? 'text-right tabular-nums' : 'text-left'} text-gray-800 dark:text-gray-100 ${className}`}>{children}</td>
 )
 export const Money = ({ v, zeroDash = true, colored }: { v: number | null | undefined; zeroDash?: boolean; colored?: boolean }) => (
-  <span className={colored && (v || 0) < 0 ? 'text-red-600' : ''}>{zeroDash && !v ? '-' : num(v)}</span>
+  <span className={colored && (v || 0) < 0 ? 'text-red-600 dark:text-red-400' : ''}>{zeroDash && !v ? '-' : num(v)}</span>
 )
 
 export function DocLink({ url, children }: { url?: string | null; children: React.ReactNode }) {
@@ -246,7 +246,7 @@ export function DocLink({ url, children }: { url?: string | null; children: Reac
 }
 
 export function LoadState({ loading, error, empty, emptyText, children }: { loading: boolean; error: string | null; empty?: boolean; emptyText?: string; children: React.ReactNode }) {
-  if (error) return <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>
+  if (error) return <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">{error}</div>
   if (loading) {
     return (
       <div className="space-y-2 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
@@ -254,7 +254,7 @@ export function LoadState({ loading, error, empty, emptyText, children }: { load
       </div>
     )
   }
-  if (empty) return <div className="rounded-xl border border-dashed border-gray-300 bg-white p-10 text-center text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-800">{emptyText || 'Tidak ada data untuk periode ini.'}</div>
+  if (empty) return <div className="rounded-xl border border-dashed border-gray-300 bg-white p-10 text-center text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">{emptyText || 'Tidak ada data untuk periode ini.'}</div>
   return <>{children}</>
 }
 

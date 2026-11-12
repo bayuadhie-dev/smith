@@ -42,17 +42,17 @@ const { id } = useParams<{ id: string }>()
     const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
     switch (status) {
       case 'received':
-        return `${baseClasses} bg-blue-100 text-blue-800`
+        return `${baseClasses} bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300`
       case 'qc_pending':
-        return `${baseClasses} bg-yellow-100 text-yellow-800`
+        return `${baseClasses} bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300`
       case 'qc_approved':
-        return `${baseClasses} bg-green-100 text-green-800`
+        return `${baseClasses} bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300`
       case 'qc_rejected':
-        return `${baseClasses} bg-red-100 text-red-800`
+        return `${baseClasses} bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300`
       case 'processed':
-        return `${baseClasses} bg-blue-100 text-blue-800`
+        return `${baseClasses} bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300`
       default:
-        return `${baseClasses} bg-gray-100 text-gray-800`
+        return `${baseClasses} bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100`
     }
   }
 
@@ -230,21 +230,21 @@ const { id } = useParams<{ id: string }>()
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {item.quantity_returned}
                         {item.qc_quantity_approved > 0 && (
-                          <div className="text-xs text-green-600">
+                          <div className="text-xs text-green-600 dark:text-green-400">
                             Approved: {item.qc_quantity_approved}
                           </div>
                         )}
                         {item.qc_quantity_rejected > 0 && (
-                          <div className="text-xs text-red-600">
+                          <div className="text-xs text-red-600 dark:text-red-400">
                             Rejected: {item.qc_quantity_rejected}
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          item.condition_received === 'good' ? 'bg-green-100 text-green-800' :
-                          item.condition_received === 'damaged' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
+                          item.condition_received === 'good' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                          item.condition_received === 'damaged' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
                         }`}>
                           {item.condition_received}
                         </span>
@@ -279,7 +279,7 @@ const { id } = useParams<{ id: string }>()
                                 setSelectedItem(item)
                                 setShowQCModal(true)
                               }}
-                              className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                              className="text-blue-600 hover:text-blue-900 flex items-center gap-1 dark:text-blue-400"
                             >
                               <BeakerIcon className="h-4 w-4" />
                             </button>
@@ -290,7 +290,7 @@ const { id } = useParams<{ id: string }>()
                                 setSelectedItem(item)
                                 setShowDispositionModal(true)
                               }}
-                              className="text-green-600 hover:text-green-900 flex items-center gap-1"
+                              className="text-green-600 hover:text-green-900 flex items-center gap-1 dark:text-green-400"
                             >
                               <ArchiveBoxIcon className="h-4 w-4" />
                             </button>
@@ -328,7 +328,7 @@ const { id } = useParams<{ id: string }>()
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">QC Records</h3>
               <div className="space-y-4">
                 {returnData.qc_records.map((qc) => (
-                  <div key={qc.id} className="border-l-4 border-blue-200 pl-4">
+                  <div key={qc.id} className="border-l-4 border-blue-200 pl-4 dark:border-blue-800">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-900 dark:text-white">{qc.qc_by}</span>
                       <span className={getStatusBadge(qc.overall_result)}>
@@ -345,7 +345,7 @@ const { id } = useParams<{ id: string }>()
                       <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">{qc.qc_notes}</p>
                     )}
                     {qc.recommendation && (
-                      <p className="text-sm text-blue-600 mt-1">Rec: {qc.recommendation}</p>
+                      <p className="text-sm text-blue-600 mt-1 dark:text-blue-400">Rec: {qc.recommendation}</p>
                     )}
                   </div>
                 ))}

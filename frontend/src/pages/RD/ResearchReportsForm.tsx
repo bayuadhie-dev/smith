@@ -204,12 +204,12 @@ const ResearchReportsForm: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'planning': return 'bg-gray-100 text-gray-800';
-      case 'active': return 'bg-blue-100 text-blue-800';
-      case 'on_hold': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'planning': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
+      case 'active': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'on_hold': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -372,7 +372,7 @@ const ResearchReportsForm: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
-                <Beaker className="h-8 w-8 text-blue-600" />
+                <Beaker className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Projects</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.total_projects}</p>
@@ -382,7 +382,7 @@ const ResearchReportsForm: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
-                <ArrowTrendingUpIcon className="h-8 w-8 text-green-600" />
+                <ArrowTrendingUpIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Projects</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.active_projects}</p>
@@ -392,7 +392,7 @@ const ResearchReportsForm: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
-                <CurrencyDollarIcon className="h-8 w-8 text-purple-600" />
+                <CurrencyDollarIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Budget</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(reportData.summary.total_budget)}</p>
@@ -402,7 +402,7 @@ const ResearchReportsForm: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center">
-                <CheckCircle className="h-8 w-8 text-orange-600" />
+                <CheckCircle className="h-8 w-8 text-orange-600 dark:text-orange-400" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Success Rate</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.success_rate.toFixed(1)}%</p>
@@ -416,25 +416,25 @@ const ResearchReportsForm: React.FC = () => {
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Performance Metrics</h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                   {((reportData.summary.completed_projects / reportData.summary.total_projects) * 100).toFixed(1)}%
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">Completion Rate</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">
+                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
                   {((reportData.summary.budget_utilized / reportData.summary.total_budget) * 100).toFixed(1)}%
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">Budget Utilization</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600">
+                <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
                   {reportData.summary.average_duration.toFixed(0)}
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">Avg Duration (days)</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-orange-600">
+                <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
                   {reportData.summary.roi.toFixed(1)}%
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">ROI</div>

@@ -189,7 +189,7 @@ const RNDProjectForm: React.FC = () => {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-800">
           <h2 className="text-lg font-semibold mb-4">Informasi Dasar</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -253,7 +253,7 @@ const RNDProjectForm: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-800">
           <h2 className="text-lg font-semibold mb-4">Target Produk</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -321,7 +321,7 @@ const RNDProjectForm: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-800">
           <h2 className="text-lg font-semibold mb-4">Timeline & Budget</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

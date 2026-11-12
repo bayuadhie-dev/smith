@@ -31,7 +31,7 @@ export default function NotificationPreferences() {
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Pilih kejadian yang ingin Anda terima di lonceng dan di email.</p>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700">
+          <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
             <th className="pb-2">Kejadian</th><th className="pb-2 text-center w-24">Lonceng</th><th className="pb-2 text-center w-24">Email</th>
           </tr>
         </thead>

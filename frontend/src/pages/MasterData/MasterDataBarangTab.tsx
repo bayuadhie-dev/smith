@@ -315,7 +315,7 @@ export default function MasterDataBarangTab() {
                       </span>
                     </td>
                     <td>
-                      <button onClick={() => openEdit(row)} className="text-primary-600 hover:text-primary-800">
+                      <button onClick={() => openEdit(row)} className="text-primary-600 hover:text-primary-800 dark:text-primary-400">
                         <PencilIcon className="h-5 w-5" />
                       </button>
                     </td>
@@ -323,13 +323,13 @@ export default function MasterDataBarangTab() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="text-center py-8 text-gray-500">Tidak ada item ditemukan</td>
+                    <td colSpan={9} className="text-center py-8 text-gray-500 dark:text-gray-400">Tidak ada item ditemukan</td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm text-gray-600">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
             <span>
               {filtered.length === 0 ? '0 item' : `${(safePage - 1) * pageSize + 1}-${Math.min(safePage * pageSize, filtered.length)} dari ${filtered.length} item`}
             </span>
@@ -356,7 +356,7 @@ export default function MasterDataBarangTab() {
               <button
                 onClick={() => setModalTab('detail')}
                 className={`pb-2 px-1 border-b-2 text-sm font-medium ${
-                  modalTab === 'detail' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'
+                  modalTab === 'detail' ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400'
                 }`}
               >
                 Detail
@@ -364,7 +364,7 @@ export default function MasterDataBarangTab() {
               <button
                 onClick={() => openUsageTab(editingRow)}
                 className={`pb-2 px-1 border-b-2 text-sm font-medium ${
-                  modalTab === 'usage' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'
+                  modalTab === 'usage' ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400'
                 }`}
               >
                 Usage
@@ -381,16 +381,16 @@ export default function MasterDataBarangTab() {
                       <div key={`${u.table}-${u.column}`} className="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 py-2">
                         <div>
                           <span className="font-medium">{u.table}</span>
-                          <span className="text-sm text-gray-500"> .{u.column}</span>
+                          <span className="text-sm text-gray-500 dark:text-gray-400"> .{u.column}</span>
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
                           {u.count} baris — id: {u.sample_ids.join(', ')}
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="py-8 text-center text-gray-500">
+                  <div className="py-8 text-center text-gray-500 dark:text-gray-400">
                     Item ini belum dipakai di tabel manapun (BOM, Sales Order, Purchase Order, Inventory, dll).
                   </div>
                 )}
@@ -489,7 +489,7 @@ export default function MasterDataBarangTab() {
                         onChange={(e) => setForm({ ...form, min_order_qty: e.target.value === '' ? null : Number(e.target.value) })}
                         placeholder="Kosongkan jika lot-for-lot"
                       />
-                      <p className="text-xs text-gray-500 mt-1">MRP membulatkan shortage ke angka ini bila lebih kecil.</p>
+                      <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">MRP membulatkan shortage ke angka ini bila lebih kecil.</p>
                     </div>
                     {editingRow.source === 'material' && (
                       <div>
@@ -504,7 +504,7 @@ export default function MasterDataBarangTab() {
                           <option value="WB">WB - Gabung Mingguan</option>
                           <option value="MB">MB - Gabung Bulanan</option>
                         </select>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">
                           WB/MB menggabungkan beberapa planned order MRP dalam satu minggu/bulan kalender jadi satu pesanan.
                         </p>
                       </div>
@@ -518,7 +518,7 @@ export default function MasterDataBarangTab() {
                           onChange={(e) => setForm({ ...form, fixed_lot_size: e.target.value === '' ? null : Number(e.target.value) })}
                           placeholder="Wajib diisi untuk FX"
                         />
-                        <p className="text-xs text-gray-500 mt-1">Shortage dibulatkan ke atas ke kelipatan angka ini (MOQ diabaikan).</p>
+                        <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">Shortage dibulatkan ke atas ke kelipatan angka ini (MOQ diabaikan).</p>
                       </div>
                     )}
                     <div>
@@ -538,7 +538,7 @@ export default function MasterDataBarangTab() {
                           onChange={(e) => setForm({ ...form, safety_stock_qty: e.target.value === '' ? null : Number(e.target.value) })}
                           placeholder="Kosongkan jika tidak dipakai"
                         />
-                        <p className="text-xs text-gray-500 mt-1">MRP menahan buffer ini, tidak netting sampai ke nol.</p>
+                        <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">MRP menahan buffer ini, tidak netting sampai ke nol.</p>
                       </div>
                     )}
                     {editingRow.source === 'material' && (
@@ -613,7 +613,7 @@ export default function MasterDataBarangTab() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <form onSubmit={saveNonInventory} className="w-full max-w-lg space-y-4 rounded-lg bg-white p-6 dark:bg-gray-800">
             <h3 className="text-lg font-semibold">Barang Non Persediaan</h3>
-            <p className="text-sm text-gray-500">Jasa atau biaya yang dibeli (ongkos kirim, jasa makloon, sewa, dan sebagainya). Tidak punya stok dan tidak melalui penerimaan barang; langsung dibebankan ke akun beban saat faktur pembelian.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Jasa atau biaya yang dibeli (ongkos kirim, jasa makloon, sewa, dan sebagainya). Tidak punya stok dan tidak melalui penerimaan barang; langsung dibebankan ke akun beban saat faktur pembelian.</p>
             <div className="grid grid-cols-2 gap-3">
               <div><label className="mb-1 block text-sm font-medium">Kode *</label><input className="input-field" value={ni.code} onChange={(e) => setNi({ ...ni, code: e.target.value })} /></div>
               <div><label className="mb-1 block text-sm font-medium">Satuan</label><input className="input-field" value={ni.primary_uom} onChange={(e) => setNi({ ...ni, primary_uom: e.target.value })} placeholder="TRIP, JAM, KG..." /></div>
@@ -846,11 +846,11 @@ function ApprovedVendorsManager({ materialId }: { materialId: number }) {
             <div key={a.id} className="flex items-center justify-between text-sm border border-gray-200 dark:border-gray-700 rounded px-3 py-1.5">
               <span>
                 {a.supplier_name || a.supplier?.name || `Supplier #${a.supplier_id}`}
-                {a.is_preferred && <span className="ml-2 text-xs text-primary-600 font-medium">Preferred</span>}
+                {a.is_preferred && <span className="ml-2 text-xs text-primary-600 font-medium dark:text-primary-400">Preferred</span>}
               </span>
               <div className="flex items-center gap-3">
                 <button
-                  className="text-xs text-gray-500 hover:text-primary-600"
+                  className="text-xs text-gray-500 hover:text-primary-600 dark:text-gray-400"
                   onClick={() => handleTogglePreferred(a)}
                 >
                   {a.is_preferred ? 'Batal preferred' : 'Jadikan preferred'}

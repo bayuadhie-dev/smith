@@ -604,8 +604,8 @@ const PublicAttendance: React.FC = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-bounce-once">
             <div className="text-center">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-8 h-8 text-orange-600" />
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-orange-900/30">
+                <Clock className="w-8 h-8 text-orange-600 dark:text-orange-400" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">⏰ Reminder Clock Out!</h3>
               <p className="text-gray-600 dark:text-gray-300 mb-4">
@@ -663,15 +663,15 @@ const PublicAttendance: React.FC = () => {
                 // Choose: Scan Face or Manual Input
                 <>
                   <div className="text-center mb-6">
-                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Camera className="w-8 h-8 text-blue-600" />
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-blue-900/30">
+                      <Camera className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <h2 className="text-xl font-bold text-slate-900">Absensi</h2>
-                    <p className="text-slate-500 text-sm mt-1">Pilih cara absensi Anda</p>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">Absensi</h2>
+                    <p className="text-slate-500 text-sm mt-1 dark:text-slate-400">Pilih cara absensi Anda</p>
                   </div>
                   
                   {error && (
-                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
                       <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                       {error}
                     </div>
@@ -679,13 +679,13 @@ const PublicAttendance: React.FC = () => {
 
                   {/* Face Recognized Success */}
                   {faceRecognized && (
-                    <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl">
+                    <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl dark:bg-green-900/20 dark:border-green-800">
                       <div className="flex items-center gap-3">
-                        <CheckCircle className="w-8 h-8 text-green-600" />
+                        <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
                         <div>
-                          <p className="font-semibold text-green-800">Wajah Dikenali!</p>
-                          <p className="text-green-700">{faceRecognized.name}</p>
-                          <p className="text-green-600 text-sm">{faceRecognized.jabatan} - {faceRecognized.departemen}</p>
+                          <p className="font-semibold text-green-800 dark:text-green-300">Wajah Dikenali!</p>
+                          <p className="text-green-700 dark:text-green-300">{faceRecognized.name}</p>
+                          <p className="text-green-600 text-sm dark:text-green-400">{faceRecognized.jabatan} - {faceRecognized.departemen}</p>
                         </div>
                       </div>
                     </div>
@@ -714,7 +714,7 @@ const PublicAttendance: React.FC = () => {
                       const manualSection = document.getElementById('manual-input-section');
                       if (manualSection) manualSection.classList.toggle('hidden');
                     }}
-                    className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 dark:bg-slate-800 dark:hover:bg-slate-600 dark:text-slate-200"
                   >
                     <User className="w-5 h-5" />
                     Input Manual
@@ -727,14 +727,14 @@ const PublicAttendance: React.FC = () => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Nama Lengkap"
-                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center dark:border-slate-600"
                     />
                     <input
                       type="text"
                       value={jabatan}
                       onChange={(e) => setJabatan(e.target.value)}
                       placeholder="Jabatan"
-                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center dark:border-slate-600"
                     />
                     <input
                       type="text"
@@ -742,11 +742,11 @@ const PublicAttendance: React.FC = () => {
                       onChange={(e) => setDepartemen(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleContinue()}
                       placeholder="Departemen"
-                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center dark:border-slate-600"
                     />
                     {name.trim() && (
-                      <p className="text-center text-sm text-slate-500">
-                        Akan disimpan sebagai: <span className="font-semibold text-blue-600">{toProperCase(name)}</span>
+                      <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+                        Akan disimpan sebagai: <span className="font-semibold text-blue-600 dark:text-blue-400">{toProperCase(name)}</span>
                       </p>
                     )}
                     <button
@@ -761,19 +761,19 @@ const PublicAttendance: React.FC = () => {
                   <div className="mt-6 flex flex-col items-center gap-2">
                     <button
                       onClick={() => navigate('/public/face-registration')}
-                      className="text-green-600 hover:text-green-700 text-sm flex items-center gap-1"
+                      className="text-green-600 hover:text-green-700 text-sm flex items-center gap-1 dark:text-green-400"
                     >
                       📸 Daftar Wajah untuk Absensi Otomatis →
                     </button>
                     <button
                       onClick={() => navigate('/public/leave-request')}
-                      className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1"
+                      className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 dark:text-indigo-400"
                     >
                       📝 Ajukan Izin/Cuti →
                     </button>
                     <button
                       onClick={() => navigate('/login')}
-                      className="text-blue-600 hover:text-blue-700 text-sm"
+                      className="text-blue-600 hover:text-blue-700 text-sm dark:text-blue-400"
                     >
                       Login ke Aplikasi ERP →
                     </button>
@@ -783,12 +783,12 @@ const PublicAttendance: React.FC = () => {
                 // Face Scan Camera View
                 <>
                   <div className="text-center mb-4">
-                    <h2 className="text-xl font-bold text-slate-900">Scan Wajah Anda</h2>
-                    <p className="text-slate-500 text-sm mt-1">Posisikan wajah di tengah kamera</p>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">Scan Wajah Anda</h2>
+                    <p className="text-slate-500 text-sm mt-1 dark:text-slate-400">Posisikan wajah di tengah kamera</p>
                   </div>
 
                   {error && (
-                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
                       <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                       {error}
                     </div>
@@ -829,7 +829,7 @@ const PublicAttendance: React.FC = () => {
                         stopCamera();
                         setError(null);
                       }}
-                      className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium"
+                      className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200"
                     >
                       Batal
                     </button>
@@ -923,19 +923,19 @@ const PublicAttendance: React.FC = () => {
             // Attendance Form
             <div>
               {/* Name Header */}
-              <div className="bg-slate-50 p-4 border-b flex items-center justify-between">
+              <div className="bg-slate-50 p-4 border-b flex items-center justify-between dark:bg-slate-900">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
                     <User className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-900 text-lg">{formattedName}</p>
-                    <p className="text-sm text-slate-500">Absensi Hari Ini</p>
+                    <p className="font-semibold text-slate-900 text-lg dark:text-white">{formattedName}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Absensi Hari Ini</p>
                   </div>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="text-sm text-slate-500 hover:text-slate-700 px-3 py-1 rounded-lg hover:bg-slate-100"
+                  className="text-sm text-slate-500 hover:text-slate-700 px-3 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400"
                 >
                   Ganti Nama
                 </button>
@@ -944,14 +944,14 @@ const PublicAttendance: React.FC = () => {
               <div className="p-6">
                 {/* Success/Error Messages */}
                 {success && (
-                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm flex items-center gap-2">
+                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm flex items-center gap-2 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
                     <CheckCircle className="w-4 h-4" />
                     {success}
                   </div>
                 )}
                 
                 {error && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
                     <AlertTriangle className="w-4 h-4" />
                     {error}
                   </div>
@@ -959,12 +959,12 @@ const PublicAttendance: React.FC = () => {
 
                 {/* Today's Status */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className={`p-4 rounded-xl ${hasClockIn ? 'bg-green-50 border-2 border-green-200' : 'bg-slate-50 border-2 border-slate-200'}`}>
+                  <div className={`p-4 rounded-xl ${hasClockIn ? 'bg-green-50 border-2 border-green-200 dark:bg-green-900/20 dark:border-green-800' : 'bg-slate-50 border-2 border-slate-200 dark:bg-slate-900 dark:border-slate-700'}`}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-slate-600">Clock In</span>
+                      <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Clock In</span>
                       {hasClockIn && <CheckCircle className="w-5 h-5 text-green-500" />}
                     </div>
-                    <p className={`text-2xl font-bold ${hasClockIn ? 'text-green-700' : 'text-slate-300'}`}>
+                    <p className={`text-2xl font-bold ${hasClockIn ? 'text-green-700 dark:text-green-300' : 'text-slate-300'}`}>
                       {hasClockIn 
                         ? new Date(todayAttendance.clock_in!).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
                         : '--:--'
@@ -972,12 +972,12 @@ const PublicAttendance: React.FC = () => {
                     </p>
                   </div>
                   
-                  <div className={`p-4 rounded-xl ${hasClockOut ? 'bg-orange-50 border-2 border-orange-200' : 'bg-slate-50 border-2 border-slate-200'}`}>
+                  <div className={`p-4 rounded-xl ${hasClockOut ? 'bg-orange-50 border-2 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800' : 'bg-slate-50 border-2 border-slate-200 dark:bg-slate-900 dark:border-slate-700'}`}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-slate-600">Clock Out</span>
+                      <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Clock Out</span>
                       {hasClockOut && <CheckCircle className="w-5 h-5 text-orange-500" />}
                     </div>
-                    <p className={`text-2xl font-bold ${hasClockOut ? 'text-orange-700' : 'text-slate-300'}`}>
+                    <p className={`text-2xl font-bold ${hasClockOut ? 'text-orange-700 dark:text-orange-300' : 'text-slate-300'}`}>
                       {hasClockOut 
                         ? new Date(todayAttendance.clock_out!).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
                         : '--:--'
@@ -988,20 +988,20 @@ const PublicAttendance: React.FC = () => {
 
                 {/* GPS Location Section */}
                 {!hasClockIn && officeLocation && (
-                  <div className="mb-6 p-4 bg-slate-50 rounded-xl border-2 border-slate-200">
+                  <div className="mb-6 p-4 bg-slate-50 rounded-xl border-2 border-slate-200 dark:bg-slate-900 dark:border-slate-700">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <span className="font-medium text-slate-700">Verifikasi Lokasi</span>
+                        <span className="font-medium text-slate-700 dark:text-slate-200">Verifikasi Lokasi</span>
                       </div>
                       {gpsLocation && (
                         <span className={`text-xs px-2 py-1 rounded-full ${
                           distanceFromOffice !== null && distanceFromOffice <= officeLocation.radius_meters
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                         }`}>
                           {distanceFromOffice !== null && distanceFromOffice <= officeLocation.radius_meters
                             ? '✓ Dalam jangkauan'
@@ -1012,13 +1012,13 @@ const PublicAttendance: React.FC = () => {
                     </div>
                     
                     {gpsError && (
-                      <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                      <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">
                         {gpsError}
                       </div>
                     )}
                     
                     {gpsLocation ? (
-                      <div className="text-sm text-slate-600 space-y-1">
+                      <div className="text-sm text-slate-600 space-y-1 dark:text-slate-300">
                         <p>📍 Lokasi Anda: {gpsLocation.latitude.toFixed(6)}, {gpsLocation.longitude.toFixed(6)}</p>
                         <p>🎯 Akurasi: ±{Math.round(gpsLocation.accuracy)}m</p>
                         {distanceFromOffice !== null && (
@@ -1027,7 +1027,7 @@ const PublicAttendance: React.FC = () => {
                         <button
                           onClick={getGpsLocation}
                           disabled={gpsLoading}
-                          className="mt-2 text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
+                          className="mt-2 text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1 dark:text-blue-400"
                         >
                           <RefreshCw className={`w-3 h-3 ${gpsLoading ? 'animate-spin' : ''}`} />
                           Refresh Lokasi
@@ -1037,7 +1037,7 @@ const PublicAttendance: React.FC = () => {
                       <button
                         onClick={getGpsLocation}
                         disabled={gpsLoading}
-                        className="w-full py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                        className="w-full py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 dark:bg-blue-900/30 dark:text-blue-300"
                       >
                         {gpsLoading ? (
                           <>
@@ -1061,7 +1061,7 @@ const PublicAttendance: React.FC = () => {
                 {!hasClockIn && (
                   <>
                     {loadingModels && (
-                      <div className="flex items-center justify-center gap-2 mb-4 text-blue-600 text-sm">
+                      <div className="flex items-center justify-center gap-2 mb-4 text-blue-600 text-sm dark:text-blue-400">
                         <Loader2 className="w-4 h-4 animate-spin" />
                         Memuat face detection...
                       </div>
@@ -1142,7 +1142,7 @@ const PublicAttendance: React.FC = () => {
                         <>
                           <button
                             onClick={retakePhoto}
-                            className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium flex items-center gap-2"
+                            className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium flex items-center gap-2 dark:text-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600"
                           >
                             <RefreshCw className="w-5 h-5" />
                             Ulangi
@@ -1183,11 +1183,11 @@ const PublicAttendance: React.FC = () => {
                 {/* All done message */}
                 {hasClockIn && hasClockOut && (
                   <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <CheckCircle className="w-8 h-8 text-green-600" />
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-green-900/30">
+                      <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
                     </div>
-                    <p className="text-lg font-medium text-slate-900">Absensi hari ini sudah lengkap!</p>
-                    <p className="text-slate-500 text-sm mt-1">
+                    <p className="text-lg font-medium text-slate-900 dark:text-white">Absensi hari ini sudah lengkap!</p>
+                    <p className="text-slate-500 text-sm mt-1 dark:text-slate-400">
                       {new Date().getDay() === 5 
                         ? '👋 Sampai jumpa hari Senin!' 
                         : '👋 Selamat beristirahat!'}

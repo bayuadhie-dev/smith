@@ -79,18 +79,18 @@ const CapacityPlanning: React.FC = () => {
   };
 
   const getUtilizationColor = (utilization: number) => {
-    if (utilization >= 95) return 'text-red-600 bg-red-100';
-    if (utilization >= 85) return 'text-yellow-600 bg-yellow-100';
-    if (utilization >= 70) return 'text-green-600 bg-green-100';
-    return 'text-blue-600 bg-blue-100';
+    if (utilization >= 95) return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
+    if (utilization >= 85) return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
+    if (utilization >= 70) return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
+    return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400';
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'text-green-600 bg-green-100';
-      case 'maintenance': return 'text-yellow-600 bg-yellow-100';
-      case 'idle': return 'text-gray-600 bg-gray-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'active': return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
+      case 'maintenance': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case 'idle': return 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
+      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
@@ -110,14 +110,14 @@ const CapacityPlanning: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/mrp"
-            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to MRP Dashboard
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Capacity Planning</h1>
-            <p className="text-gray-600 mt-1">Manage production capacity and resource utilization</p>
+            <p className="text-gray-600 mt-1 dark:text-gray-300">Manage production capacity and resource utilization</p>
           </div>
         </div>
       </div>

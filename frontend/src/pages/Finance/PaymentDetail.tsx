@@ -148,7 +148,7 @@ export default function PaymentDetail() {
             {({ pending: 'BELUM DIREKONSILIASI', cleared: 'SUDAH DIREKONSILIASI', cancelled: 'DIBATALKAN', bounced: 'DITOLAK BANK' } as Record<string, string>)[payment.status] || payment.status.toUpperCase()}
           </span>
           {payment.status === 'pending' && (
-            <span className="max-w-xs text-xs text-gray-500">Sudah dijurnal, tidak perlu approval. Berubah jadi Sudah Direkonsiliasi setelah dicocokkan dengan mutasi bank.</span>
+            <span className="max-w-xs text-xs text-gray-500 dark:text-gray-400">Sudah dijurnal, tidak perlu approval. Berubah jadi Sudah Direkonsiliasi setelah dicocokkan dengan mutasi bank.</span>
           )}
           <button onClick={() => navigate(-1)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
             Kembali
@@ -245,7 +245,7 @@ export default function PaymentDetail() {
                 {payment.lines.map((l, i) => (
                   <tr key={i}>
                     <td className="py-1">{l.account_code} - {l.account_name}</td>
-                    <td className="py-1">{l.description || '-'}{l.party_name && <div className="text-xs text-gray-500">{l.party_type === 'customer' ? 'Pelanggan' : 'Pemasok'}: {l.party_name}</div>}</td>
+                    <td className="py-1">{l.description || '-'}{l.party_name && <div className="text-xs text-gray-500 dark:text-gray-400">{l.party_type === 'customer' ? 'Pelanggan' : 'Pemasok'}: {l.party_name}</div>}</td>
                     <td className="py-1 text-right font-medium">{formatRupiah(l.amount)}</td>
                   </tr>
                 ))}

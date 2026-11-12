@@ -30,10 +30,10 @@ const RecurringPaymentTransactionRedirect: React.FC = () => {
   }, [txId, navigate]);
 
   if (error) {
-    return <div className="p-6 text-red-600">{error}</div>;
+    return <div className="p-6 text-red-600 dark:text-red-400">{error}</div>;
   }
 
-  return <div className="p-6 text-gray-500">Memuat...</div>;
+  return <div className="p-6 text-gray-500 dark:text-gray-400">Memuat...</div>;
 };
 
 export default RecurringPaymentTransactionRedirect;

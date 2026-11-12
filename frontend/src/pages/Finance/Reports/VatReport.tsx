@@ -13,7 +13,7 @@ export default function VatReport() {
   const t = data?.totals
   return (
     <ReportShell title="Rekap PPN" subtitle={`PPN Keluaran (penjualan) dan PPN Masukan (pembelian) per bulan · ${year}`}
-      icon={<ReceiptPercentIcon className="h-7 w-7 text-emerald-600" />} actions={<ExportButtons report={['vat-summary', params]} />}>
+      icon={<ReceiptPercentIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />} actions={<ExportButtons report={['vat-summary', params]} />}>
       <div className="print-hide flex items-center gap-2">
         <button type="button" className="rounded-lg border px-3 py-1.5 text-sm" onClick={() => setYear(year - 1)}>‹</button>
         <span className="min-w-[4rem] text-center font-semibold">{year}</span>
@@ -33,8 +33,8 @@ export default function VatReport() {
                   <Td className="font-medium">{MONTHS[i]}</Td><Td right><Money v={r.output_base} /></Td><Td right><Money v={r.output_vat} /></Td>
                   <Td right><Money v={r.input_base} /></Td><Td right><Money v={r.input_vat} /></Td><Td right className="font-semibold"><Money v={r.net_payable} colored /></Td>
                   <Td>
-                    <button type="button" disabled={!r.output_count} className="mr-3 text-emerald-700 hover:underline disabled:text-gray-300" onClick={() => navigate(`/app/finance/reports/vat/${r.month}?kind=output`)}>Keluaran ({r.output_count})</button>
-                    <button type="button" disabled={!r.input_count} className="text-emerald-700 hover:underline disabled:text-gray-300" onClick={() => navigate(`/app/finance/reports/vat/${r.month}?kind=input`)}>Masukan ({r.input_count})</button>
+                    <button type="button" disabled={!r.output_count} className="mr-3 text-emerald-700 hover:underline disabled:text-gray-300 dark:text-emerald-300" onClick={() => navigate(`/app/finance/reports/vat/${r.month}?kind=output`)}>Keluaran ({r.output_count})</button>
+                    <button type="button" disabled={!r.input_count} className="text-emerald-700 hover:underline disabled:text-gray-300 dark:text-emerald-300" onClick={() => navigate(`/app/finance/reports/vat/${r.month}?kind=input`)}>Masukan ({r.input_count})</button>
                   </Td>
                 </tr>
               ))}

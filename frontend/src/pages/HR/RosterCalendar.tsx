@@ -19,11 +19,11 @@ export default function RosterCalendar() {
 
   const getShiftColor = (shift: string) => {
     const colors: Record<string, string> = {
-      'Shift 1': 'bg-blue-100 text-blue-800 border-blue-300',
-      'Shift 2': 'bg-green-100 text-green-800 border-green-300',
-      'Shift 3': 'bg-purple-100 text-purple-800 border-purple-300'
+      'Shift 1': 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300',
+      'Shift 2': 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300',
+      'Shift 3': 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/30 dark:text-purple-300'
     }
-    return colors[shift] || 'bg-gray-100 text-gray-800 border-gray-300'
+    return colors[shift] || 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600'
   }
 
   return (
@@ -63,15 +63,15 @@ export default function RosterCalendar() {
       </div>
 
       {/* Drag & Drop Feature Highlight */}
-      <div className="card p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+      <div className="card p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 dark:border-blue-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <CursorArrowRaysIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+              <CursorArrowRaysIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-blue-900">Interactive Roster Management</h3>
-              <p className="text-sm text-blue-700">Use drag & drop to easily assign employees to machines and shifts</p>
+              <h3 className="font-semibold text-blue-900 dark:text-blue-200">Interactive Roster Management</h3>
+              <p className="text-sm text-blue-700 dark:text-blue-300">Use drag & drop to easily assign employees to machines and shifts</p>
             </div>
           </div>
           <Link 
@@ -149,15 +149,15 @@ export default function RosterCalendar() {
 
         <div className="mt-4 flex gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-blue-100 border border-blue-300"></div>
+            <div className="w-4 h-4 rounded bg-blue-100 border border-blue-300 dark:bg-blue-900/30"></div>
             <span>Shift 1 (Pagi)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-green-100 border border-green-300"></div>
+            <div className="w-4 h-4 rounded bg-green-100 border border-green-300 dark:bg-green-900/30"></div>
             <span>Shift 2 (Siang)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-purple-100 border border-purple-300"></div>
+            <div className="w-4 h-4 rounded bg-purple-100 border border-purple-300 dark:bg-purple-900/30"></div>
             <span>Shift 3 (Malam)</span>
           </div>
           <div className="flex items-center gap-2">

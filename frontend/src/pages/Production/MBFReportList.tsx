@@ -74,19 +74,19 @@ const MBFReportList: React.FC = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'approved': return <CheckCircleIcon className="h-5 w-5 text-green-600" />;
-      case 'rejected': return <XCircleIcon className="h-5 w-5 text-red-600" />;
-      case 'pending_review': return <ClockIcon className="h-5 w-5 text-yellow-600" />;
+      case 'approved': return <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400" />;
+      case 'rejected': return <XCircleIcon className="h-5 w-5 text-red-600 dark:text-red-400" />;
+      case 'pending_review': return <ClockIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />;
       default: return <DocumentTextIcon className="h-5 w-5 text-gray-400" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      draft: 'bg-gray-100 text-gray-800',
-      pending_review: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800',
+      draft: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+      pending_review: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+      approved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
     };
     const labels: Record<string, string> = {
       draft: 'Draft',
@@ -131,7 +131,7 @@ const MBFReportList: React.FC = () => {
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               statusFilter === status
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200'
             }`}
           >
             {status === '' ? 'Semua' : status === 'draft' ? 'Draft' : status === 'pending_review' ? 'In Review' : status === 'approved' ? 'Approved' : 'Rejected'}
@@ -192,9 +192,9 @@ const MBFReportList: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
                     <span className={`font-bold ${
-                      report.achievement_percentage >= 100 ? 'text-green-600' :
-                      report.achievement_percentage >= 80 ? 'text-yellow-600' :
-                      'text-red-600'
+                      report.achievement_percentage >= 100 ? 'text-green-600 dark:text-green-400' :
+                      report.achievement_percentage >= 80 ? 'text-yellow-600 dark:text-yellow-400' :
+                      'text-red-600 dark:text-red-400'
                     }`}>
                       {report.achievement_percentage.toFixed(1)}%
                     </span>
@@ -206,7 +206,7 @@ const MBFReportList: React.FC = () => {
                     <div className="flex items-center justify-center space-x-2">
                       <button
                         onClick={(e) => { e.stopPropagation(); navigate(`/app/production/mbf-report/${report.id}`); }}
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                        className="text-blue-600 hover:text-blue-800 text-sm font-medium dark:text-blue-400"
                       >
                         Lihat
                       </button>

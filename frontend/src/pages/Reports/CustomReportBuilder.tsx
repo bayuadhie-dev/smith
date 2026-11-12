@@ -367,18 +367,18 @@ const navigate = useNavigate()
               <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
                 step >= item.step 
                   ? 'bg-blue-600 border-blue-600 text-white' 
-                  : 'border-gray-300 text-gray-400'
+                  : 'border-gray-300 text-gray-400 dark:border-gray-600'
               }`}>
                 <item.icon className="h-5 w-5" />
               </div>
               <span className={`ml-2 text-sm font-medium ${
-                step >= item.step ? 'text-blue-600' : 'text-gray-400'
+                step >= item.step ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'
               }`}>
                 {item.title}
               </span>
               {index < 3 && (
                 <div className={`w-12 h-0.5 mx-4 ${
-                  step > item.step ? 'bg-blue-600' : 'bg-gray-300'
+                  step > item.step ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
                 }`} />
               )}
             </div>
@@ -448,8 +448,8 @@ const navigate = useNavigate()
                     key={source.id}
                     className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                       report.dataSources.includes(source.id)
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
                     }`}
                     onClick={() => {
                       if (report.dataSources.includes(source.id)) {
@@ -512,7 +512,7 @@ const navigate = useNavigate()
                     <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Selected Fields</h4>
                     <div className="border rounded-lg p-3 max-h-60 overflow-y-auto">
                       {report.fields.map((field, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 bg-blue-50 rounded mb-2">
+                        <div key={index} className="flex items-center justify-between p-2 bg-blue-50 rounded mb-2 dark:bg-blue-900/20">
                           <div className="flex-1">
                             <span className="text-sm text-gray-900 dark:text-white">{field.label}</span>
                             <select
@@ -615,8 +615,8 @@ const navigate = useNavigate()
                       onClick={() => setReport(prev => ({ ...prev, chartType: type.value }))}
                       className={`p-3 border-2 rounded-lg text-center transition-all ${
                         report.chartType === type.value
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
+                          : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
                       }`}
                     >
                       <type.icon className="h-6 w-6 mx-auto mb-1" />
@@ -744,9 +744,9 @@ const navigate = useNavigate()
           </div>
 
           {/* Tips */}
-          <div className="card p-4 bg-blue-50 border border-blue-200">
-            <h4 className="font-medium text-blue-900 mb-2">💡 Tips</h4>
-            <ul className="text-sm text-blue-800 space-y-1">
+          <div className="card p-4 bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+            <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">💡 Tips</h4>
+            <ul className="text-sm text-blue-800 space-y-1 dark:text-blue-300">
               {step === 1 && (
                 <>
                   <li>• Choose a descriptive name</li>

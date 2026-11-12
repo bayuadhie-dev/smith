@@ -74,15 +74,15 @@ const triggerSourceLabels: Record<string, string> = {
 const reservationStatusBadge = (status: string) => {
   switch (status) {
     case 'full':
-      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Full</span>
+      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Full</span>
     case 'partial':
-      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">Partial</span>
+      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">Partial</span>
     case 'insufficient':
-      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Insufficient</span>
+      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Insufficient</span>
     case 'none':
-      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">-</span>
+      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">-</span>
     default:
-      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">{status || '-'}</span>
+      return <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">{status || '-'}</span>
   }
 }
 
@@ -190,35 +190,35 @@ const MaterialIssueDetail: React.FC = () => {
     switch (status) {
       case 'pending':
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
             <ClockIcon className="h-4 w-4" />
             Menunggu Persetujuan
           </span>
         )
       case 'approved':
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
             <CheckCircleIcon className="h-4 w-4" />
             Disetujui - Siap Dikeluarkan
           </span>
         )
       case 'issued':
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
             <CheckCircleIcon className="h-4 w-4" />
             Sudah Dikeluarkan
           </span>
         )
       case 'partial':
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">
             <ArrowPathIcon className="h-4 w-4" />
             Sebagian Dikeluarkan
           </span>
         )
       case 'cancelled':
         return (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
             <XCircleIcon className="h-4 w-4" />
             Dibatalkan
           </span>
@@ -231,13 +231,13 @@ const MaterialIssueDetail: React.FC = () => {
   const getItemStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <span className="px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
+        return <span className="px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">Pending</span>
       case 'issued':
-        return <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">Issued</span>
+        return <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Issued</span>
       case 'partial':
-        return <span className="px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-800">Partial</span>
+        return <span className="px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">Partial</span>
       case 'returned':
-        return <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">Returned</span>
+        return <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Returned</span>
       default:
         return <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">{status}</span>
     }
@@ -277,14 +277,14 @@ const MaterialIssueDetail: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{issue.issue_number}</h1>
             <p className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
               Detail Pengeluaran Material
-              <span className="px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700">
+              <span className="px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
                 {triggerSourceLabels[issue.trigger_source] || issue.trigger_source || 'Manual'}
               </span>
             </p>
             {(issue.so_number || issue.plan_number) && (
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {issue.so_number && (
-                  <>Dari Sales Order: <Link to={`/app/sales/orders/${issue.sales_order_id}`} className="text-blue-600 hover:underline">{issue.so_number}</Link></>
+                  <>Dari Sales Order: <Link to={`/app/sales/orders/${issue.sales_order_id}`} className="text-blue-600 hover:underline dark:text-blue-400">{issue.so_number}</Link></>
                 )}
                 {issue.plan_number && (
                   <>Dari Production Plan: <span className="font-medium">{issue.plan_number}</span></>
@@ -300,13 +300,13 @@ const MaterialIssueDetail: React.FC = () => {
 
       {/* Receipt confirmation banner */}
       {issue.status === 'issued' && (
-        <div className={`card p-4 mb-6 ${issue.received_confirmed_at ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
+        <div className={`card p-4 mb-6 ${issue.received_confirmed_at ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <h3 className={`font-medium ${issue.received_confirmed_at ? 'text-green-900' : 'text-amber-900'}`}>
+              <h3 className={`font-medium ${issue.received_confirmed_at ? 'text-green-900 dark:text-green-200' : 'text-amber-900 dark:text-amber-200'}`}>
                 {issue.received_confirmed_at ? 'Penerimaan Terkonfirmasi' : 'Menunggu Konfirmasi Diterima'}
               </h3>
-              <p className={`text-sm ${issue.received_confirmed_at ? 'text-green-700' : 'text-amber-700'}`}>
+              <p className={`text-sm ${issue.received_confirmed_at ? 'text-green-700 dark:text-green-300' : 'text-amber-700 dark:text-amber-300'}`}>
                 {issue.received_confirmed_at
                   ? `Dikonfirmasi oleh ${issue.received_confirmed_by} pada ${new Date(issue.received_confirmed_at).toLocaleString('id-ID')}`
                   : 'Produksi belum melakukan checklist penerimaan fisik material ini.'}
@@ -324,11 +324,11 @@ const MaterialIssueDetail: React.FC = () => {
 
       {/* Action Buttons */}
       {issue.status !== 'issued' && issue.status !== 'cancelled' && (
-        <div className="card p-4 mb-6 bg-blue-50 border-blue-200">
+        <div className="card p-4 mb-6 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-medium text-blue-900">Aksi</h3>
-              <p className="text-sm text-blue-700">
+              <h3 className="font-medium text-blue-900 dark:text-blue-200">Aksi</h3>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
                 {issue.status === 'pending' && 'Setujui untuk me-reserve material dari inventory'}
                 {issue.status === 'approved' && 'Keluarkan material untuk mengurangi stok inventory'}
                 {issue.status === 'partial' && 'Lanjutkan mengeluarkan sisa material'}
@@ -392,7 +392,7 @@ const MaterialIssueDetail: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-300">SPK</span>
-              <Link to={`/app/production/work-orders/${issue.work_order_id}`} className="font-medium text-blue-600 hover:underline">
+              <Link to={`/app/production/work-orders/${issue.work_order_id}`} className="font-medium text-blue-600 hover:underline dark:text-blue-400">
                 {issue.wo_number}
               </Link>
             </div>
@@ -515,10 +515,10 @@ const MaterialIssueDetail: React.FC = () => {
                 <td className="px-4 py-3 whitespace-nowrap text-right font-medium">
                   {item.required_quantity.toLocaleString()} {item.uom}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-right text-green-600 font-medium">
+                <td className="px-4 py-3 whitespace-nowrap text-right text-green-600 font-medium dark:text-green-400">
                   {item.issued_quantity.toLocaleString()} {item.uom}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-right text-orange-600 font-medium">
+                <td className="px-4 py-3 whitespace-nowrap text-right text-orange-600 font-medium dark:text-orange-400">
                   {item.pending_quantity.toLocaleString()} {item.uom}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
@@ -552,11 +552,11 @@ const MaterialIssueDetail: React.FC = () => {
                 <div key={item.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-gray-900 dark:text-white">{item.material_name}</span>
-                    <span className="text-sm text-gray-500">Dikeluarkan: {item.issued_quantity} {item.uom}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Dikeluarkan: {item.issued_quantity} {item.uom}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Jumlah Diterima</label>
+                      <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Jumlah Diterima</label>
                       <NumberInput
                         step="0.01"
                         value={receiptQuantities[item.id] ?? ''}
@@ -565,7 +565,7 @@ const MaterialIssueDetail: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Catatan (kalau beda)</label>
+                      <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Catatan (kalau beda)</label>
                       <input
                         type="text"
                         value={receiptNotes[item.id] ?? ''}

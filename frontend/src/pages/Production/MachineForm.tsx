@@ -158,7 +158,7 @@ const navigate = useNavigate()
         {/* Basic Information */}
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
-            <CogIcon className="h-5 w-5 text-blue-600" />
+            <CogIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h3>
           </div>
 
@@ -174,7 +174,7 @@ const navigate = useNavigate()
                 placeholder="e.g., Wet Wipes Machine #1"
               />
               {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name.message}</p>
               )}
             </div>
 
@@ -189,7 +189,7 @@ const navigate = useNavigate()
                 placeholder="e.g., MCH-001"
               />
               {errors.code && (
-                <p className="mt-1 text-sm text-red-600">{errors.code.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.code.message}</p>
               )}
             </div>
 
@@ -272,7 +272,7 @@ const navigate = useNavigate()
         {/* Technical Specifications */}
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
-            <ChartBarIcon className="h-5 w-5 text-green-600" />
+            <ChartBarIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Technical Specifications</h3>
           </div>
 
@@ -382,7 +382,7 @@ const navigate = useNavigate()
                 <input
                   type="checkbox"
                   {...register('is_active')}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:text-blue-400"
                 />
                 <label className="ml-2 block text-sm text-gray-900 dark:text-white">
                   Machine is active

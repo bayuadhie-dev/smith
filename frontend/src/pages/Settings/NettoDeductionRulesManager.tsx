@@ -227,12 +227,12 @@ export default function NettoDeductionRulesManager() {
       {/* Rules Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-slate-500 flex flex-col items-center gap-2">
-            <ArrowPathIcon className="h-8 w-8 animate-spin text-indigo-600" />
+          <div className="p-12 text-center text-slate-500 flex flex-col items-center gap-2 dark:text-slate-400">
+            <ArrowPathIcon className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
             <p>Memuat aturan dari `product_netto_deduction.csv`...</p>
           </div>
         ) : rules.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 space-y-2">
+          <div className="p-12 text-center text-slate-500 space-y-2 dark:text-slate-400">
             <p className="font-semibold text-slate-700 dark:text-slate-300">Belum ada aturan pengecualian khusus</p>
             <p className="text-xs text-slate-400">Semua produk saat ini menggunakan potongan flat default <strong>0.515 kg</strong>.</p>
           </div>
@@ -251,12 +251,12 @@ export default function NettoDeductionRulesManager() {
               <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
                 {rules.map((rule, idx) => (
                   <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-gray-700/50 transition">
-                    <td className="px-4 py-3.5 text-center font-semibold text-slate-500">{idx + 1}</td>
+                    <td className="px-4 py-3.5 text-center font-semibold text-slate-500 dark:text-slate-400">{idx + 1}</td>
                     <td className="px-4 py-3.5">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
                         rule.rule_type === 'product_id'
-                          ? 'bg-purple-100 text-purple-800 border border-purple-300'
-                          : 'bg-amber-100 text-amber-800 border border-amber-300'
+                          ? 'bg-purple-100 text-purple-800 border border-purple-300 dark:bg-purple-900/30 dark:text-purple-300'
+                          : 'bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-900/30 dark:text-amber-300'
                       }`}>
                         {rule.rule_type === 'product_id' ? 'ID PRODUK' : 'PATTERN SUBSTRING'}
                       </span>
@@ -279,20 +279,20 @@ export default function NettoDeductionRulesManager() {
                       )}
                     </td>
                     <td className="px-4 py-3.5 text-right font-black text-indigo-600 dark:text-indigo-400 text-base">
-                      {rule.deduction_kg.toFixed(3)} <span className="text-xs font-normal text-slate-500">kg</span>
+                      {rule.deduction_kg.toFixed(3)} <span className="text-xs font-normal text-slate-500 dark:text-slate-400">kg</span>
                     </td>
                     <td className="px-4 py-3.5 text-center">
                       <div className="flex items-center justify-center gap-1.5">
                         <button
                           onClick={() => openEditModal(rule)}
-                          className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition"
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition dark:text-blue-400"
                           title="Edit Aturan"
                         >
                           <PencilSquareIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(rule)}
-                          className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition"
+                          className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition dark:text-red-400"
                           title="Hapus Aturan"
                         >
                           <TrashIcon className="h-5 w-5" />
@@ -325,7 +325,7 @@ export default function NettoDeductionRulesManager() {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
+                <label className="block text-xs font-bold uppercase text-slate-500 mb-1 dark:text-slate-400">
                   Tipe Aturan (Rule Type)
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -356,7 +356,7 @@ export default function NettoDeductionRulesManager() {
 
               {formRuleType === 'pattern' ? (
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
+                  <label className="block text-xs font-bold uppercase text-slate-500 mb-1 dark:text-slate-400">
                     Pattern Substring Nama Produk <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -373,7 +373,7 @@ export default function NettoDeductionRulesManager() {
                 </div>
               ) : (
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
+                  <label className="block text-xs font-bold uppercase text-slate-500 mb-1 dark:text-slate-400">
                     Pilih Produk Spesifik <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -395,7 +395,7 @@ export default function NettoDeductionRulesManager() {
               )}
 
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
+                <label className="block text-xs font-bold uppercase text-slate-500 mb-1 dark:text-slate-400">
                   Potongan Berat Netto (kg) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -440,7 +440,7 @@ export default function NettoDeductionRulesManager() {
       {deleteTarget && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-200 dark:border-gray-700">
-            <div className="flex items-center gap-3 text-red-600">
+            <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
               <ExclamationTriangleIcon className="h-7 w-7 flex-shrink-0" />
               <h3 className="font-bold text-lg text-slate-900 dark:text-white">
                 Konfirmasi Hapus Aturan

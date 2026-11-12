@@ -30,7 +30,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       </label>
       {children}
       {error && (
-        <div className="mt-1 flex items-center text-sm text-red-600">
+        <div className="mt-1 flex items-center text-sm text-red-600 dark:text-red-400">
           <AlertTriangle className="h-4 w-4 mr-1" />
           {error}
         </div>
@@ -65,7 +65,7 @@ export const FormSection: React.FC<FormSectionProps> = ({
             <button
               type="button"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-sm text-blue-600 hover:text-blue-800"
+              className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
             >
               {isExpanded ? 'Collapse' : 'Expand'}
             </button>
@@ -135,7 +135,7 @@ export const Input: React.FC<InputProps> = ({ error, className = '', ...props })
         w-full px-3 py-2 border rounded-lg text-sm
         focus:ring-2 focus:ring-blue-500 focus:border-blue-500
         disabled:bg-gray-50 disabled:text-gray-500
-        ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'}
+        ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 dark:border-gray-600'}
         ${className}
       `}
       {...props}
@@ -155,7 +155,7 @@ export const Select: React.FC<SelectProps> = ({ error, options, className = '', 
         w-full px-3 py-2 border rounded-lg text-sm
         focus:ring-2 focus:ring-blue-500 focus:border-blue-500
         disabled:bg-gray-50 disabled:text-gray-500
-        ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'}
+        ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 dark:border-gray-600'}
         ${className}
       `}
       {...props}
@@ -184,7 +184,7 @@ export const Textarea: React.FC<TextareaProps> = ({ error, className = '', ...pr
         w-full px-3 py-2 border rounded-lg text-sm resize-vertical
         focus:ring-2 focus:ring-blue-500 focus:border-blue-500
         disabled:bg-gray-50 disabled:text-gray-500
-        ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'}
+        ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 dark:border-gray-600'}
         ${className}
       `}
       {...props}
@@ -213,7 +213,7 @@ export const Button: React.FC<ButtonProps> = ({
     primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
     secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-    outline: 'border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-500'
+    outline: 'border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-500 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
   };
   
   const sizeClasses = {

@@ -64,19 +64,19 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'A': return 'bg-red-100 text-red-800 border-red-200'
-      case 'B': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'C': return 'bg-green-100 text-green-800 border-green-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      case 'A': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800'
+      case 'B': return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800'
+      case 'C': return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800'
+      default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-700'
     }
   }
 
   const getXYZColor = (category: string) => {
     switch (category) {
-      case 'X': return 'bg-blue-100 text-blue-800'
-      case 'Y': return 'bg-purple-100 text-purple-800'
-      case 'Z': return 'bg-orange-100 text-orange-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'X': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+      case 'Y': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+      case 'Z': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
     }
   }
 
@@ -337,12 +337,12 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
       </div>
 
       {/* ABC Analysis Guidelines */}
-      <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-        <h4 className="text-lg font-semibold text-blue-900 mb-3">ABC Analysis Guidelines</h4>
+      <div className="bg-blue-50 p-6 rounded-lg border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+        <h4 className="text-lg font-semibold text-blue-900 mb-3 dark:text-blue-200">ABC Analysis Guidelines</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>
-            <h5 className="font-medium text-red-800 mb-2">Category A (High Value)</h5>
-            <ul className="text-red-700 space-y-1">
+            <h5 className="font-medium text-red-800 mb-2 dark:text-red-300">Category A (High Value)</h5>
+            <ul className="text-red-700 space-y-1 dark:text-red-300">
               <li>• Tight inventory control</li>
               <li>• Frequent monitoring</li>
               <li>• Accurate demand forecasting</li>
@@ -350,8 +350,8 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
             </ul>
           </div>
           <div>
-            <h5 className="font-medium text-yellow-800 mb-2">Category B (Medium Value)</h5>
-            <ul className="text-yellow-700 space-y-1">
+            <h5 className="font-medium text-yellow-800 mb-2 dark:text-yellow-300">Category B (Medium Value)</h5>
+            <ul className="text-yellow-700 space-y-1 dark:text-yellow-300">
               <li>• Moderate control</li>
               <li>• Regular monitoring</li>
               <li>• Standard forecasting</li>
@@ -359,8 +359,8 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
             </ul>
           </div>
           <div>
-            <h5 className="font-medium text-green-800 mb-2">Category C (Low Value)</h5>
-            <ul className="text-green-700 space-y-1">
+            <h5 className="font-medium text-green-800 mb-2 dark:text-green-300">Category C (Low Value)</h5>
+            <ul className="text-green-700 space-y-1 dark:text-green-300">
               <li>• Simple control systems</li>
               <li>• Periodic monitoring</li>
               <li>• Basic forecasting</li>

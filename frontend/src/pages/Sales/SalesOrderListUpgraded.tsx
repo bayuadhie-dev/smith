@@ -103,23 +103,23 @@ const SalesOrderListUpgraded: React.FC = () => {
 
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { color: string; bgColor: string; icon: any }> = {
-      draft: { color: 'text-gray-600', bgColor: 'bg-gray-100 border-gray-200', icon: ClipboardDocumentListIcon },
-      confirmed: { color: 'text-blue-600', bgColor: 'bg-blue-100 border-blue-200', icon: CheckCircleIcon },
-      in_production: { color: 'text-yellow-600', bgColor: 'bg-yellow-100 border-yellow-200', icon: ClockIcon },
-      ready: { color: 'text-green-600', bgColor: 'bg-green-100 border-green-200', icon: CheckCircleIcon },
-      shipped: { color: 'text-purple-600', bgColor: 'bg-purple-100 border-purple-200', icon: TruckIcon },
-      delivered: { color: 'text-emerald-600', bgColor: 'bg-emerald-100 border-emerald-200', icon: CheckCircleIcon },
-      cancelled: { color: 'text-red-600', bgColor: 'bg-red-100 border-red-200', icon: XMarkIcon }
+      draft: { color: 'text-gray-600 dark:text-gray-300', bgColor: 'bg-gray-100 border-gray-200 dark:bg-gray-700 dark:border-gray-700', icon: ClipboardDocumentListIcon },
+      confirmed: { color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 border-blue-200 dark:bg-blue-900/30 dark:border-blue-800', icon: CheckCircleIcon },
+      in_production: { color: 'text-yellow-600 dark:text-yellow-400', bgColor: 'bg-yellow-100 border-yellow-200 dark:bg-yellow-900/30 dark:border-yellow-800', icon: ClockIcon },
+      ready: { color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 border-green-200 dark:bg-green-900/30 dark:border-green-800', icon: CheckCircleIcon },
+      shipped: { color: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-100 border-purple-200 dark:bg-purple-900/30 dark:border-purple-800', icon: TruckIcon },
+      delivered: { color: 'text-emerald-600 dark:text-emerald-400', bgColor: 'bg-emerald-100 border-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-800', icon: CheckCircleIcon },
+      cancelled: { color: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-100 border-red-200 dark:bg-red-900/30 dark:border-red-800', icon: XMarkIcon }
     };
     return configs[status] || configs.draft;
   };
 
   const getPriorityConfig = (priority: string) => {
     const configs: Record<string, { color: string; bgColor: string }> = {
-      low: { color: 'text-gray-600', bgColor: 'bg-gray-100' },
-      normal: { color: 'text-blue-600', bgColor: 'bg-blue-100' },
-      high: { color: 'text-orange-600', bgColor: 'bg-orange-100' },
-      urgent: { color: 'text-red-600', bgColor: 'bg-red-100' }
+      low: { color: 'text-gray-600 dark:text-gray-300', bgColor: 'bg-gray-100 dark:bg-gray-700' },
+      normal: { color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
+      high: { color: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-100 dark:bg-orange-900/30' },
+      urgent: { color: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-100 dark:bg-red-900/30' }
     };
     return configs[priority] || configs.normal;
   };
@@ -198,7 +198,7 @@ const SalesOrderListUpgraded: React.FC = () => {
             </Link>
             <Link
               to="/app/sales/orders/new"
-              className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-emerald-600 rounded-lg font-medium hover:bg-emerald-50 transition-colors shadow-md"
+              className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-emerald-600 rounded-lg font-medium hover:bg-emerald-50 transition-colors shadow-md dark:text-emerald-400"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               New Order
@@ -217,21 +217,21 @@ const SalesOrderListUpgraded: React.FC = () => {
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(stats.total_amount)}</div>
           <div className="text-sm text-gray-500 dark:text-gray-400">Total Value</div>
         </div>
-        <div className="bg-blue-50 rounded-lg border border-blue-200 p-4">
-          <div className="text-2xl font-bold text-blue-600">{stats.pending_count}</div>
-          <div className="text-sm text-blue-600">Pending</div>
+        <div className="bg-blue-50 rounded-lg border border-blue-200 p-4 dark:bg-blue-900/20 dark:border-blue-800">
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.pending_count}</div>
+          <div className="text-sm text-blue-600 dark:text-blue-400">Pending</div>
         </div>
-        <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4">
-          <div className="text-2xl font-bold text-yellow-600">{stats.in_production_count}</div>
-          <div className="text-sm text-yellow-600">In Production</div>
+        <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
+          <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.in_production_count}</div>
+          <div className="text-sm text-yellow-600 dark:text-yellow-400">In Production</div>
         </div>
-        <div className="bg-green-50 rounded-lg border border-green-200 p-4">
-          <div className="text-2xl font-bold text-green-600">{stats.ready_count}</div>
-          <div className="text-sm text-green-600">Ready</div>
+        <div className="bg-green-50 rounded-lg border border-green-200 p-4 dark:bg-green-900/20 dark:border-green-800">
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.ready_count}</div>
+          <div className="text-sm text-green-600 dark:text-green-400">Ready</div>
         </div>
-        <div className="bg-purple-50 rounded-lg border border-purple-200 p-4">
-          <div className="text-2xl font-bold text-purple-600">{stats.shipped_count}</div>
-          <div className="text-sm text-purple-600">Shipped</div>
+        <div className="bg-purple-50 rounded-lg border border-purple-200 p-4 dark:bg-purple-900/20 dark:border-purple-800">
+          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.shipped_count}</div>
+          <div className="text-sm text-purple-600 dark:text-purple-400">Shipped</div>
         </div>
       </div>
 
@@ -307,7 +307,7 @@ const SalesOrderListUpgraded: React.FC = () => {
                       <div>
                         <Link 
                           to={`/app/sales/orders/${order.id}`}
-                          className="font-medium text-emerald-600 hover:text-emerald-800"
+                          className="font-medium text-emerald-600 hover:text-emerald-800 dark:text-emerald-400"
                         >
                           {order.order_number}
                         </Link>
@@ -323,8 +323,8 @@ const SalesOrderListUpgraded: React.FC = () => {
                       {order.required_date ? (
                         <span className={
                           new Date(order.required_date) < new Date() && !['delivered', 'cancelled'].includes(order.status)
-                            ? 'text-red-600 font-medium'
-                            : 'text-gray-500'
+                            ? 'text-red-600 font-medium dark:text-red-400'
+                            : 'text-gray-500 dark:text-gray-400'
                         }>
                           {format(new Date(order.required_date), 'dd MMM yyyy')}
                           {new Date(order.required_date) < new Date() && !['delivered', 'cancelled'].includes(order.status) && (
@@ -389,7 +389,7 @@ const SalesOrderListUpgraded: React.FC = () => {
                             {order.status !== 'draft' && (
                               <Link
                                 to={`/app/sales/orders/${order.id}/workflow`}
-                                className="flex items-center px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
+                                className="flex items-center px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 dark:text-blue-400"
                               >
                                 <ArrowPathIcon className="h-4 w-4 mr-2" />
                                 Riwayat Produksi &amp; Pengiriman
@@ -405,7 +405,7 @@ const SalesOrderListUpgraded: React.FC = () => {
                             {!['delivered', 'cancelled'].includes(order.status) && (
                               <button
                                 onClick={() => handleCancelOrder(order.id, order.status)}
-                                className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400"
                               >
                                 <XMarkIcon className="h-4 w-4 mr-2" />
                                 Cancel Order

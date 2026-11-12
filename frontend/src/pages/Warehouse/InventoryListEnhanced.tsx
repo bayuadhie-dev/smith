@@ -139,7 +139,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
     
     if (qty <= 0) {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
           <XCircleIcon className="h-3 w-3" />
           Habis
         </span>
@@ -148,7 +148,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
     
     if (minStock > 0 && qty <= minStock) {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
           <ExclamationTriangleIcon className="h-3 w-3" />
           Stok Rendah
         </span>
@@ -156,7 +156,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
     }
     
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
         <CheckCircleIcon className="h-3 w-3" />
         Tersedia
       </span>
@@ -172,14 +172,14 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
     const normalized = (stockStatusValue || '').toLowerCase()
     if (normalized === 'quarantine') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
           Quarantine
         </span>
       )
     }
     if (normalized === 'reject' || normalized === 'rejected') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
           Reject
         </span>
       )
@@ -190,14 +190,14 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
   const getItemTypeBadge = (type: string) => {
     if (type === 'product') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
           <CubeIcon className="h-3 w-3" />
           Produk
         </span>
       )
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
         <BeakerIcon className="h-3 w-3" />
         Material
       </span>
@@ -223,15 +223,15 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
     const group = getCategoryGroup(category)
     switch (group) {
       case 'Kain':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
       case 'Packaging':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
       case 'Aksesoris':
-        return 'bg-purple-100 text-purple-800'
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
       case 'Chemical':
-        return 'bg-orange-100 text-orange-800'
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
     }
   }
 
@@ -314,7 +314,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-300">Total Produk</p>
-              <p className="text-2xl font-bold text-blue-600">{summary.total_products}</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{summary.total_products}</p>
             </div>
             <CubeIcon className="h-10 w-10 text-blue-200" />
           </div>
@@ -323,7 +323,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-300">Total Material</p>
-              <p className="text-2xl font-bold text-purple-600">{summary.total_materials}</p>
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{summary.total_materials}</p>
             </div>
             <BeakerIcon className="h-10 w-10 text-purple-200" />
           </div>
@@ -332,7 +332,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-300">Total Kuantitas</p>
-              <p className="text-2xl font-bold text-green-600">{summary.total_quantity.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{summary.total_quantity.toLocaleString()}</p>
             </div>
             <MapPinIcon className="h-10 w-10 text-green-200" />
           </div>
@@ -341,7 +341,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-300">Stok Rendah</p>
-              <p className="text-2xl font-bold text-red-600">{summary.low_stock_count}</p>
+              <p className="text-2xl font-bold text-red-600 dark:text-red-400">{summary.low_stock_count}</p>
             </div>
             <ExclamationTriangleIcon className="h-10 w-10 text-red-200" />
           </div>
@@ -363,7 +363,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`btn-secondary inline-flex items-center gap-2 ${showFilters ? 'bg-blue-50' : ''}`}
+            className={`btn-secondary inline-flex items-center gap-2 ${showFilters ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
           >
             <FunnelIcon className="h-5 w-5" />
             Filter
@@ -511,10 +511,10 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
                       <td className="px-4 py-3 whitespace-nowrap text-right font-medium">
                         {item.quantity_on_hand.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right text-green-600 font-medium">
+                      <td className="px-4 py-3 whitespace-nowrap text-right text-green-600 font-medium dark:text-green-400">
                         {item.quantity_available.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right text-orange-600">
+                      <td className="px-4 py-3 whitespace-nowrap text-right text-orange-600 dark:text-orange-400">
                         {item.quantity_reserved.toLocaleString()}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
@@ -528,7 +528,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm">
                         {item.expiry_date ? (
-                          <span className={new Date(item.expiry_date) < new Date() ? 'text-red-600 font-medium' : 'text-gray-600'}>
+                          <span className={new Date(item.expiry_date) < new Date() ? 'text-red-600 font-medium dark:text-red-400' : 'text-gray-600 dark:text-gray-300'}>
                             {new Date(item.expiry_date).toLocaleDateString('id-ID')}
                           </span>
                         ) : '-'}

@@ -60,12 +60,12 @@ interface Product {
 
 // Downtime categories
 const DOWNTIME_CATEGORIES = {
-  mesin: { label: 'Mesin', pic: 'MTC', color: 'red', bgColor: 'bg-red-50', borderColor: 'border-red-300', textColor: 'text-red-700', icon: CogIcon },
-  operator: { label: 'Operator', pic: 'SPV', color: 'orange', bgColor: 'bg-orange-50', borderColor: 'border-orange-300', textColor: 'text-orange-700', icon: UserIcon },
-  material: { label: 'Material', pic: 'PPIC', color: 'yellow', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-300', textColor: 'text-yellow-700', icon: CubeIcon },
-  design: { label: 'Design/Sanitasi', pic: 'QC', color: 'blue', bgColor: 'bg-blue-50', borderColor: 'border-blue-300', textColor: 'text-blue-700', icon: PaintBrushIcon },
-  idle: { label: 'Idle Time', pic: 'Warehouse/PPIC', color: 'orange', bgColor: 'bg-orange-50', borderColor: 'border-orange-300', textColor: 'text-orange-700', icon: ClockIcon },
-  others: { label: 'Others', pic: '-', color: 'gray', bgColor: 'bg-gray-50', borderColor: 'border-gray-300', textColor: 'text-gray-700', icon: EllipsisHorizontalCircleIcon }
+  mesin: { label: 'Mesin', pic: 'MTC', color: 'red', bgColor: 'bg-red-50 dark:bg-red-900/20', borderColor: 'border-red-300', textColor: 'text-red-700 dark:text-red-300', icon: CogIcon },
+  operator: { label: 'Operator', pic: 'SPV', color: 'orange', bgColor: 'bg-orange-50 dark:bg-orange-900/20', borderColor: 'border-orange-300', textColor: 'text-orange-700 dark:text-orange-300', icon: UserIcon },
+  material: { label: 'Material', pic: 'PPIC', color: 'yellow', bgColor: 'bg-yellow-50 dark:bg-yellow-900/20', borderColor: 'border-yellow-300', textColor: 'text-yellow-700 dark:text-yellow-300', icon: CubeIcon },
+  design: { label: 'Design/Sanitasi', pic: 'QC', color: 'blue', bgColor: 'bg-blue-50 dark:bg-blue-900/20', borderColor: 'border-blue-300', textColor: 'text-blue-700 dark:text-blue-300', icon: PaintBrushIcon },
+  idle: { label: 'Idle Time', pic: 'Warehouse/PPIC', color: 'orange', bgColor: 'bg-orange-50 dark:bg-orange-900/20', borderColor: 'border-orange-300', textColor: 'text-orange-700 dark:text-orange-300', icon: ClockIcon },
+  others: { label: 'Others', pic: '-', color: 'gray', bgColor: 'bg-gray-50 dark:bg-gray-900', borderColor: 'border-gray-300 dark:border-gray-600', textColor: 'text-gray-700 dark:text-gray-200', icon: EllipsisHorizontalCircleIcon }
 };
 
 // Keywords untuk auto-detect kategori dari alasan downtime
@@ -615,8 +615,8 @@ export default function EditProductionRecord() {
 
   if (!record || !workOrder) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">Data tidak ditemukan</p>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
+        <p className="text-red-800 dark:text-red-300">Data tidak ditemukan</p>
       </div>
     );
   }
@@ -638,8 +638,8 @@ export default function EditProductionRecord() {
       </div>
 
       {/* Info Box */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <p className="text-sm text-yellow-800">
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
+        <p className="text-sm text-yellow-800 dark:text-yellow-300">
           <strong>Perhatian:</strong> Mengubah data produksi akan mempengaruhi total produksi SPK. 
           Pastikan data yang diinput sudah benar.
         </p>
@@ -673,9 +673,9 @@ export default function EditProductionRecord() {
                     <button
                       type="button"
                       onClick={() => handleProductSelect({ id: workOrder.product_id, code: '', name: workOrder.product_name })}
-                      className="w-full px-3 py-2 text-left hover:bg-blue-50 border-b border-gray-200 dark:border-gray-700 bg-blue-50"
+                      className="w-full px-3 py-2 text-left hover:bg-blue-50 border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20"
                     >
-                      <span className="text-xs text-blue-600 font-medium">Default WO:</span>
+                      <span className="text-xs text-blue-600 font-medium dark:text-blue-400">Default WO:</span>
                       <span className="block text-sm font-medium">{workOrder.product_name}</span>
                     </button>
                   )}
@@ -686,7 +686,7 @@ export default function EditProductionRecord() {
                         key={product.id}
                         type="button"
                         onClick={() => handleProductSelect(product)}
-                        className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 border-b border-gray-100 last:border-0"
+                        className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 border-b border-gray-100 last:border-0 dark:border-gray-800"
                       >
                         <span className="text-xs text-gray-500 dark:text-gray-400">{product.code}</span>
                         <span className="block text-sm">{product.name}</span>
@@ -706,7 +706,7 @@ export default function EditProductionRecord() {
                     handleProductSelect({ id: workOrder.product_id, code: '', name: workOrder.product_name });
                   }
                 }}
-                className="px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg border border-blue-200"
+                className="px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg border border-blue-200 dark:text-blue-400 dark:border-blue-800"
                 title="Reset ke produk WO"
               >
                 Reset
@@ -714,7 +714,7 @@ export default function EditProductionRecord() {
             )}
           </div>
           {selectedProduct && selectedProduct.id !== workOrder?.product_id && (
-            <p className="text-xs text-orange-600 mt-1">
+            <p className="text-xs text-orange-600 mt-1 dark:text-orange-400">
               ⚠️ Produk berbeda dari WO default ({workOrder?.product_name})
             </p>
           )}
@@ -770,7 +770,7 @@ export default function EditProductionRecord() {
             <NumberInput
               value={formData.machine_speed}
               onChange={(e) => handleChange('machine_speed', e.target.value)}
-              className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50"
+              className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50 dark:bg-blue-900/20"
               placeholder="0"
               min="0"
             />
@@ -787,31 +787,31 @@ export default function EditProductionRecord() {
             </div>
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">Runtime</p>
-              <p className="text-lg font-bold text-blue-600">{getRuntime()}m</p>
+              <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{getRuntime()}m</p>
               <p className="text-xs text-gray-400">= A ÷ Speed</p>
             </div>
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">Downtime</p>
-              <p className="text-lg font-bold text-orange-600">{getTotalDowntime()}m</p>
+              <p className="text-lg font-bold text-orange-600 dark:text-orange-400">{getTotalDowntime()}m</p>
             </div>
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">Waktu Tercatat</p>
-              <p className={`text-lg font-bold ${getWaktuTercatat() > getAverageTime() ? 'text-red-600' : 'text-green-600'}`}>
+              <p className={`text-lg font-bold ${getWaktuTercatat() > getAverageTime() ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                 {getWaktuTercatat()}m
               </p>
               {getWaktuTercatat() > getAverageTime() && (
-                <p className="text-xs text-red-600 font-medium">
+                <p className="text-xs text-red-600 font-medium dark:text-red-400">
                   ⚠ +{getWaktuTercatat() - getAverageTime()}m
                 </p>
               )}
             </div>
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">Waktu Tidak Tercatat</p>
-              <p className="text-lg font-bold text-red-600">{getWaktuTidakTercatat()}m</p>
+              <p className="text-lg font-bold text-red-600 dark:text-red-400">{getWaktuTidakTercatat()}m</p>
             </div>
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">Efisiensi</p>
-              <p className={`text-lg font-bold ${getEfficiency() >= 60 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-lg font-bold ${getEfficiency() >= 60 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {getEfficiency().toFixed(1)}%
               </p>
             </div>
@@ -824,7 +824,7 @@ export default function EditProductionRecord() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                Grade A <span className="text-green-600">(Good)</span> *
+                Grade A <span className="text-green-600 dark:text-green-400">(Good)</span> *
               </label>
               <NumberInput
                 value={formData.quantity_good}
@@ -837,7 +837,7 @@ export default function EditProductionRecord() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                Grade B <span className="text-yellow-600">(Rework)</span>
+                Grade B <span className="text-yellow-600 dark:text-yellow-400">(Rework)</span>
               </label>
               <NumberInput
                 value={formData.quantity_rework}
@@ -888,26 +888,26 @@ export default function EditProductionRecord() {
           {/* Auto-calculated */}
           <div className="grid grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
             <div>
-              <label className="block text-sm font-medium text-blue-700 mb-1">
+              <label className="block text-sm font-medium text-blue-700 mb-1 dark:text-blue-300">
                 Qty Produksi (Auto)
               </label>
               <input
                 type="text"
                 value={formData.quantity_produced}
                 readOnly
-                className="w-full px-3 py-2 bg-blue-50 border border-blue-300 rounded-lg text-blue-800 font-medium cursor-not-allowed"
+                className="w-full px-3 py-2 bg-blue-50 border border-blue-300 rounded-lg text-blue-800 font-medium cursor-not-allowed dark:bg-blue-900/20 dark:text-blue-300"
               />
               <span className="text-xs text-gray-500 dark:text-gray-400">= A + B + C</span>
             </div>
             <div>
-              <label className="block text-sm font-medium text-orange-700 mb-1">
+              <label className="block text-sm font-medium text-orange-700 mb-1 dark:text-orange-300">
                 Waste (Auto)
               </label>
               <input
                 type="text"
                 value={formData.quantity_waste}
                 readOnly
-                className="w-full px-3 py-2 bg-orange-50 border border-orange-300 rounded-lg text-orange-700 font-medium cursor-not-allowed"
+                className="w-full px-3 py-2 bg-orange-50 border border-orange-300 rounded-lg text-orange-700 font-medium cursor-not-allowed dark:bg-orange-900/20 dark:text-orange-300"
               />
               <span className="text-xs text-gray-500 dark:text-gray-400">= C + Setting</span>
             </div>
@@ -916,16 +916,16 @@ export default function EditProductionRecord() {
 
         {/* Shift Berhenti Lebih Awal Section */}
         <div className="border-t pt-6">
-          <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
+          <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 dark:bg-orange-900/20 dark:border-orange-800">
             <div className="flex items-center gap-2 mb-4">
               <input
                 type="checkbox"
                 id="early_stop"
                 checked={formData.early_stop}
                 onChange={(e) => handleChange('early_stop', e.target.checked)}
-                className="w-4 h-4 rounded border-orange-300 text-orange-600 focus:ring-orange-500"
+                className="w-4 h-4 rounded border-orange-300 text-orange-600 focus:ring-orange-500 dark:text-orange-400"
               />
-              <label htmlFor="early_stop" className="font-medium text-orange-800">
+              <label htmlFor="early_stop" className="font-medium text-orange-800 dark:text-orange-300">
                 ⚠️ Shift Berhenti Lebih Awal
               </label>
             </div>
@@ -934,7 +934,7 @@ export default function EditProductionRecord() {
               <div className="space-y-4 pl-6 border-l-2 border-orange-300">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-orange-700 mb-1">
+                    <label className="block text-sm font-medium text-orange-700 mb-1 dark:text-orange-300">
                       Waktu Berhenti
                     </label>
                     <input
@@ -945,7 +945,7 @@ export default function EditProductionRecord() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-orange-700 mb-1">
+                    <label className="block text-sm font-medium text-orange-700 mb-1 dark:text-orange-300">
                       Alasan Berhenti
                     </label>
                     <select
@@ -964,7 +964,7 @@ export default function EditProductionRecord() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-orange-700 mb-1">
+                  <label className="block text-sm font-medium text-orange-700 mb-1 dark:text-orange-300">
                     Catatan Tambahan
                   </label>
                   <input
@@ -990,7 +990,7 @@ export default function EditProductionRecord() {
             <button
               type="button"
               onClick={addDowntimeEntry}
-              className="inline-flex items-center px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 text-sm font-medium"
+              className="inline-flex items-center px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 text-sm font-medium dark:bg-orange-900/30 dark:text-orange-300"
             >
               <PlusIcon className="h-4 w-4 mr-1" />
               Tambah Downtime
@@ -1004,7 +1004,7 @@ export default function EditProductionRecord() {
               <button
                 type="button"
                 onClick={addDowntimeEntry}
-                className="mt-2 text-orange-600 hover:text-orange-800 text-sm font-medium"
+                className="mt-2 text-orange-600 hover:text-orange-800 text-sm font-medium dark:text-orange-400"
               >
                 + Tambah downtime jika ada
               </button>
@@ -1016,9 +1016,9 @@ export default function EditProductionRecord() {
                 const Icon = categoryConfig?.icon || ClockIcon;
                 
                 return (
-                  <div key={entry.id} className={`p-4 rounded-lg border-2 ${categoryConfig ? categoryConfig.bgColor : 'bg-gray-50'} ${categoryConfig ? categoryConfig.borderColor : 'border-gray-200'}`}>
+                  <div key={entry.id} className={`p-4 rounded-lg border-2 ${categoryConfig ? categoryConfig.bgColor : 'bg-gray-50 dark:bg-gray-900'} ${categoryConfig ? categoryConfig.borderColor : 'border-gray-200 dark:border-gray-700'}`}>
                     <div className="flex items-start gap-3">
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${categoryConfig ? `${categoryConfig.bgColor} ${categoryConfig.textColor}` : 'bg-gray-200 text-gray-600'}`}>
+                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${categoryConfig ? `${categoryConfig.bgColor} ${categoryConfig.textColor}` : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}>
                         {index + 1}
                       </div>
                       
@@ -1072,7 +1072,7 @@ export default function EditProductionRecord() {
                           <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
                             Total (menit)
                           </label>
-                          <div className="px-3 py-2 bg-orange-100 border border-orange-300 rounded-lg text-sm text-center font-bold text-orange-700">
+                          <div className="px-3 py-2 bg-orange-100 border border-orange-300 rounded-lg text-sm text-center font-bold text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
                             {(parseInt(entry.duration_minutes) || 0) * (parseInt(entry.frequency) || 1)}
                           </div>
                         </div>
@@ -1114,21 +1114,21 @@ export default function EditProductionRecord() {
 
           {/* Total Downtime Summary */}
           {downtimeEntries.length > 0 && (
-            <div className="mt-4 p-3 bg-orange-100 rounded-lg border border-orange-300">
+            <div className="mt-4 p-3 bg-orange-100 rounded-lg border border-orange-300 dark:bg-orange-900/30">
               <div className="flex justify-between items-center">
-                <span className="font-medium text-orange-800">Total Downtime:</span>
-                <span className="text-xl font-bold text-orange-700">{getTotalDowntime()} menit</span>
+                <span className="font-medium text-orange-800 dark:text-orange-300">Total Downtime:</span>
+                <span className="text-xl font-bold text-orange-700 dark:text-orange-300">{getTotalDowntime()} menit</span>
               </div>
               {/* Downtime vs Runtime indicator */}
               {record?.planned_runtime && getTotalDowntime() > 0 && (
                 <div className="mt-2 text-sm">
-                  <span className="text-orange-600">
+                  <span className="text-orange-600 dark:text-orange-400">
                     ({((getTotalDowntime() / record.planned_runtime) * 100).toFixed(1)}% dari {record.planned_runtime}m)
                   </span>
                   <span className={`ml-2 font-medium ${
                     getTotalDowntime() > record.planned_runtime 
-                      ? 'text-red-600' 
-                      : 'text-green-600'
+                      ? 'text-red-600 dark:text-red-400' 
+                      : 'text-green-600 dark:text-green-400'
                   }`}>
                     {getTotalDowntime() > record.planned_runtime 
                       ? `+${getTotalDowntime() - record.planned_runtime}m (melebihi runtime)` 

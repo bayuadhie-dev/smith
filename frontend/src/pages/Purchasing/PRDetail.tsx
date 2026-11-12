@@ -14,17 +14,17 @@ import {
 import { formatRupiah, formatCurrencyAmount } from '../../utils/currencyUtils';
 
 const STEP_STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
-  pending:  { label: 'Menunggu', color: 'bg-gray-100 text-gray-600', icon: ClockIcon },
-  approved: { label: 'Disetujui', color: 'bg-green-100 text-green-700', icon: CheckCircleIcon },
-  rejected: { label: 'Ditolak', color: 'bg-red-100 text-red-700', icon: XCircleIcon },
+  pending:  { label: 'Menunggu', color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300', icon: ClockIcon },
+  approved: { label: 'Disetujui', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300', icon: CheckCircleIcon },
+  rejected: { label: 'Ditolak', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', icon: XCircleIcon },
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700' },
-  submitted: { label: 'Diajukan',   color: 'bg-blue-100 text-blue-700' },
-  approved:  { label: 'Disetujui',  color: 'bg-green-100 text-green-700' },
-  rejected:  { label: 'Ditolak',    color: 'bg-red-100 text-red-700' },
-  converted: { label: 'Jadi PO',    color: 'bg-purple-100 text-purple-700' },
+  draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
+  submitted: { label: 'Diajukan',   color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+  approved:  { label: 'Disetujui',  color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+  rejected:  { label: 'Ditolak',    color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
+  converted: { label: 'Jadi PO',    color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' },
 };
 
 export default function PRDetail() {
@@ -95,7 +95,7 @@ export default function PRDetail() {
     }
   };
 
-  const statusCfg = pr ? (STATUS_CONFIG[pr.status] || { label: pr.status, color: 'bg-gray-100 text-gray-700' }) : null;
+  const statusCfg = pr ? (STATUS_CONFIG[pr.status] || { label: pr.status, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' }) : null;
 
   if (loading) {
     return (
@@ -106,7 +106,7 @@ export default function PRDetail() {
   }
 
   if (!pr) {
-    return <div className="p-6 text-center text-gray-500">Purchase Requisition tidak ditemukan.</div>;
+    return <div className="p-6 text-center text-gray-500 dark:text-gray-400">Purchase Requisition tidak ditemukan.</div>;
   }
 
   return (
@@ -124,7 +124,7 @@ export default function PRDetail() {
               {pr.converted_po_number && (
                 <Link
                   to={`/app/purchasing/purchase-orders/${pr.converted_to_po_id}`}
-                  className="text-xs text-purple-600 hover:underline flex items-center gap-0.5"
+                  className="text-xs text-purple-600 hover:underline flex items-center gap-0.5 dark:text-purple-400"
                 >
                   &rarr; {pr.converted_po_number} <ArrowTopRightOnSquareIcon className="h-3 w-3" />
                 </Link>
@@ -156,7 +156,7 @@ export default function PRDetail() {
       </div>
 
       {pr.status === 'rejected' && pr.rejection_reason && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
           <strong>Alasan Penolakan:</strong> {pr.rejection_reason}
         </div>
       )}
@@ -170,7 +170,7 @@ export default function PRDetail() {
               <span className="text-xs text-gray-400">Dibuat otomatis dari kekurangan bahan baku</span>
               <Link
                 to={`/app/sales/orders/${pr.sales_order_id}`}
-                className="text-sm font-medium text-blue-600 hover:text-blue-700 underline"
+                className="text-sm font-medium text-blue-600 hover:text-blue-700 underline dark:text-blue-400"
               >
                 {pr.sales_order_number || `SO #${pr.sales_order_id}`}
               </Link>
@@ -271,7 +271,7 @@ export default function PRDetail() {
                           <button
                             onClick={() => setShowRejectFor(step.approval_level)}
                             disabled={actingLevel === step.approval_level}
-                            className="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-xs font-medium hover:bg-red-50"
+                            className="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-xs font-medium hover:bg-red-50 dark:text-red-400 dark:border-red-800"
                           >
                             Tolak
                           </button>
@@ -313,7 +313,7 @@ export default function PRDetail() {
                 >
                   <td className="py-2 pr-3 font-medium text-gray-900 dark:text-white">
                     <span className="flex items-center gap-1.5">
-                      {item.material_id && <CubeIcon className="h-3.5 w-3.5 text-primary-600 flex-shrink-0" />}
+                      {item.material_id && <CubeIcon className="h-3.5 w-3.5 text-primary-600 flex-shrink-0 dark:text-primary-400" />}
                       {item.item_name}
                     </span>
                   </td>
@@ -357,13 +357,13 @@ export default function PRDetail() {
         {materialModal.loading ? (
           <div className="flex justify-center py-8 text-gray-400"><ArrowPathIcon className="h-5 w-5 animate-spin" /></div>
         ) : !materialModal.data ? (
-          <p className="text-sm text-gray-500 text-center py-6">Gagal memuat data stok.</p>
+          <p className="text-sm text-gray-500 text-center py-6 dark:text-gray-400">Gagal memuat data stok.</p>
         ) : materialModal.data.locations?.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-6">Belum ada stok untuk bahan ini di gudang.</p>
+          <p className="text-sm text-gray-500 text-center py-6 dark:text-gray-400">Belum ada stok untuk bahan ini di gudang.</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700">
+              <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
                 <th className="pb-2 pr-3">Lokasi</th>
                 <th className="pb-2 pr-3">No. Batch</th>
                 <th className="pb-2 pr-3 text-right">Qty Tersedia</th>
@@ -374,7 +374,7 @@ export default function PRDetail() {
               {materialModal.data.locations.map((loc: any) => (
                 <tr key={loc.inventory_id}>
                   <td className="py-2 pr-3">{loc.location_code || '-'}</td>
-                  <td className="py-2 pr-3 text-gray-500">{loc.batch_number || '-'}</td>
+                  <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{loc.batch_number || '-'}</td>
                   <td className="py-2 pr-3 text-right tabular-nums">{loc.quantity_available.toLocaleString('id-ID')}</td>
                   <td className="py-2 text-right tabular-nums">{loc.quantity_reserved.toLocaleString('id-ID')}</td>
                 </tr>

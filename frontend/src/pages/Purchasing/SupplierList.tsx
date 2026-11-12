@@ -128,7 +128,7 @@ const [search, setSearch] = useState('')
           <div className="flex items-end">
             <button
               type="submit"
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-200 dark:bg-gray-700 transition-colors"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-200 dark:bg-gray-700 transition-colors dark:hover:bg-gray-600"
             >
               <FunnelIcon className="h-5 w-5" />{t('common.filter')}</button>
           </div>
@@ -196,7 +196,7 @@ const [search, setSearch] = useState('')
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                           {supplier.supplier_type || 'General'}{supplier.supplier_subtype ? ' - ' + supplier.supplier_subtype : ''}
                         </span>
                         <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -210,10 +210,10 @@ const [search, setSearch] = useState('')
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="space-y-1">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          supplier.rating === 'A' ? 'bg-green-100 text-green-800' : 
-                          supplier.rating === 'B' ? 'bg-yellow-100 text-yellow-800' : 
-                          supplier.rating === 'C' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
+                          supplier.rating === 'A' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 
+                          supplier.rating === 'B' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' : 
+                          supplier.rating === 'C' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                          'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
                         }`}>
                           Rating: {supplier.rating || 'Unrated'}
                         </span>
@@ -234,7 +234,7 @@ const [search, setSearch] = useState('')
                         })()}
                         <div>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            supplier.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            supplier.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                           }`}>
                             {supplier.is_active ? 'Active' : 'Inactive'}
                           </span>
@@ -245,21 +245,21 @@ const [search, setSearch] = useState('')
                       <div className="flex items-center justify-end space-x-2">
                         <Link
                           to={`/app/purchasing/suppliers/${supplier.id}`}
-                          className="text-blue-600 hover:text-blue-900 p-1"
+                          className="text-blue-600 hover:text-blue-900 p-1 dark:text-blue-400"
                           title="View Details"
                         >
                           <EyeIcon className="h-4 w-4" />
                         </Link>
                         <Link
                           to={`/app/purchasing/suppliers/${supplier.id}/edit`}
-                          className="text-indigo-600 hover:text-indigo-900 p-1"
+                          className="text-indigo-600 hover:text-indigo-900 p-1 dark:text-indigo-400"
                           title={t('common.edit')}
                         >
                           <PencilIcon className="h-4 w-4" />
                         </Link>
                         <button
                           onClick={() => handleDelete(supplier.id, supplier.company_name)}
-                          className="text-red-600 hover:text-red-900 p-1"
+                          className="text-red-600 hover:text-red-900 p-1 dark:text-red-400"
                           title={t('common.delete')}
                         >
                           <TrashIcon className="h-4 w-4" />

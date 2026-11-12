@@ -173,22 +173,22 @@ const LiveMonitoringDashboard: React.FC = () => {
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-md hover:shadow-lg transition-shadow duration-200">
           <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-medium">Patrol Selesai</p>
-          <p className="text-2xl font-bold text-blue-600">{summary.total_checks}/{summary.total_possible}</p>
+          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{summary.total_checks}/{summary.total_possible}</p>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">
             <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${summary.completion_pct}%` }} />
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-md hover:shadow-lg transition-shadow duration-200">
-          <p className="text-[10px] text-green-600 uppercase font-medium">Running</p>
-          <p className="text-2xl font-bold text-green-600">{summary.running_count}</p>
+          <p className="text-[10px] text-green-600 uppercase font-medium dark:text-green-400">Running</p>
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{summary.running_count}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-md hover:shadow-lg transition-shadow duration-200">
-          <p className="text-[10px] text-red-600 uppercase font-medium">Stopped</p>
-          <p className="text-2xl font-bold text-red-600">{summary.stopped_count}</p>
+          <p className="text-[10px] text-red-600 uppercase font-medium dark:text-red-400">Stopped</p>
+          <p className="text-2xl font-bold text-red-600 dark:text-red-400">{summary.stopped_count}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-md hover:shadow-lg transition-shadow duration-200">
-          <p className="text-[10px] text-yellow-600 uppercase font-medium">Start Telat</p>
-          <p className="text-2xl font-bold text-yellow-600">{summary.delayed_count}</p>
+          <p className="text-[10px] text-yellow-600 uppercase font-medium dark:text-yellow-400">Start Telat</p>
+          <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{summary.delayed_count}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-md hover:shadow-lg transition-shadow duration-200">
           <p className="text-[10px] text-red-500 uppercase font-medium">Total Stop</p>
@@ -212,8 +212,8 @@ const LiveMonitoringDashboard: React.FC = () => {
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Hanya mesin yang ada di jadwal produksi. Klik slot untuk input.</p>
             </div>
             <div className="flex gap-3 text-[10px]">
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-100 border border-green-300" /> Running</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-100 border border-red-300" /> Stopped</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-100 border border-green-300 dark:bg-green-900/30" /> Running</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-100 border border-red-300 dark:bg-red-900/30" /> Stopped</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600" /> Belum dicek</span>
             </div>
           </div>
@@ -237,7 +237,7 @@ const LiveMonitoringDashboard: React.FC = () => {
                     <td className="px-3 py-2.5 sticky left-0 bg-white dark:bg-gray-800 z-10 border-r">
                       <div className="font-semibold text-gray-900 dark:text-white">{m.machine_name}</div>
                       <div className="text-[10px] text-gray-400">{m.machine_code}</div>
-                      <div className="text-[10px] text-blue-600 mt-0.5 truncate max-w-[170px]">
+                      <div className="text-[10px] text-blue-600 mt-0.5 truncate max-w-[170px] dark:text-blue-400">
                         {m.shift_productions.length > 1
                           ? `${m.wo_number} - ${m.shift_productions.map((sp: any) => sp.product_name).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i).join(', ')}`
                           : `${m.wo_number} - ${m.product_name}`
@@ -253,9 +253,9 @@ const LiveMonitoringDashboard: React.FC = () => {
                           <div className={`w-full rounded-lg border px-2 py-2 transition min-h-[60px] ${
                             slot.checked
                               ? isRunning
-                                ? 'bg-green-50 border-green-300 text-green-700'
-                                : 'bg-red-50 border-red-300 text-red-700'
-                              : 'bg-gray-50 border-dashed border-gray-300 text-gray-400'
+                                ? 'bg-green-50 border-green-300 text-green-700 dark:bg-green-900/20 dark:text-green-300'
+                                : 'bg-red-50 border-red-300 text-red-700 dark:bg-red-900/20 dark:text-red-300'
+                              : 'bg-gray-50 border-dashed border-gray-300 text-gray-400 dark:bg-gray-900 dark:border-gray-600'
                           }`}>
                             {slot.checked && d ? (
                               <div>
@@ -264,7 +264,7 @@ const LiveMonitoringDashboard: React.FC = () => {
                                   <span className="font-bold text-[11px]">{isRunning ? 'Running' : 'Stopped'}</span>
                                 </div>
                                 {slot.slot === 1 && d.actual_start_time && (
-                                  <div className={`text-[9px] ${d.start_delayed ? 'text-red-600 font-bold' : 'text-green-600'}`}>
+                                  <div className={`text-[9px] ${d.start_delayed ? 'text-red-600 font-bold dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                                     Start: {d.actual_start_time} {d.start_delayed ? '⚠' : '✓'}
                                   </div>
                                 )}
@@ -292,7 +292,7 @@ const LiveMonitoringDashboard: React.FC = () => {
                       );
                     })}
                     <td className="px-2 py-2 text-center">
-                      <div className={`text-sm font-bold ${m.total_stop_minutes > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                      <div className={`text-sm font-bold ${m.total_stop_minutes > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                         {m.total_stop_minutes}m
                       </div>
                       <div className="text-[10px] text-gray-400">{m.checks_completed}/{m.total_slots} cek</div>
@@ -485,8 +485,8 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
             onClick={() => setActiveTab('status')}
             className={`flex-1 py-3 px-4 text-sm font-medium transition ${
               activeTab === 'status' 
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' 
-                : 'text-gray-500 hover:bg-gray-50'
+                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600 dark:bg-blue-900/20 dark:text-blue-300' 
+                : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-400'
             }`}
           >
             <PlayIcon className="h-4 w-4 inline mr-1.5" />
@@ -497,8 +497,8 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
             onClick={() => setActiveTab('checklist')}
             className={`flex-1 py-3 px-4 text-sm font-medium transition ${
               activeTab === 'checklist' 
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' 
-                : 'text-gray-500 hover:bg-gray-50'
+                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600 dark:bg-blue-900/20 dark:text-blue-300' 
+                : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-400'
             }`}
           >
             <CogIcon className="h-4 w-4 inline mr-1.5" />
@@ -513,14 +513,14 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
             <>
               {/* Slot 1: Machine start time */}
               {isSlot1 && (
-                <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                  <label className="block text-xs font-semibold text-blue-800 mb-1">
-                    Jam Mesin Mulai Jalan <span className="font-normal text-blue-600">(seharusnya {dashboardData.machine_expected_start})</span>
+                <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+                  <label className="block text-xs font-semibold text-blue-800 mb-1 dark:text-blue-300">
+                    Jam Mesin Mulai Jalan <span className="font-normal text-blue-600 dark:text-blue-400">(seharusnya {dashboardData.machine_expected_start})</span>
                   </label>
                   <input type="time" value={actualStartTime} onChange={e => setActualStartTime(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                   {actualStartTime > dashboardData.machine_expected_start && (
-                    <p className="text-xs text-red-600 font-semibold mt-1">⚠ Mesin terlambat mulai!</p>
+                    <p className="text-xs text-red-600 font-semibold mt-1 dark:text-red-400">⚠ Mesin terlambat mulai!</p>
                   )}
                 </div>
               )}
@@ -531,13 +531,13 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
                 <div className="grid grid-cols-2 gap-2">
                   <button type="button" onClick={() => setStatus('running')}
                     className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium transition ${
-                      status === 'running' ? 'bg-green-100 border-green-400 text-green-700 ring-2 ring-green-400' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                      status === 'running' ? 'bg-green-100 border-green-400 text-green-700 ring-2 ring-green-400 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-50 text-gray-500 hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700 dark:text-gray-400'
                     }`}>
                     <PlayIcon className="h-5 w-5" /> Running
                   </button>
                   <button type="button" onClick={() => setStatus('stopped')}
                     className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium transition ${
-                      status === 'stopped' ? 'bg-red-100 border-red-400 text-red-700 ring-2 ring-red-400' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                      status === 'stopped' ? 'bg-red-100 border-red-400 text-red-700 ring-2 ring-red-400 dark:bg-red-900/30 dark:text-red-300' : 'bg-gray-50 text-gray-500 hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-700 dark:text-gray-400'
                     }`}>
                     <StopIcon className="h-5 w-5" /> Stopped
                   </button>
@@ -546,34 +546,34 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
 
               {/* Stopped fields */}
               {status === 'stopped' && (
-                <div className="p-3 rounded-lg bg-red-50 border border-red-200 space-y-3">
+                <div className="p-3 rounded-lg bg-red-50 border border-red-200 space-y-3 dark:bg-red-900/20 dark:border-red-800">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-medium text-red-800 mb-1">Berhenti dari jam</label>
+                      <label className="block text-xs font-medium text-red-800 mb-1 dark:text-red-300">Berhenti dari jam</label>
                       <input type="time" value={stopFrom} onChange={e => setStopFrom(e.target.value)} required
                         className="w-full px-3 py-2 border border-red-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500" />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-red-800 mb-1">Sampai jam</label>
+                      <label className="block text-xs font-medium text-red-800 mb-1 dark:text-red-300">Sampai jam</label>
                       <input type="time" value={stopTo} onChange={e => setStopTo(e.target.value)} required
                         className="w-full px-3 py-2 border border-red-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500" />
                     </div>
                   </div>
                   {calcDuration > 0 && (
-                    <div className="text-center py-1.5 bg-red-100 rounded-lg">
-                      <span className="text-red-700 text-sm font-bold">Durasi: {calcDuration} menit</span>
+                    <div className="text-center py-1.5 bg-red-100 rounded-lg dark:bg-red-900/30">
+                      <span className="text-red-700 text-sm font-bold dark:text-red-300">Durasi: {calcDuration} menit</span>
                       <span className="text-red-500 text-xs ml-1">({(calcDuration / 60).toFixed(1)} jam)</span>
                     </div>
                   )}
                   <div>
-                    <label className="block text-xs font-medium text-red-800 mb-1">Kategori</label>
+                    <label className="block text-xs font-medium text-red-800 mb-1 dark:text-red-300">Kategori</label>
                     <select value={stopCategory} onChange={e => setStopCategory(e.target.value)}
                       className="w-full px-3 py-2 border border-red-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500">
                       {STOP_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-red-800 mb-1">Alasan Berhenti *</label>
+                    <label className="block text-xs font-medium text-red-800 mb-1 dark:text-red-300">Alasan Berhenti *</label>
                     <input type="text" value={stopReason} onChange={e => setStopReason(e.target.value)} required
                       className="w-full px-3 py-2 border border-red-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500"
                       placeholder="Contoh: Roll habis, mesin overheat, ganti produk dll" />
@@ -622,7 +622,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
                   {kondisiMesinItems.length > 0 && (
                     <div>
                       <div className="flex items-center space-x-2 mb-2">
-                        <CogIcon className="h-4 w-4 text-blue-600" />
+                        <CogIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                         <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Kondisi Mesin</h4>
                         <span className="text-xs text-gray-500 dark:text-gray-400">({kondisiMesinItems.length} item)</span>
                       </div>
@@ -631,21 +631,21 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
                           const answer = checklistAnswers[item.id];
                           return (
                             <div key={item.id} className={`p-2 rounded-lg border ${
-                              answer?.status === 'NG' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'
+                              answer?.status === 'NG' ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800' : 'bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-700'
                             }`}>
                               <div className="flex items-center justify-between">
                                 <span className="text-xs text-gray-700 dark:text-gray-200 flex-1">{item.item_name}</span>
                                 <div className="flex items-center space-x-1">
                                   <button type="button" onClick={() => handleAnswerChange(item.id, 'OK')}
-                                    className={`p-1.5 rounded ${answer?.status === 'OK' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-green-100'}`}>
+                                    className={`p-1.5 rounded ${answer?.status === 'OK' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-green-100 dark:bg-gray-700 dark:text-gray-400'}`}>
                                     <CheckIcon className="h-3.5 w-3.5" />
                                   </button>
                                   <button type="button" onClick={() => handleAnswerChange(item.id, 'NG')}
-                                    className={`p-1.5 rounded ${answer?.status === 'NG' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-red-100'}`}>
+                                    className={`p-1.5 rounded ${answer?.status === 'NG' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-red-100 dark:bg-gray-700 dark:text-gray-400'}`}>
                                     <XCircleIcon className="h-3.5 w-3.5" />
                                   </button>
                                   <button type="button" onClick={() => handleAnswerChange(item.id, 'NA')}
-                                    className={`p-1.5 rounded ${answer?.status === 'NA' ? 'bg-gray-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'}`}>
+                                    className={`p-1.5 rounded ${answer?.status === 'NA' ? 'bg-gray-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-400'}`}>
                                     <MinusIcon className="h-3.5 w-3.5" />
                                   </button>
                                 </div>
@@ -670,7 +670,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
                   {manpowerItems.length > 0 && (
                     <div>
                       <div className="flex items-center space-x-2 mb-2">
-                        <UserGroupIcon className="h-4 w-4 text-purple-600" />
+                        <UserGroupIcon className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                         <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Man Power</h4>
                         <span className="text-xs text-gray-500 dark:text-gray-400">({manpowerItems.length} item)</span>
                       </div>
@@ -679,21 +679,21 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
                           const answer = checklistAnswers[item.id];
                           return (
                             <div key={item.id} className={`p-2 rounded-lg border ${
-                              answer?.status === 'NG' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'
+                              answer?.status === 'NG' ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800' : 'bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-700'
                             }`}>
                               <div className="flex items-center justify-between">
                                 <span className="text-xs text-gray-700 dark:text-gray-200 flex-1">{item.item_name}</span>
                                 <div className="flex items-center space-x-1">
                                   <button type="button" onClick={() => handleAnswerChange(item.id, 'OK')}
-                                    className={`p-1.5 rounded ${answer?.status === 'OK' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-green-100'}`}>
+                                    className={`p-1.5 rounded ${answer?.status === 'OK' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-green-100 dark:bg-gray-700 dark:text-gray-400'}`}>
                                     <CheckIcon className="h-3.5 w-3.5" />
                                   </button>
                                   <button type="button" onClick={() => handleAnswerChange(item.id, 'NG')}
-                                    className={`p-1.5 rounded ${answer?.status === 'NG' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-red-100'}`}>
+                                    className={`p-1.5 rounded ${answer?.status === 'NG' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-red-100 dark:bg-gray-700 dark:text-gray-400'}`}>
                                     <XCircleIcon className="h-3.5 w-3.5" />
                                   </button>
                                   <button type="button" onClick={() => handleAnswerChange(item.id, 'NA')}
-                                    className={`p-1.5 rounded ${answer?.status === 'NA' ? 'bg-gray-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'}`}>
+                                    className={`p-1.5 rounded ${answer?.status === 'NA' ? 'bg-gray-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-400'}`}>
                                     <MinusIcon className="h-3.5 w-3.5" />
                                   </button>
                                 </div>
@@ -716,8 +716,8 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
 
                   {/* NG Warning */}
                   {hasNGItems && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-xs text-red-700 font-semibold">
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-800">
+                      <p className="text-xs text-red-700 font-semibold dark:text-red-300">
                         ⚠️ Ada item dengan status NG! Pastikan sudah dicatat untuk tindak lanjut.
                       </p>
                     </div>
@@ -733,7 +733,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
               {saving ? 'Menyimpan...' : existingData ? 'Update Check' : 'Simpan Check'}
             </button>
             <button type="button" onClick={onClose}
-              className="px-4 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-medium text-sm transition">Batal</button>
+              className="px-4 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-medium text-sm transition dark:hover:bg-gray-600">Batal</button>
           </div>
         </form>
       </div>
@@ -744,9 +744,9 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
 // ==================== MISMATCH MODAL ====================
 const MismatchModal: React.FC<{ data: any; onClose: () => void }> = ({ data, onClose }) => {
   const sevCfg: Record<string, { label: string; color: string; bg: string }> = {
-    high: { label: 'HIGH', color: 'text-red-700', bg: 'bg-red-100 border-red-300' },
-    medium: { label: 'MEDIUM', color: 'text-yellow-700', bg: 'bg-yellow-100 border-yellow-300' },
-    low: { label: 'LOW', color: 'text-blue-700', bg: 'bg-blue-100 border-blue-300' },
+    high: { label: 'HIGH', color: 'text-red-700 dark:text-red-300', bg: 'bg-red-100 border-red-300 dark:bg-red-900/30' },
+    medium: { label: 'MEDIUM', color: 'text-yellow-700 dark:text-yellow-300', bg: 'bg-yellow-100 border-yellow-300 dark:bg-yellow-900/30' },
+    low: { label: 'LOW', color: 'text-blue-700 dark:text-blue-300', bg: 'bg-blue-100 border-blue-300 dark:bg-blue-900/30' },
   };
   const typeLabels: Record<string, string> = {
     start_delayed: 'Start Telat',
@@ -758,12 +758,12 @@ const MismatchModal: React.FC<{ data: any; onClose: () => void }> = ({ data, onC
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="p-5 border-b bg-red-50 rounded-t-2xl flex items-center justify-between">
+        <div className="p-5 border-b bg-red-50 rounded-t-2xl flex items-center justify-between dark:bg-red-900/20">
           <div>
-            <h3 className="font-bold text-red-900 flex items-center gap-2">
+            <h3 className="font-bold text-red-900 flex items-center gap-2 dark:text-red-200">
               <ExclamationTriangleIcon className="h-5 w-5" /> Mismatch Report
             </h3>
-            <p className="text-xs text-red-600 mt-0.5">{data.date} &bull; {data.shift} &bull; {data.total_mismatches} temuan</p>
+            <p className="text-xs text-red-600 mt-0.5 dark:text-red-400">{data.date} &bull; {data.shift} &bull; {data.total_mismatches} temuan</p>
           </div>
           <button onClick={onClose} className="text-red-400 hover:text-red-600"><XMarkIcon className="h-5 w-5" /></button>
         </div>
@@ -782,14 +782,14 @@ const MismatchModal: React.FC<{ data: any; onClose: () => void }> = ({ data, onC
           {data.total_mismatches === 0 ? (
             <div className="text-center py-8">
               <CheckCircleIcon className="h-12 w-12 text-green-400 mx-auto mb-2" />
-              <p className="text-green-700 font-medium">Tidak ada mismatch!</p>
+              <p className="text-green-700 font-medium dark:text-green-300">Tidak ada mismatch!</p>
               <p className="text-gray-500 dark:text-gray-400 text-sm">Data live monitoring sesuai dengan input produksi.</p>
             </div>
           ) : (
             data.mismatches.map((m: any, i: number) => {
               const c = sevCfg[m.severity];
               return (
-                <div key={i} className={`p-4 rounded-xl border-l-4 bg-white shadow-sm ${
+                <div key={i} className={`p-4 rounded-xl border-l-4 bg-white shadow-sm dark:bg-gray-800 ${
                   m.severity === 'high' ? 'border-l-red-500' : m.severity === 'medium' ? 'border-l-yellow-500' : 'border-l-blue-500'
                 }`}>
                   <div className="flex items-center gap-2 mb-1">
@@ -801,7 +801,7 @@ const MismatchModal: React.FC<{ data: any; onClose: () => void }> = ({ data, onC
                   {m.stops && (
                     <div className="mt-2 space-y-1">
                       {m.stops.map((s: any, si: number) => (
-                        <div key={si} className="text-[10px] px-2 py-1 rounded bg-red-50 text-red-700">
+                        <div key={si} className="text-[10px] px-2 py-1 rounded bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300">
                           {s.from} → {s.to} ({s.dur}m) — {s.reason}
                         </div>
                       ))}

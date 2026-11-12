@@ -15,21 +15,21 @@ import { scheduleStatuses } from '../../components/POScheduleEditor';
 import { usePermissions } from '../../contexts/PermissionContext';
 
 const SCHEDULE_BADGE: Record<string, { label: string; color: string }> = {
-  done:    { label: 'Sudah datang', color: 'bg-emerald-100 text-emerald-700' },
-  partial: { label: 'Datang sebagian', color: 'bg-amber-100 text-amber-700' },
-  late:    { label: 'Terlambat', color: 'bg-red-100 text-red-700' },
-  waiting: { label: 'Menunggu', color: 'bg-gray-100 text-gray-700' },
+  done:    { label: 'Sudah datang', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
+  partial: { label: 'Datang sebagian', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
+  late:    { label: 'Terlambat', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
+  waiting: { label: 'Menunggu', color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700' },
-  sent:      { label: 'Terkirim',   color: 'bg-blue-100 text-blue-700' },
-  approved:  { label: 'Disetujui',  color: 'bg-green-100 text-green-700' },
-  confirmed: { label: 'Dikonfirmasi', color: 'bg-green-100 text-green-700' },
-  partial:   { label: 'Diterima Sebagian', color: 'bg-amber-100 text-amber-700' },
-  received:  { label: 'Diterima',   color: 'bg-emerald-100 text-emerald-700' },
-  cancelled: { label: 'Dibatalkan', color: 'bg-red-100 text-red-700' },
-  rejected:  { label: 'Ditolak',    color: 'bg-red-100 text-red-700' },
+  draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
+  sent:      { label: 'Terkirim',   color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+  approved:  { label: 'Disetujui',  color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+  confirmed: { label: 'Dikonfirmasi', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+  partial:   { label: 'Diterima Sebagian', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
+  received:  { label: 'Diterima',   color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
+  cancelled: { label: 'Dibatalkan', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
+  rejected:  { label: 'Ditolak',    color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
 };
 
 export default function PODetail() {
@@ -79,7 +79,7 @@ export default function PODetail() {
     }
   };
 
-  const statusCfg = po ? (STATUS_CONFIG[po.status] || { label: po.status, color: 'bg-gray-100 text-gray-700' }) : null;
+  const statusCfg = po ? (STATUS_CONFIG[po.status] || { label: po.status, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' }) : null;
 
   if (loading) {
     return (
@@ -90,7 +90,7 @@ export default function PODetail() {
   }
 
   if (!po) {
-    return <div className="p-6 text-center text-gray-500">Purchase Order tidak ditemukan.</div>;
+    return <div className="p-6 text-center text-gray-500 dark:text-gray-400">Purchase Order tidak ditemukan.</div>;
   }
 
   const ccy = po.currency || 'IDR';
@@ -109,14 +109,14 @@ export default function PODetail() {
 <div className="my-2"><DocActions docType="purchase_order" docId={po.id} number={po.po_number} listPath="/app/purchasing/purchase-orders" /></div>
             <div className="flex items-center gap-2 mt-0.5">
               <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusCfg?.color}`}>{statusCfg?.label}</span>
-              <span className="px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700">{ccy}</span>
+              <span className="px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">{ccy}</span>
               {isForeign && po.exchange_rate_source && (
-                <span className={`px-2 py-0.5 rounded text-xs font-medium ${po.exchange_rate_source === 'manual' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}`}>
+                <span className={`px-2 py-0.5 rounded text-xs font-medium ${po.exchange_rate_source === 'manual' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'}`}>
                   {po.exchange_rate_source === 'manual' ? 'Kurs Manual' : 'Kurs Otomatis'}
                 </span>
               )}
               {po.has_grn && (
-                <span className="text-xs text-emerald-600 flex items-center gap-0.5">
+                <span className="text-xs text-emerald-600 flex items-center gap-0.5 dark:text-emerald-400">
                   <TruckIcon className="h-3.5 w-3.5" /> Sudah ada penerimaan barang
                 </span>
               )}
@@ -160,7 +160,7 @@ export default function PODetail() {
             <p className="text-xs text-gray-400 dark:text-gray-500">Supplier</p>
             <button
               onClick={openSupplierDrillDown}
-              className="text-primary-600 hover:underline flex items-center gap-1 font-medium"
+              className="text-primary-600 hover:underline flex items-center gap-1 font-medium dark:text-primary-400"
             >
               <BuildingStorefrontIcon className="h-4 w-4" /> {po.supplier.company_name}
             </button>
@@ -221,11 +221,11 @@ export default function PODetail() {
                   >
                     <td className="py-2 pr-3 font-medium text-gray-900 dark:text-white">
                       <span className="flex items-center gap-1.5">
-                        {item.material_id && <CubeIcon className="h-3.5 w-3.5 text-primary-600 flex-shrink-0" />}
+                        {item.material_id && <CubeIcon className="h-3.5 w-3.5 text-primary-600 flex-shrink-0 dark:text-primary-400" />}
                         {name}
                       </span>
                       {(code || (master && master !== name)) && <p className="text-xs text-gray-400 dark:text-gray-500 ml-5">{[code, master !== name ? master : ''].filter(Boolean).join(' · ')}</p>}
-                      {item.notes && <p className="text-xs text-gray-500 ml-5 italic">Ket: {item.notes}</p>}
+                      {item.notes && <p className="text-xs text-gray-500 ml-5 italic dark:text-gray-400">Ket: {item.notes}</p>}
                     </td>
                     <td className="py-2 pr-3 text-right tabular-nums">{item.quantity.toLocaleString('id-ID')}</td>
                     <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{item.uom}</td>
@@ -259,7 +259,7 @@ export default function PODetail() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-gray-900 dark:text-white">Jadwal Kedatangan</h2>
-            <Link to={`/app/purchasing/purchase-orders/${id}/edit`} className="text-sm text-primary-600 hover:underline">Ubah jadwal</Link>
+            <Link to={`/app/purchasing/purchase-orders/${id}/edit`} className="text-sm text-primary-600 hover:underline dark:text-primary-400">Ubah jadwal</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -306,13 +306,13 @@ export default function PODetail() {
         {materialModal.loading ? (
           <div className="flex justify-center py-8 text-gray-400"><ArrowPathIcon className="h-5 w-5 animate-spin" /></div>
         ) : !materialModal.data ? (
-          <p className="text-sm text-gray-500 text-center py-6">Gagal memuat data stok.</p>
+          <p className="text-sm text-gray-500 text-center py-6 dark:text-gray-400">Gagal memuat data stok.</p>
         ) : materialModal.data.locations?.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-6">Belum ada stok untuk bahan ini di gudang.</p>
+          <p className="text-sm text-gray-500 text-center py-6 dark:text-gray-400">Belum ada stok untuk bahan ini di gudang.</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700">
+              <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
                 <th className="pb-2 pr-3">Lokasi</th>
                 <th className="pb-2 pr-3">No. Batch</th>
                 <th className="pb-2 pr-3 text-right">Qty Tersedia</th>
@@ -323,7 +323,7 @@ export default function PODetail() {
               {materialModal.data.locations.map((loc: any) => (
                 <tr key={loc.inventory_id}>
                   <td className="py-2 pr-3">{loc.location_code || '-'}</td>
-                  <td className="py-2 pr-3 text-gray-500">{loc.batch_number || '-'}</td>
+                  <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{loc.batch_number || '-'}</td>
                   <td className="py-2 pr-3 text-right tabular-nums">{loc.quantity_available.toLocaleString('id-ID')}</td>
                   <td className="py-2 text-right tabular-nums">{loc.quantity_reserved.toLocaleString('id-ID')}</td>
                 </tr>
@@ -343,7 +343,7 @@ export default function PODetail() {
         {supplierModal.loading ? (
           <div className="flex justify-center py-8 text-gray-400"><ArrowPathIcon className="h-5 w-5 animate-spin" /></div>
         ) : !supplierModal.data ? (
-          <p className="text-sm text-gray-500 text-center py-6">Gagal memuat data supplier.</p>
+          <p className="text-sm text-gray-500 text-center py-6 dark:text-gray-400">Gagal memuat data supplier.</p>
         ) : (
           <div className="space-y-2 text-sm">
             <InfoRow label="Nama" value={supplierModal.data.company_name} />

@@ -306,8 +306,8 @@ export default function PurchaseInvoiceForm() {
         <Link to="/app/purchasing/invoices" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><ArrowLeftIcon className="h-5 w-5" /></Link>
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{editId ? `Ubah Faktur ${editInv?.invoice_number || ""}` : "Buat Faktur Pembelian"}</h1>
-          {editId && <p className="mt-1 text-sm text-amber-700">Saat disimpan, faktur lama dibatalkan (jurnal dibalik) dan diganti faktur baru dengan nomor yang sama. Faktur yang sudah dibayar atau dialokasikan uang muka tidak bisa diubah. Baris di luar PO perlu dipilih ulang akunnya.</p>}
-          <p className="text-sm text-gray-500">Tagihan pemasok atas PO. Jurnal hutang diposting otomatis dan faktur ikut pencocokan 3 arah.</p>
+          {editId && <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">Saat disimpan, faktur lama dibatalkan (jurnal dibalik) dan diganti faktur baru dengan nomor yang sama. Faktur yang sudah dibayar atau dialokasikan uang muka tidak bisa diubah. Baris di luar PO perlu dipilih ulang akunnya.</p>}
+          <p className="text-sm text-gray-500 dark:text-gray-400">Tagihan pemasok atas PO. Jurnal hutang diposting otomatis dan faktur ikut pencocokan 3 arah.</p>
         </div>
       </div>
 
@@ -328,7 +328,7 @@ export default function PurchaseInvoiceForm() {
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Penerimaan Barang (tanpa PO)</label>
               <div className="input-field bg-gray-50 dark:bg-gray-900">{grn.grn_number}</div>
-              <p className="mt-1 text-xs text-gray-500">Faktur dibuat dari GRN ini. Isi harga satuan tiap barang sesuai faktur pemasok.</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Faktur dibuat dari GRN ini. Isi harga satuan tiap barang sesuai faktur pemasok.</p>
             </div>
           ) : (
           <div>
@@ -341,14 +341,14 @@ export default function PurchaseInvoiceForm() {
               disabled={!supplierId}
               className="w-full"
             />
-            <p className="mt-1 text-xs text-gray-500">Hanya PO yang sudah disetujui, diterima sebagian, atau diterima penuh.</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Hanya PO yang sudah disetujui, diterima sebagian, atau diterima penuh.</p>
           </div>
           )}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Transaksi (PI)</label>
             <input className="input-field" value={editId ? (numberTouched.current ? invNumber : (editInv?.invoice_number || '')) : (numberTouched.current ? invNumber : (nextNumber || ''))} placeholder="Otomatis"
               onChange={(e) => { numberTouched.current = true; setInvNumber(e.target.value) }} />
-            <p className="mt-1 text-xs text-gray-500">{editId ? 'Nomor lama dipertahankan kecuali Anda ganti.' : 'Terisi nomor berikutnya secara otomatis; bisa diganti manual.'}</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{editId ? 'Nomor lama dipertahankan kecuali Anda ganti.' : 'Terisi nomor berikutnya secara otomatis; bisa diganti manual.'}</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Faktur Pemasok *</label>
@@ -368,7 +368,7 @@ export default function PurchaseInvoiceForm() {
               <option value="">Pilih syarat pembayaran</option>
               {termChoices.map((d) => <option key={d} value={d}>{termLabel(d)}</option>)}
             </select>
-            <p className="mt-1 text-xs text-gray-500">Bawaan dari termin pemasok. Jatuh tempo dihitung dari tanggal faktur.</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Bawaan dari termin pemasok. Jatuh tempo dihitung dari tanggal faktur.</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Jatuh Tempo</label>
@@ -391,7 +391,7 @@ export default function PurchaseInvoiceForm() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700">
+                  <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
                     <th className="pb-2 pr-3">Item</th>
                     <th className="pb-2 pr-3 min-w-[12rem]">Keterangan</th>
                     <th className="pb-2 pr-3 text-right">Dipesan</th>
@@ -413,7 +413,7 @@ export default function PurchaseInvoiceForm() {
                             <div className="min-w-[14rem]">
                               <SearchableSelect options={expenseAccounts.map((a) => ({ id: a.id, name: `${a.code} - ${a.name}` }))} value={l.account_id ? Number(l.account_id) : null}
                                 onChange={(v: any) => update(i, { account_id: v ? String(v) : '' })} placeholder="Akun beban (mis. ongkos kirim)" />
-                              <button type="button" className="mt-1 text-xs text-red-600 hover:underline" onClick={() => setLines((ls) => ls.filter((_, idx) => idx !== i))}>Hapus baris</button>
+                              <button type="button" className="mt-1 text-xs text-red-600 hover:underline dark:text-red-400" onClick={() => setLines((ls) => ls.filter((_, idx) => idx !== i))}>Hapus baris</button>
                             </div>
                           ) : (<>
                             <div className="font-medium text-gray-900 dark:text-white">{l.name}</div>
@@ -424,12 +424,12 @@ export default function PurchaseInvoiceForm() {
                           <input className="input-field" value={l.description} onChange={(e) => update(i, { description: e.target.value })} placeholder="Keterangan baris" />
                         </td>
                         <td className="py-2 pr-3 text-right tabular-nums">{l.extra || l.fromGrn ? '-' : `${l.ordered.toLocaleString('id-ID')} ${l.uom}`}</td>
-                        <td className={`py-2 pr-3 text-right tabular-nums ${!l.extra && l.received < l.ordered ? 'text-amber-600' : ''}`}>{l.extra ? '-' : l.received.toLocaleString('id-ID')}</td>
+                        <td className={`py-2 pr-3 text-right tabular-nums ${!l.extra && l.received < l.ordered ? 'text-amber-600 dark:text-amber-400' : ''}`}>{l.extra ? '-' : l.received.toLocaleString('id-ID')}</td>
                         <td className="py-2 pr-3 text-right tabular-nums">{l.extra ? '-' : l.invoiced.toLocaleString('id-ID')}</td>
                         <td className="py-2 pr-3">
                           <NumberInput className="input-field text-right" value={l.qty as any} onChange={(e: any) => update(i, { qty: e.target.value })} />
                           {!l.extra && !l.fromGrn && Number(l.qty) > l.ordered - l.invoiced + 1e-9 && (
-                            <div className="mt-1 text-xs text-amber-600">Melebihi sisa PO ({Math.max(0, l.ordered - l.invoiced).toLocaleString('id-ID')}); ditandai selisih saat pencocokan 3 arah.</div>
+                            <div className="mt-1 text-xs text-amber-600 dark:text-amber-400">Melebihi sisa PO ({Math.max(0, l.ordered - l.invoiced).toLocaleString('id-ID')}); ditandai selisih saat pencocokan 3 arah.</div>
                           )}
                         </td>
                         <td className="py-2 pr-3">
@@ -455,10 +455,10 @@ export default function PurchaseInvoiceForm() {
               onClick={() => setLines((ls) => [...ls, { po_item_id: null, extra: true, name: '', uom: '', ordered: 0, received: 0, invoiced: 0, qty: 1, price: '', ppn_code: po?.is_taxable ? (po.ppn_code || 'Y') : '', description: '', account_id: '' }])}>
               + Tambah baris di luar PO (ongkos kirim, biaya lain)
             </button>
-            <p className="text-xs text-gray-500">Qty tagih terisi dari barang yang sudah diterima dan belum ditagih. Menagih lebih dari yang diterima akan ditandai selisih saat pencocokan 3 arah.</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Qty tagih terisi dari barang yang sudah diterima dan belum ditagih. Menagih lebih dari yang diterima akan ditandai selisih saat pencocokan 3 arah.</p>
             <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white">PPh dipotong (opsional)</h3>
-              <p className="mt-1 text-xs text-gray-500">Isi kalau tagihan pemasok sudah memotong PPh (mis. PPh 22 batubara). Total tagihan = DPP + PPN - PPh. PPh dicatat sebagai hutang pajak.</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Isi kalau tagihan pemasok sudah memotong PPh (mis. PPh 22 batubara). Total tagihan = DPP + PPN - PPh. PPh dicatat sebagai hutang pajak.</p>
               <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
                 <select className="input-field" value={pphType} onChange={(e) => { pphEdited.current = false; setPphType(e.target.value); setPphRate(PPH_DEFAULT[e.target.value] || ''); if (!e.target.value) setPphAmt('') }}>
                   <option value="">Tanpa PPh</option>
@@ -466,7 +466,7 @@ export default function PurchaseInvoiceForm() {
                 </select>
                 <div className="flex items-center gap-2">
                   <NumberInput className="input-field text-right" value={pphRate as any} disabled={!pphType} onChange={(e: any) => { pphEdited.current = false; setPphRate(e.target.value) }} placeholder="Tarif" />
-                  <span className="text-sm text-gray-500">%</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">%</span>
                 </div>
                 <NumberInput currency className="input-field text-right" value={pphAmt as any} disabled={!pphType} onChange={(e: any) => { pphEdited.current = true; setPphAmt(e.target.value) }} placeholder="Nilai PPh" />
               </div>
@@ -477,13 +477,13 @@ export default function PurchaseInvoiceForm() {
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Pakai uang muka</h3>
                   <Link to="/app/purchasing/down-payments" className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400">Buka daftar uang muka</Link>
                 </div>
-                <p className="mt-1 text-xs text-gray-500">Pemasok ini punya uang muka yang belum terpakai. Alokasi dijalankan sesudah faktur tersimpan dan mengurangi sisa tagihan.</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Pemasok ini punya uang muka yang belum terpakai. Alokasi dijalankan sesudah faktur tersimpan dan mengurangi sisa tagihan.</p>
                 <div className="mt-3 space-y-2">
                   {openDps.map((d) => (
                     <div key={d.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
                       <div className="text-gray-800 dark:text-gray-200">
                         <span className="font-medium">{d.dp_number}</span>
-                        <span className="ml-2 text-xs text-gray-500">{d.po_number ? `PO ${d.po_number}` : 'tanpa PO'} · sisa {formatCurrencyAmount(d.remaining, 'IDR')}</span>
+                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">{d.po_number ? `PO ${d.po_number}` : 'tanpa PO'} · sisa {formatCurrencyAmount(d.remaining, 'IDR')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <NumberInput currency className="input-field w-40 text-right" value={(dpUse[d.id] ?? '') as any} onChange={(e: any) => setDpUse((m) => ({ ...m, [d.id]: e.target.value }))} placeholder="Jumlah dipakai" />

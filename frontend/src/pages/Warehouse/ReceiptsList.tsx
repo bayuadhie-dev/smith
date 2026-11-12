@@ -52,8 +52,8 @@ export default function ReceiptsList() {
             <th className={th}>Asal</th><th className={th}>Nomor</th><th className={th}>Tanggal</th><th className={th}>Dari</th><th className={th}>Ke gudang</th><th className={th}>Referensi</th><th className={th}>Status</th><th className={th}></th>
           </tr></thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500">Memuat...</td></tr>}
-            {!loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500">Belum ada penerimaan.</td></tr>}
+            {loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+            {!loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada penerimaan.</td></tr>}
             {rows.map((r) => {
               const og = ORIGIN[r.origin]
               const st = (r.origin === 'grn' ? GRN_STATUS : TRANSFER_STATUS)[r.status] || { label: r.status, cls: '' }

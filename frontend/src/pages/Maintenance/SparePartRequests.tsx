@@ -49,7 +49,7 @@ const fmtDate = (d: string | null) => (d ? new Date(d).toLocaleString('id-ID', {
 const fmtNum = (n: number) => n.toLocaleString('id-ID')
 
 const Badge = ({ status }: { status: string }) => {
-  const s = STATUS[status] || { label: status, cls: 'bg-gray-100 text-gray-700' }
+  const s = STATUS[status] || { label: status, cls: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' }
   return <span className={`inline-flex rounded px-2 py-0.5 text-xs font-medium ${s.cls}`}>{s.label}</span>
 }
 
@@ -132,7 +132,7 @@ const SparePartRequests = () => {
             key={t.label}
             type="button"
             onClick={() => setTab(t.id)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === t.id ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === t.id ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'}`}
           >
             {t.label}
             {t.id === 'pending' && pendingCount > 0 && (
@@ -155,8 +155,8 @@ const SparePartRequests = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {loading && <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">Memuat...</td></tr>}
-            {!loading && rows.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-500">Tidak ada permintaan.</td></tr>}
+            {loading && <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+            {!loading && rows.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Tidak ada permintaan.</td></tr>}
             {rows.map((r) => (
               <tr key={r.id} onClick={() => openDetail(r)} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/40">
                 <td className="whitespace-nowrap px-4 py-2.5 text-sm font-medium text-emerald-700 dark:text-emerald-400">{r.request_number}</td>
@@ -189,11 +189,11 @@ const SparePartRequests = () => {
         {detail && (
           <div className="space-y-4">
             <dl className="grid gap-3 text-sm sm:grid-cols-3">
-              <div><dt className="text-xs text-gray-500">Status</dt><dd className="mt-0.5"><Badge status={detail.status} /></dd></div>
-              <div><dt className="text-xs text-gray-500">Mesin</dt><dd className="mt-0.5 text-gray-800 dark:text-gray-200">{detail.machine_name || '-'}</dd></div>
-              <div><dt className="text-xs text-gray-500">Peminta</dt><dd className="mt-0.5 text-gray-800 dark:text-gray-200">{detail.requested_by || '-'}, {fmtDate(detail.requested_at)}</dd></div>
-              {detail.notes && <div className="sm:col-span-3"><dt className="text-xs text-gray-500">Catatan</dt><dd className="mt-0.5 text-gray-800 dark:text-gray-200">{detail.notes}</dd></div>}
-              {detail.decided_by && <div className="sm:col-span-3"><dt className="text-xs text-gray-500">Keputusan</dt><dd className="mt-0.5 text-gray-800 dark:text-gray-200">{detail.decided_by}, {fmtDate(detail.decided_at)}{detail.decision_note ? `. ${detail.decision_note}` : ''}</dd></div>}
+              <div><dt className="text-xs text-gray-500 dark:text-gray-400">Status</dt><dd className="mt-0.5"><Badge status={detail.status} /></dd></div>
+              <div><dt className="text-xs text-gray-500 dark:text-gray-400">Mesin</dt><dd className="mt-0.5 text-gray-800 dark:text-gray-200">{detail.machine_name || '-'}</dd></div>
+              <div><dt className="text-xs text-gray-500 dark:text-gray-400">Peminta</dt><dd className="mt-0.5 text-gray-800 dark:text-gray-200">{detail.requested_by || '-'}, {fmtDate(detail.requested_at)}</dd></div>
+              {detail.notes && <div className="sm:col-span-3"><dt className="text-xs text-gray-500 dark:text-gray-400">Catatan</dt><dd className="mt-0.5 text-gray-800 dark:text-gray-200">{detail.notes}</dd></div>}
+              {detail.decided_by && <div className="sm:col-span-3"><dt className="text-xs text-gray-500 dark:text-gray-400">Keputusan</dt><dd className="mt-0.5 text-gray-800 dark:text-gray-200">{detail.decided_by}, {fmtDate(detail.decided_at)}{detail.decision_note ? `. ${detail.decision_note}` : ''}</dd></div>}
             </dl>
             <Panel title="Item">
               <div className="overflow-x-auto">

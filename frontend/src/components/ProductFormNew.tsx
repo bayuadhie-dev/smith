@@ -247,7 +247,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
           </h2>
           <button
             onClick={onCancel}
-            className="text-gray-400 hover:text-gray-600 dark:text-gray-300 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:text-gray-300 transition-colors dark:hover:text-white"
           >
             <X className="w-5 h-5" />
           </button>
@@ -272,7 +272,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   value={formData.kode_produk}
                   onChange={(e) => handleInputChange('kode_produk', e.target.value)}
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.kode_produk ? 'border-red-500' : 'border-gray-300'
+                    errors.kode_produk ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                   }`}
                   placeholder="Contoh: 4020701001"
                 />
@@ -290,7 +290,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
                   value={formData.nama_produk}
                   onChange={(e) => handleInputChange('nama_produk', e.target.value)}
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.nama_produk ? 'border-red-500' : 'border-gray-300'
+                    errors.nama_produk ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                   }`}
                   placeholder="Contoh: ANDALAN 10S @72"
                 />
@@ -876,7 +876,7 @@ const ProductFormNew: React.FC<ProductFormNewProps> = ({ product, onSave, onCanc
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-md transition-colors"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-md transition-colors dark:hover:bg-gray-600"
             >
             </button>
             <button

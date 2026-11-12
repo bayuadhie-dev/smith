@@ -216,7 +216,7 @@ export default function BankReconciliation() {
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{s.account_name}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{s.period_start} s/d {s.period_end}</p>
                   <p className="text-xs mt-1">
-                    <span className={s.matched_lines === s.total_lines ? 'text-green-600' : 'text-amber-600'}>
+                    <span className={s.matched_lines === s.total_lines ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}>
                       {s.matched_lines}/{s.total_lines} baris cocok
                     </span>
                   </p>
@@ -239,7 +239,7 @@ export default function BankReconciliation() {
             )}
           </div>
           {selectedStatement && (
-            <p className={`text-xs mb-3 font-medium ${selectedStatement.matched_lines === selectedStatement.total_lines ? 'text-green-600' : 'text-amber-600'}`}>
+            <p className={`text-xs mb-3 font-medium ${selectedStatement.matched_lines === selectedStatement.total_lines ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>
               {selectedStatement.matched_lines} dari {selectedStatement.total_lines} baris mutasi sudah dicocokkan ke jurnal akuntansi.
             </p>
           )}
@@ -267,7 +267,7 @@ export default function BankReconciliation() {
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{line.description || '(tanpa keterangan)'}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{line.line_date} {line.reference_number ? `· ${line.reference_number}` : ''}</p>
                     </div>
-                    <p className={`text-sm font-bold ml-4 ${line.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <p className={`text-sm font-bold ml-4 ${line.amount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                       {line.amount >= 0 ? '+' : ''}{formatRupiah(line.amount)}
                     </p>
                   </div>
@@ -284,7 +284,7 @@ export default function BankReconciliation() {
                           <span>Cocok dengan jurnal #{line.matched_accounting_entry_id} (jurnal tidak ditemukan / sudah dihapus)</span>
                         )}
                       </span>
-                      <button onClick={() => handleUnmatch(line.id)} className="text-xs text-red-600 hover:underline flex items-center gap-1 flex-shrink-0 ml-2">
+                      <button onClick={() => handleUnmatch(line.id)} className="text-xs text-red-600 hover:underline flex items-center gap-1 flex-shrink-0 ml-2 dark:text-red-400">
                         <XCircleIcon className="w-4 h-4" /> Batalkan
                       </button>
                     </div>
@@ -297,7 +297,7 @@ export default function BankReconciliation() {
                           <span className="truncate flex-1">{c.entry_number} · {c.entry_date} · {c.description || '-'}</span>
                           <button
                             onClick={() => handleMatch(line.id, c.id)}
-                            className="ml-2 flex-shrink-0 flex items-center gap-1 text-primary-600 hover:underline font-medium"
+                            className="ml-2 flex-shrink-0 flex items-center gap-1 text-primary-600 hover:underline font-medium dark:text-primary-400"
                           >
                             <LinkIcon className="w-3.5 h-3.5" /> Cocokkan
                           </button>

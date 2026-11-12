@@ -133,9 +133,9 @@ export default function WhatIfSimulation() {
   }
 
   const getRiskLevel = (criticalMaterials: number) => {
-    if (criticalMaterials < 5) return { level: 'Low', color: 'text-green-600', bg: 'bg-green-100' }
-    if (criticalMaterials < 15) return { level: 'Medium', color: 'text-yellow-600', bg: 'bg-yellow-100' }
-    return { level: 'High', color: 'text-red-600', bg: 'bg-red-100' }
+    if (criticalMaterials < 5) return { level: 'Low', color: 'text-green-600 dark:text-green-400', bg: 'bg-green-100 dark:bg-green-900/30' }
+    if (criticalMaterials < 15) return { level: 'Medium', color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-100 dark:bg-yellow-900/30' }
+    return { level: 'High', color: 'text-red-600 dark:text-red-400', bg: 'bg-red-100 dark:bg-red-900/30' }
   }
 
   return (
@@ -144,7 +144,7 @@ export default function WhatIfSimulation() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <BeakerIcon className="h-8 w-8 text-purple-600" />
+            <BeakerIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />
             MRP What-If Simulation
           </h1>
           <p className="text-gray-600 dark:text-gray-300">Compare different planning scenarios and their impact on material requirements</p>
@@ -363,7 +363,7 @@ export default function WhatIfSimulation() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-600 dark:text-gray-300">Critical Materials:</span>
-                            <span className={`font-medium ${result.summary.critical_materials > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                            <span className={`font-medium ${result.summary.critical_materials > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                               {result.summary.critical_materials}
                             </span>
                           </div>
@@ -428,7 +428,7 @@ export default function WhatIfSimulation() {
                                 <td key={index} className="px-6 py-4 whitespace-nowrap">
                                   {req ? (
                                     <div className="text-sm">
-                                      <div className={`font-medium ${req.net_requirement > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                      <div className={`font-medium ${req.net_requirement > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                                         {req.net_requirement > 0 ? 
                                           `Shortage: ${req.net_requirement.toFixed(2)}` :
                                           'Sufficient'
@@ -464,17 +464,17 @@ export default function WhatIfSimulation() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Best Case Scenario */}
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg dark:bg-green-900/20 dark:border-green-800">
                     <div className="flex items-center gap-2 mb-2">
-                      <CheckCircleIcon className="h-5 w-5 text-green-600" />
-                      <h4 className="font-medium text-green-900">Best Case Scenario</h4>
+                      <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <h4 className="font-medium text-green-900 dark:text-green-200">Best Case Scenario</h4>
                     </div>
                     {(() => {
                       const bestScenario = simulationResults.reduce((best, current) => 
                         current.summary.critical_materials < best.summary.critical_materials ? current : best
                       )
                       return (
-                        <div className="text-sm text-green-800">
+                        <div className="text-sm text-green-800 dark:text-green-300">
                           <p className="font-medium">{bestScenario.scenario_name}</p>
                           <p>Only {bestScenario.summary.critical_materials} critical materials</p>
                           <p>Risk Level: {getRiskLevel(bestScenario.summary.critical_materials).level}</p>
@@ -484,17 +484,17 @@ export default function WhatIfSimulation() {
                   </div>
 
                   {/* Worst Case Scenario */}
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-800">
                     <div className="flex items-center gap-2 mb-2">
-                      <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
-                      <h4 className="font-medium text-red-900">Highest Risk Scenario</h4>
+                      <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
+                      <h4 className="font-medium text-red-900 dark:text-red-200">Highest Risk Scenario</h4>
                     </div>
                     {(() => {
                       const worstScenario = simulationResults.reduce((worst, current) => 
                         current.summary.critical_materials > worst.summary.critical_materials ? current : worst
                       )
                       return (
-                        <div className="text-sm text-red-800">
+                        <div className="text-sm text-red-800 dark:text-red-300">
                           <p className="font-medium">{worstScenario.scenario_name}</p>
                           <p>{worstScenario.summary.critical_materials} critical materials</p>
                           <p>Risk Level: {getRiskLevel(worstScenario.summary.critical_materials).level}</p>

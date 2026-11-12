@@ -100,13 +100,13 @@ const ProductVersionHistory: React.FC = () => {
   const getChangeTypeColor = (changeType: string) => {
     switch (changeType) {
       case 'CREATE':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       case 'UPDATE':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
       case 'DELETE':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -139,7 +139,7 @@ const ProductVersionHistory: React.FC = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <ExclamationCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600">{error || 'Product not found'}</p>
+          <p className="text-red-600 dark:text-red-400">{error || 'Product not found'}</p>
           <button
             onClick={() => navigate('/app/products/list')}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -198,7 +198,7 @@ const ProductVersionHistory: React.FC = () => {
                 className={`px-3 py-1 text-sm rounded flex items-center ${
                   compareMode
                     ? 'bg-purple-600 text-white hover:bg-purple-700'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200'
                 }`}
               >
                 <GitCompare className="h-4 w-4 mr-1" />
@@ -249,7 +249,7 @@ const ProductVersionHistory: React.FC = () => {
                         type="checkbox"
                         checked={selectedVersions.includes(version.version)}
                         onChange={() => toggleVersionSelection(version.version)}
-                        className="mt-1 h-4 w-4 text-purple-600 border-gray-300 dark:border-gray-600 rounded focus:ring-purple-500"
+                        className="mt-1 h-4 w-4 text-purple-600 border-gray-300 dark:border-gray-600 rounded focus:ring-purple-500 dark:text-purple-400"
                       />
                     )}
                     

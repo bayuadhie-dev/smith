@@ -19,7 +19,7 @@ export default function TrialBalance() {
 
   return (
     <ReportShell title="Neraca Saldo" subtitle={`Saldo awal, mutasi, dan saldo akhir seluruh akun · ${periodLabel(p.from, p.to)}`}
-      icon={<ScaleIcon className="h-7 w-7 text-emerald-600" />} actions={<ExportButtons report={['trial-balance', params]} />}>
+      icon={<ScaleIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />} actions={<ExportButtons report={['trial-balance', params]} />}>
       <PeriodFilter from={p.from} to={p.to} onChange={p.setRange} onReload={reload} loading={loading} extra={
         <>
           <label className="flex items-center gap-2 pb-2 text-sm text-gray-600 dark:text-gray-300">
@@ -81,7 +81,7 @@ export default function TrialBalance() {
             </tfoot>
           )}
         </DataTable>
-        <p className="print-hide text-xs text-gray-500">Klik baris akun untuk melihat rincian transaksinya (buku besar).</p>
+        <p className="print-hide text-xs text-gray-500 dark:text-gray-400">Klik baris akun untuk melihat rincian transaksinya (buku besar).</p>
       </LoadState>
     </ReportShell>
   )

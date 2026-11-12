@@ -430,7 +430,7 @@ const TemplateVersionEditor: React.FC = () => {
   const listFields: FieldLibraryEntry[] = Object.values(fieldLibrary).flat().filter((f) => f.type === 'list');
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-gray-500">Memuat editor...</div>;
+    return <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">Memuat editor...</div>;
   }
 
   return (
@@ -438,7 +438,7 @@ const TemplateVersionEditor: React.FC = () => {
       {/* Toolbar */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(`/app/documents/templates/${templateId}`)} className="p-2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
+          <button onClick={() => navigate(`/app/documents/templates/${templateId}`)} className="p-2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-400">
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
@@ -468,10 +468,10 @@ const TemplateVersionEditor: React.FC = () => {
 
           <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
 
-          <button onClick={handleUndo} disabled={!canUndo} title="Undo" className="p-2 text-gray-500 disabled:opacity-30 hover:text-gray-800 dark:hover:text-gray-200">
+          <button onClick={handleUndo} disabled={!canUndo} title="Undo" className="p-2 text-gray-500 disabled:opacity-30 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-400">
             <Undo2 className="w-4 h-4" />
           </button>
-          <button onClick={handleRedo} disabled={!canRedo} title="Redo" className="p-2 text-gray-500 disabled:opacity-30 hover:text-gray-800 dark:hover:text-gray-200">
+          <button onClick={handleRedo} disabled={!canRedo} title="Redo" className="p-2 text-gray-500 disabled:opacity-30 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-400">
             <Redo2 className="w-4 h-4" />
           </button>
           <button onClick={deleteSelected} disabled={!selected} title="Hapus elemen terpilih" className="p-2 text-red-500 disabled:opacity-30 hover:text-red-700">
@@ -480,11 +480,11 @@ const TemplateVersionEditor: React.FC = () => {
 
           <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
 
-          <button onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))} title="Perkecil" className="p-2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
+          <button onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))} title="Perkecil" className="p-2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-400">
             <ZoomOut className="w-4 h-4" />
           </button>
-          <span className="text-xs text-gray-500 w-10 text-center">{Math.round(zoom * 100)}%</span>
-          <button onClick={() => setZoom((z) => Math.min(3, z + 0.25))} title="Perbesar" className="p-2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
+          <span className="text-xs text-gray-500 w-10 text-center dark:text-gray-400">{Math.round(zoom * 100)}%</span>
+          <button onClick={() => setZoom((z) => Math.min(3, z + 0.25))} title="Perbesar" className="p-2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-400">
             <ZoomIn className="w-4 h-4" />
           </button>
 
@@ -515,7 +515,7 @@ const TemplateVersionEditor: React.FC = () => {
         {/* Left: palette + field library */}
         <div className="w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-y-auto p-3">
           <div className="mb-4">
-            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Elemen</h4>
+            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2 dark:text-gray-400">Elemen</h4>
             <div className="grid grid-cols-2 gap-2">
               <button onClick={addLabel} disabled={status !== 'draft'} className="flex flex-col items-center gap-1 p-2 border border-gray-200 dark:border-gray-700 rounded text-xs hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40">
                 <Type className="w-4 h-4" /> Teks
@@ -540,7 +540,7 @@ const TemplateVersionEditor: React.FC = () => {
 
           {listFields.length > 0 && (
             <div className="mb-4">
-              <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Tabel Berulang</h4>
+              <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2 dark:text-gray-400">Tabel Berulang</h4>
               {listFields.map((f) => (
                 <button key={f.path} onClick={() => addRepeatingTable(f)} disabled={status !== 'draft'}
                   className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-left border border-gray-200 dark:border-gray-700 rounded mb-1 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40">
@@ -551,7 +551,7 @@ const TemplateVersionEditor: React.FC = () => {
           )}
 
           <div>
-            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Field Library</h4>
+            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2 dark:text-gray-400">Field Library</h4>
             {Object.entries(fieldLibrary).map(([group, fields]) => (
               <div key={group} className="mb-3">
                 <div className="text-[11px] font-medium text-gray-400 mb-1">{formatGroupLabel(group)}</div>
@@ -593,18 +593,18 @@ const TemplateVersionEditor: React.FC = () => {
 
         {/* Right: properties panel */}
         <div className="w-64 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-y-auto p-3">
-          <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Properti</h4>
+          <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2 dark:text-gray-400">Properti</h4>
           {!selected && <p className="text-xs text-gray-400">Pilih elemen di canvas untuk mengatur propertinya.</p>}
           {selected && (
             <div className="space-y-3">
-              <div className="text-xs text-gray-500">Tipe: <span className="font-medium">{elementType}</span></div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">Tipe: <span className="font-medium">{elementType}</span></div>
 
               <div className="grid grid-cols-2 gap-2">
-                <label className="text-[11px] text-gray-500">X (mm)
+                <label className="text-[11px] text-gray-500 dark:text-gray-400">X (mm)
                   <NumberInput value={Math.round((selected.left || 0))} onChange={(e) => updateSelected({ left: parseFloat(e.target.value) || 0 })}
                     className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800" />
                 </label>
-                <label className="text-[11px] text-gray-500">Y (mm)
+                <label className="text-[11px] text-gray-500 dark:text-gray-400">Y (mm)
                   <NumberInput value={Math.round((selected.top || 0))} onChange={(e) => updateSelected({ top: parseFloat(e.target.value) || 0 })}
                     className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800" />
                 </label>
@@ -613,22 +613,22 @@ const TemplateVersionEditor: React.FC = () => {
               {isTextLike && (
                 <>
                   {elementType === 'label' && (
-                    <label className="text-[11px] text-gray-500 block">Teks
+                    <label className="text-[11px] text-gray-500 block dark:text-gray-400">Teks
                       <input type="text" value={(selected as fabric.Textbox).text || ''} onChange={(e) => updateSelected({ text: e.target.value })}
                         className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800" />
                     </label>
                   )}
-                  <label className="text-[11px] text-gray-500 block">Ukuran Font (pt)
+                  <label className="text-[11px] text-gray-500 block dark:text-gray-400">Ukuran Font (pt)
                     <NumberInput value={Math.round(((selected as any).fontSize || 10 * MM_PER_PT) / MM_PER_PT)}
                       onChange={(e) => updateSelected({ fontSize: (parseInt(e.target.value) || 10) * MM_PER_PT })}
                       className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800" />
                   </label>
-                  <label className="text-[11px] text-gray-500 block">Warna Teks
+                  <label className="text-[11px] text-gray-500 block dark:text-gray-400">Warna Teks
                     <input type="color" value={(selected as any).fill || '#000000'} onChange={(e) => updateSelected({ fill: e.target.value })}
                       className="w-full h-7 border border-gray-300 dark:border-gray-600 rounded" />
                   </label>
                   <div className="flex items-center gap-2">
-                    <label className="text-[11px] text-gray-500">Tebal
+                    <label className="text-[11px] text-gray-500 dark:text-gray-400">Tebal
                       <input type="checkbox" checked={(selected as any).fontWeight === 'bold'} onChange={(e) => updateSelected({ fontWeight: e.target.checked ? 'bold' : 'normal' })} className="ml-1" />
                     </label>
                     <select value={(selected as any).textAlign || 'left'} onChange={(e) => updateSelected({ textAlign: e.target.value })}
@@ -643,11 +643,11 @@ const TemplateVersionEditor: React.FC = () => {
 
               {isLineOrBox && (
                 <>
-                  <label className="text-[11px] text-gray-500 block">Warna Garis
+                  <label className="text-[11px] text-gray-500 block dark:text-gray-400">Warna Garis
                     <input type="color" value={(selected as any).stroke || '#000000'} onChange={(e) => updateSelected({ stroke: e.target.value })}
                       className="w-full h-7 border border-gray-300 dark:border-gray-600 rounded" />
                   </label>
-                  <label className="text-[11px] text-gray-500 block">Ketebalan
+                  <label className="text-[11px] text-gray-500 block dark:text-gray-400">Ketebalan
                     <NumberInput value={(selected as any).strokeWidth || 1} onChange={(e) => updateSelected({ strokeWidth: parseInt(e.target.value) || 1 })}
                       className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800" />
                   </label>
@@ -655,7 +655,7 @@ const TemplateVersionEditor: React.FC = () => {
               )}
 
               {(elementType === 'image' || elementType === 'barcode' || elementType === 'qrcode') && (
-                <label className="text-[11px] text-gray-500 block">
+                <label className="text-[11px] text-gray-500 block dark:text-gray-400">
                   Sumber Data (field dinamis)
                   <select
                     value={(selected as any).fieldPath || ''}
@@ -689,7 +689,7 @@ const TemplateVersionEditor: React.FC = () => {
               )}
 
               {elementType === 'repeating_table' && (
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   <div>Sumber: <span className="font-medium">{(selected as any).dataSource}</span></div>
                   <div className="mt-1">{((selected as any).columns || []).length} kolom terkonfigurasi</div>
                   <p className="mt-2 text-[10px] text-gray-400">Kolom tabel diambil otomatis dari field library saat elemen ini ditambahkan. Untuk mengubah kolom, hapus dan tambahkan ulang dari panel "Tabel Berulang".</p>
@@ -704,7 +704,7 @@ const TemplateVersionEditor: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowPublishModal(false)}>
           <div className="bg-white dark:bg-gray-900 rounded-lg max-w-md w-full p-5" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">Publish Versi {versionNumber}</h3>
-            <p className="text-xs text-gray-500 mb-3">Versi ini akan jadi LIVE — dipakai untuk semua dokumen baru mulai sekarang. Versi yang sebelumnya live akan diarsipkan (tetap bisa di-rollback nanti, tidak dihapus).</p>
+            <p className="text-xs text-gray-500 mb-3 dark:text-gray-400">Versi ini akan jadi LIVE — dipakai untuk semua dokumen baru mulai sekarang. Versi yang sebelumnya live akan diarsipkan (tetap bisa di-rollback nanti, tidak dihapus).</p>
             <textarea
               value={changeNote}
               onChange={(e) => setChangeNote(e.target.value)}
@@ -737,14 +737,14 @@ const TemplateVersionEditor: React.FC = () => {
                     <Save className="w-3.5 h-3.5" /> Unduh
                   </a>
                 )}
-                <button onClick={closePreviewModal} className="p-1.5 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
+                <button onClick={closePreviewModal} className="p-1.5 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-400">
                   ✕
                 </button>
               </div>
             </div>
             <div className="flex-1 bg-gray-100 dark:bg-gray-950 overflow-hidden">
               {previewLoading && (
-                <div className="h-full flex items-center justify-center text-sm text-gray-500">Membuat preview PDF...</div>
+                <div className="h-full flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">Membuat preview PDF...</div>
               )}
               {!previewLoading && previewUrl && (
                 <iframe title="Preview PDF" src={previewUrl} className="w-full h-full border-0" />

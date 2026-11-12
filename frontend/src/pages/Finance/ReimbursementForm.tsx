@@ -138,23 +138,23 @@ const ReimbursementForm: React.FC = () => {
           </h3>
 
           {!sameEmployee && (
-            <div className="flex items-center gap-2 p-3 mb-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center gap-2 p-3 mb-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
               <AlertCircle className="h-5 w-5" />
               <span>Semua expense yang dipilih harus milik karyawan yang sama.</span>
             </div>
           )}
 
           {loading ? (
-            <div className="text-center py-8 text-gray-500">Memuat data...</div>
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">Memuat data...</div>
           ) : expenses.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               Tidak ada expense yang disetujui dan belum di-reimburse.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead>
-                  <tr className="text-left text-xs font-medium text-gray-500 uppercase">
+                  <tr className="text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">
                     <th className="px-3 py-2 w-10"></th>
                     <th className="px-3 py-2">Number</th>
                     <th className="px-3 py-2">Employee</th>
@@ -177,7 +177,7 @@ const ReimbursementForm: React.FC = () => {
                           checked={selectedIds.includes(exp.id)}
                           onChange={() => toggleExpense(exp.id)}
                           onClick={(e) => e.stopPropagation()}
-                          className="h-4 w-4 text-blue-600 rounded"
+                          className="h-4 w-4 text-blue-600 rounded dark:text-blue-400"
                         />
                       </td>
                       <td className="px-3 py-2 text-sm font-medium text-gray-900 dark:text-white">

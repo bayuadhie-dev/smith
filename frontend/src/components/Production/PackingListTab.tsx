@@ -271,29 +271,29 @@ export default function PackingListTab({
   return (
     <div className="space-y-4">
       {/* Header Info */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4 dark:bg-green-900/20 dark:border-green-800">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-green-800">📦 Packing List</h3>
-            <p className="text-sm text-green-600">{productName}</p>
-            {packingList?.wo_number && <p className="text-xs font-medium text-green-700">No. SPK: {packingList.wo_number}</p>}
+            <h3 className="text-lg font-semibold text-green-800 dark:text-green-300">📦 Packing List</h3>
+            <p className="text-sm text-green-600 dark:text-green-400">{productName}</p>
+            {packingList?.wo_number && <p className="text-xs font-medium text-green-700 dark:text-green-300">No. SPK: {packingList.wo_number}</p>}
           </div>
           <div className="text-right">
-            <p className="text-sm text-green-600">Total Karton</p>
-            <p className="text-2xl font-bold text-green-800">{totalAktualKarton}</p>
+            <p className="text-sm text-green-600 dark:text-green-400">Total Karton</p>
+            <p className="text-2xl font-bold text-green-800 dark:text-green-300">{totalAktualKarton}</p>
           </div>
         </div>
         
         <div className="mt-4 flex items-center gap-4">
           <div className="flex-1">
-            <p className="text-sm text-green-600">Batch Mixing Aktif</p>
-            <p className="font-medium text-green-800">
+            <p className="text-sm text-green-600 dark:text-green-400">Batch Mixing Aktif</p>
+            <p className="font-medium text-green-800 dark:text-green-300">
               {packingList?.current_batch_mixing || '-'}
             </p>
           </div>
           <div className="flex-1">
-            <p className="text-sm text-green-600">Nomor Karton</p>
-            <p className="font-medium text-green-800">
+            <p className="text-sm text-green-600 dark:text-green-400">Nomor Karton</p>
+            <p className="font-medium text-green-800 dark:text-green-300">
               {packingList?.start_carton_number || startCartonNumber} - {(packingList?.start_carton_number || startCartonNumber) + totalAktualKarton - 1}
             </p>
           </div>
@@ -344,14 +344,14 @@ export default function PackingListTab({
               {items.map((item) => (
                 <tr 
                   key={item.id} 
-                  className={item.is_batch_start ? 'bg-yellow-50' : ''}
+                  className={item.is_batch_start ? 'bg-yellow-50 dark:bg-yellow-900/20' : ''}
                 >
                   <td className="px-4 py-3 whitespace-nowrap">
                     <span className="font-medium text-gray-900 dark:text-white">
                       {item.carton_number}
                     </span>
                     {item.is_batch_start && (
-                      <span className="ml-2 px-2 py-0.5 text-xs bg-yellow-200 text-yellow-800 rounded">
+                      <span className="ml-2 px-2 py-0.5 text-xs bg-yellow-200 text-yellow-800 rounded dark:text-yellow-300">
                         Batch Baru
                       </span>
                     )}
@@ -372,7 +372,7 @@ export default function PackingListTab({
                   <td className="px-4 py-3 whitespace-nowrap text-center">
                     <button
                       onClick={() => openBatchModal(item.carton_number)}
-                      className="text-xs text-blue-600 hover:text-blue-800"
+                      className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400"
                     >
                       Set Batch
                     </button>
@@ -391,7 +391,7 @@ export default function PackingListTab({
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="p-2 rounded hover:bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
+                className="p-2 rounded hover:bg-gray-200 dark:bg-gray-700 disabled:opacity-50 dark:hover:bg-gray-600"
               >
                 <ChevronLeftIcon className="h-5 w-5" />
               </button>
@@ -401,7 +401,7 @@ export default function PackingListTab({
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="p-2 rounded hover:bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
+                className="p-2 rounded hover:bg-gray-200 dark:bg-gray-700 disabled:opacity-50 dark:hover:bg-gray-600"
               >
                 <ChevronRightIcon className="h-5 w-5" />
               </button>
@@ -493,15 +493,15 @@ export default function PackingListTab({
                   placeholder="1"
                 />
               </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-sm text-blue-800">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 dark:bg-blue-900/20 dark:border-blue-800">
+                <p className="text-sm text-blue-800 dark:text-blue-300">
                   <strong>Total Karton:</strong> {totalAktualKarton}
                 </p>
-                <p className="text-sm text-blue-800 mt-1">
+                <p className="text-sm text-blue-800 mt-1 dark:text-blue-300">
                   <strong>Nomor Karton:</strong> {startCartonNumber} - {startCartonNumber + totalAktualKarton - 1}
                 </p>
                 {startCartonNumber + totalAktualKarton - 1 > 10000 && (
-                  <p className="text-sm text-orange-600 mt-1">
+                  <p className="text-sm text-orange-600 mt-1 dark:text-orange-400">
                     ⚠️ Nomor karton akan reset ke 1 setelah 10000
                   </p>
                 )}
@@ -580,11 +580,11 @@ export default function PackingListTab({
                           <td className="px-3 py-2">{r.batch_number || '-'}</td>
                           <td className="px-3 py-2">
                             {r.carton_number_full == null ? (
-                              <span className="text-red-600">✗ Nomor karton tidak terbaca</span>
+                              <span className="text-red-600 dark:text-red-400">✗ Nomor karton tidak terbaca</span>
                             ) : r.will_create ? (
-                              <span className="text-blue-600">+ Karton baru</span>
+                              <span className="text-blue-600 dark:text-blue-400">+ Karton baru</span>
                             ) : (
-                              <span className="text-green-600">✓ Update karton lama</span>
+                              <span className="text-green-600 dark:text-green-400">✓ Update karton lama</span>
                             )}
                           </td>
                         </tr>
@@ -592,7 +592,7 @@ export default function PackingListTab({
                     </tbody>
                   </table>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   "Karton baru" akan ditambahkan ke packing list ini langsung dari hasil scan - tidak perlu Sinkronkan atau input manual dulu. Periksa angka gross/netto/batch dulu sebelum konfirmasi.
                 </p>
                 <div className="flex justify-end gap-3">

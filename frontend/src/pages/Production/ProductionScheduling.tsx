@@ -85,11 +85,11 @@ const ProductionScheduling = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'scheduled': return 'bg-blue-100 text-blue-800'
-      case 'in_progress': return 'bg-yellow-100 text-yellow-800'
-      case 'completed': return 'bg-green-100 text-green-800'
-      case 'cancelled': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'scheduled': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+      case 'in_progress': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+      case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
     }
   }
 
@@ -178,7 +178,7 @@ const ProductionScheduling = () => {
             >
               <ChevronLeftIcon className="h-5 w-5" />
             </button>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               {viewMode === 'week' 
                 ? `Week of ${currentDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
                 : currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
@@ -195,12 +195,12 @@ const ProductionScheduling = () => {
           <div className="flex gap-2">
             <button
               onClick={() => setViewMode('week')}
-              className={`px-3 py-1 rounded ${viewMode === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+              className={`px-3 py-1 rounded ${viewMode === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}
             >
             </button>
             <button
               onClick={() => setViewMode('month')}
-              className={`px-3 py-1 rounded ${viewMode === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+              className={`px-3 py-1 rounded ${viewMode === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}
             >
             </button>
           </div>
@@ -217,7 +217,7 @@ const ProductionScheduling = () => {
               
               return (
                 <div key={index} className="space-y-3">
-                  <div className={`text-center p-2 rounded-lg ${isToday ? 'bg-blue-100 text-blue-800' : 'bg-gray-50'}`}>
+                  <div className={`text-center p-2 rounded-lg ${isToday ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-gray-50 dark:bg-gray-900'}`}>
                     <div className="font-semibold">{formatDate(date)}</div>
                   </div>
                   
@@ -230,7 +230,7 @@ const ProductionScheduling = () => {
                           className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
                         >
                           <div className="flex justify-between items-start mb-2">
-                            <div className="text-sm font-medium text-gray-900 truncate">
+                            <div className="text-sm font-medium text-gray-900 truncate dark:text-white">
                               {schedule.wo_number}
                             </div>
                             <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(schedule.status)} flex items-center gap-1`}>
@@ -238,7 +238,7 @@ const ProductionScheduling = () => {
                             </div>
                           </div>
                           
-                          <div className="text-xs text-gray-600 space-y-1">
+                          <div className="text-xs text-gray-600 space-y-1 dark:text-gray-300">
                             <div className="flex items-center gap-1">
                               <CogIcon className="h-3 w-3" />
                               {schedule.machine_name}
@@ -271,7 +271,7 @@ const ProductionScheduling = () => {
       {/* Schedule List */}
       <div className="card">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900">All Schedules</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">All Schedules</h3>
         </div>
         
         <div className="overflow-x-auto">
@@ -297,16 +297,16 @@ const ProductionScheduling = () => {
                 return (
                   <tr key={schedule.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{schedule.schedule_number}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{schedule.schedule_number}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{schedule.wo_number}</div>
+                      <div className="text-sm text-gray-900 dark:text-white">{schedule.wo_number}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{schedule.machine_name}</div>
+                      <div className="text-sm text-gray-900 dark:text-white">{schedule.machine_name}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-white">
                         {new Date(schedule.scheduled_start).toLocaleDateString()} - {new Date(schedule.scheduled_end).toLocaleDateString()}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -323,15 +323,15 @@ const ProductionScheduling = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex gap-2">
                         {schedule.status === 'scheduled' && (
-                          <button className="text-green-600 hover:text-green-900">
+                          <button className="text-green-600 hover:text-green-900 dark:text-green-400">
                           </button>
                         )}
                         {schedule.status === 'in_progress' && (
-                          <button className="text-blue-600 hover:text-blue-900">
+                          <button className="text-blue-600 hover:text-blue-900 dark:text-blue-400">
                           </button>
                         )}
                         <button
-                          className="text-indigo-600 hover:text-indigo-900"
+                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400"
                           onClick={() => showInfo(`View schedule ${schedule.schedule_number}`)}
                         >
                         </button>
@@ -347,7 +347,7 @@ const ProductionScheduling = () => {
         {schedules.length === 0 && (
           <div className="text-center py-12">
             <CalendarDaysIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No schedules found</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No schedules found</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating your first schedule</p>
             <div className="mt-6">
               <button 
@@ -370,8 +370,8 @@ const ProductionScheduling = () => {
               <CalendarDaysIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Schedules</p>
-              <p className="text-2xl font-bold text-gray-900">{schedules.length}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Schedules</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{schedules.length}</p>
             </div>
           </div>
         </div>
@@ -382,8 +382,8 @@ const ProductionScheduling = () => {
               <PlayIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">In Progress</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">In Progress</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {schedules.filter(s => s.status === 'in_progress').length}
               </p>
             </div>
@@ -396,8 +396,8 @@ const ProductionScheduling = () => {
               <CheckCircleIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Completed</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Completed</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {schedules.filter(s => s.status === 'completed').length}
               </p>
             </div>
@@ -410,8 +410,8 @@ const ProductionScheduling = () => {
               <CogIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active Machines</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Machines</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {machines.filter(m => m.status === 'running').length}
               </p>
             </div>
@@ -427,7 +427,7 @@ const ProductionScheduling = () => {
               <h3 className="text-lg font-semibold">📅 New Schedule</h3>
               <button 
                 onClick={() => setShowNewScheduleModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-white"
               >
                 ✕
               </button>

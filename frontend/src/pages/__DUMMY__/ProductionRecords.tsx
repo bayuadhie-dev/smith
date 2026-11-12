@@ -352,11 +352,11 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="space-y-1">
                       <div className="text-sm">
-                        <span className="text-green-600 font-medium">
+                        <span className="text-green-600 font-medium dark:text-green-400">
                           {record.quantity_good.toLocaleString()}
                         </span>
                         <span className="text-gray-400 mx-1">/</span>
-                        <span className="text-red-600 font-medium">
+                        <span className="text-red-600 font-medium dark:text-red-400">
                           {record.quantity_scrap.toLocaleString()}
                         </span>
                       </div>
@@ -369,9 +369,9 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900 dark:text-white">
                       {record.downtime_minutes > 0 ? (
-                        <span className="text-red-600 font-medium">{record.downtime_minutes}m</span>
+                        <span className="text-red-600 font-medium dark:text-red-400">{record.downtime_minutes}m</span>
                       ) : (
-                        <span className="text-green-600 font-medium">0m</span>
+                        <span className="text-green-600 font-medium dark:text-green-400">0m</span>
                       )}
                     </div>
                   </td>
@@ -379,7 +379,7 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <Link
                       to={`/app/production/records/${record.id}`}
-                      className="text-indigo-600 hover:text-indigo-900"
+                      className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400"
                     >
                     </Link>
                   </td>

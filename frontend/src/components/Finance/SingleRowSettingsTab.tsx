@@ -61,7 +61,7 @@ const SingleRowSettingsTab: React.FC<SingleRowSettingsTabProps> = ({
   };
 
   if (loading) {
-    return <div className="text-gray-500">Memuat...</div>;
+    return <div className="text-gray-500 dark:text-gray-400">Memuat...</div>;
   }
 
   return (
@@ -74,7 +74,7 @@ const SingleRowSettingsTab: React.FC<SingleRowSettingsTabProps> = ({
       {message && (
         <div
           className={`p-3 rounded-md text-sm mb-4 ${
-            message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+            message.type === 'success' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
           }`}
         >
           {message.text}
@@ -93,7 +93,7 @@ const SingleRowSettingsTab: React.FC<SingleRowSettingsTabProps> = ({
                   onChange={(e) =>
                     setValues((prev) => ({ ...prev, [field.key]: e.target.checked }))
                   }
-                  className="h-4 w-4 rounded border-gray-300"
+                  className="h-4 w-4 rounded border-gray-300 dark:border-gray-600"
                 />
                 <label htmlFor={field.key} className="text-sm text-gray-700 dark:text-gray-200">
                   {field.label}

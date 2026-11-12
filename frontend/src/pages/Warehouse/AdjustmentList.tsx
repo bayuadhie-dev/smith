@@ -25,10 +25,10 @@ interface Adjustment {
 }
 
 const statusMap: Record<string, { color: string; label: string }> = {
-  pending: { color: 'bg-gray-100 text-gray-700', label: 'Draft' },
-  pending_approval: { color: 'bg-amber-100 text-amber-700', label: 'Menunggu Persetujuan' },
-  applied: { color: 'bg-green-100 text-green-700', label: 'Diterapkan' },
-  rejected: { color: 'bg-red-100 text-red-700', label: 'Ditolak' },
+  pending: { color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200', label: 'Draft' },
+  pending_approval: { color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', label: 'Menunggu Persetujuan' },
+  applied: { color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300', label: 'Diterapkan' },
+  rejected: { color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', label: 'Ditolak' },
 };
 
 const reasonLabels: Record<string, string> = {
@@ -71,7 +71,7 @@ const AdjustmentList: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ScaleIcon className="h-7 w-7 text-orange-600" />
+            <ScaleIcon className="h-7 w-7 text-orange-600 dark:text-orange-400" />
             Penyesuaian Stok
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
@@ -142,13 +142,13 @@ const AdjustmentList: React.FC = () => {
                       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{a.location_name || '-'}</td>
                       <td className="px-4 py-3 text-sm">
                         {a.is_value_adjustment ? (
-                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">Value</span>
+                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">Value</span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">Quantity</span>
+                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">Quantity</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{reasonLabels[a.reason] || a.reason}</td>
-                      <td className={`px-4 py-3 text-sm text-right font-medium ${a.adjustment_quantity > 0 ? 'text-green-600' : a.adjustment_quantity < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                      <td className={`px-4 py-3 text-sm text-right font-medium ${a.adjustment_quantity > 0 ? 'text-green-600 dark:text-green-400' : a.adjustment_quantity < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
                         {a.adjustment_quantity > 0 ? '+' : ''}{a.adjustment_quantity}
                       </td>
                       <td className="px-4 py-3">

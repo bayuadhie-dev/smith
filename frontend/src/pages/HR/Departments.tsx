@@ -167,8 +167,8 @@ export default function Departments() {
             <div key={dept.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 hover:shadow-md transition">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <BuildingOfficeIcon className="h-6 w-6 text-blue-600" />
+                  <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+                    <BuildingOfficeIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-white">{dept.name}</h3>
@@ -204,13 +204,13 @@ export default function Departments() {
               )}
               <button
                 onClick={() => setDrillDownDept(dept)}
-                className="mt-3 flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                className="mt-3 flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400"
               >
                 <UserGroupIcon className="h-4 w-4" />
                 <span>{dept.employee_count || 0} karyawan &rarr;</span>
               </button>
               <span className={`mt-2 inline-block px-2 py-1 text-xs rounded-full ${
-                dept.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                dept.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
               }`}>
                 {dept.is_active ? 'Aktif' : 'Non-aktif'}
               </span>
@@ -284,7 +284,7 @@ export default function Departments() {
                     <option key={e.id} value={e.id}>{e.full_name}</option>
                   ))}
                 </select>
-                <p className="text-xs text-gray-500 mt-1">Dipakai sebagai approver pertama untuk cuti/reimbursement karyawan di departemen ini.</p>
+                <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">Dipakai sebagai approver pertama untuk cuti/reimbursement karyawan di departemen ini.</p>
               </div>
               <div className="flex justify-end gap-2 pt-4">
                 <button
@@ -313,9 +313,9 @@ export default function Departments() {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-lg font-semibold">{drillDownDept.name}</h3>
-                <p className="text-sm text-gray-500">{drillDownDept.code}{drillDownDept.manager_name && ` — Manager: ${drillDownDept.manager_name}`}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{drillDownDept.code}{drillDownDept.manager_name && ` — Manager: ${drillDownDept.manager_name}`}</p>
               </div>
-              <button onClick={() => setDrillDownDept(null)} className="text-gray-400 hover:text-gray-600">&times;</button>
+              <button onClick={() => setDrillDownDept(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white">&times;</button>
             </div>
 
             {childDepartments(drillDownDept.id).length > 0 && (
@@ -337,7 +337,7 @@ export default function Departments() {
 
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Karyawan ({departmentEmployees(drillDownDept.id).length})</h4>
             {departmentEmployees(drillDownDept.id).length === 0 ? (
-              <p className="text-sm text-gray-500">Belum ada karyawan di departemen ini.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada karyawan di departemen ini.</p>
             ) : (
               <div className="space-y-1">
                 {departmentEmployees(drillDownDept.id).map((e) => (

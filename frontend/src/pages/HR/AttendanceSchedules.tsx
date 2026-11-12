@@ -39,7 +39,7 @@ const Modal = ({ title, onClose, children }: { title: string; onClose: () => voi
     <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-white">{title}</h2>
-        <button type="button" onClick={onClose} className="text-sm text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">Tutup</button>
+        <button type="button" onClick={onClose} className="text-sm text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-400">Tutup</button>
       </div>
       {children}
     </div>
@@ -204,11 +204,11 @@ const AttendanceSchedules = () => {
 
       <div className="flex gap-6 border-b border-gray-200 dark:border-gray-700">
         {([['jadwal', 'Jadwal'], ['penetapan', 'Penetapan']] as const).map(([k, l]) => (
-          <button key={k} onClick={() => setTab(k)} className={`-mb-px border-b-2 px-1 py-2 text-sm font-medium ${tab === k ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}>{l}</button>
+          <button key={k} onClick={() => setTab(k)} className={`-mb-px border-b-2 px-1 py-2 text-sm font-medium ${tab === k ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'}`}>{l}</button>
         ))}
       </div>
 
-      {loading && <p className="text-sm text-gray-500">Memuat...</p>}
+      {loading && <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>}
 
       {!loading && tab === 'jadwal' && (
         <div className="space-y-4">
@@ -217,7 +217,7 @@ const AttendanceSchedules = () => {
               Beberapa jam bawaan masih perkiraan (mis. Sabtu). Sesuaikan dengan jam kerja sebenarnya.
             </div>
           )}
-          {schedules.length === 0 && <p className="text-sm text-gray-500">Belum ada jadwal.</p>}
+          {schedules.length === 0 && <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada jadwal.</p>}
           {schedules.map((s) => (
             <Panel
               key={s.id}
@@ -285,7 +285,7 @@ const AttendanceSchedules = () => {
                   <option value="none">Jadwal bawaan (lepas)</option>
                   {activeSchedules.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
-                <button onClick={applyBulk} disabled={selected.size === 0} className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200">
+                <button onClick={applyBulk} disabled={selected.size === 0} className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                   Terapkan jadwal ke yang dipilih ({selected.size})
                 </button>
                 <button onClick={applyAllSuggestions} className="rounded-md bg-emerald-700 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-800">Terapkan semua saran</button>
@@ -303,13 +303,13 @@ const AttendanceSchedules = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {slice.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500">Tidak ada orang yang cocok.</td></tr>}
+                {slice.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">Tidak ada orang yang cocok.</td></tr>}
                 {slice.map((p) => {
                   const sug = p.suggested_schedule_id && p.suggested_schedule_id !== p.schedule_id ? byId[p.suggested_schedule_id] : null
                   return (
                     <tr key={p.device_user_id}>
                       {canEdit && <td className="px-3 py-2"><input type="checkbox" checked={selected.has(p.device_user_id)} onChange={() => toggleOne(p.device_user_id)} /></td>}
-                      <td className="px-3 py-2"><div className="font-medium text-gray-900 dark:text-white">{p.employee_name || p.name}</div>{p.employee_name && p.employee_name !== p.name && <div className="text-xs text-gray-500">di alat: {p.name}</div>}</td>
+                      <td className="px-3 py-2"><div className="font-medium text-gray-900 dark:text-white">{p.employee_name || p.name}</div>{p.employee_name && p.employee_name !== p.name && <div className="text-xs text-gray-500 dark:text-gray-400">di alat: {p.name}</div>}</td>
                       <td className="px-3 py-2 tabular-nums">{p.device_user_id}</td>
                       <td className="px-3 py-2 tabular-nums">{p.median_first || '-'} - {p.median_last || '-'}</td>
                       <td className="px-3 py-2 text-right tabular-nums">{p.active_days}</td>
@@ -339,7 +339,7 @@ const AttendanceSchedules = () => {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <div className="font-medium text-gray-900 dark:text-white">{p.employee_name || p.name}</div>
-                      <div className="text-xs text-gray-500">ID alat {p.device_user_id} · {p.median_first || '-'} - {p.median_last || '-'} · {p.active_days} hari</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">ID alat {p.device_user_id} · {p.median_first || '-'} - {p.median_last || '-'} · {p.active_days} hari</div>
                     </div>
                     {canEdit && <input type="checkbox" checked={selected.has(p.device_user_id)} onChange={() => toggleOne(p.device_user_id)} />}
                   </div>

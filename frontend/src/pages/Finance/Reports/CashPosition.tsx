@@ -11,7 +11,7 @@ export default function CashPosition() {
   const max = Math.max(1, ...(data?.rows || []).map((r: any) => Math.abs(r.balance)))
   return (
     <ReportShell title="Posisi Kas & Bank" subtitle={`Saldo seluruh rekening kas dan bank per ${fmtDate(asOf)}`}
-      icon={<BanknotesIcon className="h-7 w-7 text-emerald-600" />} actions={<ExportButtons report={['cash-position', params]} />}>
+      icon={<BanknotesIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />} actions={<ExportButtons report={['cash-position', params]} />}>
       <PeriodFilter single from={asOf} to={asOf} onChange={(_, to) => setAsOf(to)} onReload={reload} loading={loading} />
       {data && <StatCards items={[
         { label: 'Total Kas & Bank', value: idr(data.total), tone: 'blue' }, { label: 'Jumlah Rekening', value: String(data.rows.length) },
@@ -35,7 +35,7 @@ export default function CashPosition() {
           </DataTable>
         )}
       </LoadState>
-      <p className="print-hide text-xs text-gray-500">Klik rekening untuk melihat mutasinya.</p>
+      <p className="print-hide text-xs text-gray-500 dark:text-gray-400">Klik rekening untuk melihat mutasinya.</p>
     </ReportShell>
   )
 }

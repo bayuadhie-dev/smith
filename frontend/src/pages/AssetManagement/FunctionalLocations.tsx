@@ -103,7 +103,7 @@ export default function FunctionalLocations() {
           <MapPinIcon className="h-4 w-4 text-gray-400" />
           <span className="font-medium">{loc.name}</span>
           <span className="text-xs text-gray-400">{loc.code}{loc.location_type ? ` — ${loc.location_type}` : ''}</span>
-          <span className="text-xs text-blue-600">({assetsAtLocation(loc.id).length} aset) &rarr;</span>
+          <span className="text-xs text-blue-600 dark:text-blue-400">({assetsAtLocation(loc.id).length} aset) &rarr;</span>
         </button>
         <div className="flex gap-1">
           <button onClick={() => openAdd(loc.id)} className="p-1 text-gray-400 hover:text-green-600" title="Tambah sub-lokasi"><PlusIcon className="h-4 w-4" /></button>
@@ -131,7 +131,7 @@ export default function FunctionalLocations() {
         {isLoading ? (
           <div className="text-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div></div>
         ) : topLevelLocations.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">Belum ada functional location terdaftar.</div>
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">Belum ada functional location terdaftar.</div>
         ) : (
           topLevelLocations.map((loc) => renderNode(loc, 0))
         )}
@@ -178,13 +178,13 @@ export default function FunctionalLocations() {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-lg font-semibold">{drillDown.name}</h3>
-                <p className="text-sm text-gray-500">{drillDown.code}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{drillDown.code}</p>
               </div>
-              <button onClick={() => setDrillDown(null)} className="text-gray-400 hover:text-gray-600">&times;</button>
+              <button onClick={() => setDrillDown(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white">&times;</button>
             </div>
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Aset di lokasi ini ({assetsAtLocation(drillDown.id).length})</h4>
             {assetsAtLocation(drillDown.id).length === 0 ? (
-              <p className="text-sm text-gray-500">Belum ada aset ditempatkan di sini.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada aset ditempatkan di sini.</p>
             ) : (
               <div className="space-y-1">
                 {assetsAtLocation(drillDown.id).map((a) => (

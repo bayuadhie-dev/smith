@@ -268,22 +268,22 @@ const [costAnalysis, setCostAnalysis] = useState<CostAnalysis[]>([])
         <div className="card p-6">
           <h3 className="text-lg font-semibold mb-4">🎯 Cost Efficiency Metrics</h3>
           <div className="space-y-4">
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h4 className="font-medium text-green-800 mb-1">Material Efficiency</h4>
-              <p className="text-2xl font-bold text-green-600">92.5%</p>
-              <p className="text-sm text-green-600">↑ 2.3% from last month</p>
+            <div className="bg-green-50 p-4 rounded-lg dark:bg-green-900/20">
+              <h4 className="font-medium text-green-800 mb-1 dark:text-green-300">Material Efficiency</h4>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">92.5%</p>
+              <p className="text-sm text-green-600 dark:text-green-400">↑ 2.3% from last month</p>
             </div>
 
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h4 className="font-medium text-blue-800 mb-1">Labor Productivity</h4>
-              <p className="text-2xl font-bold text-blue-600">87.8%</p>
-              <p className="text-sm text-blue-600">↑ 1.5% from last month</p>
+            <div className="bg-blue-50 p-4 rounded-lg dark:bg-blue-900/20">
+              <h4 className="font-medium text-blue-800 mb-1 dark:text-blue-300">Labor Productivity</h4>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">87.8%</p>
+              <p className="text-sm text-blue-600 dark:text-blue-400">↑ 1.5% from last month</p>
             </div>
 
-            <div className="bg-orange-50 p-4 rounded-lg">
-              <h4 className="font-medium text-orange-800 mb-1">Overhead Control</h4>
-              <p className="text-2xl font-bold text-orange-600">95.2%</p>
-              <p className="text-sm text-orange-600">↓ 0.8% from last month</p>
+            <div className="bg-orange-50 p-4 rounded-lg dark:bg-orange-900/20">
+              <h4 className="font-medium text-orange-800 mb-1 dark:text-orange-300">Overhead Control</h4>
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">95.2%</p>
+              <p className="text-sm text-orange-600 dark:text-orange-400">↓ 0.8% from last month</p>
             </div>
           </div>
         </div>
@@ -299,7 +299,7 @@ const [costAnalysis, setCostAnalysis] = useState<CostAnalysis[]>([])
               className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
                 viewMode === 'table'
                   ? 'bg-blue-500 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200'
               }`}
             >
               Table View
@@ -309,7 +309,7 @@ const [costAnalysis, setCostAnalysis] = useState<CostAnalysis[]>([])
               className={`px-4 py-2 text-sm font-medium rounded-r-lg ${
                 viewMode === 'chart'
                   ? 'bg-blue-500 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200'
               }`}
             >
               Chart View
@@ -371,14 +371,14 @@ const [costAnalysis, setCostAnalysis] = useState<CostAnalysis[]>([])
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-white">
                       {item.units_produced.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-blue-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-blue-600 dark:text-blue-400">
                       {formatRupiah(item.cost_per_unit)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        item.cost_per_unit < 300 ? 'bg-green-100 text-green-800' :
-                        item.cost_per_unit < 400 ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
+                        item.cost_per_unit < 300 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                        item.cost_per_unit < 400 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                        'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                       }`}>
                         {item.cost_per_unit < 300 ? 'Excellent' :
                          item.cost_per_unit < 400 ? 'Good' : 'Needs Improvement'}
@@ -405,7 +405,7 @@ const [costAnalysis, setCostAnalysis] = useState<CostAnalysis[]>([])
                   <td className="px-6 py-4 text-center text-sm font-bold text-gray-900 dark:text-white">
                     {getTotalUnits().toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 text-right text-sm font-bold text-blue-600">
+                  <td className="px-6 py-4 text-right text-sm font-bold text-blue-600 dark:text-blue-400">
                     {formatRupiah(getAverageCostPerUnit())}
                   </td>
                   <td></td>

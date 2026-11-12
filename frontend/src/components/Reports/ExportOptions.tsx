@@ -375,7 +375,7 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
+                  className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:bg-gray-600"
                 >{t('common.cancel')}</button>
                 <button
                   onClick={advancedExport}

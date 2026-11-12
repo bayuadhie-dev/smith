@@ -80,14 +80,14 @@ const ExpenseDetail: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="p-6 text-gray-500">Memuat...</div>;
+    return <div className="p-6 text-gray-500 dark:text-gray-400">Memuat...</div>;
   }
 
   if (error || !data) {
     return (
       <div className="p-6">
-        <p className="text-red-600">{error || 'Expense tidak ditemukan.'}</p>
-        <button onClick={() => navigate(-1)} className="mt-4 text-primary-600 hover:underline">
+        <p className="text-red-600 dark:text-red-400">{error || 'Expense tidak ditemukan.'}</p>
+        <button onClick={() => navigate(-1)} className="mt-4 text-primary-600 hover:underline dark:text-primary-400">
           &larr; Kembali
         </button>
       </div>
@@ -96,7 +96,7 @@ const ExpenseDetail: React.FC = () => {
 
   return (
     <div className="p-6 max-w-2xl">
-      <button onClick={() => navigate(-1)} className="text-sm text-gray-500 hover:text-gray-700 mb-4">
+      <button onClick={() => navigate(-1)} className="text-sm text-gray-500 hover:text-gray-700 mb-4 dark:text-gray-400 dark:hover:text-white">
         &larr; Kembali
       </button>
 
@@ -189,7 +189,7 @@ const ExpenseDetail: React.FC = () => {
           {data.rejection_reason && (
             <div className="col-span-2">
               <div className="text-gray-500 dark:text-gray-400">Alasan Ditolak</div>
-              <div className="font-medium text-red-600">{data.rejection_reason}</div>
+              <div className="font-medium text-red-600 dark:text-red-400">{data.rejection_reason}</div>
             </div>
           )}
           {data.notes && (

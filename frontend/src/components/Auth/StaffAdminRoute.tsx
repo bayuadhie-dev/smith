@@ -42,8 +42,8 @@ const StaffAdminRoute: React.FC<StaffAdminRouteProps> = ({
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
           <div className="text-center max-w-md mx-auto p-8">
-            <div className="bg-red-100 rounded-full p-4 w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-              <ShieldExclamationIcon className="h-10 w-10 text-red-600" />
+            <div className="bg-red-100 rounded-full p-4 w-20 h-20 mx-auto mb-6 flex items-center justify-center dark:bg-red-900/30">
+              <ShieldExclamationIcon className="h-10 w-10 text-red-600 dark:text-red-400" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h1>
             <p className="text-gray-600 dark:text-gray-300 mb-6">

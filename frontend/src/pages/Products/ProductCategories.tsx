@@ -212,14 +212,14 @@ const ProductCategories: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/products/dashboard"
-            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to Dashboard
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Kategori Produk</h1>
-            <p className="text-gray-600 mt-1">Organize and manage your product categories</p>
+            <p className="text-gray-600 mt-1 dark:text-gray-300">Organize and manage your product categories</p>
           </div>
         </div>
         <button
@@ -268,8 +268,8 @@ const ProductCategories: React.FC = () => {
           <div key={category.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <TagIcon className="h-6 w-6 text-blue-600" />
+                <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+                  <TagIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="ml-3">
                   <h3 className="font-semibold text-gray-900 dark:text-white">{category.name}</h3>
@@ -281,23 +281,23 @@ const ProductCategories: React.FC = () => {
               <div className="flex items-center space-x-1">
                 <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                   category.is_active 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                    : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                 }`}>
                   {category.is_active ? 'Active' : 'Inactive'}
                 </span>
               </div>
             </div>
 
-            <p className="text-gray-600 text-sm mb-4 line-clamp-2">{category.description}</p>
+            <p className="text-gray-600 text-sm mb-4 line-clamp-2 dark:text-gray-300">{category.description}</p>
 
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Products:</span>
+                <span className="text-gray-600 dark:text-gray-300">Products:</span>
                 <span className="font-medium text-gray-900 dark:text-white">{formatNumber(category.product_count)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Total Value:</span>
+                <span className="text-gray-600 dark:text-gray-300">Total Value:</span>
                 <span className="font-medium text-gray-900 dark:text-white">{formatRupiah(category.total_value)}</span>
               </div>
             </div>
@@ -305,18 +305,18 @@ const ProductCategories: React.FC = () => {
             <div className="flex space-x-2">
               <button
                 onClick={() => openModal(category)}
-                className="flex-1 flex items-center justify-center px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-200 dark:bg-gray-700"
+                className="flex-1 flex items-center justify-center px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
               >
                 <PencilIcon className="h-4 w-4 mr-1" />{t('common.edit')}</button>
               <Link
                 to={`/app/products?category=${category.id}`}
-                className="flex items-center justify-center px-3 py-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                className="flex items-center justify-center px-3 py-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300"
               >
                 <EyeIcon className="h-4 w-4" />
               </Link>
               <button
                 onClick={() => deleteCategory(category.id)}
-                className="flex items-center justify-center px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                className="flex items-center justify-center px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300"
                 disabled={category.product_count > 0}
                 title={category.product_count > 0 ? 'Cannot delete category with products' : 'Delete category'}
               >
@@ -333,7 +333,7 @@ const ProductCategories: React.FC = () => {
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             {loadError ? 'Failed to load categories' : 'No categories found'}
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600 mb-4 dark:text-gray-300">
             {loadError
               ? 'Could not reach the server. Please try again.'
               : searchTerm || statusFilter !== 'all'
@@ -407,7 +407,7 @@ const ProductCategories: React.FC = () => {
                       type="checkbox"
                       checked={categoryForm.is_active}
                       onChange={(e) => setCategoryForm({...categoryForm, is_active: e.target.checked})}
-                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
+                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:text-blue-400"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-200">Active Category</span>
                   </label>
@@ -417,7 +417,7 @@ const ProductCategories: React.FC = () => {
               <div className="flex justify-end space-x-3 pt-6 mt-6 border-t">
                 <button
                   onClick={closeModal}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
+                  className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:bg-gray-600"
                 >{t('common.cancel')}</button>
                 <button
                   onClick={saveCategory}

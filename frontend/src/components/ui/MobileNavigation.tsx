@@ -139,8 +139,8 @@ const MobileNavigation: React.FC = () => {
             to={item.href}
             className={`flex-1 flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
               active
-                ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                : 'text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200'
             } ${level > 0 ? 'ml-4' : ''}`}
             onClick={() => setIsOpen(false)}
           >
@@ -150,7 +150,7 @@ const MobileNavigation: React.FC = () => {
           {hasChildren && (
             <button
               onClick={() => toggleSection(item.name)}
-              className="p-2 text-gray-400 hover:text-gray-600"
+              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white"
             >
               {isExpanded ? (
                 <ChevronDown className="h-4 w-4" />
@@ -175,7 +175,7 @@ const MobileNavigation: React.FC = () => {
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 text-gray-600 hover:text-gray-900 dark:text-white"
+          className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
         >
           {isOpen ? <X className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
         </button>
@@ -191,7 +191,7 @@ const MobileNavigation: React.FC = () => {
 
       {/* Mobile navigation panel */}
       <div
-        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
+        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out dark:bg-gray-800 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -206,7 +206,7 @@ const MobileNavigation: React.FC = () => {
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1 text-gray-400 hover:text-gray-600"
+              className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-white"
             >
               <X className="h-5 w-5" />
             </button>

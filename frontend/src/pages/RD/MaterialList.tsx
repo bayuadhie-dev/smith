@@ -106,7 +106,7 @@ const MaterialList: React.FC = () => {
       case 'requested': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
       case 'ordered': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
       case 'rejected': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
-      default: return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -175,44 +175,44 @@ const MaterialList: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <CubeIcon className="w-6 h-6 text-blue-600" />
+              <CubeIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{materials.length}</p>
-              <p className="text-sm text-gray-500">Total Materials</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total Materials</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-              <ClockIcon className="w-6 h-6 text-yellow-600" />
+              <ClockIcon className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-yellow-600">{pendingCount}</p>
-              <p className="text-sm text-gray-500">Pending Requests</p>
+              <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{pendingCount}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Pending Requests</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <CheckCircleIcon className="w-6 h-6 text-green-600" />
+              <CheckCircleIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-green-600">{materials.filter(m => m.status === 'received').length}</p>
-              <p className="text-sm text-gray-500">Received</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{materials.filter(m => m.status === 'received').length}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Received</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <CurrencyDollarIcon className="w-6 h-6 text-purple-600" />
+              <CurrencyDollarIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <p className="text-lg font-bold text-purple-600">{formatCurrency(totalCost)}</p>
-              <p className="text-sm text-gray-500">Total Cost</p>
+              <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{formatCurrency(totalCost)}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total Cost</p>
             </div>
           </div>
         </div>
@@ -267,25 +267,25 @@ const MaterialList: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Material
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Project
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Quantity
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Cost
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Supplier
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Actions
                 </th>
               </tr>
@@ -368,7 +368,7 @@ const MaterialList: React.FC = () => {
                     <p className="text-gray-500 dark:text-gray-400">No materials found</p>
                     <Link
                       to="/app/rd/materials/new"
-                      className="inline-flex items-center gap-2 mt-4 text-blue-600 hover:text-blue-700"
+                      className="inline-flex items-center gap-2 mt-4 text-blue-600 hover:text-blue-700 dark:text-blue-400"
                     >
                       <PlusIcon className="w-4 h-4" />
                       Request your first material

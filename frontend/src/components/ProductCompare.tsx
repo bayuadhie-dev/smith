@@ -161,7 +161,7 @@ const ProductCompare: React.FC = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <ExclamationCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600">{error || 'Comparison data not found'}</p>
+          <p className="text-red-600 dark:text-red-400">{error || 'Comparison data not found'}</p>
           <button
             onClick={() => navigate(`/app/products/${kode_produk}/versions`)}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -279,7 +279,7 @@ const ProductCompare: React.FC = () => {
                               const isDifferent = String(value1) !== String(value2);
                               
                               return (
-                                <tr key={fieldName} className={isDifferent ? 'bg-red-50' : ''}>
+                                <tr key={fieldName} className={isDifferent ? 'bg-red-50 dark:bg-red-900/20' : ''}>
                                   <td className="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white">
                                     {fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                                   </td>

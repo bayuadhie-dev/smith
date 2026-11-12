@@ -365,7 +365,7 @@ const AdvancedReportBuilder: React.FC = () => {
                   <div className="col-span-1">
                     <button
                       onClick={() => removeField(field.id)}
-                      className="text-red-600 hover:text-red-800"
+                      className="text-red-600 hover:text-red-800 dark:text-red-400"
                     >
                       <TrashIcon className="h-4 w-4" />
                     </button>
@@ -434,7 +434,7 @@ const AdvancedReportBuilder: React.FC = () => {
                   <div className="col-span-1">
                     <button
                       onClick={() => removeFilter(filter.id)}
-                      className="text-red-600 hover:text-red-800"
+                      className="text-red-600 hover:text-red-800 dark:text-red-400"
                     >
                       <TrashIcon className="h-4 w-4" />
                     </button>

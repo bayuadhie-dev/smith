@@ -13,9 +13,9 @@ const { data, isLoading } = useGetOEERecordsQuery({})
   const avgQuality = data?.records?.reduce((sum: number, r: any) => sum + r.quality, 0) / (data?.records?.length || 1) || 0
 
   const getOEEColor = (oee: number) => {
-    if (oee >= 85) return 'text-green-600'
-    if (oee >= 70) return 'text-yellow-600'
-    return 'text-red-600'
+    if (oee >= 85) return 'text-green-600 dark:text-green-400'
+    if (oee >= 70) return 'text-yellow-600 dark:text-yellow-400'
+    return 'text-red-600 dark:text-red-400'
   }
 
   return (

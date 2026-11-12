@@ -305,9 +305,9 @@ export default function PayrollRecordList() {
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      calculated: 'bg-blue-100 text-blue-800',
-      approved: 'bg-green-100 text-green-800',
-      paid: 'bg-purple-100 text-purple-800'
+      calculated: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      approved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      paid: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
     }
     const labels: Record<string, string> = {
       calculated: 'Dihitung',
@@ -315,7 +315,7 @@ export default function PayrollRecordList() {
       paid: 'Dibayar'
     }
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'}`}>
         {labels[status] || status}
       </span>
     )
@@ -331,16 +331,16 @@ export default function PayrollRecordList() {
   }
 
   const payTypeStyles: Record<string, string> = {
-    fixed: 'bg-indigo-100 text-indigo-800',
-    monthly: 'bg-sky-100 text-sky-800',
-    weekly: 'bg-teal-100 text-teal-800',
-    daily: 'bg-amber-100 text-amber-800',
-    piecework: 'bg-orange-100 text-orange-800',
-    outsourcing: 'bg-pink-100 text-pink-800'
+    fixed: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+    monthly: 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300',
+    weekly: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
+    daily: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+    piecework: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+    outsourcing: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300'
   }
 
   const getPayTypeBadge = (payType: string) => (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${payTypeStyles[payType] || 'bg-gray-100 text-gray-800'}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${payTypeStyles[payType] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'}`}>
       {payTypeLabels[payType] || payType}
     </span>
   )
@@ -397,8 +397,8 @@ export default function PayrollRecordList() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <UserIcon className="h-5 w-5 text-blue-600" />
+            <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+              <UserIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Total Karyawan</p>
@@ -406,15 +406,15 @@ export default function PayrollRecordList() {
             </div>
           </div>
           <div className="mt-2 flex gap-2 text-xs">
-            <span className="text-blue-600">{summaryStats.calculated} dihitung</span>
-            <span className="text-green-600">{summaryStats.approved} disetujui</span>
-            <span className="text-purple-600">{summaryStats.paid} dibayar</span>
+            <span className="text-blue-600 dark:text-blue-400">{summaryStats.calculated} dihitung</span>
+            <span className="text-green-600 dark:text-green-400">{summaryStats.approved} disetujui</span>
+            <span className="text-purple-600 dark:text-purple-400">{summaryStats.paid} dibayar</span>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CurrencyDollarIcon className="h-5 w-5 text-green-600" />
+            <div className="p-2 bg-green-100 rounded-lg dark:bg-green-900/30">
+              <CurrencyDollarIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Total Gaji Kotor</p>
@@ -424,23 +424,23 @@ export default function PayrollRecordList() {
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <DocumentTextIcon className="h-5 w-5 text-red-600" />
+            <div className="p-2 bg-red-100 rounded-lg dark:bg-red-900/30">
+              <DocumentTextIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Total Potongan</p>
-              <p className="text-lg font-bold text-red-600">{formatCurrency(summaryStats.totalDeductions)}</p>
+              <p className="text-lg font-bold text-red-600 dark:text-red-400">{formatCurrency(summaryStats.totalDeductions)}</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <BanknotesIcon className="h-5 w-5 text-purple-600" />
+            <div className="p-2 bg-purple-100 rounded-lg dark:bg-purple-900/30">
+              <BanknotesIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Total Gaji Bersih</p>
-              <p className="text-lg font-bold text-purple-600">{formatCurrency(summaryStats.totalNet)}</p>
+              <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{formatCurrency(summaryStats.totalNet)}</p>
             </div>
           </div>
         </div>
@@ -498,11 +498,11 @@ export default function PayrollRecordList() {
                     <td className="px-4 py-3 text-right text-sm font-mono">{formatCurrency(record.basic_salary)}</td>
                     <td className="px-4 py-3 text-right text-sm font-mono">{formatCurrency(record.allowances)}</td>
                     <td className="px-4 py-3 text-right text-sm font-mono">{formatCurrency(record.overtime_amount)}</td>
-                    <td className="px-4 py-3 text-right text-sm font-mono font-medium text-green-700">{formatCurrency(record.gross_salary)}</td>
-                    <td className="px-4 py-3 text-right text-sm font-mono text-red-600">{formatCurrency(record.total_deductions)}</td>
-                    <td className="px-4 py-3 text-right text-sm font-mono font-bold text-blue-700">{formatCurrency(record.net_salary)}</td>
+                    <td className="px-4 py-3 text-right text-sm font-mono font-medium text-green-700 dark:text-green-300">{formatCurrency(record.gross_salary)}</td>
+                    <td className="px-4 py-3 text-right text-sm font-mono text-red-600 dark:text-red-400">{formatCurrency(record.total_deductions)}</td>
+                    <td className="px-4 py-3 text-right text-sm font-mono font-bold text-blue-700 dark:text-blue-300">{formatCurrency(record.net_salary)}</td>
                     <td className="px-4 py-3 text-center text-sm">
-                      <span className={`${record.days_absent > 0 ? 'text-red-600 font-medium' : 'text-gray-600'}`}>
+                      <span className={`${record.days_absent > 0 ? 'text-red-600 font-medium dark:text-red-400' : 'text-gray-600 dark:text-gray-300'}`}>
                         {record.days_worked}/{record.total_working_days}
                       </span>
                       {record.days_absent > 0 && (
@@ -514,7 +514,7 @@ export default function PayrollRecordList() {
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => handleViewPayslip(record)}
-                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:text-blue-400"
                           title="Lihat Slip Gaji"
                         >
                           <EyeIcon className="h-4 w-4" />
@@ -522,7 +522,7 @@ export default function PayrollRecordList() {
                         {record.status === 'calculated' && (
                           <button
                             onClick={() => handleApproveRecord(record.id)}
-                            className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors dark:text-green-400"
                             title="Approve"
                           >
                             <CheckIcon className="h-4 w-4" />
@@ -531,7 +531,7 @@ export default function PayrollRecordList() {
                         {record.status === 'approved' && (
                           <button
                             onClick={() => handleMarkPaid(record.id)}
-                            className="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                            className="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors dark:text-purple-400"
                             title="Tandai Dibayar"
                           >
                             <BanknotesIcon className="h-4 w-4" />
@@ -576,7 +576,7 @@ export default function PayrollRecordList() {
               <div className="payslip">
                 {/* Company Header */}
                 <div className="header text-center border-b-2 border-blue-800 pb-4 mb-6">
-                  <h1 className="text-2xl font-bold text-blue-800">SLIP GAJI KARYAWAN</h1>
+                  <h1 className="text-2xl font-bold text-blue-800 dark:text-blue-300">SLIP GAJI KARYAWAN</h1>
                   <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
                     Periode: {period?.period_name || '-'}
                   </p>
@@ -607,7 +607,7 @@ export default function PayrollRecordList() {
                       <span className="text-sm font-medium">
                         {selectedRecord.employee.position || '-'}
                         {selectedRecord.employee.has_allowance && (
-                          <span className="ml-1 text-xs text-emerald-600 font-semibold">(Tunjangan)</span>
+                          <span className="ml-1 text-xs text-emerald-600 font-semibold dark:text-emerald-400">(Tunjangan)</span>
                         )}
                       </span>
                     </div>
@@ -624,7 +624,7 @@ export default function PayrollRecordList() {
 
                 {/* Attendance */}
                 <div className="mb-6">
-                  <h3 className="text-sm font-bold text-blue-800 border-b border-gray-200 dark:border-gray-700 pb-1 mb-3 flex items-center gap-1">
+                  <h3 className="text-sm font-bold text-blue-800 border-b border-gray-200 dark:border-gray-700 pb-1 mb-3 flex items-center gap-1 dark:text-blue-300">
                     🕐 Kehadiran
                   </h3>
                   <div className="grid grid-cols-4 gap-3">
@@ -632,16 +632,16 @@ export default function PayrollRecordList() {
                       <div className="text-lg font-bold">{selectedRecord.total_working_days}</div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">Hari Kerja</div>
                     </div>
-                    <div className="text-center p-2 bg-green-50 rounded">
-                      <div className="text-lg font-bold text-green-700">{selectedRecord.days_worked}</div>
+                    <div className="text-center p-2 bg-green-50 rounded dark:bg-green-900/20">
+                      <div className="text-lg font-bold text-green-700 dark:text-green-300">{selectedRecord.days_worked}</div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">Hadir</div>
                     </div>
-                    <div className="text-center p-2 bg-red-50 rounded">
-                      <div className="text-lg font-bold text-red-700">{selectedRecord.days_absent}</div>
+                    <div className="text-center p-2 bg-red-50 rounded dark:bg-red-900/20">
+                      <div className="text-lg font-bold text-red-700 dark:text-red-300">{selectedRecord.days_absent}</div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">Absen</div>
                     </div>
-                    <div className="text-center p-2 bg-blue-50 rounded">
-                      <div className="text-lg font-bold text-blue-700">{selectedRecord.overtime_hours}</div>
+                    <div className="text-center p-2 bg-blue-50 rounded dark:bg-blue-900/20">
+                      <div className="text-lg font-bold text-blue-700 dark:text-blue-300">{selectedRecord.overtime_hours}</div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">Jam Lembur</div>
                     </div>
                   </div>
@@ -649,54 +649,54 @@ export default function PayrollRecordList() {
 
                 {/* Earnings */}
                 <div className="mb-4">
-                  <h3 className="text-sm font-bold text-green-700 border-b border-gray-200 dark:border-gray-700 pb-1 mb-3 flex items-center gap-1">
+                  <h3 className="text-sm font-bold text-green-700 border-b border-gray-200 dark:border-gray-700 pb-1 mb-3 flex items-center gap-1 dark:text-green-300">
                     <CurrencyDollarIcon className="h-4 w-4" /> Pendapatan
                   </h3>
                   <table className="w-full text-sm">
                     <tbody>
-                      <tr className="border-b border-gray-100">
+                      <tr className="border-b border-gray-100 dark:border-gray-800">
                         <td className="py-2 text-gray-600 dark:text-gray-300">Gaji Pokok</td>
                         <td className="py-2 text-right font-mono">{formatCurrency(selectedRecord.basic_salary)}</td>
                       </tr>
                       {(selectedRecord.position_allowance || 0) > 0 && (
-                        <tr className="border-b border-gray-100">
+                        <tr className="border-b border-gray-100 dark:border-gray-800">
                           <td className="py-2 text-gray-600 dark:text-gray-300">Tunjangan Jabatan</td>
                           <td className="py-2 text-right font-mono">{formatCurrency(selectedRecord.position_allowance)}</td>
                         </tr>
                       )}
                       {(selectedRecord.transport_allowance || 0) > 0 && (
-                        <tr className="border-b border-gray-100">
+                        <tr className="border-b border-gray-100 dark:border-gray-800">
                           <td className="py-2 text-gray-600 dark:text-gray-300">Tunj. Transportasi ({selectedRecord.days_worked} hari)</td>
                           <td className="py-2 text-right font-mono">{formatCurrency(selectedRecord.transport_allowance)}</td>
                         </tr>
                       )}
                       {(selectedRecord.allowances - (selectedRecord.position_allowance || 0) - (selectedRecord.transport_allowance || 0)) > 0 && (
-                        <tr className="border-b border-gray-100">
+                        <tr className="border-b border-gray-100 dark:border-gray-800">
                           <td className="py-2 text-gray-600 dark:text-gray-300">Tunjangan Lainnya</td>
                           <td className="py-2 text-right font-mono">{formatCurrency(selectedRecord.allowances - (selectedRecord.position_allowance || 0) - (selectedRecord.transport_allowance || 0))}</td>
                         </tr>
                       )}
                       {selectedRecord.overtime_amount > 0 && (
-                        <tr className="border-b border-gray-100">
+                        <tr className="border-b border-gray-100 dark:border-gray-800">
                           <td className="py-2 text-gray-600 dark:text-gray-300">Lembur ({selectedRecord.overtime_hours} jam)</td>
                           <td className="py-2 text-right font-mono">{formatCurrency(selectedRecord.overtime_amount)}</td>
                         </tr>
                       )}
                       {(selectedRecord.bonus || 0) > 0 && (
-                        <tr className="border-b border-gray-100">
+                        <tr className="border-b border-gray-100 dark:border-gray-800">
                           <td className="py-2 text-gray-600 dark:text-gray-300">Bonus</td>
                           <td className="py-2 text-right font-mono">{formatCurrency(selectedRecord.bonus || 0)}</td>
                         </tr>
                       )}
                       {(selectedRecord.commission || 0) > 0 && (
-                        <tr className="border-b border-gray-100">
+                        <tr className="border-b border-gray-100 dark:border-gray-800">
                           <td className="py-2 text-gray-600 dark:text-gray-300">Komisi</td>
                           <td className="py-2 text-right font-mono">{formatCurrency(selectedRecord.commission || 0)}</td>
                         </tr>
                       )}
-                      <tr className="bg-green-50 font-bold">
-                        <td className="py-2 text-green-800">Total Pendapatan</td>
-                        <td className="py-2 text-right font-mono text-green-800">{formatCurrency(selectedRecord.gross_salary)}</td>
+                      <tr className="bg-green-50 font-bold dark:bg-green-900/20">
+                        <td className="py-2 text-green-800 dark:text-green-300">Total Pendapatan</td>
+                        <td className="py-2 text-right font-mono text-green-800 dark:text-green-300">{formatCurrency(selectedRecord.gross_salary)}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -704,44 +704,44 @@ export default function PayrollRecordList() {
 
                 {/* Deductions */}
                 <div className="mb-4">
-                  <h3 className="text-sm font-bold text-red-700 border-b border-gray-200 dark:border-gray-700 pb-1 mb-3 flex items-center gap-1">
+                  <h3 className="text-sm font-bold text-red-700 border-b border-gray-200 dark:border-gray-700 pb-1 mb-3 flex items-center gap-1 dark:text-red-300">
                     <DocumentTextIcon className="h-4 w-4" /> Potongan
                   </h3>
                   <table className="w-full text-sm">
                     <tbody>
                       {selectedRecord.insurance_deduction > 0 && (
-                        <tr className="border-b border-gray-100">
+                        <tr className="border-b border-gray-100 dark:border-gray-800">
                           <td className="py-2 text-gray-600 dark:text-gray-300">BPJS Kesehatan (1%)</td>
-                          <td className="py-2 text-right font-mono text-red-600">-{formatCurrency(selectedRecord.insurance_deduction)}</td>
+                          <td className="py-2 text-right font-mono text-red-600 dark:text-red-400">-{formatCurrency(selectedRecord.insurance_deduction)}</td>
                         </tr>
                       )}
                       {selectedRecord.pension_deduction > 0 && (
-                        <tr className="border-b border-gray-100">
+                        <tr className="border-b border-gray-100 dark:border-gray-800">
                           <td className="py-2 text-gray-600 dark:text-gray-300">BPJS Ketenagakerjaan JHT (2%)</td>
-                          <td className="py-2 text-right font-mono text-red-600">-{formatCurrency(selectedRecord.pension_deduction)}</td>
+                          <td className="py-2 text-right font-mono text-red-600 dark:text-red-400">-{formatCurrency(selectedRecord.pension_deduction)}</td>
                         </tr>
                       )}
                       {(selectedRecord.absence_deduction || 0) > 0 && (
-                        <tr className="border-b border-gray-100">
+                        <tr className="border-b border-gray-100 dark:border-gray-800">
                           <td className="py-2 text-gray-600 dark:text-gray-300">Potongan Absensi ({selectedRecord.days_absent} hari)</td>
-                          <td className="py-2 text-right font-mono text-red-600">-{formatCurrency(selectedRecord.absence_deduction || 0)}</td>
+                          <td className="py-2 text-right font-mono text-red-600 dark:text-red-400">-{formatCurrency(selectedRecord.absence_deduction || 0)}</td>
                         </tr>
                       )}
                       {(selectedRecord.loan_deduction || 0) > 0 && (
-                        <tr className="border-b border-gray-100">
+                        <tr className="border-b border-gray-100 dark:border-gray-800">
                           <td className="py-2 text-gray-600 dark:text-gray-300">Potongan Pinjaman</td>
-                          <td className="py-2 text-right font-mono text-red-600">-{formatCurrency(selectedRecord.loan_deduction || 0)}</td>
+                          <td className="py-2 text-right font-mono text-red-600 dark:text-red-400">-{formatCurrency(selectedRecord.loan_deduction || 0)}</td>
                         </tr>
                       )}
                       {(selectedRecord.other_deductions || 0) > 0 && (
-                        <tr className="border-b border-gray-100">
+                        <tr className="border-b border-gray-100 dark:border-gray-800">
                           <td className="py-2 text-gray-600 dark:text-gray-300">Potongan Lain-lain</td>
-                          <td className="py-2 text-right font-mono text-red-600">-{formatCurrency(selectedRecord.other_deductions || 0)}</td>
+                          <td className="py-2 text-right font-mono text-red-600 dark:text-red-400">-{formatCurrency(selectedRecord.other_deductions || 0)}</td>
                         </tr>
                       )}
-                      <tr className="bg-red-50 font-bold">
-                        <td className="py-2 text-red-800">Total Potongan</td>
-                        <td className="py-2 text-right font-mono text-red-800">-{formatCurrency(selectedRecord.total_deductions)}</td>
+                      <tr className="bg-red-50 font-bold dark:bg-red-900/20">
+                        <td className="py-2 text-red-800 dark:text-red-300">Total Potongan</td>
+                        <td className="py-2 text-right font-mono text-red-800 dark:text-red-300">-{formatCurrency(selectedRecord.total_deductions)}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -755,13 +755,13 @@ export default function PayrollRecordList() {
 
                 {/* PPh 21 Ditanggung Perusahaan */}
                 {selectedRecord.tax_deduction > 0 && (
-                  <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                  <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between dark:bg-blue-900/20 dark:border-blue-800">
                     <div>
-                      <span className="text-xs font-semibold text-blue-800">PPh 21 (Ditanggung Perusahaan)</span>
+                      <span className="text-xs font-semibold text-blue-800 dark:text-blue-300">PPh 21 (Ditanggung Perusahaan)</span>
                       <br />
                       <span className="text-xs text-gray-500 dark:text-gray-400">Metode TER PP 58/2023 — tidak dipotong dari gaji</span>
                     </div>
-                    <span className="text-sm font-bold text-blue-800">{formatCurrency(selectedRecord.tax_deduction)}</span>
+                    <span className="text-sm font-bold text-blue-800 dark:text-blue-300">{formatCurrency(selectedRecord.tax_deduction)}</span>
                   </div>
                 )}
 

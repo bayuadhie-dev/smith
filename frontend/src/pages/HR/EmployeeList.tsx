@@ -85,13 +85,13 @@ export default function EmployeeList() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
       case 'on_leave':
-        return 'bg-yellow-100 text-yellow-800'
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
       case 'terminated':
-        return 'bg-red-100 text-red-800'
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
     }
   }
 
@@ -124,7 +124,7 @@ export default function EmployeeList() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/app/hr/fingerprint-mapping" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200">
+          <Link to="/app/hr/fingerprint-mapping" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
             Hubungkan ID mesin
           </Link>
           <Link to="/app/hr/employees/new" className="btn-primary inline-flex items-center gap-2">
@@ -152,7 +152,7 @@ export default function EmployeeList() {
           {/* Filter Toggle */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`btn-secondary flex items-center gap-2 ${showFilters ? 'bg-blue-50 border-blue-300' : ''}`}
+            className={`btn-secondary flex items-center gap-2 ${showFilters ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/20' : ''}`}
           >
             <FunnelIcon className="h-5 w-5" />
             Filter
@@ -162,7 +162,7 @@ export default function EmployeeList() {
           </button>
 
           {hasActiveFilters && (
-            <button onClick={clearFilters} className="btn-secondary flex items-center gap-2 text-red-600">
+            <button onClick={clearFilters} className="btn-secondary flex items-center gap-2 text-red-600 dark:text-red-400">
               <XMarkIcon className="h-5 w-5" />
               Reset
             </button>
@@ -255,8 +255,8 @@ export default function EmployeeList() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-white">{employee.nik || <span className="text-gray-400">-</span>}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 flex-shrink-0 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-blue-600 font-semibold text-sm">
+                        <div className="h-10 w-10 flex-shrink-0 bg-blue-100 rounded-full flex items-center justify-center dark:bg-blue-900/30">
+                          <span className="text-blue-600 font-semibold text-sm dark:text-blue-400">
                             {employee.full_name?.charAt(0)?.toUpperCase() || '?'}
                           </span>
                         </div>
@@ -267,7 +267,7 @@ export default function EmployeeList() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">
-                      {employee.fingerprint_id ? <span className="text-gray-900 dark:text-white">{employee.fingerprint_id}</span> : <span className="text-amber-600">belum</span>}
+                      {employee.fingerprint_id ? <span className="text-gray-900 dark:text-white">{employee.fingerprint_id}</span> : <span className="text-amber-600 dark:text-amber-400">belum</span>}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                       {employee.department || '-'}
@@ -276,7 +276,7 @@ export default function EmployeeList() {
                       {employee.position || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                      <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                         {getEmploymentTypeLabel(employee.employment_type)}
                       </span>
                     </td>

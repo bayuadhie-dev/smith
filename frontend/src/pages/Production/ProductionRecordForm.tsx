@@ -242,7 +242,7 @@ const navigate = useNavigate()
         {/* Basic Information */}
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
-            <ClipboardDocumentListIcon className="h-5 w-5 text-blue-600" />
+            <ClipboardDocumentListIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h3>
           </div>
 
@@ -263,7 +263,7 @@ const navigate = useNavigate()
                 ))}
               </select>
               {errors.work_order_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.work_order_id.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.work_order_id.message}</p>
               )}
             </div>
 
@@ -293,9 +293,9 @@ const navigate = useNavigate()
                         <button
                           type="button"
                           onClick={() => handleProductSelect({ id: selectedWO.product_id, code: '', name: selectedWO.product_name })}
-                          className="w-full px-3 py-2 text-left hover:bg-blue-50 border-b border-gray-200 dark:border-gray-700 bg-blue-50"
+                          className="w-full px-3 py-2 text-left hover:bg-blue-50 border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20"
                         >
-                          <span className="text-xs text-blue-600 font-medium">Default WO:</span>
+                          <span className="text-xs text-blue-600 font-medium dark:text-blue-400">Default WO:</span>
                           <span className="block text-sm font-medium">{selectedWO.product_name}</span>
                         </button>
                       )}
@@ -306,7 +306,7 @@ const navigate = useNavigate()
                             key={product.id}
                             type="button"
                             onClick={() => handleProductSelect(product)}
-                            className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 border-b border-gray-100 last:border-0"
+                            className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 border-b border-gray-100 last:border-0 dark:border-gray-800"
                           >
                             <span className="text-xs text-gray-500 dark:text-gray-400">{product.code}</span>
                             <span className="block text-sm">{product.name}</span>
@@ -319,7 +319,7 @@ const navigate = useNavigate()
                   )}
                 </div>
                 {selectedProduct && selectedWO && selectedProduct.id !== selectedWO.product_id && (
-                  <p className="text-xs text-orange-600 mt-1">
+                  <p className="text-xs text-orange-600 mt-1 dark:text-orange-400">
                     ⚠️ Produk berbeda dari WO default ({selectedWO.product_name})
                   </p>
                 )}
@@ -366,7 +366,7 @@ const navigate = useNavigate()
                 className="input"
               />
               {errors.production_date && (
-                <p className="mt-1 text-sm text-red-600">{errors.production_date.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.production_date.message}</p>
               )}
             </div>
 
@@ -385,7 +385,7 @@ const navigate = useNavigate()
                 ))}
               </select>
               {errors.shift && (
-                <p className="mt-1 text-sm text-red-600">{errors.shift.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.shift.message}</p>
               )}
             </div>
           </div>
@@ -394,7 +394,7 @@ const navigate = useNavigate()
         {/* Production Data */}
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-6">
-            <ChartBarIcon className="h-5 w-5 text-green-600" />
+            <ChartBarIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Production Data</h3>
           </div>
 
@@ -412,7 +412,7 @@ const navigate = useNavigate()
                 placeholder="0"
               />
               {errors.quantity_produced && (
-                <p className="mt-1 text-sm text-red-600">{errors.quantity_produced.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.quantity_produced.message}</p>
               )}
             </div>
 
@@ -429,7 +429,7 @@ const navigate = useNavigate()
                 placeholder="0"
               />
               {errors.quantity_good && (
-                <p className="mt-1 text-sm text-red-600">{errors.quantity_good.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.quantity_good.message}</p>
               )}
             </div>
 
@@ -443,7 +443,7 @@ const navigate = useNavigate()
                 placeholder="0"
               />
               {errors.quantity_scrap && (
-                <p className="mt-1 text-sm text-red-600">{errors.quantity_scrap.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.quantity_scrap.message}</p>
               )}
             </div>
 
@@ -462,7 +462,7 @@ const navigate = useNavigate()
                 <option value="boxes">Boxes</option>
               </select>
               {errors.uom && (
-                <p className="mt-1 text-sm text-red-600">{errors.uom.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.uom.message}</p>
               )}
             </div>
 
@@ -480,7 +480,7 @@ const navigate = useNavigate()
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               </label>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {efficiency.toFixed(1)}%
               </div>
             </div>

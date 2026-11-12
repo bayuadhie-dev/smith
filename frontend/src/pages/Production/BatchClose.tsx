@@ -184,7 +184,7 @@ export default function BatchClose() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Link to={`/app/production/work-orders/${batch.work_order_id}/close`} className="text-gray-500 hover:text-gray-700">
+        <Link to={`/app/production/work-orders/${batch.work_order_id}/close`} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
         <div>
@@ -279,16 +279,16 @@ export default function BatchClose() {
               </div>
               <button
                 onClick={() => setInventoryModalItem(null)}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 text-2xl dark:hover:text-white"
               >
                 &times;
               </button>
             </div>
 
             {loadingInventory ? (
-              <div className="text-gray-500 text-sm py-8 text-center">Memuat...</div>
+              <div className="text-gray-500 text-sm py-8 text-center dark:text-gray-400">Memuat...</div>
             ) : inventoryRows.length === 0 ? (
-              <div className="text-gray-500 text-sm py-8 text-center">Belum ada stok untuk item ini.</div>
+              <div className="text-gray-500 text-sm py-8 text-center dark:text-gray-400">Belum ada stok untuk item ini.</div>
             ) : (
               <table className="w-full text-sm">
                 <thead>
@@ -321,7 +321,7 @@ export default function BatchClose() {
                             <button
                               type="button"
                               onClick={() => handleSelectBatch(row)}
-                              className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                              className="text-blue-600 hover:text-blue-800 text-xs font-medium dark:text-blue-400"
                             >
                               Pilih
                             </button>
@@ -346,8 +346,8 @@ export default function BatchClose() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-orange-100 rounded-full">
-                  <ArrowUturnLeftIcon className="h-6 w-6 text-orange-600" />
+                <div className="p-3 bg-orange-100 rounded-full dark:bg-orange-900/30">
+                  <ArrowUturnLeftIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Batalkan Konfirmasi</h3>
               </div>

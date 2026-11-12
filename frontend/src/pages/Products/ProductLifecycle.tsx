@@ -122,12 +122,12 @@ const ProductLifecycle: React.FC = () => {
 
   const getStageColor = (stage: string) => {
     switch (stage) {
-      case 'introduction': return 'bg-blue-100 text-blue-800';
-      case 'growth': return 'bg-green-100 text-green-800';
-      case 'maturity': return 'bg-yellow-100 text-yellow-800';
-      case 'decline': return 'bg-orange-100 text-orange-800';
-      case 'discontinued': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'introduction': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'growth': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'maturity': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'decline': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
+      case 'discontinued': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -185,14 +185,14 @@ const ProductLifecycle: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Link
             to="/app/products/dashboard"
-            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white"
+            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
             Back to Dashboard
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Lifecycle Produk</h1>
-            <p className="text-gray-600 mt-1">Track product performance across lifecycle stages</p>
+            <p className="text-gray-600 mt-1 dark:text-gray-300">Track product performance across lifecycle stages</p>
           </div>
         </div>
         <div className="flex space-x-3">
@@ -220,7 +220,7 @@ const ProductLifecycle: React.FC = () => {
               <span className="text-2xl font-bold text-gray-900 dark:text-white">{metric.product_count}</span>
             </div>
             <h3 className="font-medium text-gray-900 dark:text-white">{metric.stage}</h3>
-            <div className="mt-2 space-y-1 text-sm text-gray-600">
+            <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-300">
               <div>Revenue: {formatRupiah(metric.total_revenue)}</div>
               <div>Avg Duration: {formatDuration(metric.avg_duration)}</div>
               <div>Success Rate: {formatPercent(metric.success_rate)}</div>
@@ -324,7 +324,7 @@ const ProductLifecycle: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Product Lifecycle Status</h3>
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-300">
             Showing {filteredProducts.length} of {products.length} products
           </div>
         </div>
@@ -381,7 +381,7 @@ const ProductLifecycle: React.FC = () => {
                         <ArrowTrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
                       )}
                       <span className={`text-sm font-medium ${
-                        product.growth_rate >= 0 ? 'text-green-600' : 'text-red-600'
+                        product.growth_rate >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                       }`}>
                         {formatPercent(Math.abs(product.growth_rate))}
                       </span>
@@ -392,8 +392,8 @@ const ProductLifecycle: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`text-sm font-medium ${
-                      product.roi >= 100 ? 'text-green-600' :
-                      product.roi >= 50 ? 'text-yellow-600' : 'text-red-600'
+                      product.roi >= 100 ? 'text-green-600 dark:text-green-400' :
+                      product.roi >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
                     }`}>
                       {formatPercent(product.roi)}
                     </span>
@@ -401,7 +401,7 @@ const ProductLifecycle: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <Link
                       to={`/app/products-v2?view=detail&code=${product.product_code}`}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
                       title="Lihat detail produk"
                     >
                       <EyeIcon className="h-5 w-5" />
@@ -423,14 +423,14 @@ const ProductLifecycle: React.FC = () => {
               <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div className="flex-1">
                   <div className="font-medium text-gray-900 dark:text-white">{transition.product_name}</div>
-                  <div className="text-sm text-gray-600 mt-1">
+                  <div className="text-sm text-gray-600 mt-1 dark:text-gray-300">
                     Moved from <span className="font-medium capitalize">{transition.from_stage}</span> to{' '}
                     <span className="font-medium capitalize">{transition.to_stage}</span>
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{transition.reason}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
                     {new Date(transition.transition_date).toLocaleDateString()}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -447,7 +447,7 @@ const ProductLifecycle: React.FC = () => {
         <div className="text-center py-12">
           <ChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No products found</h3>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             Try adjusting your search or filter criteria
           </p>
         </div>

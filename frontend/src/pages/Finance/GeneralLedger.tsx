@@ -209,7 +209,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Balance Check</p>
               <p className={`text-2xl font-bold ${
-                getTotalDebits() === getTotalCredits() ? 'text-green-600' : 'text-red-600'
+                getTotalDebits() === getTotalCredits() ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
               }`}>
                 {getTotalDebits() === getTotalCredits() ? 'Balanced' : 'Out of Balance'}
               </p>
@@ -331,24 +331,24 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {entry.document_url ? (
-                      <Link to={entry.document_url} className="text-sm text-blue-600 hover:underline" title="Buka transaksi asal">{entry.reference_number || entry.entry_number}</Link>
+                      <Link to={entry.document_url} className="text-sm text-blue-600 hover:underline dark:text-blue-400" title="Buka transaksi asal">{entry.reference_number || entry.entry_number}</Link>
                     ) : (
                       <div className="text-sm text-gray-900 dark:text-white">{entry.reference_number || '-'}</div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="text-sm font-medium text-green-600">
+                    <div className="text-sm font-medium text-green-600 dark:text-green-400">
                       {entry.debit_amount > 0 ? formatRupiah(entry.debit_amount) : '-'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="text-sm font-medium text-red-600">
+                    <div className="text-sm font-medium text-red-600 dark:text-red-400">
                       {entry.credit_amount > 0 ? formatRupiah(entry.credit_amount) : '-'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className={`text-sm font-medium ${
-                      calculateRunningBalance(index) >= 0 ? 'text-green-600' : 'text-red-600'
+                      calculateRunningBalance(index) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                     }`}>
                       {formatRupiah(calculateRunningBalance(index))}
                     </div>
@@ -366,18 +366,18 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
                     Totals:
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="text-sm font-bold text-green-600">
+                    <div className="text-sm font-bold text-green-600 dark:text-green-400">
                       {formatRupiah(getTotalDebits())}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="text-sm font-bold text-red-600">
+                    <div className="text-sm font-bold text-red-600 dark:text-red-400">
                       {formatRupiah(getTotalCredits())}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className={`text-sm font-bold ${
-                      getTotalDebits() - getTotalCredits() >= 0 ? 'text-green-600' : 'text-red-600'
+                      getTotalDebits() - getTotalCredits() >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                     }`}>
                       {formatRupiah(getTotalDebits() - getTotalCredits())}
                     </div>
@@ -435,7 +435,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
                       className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
                         page === currentPage
                           ? 'z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
-                          : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0'
+                          : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0 dark:hover:bg-gray-700 dark:text-white'
                       }`}
                     >
                       {page}

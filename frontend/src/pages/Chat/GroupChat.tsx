@@ -1118,7 +1118,7 @@ const GroupChat: React.FC = () => {
                         <div className={`flex items-center gap-1 mt-0.5 px-1 ${ isMine ? 'flex-row-reverse' : ''}`}>
                           <span className="text-[10px] text-gray-500 dark:text-gray-400">{formatTime(msg.created_at)}</span>
                           {isMine && (
-                            <span className={`text-[10px] ${ msg.is_read ? 'text-blue-400' : 'text-gray-500'}`}>
+                            <span className={`text-[10px] ${ msg.is_read ? 'text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}>
                               {msg.is_read ? '✓✓' : '✓'}
                             </span>
                           )}

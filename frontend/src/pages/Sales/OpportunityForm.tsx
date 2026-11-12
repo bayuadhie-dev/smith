@@ -205,7 +205,7 @@ const OpportunityForm = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/sales/opportunities')}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
+            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
@@ -219,7 +219,7 @@ const OpportunityForm = () => {
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="card p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Opportunity Information</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6 dark:text-white">Opportunity Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Opportunity Name */}

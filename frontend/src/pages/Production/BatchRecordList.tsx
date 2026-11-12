@@ -5,12 +5,12 @@ import { ArrowPathIcon, MagnifyingGlassIcon, DocumentTextIcon, CalendarDaysIcon 
 import { useDebounce } from '../../hooks/useDebounce';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  draft:        { label: 'Draft',        color: 'bg-gray-100 text-gray-700' },
-  approved:     { label: 'Disetujui',    color: 'bg-blue-100 text-blue-700' },
-  in_progress:  { label: 'Berjalan',     color: 'bg-amber-100 text-amber-700' },
-  completed:    { label: 'Selesai',      color: 'bg-emerald-100 text-emerald-700' },
-  cancelled:    { label: 'Dibatalkan',   color: 'bg-red-100 text-red-700' },
-  unplaceable:  { label: 'Belum Terjadwal', color: 'bg-gray-100 text-gray-700' },
+  draft:        { label: 'Draft',        color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
+  approved:     { label: 'Disetujui',    color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+  in_progress:  { label: 'Berjalan',     color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
+  completed:    { label: 'Selesai',      color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
+  cancelled:    { label: 'Dibatalkan',   color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
+  unplaceable:  { label: 'Belum Terjadwal', color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
 };
 
 export default function BatchRecordList() {
@@ -75,9 +75,9 @@ export default function BatchRecordList() {
               {loading ? (
                 <tr><td colSpan={9} className="text-center py-8 text-gray-400"><ArrowPathIcon className="h-5 w-5 animate-spin inline mr-2" />Memuat...</td></tr>
               ) : data.items.length === 0 ? (
-                <tr><td colSpan={9} className="text-center py-8 text-gray-500">Tidak ada batch ditemukan.</td></tr>
+                <tr><td colSpan={9} className="text-center py-8 text-gray-500 dark:text-gray-400">Tidak ada batch ditemukan.</td></tr>
               ) : data.items.map((b: any) => {
-                const cfg = STATUS_CONFIG[b.status] || { label: b.status, color: 'bg-gray-100 text-gray-700' };
+                const cfg = STATUS_CONFIG[b.status] || { label: b.status, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' };
                 return (
                   <tr key={b.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{b.batch_number}</td>
@@ -89,7 +89,7 @@ export default function BatchRecordList() {
                     <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs font-medium ${cfg.color}`}>{cfg.label}</span></td>
                     <td className="px-4 py-3">
                       {b.admin_closed ? (
-                        <span className="text-xs text-emerald-600">Sudah ditutup</span>
+                        <span className="text-xs text-emerald-600 dark:text-emerald-400">Sudah ditutup</span>
                       ) : (
                         <span className="text-xs text-gray-400">Belum ditutup</span>
                       )}
@@ -97,7 +97,7 @@ export default function BatchRecordList() {
                     <td className="px-4 py-3 text-right">
                       <Link
                         to={`/app/production/batches/${b.id}/record`}
-                        className="inline-flex items-center gap-1 text-primary-600 hover:underline text-xs font-medium"
+                        className="inline-flex items-center gap-1 text-primary-600 hover:underline text-xs font-medium dark:text-primary-400"
                       >
                         <DocumentTextIcon className="h-3.5 w-3.5" /> Lihat
                       </Link>

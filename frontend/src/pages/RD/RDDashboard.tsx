@@ -42,7 +42,7 @@ export default function RDDashboard() {
           <div className="flex gap-3">
             <Link
               to="/app/rd/projects/new"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-purple-700 font-semibold rounded-xl hover:bg-purple-50 transition-all shadow-lg"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-purple-700 font-semibold rounded-xl hover:bg-purple-50 transition-all shadow-lg dark:text-purple-300"
             >
               <PlusIcon className="h-5 w-5" />
               New Project
@@ -189,10 +189,10 @@ export default function RDDashboard() {
             <Link
               key={idx}
               to={item.to}
-              className={`flex flex-col items-center p-4 rounded-xl border-2 border-transparent bg-slate-50 dark:bg-slate-700/50 hover:border-${item.color}-300 dark:hover:border-${item.color}-600 hover:bg-${item.color}-50 dark:hover:bg-${item.color}-900/20 transition-all duration-200 group`}
+              className={`flex flex-col items-center p-4 rounded-xl border-2 border-transparent bg-slate-50 dark:bg-slate-700/50 hover:border-${item.color}-300 dark:hover:border- ${item.color}-600 hover:bg-${item.color}-50 dark:hover:bg- ${item.color}-900/20 transition-all duration-200 group`}
             >
-              <div className={`p-3 rounded-xl bg-${item.color}-100 dark:bg-${item.color}-900/30 group-hover:scale-110 transition-transform`}>
-                <item.icon className={`h-6 w-6 text-${item.color}-600 dark:text-${item.color}-400`} />
+              <div className={`p-3 rounded-xl bg-${item.color}-100 dark:bg- ${item.color}-900/30 group-hover:scale-110 transition-transform`}>
+                <item.icon className={`h-6 w-6 text-${item.color}-600 dark:text- ${item.color}-400`} />
               </div>
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300 mt-2">{item.label}</span>
             </Link>
@@ -212,7 +212,7 @@ export default function RDDashboard() {
                 </div>
                 <h2 className="font-semibold text-slate-900 dark:text-white">Recent Projects</h2>
               </div>
-              <Link to="/app/rd/projects" className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1">
+              <Link to="/app/rd/projects" className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1 dark:text-blue-400">
                 View All <ArrowRightIcon className="w-4 h-4" />
               </Link>
             </div>
@@ -233,7 +233,7 @@ export default function RDDashboard() {
                 <div className="text-center py-12 text-slate-500 dark:text-slate-400">
                   <ClipboardDocumentListIcon className="h-12 w-12 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
                   <p>No recent projects</p>
-                  <Link to="/app/rd/projects/new" className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block">
+                  <Link to="/app/rd/projects/new" className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block dark:text-blue-400">
                     Create your first project
                   </Link>
                 </div>
@@ -252,7 +252,7 @@ export default function RDDashboard() {
                 </div>
                 <h2 className="font-semibold text-slate-900 dark:text-white">Recent Experiments</h2>
               </div>
-              <Link to="/app/rd/experiments" className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center gap-1">
+              <Link to="/app/rd/experiments" className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center gap-1 dark:text-purple-400">
                 View All <ArrowRightIcon className="w-4 h-4" />
               </Link>
             </div>
@@ -278,7 +278,7 @@ export default function RDDashboard() {
                 <div className="text-center py-12 text-slate-500 dark:text-slate-400">
                   <BeakerIcon className="h-12 w-12 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
                   <p>No recent experiments</p>
-                  <Link to="/app/rd/experiments/new" className="text-purple-600 hover:text-purple-700 text-sm font-medium mt-2 inline-block">
+                  <Link to="/app/rd/experiments/new" className="text-purple-600 hover:text-purple-700 text-sm font-medium mt-2 inline-block dark:text-purple-400">
                     Start your first experiment
                   </Link>
                 </div>
@@ -306,7 +306,7 @@ export default function RDDashboard() {
                   {summary.materials.pending} material requests pending approval
                 </p>
               </div>
-              <Link to="/app/rd/materials?status=requested" className="text-amber-600 hover:text-amber-700 text-sm font-medium">
+              <Link to="/app/rd/materials?status=requested" className="text-amber-600 hover:text-amber-700 text-sm font-medium dark:text-amber-400">
                 Review →
               </Link>
             </div>
@@ -321,7 +321,7 @@ export default function RDDashboard() {
                   Budget utilization is high ({summary.budget?.utilization_rate?.toFixed(1)}%)
                 </p>
               </div>
-              <Link to="/app/rd/reports" className="text-red-600 hover:text-red-700 text-sm font-medium">
+              <Link to="/app/rd/reports" className="text-red-600 hover:text-red-700 text-sm font-medium dark:text-red-400">
                 View Details →
               </Link>
             </div>
@@ -336,7 +336,7 @@ export default function RDDashboard() {
                   No active research projects. Consider starting a new project.
                 </p>
               </div>
-              <Link to="/app/rd/projects/new" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              <Link to="/app/rd/projects/new" className="text-blue-600 hover:text-blue-700 text-sm font-medium dark:text-blue-400">
                 Create Project →
               </Link>
             </div>

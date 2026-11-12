@@ -35,9 +35,9 @@ interface MachineStatus {
 }
 
 const SHIFT_CONFIG = [
-  { id: 1, name: 'Shift 1', time: '07:00 - 15:00', color: 'blue', bgLight: 'bg-blue-50', bgDark: 'bg-blue-600', text: 'text-blue-700', border: 'border-blue-200' },
-  { id: 2, name: 'Shift 2', time: '15:00 - 23:00', color: 'purple', bgLight: 'bg-purple-50', bgDark: 'bg-purple-600', text: 'text-purple-700', border: 'border-purple-200' },
-  { id: 3, name: 'Shift 3', time: '23:00 - 07:00', color: 'indigo', bgLight: 'bg-indigo-50', bgDark: 'bg-indigo-600', text: 'text-indigo-700', border: 'border-indigo-200' },
+  { id: 1, name: 'Shift 1', time: '07:00 - 15:00', color: 'blue', bgLight: 'bg-blue-50 dark:bg-blue-900/20', bgDark: 'bg-blue-600', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-200 dark:border-blue-800' },
+  { id: 2, name: 'Shift 2', time: '15:00 - 23:00', color: 'purple', bgLight: 'bg-purple-50 dark:bg-purple-900/20', bgDark: 'bg-purple-600', text: 'text-purple-700 dark:text-purple-300', border: 'border-purple-200 dark:border-purple-800' },
+  { id: 3, name: 'Shift 3', time: '23:00 - 07:00', color: 'indigo', bgLight: 'bg-indigo-50 dark:bg-indigo-900/20', bgDark: 'bg-indigo-600', text: 'text-indigo-700 dark:text-indigo-300', border: 'border-indigo-200 dark:border-indigo-800' },
 ]
 
 const PreShiftChecklist = () => {
@@ -99,7 +99,7 @@ const PreShiftChecklist = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         
         {/* Header Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden dark:border-gray-800">
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
@@ -167,8 +167,8 @@ const PreShiftChecklist = () => {
           </div>
           
           {/* Date Display */}
-          <div className="px-6 py-3 bg-blue-50 border-b border-blue-100">
-            <p className="text-blue-800 font-medium">
+          <div className="px-6 py-3 bg-blue-50 border-b border-blue-100 dark:bg-blue-900/20">
+            <p className="text-blue-800 font-medium dark:text-blue-300">
               📅 {new Date(selectedDate).toLocaleDateString('id-ID', { 
                 weekday: 'long', 
                 year: 'numeric', 
@@ -183,10 +183,10 @@ const PreShiftChecklist = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Progress Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 p-5 col-span-1 md:col-span-1">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 p-5 col-span-1 md:col-span-1 dark:border-gray-800">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Progress</span>
-              <span className="text-2xl font-bold text-blue-600">{stats.percentage}%</span>
+              <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.percentage}%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
               <div 
@@ -198,7 +198,7 @@ const PreShiftChecklist = () => {
           </div>
           
           {/* Total Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 p-5 dark:border-gray-800">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Mesin</p>
@@ -215,10 +215,10 @@ const PreShiftChecklist = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Selesai</p>
-                <p className="text-3xl font-bold text-green-600 mt-1">{stats.submitted}</p>
+                <p className="text-3xl font-bold text-green-600 mt-1 dark:text-green-400">{stats.submitted}</p>
               </div>
-              <div className="p-3 bg-green-100 rounded-xl">
-                <CheckCircleSolid className="w-7 h-7 text-green-600" />
+              <div className="p-3 bg-green-100 rounded-xl dark:bg-green-900/30">
+                <CheckCircleSolid className="w-7 h-7 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </div>
@@ -228,17 +228,17 @@ const PreShiftChecklist = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Belum Diisi</p>
-                <p className="text-3xl font-bold text-amber-600 mt-1">{stats.pending}</p>
+                <p className="text-3xl font-bold text-amber-600 mt-1 dark:text-amber-400">{stats.pending}</p>
               </div>
-              <div className="p-3 bg-amber-100 rounded-xl">
-                <ClockIcon className="w-7 h-7 text-amber-600" />
+              <div className="p-3 bg-amber-100 rounded-xl dark:bg-amber-900/30">
+                <ClockIcon className="w-7 h-7 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Shift Legend */}
-        <div className="flex items-center justify-center space-x-6 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 py-3 px-6">
+        <div className="flex items-center justify-center space-x-6 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 py-3 px-6 dark:border-gray-800">
           {SHIFT_CONFIG.map((shift) => (
             <div key={shift.id} className="flex items-center space-x-2">
               <div className={`w-3 h-3 rounded-full ${shift.bgDark}`}></div>
@@ -249,8 +249,8 @@ const PreShiftChecklist = () => {
         </div>
 
         {/* Machine Grid */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 dark:bg-gray-900">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden dark:border-gray-800">
+          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 dark:bg-gray-900 dark:border-gray-800">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <CogIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
@@ -286,9 +286,9 @@ const PreShiftChecklist = () => {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {data?.machines?.map((machine: MachineStatus, index: number) => (
-                  <tr key={machine.machine_id} className={`hover:bg-blue-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                  <tr key={machine.machine_id} className={`hover:bg-blue-50/50 transition-colors ${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50'}`}>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 flex-shrink-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
@@ -314,14 +314,14 @@ const PreShiftChecklist = () => {
                               onClick={() => handleOpenForm(machine.machine_id, shiftConfig.id, shiftData?.submission_id)}
                               className={`group relative flex flex-col items-center justify-center w-24 h-20 rounded-xl border-2 transition-all duration-200 ${
                                 isSubmitted 
-                                  ? 'bg-green-50 border-green-300 hover:bg-green-100 hover:border-green-400 hover:shadow-md' 
-                                  : 'bg-amber-50 border-amber-300 hover:bg-amber-100 hover:border-amber-400 hover:shadow-md'
+                                  ? 'bg-green-50 border-green-300 hover:bg-green-100 hover:border-green-400 hover:shadow-md dark:bg-green-900/20' 
+                                  : 'bg-amber-50 border-amber-300 hover:bg-amber-100 hover:border-amber-400 hover:shadow-md dark:bg-amber-900/20'
                               }`}
                             >
                               {isSubmitted ? (
                                 <>
                                   <CheckCircleSolid className="w-8 h-8 text-green-500 mb-1" />
-                                  <span className="text-xs font-medium text-green-700">Selesai</span>
+                                  <span className="text-xs font-medium text-green-700 dark:text-green-300">Selesai</span>
                                   <div className="absolute inset-0 flex items-center justify-center bg-green-600/90 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
                                     <EyeIcon className="w-5 h-5 text-white mr-1" />
                                     <span className="text-xs font-medium text-white">Lihat</span>
@@ -330,7 +330,7 @@ const PreShiftChecklist = () => {
                               ) : (
                                 <>
                                   <ClockIcon className="w-8 h-8 text-amber-500 mb-1" />
-                                  <span className="text-xs font-medium text-amber-700">Belum</span>
+                                  <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Belum</span>
                                   <div className="absolute inset-0 flex items-center justify-center bg-amber-500/90 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
                                     <PencilSquareIcon className="w-5 h-5 text-white mr-1" />
                                     <span className="text-xs font-medium text-white">Isi</span>
@@ -358,14 +358,14 @@ const PreShiftChecklist = () => {
         </div>
 
         {/* Info Footer */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 dark:bg-blue-900/20 dark:border-blue-800">
           <div className="flex items-start space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <UserGroupIcon className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+              <UserGroupIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-blue-900">Tentang Pre-Shift Checklist</h3>
-              <p className="text-sm text-blue-700 mt-1">
+              <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-200">Tentang Pre-Shift Checklist</h3>
+              <p className="text-sm text-blue-700 mt-1 dark:text-blue-300">
                 Checklist ini wajib diisi oleh operator sebelum memulai produksi di setiap shift. 
                 Pastikan semua item Kondisi Mesin dan Man Power dicek dengan benar.
               </p>

@@ -109,10 +109,10 @@ const MaterialIssueForm: React.FC = () => {
   ];
 
   const priorities = [
-    { value: 'low', label: 'Low', color: 'text-gray-600' },
-    { value: 'normal', label: 'Normal', color: 'text-blue-600' },
-    { value: 'high', label: 'High', color: 'text-orange-600' },
-    { value: 'urgent', label: 'Urgent', color: 'text-red-600' }
+    { value: 'low', label: 'Low', color: 'text-gray-600 dark:text-gray-300' },
+    { value: 'normal', label: 'Normal', color: 'text-blue-600 dark:text-blue-400' },
+    { value: 'high', label: 'High', color: 'text-orange-600 dark:text-orange-400' },
+    { value: 'urgent', label: 'Urgent', color: 'text-red-600 dark:text-red-400' }
   ];
 
   useEffect(() => {
@@ -339,7 +339,7 @@ const MaterialIssueForm: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
               <ExclamationCircleIcon className="h-5 w-5" />
               <span>{error}</span>
             </div>
@@ -502,7 +502,7 @@ const MaterialIssueForm: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => removeItem(index)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-red-600 hover:text-red-700 dark:text-red-400"
                       >
                         <TrashIcon className="h-4 w-4" />
                       </button>
@@ -617,11 +617,11 @@ const MaterialIssueForm: React.FC = () => {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="text-center">
                   <div className="font-medium text-gray-900 dark:text-white">Total Items</div>
-                  <div className="text-blue-600">{getTotalItems()}</div>
+                  <div className="text-blue-600 dark:text-blue-400">{getTotalItems()}</div>
                 </div>
                 <div className="text-center">
                   <div className="font-medium text-gray-900 dark:text-white">Total Quantity</div>
-                  <div className="text-blue-600">{getTotalQuantity().toFixed(2)}</div>
+                  <div className="text-blue-600 dark:text-blue-400">{getTotalQuantity().toFixed(2)}</div>
                 </div>
               </div>
             </div>

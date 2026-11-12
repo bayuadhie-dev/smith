@@ -189,8 +189,8 @@ const ScheduledReports: React.FC = () => {
   // Get status badge
   const getStatusBadge = (isActive: boolean) => {
     return isActive 
-      ? <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Active</span>
-      : <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Inactive</span>;
+      ? <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Active</span>
+      : <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Inactive</span>;
   };
 
   // Get frequency display
@@ -279,7 +279,7 @@ const ScheduledReports: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                       {reportTypes.find(t => t.value === report.report_type)?.label || report.report_type}
                     </span>
                   </td>
@@ -308,7 +308,7 @@ const ScheduledReports: React.FC = () => {
                     <div className="flex space-x-2">
                       <button
                         onClick={() => runReportNow(report.id)}
-                        className="text-green-600 hover:text-green-900"
+                        className="text-green-600 hover:text-green-900 dark:text-green-400"
                         title="Run Now"
                       >
                         <PlayIcon className="h-4 w-4" />
@@ -316,7 +316,7 @@ const ScheduledReports: React.FC = () => {
                       
                       <button
                         onClick={() => toggleReportStatus(report.id, report.is_active)}
-                        className={`${report.is_active ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900'}`}
+                        className={`${report.is_active ? 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400' : 'text-green-600 hover:text-green-900 dark:text-green-400'}`}
                         title={report.is_active ? 'Pause' : 'Activate'}
                       >
                         {report.is_active ? <PauseIcon className="h-4 w-4" /> : <PlayIcon className="h-4 w-4" />}
@@ -324,7 +324,7 @@ const ScheduledReports: React.FC = () => {
                       
                       <button
                         onClick={() => deleteScheduledReport(report.id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-red-600 hover:text-red-900 dark:text-red-400"
                         title={t('common.delete')}
                       >
                         <TrashIcon className="h-4 w-4" />
@@ -470,7 +470,7 @@ const ScheduledReports: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400"
+                    className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:bg-gray-600"
                   >{t('common.cancel')}</button>
                   <button
                     type="submit"

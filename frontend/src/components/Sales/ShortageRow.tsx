@@ -28,7 +28,7 @@ const ShortageRow: React.FC<{ item: MaterialShortage; depth: number }> = ({ item
 
   return (
     <>
-      <tr className={`border-b last:border-0 ${item.is_critical ? 'bg-red-50' : ''}`}>
+      <tr className={`border-b last:border-0 ${item.is_critical ? 'bg-red-50 dark:bg-red-900/20' : ''}`}>
         <td className="py-2" style={{ paddingLeft: depth * 20 }}>
           <div className="flex items-center gap-1">
             {hasChildren && (
@@ -42,7 +42,7 @@ const ShortageRow: React.FC<{ item: MaterialShortage; depth: number }> = ({ item
             )}
             <span className="font-medium">{item.item_name}</span>
             {item.is_wip && (
-              <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">WIP</span>
+              <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded dark:bg-blue-900/30 dark:text-blue-300">WIP</span>
             )}
             {item.is_critical && (
               <span className="px-1.5 py-0.5 bg-red-600 text-white text-xs rounded">CRITICAL</span>
@@ -52,7 +52,7 @@ const ShortageRow: React.FC<{ item: MaterialShortage; depth: number }> = ({ item
         </td>
         <td className="py-2 text-right">{item.required_quantity.toLocaleString()}</td>
         <td className="py-2 text-right">{item.available_quantity.toLocaleString()}</td>
-        <td className="py-2 text-right font-medium text-red-600">
+        <td className="py-2 text-right font-medium text-red-600 dark:text-red-400">
           {item.shortage_quantity > 0 ? item.shortage_quantity.toLocaleString() : '-'}
         </td>
         <td className="py-2">

@@ -211,9 +211,9 @@ export default function EmployeeForm() {
     return <LoadingSpinner />
   }
 
-  const inputClass = "w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1.5"
-  const errorClass = "mt-1 text-sm text-red-600"
+  const inputClass = "w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:border-gray-600"
+  const labelClass = "block text-sm font-medium text-gray-700 mb-1.5 dark:text-gray-200"
+  const errorClass = "mt-1 text-sm text-red-600 dark:text-red-400"
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -254,7 +254,7 @@ export default function EmployeeForm() {
                     </option>
                   ))}
                 </select>
-                <p className="mt-1 text-xs text-gray-500">Pilih nama orang ini di mesin absensi supaya kehadirannya terbaca.</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Pilih nama orang ini di mesin absensi supaya kehadirannya terbaca.</p>
               </div>
               <div>
                 <label className={labelClass}>NIK</label>
@@ -279,7 +279,7 @@ export default function EmployeeForm() {
                 <input
                   type="text"
                   {...register('employee_number', { required: 'No. Karyawan wajib diisi' })}
-                  className={`${inputClass} ${errors.employee_number ? 'border-red-300 bg-red-50' : ''}`}
+                  className={`${inputClass} ${errors.employee_number ? 'border-red-300 bg-red-50 dark:bg-red-900/20' : ''}`}
                   placeholder="Contoh: EMP-001"
                 />
                 {errors.employee_number && <p className={errorClass}>{errors.employee_number.message}</p>}
@@ -292,7 +292,7 @@ export default function EmployeeForm() {
               <input
                 type="text"
                 {...register('first_name', { required: 'Nama depan wajib diisi' })}
-                className={`${inputClass} ${errors.first_name ? 'border-red-300 bg-red-50' : ''}`}
+                className={`${inputClass} ${errors.first_name ? 'border-red-300 bg-red-50 dark:bg-red-900/20' : ''}`}
                 placeholder="Nama depan"
               />
               {errors.first_name && <p className={errorClass}>{errors.first_name.message}</p>}
@@ -303,7 +303,7 @@ export default function EmployeeForm() {
               <input
                 type="text"
                 {...register('last_name')}
-                className={`${inputClass} ${errors.last_name ? 'border-red-300 bg-red-50' : ''}`}
+                className={`${inputClass} ${errors.last_name ? 'border-red-300 bg-red-50 dark:bg-red-900/20' : ''}`}
                 placeholder="Nama belakang"
               />
               {errors.last_name && <p className={errorClass}>{errors.last_name.message}</p>}
@@ -399,7 +399,7 @@ export default function EmployeeForm() {
                   <option key={pos.id} value={pos.id}>{pos.title}{pos.grade ? ` (${pos.grade})` : ''}</option>
                 ))}
               </select>
-              <p className="text-xs text-gray-500 mt-1">Opsional - entitas Position asli, dikelola di Master Data Jabatan.</p>
+              <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">Opsional - entitas Position asli, dikelola di Master Data Jabatan.</p>
             </div>
 
             <div className="md:col-span-3">
@@ -408,7 +408,7 @@ export default function EmployeeForm() {
                   type="checkbox"
                   id="has_allowance"
                   {...register('has_allowance')}
-                  className="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:text-blue-400"
                 />
                 <label htmlFor="has_allowance" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                   Mendapatkan Tunjangan

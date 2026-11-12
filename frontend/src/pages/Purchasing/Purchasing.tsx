@@ -44,7 +44,7 @@ export default function Purchasing() {
           description: po.supplier?.name || 'Supplier',
           time: po.created_at ? new Date(po.created_at).toLocaleDateString('id-ID') : '-',
           icon: DocumentTextIcon,
-          color: 'text-blue-600'
+          color: 'text-blue-600 dark:text-blue-400'
         });
       });
     }
@@ -59,7 +59,7 @@ export default function Purchasing() {
           description: supplier.contact_person || 'Supplier baru',
           time: supplier.created_at ? new Date(supplier.created_at).toLocaleDateString('id-ID') : '-',
           icon: BuildingOfficeIcon,
-          color: 'text-green-600'
+          color: 'text-green-600 dark:text-green-400'
         });
       });
     }
@@ -142,8 +142,8 @@ export default function Purchasing() {
         subtitle="Pemasok, permintaan, pesanan, dan kontrak pembelian"
         actions={
           <>
-            <Link to="/app/purchasing/price-comparison" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Analisis Harga</Link>
-            <Link to="/app/purchasing/suppliers/new" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Tambah Supplier</Link>
+            <Link to="/app/purchasing/price-comparison" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Analisis Harga</Link>
+            <Link to="/app/purchasing/suppliers/new" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Tambah Supplier</Link>
             <Link to="/app/purchasing/purchase-orders/new" className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Buat PO</Link>
           </>
         }
@@ -161,7 +161,7 @@ export default function Purchasing() {
                 className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-primary-600 text-emerald-600 dark:text-emerald-400'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-white'
                 }`}
               >
                 <Icon className="h-5 w-5" />
@@ -191,7 +191,7 @@ export default function Purchasing() {
                     const Icon = activity.icon
                     return (
                       <div key={activity.id} className="flex items-start space-x-3">
-                        <div className={`p-2 rounded-lg bg-gray-100`}>
+                        <div className={`p-2 rounded-lg bg-gray-100 dark:bg-gray-700`}>
                           <Icon className={`h-4 w-4 ${activity.color}`} />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -216,7 +216,7 @@ export default function Purchasing() {
                   {pendingApprovals.map((item) => (
                     <div key={item.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-md">
                       <div className="flex items-center space-x-3">
-                        <ClockIcon className="h-5 w-5 text-yellow-600" />
+                        <ClockIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                         <div>
                           <p className="text-sm font-medium text-gray-900 dark:text-white">{item.title}</p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">{item.supplier}</p>
@@ -228,7 +228,7 @@ export default function Purchasing() {
                           {formatRupiah(item.amount)}
                         </p>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          item.priority === 'high' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                          item.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
                         }`}>
                           {item.priority}
                         </span>

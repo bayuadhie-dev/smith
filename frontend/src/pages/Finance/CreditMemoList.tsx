@@ -110,10 +110,10 @@ const CreditMemoList: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-2">
-        <ReceiptRefundIcon className="w-6 h-6 text-green-700" />
+        <ReceiptRefundIcon className="w-6 h-6 text-green-700 dark:text-green-300" />
         <h1 className="text-2xl font-bold">Nota Kredit Customer</h1>
       </div>
-      <p className="text-gray-500 text-sm">
+      <p className="text-gray-500 text-sm dark:text-gray-400">
         Kredit dari retur penjualan yang belum terpakai (melebihi sisa faktur atau tidak terhubung ke faktur). Pakai untuk mengurangi
         faktur customer yang sama, atau kembalikan dananya lewat kas/bank.
       </p>
@@ -144,7 +144,7 @@ const CreditMemoList: React.FC = () => {
             </thead>
             <tbody>
               {memos.length === 0 && (
-                <tr><td colSpan={8} className="text-center text-gray-500 py-6">Tidak ada nota kredit</td></tr>
+                <tr><td colSpan={8} className="text-center text-gray-500 py-6 dark:text-gray-400">Tidak ada nota kredit</td></tr>
               )}
               {memos.map((m) => (
                 <tr key={m.id} className="border-t">
@@ -158,8 +158,8 @@ const CreditMemoList: React.FC = () => {
                   <td className="px-4 py-2 text-right whitespace-nowrap">
                     {m.status === 'open' && (
                       <>
-                        <button onClick={() => openDialog(m, 'apply')} className="text-green-700 hover:underline mr-3">Pakai ke faktur</button>
-                        <button onClick={() => openDialog(m, 'refund')} className="text-blue-700 hover:underline">Kembalikan dana</button>
+                        <button onClick={() => openDialog(m, 'apply')} className="text-green-700 hover:underline mr-3 dark:text-green-300">Pakai ke faktur</button>
+                        <button onClick={() => openDialog(m, 'refund')} className="text-blue-700 hover:underline dark:text-blue-300">Kembalikan dana</button>
                       </>
                     )}
                   </td>
@@ -176,7 +176,7 @@ const CreditMemoList: React.FC = () => {
             <h2 className="text-lg font-semibold">
               {mode === 'apply' ? 'Pakai ke faktur' : 'Kembalikan dana'} — {active.memo_number}
             </h2>
-            <p className="text-sm text-gray-500">{active.customer_name} · sisa {formatRupiah(active.balance)}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{active.customer_name} · sisa {formatRupiah(active.balance)}</p>
             {mode === 'apply' ? (
               <div>
                 <label className="block text-sm mb-1">Faktur</label>
@@ -190,7 +190,7 @@ const CreditMemoList: React.FC = () => {
                     <option key={i.id} value={i.id}>{i.invoice_number} — sisa {formatRupiah(i.balance_due)}</option>
                   ))}
                 </select>
-                {(active.open_invoices || []).length === 0 && <p className="text-xs text-gray-500 mt-1">Customer ini tidak punya faktur terbuka.</p>}
+                {(active.open_invoices || []).length === 0 && <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">Customer ini tidak punya faktur terbuka.</p>}
               </div>
             ) : (
               <div>
@@ -209,14 +209,14 @@ const CreditMemoList: React.FC = () => {
             </div>
             {(active.applications || []).length > 0 && (
               <div className="text-xs space-y-1">
-                <div className="font-medium text-gray-600">Riwayat</div>
+                <div className="font-medium text-gray-600 dark:text-gray-300">Riwayat</div>
                 {active.applications!.map((a) => (
-                  <div key={a.id} className={`flex items-center justify-between gap-2 ${a.reversed ? 'line-through text-gray-400' : 'text-gray-600'}`}>
+                  <div key={a.id} className={`flex items-center justify-between gap-2 ${a.reversed ? 'line-through text-gray-400' : 'text-gray-600 dark:text-gray-300'}`}>
                     <span>
                       {a.applied_date} · {a.kind === 'refund' ? 'dikembalikan' : `dipakai ke ${a.invoice_number}`} {formatRupiah(a.amount)}
                     </span>
                     {a.reversed ? <span className="no-underline">(dibatalkan)</span> : (
-                      <button onClick={() => undo(a.id)} disabled={saving} className="text-red-600 hover:underline">Batalkan</button>
+                      <button onClick={() => undo(a.id)} disabled={saving} className="text-red-600 hover:underline dark:text-red-400">Batalkan</button>
                     )}
                   </div>
                 ))}

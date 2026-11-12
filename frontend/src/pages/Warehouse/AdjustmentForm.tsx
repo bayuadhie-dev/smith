@@ -181,7 +181,7 @@ const AdjustmentForm: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
               <ExclamationCircleIcon className="h-5 w-5" />
               <span>{error}</span>
             </div>
@@ -194,14 +194,14 @@ const AdjustmentForm: React.FC = () => {
               Item Inventory *
             </label>
             {selectedInventory ? (
-              <div className="flex items-center justify-between p-3 border border-blue-200 bg-blue-50 rounded-lg">
+              <div className="flex items-center justify-between p-3 border border-blue-200 bg-blue-50 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
                 <div>
-                  <p className="font-medium text-gray-900">{selectedInventory.item_code} - {selectedInventory.item_name}</p>
-                  <p className="text-sm text-gray-600 flex items-center gap-1">
+                  <p className="font-medium text-gray-900 dark:text-white">{selectedInventory.item_code} - {selectedInventory.item_name}</p>
+                  <p className="text-sm text-gray-600 flex items-center gap-1 dark:text-gray-300">
                     <MapPinIcon className="h-4 w-4" /> {selectedInventory.location_code} — Stok sistem: {selectedInventory.quantity_on_hand} {selectedInventory.uom}
                   </p>
                 </div>
-                <button type="button" onClick={() => setSelectedInventory(null)} className="text-gray-400 hover:text-gray-600">
+                <button type="button" onClick={() => setSelectedInventory(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white">
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -220,25 +220,25 @@ const AdjustmentForm: React.FC = () => {
                     type="button"
                     onClick={searchInventory}
                     disabled={searching}
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1"
+                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1 dark:bg-gray-700 dark:hover:bg-gray-600"
                   >
                     <MagnifyingGlassIcon className="h-4 w-4" /> Cari
                   </button>
                 </div>
                 {inventoryOptions.length > 0 && (
-                  <div className="mt-2 border border-gray-200 rounded-lg divide-y max-h-64 overflow-y-auto">
+                  <div className="mt-2 border border-gray-200 rounded-lg divide-y max-h-64 overflow-y-auto dark:border-gray-700">
                     {inventoryOptions.map((inv) => (
                       <button
                         type="button"
                         key={inv.id}
                         onClick={() => selectInventory(inv)}
-                        className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center justify-between"
+                        className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center justify-between dark:hover:bg-gray-700"
                       >
                         <div>
-                          <p className="font-medium text-sm text-gray-900">{inv.item_code} - {inv.item_name}</p>
-                          <p className="text-xs text-gray-500">{inv.location_code}</p>
+                          <p className="font-medium text-sm text-gray-900 dark:text-white">{inv.item_code} - {inv.item_name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{inv.location_code}</p>
                         </div>
-                        <span className="text-sm text-gray-600">{inv.quantity_on_hand} {inv.uom}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">{inv.quantity_on_hand} {inv.uom}</span>
                       </button>
                     ))}
                   </div>
@@ -290,7 +290,7 @@ const AdjustmentForm: React.FC = () => {
                   placeholder="Hasil hitung fisik"
                 />
                 {selectedInventory && physicalQuantity !== '' && (
-                  <p className={`mt-1 text-sm ${adjustmentQuantity > 0 ? 'text-green-600' : adjustmentQuantity < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                  <p className={`mt-1 text-sm ${adjustmentQuantity > 0 ? 'text-green-600 dark:text-green-400' : adjustmentQuantity < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
                     {adjustmentQuantity > 0 && <ArrowTrendingUpIcon className="inline h-4 w-4 mr-1" />}
                     {adjustmentQuantity < 0 && <ArrowTrendingDownIcon className="inline h-4 w-4 mr-1" />}
                     Selisih: {adjustmentQuantity > 0 ? '+' : ''}{adjustmentQuantity}
@@ -327,7 +327,7 @@ const AdjustmentForm: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Positif = naik nilai, negatif = turun nilai"
               />
-              <p className="mt-1 text-sm text-gray-500">Kuantitas stok tidak akan berubah - hanya nilai/jurnal.</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Kuantitas stok tidak akan berubah - hanya nilai/jurnal.</p>
             </div>
           )}
 
@@ -379,7 +379,7 @@ const AdjustmentForm: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate('/app/warehouse/adjustments')}
-              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               <X className="inline h-4 w-4 mr-2" />Batal
             </button>

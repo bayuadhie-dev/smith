@@ -177,7 +177,7 @@ const MaintenanceList: React.FC = () => {
   const th = 'px-4 py-2.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400';
 
   if (loading) {
-    return <div className="p-6 text-sm text-gray-500">Memuat catatan perawatan...</div>;
+    return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Memuat catatan perawatan...</div>;
   }
 
   return (
@@ -257,8 +257,8 @@ const MaintenanceList: React.FC = () => {
                 <td className="whitespace-nowrap px-4 py-2.5 text-right text-sm tabular-nums text-gray-800 dark:text-gray-200">Rp {record.cost.toLocaleString('id-ID')}</td>
                 <td className="whitespace-nowrap px-4 py-2.5">
                   <div className="flex items-center justify-end gap-1">
-                    <Link to={`/app/maintenance/${record.id}`} className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700" title="Lihat detail"><Eye className="h-4 w-4" /></Link>
-                    <Link to={`/app/maintenance/${record.id}/edit`} className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700" title="Ubah"><Pencil className="h-4 w-4" /></Link>
+                    <Link to={`/app/maintenance/${record.id}`} className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-white" title="Lihat detail"><Eye className="h-4 w-4" /></Link>
+                    <Link to={`/app/maintenance/${record.id}/edit`} className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-white" title="Ubah"><Pencil className="h-4 w-4" /></Link>
                     {record.status === 'scheduled' && (
                       <button onClick={() => handleStatusChange(record.id, 'in_progress')} className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-emerald-700 dark:hover:bg-gray-700" title="Mulai pekerjaan"><Play className="h-4 w-4" /></button>
                     )}
@@ -327,7 +327,7 @@ const MaintenanceList: React.FC = () => {
                   />
                 </div>
                 <div className="flex justify-end gap-2">
-                  <button onClick={() => setCompletingRecord(null)} className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200">Batal</button>
+                  <button onClick={() => setCompletingRecord(null)} className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Batal</button>
                   <button onClick={submitCompleteWithRootCause} disabled={submittingComplete} className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">
                     {submittingComplete ? 'Menyimpan...' : 'Tandai selesai'}
                   </button>

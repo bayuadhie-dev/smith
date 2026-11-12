@@ -30,14 +30,14 @@ export default function POScheduleEditor({ quantity, uom, value, onChange, disab
         {!disabled && (
           <button
             type="button"
-            className="text-sm text-emerald-700 hover:underline inline-flex items-center gap-1"
+            className="text-sm text-emerald-700 hover:underline inline-flex items-center gap-1 dark:text-emerald-300"
             onClick={() => onChange([...value, { expected_date: '', quantity: remaining || '' }])}
           >
             <PlusIcon className="h-4 w-4" /> Tambah jadwal
           </button>
         )}
       </div>
-      {value.length === 0 && <p className="text-xs text-gray-500">Belum ada jadwal. Tanggal dibutuhkan PO berlaku untuk seluruh jumlah.</p>}
+      {value.length === 0 && <p className="text-xs text-gray-500 dark:text-gray-400">Belum ada jadwal. Tanggal dibutuhkan PO berlaku untuk seluruh jumlah.</p>}
       {value.map((r, i) => (
         <div key={i} className="grid grid-cols-12 gap-2 mb-2 items-center">
           <input
@@ -56,7 +56,7 @@ export default function POScheduleEditor({ quantity, uom, value, onChange, disab
               placeholder="Jumlah"
             />
           </div>
-          <span className="col-span-1 text-xs text-gray-500">{uom}</span>
+          <span className="col-span-1 text-xs text-gray-500 dark:text-gray-400">{uom}</span>
           <input
             type="text"
             className="input-field col-span-3"
@@ -74,7 +74,7 @@ export default function POScheduleEditor({ quantity, uom, value, onChange, disab
         </div>
       ))}
       {value.length > 0 && (
-        <p className={`text-xs ${over ? 'text-red-600' : 'text-gray-500'}`}>
+        <p className={`text-xs ${over ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
           Terjadwal {total.toLocaleString('id-ID')} dari {Number(quantity || 0).toLocaleString('id-ID')} {uom}
           {over ? ' (melebihi jumlah pesanan)' : remaining > 0 ? `, sisa ${remaining.toLocaleString('id-ID')} belum dijadwalkan` : ''}
         </p>

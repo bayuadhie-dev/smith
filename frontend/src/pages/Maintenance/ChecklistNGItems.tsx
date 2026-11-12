@@ -45,11 +45,11 @@ interface NGItem {
 }
 
 const REPAIR_STATUS_OPTIONS = [
-  { value: 'pending', label: 'Menunggu', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'in_progress', label: 'Sedang Dikerjakan', color: 'bg-blue-100 text-blue-800' },
-  { value: 'completed', label: 'Selesai', color: 'bg-green-100 text-green-800' },
-  { value: 'cannot_repair', label: 'Tidak Bisa Diperbaiki', color: 'bg-red-100 text-red-800' },
-  { value: 'deferred', label: 'Ditunda', color: 'bg-gray-100 text-gray-800' },
+  { value: 'pending', label: 'Menunggu', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' },
+  { value: 'in_progress', label: 'Sedang Dikerjakan', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
+  { value: 'completed', label: 'Selesai', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
+  { value: 'cannot_repair', label: 'Tidak Bisa Diperbaiki', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' },
+  { value: 'deferred', label: 'Ditunda', color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100' },
 ];
 
 const filterCls = 'rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white';
@@ -155,7 +155,7 @@ const ChecklistNGItems: React.FC = () => {
         title="Item NG Checklist"
         subtitle="Item yang perlu diperbaiki dari Pre-Shift Checklist"
         actions={
-          <button onClick={fetchData} className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
+          <button onClick={fetchData} className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
             <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Muat ulang
           </button>
@@ -309,9 +309,9 @@ const CorrectiveActionForm: React.FC<CorrectiveActionFormProps> = ({ item, onSav
       {/* Cannot Repair Reason */}
       {status === 'cannot_repair' && (
         <div>
-          <label className="block text-sm font-medium text-red-700 mb-1">Alasan Tidak Bisa Diperbaiki *</label>
+          <label className="block text-sm font-medium text-red-700 mb-1 dark:text-red-300">Alasan Tidak Bisa Diperbaiki *</label>
           <textarea value={cannotRepairReason} onChange={e => setCannotRepairReason(e.target.value)} rows={2} required
-            className="w-full px-3 py-2 border border-red-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 bg-red-50"
+            className="w-full px-3 py-2 border border-red-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 bg-red-50 dark:bg-red-900/20"
             placeholder="Jelaskan alasan mengapa tidak bisa diperbaiki..." />
         </div>
       )}

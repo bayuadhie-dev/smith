@@ -179,12 +179,12 @@ export default function ShippingOrderForm() {
         <div className="card p-6">
           <h2 className="text-lg font-semibold mb-3">Barang</h2>
           {lines.length === 0 ? (
-            <p className="text-sm text-gray-500">Pilih Sales Order untuk memuat barang.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Pilih Sales Order untuk memuat barang.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs uppercase text-gray-500 border-b">
+                  <tr className="text-left text-xs uppercase text-gray-500 border-b dark:text-gray-400">
                     <th className="py-2 pr-3">No.</th><th className="pr-3">Kode</th><th className="pr-3">Nama Produk</th>
                     <th className="pr-3 text-right">Dipesan</th><th className="pr-3 text-right">Sudah Dikirim</th>
                     <th className="pr-3 text-right w-40">Qty Kirim</th><th className="pr-3">Satuan</th><th>Keterangan</th>
@@ -206,7 +206,7 @@ export default function ShippingOrderForm() {
                 </tbody>
               </table>
               <p className="mt-3 text-right font-semibold">Total Qty: {fmt(totalQty)}</p>
-              <p className="text-xs text-gray-500 text-right">Batch dipilih otomatis (FIFO) dan tercetak di kolom Batch.</p>
+              <p className="text-xs text-gray-500 text-right dark:text-gray-400">Batch dipilih otomatis (FIFO) dan tercetak di kolom Batch.</p>
             </div>
           )}
         </div>

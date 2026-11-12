@@ -113,12 +113,12 @@ const ConfirmAndStartProductionModal: React.FC<Props> = ({ orderId, orderNumber,
               langsung dikonfirmasi dan SPK-nya dibuat sekaligus — tidak perlu langkah terpisah lagi.
             </p>
             {confirmError && (
-              <div className="mb-4 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded">
+              <div className="mb-4 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded dark:text-red-400">
                 {confirmError}
               </div>
             )}
             {shortItems.length > 0 && (
-              <div className="mb-4 text-sm text-red-700 bg-red-50 dark:bg-red-900/20 p-3 rounded">
+              <div className="mb-4 text-sm text-red-700 bg-red-50 dark:bg-red-900/20 p-3 rounded dark:text-red-300">
                 <p className="font-medium mb-1">Stok kemungkinan tidak cukup (ATP):</p>
                 <ul className="list-disc list-inside space-y-1">
                   {shortItems.map((it) => (
@@ -127,7 +127,7 @@ const ConfirmAndStartProductionModal: React.FC<Props> = ({ orderId, orderNumber,
                       {it.free_to_promise.toLocaleString('id-ID')} (stok {it.on_hand.toLocaleString('id-ID')}
                       {it.committed_elsewhere > 0 && `, sudah dijanjikan ${it.committed_elsewhere.toLocaleString('id-ID')} ke SO lain`})
                       {it.competing_orders.length > 0 && (
-                        <ul className="list-[circle] list-inside ml-4 text-xs text-red-600">
+                        <ul className="list-[circle] list-inside ml-4 text-xs text-red-600 dark:text-red-400">
                           {it.competing_orders.map((c) => (
                             <li key={c.order_id}>
                               {c.order_number} ({c.customer_name || 'customer?'}): {c.quantity.toLocaleString('id-ID')}
@@ -141,7 +141,7 @@ const ConfirmAndStartProductionModal: React.FC<Props> = ({ orderId, orderNumber,
               </div>
             )}
             {loadedItems.length > 0 && (
-              <div className="mb-4 text-sm text-amber-700 bg-amber-50 dark:bg-amber-900/20 p-3 rounded">
+              <div className="mb-4 text-sm text-amber-700 bg-amber-50 dark:bg-amber-900/20 p-3 rounded dark:text-amber-300">
                 <p className="font-medium mb-1">Mesin sudah ada jadwal lain minggu ini:</p>
                 <ul className="list-disc list-inside">
                   {loadedItems.map((it) => (
@@ -173,7 +173,7 @@ const ConfirmAndStartProductionModal: React.FC<Props> = ({ orderId, orderNumber,
               </p>
             )}
             {confirmResult.failed_items?.length > 0 && (
-              <div className="mb-3 text-sm text-amber-700 bg-amber-50 dark:bg-amber-900/20 p-3 rounded">
+              <div className="mb-3 text-sm text-amber-700 bg-amber-50 dark:bg-amber-900/20 p-3 rounded dark:text-amber-300">
                 <p className="font-medium mb-1">Item yang tidak masuk Planning Produksi:</p>
                 <ul className="list-disc list-inside">
                   {confirmResult.failed_items.map((f, i) => (
@@ -183,7 +183,7 @@ const ConfirmAndStartProductionModal: React.FC<Props> = ({ orderId, orderNumber,
               </div>
             )}
             {confirmResult.warnings && confirmResult.warnings.length > 0 && (
-              <div className="mb-3 text-sm text-red-700 bg-red-50 dark:bg-red-900/20 p-3 rounded">
+              <div className="mb-3 text-sm text-red-700 bg-red-50 dark:bg-red-900/20 p-3 rounded dark:text-red-300">
                 <p className="font-medium mb-1">Peringatan stok:</p>
                 <ul className="list-disc list-inside">
                   {confirmResult.warnings.map((w, i) => (

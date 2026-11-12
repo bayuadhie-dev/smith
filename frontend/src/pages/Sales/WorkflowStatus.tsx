@@ -143,7 +143,7 @@ const WorkflowStatus: React.FC = () => {
   if (error) {
     return (
       <div className="text-center py-12">
-        <div className="text-red-600 mb-4">
+        <div className="text-red-600 mb-4 dark:text-red-400">
           <ExclamationTriangleIcon className="h-12 w-12 mx-auto" />
         </div>
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Gagal Memuat Riwayat</h3>
@@ -180,11 +180,11 @@ const WorkflowStatus: React.FC = () => {
             <p className="text-gray-600 dark:text-gray-300">Customer: {workflowData.sales_order.customer_name}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">Status SO:
               <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
-                workflowData.sales_order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
-                workflowData.sales_order.status === 'in_production' ? 'bg-yellow-100 text-yellow-800' :
-                workflowData.sales_order.status === 'ready' ? 'bg-green-100 text-green-800' :
-                workflowData.sales_order.status === 'shipped' ? 'bg-purple-100 text-purple-800' :
-                'bg-gray-100 text-gray-800'
+                workflowData.sales_order.status === 'confirmed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                workflowData.sales_order.status === 'in_production' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                workflowData.sales_order.status === 'ready' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                workflowData.sales_order.status === 'shipped' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
+                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
               }`}>
                 {workflowData.sales_order.status}
               </span>
@@ -214,10 +214,10 @@ const WorkflowStatus: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-medium">{wo.wo_number}</h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    wo.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    wo.status === 'planned' ? 'bg-blue-100 text-blue-800' :
-                    wo.status === 'quality_approved' ? 'bg-purple-100 text-purple-800' :
-                    'bg-yellow-100 text-yellow-800'
+                    wo.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                    wo.status === 'planned' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                    wo.status === 'quality_approved' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
                   }`}>
                     {wo.status}
                   </span>
@@ -245,9 +245,9 @@ const WorkflowStatus: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-medium">{qi.inspection_number}</h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    qi.status === 'passed' ? 'bg-green-100 text-green-800' :
-                    qi.status === 'failed' ? 'bg-red-100 text-red-800' :
-                    'bg-yellow-100 text-yellow-800'
+                    qi.status === 'passed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                    qi.status === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
                   }`}>
                     {qi.status}
                   </span>
@@ -284,9 +284,9 @@ const WorkflowStatus: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-medium">{so.shipping_number}</h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    so.status === 'shipped' ? 'bg-green-100 text-green-800' :
-                    so.status === 'preparing' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-blue-100 text-blue-800'
+                    so.status === 'shipped' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                    so.status === 'preparing' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                    'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
                   }`}>
                     {so.status}
                   </span>
@@ -326,9 +326,9 @@ const WorkflowStatus: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-medium">{inv.invoice_number}</h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    inv.status === 'paid' ? 'bg-green-100 text-green-800' :
-                    inv.status === 'sent' ? 'bg-blue-100 text-blue-800' :
-                    'bg-yellow-100 text-yellow-800'
+                    inv.status === 'paid' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                    inv.status === 'sent' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
                   }`}>
                     {inv.status}
                   </span>

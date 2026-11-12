@@ -198,7 +198,7 @@ export default function SalesInvoiceFormNew() {
                   </label>
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-1">Memilih surat jalan mengisi qty dari barang yang benar-benar dikirim dan menghubungkannya ke faktur ini.</p>
+              <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">Memilih surat jalan mengisi qty dari barang yang benar-benar dikirim dan menghubungkannya ke faktur ini.</p>
             </div>
           )}
         </div>
@@ -211,7 +211,7 @@ export default function SalesInvoiceFormNew() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs uppercase text-gray-500 border-b">
+                <tr className="text-left text-xs uppercase text-gray-500 border-b dark:text-gray-400">
                   <th className="py-2 pr-2">No.</th><th className="pr-2 w-64">Kode / Barang</th><th className="pr-2">Keterangan</th>
                   <th className="pr-2 w-28 text-right">Qty</th><th className="pr-2 w-24">Satuan</th><th className="pr-2 w-36 text-right">Harga</th>
                   <th className="pr-2 w-28">Diskon % (10+5)</th><th className="pr-2 w-36 text-right">Jumlah</th><th />
@@ -233,7 +233,7 @@ export default function SalesInvoiceFormNew() {
                       <td className="pr-2"><NumberInput currency className="input-field text-right" value={l.unit_price} onChange={(e: any) => setLine(i, { unit_price: e.target.value })} /></td>
                       <td className="pr-2"><input className="input-field" inputMode="decimal" value={l.tiers} onChange={(e) => setLine(i, { tiers: e.target.value })} placeholder="0" /></td>
                       <td className="pr-2 text-right pt-3">{rp(net)}</td>
-                      <td>{lines.length > 1 && <button type="button" className="text-red-600 px-2 pt-2" onClick={() => setLines((ls) => ls.filter((_, idx) => idx !== i))}>Hapus</button>}</td>
+                      <td>{lines.length > 1 && <button type="button" className="text-red-600 px-2 pt-2 dark:text-red-400" onClick={() => setLines((ls) => ls.filter((_, idx) => idx !== i))}>Hapus</button>}</td>
                     </tr>
                   )
                 })}
@@ -254,9 +254,9 @@ export default function SalesInvoiceFormNew() {
               <span>PPN (%)</span>
               <span className="flex items-center gap-2"><NumberInput className="input-field w-20 text-right" value={taxRate} onChange={(e: any) => setTaxRate(e.target.value)} /> {rp(totals.tax)}</span>
             </div>
-            <p className="text-xs text-gray-500">Barang dengan kode PPN di master produk memakai tarifnya sendiri; angka ini untuk baris tanpa kode.</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Barang dengan kode PPN di master produk memakai tarifnya sendiri; angka ini untuk baris tanpa kode.</p>
             <div className="flex justify-between font-bold text-base border-t pt-2"><span>TOTAL</span><span>{rp(totals.total)}</span></div>
-            <p className="text-xs text-gray-500">Sudah Dibayar dan Sisa Tagihan terisi otomatis saat pembayaran dicatat.</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Sudah Dibayar dan Sisa Tagihan terisi otomatis saat pembayaran dicatat.</p>
           </div>
         </div>
 

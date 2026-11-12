@@ -132,15 +132,15 @@ export default function WIPStock() {
   };
 
   const getMovementIcon = (type: string) => {
-    if (type === 'in') return <PlusIcon className="h-4 w-4 text-green-600" />;
-    if (type === 'out') return <MinusIcon className="h-4 w-4 text-red-600" />;
-    return <ArrowPathIcon className="h-4 w-4 text-blue-600" />;
+    if (type === 'in') return <PlusIcon className="h-4 w-4 text-green-600 dark:text-green-400" />;
+    if (type === 'out') return <MinusIcon className="h-4 w-4 text-red-600 dark:text-red-400" />;
+    return <ArrowPathIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
   };
 
   const getMovementColor = (type: string) => {
-    if (type === 'in') return 'text-green-600';
-    if (type === 'out') return 'text-red-600';
-    return 'text-blue-600';
+    if (type === 'in') return 'text-green-600 dark:text-green-400';
+    if (type === 'out') return 'text-red-600 dark:text-red-400';
+    return 'text-blue-600 dark:text-blue-400';
   };
 
   return (
@@ -176,19 +176,19 @@ export default function WIPStock() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-purple-50 rounded-lg p-4">
-          <p className="text-sm text-purple-600">Total Produk dengan WIP</p>
-          <p className="text-2xl font-bold text-purple-800">{wipStocks.length}</p>
+        <div className="bg-purple-50 rounded-lg p-4 dark:bg-purple-900/20">
+          <p className="text-sm text-purple-600 dark:text-purple-400">Total Produk dengan WIP</p>
+          <p className="text-2xl font-bold text-purple-800 dark:text-purple-300">{wipStocks.length}</p>
         </div>
-        <div className="bg-green-50 rounded-lg p-4">
-          <p className="text-sm text-green-600">Total WIP Karton</p>
-          <p className="text-2xl font-bold text-green-800">
+        <div className="bg-green-50 rounded-lg p-4 dark:bg-green-900/20">
+          <p className="text-sm text-green-600 dark:text-green-400">Total WIP Karton</p>
+          <p className="text-2xl font-bold text-green-800 dark:text-green-300">
             {wipStocks.reduce((sum, w) => sum + w.quantity_carton, 0).toLocaleString()}
           </p>
         </div>
-        <div className="bg-blue-50 rounded-lg p-4">
-          <p className="text-sm text-blue-600">Total WIP Pcs</p>
-          <p className="text-2xl font-bold text-blue-800">
+        <div className="bg-blue-50 rounded-lg p-4 dark:bg-blue-900/20">
+          <p className="text-sm text-blue-600 dark:text-blue-400">Total WIP Pcs</p>
+          <p className="text-2xl font-bold text-blue-800 dark:text-blue-300">
             {wipStocks.reduce((sum, w) => sum + w.quantity_pcs, 0).toLocaleString()}
           </p>
         </div>
@@ -226,7 +226,7 @@ export default function WIPStock() {
                     <p className="text-xs text-gray-500 dark:text-gray-400">{wip.product_code}</p>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className="text-xl font-bold text-purple-600">{wip.quantity_carton.toLocaleString()}</span>
+                    <span className="text-xl font-bold text-purple-600 dark:text-purple-400">{wip.quantity_carton.toLocaleString()}</span>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className="text-lg font-medium text-gray-700 dark:text-gray-200">{wip.quantity_pcs.toLocaleString()}</span>
@@ -235,7 +235,7 @@ export default function WIPStock() {
                     {wip.pack_per_carton}
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-sm text-blue-600">{wip.last_wo_number || '-'}</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-400">{wip.last_wo_number || '-'}</p>
                     {wip.last_updated_at && (
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {new Date(wip.last_updated_at).toLocaleDateString('id-ID')}
@@ -246,14 +246,14 @@ export default function WIPStock() {
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => openMovementsModal(wip)}
-                        className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-200 dark:bg-gray-700 flex items-center gap-1"
+                        className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-200 dark:bg-gray-700 flex items-center gap-1 dark:hover:bg-gray-600"
                       >
                         <ClockIcon className="h-3 w-3" />
                         Histori
                       </button>
                       <button
                         onClick={() => openAdjustModal(wip)}
-                        className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 flex items-center gap-1"
+                        className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 flex items-center gap-1 dark:bg-blue-900/30 dark:text-blue-300"
                       >
                         <ArrowPathIcon className="h-3 w-3" />
                         Adjust
@@ -296,9 +296,9 @@ export default function WIPStock() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">Adjustment WIP Stock</h3>
             
-            <div className="bg-purple-50 rounded-lg p-3 mb-4">
-              <p className="font-medium text-purple-800">{selectedProduct.product_name}</p>
-              <p className="text-sm text-purple-600">
+            <div className="bg-purple-50 rounded-lg p-3 mb-4 dark:bg-purple-900/20">
+              <p className="font-medium text-purple-800 dark:text-purple-300">{selectedProduct.product_name}</p>
+              <p className="text-sm text-purple-600 dark:text-purple-400">
                 Stok saat ini: {selectedProduct.quantity_carton} karton ({selectedProduct.quantity_pcs.toLocaleString()} pcs)
               </p>
             </div>
@@ -364,7 +364,7 @@ export default function WIPStock() {
               </div>
               <button
                 onClick={() => setShowMovementsModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white"
               >
                 ✕
               </button>

@@ -33,13 +33,13 @@ export default function DeliveryTracking() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'picked_up':
-        return <TruckIcon className="h-5 w-5 text-blue-600" />
+        return <TruckIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
       case 'in_transit':
-        return <ClockIcon className="h-5 w-5 text-yellow-600" />
+        return <ClockIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
       case 'delivered':
-        return <CheckCircleIcon className="h-5 w-5 text-green-600" />
+        return <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
       case 'failed':
-        return <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
+        return <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
       default:
         return <MapPinIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
     }
@@ -60,15 +60,15 @@ export default function DeliveryTracking() {
 
   const getStatusColor = (status: string) => {
     const colors = {
-      preparing: 'text-gray-600 bg-gray-100',
-      picked_up: 'text-blue-600 bg-blue-100',
-      in_transit: 'text-yellow-600 bg-yellow-100',
-      out_for_delivery: 'text-purple-600 bg-purple-100',
-      delivered: 'text-green-600 bg-green-100',
-      failed: 'text-red-600 bg-red-100',
-      returned: 'text-orange-600 bg-orange-100'
+      preparing: 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300',
+      picked_up: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400',
+      in_transit: 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400',
+      out_for_delivery: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30 dark:text-purple-400',
+      delivered: 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400',
+      failed: 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400',
+      returned: 'text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400'
     }
-    return colors[status as keyof typeof colors] || 'text-gray-600 bg-gray-100'
+    return colors[status as keyof typeof colors] || 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300'
   }
 
   return (
@@ -117,10 +117,10 @@ export default function DeliveryTracking() {
           )}
 
           {error && (
-            <div className="card bg-red-50 border-red-200">
+            <div className="card bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800">
               <div className="flex items-center">
-                <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-3" />
-                <span className="text-red-800">
+                <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-3 dark:text-red-400" />
+                <span className="text-red-800 dark:text-red-300">
                   Nomor resi tidak ditemukan atau terjadi kesalahan
                 </span>
               </div>
@@ -287,9 +287,9 @@ export default function DeliveryTracking() {
       )}
 
       {/* Help Section */}
-      <div className="card bg-blue-50 border-blue-200">
-        <h3 className="text-lg font-medium text-blue-900 mb-3">Bantuan Pelacakan</h3>
-        <div className="text-sm text-blue-800 space-y-2">
+      <div className="card bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+        <h3 className="text-lg font-medium text-blue-900 mb-3 dark:text-blue-200">Bantuan Pelacakan</h3>
+        <div className="text-sm text-blue-800 space-y-2 dark:text-blue-300">
           <p>• Nomor resi dapat ditemukan di email konfirmasi atau invoice pengiriman</p>
           <p>• Informasi tracking akan diperbarui setiap 2-4 jam</p>
           <p>• Hubungi customer service jika ada kendala dalam pengiriman</p>

@@ -5,7 +5,7 @@ import { DataTable, DocLink, ExportButtons, LoadState, Money, PeriodFilter, Repo
 
 const TYPE_LABEL: Record<string, string> = { invoice: 'Faktur', payment: 'Pembayaran', return: 'Retur', refund: 'Pengembalian dana' }
 const TYPE_STYLE: Record<string, string> = {
-  invoice: 'bg-blue-50 text-blue-700', payment: 'bg-emerald-50 text-emerald-700', return: 'bg-amber-50 text-amber-700', refund: 'bg-purple-50 text-purple-700',
+  invoice: 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300', payment: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300', return: 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300', refund: 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300',
 }
 
 export default function PartyStatementDetail() {
@@ -19,12 +19,12 @@ export default function PartyStatementDetail() {
   const party = data?.party
   return (
     <ReportShell title={isCustomer ? 'Kartu Piutang' : 'Kartu Hutang'} subtitle={party ? `${party.name} · ${periodLabel(p.from, p.to)}` : undefined}
-      icon={<DocumentTextIcon className="h-7 w-7 text-emerald-600" />} backTo={`/app/finance/reports/${isCustomer ? 'customer' : 'supplier'}-statements`} backLabel={isCustomer ? 'Kartu Piutang' : 'Kartu Hutang'}
+      icon={<DocumentTextIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />} backTo={`/app/finance/reports/${isCustomer ? 'customer' : 'supplier'}-statements`} backLabel={isCustomer ? 'Kartu Piutang' : 'Kartu Hutang'}
       actions={<ExportButtons report={[`party-statement/${type}/${id}`, params]} />}>
       {party && (
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <p className="text-lg font-bold text-gray-900 dark:text-white">{party.name}</p>
-          <p className="text-sm text-gray-500">{party.tax_id ? `NPWP ${party.tax_id}` : 'NPWP belum diisi'}{party.address ? ` · ${party.address}` : ''}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{party.tax_id ? `NPWP ${party.tax_id}` : 'NPWP belum diisi'}{party.address ? ` · ${party.address}` : ''}</p>
         </div>
       )}
       <PeriodFilter from={p.from} to={p.to} onChange={p.setRange} onReload={reload} loading={loading} />
@@ -44,7 +44,7 @@ export default function PartyStatementDetail() {
                   <Td className="whitespace-nowrap">{fmtDate(r.date)}</Td>
                   <Td><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${TYPE_STYLE[r.type] || ''}`}>{TYPE_LABEL[r.type] || r.type}</span></Td>
                   <Td className="whitespace-nowrap"><DocLink url={r.url}>{r.number}</DocLink></Td><Td>{r.description}</Td>
-                  <Td right><Money v={r.increase} /></Td><Td right className="text-emerald-700"><Money v={r.decrease} /></Td><Td right className="font-medium"><Money v={r.balance} zeroDash={false} colored /></Td>
+                  <Td right><Money v={r.increase} /></Td><Td right className="text-emerald-700 dark:text-emerald-300"><Money v={r.decrease} /></Td><Td right className="font-medium"><Money v={r.balance} zeroDash={false} colored /></Td>
                 </tr>
               ))}
             </tbody>

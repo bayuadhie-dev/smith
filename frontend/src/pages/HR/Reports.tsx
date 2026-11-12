@@ -127,13 +127,13 @@ export default function Reports() {
 
   const getColorClass = (color: string) => {
     const colors: { [key: string]: string } = {
-      blue: 'bg-blue-100 text-blue-600',
-      green: 'bg-green-100 text-green-600',
-      purple: 'bg-purple-100 text-purple-600',
-      yellow: 'bg-yellow-100 text-yellow-600',
-      indigo: 'bg-indigo-100 text-indigo-600'
+      blue: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
+      green: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
+      purple: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
+      yellow: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400',
+      indigo: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400'
     };
-    return colors[color] || 'bg-gray-100 text-gray-600';
+    return colors[color] || 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
   };
 
   return (
@@ -157,8 +157,8 @@ export default function Reports() {
                 onClick={() => setSelectedReport(report.id)}
                 className={`p-4 rounded-lg border-2 text-left transition ${
                   isSelected 
-                    ? 'border-blue-600 bg-blue-50' 
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20' 
+                    : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
                 }`}
               >
                 <div className="flex items-center gap-3">

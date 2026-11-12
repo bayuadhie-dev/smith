@@ -565,8 +565,8 @@ export default function SalesForecastGrid() {
     setSearchParams({ window: newWindow, count: String(windowMonths.length) });
   };
 
-  if (loading) return <div className="text-center py-10 text-gray-500">Memuat...</div>;
-  if (!header) return <div className="text-center py-10 text-gray-500">Forecast tidak ditemukan</div>;
+  if (loading) return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Memuat...</div>;
+  if (!header) return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Forecast tidak ditemukan</div>;
 
   const existingProductIds = new Set(header.lines.map((l) => l.product_id));
   const productOptions = products.filter((p) => !existingProductIds.has(p.id));
@@ -686,7 +686,7 @@ export default function SalesForecastGrid() {
           Cuma muncul di edit mode (§3). */}
       {isEditMode && (
         <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center gap-3 flex-wrap">
-          <span className="text-xs font-medium text-gray-500 flex items-center gap-1"><Layers className="w-3.5 h-3.5" /> Kirim ke Monthly Planning{windowMonths.length === 1 ? ` - ${periodLabel(windowMonths[0])}` : ':'}</span>
+          <span className="text-xs font-medium text-gray-500 flex items-center gap-1 dark:text-gray-400"><Layers className="w-3.5 h-3.5" /> Kirim ke Monthly Planning{windowMonths.length === 1 ? ` - ${periodLabel(windowMonths[0])}` : ':'}</span>
           {windowMonths.length > 1 && (
             <select
               value={bulkPeriod ?? ''}
@@ -866,21 +866,21 @@ export default function SalesForecastGrid() {
                             <div className="space-y-3">
                               <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs">
                                 <span className="inline-flex items-center gap-1.5">
-                                  <PackageCheck className="w-3.5 h-3.5 text-green-600 shrink-0" />
-                                  <span className="text-gray-500">Stok FG</span>
+                                  <PackageCheck className="w-3.5 h-3.5 text-green-600 shrink-0 dark:text-green-400" />
+                                  <span className="text-gray-500 dark:text-gray-400">Stok FG</span>
                                   <span className="font-semibold text-gray-800 dark:text-gray-100 tabular-nums">{fgTotal.toLocaleString('id-ID')}</span>
                                 </span>
                                 <span className="inline-flex items-center gap-1.5">
-                                  <Factory className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                                  <span className="text-gray-500">WIP</span>
+                                  <Factory className="w-3.5 h-3.5 text-indigo-600 shrink-0 dark:text-indigo-400" />
+                                  <span className="text-gray-500 dark:text-gray-400">WIP</span>
                                   <span className="font-semibold text-gray-800 dark:text-gray-100 tabular-nums">{detail.wip.total.toLocaleString('id-ID')}</span>
                                   {detail.wip.work_orders.length > 0 && (
                                     <span className="text-gray-400">({detail.wip.work_orders.length} WO)</span>
                                   )}
                                 </span>
                                 <span className="inline-flex items-center gap-1.5 flex-wrap">
-                                  <Layers className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                                  <span className="text-gray-500">Bahan Baku</span>
+                                  <Layers className="w-3.5 h-3.5 text-amber-600 shrink-0 dark:text-amber-400" />
+                                  <span className="text-gray-500 dark:text-gray-400">Bahan Baku</span>
                                   {detail.bom.materials.length === 0 ? (
                                     <span className="text-gray-400">tidak ada BOM aktif</span>
                                   ) : shortages.length === 0 ? (
@@ -910,12 +910,12 @@ export default function SalesForecastGrid() {
                                     <tbody>
                                       {detail.comparison.map((c) => (
                                         <tr key={c.period} className="border-t border-gray-200 dark:border-gray-700">
-                                          <td className="pr-3 py-0.5 text-gray-500 font-mono">{c.period}</td>
+                                          <td className="pr-3 py-0.5 text-gray-500 font-mono dark:text-gray-400">{c.period}</td>
                                           <td className="text-right px-3 py-0.5 tabular-nums text-gray-700 dark:text-gray-200">{c.target.toLocaleString('id-ID')}</td>
                                           <td className={`text-right px-3 py-0.5 tabular-nums font-medium ${c.so_real > c.target ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-200'}`}>
                                             {c.so_real.toLocaleString('id-ID')}
                                           </td>
-                                          <td className="text-right pl-3 py-0.5 tabular-nums text-gray-500">{c.converted.toLocaleString('id-ID')}</td>
+                                          <td className="text-right pl-3 py-0.5 tabular-nums text-gray-500 dark:text-gray-400">{c.converted.toLocaleString('id-ID')}</td>
                                         </tr>
                                       ))}
                                     </tbody>
@@ -939,7 +939,7 @@ export default function SalesForecastGrid() {
             {header.lines.length > 0 && (
               <tfoot>
                 <tr className="border-t-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
-                  <td className="px-3 py-2.5 sticky left-0 z-10 bg-gray-50 dark:bg-gray-800/60 text-[11px] font-semibold uppercase tracking-wide text-gray-500 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
+                  <td className="px-3 py-2.5 sticky left-0 z-10 bg-gray-50 dark:bg-gray-800/60 text-[11px] font-semibold uppercase tracking-wide text-gray-500 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] dark:text-gray-400">
                     Total
                   </td>
                   {windowMonths.map((period) => {
@@ -989,8 +989,8 @@ export default function SalesForecastGrid() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Kirim ke Monthly Planning</h3>
-            <p className="text-sm text-gray-500 mb-4">{periodLabel(bulkPeriod)} - {bulkLines.length} produk (qty {'>'} 0) masuk sebagai rencana bulanan (draft) di halaman Monthly Production Plan, tinggal direview PPIC & dipecah ke Weekly Planning per minggu.</p>
-            {bulkError && <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-2 rounded">{bulkError}</div>}
+            <p className="text-sm text-gray-500 mb-4 dark:text-gray-400">{periodLabel(bulkPeriod)} - {bulkLines.length} produk (qty {'>'} 0) masuk sebagai rencana bulanan (draft) di halaman Monthly Production Plan, tinggal direview PPIC & dipecah ke Weekly Planning per minggu.</p>
+            {bulkError && <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-2 rounded dark:text-red-400">{bulkError}</div>}
             <div className="max-h-72 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
               <table className="min-w-full text-xs">
                 <thead className="bg-gray-50 dark:bg-gray-800">

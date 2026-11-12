@@ -44,17 +44,17 @@ const [page, setPage] = useState(1)
     const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
     switch (status) {
       case 'received':
-        return `${baseClasses} bg-blue-100 text-blue-800`
+        return `${baseClasses} bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300`
       case 'qc_pending':
-        return `${baseClasses} bg-yellow-100 text-yellow-800`
+        return `${baseClasses} bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300`
       case 'qc_approved':
-        return `${baseClasses} bg-green-100 text-green-800`
+        return `${baseClasses} bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300`
       case 'qc_rejected':
-        return `${baseClasses} bg-red-100 text-red-800`
+        return `${baseClasses} bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300`
       case 'processed':
-        return `${baseClasses} bg-blue-100 text-blue-800`
+        return `${baseClasses} bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300`
       default:
-        return `${baseClasses} bg-gray-100 text-gray-800`
+        return `${baseClasses} bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100`
     }
   }
 
@@ -62,15 +62,15 @@ const [page, setPage] = useState(1)
     const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
     switch (qcStatus) {
       case 'pending':
-        return `${baseClasses} bg-yellow-100 text-yellow-800`
+        return `${baseClasses} bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300`
       case 'passed':
       case 'approved':
-        return `${baseClasses} bg-green-100 text-green-800`
+        return `${baseClasses} bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300`
       case 'failed':
       case 'rejected':
-        return `${baseClasses} bg-red-100 text-red-800`
+        return `${baseClasses} bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300`
       default:
-        return `${baseClasses} bg-gray-100 text-gray-800`
+        return `${baseClasses} bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100`
     }
   }
 
@@ -195,7 +195,7 @@ const [page, setPage] = useState(1)
 
           <button
             onClick={() => refetch()}
-            className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:bg-gray-700 flex items-center gap-2"
+            className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:bg-gray-700 flex items-center gap-2 dark:hover:bg-gray-600"
           >
             <ArrowPathIcon className="h-4 w-4" />
           </button>

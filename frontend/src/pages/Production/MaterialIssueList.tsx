@@ -71,35 +71,35 @@ const MaterialIssueList: React.FC = () => {
     switch (status) {
       case 'pending':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
             <ClockIcon className="h-3 w-3" />
             Menunggu
           </span>
         )
       case 'approved':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
             <CheckCircleIcon className="h-3 w-3" />
             Disetujui
           </span>
         )
       case 'issued':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
             <CheckCircleIcon className="h-3 w-3" />
             Dikeluarkan
           </span>
         )
       case 'partial':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">
             <ArrowPathIcon className="h-3 w-3" />
             Sebagian
           </span>
         )
       case 'cancelled':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
             <XCircleIcon className="h-3 w-3" />
             Dibatalkan
           </span>
@@ -116,13 +116,13 @@ const MaterialIssueList: React.FC = () => {
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return <span className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">Urgent</span>
+        return <span className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Urgent</span>
       case 'high':
-        return <span className="px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-800">Tinggi</span>
+        return <span className="px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">Tinggi</span>
       case 'normal':
         return <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">Normal</span>
       case 'low':
-        return <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">Rendah</span>
+        return <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Rendah</span>
       default:
         return <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">{priority}</span>
     }
@@ -199,7 +199,7 @@ const MaterialIssueList: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-300">Menunggu</p>
-              <p className="text-2xl font-bold text-yellow-600">
+              <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                 {issues.filter(i => i.status === 'pending').length}
               </p>
             </div>
@@ -210,7 +210,7 @@ const MaterialIssueList: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-300">Disetujui</p>
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {issues.filter(i => i.status === 'approved').length}
               </p>
             </div>
@@ -221,7 +221,7 @@ const MaterialIssueList: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-300">Dikeluarkan</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {issues.filter(i => i.status === 'issued').length}
               </p>
             </div>
@@ -260,10 +260,10 @@ const MaterialIssueList: React.FC = () => {
               {issues.map((issue) => (
                 <tr key={issue.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-4 py-3 whitespace-nowrap">
-                    <span className="font-medium text-blue-600">{issue.issue_number}</span>
+                    <span className="font-medium text-blue-600 dark:text-blue-400">{issue.issue_number}</span>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
-                    <Link to={`/app/production/work-orders/${issue.work_order_id}`} className="text-blue-600 hover:underline">
+                    <Link to={`/app/production/work-orders/${issue.work_order_id}`} className="text-blue-600 hover:underline dark:text-blue-400">
                       {issue.wo_number}
                     </Link>
                   </td>
@@ -285,7 +285,7 @@ const MaterialIssueList: React.FC = () => {
                   <td className="px-4 py-3 whitespace-nowrap">
                     <Link
                       to={`/app/production/material-issues/${issue.id}`}
-                      className="text-blue-600 hover:text-blue-800"
+                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
                     >
                       <EyeIcon className="h-5 w-5" />
                     </Link>

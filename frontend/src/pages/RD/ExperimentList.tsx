@@ -81,7 +81,7 @@ const ExperimentList: React.FC = () => {
       case 'in_progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
       case 'planned': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
       case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
-      default: return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -149,44 +149,44 @@ const ExperimentList: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <BeakerIcon className="w-6 h-6 text-blue-600" />
+              <BeakerIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{experiments.length}</p>
-              <p className="text-sm text-gray-500">Total Experiments</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total Experiments</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <CheckCircleIcon className="w-6 h-6 text-green-600" />
+              <CheckCircleIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-green-600">{experiments.filter(e => e.success === true).length}</p>
-              <p className="text-sm text-gray-500">Successful</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{experiments.filter(e => e.success === true).length}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Successful</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-              <ClockIcon className="w-6 h-6 text-yellow-600" />
+              <ClockIcon className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-yellow-600">{experiments.filter(e => e.status === 'in_progress').length}</p>
-              <p className="text-sm text-gray-500">In Progress</p>
+              <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{experiments.filter(e => e.status === 'in_progress').length}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">In Progress</p>
             </div>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <DocumentTextIcon className="w-6 h-6 text-purple-600" />
+              <DocumentTextIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-purple-600">{experiments.filter(e => e.status === 'completed').length}</p>
-              <p className="text-sm text-gray-500">Completed</p>
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{experiments.filter(e => e.status === 'completed').length}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Completed</p>
             </div>
           </div>
         </div>
@@ -240,25 +240,25 @@ const ExperimentList: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Experiment
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Project
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Result
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Actions
                 </th>
               </tr>
@@ -272,7 +272,7 @@ const ExperimentList: React.FC = () => {
                       <div>
                         <Link
                           to={`/app/rd/experiments/${experiment.id}`}
-                          className="text-blue-600 hover:text-blue-700 font-medium"
+                          className="text-blue-600 hover:text-blue-700 font-medium dark:text-blue-400"
                         >
                           {experiment.experiment_code}
                         </Link>
@@ -299,7 +299,7 @@ const ExperimentList: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       {getSuccessIcon(experiment.success)}
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         {experiment.success === null ? 'Pending' : experiment.success ? 'Success' : 'Failed'}
                       </span>
                     </div>
@@ -338,7 +338,7 @@ const ExperimentList: React.FC = () => {
                     <p className="text-gray-500 dark:text-gray-400">No experiments found</p>
                     <Link
                       to="/app/rd/experiments/new"
-                      className="inline-flex items-center gap-2 mt-4 text-blue-600 hover:text-blue-700"
+                      className="inline-flex items-center gap-2 mt-4 text-blue-600 hover:text-blue-700 dark:text-blue-400"
                     >
                       <PlusIcon className="w-4 h-4" />
                       Create your first experiment

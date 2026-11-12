@@ -201,7 +201,7 @@ const ActivityForm = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/sales/activities')}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
+            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
@@ -215,7 +215,7 @@ const ActivityForm = () => {
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="card p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Activity Details</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6 dark:text-white">Activity Details</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Activity Type */}
@@ -379,7 +379,7 @@ const ActivityForm = () => {
 
         {/* Related To Section */}
         <div className="card p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Related To</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6 dark:text-white">Related To</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Related To Type */}
@@ -472,7 +472,7 @@ const ActivityForm = () => {
 
         {/* Notes Section */}
         <div className="card p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Additional Notes</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6 dark:text-white">Additional Notes</h2>
           <textarea
             className="input w-full"
             rows={4}

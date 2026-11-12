@@ -31,11 +31,11 @@ const stageLabels: Record<string, string> = {
 };
 
 const stageColors: Record<string, string> = {
-  'LAB_SCALE': 'bg-blue-100 text-blue-800',
-  'PILOT_SCALE': 'bg-yellow-100 text-yellow-800',
-  'VALIDATION': 'bg-purple-100 text-purple-800',
-  'COMPLETION': 'bg-green-100 text-green-800',
-  'CANCELLED': 'bg-red-100 text-red-800'
+  'LAB_SCALE': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  'PILOT_SCALE': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+  'VALIDATION': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  'COMPLETION': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  'CANCELLED': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
 };
 
 const priorityLabels: Record<string, string> = {
@@ -46,10 +46,10 @@ const priorityLabels: Record<string, string> = {
 };
 
 const priorityColors: Record<string, string> = {
-  'low': 'bg-gray-100 text-gray-800',
-  'medium': 'bg-blue-100 text-blue-800',
-  'high': 'bg-orange-100 text-orange-800',
-  'critical': 'bg-red-100 text-red-800'
+  'low': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+  'medium': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  'high': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+  'critical': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
 };
 
 const typeLabels: Record<string, string> = {
@@ -124,7 +124,7 @@ const RNDProjectList: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-800">
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[200px]">
             <div className="relative">
@@ -165,7 +165,7 @@ const RNDProjectList: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 overflow-hidden dark:border-gray-800">
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -196,7 +196,7 @@ const RNDProjectList: React.FC = () => {
                     <td className="px-4 py-3">
                       <Link 
                         to={`/app/rnd/projects/${project.id}`}
-                        className="text-blue-600 hover:underline font-medium"
+                        className="text-blue-600 hover:underline font-medium dark:text-blue-400"
                       >
                         {project.project_number}
                       </Link>

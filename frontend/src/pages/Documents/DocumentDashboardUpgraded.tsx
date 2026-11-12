@@ -247,11 +247,11 @@ export default function DocumentDashboardUpgraded() {
 
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { color: string; bgColor: string; icon: any }> = {
-      draft: { color: 'text-gray-600', bgColor: 'bg-gray-100 border-gray-200', icon: ClockIcon },
-      generated: { color: 'text-blue-600', bgColor: 'bg-blue-100 border-blue-200', icon: DocumentTextIcon },
-      printed: { color: 'text-green-600', bgColor: 'bg-green-100 border-green-200', icon: PrinterIcon },
-      sent: { color: 'text-purple-600', bgColor: 'bg-purple-100 border-purple-200', icon: PaperAirplaneIcon },
-      approved: { color: 'text-emerald-600', bgColor: 'bg-emerald-100 border-emerald-200', icon: CheckCircleIcon }
+      draft: { color: 'text-gray-600 dark:text-gray-300', bgColor: 'bg-gray-100 border-gray-200 dark:bg-gray-700 dark:border-gray-700', icon: ClockIcon },
+      generated: { color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 border-blue-200 dark:bg-blue-900/30 dark:border-blue-800', icon: DocumentTextIcon },
+      printed: { color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 border-green-200 dark:bg-green-900/30 dark:border-green-800', icon: PrinterIcon },
+      sent: { color: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-100 border-purple-200 dark:bg-purple-900/30 dark:border-purple-800', icon: PaperAirplaneIcon },
+      approved: { color: 'text-emerald-600 dark:text-emerald-400', bgColor: 'bg-emerald-100 border-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-800', icon: CheckCircleIcon }
     };
     return configs[status] || configs.draft;
   };
@@ -274,7 +274,7 @@ export default function DocumentDashboardUpgraded() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <DocumentTextIcon className="h-7 w-7 text-primary-600" />
+            <DocumentTextIcon className="h-7 w-7 text-primary-600 dark:text-primary-400" />
             Dokumen
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Generate, manage, and track all business documents</p>
@@ -363,7 +363,7 @@ export default function DocumentDashboardUpgraded() {
             <button
               key={type.value}
               onClick={() => navigate(`/app/documents/generate?type=${type.value}`)}
-              className={`p-4 rounded-xl border-2 border-gray-200 hover:border-${type.color}-400 hover:bg-${type.color}-50 transition-all text-center group`}
+              className={`p-4 rounded-xl border-2 border-gray-200 hover:border- dark:border-gray-700 ${type.color}-400 hover:bg-${type.color}-50 transition-all text-center group`}
             >
               <span className="text-2xl block mb-2">{type.icon}</span>
               <span className="text-xs font-medium text-gray-700 group-hover:text-gray-900 dark:text-white">{type.label}</span>
@@ -432,15 +432,15 @@ export default function DocumentDashboardUpgraded() {
           <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button
               onClick={() => setViewMode('table')}
-              className={`p-2 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+              className={`p-2 rounded-md transition-colors ${viewMode === 'table' ? 'bg-white shadow-sm dark:bg-gray-800' : 'hover:bg-gray-200 dark:hover:bg-gray-600'}`}
             >
-              <TableCellsIcon className="h-5 w-5 text-gray-600" />
+              <TableCellsIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
             </button>
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+              className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm dark:bg-gray-800' : 'hover:bg-gray-200 dark:hover:bg-gray-600'}`}
             >
-              <FolderIcon className="h-5 w-5 text-gray-600" />
+              <FolderIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
             </button>
           </div>
         </div>
@@ -448,17 +448,17 @@ export default function DocumentDashboardUpgraded() {
         {/* Bulk Actions */}
         {selectedDocs.length > 0 && (
           <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center gap-4">
-            <span className="text-sm text-gray-600">{selectedDocs.length} selected</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">{selectedDocs.length} selected</span>
             <button
               onClick={handleBulkDownload}
-              className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+              className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center gap-1 dark:text-indigo-400"
             >
               <ArrowDownTrayIcon className="h-4 w-4" />
               Download All
             </button>
             <button
               onClick={() => setSelectedDocs([])}
-              className="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-100"
+              className="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-100 dark:hover:text-white"
             >
               Clear Selection
             </button>
@@ -503,7 +503,7 @@ export default function DocumentDashboardUpgraded() {
                       <p className="text-gray-500 dark:text-gray-400">No documents found</p>
                       <Link
                         to="/app/documents/generate"
-                        className="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-800"
+                        className="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-800 dark:text-indigo-400"
                       >
                         <PlusIcon className="h-4 w-4 mr-1" />
                         Generate your first document
@@ -544,10 +544,10 @@ export default function DocumentDashboardUpgraded() {
                             {typeConfig.label}
                           </span>
                         </td>
-                        <td className="px-4 py-4 text-sm text-gray-600">
+                        <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
                           {doc.reference_number || '-'}
                         </td>
-                        <td className="px-4 py-4 text-sm text-gray-600">
+                        <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
                           {new Date(doc.document_date).toLocaleDateString('id-ID')}
                         </td>
                         <td className="px-4 py-4">
@@ -557,7 +557,7 @@ export default function DocumentDashboardUpgraded() {
                           </span>
                         </td>
                         <td className="px-4 py-4">
-                          <div className="flex items-center text-sm text-gray-600">
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                             <PrinterIcon className="h-4 w-4 mr-1 text-gray-400" />
                             {doc.print_count}
                           </div>
@@ -566,28 +566,28 @@ export default function DocumentDashboardUpgraded() {
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => handlePreview(doc.id)}
-                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:text-blue-400"
                               title="Preview"
                             >
                               <EyeIcon className="h-5 w-5" />
                             </button>
                             <button
                               onClick={() => handlePrint(doc.id)}
-                              className="p-1.5 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg transition-colors"
+                              className="p-1.5 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg transition-colors dark:text-gray-300"
                               title="Print"
                             >
                               <PrinterIcon className="h-5 w-5" />
                             </button>
                             <button
                               onClick={() => handleDownloadPDF(doc.id, doc.document_number)}
-                              className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors dark:text-red-400"
                               title="Download PDF"
                             >
                               <DocumentArrowDownIcon className="h-5 w-5" />
                             </button>
                             <button
                               onClick={() => handleDownloadExcel(doc.id, doc.document_number)}
-                              className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                              className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors dark:text-green-400"
                               title="Download Excel"
                             >
                               <TableCellsIcon className="h-5 w-5" />
@@ -606,7 +606,7 @@ export default function DocumentDashboardUpgraded() {
                                       navigate(`/app/documents/${doc.id}/edit`);
                                       setShowActions(null);
                                     }}
-                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
+                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 dark:text-gray-200"
                                   >
                                     <PencilIcon className="h-4 w-4 mr-2" />
                                     Edit
@@ -616,7 +616,7 @@ export default function DocumentDashboardUpgraded() {
                                       handleDelete(doc.id);
                                       setShowActions(null);
                                     }}
-                                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400"
                                   >
                                     <TrashIcon className="h-4 w-4 mr-2" />
                                     Delete
@@ -679,7 +679,7 @@ export default function DocumentDashboardUpgraded() {
                     )}
                   </div>
                   
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
                     <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                       <PrinterIcon className="h-3.5 w-3.5 mr-1" />
                       {doc.print_count} prints
@@ -687,21 +687,21 @@ export default function DocumentDashboardUpgraded() {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => handlePreview(doc.id)}
-                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
+                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg dark:text-blue-400"
                         title="Preview"
                       >
                         <EyeIcon className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleDownloadPDF(doc.id, doc.document_number)}
-                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
+                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg dark:text-red-400"
                         title="Download PDF"
                       >
                         <ArrowDownTrayIcon className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handlePrint(doc.id)}
-                        className="p-1.5 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
+                        className="p-1.5 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg dark:text-gray-300"
                         title="Print"
                       >
                         <PrinterIcon className="h-4 w-4" />

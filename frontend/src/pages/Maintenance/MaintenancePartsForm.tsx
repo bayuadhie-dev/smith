@@ -68,7 +68,7 @@ const MaintenancePartsForm = () => {
       <PageHeader
         title="Permintaan Sparepart Baru"
         subtitle="Setelah dikirim, permintaan menunggu persetujuan kepala maintenance. Permintaan tidak bisa diedit, hanya dibatalkan."
-        actions={<button type="button" onClick={() => navigate('/app/maintenance/spare-part-requests')} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Batal</button>}
+        actions={<button type="button" onClick={() => navigate('/app/maintenance/spare-part-requests')} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Batal</button>}
       />
       <form onSubmit={submit} className="space-y-4">
         <Panel title="Keterangan">
@@ -93,7 +93,7 @@ const MaintenancePartsForm = () => {
                 <div key={i} className="grid grid-cols-12 items-start gap-2">
                   <div className="col-span-12 md:col-span-6">
                     <SearchableSelect options={parts} value={l.spare_part_id} onChange={(v) => setLine(i, { spare_part_id: v ? Number(v) : null })} placeholder="Cari kode atau nama sparepart" />
-                    {p && <p className={`mt-1 text-xs ${short ? 'text-red-600' : 'text-gray-500'}`}>Stok tersedia {p.stock.toLocaleString('id-ID')} {p.uom}{short ? '. Jumlah melebihi stok.' : ''}</p>}
+                    {p && <p className={`mt-1 text-xs ${short ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>Stok tersedia {p.stock.toLocaleString('id-ID')} {p.uom}{short ? '. Jumlah melebihi stok.' : ''}</p>}
                   </div>
                   <div className="col-span-5 md:col-span-2">
                     <NumberInput className={`${inputCls} text-right`} placeholder="Jumlah" value={l.qty} onChange={(e) => setLine(i, { qty: e.target.value })} />

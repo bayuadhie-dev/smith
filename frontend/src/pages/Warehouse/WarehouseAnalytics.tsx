@@ -31,7 +31,7 @@ const [period, setPeriod] = useState('monthly')
     } else if (trend === 'declining') {
       return <ArrowTrendingDownIcon className="h-5 w-5 text-red-500" />
     }
-    return <div className="h-5 w-5 bg-gray-300 rounded-full"></div>
+    return <div className="h-5 w-5 bg-gray-300 rounded-full dark:bg-gray-600"></div>
   }
 
   if (isLoading) {
@@ -69,7 +69,7 @@ const [period, setPeriod] = useState('monthly')
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Inventory Turnover</p>
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {summary.current_turnover ? `${summary.current_turnover}x` : 'No Data'}
               </p>
             </div>
@@ -82,7 +82,7 @@ const [period, setPeriod] = useState('monthly')
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Storage Utilization</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {summary.current_utilization ? `${summary.current_utilization}%` : 'No Data'}
               </p>
             </div>
@@ -95,7 +95,7 @@ const [period, setPeriod] = useState('monthly')
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Days of Supply</p>
-              <p className="text-2xl font-bold text-purple-600">
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                 {summary.current_days_supply ? `${summary.current_days_supply}` : 'No Data'}
               </p>
             </div>
@@ -108,7 +108,7 @@ const [period, setPeriod] = useState('monthly')
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Stockout Incidents</p>
-              <p className="text-2xl font-bold text-red-600">
+              <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                 {summary.total_stockouts || 0}
               </p>
             </div>
@@ -293,12 +293,12 @@ const [period, setPeriod] = useState('monthly')
                       ${(item.total_value || 0).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      <span className={`font-medium ${item.inventory_turnover >= 4 ? 'text-green-600' : item.inventory_turnover >= 2 ? 'text-yellow-600' : 'text-red-600'}`}>
+                      <span className={`font-medium ${item.inventory_turnover >= 4 ? 'text-green-600 dark:text-green-400' : item.inventory_turnover >= 2 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
                         {item.inventory_turnover || 0}x
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      <span className={`font-medium ${item.storage_utilization >= 80 ? 'text-red-600' : item.storage_utilization >= 60 ? 'text-yellow-600' : 'text-green-600'}`}>
+                      <span className={`font-medium ${item.storage_utilization >= 80 ? 'text-red-600 dark:text-red-400' : item.storage_utilization >= 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'}`}>
                         {item.storage_utilization || 0}%
                       </span>
                     </td>
@@ -308,17 +308,17 @@ const [period, setPeriod] = useState('monthly')
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       <div className="flex space-x-2">
                         {item.stockout_incidents > 0 && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
                             {item.stockout_incidents} stockouts
                           </span>
                         )}
                         {item.overstock_incidents > 0 && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
                             {item.overstock_incidents} overstocks
                           </span>
                         )}
                         {item.expired_products > 0 && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">
                             {item.expired_products} expired
                           </span>
                         )}

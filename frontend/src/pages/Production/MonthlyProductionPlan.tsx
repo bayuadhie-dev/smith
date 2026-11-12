@@ -70,10 +70,10 @@ const SCHEDULE_COLORS = [
 ];
 
 const PRIORITIES = [
-  { value: 'low', label: 'Rendah', color: 'bg-gray-100 text-gray-700' },
-  { value: 'normal', label: 'Normal', color: 'bg-blue-100 text-blue-700' },
-  { value: 'high', label: 'Tinggi', color: 'bg-orange-100 text-orange-700' },
-  { value: 'urgent', label: 'Urgent', color: 'bg-red-100 text-red-700' },
+  { value: 'low', label: 'Rendah', color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
+  { value: 'normal', label: 'Normal', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+  { value: 'high', label: 'Tinggi', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' },
+  { value: 'urgent', label: 'Urgent', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
 ];
 
 const MonthlyProductionPlan: React.FC = () => {
@@ -278,15 +278,15 @@ const MonthlyProductionPlan: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'submitted':
-        return { bg: 'bg-yellow-100 text-yellow-700', label: 'Menunggu Approval' };
+        return { bg: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300', label: 'Menunggu Approval' };
       case 'approved':
-        return { bg: 'bg-green-100 text-green-700', label: 'Approved' };
+        return { bg: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300', label: 'Approved' };
       case 'in_progress':
-        return { bg: 'bg-blue-100 text-blue-700', label: 'In Progress' };
+        return { bg: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300', label: 'In Progress' };
       case 'completed':
-        return { bg: 'bg-emerald-100 text-emerald-700', label: 'Selesai' };
+        return { bg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300', label: 'Selesai' };
       default:
-        return { bg: 'bg-gray-100 text-gray-600', label: 'Draft' };
+        return { bg: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300', label: 'Draft' };
     }
   };
 
@@ -310,7 +310,7 @@ const MonthlyProductionPlan: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/app/production/scheduling')}
-            className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 flex items-center gap-2"
+            className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 flex items-center gap-2 dark:bg-purple-900/30 dark:text-purple-300"
           >
             <CalendarDaysIcon className="h-5 w-5" />
             Jadwal Mingguan
@@ -374,8 +374,8 @@ const MonthlyProductionPlan: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-blue-500">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-100 p-2 rounded-lg">
-              <CubeIcon className="h-6 w-6 text-blue-600" />
+            <div className="bg-blue-100 p-2 rounded-lg dark:bg-blue-900/30">
+              <CubeIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{schedules.length}</p>
@@ -385,8 +385,8 @@ const MonthlyProductionPlan: React.FC = () => {
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-amber-500">
           <div className="flex items-center gap-3">
-            <div className="bg-amber-100 p-2 rounded-lg">
-              <CalendarDaysIcon className="h-6 w-6 text-amber-600" />
+            <div className="bg-amber-100 p-2 rounded-lg dark:bg-amber-900/30">
+              <CalendarDaysIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{totalTargetCtn.toLocaleString()}</p>
@@ -396,8 +396,8 @@ const MonthlyProductionPlan: React.FC = () => {
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-green-500">
           <div className="flex items-center gap-3">
-            <div className="bg-green-100 p-2 rounded-lg">
-              <CheckCircleIcon className="h-6 w-6 text-green-600" />
+            <div className="bg-green-100 p-2 rounded-lg dark:bg-green-900/30">
+              <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{totalScheduledCtn.toLocaleString()}</p>
@@ -407,8 +407,8 @@ const MonthlyProductionPlan: React.FC = () => {
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border-l-4 border-orange-500">
           <div className="flex items-center gap-3">
-            <div className="bg-orange-100 p-2 rounded-lg">
-              <ClockIcon className="h-6 w-6 text-orange-600" />
+            <div className="bg-orange-100 p-2 rounded-lg dark:bg-orange-900/30">
+              <ClockIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{totalRemainingCtn.toLocaleString()}</p>
@@ -486,17 +486,17 @@ const MonthlyProductionPlan: React.FC = () => {
                         )}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="font-bold text-amber-600">{item.target_ctn.toLocaleString()}</span>
+                        <span className="font-bold text-amber-600 dark:text-amber-400">{item.target_ctn.toLocaleString()}</span>
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className="text-gray-600 dark:text-gray-300">{item.target_pack.toLocaleString()}</span>
                         <span className="text-xs text-gray-400 ml-1">({item.qty_per_ctn}/ctn)</span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="font-medium text-green-600">{item.scheduled_ctn.toLocaleString()}</span>
+                        <span className="font-medium text-green-600 dark:text-green-400">{item.scheduled_ctn.toLocaleString()}</span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`font-medium ${item.remaining_ctn > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                        <span className={`font-medium ${item.remaining_ctn > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400'}`}>
                           {item.remaining_ctn.toLocaleString()}
                         </span>
                       </td>
@@ -547,12 +547,12 @@ const MonthlyProductionPlan: React.FC = () => {
       </div>
 
       {/* Info Box */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 dark:bg-blue-900/20 dark:border-blue-800">
         <div className="flex items-start gap-3">
           <ExclamationTriangleIcon className="h-6 w-6 text-blue-500 flex-shrink-0 mt-0.5" />
           <div>
-            <h4 className="font-semibold text-blue-800">Cara Menggunakan</h4>
-            <ul className="mt-2 text-sm text-blue-700 space-y-1">
+            <h4 className="font-semibold text-blue-800 dark:text-blue-300">Cara Menggunakan</h4>
+            <ul className="mt-2 text-sm text-blue-700 space-y-1 dark:text-blue-300">
               <li>1. Tambahkan target produksi per produk untuk bulan ini</li>
               <li>2. Buka <strong>Jadwal Mingguan</strong> untuk breakdown target ke minggu-minggu</li>
               <li>3. Saat menambah jadwal mingguan, pilih dari daftar target bulanan yang tersedia</li>
@@ -630,7 +630,7 @@ const MonthlyProductionPlan: React.FC = () => {
                       setCalcExpression('');
                       setShowCalculator(true);
                     }}
-                    className="px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"
+                    className="px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:hover:bg-gray-600"
                     title="Kalkulator"
                   >
                     🧮
@@ -747,8 +747,8 @@ const MonthlyProductionPlan: React.FC = () => {
                   className={`p-3 text-lg font-semibold rounded-lg transition ${
                     btn === '=' ? 'bg-blue-500 text-white hover:bg-blue-600 col-span-1' :
                     ['+', '-', '×', '÷'].includes(btn) ? 'bg-orange-400 text-white hover:bg-orange-500' :
-                    ['C', '±', '%'].includes(btn) ? 'bg-gray-300 hover:bg-gray-400' :
-                    'bg-white hover:bg-gray-200'
+                    ['C', '±', '%'].includes(btn) ? 'bg-gray-300 hover:bg-gray-400 dark:bg-gray-600' :
+                    'bg-white hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-600'
                   }`}
                 >
                   {btn}

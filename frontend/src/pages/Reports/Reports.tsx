@@ -275,8 +275,8 @@ const [selectedCategory, setSelectedCategory] = useState('all')
               onClick={() => setSelectedCategory(category.id)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedCategory === category.id
-                  ? 'bg-primary-100 text-primary-700 border border-primary-200'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-primary-100 text-primary-700 border border-primary-200 dark:bg-primary-900/30 dark:text-primary-300 dark:border-primary-800'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200'
               }`}
             >
               {category.label}
@@ -298,8 +298,8 @@ const [selectedCategory, setSelectedCategory] = useState('all')
                 className="card p-6 hover:shadow-lg transition-all duration-200 cursor-pointer hover:border-green-200 group bg-gradient-to-br from-green-50 to-blue-50"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="p-3 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
-                    <IconComponent className="h-6 w-6 text-green-600" />
+                  <div className="p-3 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors dark:bg-green-900/30">
+                    <IconComponent className="h-6 w-6 text-green-600 dark:text-green-400" />
                   </div>
                   <span className="badge badge-success">
                     {feature.frequency}
@@ -315,7 +315,7 @@ const [selectedCategory, setSelectedCategory] = useState('all')
                 
                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                   <span className="capitalize">{feature.category}</span>
-                  <span className="text-green-600 font-medium">Available Now!</span>
+                  <span className="text-green-600 font-medium dark:text-green-400">Available Now!</span>
                 </div>
               </div>
             )
@@ -336,8 +336,8 @@ const [selectedCategory, setSelectedCategory] = useState('all')
               className="card p-6 hover:shadow-lg transition-all duration-200 cursor-pointer hover:border-primary-200 group"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-primary-50 rounded-lg group-hover:bg-primary-100 transition-colors">
-                  <IconComponent className="h-6 w-6 text-primary-600" />
+                <div className="p-3 bg-primary-50 rounded-lg group-hover:bg-primary-100 transition-colors dark:bg-primary-900/20">
+                  <IconComponent className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                 </div>
                 <span className={`badge ${getFrequencyBadge(report.frequency)}`}>
                   {report.frequency}
@@ -361,12 +361,12 @@ const [selectedCategory, setSelectedCategory] = useState('all')
                 </div>
               )}
 
-              <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                     {report.category}
                   </span>
-                  <button className="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                  <button className="text-primary-600 hover:text-primary-700 text-sm font-medium dark:text-primary-400">
                     Generate →
                   </button>
                 </div>
@@ -409,9 +409,9 @@ const [selectedCategory, setSelectedCategory] = useState('all')
       </div>
 
       {/* Tips */}
-      <div className="card p-4 bg-blue-50 border border-blue-200">
-        <h4 className="font-medium text-blue-900 mb-2">💡 Report Tips</h4>
-        <ul className="text-sm text-blue-800 space-y-1">
+      <div className="card p-4 bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+        <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">💡 Report Tips</h4>
+        <ul className="text-sm text-blue-800 space-y-1 dark:text-blue-300">
           <li>• Reports are automatically updated based on their frequency</li>
           <li>• Use filters to customize report data before generation</li>
           <li>• Schedule reports to be delivered to your email automatically</li>

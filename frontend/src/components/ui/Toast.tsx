@@ -18,8 +18,8 @@ export const ToastProvider = () => (
     toastOptions={{
       duration: 4000,
       style: {
-        background: 'white',
-        color: '#1e293b',
+        background: 'var(--toast-bg)',
+        color: 'var(--toast-fg)',
         padding: '16px',
         borderRadius: '12px',
         boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',

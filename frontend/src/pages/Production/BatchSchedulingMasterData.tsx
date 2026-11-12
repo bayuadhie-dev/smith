@@ -162,11 +162,11 @@ const OverrideGridTab: React.FC = () => {
     0
   );
 
-  if (loading) return <div className="text-center py-10 text-gray-500">Memuat...</div>;
+  if (loading) return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Memuat...</div>;
 
   return (
     <div>
-      <p className="text-sm text-gray-500 mb-4">
+      <p className="text-sm text-gray-500 mb-4 dark:text-gray-400">
         Grid ini otomatis diisi dari hasil Global+Exception sebagai starting point. Ubah sel yang perlu — hanya sel yang berubah yang tersimpan sebagai override.
       </p>
       <div className="flex items-center justify-between mb-4">
@@ -200,11 +200,11 @@ const OverrideGridTab: React.FC = () => {
           </colgroup>
           <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th className="px-3 py-2 text-left font-medium text-gray-500 sticky left-0 z-10 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+              <th className="px-3 py-2 text-left font-medium text-gray-500 sticky left-0 z-10 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
                 Mesin
               </th>
               {dates.map((d, i) => (
-                <th key={d} className="px-2 py-2 text-center font-medium text-gray-500 border-b border-l border-gray-200 dark:border-gray-700">
+                <th key={d} className="px-2 py-2 text-center font-medium text-gray-500 border-b border-l border-gray-200 dark:border-gray-700 dark:text-gray-400">
                   <div>{DAY_NAMES[i]}</div>
                   <div className="font-normal text-gray-400">{d.slice(5)}</div>
                 </th>
@@ -237,7 +237,7 @@ const OverrideGridTab: React.FC = () => {
                   return (
                     <td key={cell.date} className={`px-2 py-2 text-center align-top border-l border-gray-100 dark:border-gray-800 ${changed ? 'bg-yellow-50 dark:bg-yellow-900/20' : ''}`}>
                       <div className="flex flex-col items-center gap-1.5">
-                        <label className="flex items-center gap-1 text-[11px] text-gray-500">
+                        <label className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400">
                           <input
                             type="checkbox"
                             checked={cell.is_working_day}

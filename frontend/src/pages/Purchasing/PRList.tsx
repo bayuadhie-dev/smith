@@ -8,18 +8,18 @@ import {
 } from '@heroicons/react/24/outline';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700' },
-  submitted: { label: 'Diajukan',   color: 'bg-blue-100 text-blue-700' },
-  approved:  { label: 'Disetujui',  color: 'bg-green-100 text-green-700' },
-  rejected:  { label: 'Ditolak',    color: 'bg-red-100 text-red-700' },
-  converted: { label: 'Jadi PO',    color: 'bg-purple-100 text-purple-700' },
+  draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
+  submitted: { label: 'Diajukan',   color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+  approved:  { label: 'Disetujui',  color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+  rejected:  { label: 'Ditolak',    color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
+  converted: { label: 'Jadi PO',    color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' },
 };
 
 const PRIORITY_CONFIG: Record<string, { label: string; color: string }> = {
-  low:    { label: 'Rendah',  color: 'bg-gray-100 text-gray-600' },
-  normal: { label: 'Normal',  color: 'bg-blue-100 text-blue-600' },
-  high:   { label: 'Tinggi',  color: 'bg-orange-100 text-orange-600' },
-  urgent: { label: 'Urgent',  color: 'bg-red-100 text-red-600' },
+  low:    { label: 'Rendah',  color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' },
+  normal: { label: 'Normal',  color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' },
+  high:   { label: 'Tinggi',  color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' },
+  urgent: { label: 'Urgent',  color: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' },
 };
 
 export default function PRList() {
@@ -61,13 +61,13 @@ export default function PRList() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Permintaan Pembelian (PR)</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-400">
             Permintaan pembelian dari departemen — {total} total
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/app/imports?kind=purchase_requisition" className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium">Import</Link>
-          <Link to="/app/imports?kind=purchase_requisition&mode=export" className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium">Ekspor</Link>
+          <Link to="/app/imports?kind=purchase_requisition" className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium dark:hover:bg-gray-700 dark:border-gray-600">Import</Link>
+          <Link to="/app/imports?kind=purchase_requisition&mode=export" className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium dark:hover:bg-gray-700 dark:border-gray-600">Ekspor</Link>
         <Link
           to="/app/purchasing/requisitions/new"
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
@@ -123,7 +123,7 @@ export default function PRList() {
           <div className="text-center py-16 text-gray-400">
             <DocumentTextIcon className="h-12 w-12 mx-auto mb-3 opacity-40" />
             <p>Belum ada Purchase Requisition</p>
-            <Link to="/app/purchasing/requisitions/new" className="mt-2 inline-block text-sm text-blue-600 hover:underline">
+            <Link to="/app/purchasing/requisitions/new" className="mt-2 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400">
               Buat PR pertama
             </Link>
           </div>
@@ -143,8 +143,8 @@ export default function PRList() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {prs.map((pr) => {
-                const status = STATUS_CONFIG[pr.status] || { label: pr.status, color: 'bg-gray-100 text-gray-600' };
-                const priority = PRIORITY_CONFIG[pr.priority] || { label: pr.priority, color: 'bg-gray-100 text-gray-600' };
+                const status = STATUS_CONFIG[pr.status] || { label: pr.status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
+                const priority = PRIORITY_CONFIG[pr.priority] || { label: pr.priority, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
                 return (
                   <tr
                     key={pr.id}
@@ -175,7 +175,7 @@ export default function PRList() {
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <Link
                         to={`/app/purchasing/requisitions/${pr.id}`}
-                        className="text-xs text-blue-600 hover:underline"
+                        className="text-xs text-blue-600 hover:underline dark:text-blue-400"
                       >
                         Detail
                       </Link>
@@ -198,7 +198,7 @@ export default function PRList() {
           >
             ← Prev
           </button>
-          <span className="px-3 py-1 text-sm text-gray-600">Hal {page}</span>
+          <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-300">Hal {page}</span>
           <button
             disabled={prs.length < 20}
             onClick={() => setPage(p => p + 1)}

@@ -112,7 +112,7 @@ const WMSDashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug flex items-center gap-2">
-            <BuildingStorefrontIcon className="h-7 w-7 text-emerald-600" />
+            <BuildingStorefrontIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
             Dashboard WMS
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Warehouse Management System — Terintegrasi penuh dengan Produksi & Material</p>
@@ -145,7 +145,7 @@ const WMSDashboard: React.FC = () => {
           {data?.alerts.pending_transfers ? (
             <span
               onClick={() => navigate('/app/wms/transfers')}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 cursor-pointer hover:bg-yellow-200"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 cursor-pointer hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300"
             >
               <TruckIcon className="h-4 w-4" />
               {data.alerts.pending_transfers} Transfer Menunggu
@@ -154,7 +154,7 @@ const WMSDashboard: React.FC = () => {
           {data?.alerts.active_picks ? (
             <span
               onClick={() => navigate('/app/wms/pick-lists')}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300"
             >
               <ClipboardDocumentListIcon className="h-4 w-4" />
               {data.alerts.active_picks} Pick List Aktif
@@ -166,21 +166,21 @@ const WMSDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Zone Utilization */}
         <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Utilisasi Zone Gudang</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 dark:text-white">Utilisasi Zone Gudang</h3>
           {data?.zones && data.zones.length > 0 ? (
             <div className="space-y-4">
               {data.zones.map((zone, i) => (
                 <div key={i}>
                   <div className="flex items-center justify-between mb-1">
                     <div>
-                      <span className="font-medium text-gray-700">{zone.name}</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-200">{zone.name}</span>
                       <span className="ml-2 text-xs text-gray-400 capitalize">{zone.material_type?.replace('_', ' ')}</span>
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
                       {zone.total_occupied.toLocaleString()} / {zone.total_capacity.toLocaleString()} · {zone.location_count} lokasi
                     </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
+                  <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700">
                     <div
                       className={`h-3 rounded-full transition-all ${
                         zone.utilization > 90 ? 'bg-red-500' :
@@ -200,20 +200,20 @@ const WMSDashboard: React.FC = () => {
 
         {/* Material Consumption Summary */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Konsumsi Material</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 dark:text-white">Konsumsi Material</h3>
           <div className="space-y-4">
             <div className="text-center py-4">
-              <p className="text-3xl font-bold text-gray-900">{data?.material_consumption.total_tracked || 0}</p>
-              <p className="text-sm text-gray-500">Material Terlacak</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">{data?.material_consumption.total_tracked || 0}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Material Terlacak</p>
             </div>
             {data?.material_consumption.over_consumed ? (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
-                <p className="text-lg font-bold text-red-700">{data.material_consumption.over_consumed}</p>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center dark:bg-red-900/20 dark:border-red-800">
+                <p className="text-lg font-bold text-red-700 dark:text-red-300">{data.material_consumption.over_consumed}</p>
                 <p className="text-xs text-red-500">Over-consumed (melebihi rencana)</p>
               </div>
             ) : (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-                <p className="text-sm text-green-700 font-medium">Semua dalam batas normal</p>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center dark:bg-green-900/20 dark:border-green-800">
+                <p className="text-sm text-green-700 font-medium dark:text-green-300">Semua dalam batas normal</p>
               </div>
             )}
             <button
@@ -228,7 +228,7 @@ const WMSDashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Menu WMS</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 dark:text-white">Menu WMS</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {quickActions.map((action) => (
             <div

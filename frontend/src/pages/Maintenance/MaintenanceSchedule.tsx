@@ -56,7 +56,7 @@ const Modal = ({ title, onClose, children }: { title: string; onClose: () => voi
     <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-white">{title}</h2>
-        <button type="button" onClick={onClose} className="text-sm text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">Tutup</button>
+        <button type="button" onClick={onClose} className="text-sm text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-400">Tutup</button>
       </div>
       {children}
     </div>
@@ -232,15 +232,15 @@ const MaintenanceSchedule = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {loading && rows.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500">Memuat...</td></tr>}
+            {loading && rows.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
             {!loading && rows.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500">{machineFilter || onlyOverdue ? 'Tidak ada jadwal yang cocok.' : 'Belum ada jadwal perawatan.'}</td></tr>
+              <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{machineFilter || onlyOverdue ? 'Tidak ada jadwal yang cocok.' : 'Belum ada jadwal perawatan.'}</td></tr>
             )}
             {rows.map((s) => (
               <tr key={s.id} className="align-top hover:bg-gray-50 dark:hover:bg-gray-700/40">
                 <td className="px-4 py-2.5 text-sm">
                   <div className="font-medium text-gray-900 dark:text-white">{s.machine_name}</div>
-                  <div className="text-xs text-gray-500">{s.machine_code} · {s.schedule_number}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{s.machine_code} · {s.schedule_number}</div>
                 </td>
                 <td className="whitespace-nowrap px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200">{TYPE_LABEL[s.maintenance_type] || s.maintenance_type}</td>
                 <td className="whitespace-nowrap px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200">{freqText(s.frequency, s.frequency_value)}</td>
@@ -294,7 +294,7 @@ const MaintenanceSchedule = () => {
                     <input className={`${inputCls} pl-9`} placeholder="Cari mesin" value={machineSearch} onChange={(e) => setMachineSearch(e.target.value)} />
                   </div>
                   <div className="max-h-44 overflow-y-auto rounded-md border border-gray-200 dark:border-gray-700">
-                    {filteredMachines.length === 0 && <p className="p-3 text-sm text-gray-500">Mesin tidak ditemukan.</p>}
+                    {filteredMachines.length === 0 && <p className="p-3 text-sm text-gray-500 dark:text-gray-400">Mesin tidak ditemukan.</p>}
                     {filteredMachines.map((m) => (
                       <label key={m.id} className="flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700/40">
                         <input type="checkbox" checked={form.machine_ids.includes(m.id)} onChange={() => toggleMachine(m.id)} />
@@ -303,7 +303,7 @@ const MaintenanceSchedule = () => {
                       </label>
                     ))}
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">Bila memilih lebih dari satu mesin, satu jadwal dibuat untuk tiap mesin dengan pengaturan yang sama.</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Bila memilih lebih dari satu mesin, satu jadwal dibuat untuk tiap mesin dengan pengaturan yang sama.</p>
                 </>
               )}
             </div>
@@ -355,7 +355,7 @@ const MaintenanceSchedule = () => {
               <button type="button" className="mt-2 text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400" onClick={() => setForm({ ...form, parts: [...form.parts, { spare_part_id: null, qty: '1' }] })}>
                 + Tambah sparepart
               </button>
-              <p className="mt-1 text-xs text-gray-500">Saat perintah kerja dibuat dari jadwal ini, permintaan sparepart dibuat otomatis untuk disetujui kepala maintenance.</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Saat perintah kerja dibuat dari jadwal ini, permintaan sparepart dibuat otomatis untuk disetujui kepala maintenance.</p>
             </div>
 
             <div>

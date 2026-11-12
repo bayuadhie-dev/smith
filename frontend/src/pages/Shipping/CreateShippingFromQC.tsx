@@ -229,7 +229,7 @@ export default function CreateShippingFromQC() {
         <div className="lg:col-span-1">
           <div className="card p-4">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <CheckCircleIcon className="h-5 w-5 text-green-600" />
+              <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
               Siap Kirim ({readyItems.length})
             </h2>
             
@@ -251,13 +251,13 @@ export default function CreateShippingFromQC() {
                     onClick={() => handleSelectItem(item)}
                     className={`p-4 border rounded-lg cursor-pointer transition-all ${
                       selectedItem?.work_order_id === item.work_order_id
-                        ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                        : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                        ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200 dark:bg-blue-900/20'
+                        : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-700'
                     }`}
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium text-blue-600">{item.work_order_number}</span>
-                      <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                      <span className="font-medium text-blue-600 dark:text-blue-400">{item.work_order_number}</span>
+                      <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded dark:bg-green-900/30 dark:text-green-300">
                         QC Pass
                       </span>
                     </div>
@@ -267,7 +267,7 @@ export default function CreateShippingFromQC() {
                       <span className="text-gray-600 dark:text-gray-300">Qty: {item.quantity_passed.toLocaleString()} {item.uom}</span>
                       <span className="text-gray-500 dark:text-gray-400">{formatDate(item.qc_date)}</span>
                     </div>
-                    <div className="mt-2 pt-2 border-t border-gray-100">
+                    <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
                         <BuildingOfficeIcon className="h-4 w-4 inline mr-1" />
                         {item.customer_name}
@@ -294,23 +294,23 @@ export default function CreateShippingFromQC() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Selected Item Info */}
-              <div className="card p-4 bg-blue-50 border-blue-200">
-                <h3 className="font-semibold text-blue-900 mb-3">Item yang Dipilih</h3>
+              <div className="card p-4 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+                <h3 className="font-semibold text-blue-900 mb-3 dark:text-blue-200">Item yang Dipilih</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <span className="text-blue-600">SPK</span>
+                    <span className="text-blue-600 dark:text-blue-400">SPK</span>
                     <p className="font-medium">{selectedItem.work_order_number}</p>
                   </div>
                   <div>
-                    <span className="text-blue-600">Produk</span>
+                    <span className="text-blue-600 dark:text-blue-400">Produk</span>
                     <p className="font-medium">{selectedItem.product_name}</p>
                   </div>
                   <div>
-                    <span className="text-blue-600">Quantity</span>
+                    <span className="text-blue-600 dark:text-blue-400">Quantity</span>
                     <p className="font-medium">{selectedItem.quantity_passed.toLocaleString()} {selectedItem.uom}</p>
                   </div>
                   <div>
-                    <span className="text-blue-600">Customer</span>
+                    <span className="text-blue-600 dark:text-blue-400">Customer</span>
                     <p className="font-medium">{selectedItem.customer_name}</p>
                   </div>
                 </div>
@@ -325,11 +325,11 @@ export default function CreateShippingFromQC() {
                     onClick={() => setDeliveryMethod('expedition')}
                     className={`p-4 border-2 rounded-lg text-left transition-all ${
                       deliveryMethod === 'expedition'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
                     }`}
                   >
-                    <TruckIcon className={`h-8 w-8 mb-2 ${deliveryMethod === 'expedition' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <TruckIcon className={`h-8 w-8 mb-2 ${deliveryMethod === 'expedition' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`} />
                     <p className="font-semibold">Via Ekspedisi</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Kirim melalui jasa ekspedisi/kurir</p>
                   </button>
@@ -339,11 +339,11 @@ export default function CreateShippingFromQC() {
                     onClick={() => setDeliveryMethod('self_pickup')}
                     className={`p-4 border-2 rounded-lg text-left transition-all ${
                       deliveryMethod === 'self_pickup'
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
                     }`}
                   >
-                    <UserIcon className={`h-8 w-8 mb-2 ${deliveryMethod === 'self_pickup' ? 'text-green-600' : 'text-gray-400'}`} />
+                    <UserIcon className={`h-8 w-8 mb-2 ${deliveryMethod === 'self_pickup' ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`} />
                     <p className="font-semibold">Diambil Sendiri</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Customer mengambil langsung</p>
                   </button>

@@ -519,7 +519,7 @@ const BOMForm: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
               <ExclamationCircleIcon className="h-5 w-5" />
               <span>{error}</span>
             </div>
@@ -679,7 +679,7 @@ const BOMForm: React.FC = () => {
                 name="is_active"
                 checked={formData.is_active}
                 onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:text-blue-400"
               />
               <label className="ml-2 block text-sm text-gray-700 dark:text-gray-200">
                 <CheckCircle className="inline h-4 w-4 mr-1" />
@@ -785,7 +785,7 @@ const BOMForm: React.FC = () => {
                           )}
                         </td>
                         <td className="px-2 py-3 text-xs text-gray-600 dark:text-gray-300">
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs dark:bg-blue-900/30 dark:text-blue-300">
                             {item.material_category || 'N/A'}
                           </span>
                         </td>
@@ -850,14 +850,14 @@ const BOMForm: React.FC = () => {
                             type="checkbox"
                             checked={item.is_critical}
                             onChange={(e) => updateBOMItem(index, 'is_critical', e.target.checked)}
-                            className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600 rounded"
+                            className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600 rounded dark:text-red-400"
                           />
                         </td>
                         <td className="px-2 py-3">
                           <button
                             type="button"
                             onClick={() => removeBOMItem(index)}
-                            className="text-red-600 hover:text-red-800"
+                            className="text-red-600 hover:text-red-800 dark:text-red-400"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -871,8 +871,8 @@ const BOMForm: React.FC = () => {
 
             {/* BOM Summary */}
             {formData.items.length > 0 && (
-              <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-blue-900 mb-4 flex items-center">
+              <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 dark:border-blue-800">
+                <h4 className="font-semibold text-blue-900 mb-4 flex items-center dark:text-blue-200">
                   <CubeIcon className="h-5 w-5 mr-2" />
                   BOM Cost Analysis
                 </h4>
@@ -883,7 +883,7 @@ const BOMForm: React.FC = () => {
                   </div>
                   <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
                     <span className="text-gray-600 dark:text-gray-300 text-sm">Critical Items</span>
-                    <div className="font-bold text-lg text-red-600">{getCriticalItems()}</div>
+                    <div className="font-bold text-lg text-red-600 dark:text-red-400">{getCriticalItems()}</div>
                   </div>
                   <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
                     <span className="text-gray-600 dark:text-gray-300 text-sm">Batch Size</span>
@@ -892,12 +892,12 @@ const BOMForm: React.FC = () => {
                   </div>
                   <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
                     <span className="text-gray-600 dark:text-gray-300 text-sm">Total Material Cost</span>
-                    <div className="font-bold text-lg text-green-600">Rp {getTotalCost().toLocaleString('id-ID')}</div>
+                    <div className="font-bold text-lg text-green-600 dark:text-green-400">Rp {getTotalCost().toLocaleString('id-ID')}</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">For {formData.batch_size} carton(s)</div>
                   </div>
                   <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border-2 border-yellow-300">
                     <span className="text-gray-600 dark:text-gray-300 text-sm">HPP per Carton</span>
-                    <div className="font-bold text-xl text-yellow-600">Rp {getHPP().toLocaleString('id-ID')}</div>
+                    <div className="font-bold text-xl text-yellow-600 dark:text-yellow-400">Rp {getHPP().toLocaleString('id-ID')}</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Cost per carton ({formData.pack_per_carton} packs)</div>
                   </div>
                 </div>
@@ -907,7 +907,7 @@ const BOMForm: React.FC = () => {
                   <h5 className="font-medium text-gray-900 dark:text-white mb-3">Material Cost Breakdown</h5>
                   <div className="space-y-2">
                     {formData.items.map((item, index) => (
-                      <div key={index} className="flex justify-between items-center py-1 border-b border-gray-100 last:border-b-0">
+                      <div key={index} className="flex justify-between items-center py-1 border-b border-gray-100 last:border-b-0 dark:border-gray-800">
                         <div className="flex items-center space-x-2">
                           <span className="text-sm text-gray-600 dark:text-gray-300">{item.line_number}.</span>
                           <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -921,10 +921,10 @@ const BOMForm: React.FC = () => {
                           <span className="text-gray-600 dark:text-gray-300">
                             {item.quantity} {item.uom} × Rp {item.unit_cost.toLocaleString('id-ID')}
                           </span>
-                          <span className="font-medium text-blue-600">
+                          <span className="font-medium text-blue-600 dark:text-blue-400">
                             {item.percentage.toFixed(1)}%
                           </span>
-                          <span className="font-bold text-green-600 min-w-[100px] text-right">
+                          <span className="font-bold text-green-600 min-w-[100px] text-right dark:text-green-400">
                             Rp {item.total_cost.toLocaleString('id-ID')}
                           </span>
                         </div>

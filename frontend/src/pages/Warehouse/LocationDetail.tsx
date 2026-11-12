@@ -114,30 +114,30 @@ const LocationDetail: React.FC = () => {
 
   const getMovementIcon = (type: string) => {
     switch (type) {
-      case 'stock_in': return <ArrowDownTrayIcon className="h-4 w-4 text-green-600" />;
-      case 'stock_out': return <ArrowUpTrayIcon className="h-4 w-4 text-red-600" />;
+      case 'stock_in': return <ArrowDownTrayIcon className="h-4 w-4 text-green-600 dark:text-green-400" />;
+      case 'stock_out': return <ArrowUpTrayIcon className="h-4 w-4 text-red-600 dark:text-red-400" />;
       default: return <ClockIcon className="h-4 w-4 text-gray-400" />;
     }
   };
 
   const getMovementColor = (type: string) => {
     switch (type) {
-      case 'stock_in': return 'text-green-700 bg-green-50';
-      case 'stock_out': return 'text-red-700 bg-red-50';
-      case 'transfer': return 'text-blue-700 bg-blue-50';
-      case 'adjust': return 'text-orange-700 bg-orange-50';
-      default: return 'text-gray-700 bg-gray-50';
+      case 'stock_in': return 'text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-300';
+      case 'stock_out': return 'text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-300';
+      case 'transfer': return 'text-blue-700 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-300';
+      case 'adjust': return 'text-orange-700 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-300';
+      default: return 'text-gray-700 bg-gray-50 dark:bg-gray-900 dark:text-gray-200';
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'released': return 'bg-green-100 text-green-800';
-      case 'available': return 'bg-green-100 text-green-800';
-      case 'quarantine': return 'bg-yellow-100 text-yellow-800';
-      case 'on_hold': return 'bg-yellow-100 text-yellow-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'released': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'available': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'quarantine': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'on_hold': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'rejected': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -154,7 +154,7 @@ const LocationDetail: React.FC = () => {
       <div className="text-center py-12">
         <MapPinIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
         <h3 className="text-lg font-medium text-gray-900 dark:text-white">Lokasi tidak ditemukan</h3>
-        <button onClick={() => navigate('/app/warehouse/locations')} className="mt-4 text-blue-600 hover:underline">
+        <button onClick={() => navigate('/app/warehouse/locations')} className="mt-4 text-blue-600 hover:underline dark:text-blue-400">
           Kembali ke daftar lokasi
         </button>
       </div>
@@ -170,7 +170,7 @@ const LocationDetail: React.FC = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/warehouse/locations')}
-            className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"
+            className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
@@ -183,7 +183,7 @@ const LocationDetail: React.FC = () => {
         </div>
         <div className="flex items-center gap-3">
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${
-            location.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            location.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
           }`}>
             {location.is_active ? <CheckCircleIcon className="h-4 w-4" /> : <ExclamationCircleIcon className="h-4 w-4" />}
             {location.is_active ? 'Aktif' : 'Nonaktif'}
@@ -202,8 +202,8 @@ const LocationDetail: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <BuildingOfficeIcon className="h-5 w-5 text-blue-600" />
+            <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+              <BuildingOfficeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             <span className="text-sm text-gray-600 dark:text-gray-300">Zone</span>
           </div>
@@ -213,8 +213,8 @@ const LocationDetail: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <MapPinIcon className="h-5 w-5 text-purple-600" />
+            <div className="p-2 bg-purple-100 rounded-lg dark:bg-purple-900/30">
+              <MapPinIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             </div>
             <span className="text-sm text-gray-600 dark:text-gray-300">Posisi</span>
           </div>
@@ -225,8 +225,8 @@ const LocationDetail: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CubeIcon className="h-5 w-5 text-green-600" />
+            <div className="p-2 bg-green-100 rounded-lg dark:bg-green-900/30">
+              <CubeIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
             <span className="text-sm text-gray-600 dark:text-gray-300">Kapasitas</span>
           </div>
@@ -243,7 +243,7 @@ const LocationDetail: React.FC = () => {
             <span className="text-sm text-gray-600 dark:text-gray-300">Utilisasi</span>
           </div>
           <p className={`text-2xl font-bold ${
-            utilPct >= 90 ? 'text-red-600' : utilPct >= 75 ? 'text-orange-600' : utilPct >= 50 ? 'text-yellow-600' : 'text-green-600'
+            utilPct >= 90 ? 'text-red-600 dark:text-red-400' : utilPct >= 75 ? 'text-orange-600 dark:text-orange-400' : utilPct >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'
           }`}>
             {utilPct.toFixed(1)}%
           </p>
@@ -264,8 +264,8 @@ const LocationDetail: React.FC = () => {
               onClick={() => setActiveTab('inventory')}
               className={`px-6 py-3 text-sm font-medium border-b-2 ${
                 activeTab === 'inventory'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               Inventory ({inventoryItems.length})
@@ -274,8 +274,8 @@ const LocationDetail: React.FC = () => {
               onClick={() => setActiveTab('movements')}
               className={`px-6 py-3 text-sm font-medium border-b-2 ${
                 activeTab === 'movements'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               Riwayat Pergerakan ({movements.length})
@@ -317,7 +317,7 @@ const LocationDetail: React.FC = () => {
                           </td>
                           <td className="px-4 py-3">
                             <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                              item.item_type === 'product' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                              item.item_type === 'product' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
                             }`}>
                               {item.item_type === 'product' ? 'Produk' : 'Material'}
                             </span>
@@ -329,10 +329,10 @@ const LocationDetail: React.FC = () => {
                           <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 dark:text-white">
                             {item.quantity_on_hand.toLocaleString()}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-orange-600">
+                          <td className="px-4 py-3 text-sm text-right text-orange-600 dark:text-orange-400">
                             {item.quantity_reserved.toLocaleString()}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right font-medium text-green-600">
+                          <td className="px-4 py-3 text-sm text-right font-medium text-green-600 dark:text-green-400">
                             {item.quantity_available.toLocaleString()}
                           </td>
                           <td className="px-4 py-3">

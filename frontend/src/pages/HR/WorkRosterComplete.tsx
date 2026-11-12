@@ -415,7 +415,7 @@ export default function WorkRosterComplete() {
                 className={`px-4 py-2 rounded-lg font-medium transition ${
                   selectedShift === shift.value
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200'
                 }`}
               >
                 {shift.shortLabel}
@@ -427,10 +427,10 @@ export default function WorkRosterComplete() {
           {roster && (
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
               roster.status === 'published' 
-                ? 'bg-green-100 text-green-800'
+                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                 : roster.status === 'completed'
-                ? 'bg-blue-100 text-blue-800'
-                : 'bg-yellow-100 text-yellow-800'
+                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
             }`}>
               {roster.status === 'published' ? 'Published' : roster.status === 'completed' ? 'Completed' : 'Draft'}
             </span>
@@ -448,7 +448,7 @@ export default function WorkRosterComplete() {
           {/* Leader Section */}
           <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <UserGroupIcon className="h-5 w-5 text-purple-600" />
+              <UserGroupIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               Leader Shift
             </h2>
             <div className="flex items-center gap-4">
@@ -465,7 +465,7 @@ export default function WorkRosterComplete() {
                 ))}
               </select>
               {leaderId && (
-                <span className="text-green-600 font-medium">
+                <span className="text-green-600 font-medium dark:text-green-400">
                   ✓ Leader: {employees.find(e => e.id === leaderId)?.full_name || roster?.leader_name}
                 </span>
               )}
@@ -475,7 +475,7 @@ export default function WorkRosterComplete() {
           {/* Machine-based Assignments */}
           <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <CogIcon className="h-5 w-5 text-blue-600" />
+              <CogIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               Assignment per Mesin
             </h2>
             
@@ -498,7 +498,7 @@ export default function WorkRosterComplete() {
                     <tr key={machine.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                       <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
                         {machine.name}
-                        <div className="text-xs text-gray-500">{machine.code}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{machine.code}</div>
                       </td>
                       {Object.entries(roleDefinitions)
                         .filter(([_, def]) => def.requires_machine)
@@ -532,7 +532,7 @@ export default function WorkRosterComplete() {
                                 ))}
                                 <button
                                   onClick={() => openEmployeeModal(role, machine.id)}
-                                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+                                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm dark:text-blue-400"
                                 >
                                   <PlusIcon className="h-4 w-4" />
                                   Tambah
@@ -571,7 +571,7 @@ export default function WorkRosterComplete() {
                         >
                           <span className="flex-1">
                             {assignment.employee_name}
-                            <span className="text-xs text-gray-500 ml-2">
+                            <span className="text-xs text-gray-500 ml-2 dark:text-gray-400">
                               ({assignment.employee_number})
                             </span>
                           </span>
@@ -627,7 +627,7 @@ export default function WorkRosterComplete() {
               </h3>
               <button
                 onClick={() => setShowEmployeeModal(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-200"
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-200 dark:hover:text-white"
               >
                 ✕
               </button>
@@ -648,7 +648,7 @@ export default function WorkRosterComplete() {
             
             <div className="overflow-y-auto max-h-96">
               {employees.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
+                <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                   Tidak ada karyawan ditemukan
                 </div>
               ) : (
@@ -666,16 +666,16 @@ export default function WorkRosterComplete() {
                     {employees.map(emp => (
                       <tr 
                         key={emp.id} 
-                        className={`hover:bg-gray-50 ${emp.is_assigned ? 'opacity-50' : ''}`}
+                        className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${emp.is_assigned ? 'opacity-50' : ''}`}
                       >
                         <td className="px-4 py-2 text-sm">{emp.employee_number}</td>
                         <td className="px-4 py-2 text-sm font-medium">{emp.full_name}</td>
-                        <td className="px-4 py-2 text-sm text-gray-500">{emp.department || '-'}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">{emp.department || '-'}</td>
                         <td className="px-4 py-2 text-sm">
                           {emp.is_assigned ? (
-                            <span className="text-yellow-600">Sudah di-assign</span>
+                            <span className="text-yellow-600 dark:text-yellow-400">Sudah di-assign</span>
                           ) : emp.has_skill ? (
-                            <span className="text-green-600">Tersedia</span>
+                            <span className="text-green-600 dark:text-green-400">Tersedia</span>
                           ) : (
                             <span className="text-gray-400">-</span>
                           )}

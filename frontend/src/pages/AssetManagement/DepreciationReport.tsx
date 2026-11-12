@@ -28,7 +28,7 @@ const DepreciationReport: React.FC = () => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-          <CurrencyDollarIcon className="h-8 w-8 text-green-600" />
+          <CurrencyDollarIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
           Laporan Penyusutan Aset
         </h1>
         <p className="text-slate-500 dark:text-gray-400 mt-1">
@@ -42,7 +42,7 @@ const DepreciationReport: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6">
           <div className="flex items-start gap-4">
             <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <CalendarIcon className="h-6 w-6 text-blue-600" />
+              <CalendarIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-2">
@@ -76,7 +76,7 @@ const DepreciationReport: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6">
           <div className="flex items-start gap-4">
             <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <ArrowDownTrayIcon className="h-6 w-6 text-green-600" />
+              <ArrowDownTrayIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-2">
@@ -111,11 +111,11 @@ const DepreciationReport: React.FC = () => {
           <h4 className="text-sm opacity-90 mb-2">Metode Penyusutan</h4>
           <ul className="space-y-2 text-sm">
             <li className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
+              <div className="w-2 h-2 bg-white rounded-full dark:bg-gray-800"></div>
               Straight Line (Garis Lurus)
             </li>
             <li className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
+              <div className="w-2 h-2 bg-white rounded-full dark:bg-gray-800"></div>
               Declining Balance
             </li>
           </ul>

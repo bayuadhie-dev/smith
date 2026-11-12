@@ -254,7 +254,7 @@ export default function WorkOrderBOMEdit() {
             <button
               onClick={handleResetBOM}
               disabled={saving}
-              className="px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 inline-flex items-center"
+              className="px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 inline-flex items-center dark:text-red-300"
             >
               <ArrowPathIcon className="h-4 w-4 mr-2" />
               Reset ke Master
@@ -275,37 +275,37 @@ export default function WorkOrderBOMEdit() {
 
       {/* Info Box */}
       <div className={`border rounded-lg p-4 ${
-        bomSource === 'work_order' ? 'bg-green-50 border-green-200' : 
-        bomSource === 'master_bom' ? 'bg-blue-50 border-blue-200' : 
-        'bg-yellow-50 border-yellow-200'
+        bomSource === 'work_order' ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : 
+        bomSource === 'master_bom' ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800' : 
+        'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'
       }`}>
         <div className="flex items-start gap-3">
           <ExclamationTriangleIcon className={`h-5 w-5 mt-0.5 ${
-            bomSource === 'work_order' ? 'text-green-600' : 
-            bomSource === 'master_bom' ? 'text-blue-600' : 
-            'text-yellow-600'
+            bomSource === 'work_order' ? 'text-green-600 dark:text-green-400' : 
+            bomSource === 'master_bom' ? 'text-blue-600 dark:text-blue-400' : 
+            'text-yellow-600 dark:text-yellow-400'
           }`} />
           <div>
             {bomSource === 'work_order' && (
               <>
-                <p className="font-medium text-green-800">BOM SPK (Editable)</p>
-                <p className="text-sm text-green-700">
+                <p className="font-medium text-green-800 dark:text-green-300">BOM SPK (Editable)</p>
+                <p className="text-sm text-green-700 dark:text-green-300">
                   BOM ini adalah copy khusus untuk SPK ini. Perubahan <strong>TIDAK</strong> akan mempengaruhi BOM master.
                 </p>
               </>
             )}
             {bomSource === 'master_bom' && (
               <>
-                <p className="font-medium text-blue-800">BOM Master (Read-only)</p>
-                <p className="text-sm text-blue-700">
+                <p className="font-medium text-blue-800 dark:text-blue-300">BOM Master (Read-only)</p>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
                   Ini adalah BOM master. Klik "Copy BOM untuk Edit" untuk membuat copy yang bisa diedit tanpa mengubah master.
                 </p>
               </>
             )}
             {bomSource === 'none' && (
               <>
-                <p className="font-medium text-yellow-800">Tidak Ada BOM</p>
-                <p className="text-sm text-yellow-700">
+                <p className="font-medium text-yellow-800 dark:text-yellow-300">Tidak Ada BOM</p>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">
                   SPK ini tidak memiliki BOM. Anda bisa menambahkan item secara manual.
                 </p>
               </>
@@ -341,7 +341,7 @@ export default function WorkOrderBOMEdit() {
               <p className="text-xs text-gray-500 dark:text-gray-400">Selisih</p>
               <p className={`text-lg font-semibold ${
                 costSummary.variance === null ? 'text-gray-400' :
-                costSummary.variance > 0 ? 'text-red-600' : costSummary.variance < 0 ? 'text-green-600' : 'text-gray-900 dark:text-white'
+                costSummary.variance > 0 ? 'text-red-600 dark:text-red-400' : costSummary.variance < 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'
               }`}>
                 {costSummary.variance !== null
                   ? `${costSummary.variance > 0 ? '+' : ''}Rp ${costSummary.variance.toLocaleString('id-ID')}`
@@ -352,7 +352,7 @@ export default function WorkOrderBOMEdit() {
               <p className="text-xs text-gray-500 dark:text-gray-400">% Selisih</p>
               <p className={`text-lg font-semibold ${
                 costSummary.variance_percent === null ? 'text-gray-400' :
-                costSummary.variance_percent > 0 ? 'text-red-600' : costSummary.variance_percent < 0 ? 'text-green-600' : 'text-gray-900 dark:text-white'
+                costSummary.variance_percent > 0 ? 'text-red-600 dark:text-red-400' : costSummary.variance_percent < 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'
               }`}>
                 {costSummary.variance_percent !== null ? `${costSummary.variance_percent > 0 ? '+' : ''}${costSummary.variance_percent}%` : '-'}
               </p>
@@ -407,7 +407,7 @@ export default function WorkOrderBOMEdit() {
                 </tr>
               ) : (
                 bomItems.map((item, index) => (
-                  <tr key={item.id} className={item.is_modified ? 'bg-yellow-50' : item.is_added ? 'bg-green-50' : ''}>
+                  <tr key={item.id} className={item.is_modified ? 'bg-yellow-50 dark:bg-yellow-900/20' : item.is_added ? 'bg-green-50 dark:bg-green-900/20' : ''}>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{index + 1}</td>
                     <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{item.item_code || '-'}</td>
                     <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{item.item_name}</td>
@@ -435,10 +435,10 @@ export default function WorkOrderBOMEdit() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       {item.is_added && (
-                        <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Ditambahkan</span>
+                        <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full dark:bg-green-900/30 dark:text-green-300">Ditambahkan</span>
                       )}
                       {item.is_modified && !item.is_added && (
-                        <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Diubah</span>
+                        <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full dark:bg-yellow-900/30 dark:text-yellow-300">Diubah</span>
                       )}
                       {!item.is_modified && !item.is_added && bomSource === 'work_order' && (
                         <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full">Original</span>
@@ -449,14 +449,14 @@ export default function WorkOrderBOMEdit() {
                         <div className="flex justify-center gap-1">
                           <button
                             onClick={() => setEditingItem(editingItem === item.id ? null : item.id)}
-                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            className="p-1 text-blue-600 hover:bg-blue-50 rounded dark:text-blue-400"
                             title="Edit"
                           >
                             <PencilIcon className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteItem(item.id)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            className="p-1 text-red-600 hover:bg-red-50 rounded dark:text-red-400"
                             title="Hapus"
                           >
                             <TrashIcon className="h-4 w-4" />

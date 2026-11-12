@@ -59,27 +59,27 @@ const [search, setSearch] = useState('')
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { class: string; label: string }> = {
-      draft: { class: 'bg-gray-100 text-gray-800', label: 'Draft' },
-      pending_approval: { class: 'bg-yellow-100 text-yellow-800', label: 'Pending Approval' },
-      approved: { class: 'bg-green-100 text-green-800', label: 'Approved' },
-      rejected: { class: 'bg-red-100 text-red-800', label: 'Rejected' },
-      sent: { class: 'bg-blue-100 text-blue-800', label: 'Sent' },
-      confirmed: { class: 'bg-indigo-100 text-indigo-800', label: 'Confirmed' },
-      partial: { class: 'bg-orange-100 text-orange-800', label: 'Partially Received' },
-      received: { class: 'bg-green-100 text-green-800', label: 'Received' },
-      cancelled: { class: 'bg-red-100 text-red-800', label: 'Cancelled' }
+      draft: { class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: 'Draft' },
+      pending_approval: { class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300', label: 'Pending Approval' },
+      approved: { class: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', label: 'Approved' },
+      rejected: { class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Rejected' },
+      sent: { class: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', label: 'Sent' },
+      confirmed: { class: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300', label: 'Confirmed' },
+      partial: { class: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300', label: 'Partially Received' },
+      received: { class: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', label: 'Received' },
+      cancelled: { class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Cancelled' }
     }
-    return badges[status] || { class: 'bg-gray-100 text-gray-800', label: status }
+    return badges[status] || { class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: status }
   }
 
   const getPriorityBadge = (priority: string) => {
     const badges: Record<string, { class: string; label: string }> = {
-      low: { class: 'bg-gray-100 text-gray-800', label: 'Low' },
-      normal: { class: 'bg-blue-100 text-blue-800', label: 'Normal' },
-      high: { class: 'bg-orange-100 text-orange-800', label: 'High' },
-      urgent: { class: 'bg-red-100 text-red-800', label: 'Urgent' }
+      low: { class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: 'Low' },
+      normal: { class: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', label: 'Normal' },
+      high: { class: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300', label: 'High' },
+      urgent: { class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Urgent' }
     }
-    return badges[priority] || { class: 'bg-blue-100 text-blue-800', label: 'Normal' }
+    return badges[priority] || { class: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', label: 'Normal' }
   }
 
   const handleSubmitApproval = async (po: any) => {
@@ -141,12 +141,12 @@ const [search, setSearch] = useState('')
         <div className="flex space-x-3">
           <Link
             to="/app/purchasing/rfqs"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-200 dark:bg-gray-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-200 dark:bg-gray-700 transition-colors dark:hover:bg-gray-600"
           >
             <DocumentTextIcon className="h-5 w-5" />
           </Link>
-          <Link to="/app/imports?kind=purchase_order" className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium">Import</Link>
-          <Link to="/app/imports?kind=purchase_order&mode=export" className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium">Ekspor</Link>
+          <Link to="/app/imports?kind=purchase_order" className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium dark:hover:bg-gray-700 dark:border-gray-600">Import</Link>
+          <Link to="/app/imports?kind=purchase_order&mode=export" className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium dark:hover:bg-gray-700 dark:border-gray-600">Ekspor</Link>
           <Link
             to="/app/purchasing/purchase-orders/new"
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
@@ -210,7 +210,7 @@ const [search, setSearch] = useState('')
           <div className="flex items-end">
             <button
               type="submit"
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-200 dark:bg-gray-700 transition-colors"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-200 dark:bg-gray-700 transition-colors dark:hover:bg-gray-600"
             >
               <FunnelIcon className="h-5 w-5" />{t('common.filter')}</button>
           </div>
@@ -303,7 +303,7 @@ const [search, setSearch] = useState('')
                         <div className="flex items-center justify-end space-x-2">
                           <Link
                             to={`/app/purchasing/purchase-orders/${po.id}`}
-                            className="text-blue-600 hover:text-blue-900 p-1"
+                            className="text-blue-600 hover:text-blue-900 p-1 dark:text-blue-400"
                             title="View Details"
                           >
                             <EyeIcon className="h-4 w-4" />
@@ -313,14 +313,14 @@ const [search, setSearch] = useState('')
                             <>
                               <Link
                                 to={`/app/purchasing/purchase-orders/${po.id}/edit`}
-                                className="text-indigo-600 hover:text-indigo-900 p-1"
+                                className="text-indigo-600 hover:text-indigo-900 p-1 dark:text-indigo-400"
                                 title={t('common.edit')}
                               >
                                 <PencilIcon className="h-4 w-4" />
                               </Link>
                               <button
                                 onClick={() => handleSubmitApproval(po)}
-                                className="text-yellow-600 hover:text-yellow-900 p-1"
+                                className="text-yellow-600 hover:text-yellow-900 p-1 dark:text-yellow-400"
                                 title="Submit for Approval"
                               >
                                 <ClockIcon className="h-4 w-4" />
@@ -331,7 +331,7 @@ const [search, setSearch] = useState('')
                           {po.status === 'pending_approval' && (
                             <Link
                               to="/app/approval"
-                              className="text-yellow-600 hover:text-yellow-900 p-1"
+                              className="text-yellow-600 hover:text-yellow-900 p-1 dark:text-yellow-400"
                               title="Lihat status approval"
                             >
                               <ShieldCheckIcon className="h-4 w-4" />
@@ -397,7 +397,7 @@ const [search, setSearch] = useState('')
         size="md"
       >
         <div className="space-y-4 text-sm">
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800">
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
             ⚠️ Kurs otomatis {manualRateModal.currency}/IDR tidak tersedia. Cek kurs riil (BI / bank / supplier) terlebih dahulu sebelum menyimpan. Kurs ini akan dikunci untuk GRN dan faktur dari PO ini.
           </div>
           <div>

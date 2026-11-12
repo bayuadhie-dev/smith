@@ -205,10 +205,10 @@ export default function ModuleCard({
             <span className={clsx(
               'inline-flex items-center px-3 py-1 rounded-full text-xs font-bold shadow-lg',
               'animate-pulse',
-              badge.color === 'red' && 'bg-red-100 text-red-800',
-              badge.color === 'yellow' && 'bg-yellow-100 text-yellow-800',
-              badge.color === 'green' && 'bg-green-100 text-green-800',
-              badge.color === 'blue' && 'bg-blue-100 text-blue-800'
+              badge.color === 'red' && 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+              badge.color === 'yellow' && 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+              badge.color === 'green' && 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+              badge.color === 'blue' && 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
             )}>
               {badge.text}
             </span>

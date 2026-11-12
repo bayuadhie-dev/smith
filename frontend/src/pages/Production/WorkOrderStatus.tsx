@@ -39,24 +39,24 @@ interface WorkOrderStatusItem {
 const STATUS_CONFIG = {
   not_started: {
     label: 'Belum Dimulai',
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-100',
-    borderColor: 'border-gray-300',
+    color: 'text-gray-600 dark:text-gray-300',
+    bgColor: 'bg-gray-100 dark:bg-gray-700',
+    borderColor: 'border-gray-300 dark:border-gray-600',
     icon: DocumentPlusIcon,
     description: 'SPK belum ada input produksi'
   },
   in_progress: {
     label: 'Sedang Diisi',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
+    color: 'text-blue-600 dark:text-blue-400',
+    bgColor: 'bg-blue-100 dark:bg-blue-900/30',
     borderColor: 'border-blue-300',
     icon: PencilSquareIcon,
     description: 'SPK sedang dalam proses input'
   },
   completed: {
     label: 'Selesai',
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
+    color: 'text-green-600 dark:text-green-400',
+    bgColor: 'bg-green-100 dark:bg-green-900/30',
     borderColor: 'border-green-300',
     icon: CheckCircleIcon,
     description: 'SPK sudah selesai diinput'
@@ -64,11 +64,11 @@ const STATUS_CONFIG = {
 };
 
 const WO_STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
-  draft: { label: 'Draft', color: 'text-gray-600', bgColor: 'bg-gray-100' },
-  planned: { label: 'Planned', color: 'text-blue-600', bgColor: 'bg-blue-100' },
-  in_progress: { label: 'In Progress', color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
-  completed: { label: 'Completed', color: 'text-green-600', bgColor: 'bg-green-100' },
-  cancelled: { label: 'Cancelled', color: 'text-red-600', bgColor: 'bg-red-100' }
+  draft: { label: 'Draft', color: 'text-gray-600 dark:text-gray-300', bgColor: 'bg-gray-100 dark:bg-gray-700' },
+  planned: { label: 'Planned', color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
+  in_progress: { label: 'In Progress', color: 'text-yellow-600 dark:text-yellow-400', bgColor: 'bg-yellow-100 dark:bg-yellow-900/30' },
+  completed: { label: 'Completed', color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900/30' },
+  cancelled: { label: 'Cancelled', color: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-100 dark:bg-red-900/30' }
 };
 
 export default function WorkOrderStatus() {
@@ -189,7 +189,7 @@ export default function WorkOrderStatus() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ClipboardDocumentListIcon className="h-7 w-7 text-blue-600" />
+            <ClipboardDocumentListIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
             Status Pengerjaan
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Pantau status input produksi SPK</p>
@@ -208,11 +208,11 @@ export default function WorkOrderStatus() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div 
           onClick={() => setInputStatusFilter('all')}
-          className={`bg-white rounded-xl shadow p-4 cursor-pointer transition-all hover:shadow-lg ${inputStatusFilter === 'all' ? 'ring-2 ring-blue-500' : ''}`}
+          className={`bg-white rounded-xl shadow p-4 cursor-pointer transition-all hover:shadow-lg dark:bg-gray-800 ${inputStatusFilter === 'all' ? 'ring-2 ring-blue-500' : ''}`}
         >
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <ClipboardDocumentListIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-3 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+              <ClipboardDocumentListIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Total WO</p>
@@ -223,7 +223,7 @@ export default function WorkOrderStatus() {
         
         <div 
           onClick={() => setInputStatusFilter('not_started')}
-          className={`bg-white rounded-xl shadow p-4 cursor-pointer transition-all hover:shadow-lg ${inputStatusFilter === 'not_started' ? 'ring-2 ring-gray-500' : ''}`}
+          className={`bg-white rounded-xl shadow p-4 cursor-pointer transition-all hover:shadow-lg dark:bg-gray-800 ${inputStatusFilter === 'not_started' ? 'ring-2 ring-gray-500' : ''}`}
         >
           <div className="flex items-center gap-3">
             <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
@@ -238,30 +238,30 @@ export default function WorkOrderStatus() {
         
         <div 
           onClick={() => setInputStatusFilter('in_progress')}
-          className={`bg-white rounded-xl shadow p-4 cursor-pointer transition-all hover:shadow-lg ${inputStatusFilter === 'in_progress' ? 'ring-2 ring-blue-500' : ''}`}
+          className={`bg-white rounded-xl shadow p-4 cursor-pointer transition-all hover:shadow-lg dark:bg-gray-800 ${inputStatusFilter === 'in_progress' ? 'ring-2 ring-blue-500' : ''}`}
         >
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <PencilSquareIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-3 bg-blue-100 rounded-lg dark:bg-blue-900/30">
+              <PencilSquareIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Sedang Diisi</p>
-              <p className="text-2xl font-bold text-blue-600">{stats.inProgress}</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.inProgress}</p>
             </div>
           </div>
         </div>
         
         <div 
           onClick={() => setInputStatusFilter('completed')}
-          className={`bg-white rounded-xl shadow p-4 cursor-pointer transition-all hover:shadow-lg ${inputStatusFilter === 'completed' ? 'ring-2 ring-green-500' : ''}`}
+          className={`bg-white rounded-xl shadow p-4 cursor-pointer transition-all hover:shadow-lg dark:bg-gray-800 ${inputStatusFilter === 'completed' ? 'ring-2 ring-green-500' : ''}`}
         >
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <CheckCircleIcon className="h-6 w-6 text-green-600" />
+            <div className="p-3 bg-green-100 rounded-lg dark:bg-green-900/30">
+              <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Selesai</p>
-              <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.completed}</p>
             </div>
           </div>
         </div>
@@ -328,7 +328,7 @@ export default function WorkOrderStatus() {
                     <td className="px-4 py-3">
                       <Link 
                         to={`/app/production/work-orders/${wo.id}`}
-                        className="text-blue-600 hover:text-blue-800 font-medium"
+                        className="text-blue-600 hover:text-blue-800 font-medium dark:text-blue-400"
                       >
                         {wo.wo_number}
                       </Link>
@@ -382,7 +382,7 @@ export default function WorkOrderStatus() {
                       <div className="flex items-center justify-center gap-2">
                         <Link
                           to={`/app/production/work-orders/${wo.id}/input`}
-                          className="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg"
+                          className="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg dark:text-blue-400"
                           title="Input Produksi"
                         >
                           <PencilSquareIcon className="h-5 w-5" />

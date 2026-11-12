@@ -57,11 +57,11 @@ const AttendanceAdmin: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      present: 'bg-green-100 text-green-800',
-      late: 'bg-yellow-100 text-yellow-800',
-      absent: 'bg-red-100 text-red-800'
+      present: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+      late: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+      absent: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
     };
-    return styles[status] || 'bg-gray-100 text-gray-800';
+    return styles[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
   };
 
   return (
@@ -97,16 +97,16 @@ const AttendanceAdmin: React.FC = () => {
 
       {/* Messages */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600" />
-          <p className="text-red-800">{error}</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3 dark:bg-red-900/20 dark:border-red-800">
+          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <p className="text-red-800 dark:text-red-300">{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-          <CheckCircle className="w-5 h-5 text-green-600" />
-          <p className="text-green-800">{success}</p>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3 dark:bg-green-900/20 dark:border-green-800">
+          <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+          <p className="text-green-800 dark:text-green-300">{success}</p>
         </div>
       )}
 
@@ -138,7 +138,7 @@ const AttendanceAdmin: React.FC = () => {
                 <button
                   onClick={() => handleDelete(record)}
                   disabled={deletingId === record.id}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50"
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50 dark:text-red-400"
                   title="Hapus"
                 >
                   {deletingId === record.id ? (
@@ -160,9 +160,9 @@ const AttendanceAdmin: React.FC = () => {
       )}
 
       {/* Tips */}
-      <div className="bg-blue-50 rounded-xl p-4">
-        <h4 className="font-medium text-blue-900 mb-2">Tips:</h4>
-        <ul className="text-sm text-blue-700 space-y-1">
+      <div className="bg-blue-50 rounded-xl p-4 dark:bg-blue-900/20">
+        <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">Tips:</h4>
+        <ul className="text-sm text-blue-700 space-y-1 dark:text-blue-300">
           <li>• Gunakan untuk menghapus data test atau nama double</li>
           <li>• Cari berdasarkan nama staff</li>
           <li>• Data yang dihapus tidak dapat dikembalikan</li>

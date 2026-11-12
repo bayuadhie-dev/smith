@@ -275,7 +275,7 @@ const UserManual: React.FC = () => {
               Hasil Pencarian
             </h4>
             {isSearching ? (
-              <p className="text-sm text-gray-500">Mencari...</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Mencari...</p>
             ) : searchResults.length > 0 ? (
               <div className="space-y-2">
                 {searchResults.map((result, idx) => (
@@ -306,7 +306,7 @@ const UserManual: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500">Tidak ada hasil</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Tidak ada hasil</p>
             )}
           </div>
         )}
@@ -330,11 +330,11 @@ const UserManual: React.FC = () => {
                   className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <IconComponent className="h-5 w-5 text-blue-600" />
+                    <IconComponent className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {category.name}
                     </span>
-                    <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 dark:bg-gray-600 px-2 py-0.5 rounded-full">
+                    <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 dark:bg-gray-600 px-2 py-0.5 rounded-full dark:text-gray-400">
                       {category.article_count}
                     </span>
                   </div>
@@ -401,12 +401,12 @@ const UserManual: React.FC = () => {
         <div className="max-w-4xl mx-auto">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm mb-6 bg-white dark:bg-gray-800 px-4 py-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-            <button onClick={() => navigate('/app/manual')} className="text-blue-600 hover:text-blue-700 flex items-center gap-1 font-medium">
+            <button onClick={() => navigate('/app/manual')} className="text-blue-600 hover:text-blue-700 flex items-center gap-1 font-medium dark:text-blue-400">
               <HomeIcon className="h-4 w-4" />
               Manual
             </button>
             <ChevronRightIcon className="h-4 w-4 text-gray-400" />
-            <span className="text-gray-500">{currentArticle.category_name}</span>
+            <span className="text-gray-500 dark:text-gray-400">{currentArticle.category_name}</span>
             <ChevronRightIcon className="h-4 w-4 text-gray-400" />
             <span className="text-gray-900 dark:text-white font-medium">{currentArticle.title}</span>
           </nav>
@@ -454,9 +454,9 @@ const UserManual: React.FC = () => {
         {/* Hero Section */}
         <div className="text-center mb-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 rounded-3xl p-12 text-white shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full opacity-10">
-            <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl"></div>
-            <div className="absolute bottom-10 right-10 w-40 h-40 bg-white rounded-full blur-3xl"></div>
-            <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white rounded-full blur-2xl"></div>
+            <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl dark:bg-gray-800"></div>
+            <div className="absolute bottom-10 right-10 w-40 h-40 bg-white rounded-full blur-3xl dark:bg-gray-800"></div>
+            <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white rounded-full blur-2xl dark:bg-gray-800"></div>
           </div>
           <div className="relative z-10">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-2xl mb-6 backdrop-blur-sm shadow-lg">
@@ -485,7 +485,7 @@ const UserManual: React.FC = () => {
               placeholder="Cari panduan, tutorial, atau FAQ..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-14 pr-6 py-5 bg-white border-2 border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 text-lg shadow-xl transition-all"
+              className="w-full pl-14 pr-6 py-5 bg-white border-2 border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 text-lg shadow-xl transition-all dark:bg-gray-800 dark:border-gray-800"
             />
           </div>
         </div>
@@ -530,7 +530,7 @@ const UserManual: React.FC = () => {
         {faqs.length > 0 && (
           <div className="mt-12">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-              <QuestionMarkCircleIcon className="h-8 w-8 text-green-600" />
+              <QuestionMarkCircleIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
               Pertanyaan Umum (FAQ)
             </h2>
             <div className="space-y-4">
@@ -567,7 +567,7 @@ const UserManual: React.FC = () => {
             {faqs.length > 5 && (
               <button
                 onClick={() => navigate('/app/manual/faq')}
-                className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
+                className="mt-4 text-blue-600 hover:text-blue-700 font-medium dark:text-blue-400"
               >
                 Lihat semua FAQ →
               </button>

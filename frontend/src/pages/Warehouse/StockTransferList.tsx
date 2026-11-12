@@ -57,8 +57,8 @@ export default function StockTransferList({ receiveMode = false }: { receiveMode
             <th className={th}>Nomor</th><th className={th}>Tanggal</th><th className={th}>Sumber</th><th className={th}>Dari</th><th className={th}>Ke</th><th className={`${th} text-right`}>Barang</th><th className={th}>Status</th>{receiveMode && <th className={th}></th>}
           </tr></thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500">Memuat...</td></tr>}
-            {!loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500">{receiveMode ? 'Tidak ada pemindahan yang menunggu diterima.' : 'Belum ada pemindahan barang.'}</td></tr>}
+            {loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+            {!loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{receiveMode ? 'Tidak ada pemindahan yang menunggu diterima.' : 'Belum ada pemindahan barang.'}</td></tr>}
             {rows.map((r) => {
               const st = TRANSFER_STATUS[r.status] || { label: r.status, cls: '' }
               return (

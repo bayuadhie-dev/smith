@@ -209,7 +209,7 @@ const navigate = useNavigate();
           <div className="flex items-center space-x-4">
             <button
               onClick={() => navigate('/app/products/categories')}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 transition-colors"
+              className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 transition-colors dark:hover:text-white"
             >
               <ArrowLeftIcon className="h-6 w-6" />
             </button>
@@ -242,12 +242,12 @@ const navigate = useNavigate();
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   className={`block w-full rounded-lg border ${
-                    errors.name ? 'border-red-300' : 'border-gray-300'
+                    errors.name ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
                   } px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500`}
                   placeholder="Enter category name"
                 />
                 {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
                 )}
               </div>
 
@@ -281,13 +281,13 @@ const navigate = useNavigate();
                   value={formData.sort_order}
                   onChange={(e) => handleInputChange('sort_order', parseInt(e.target.value) || 0)}
                   className={`block w-full rounded-lg border ${
-                    errors.sort_order ? 'border-red-300' : 'border-gray-300'
+                    errors.sort_order ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
                   } px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500`}
                   placeholder="0"
                   min="0"
                 />
                 {errors.sort_order && (
-                  <p className="mt-1 text-sm text-red-600">{errors.sort_order}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.sort_order}</p>
                 )}
               </div>
 
@@ -301,12 +301,12 @@ const navigate = useNavigate();
                   value={formData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   className={`block w-full rounded-lg border ${
-                    errors.description ? 'border-red-300' : 'border-gray-300'
+                    errors.description ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
                   } px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500`}
                   placeholder="Enter category description"
                 />
                 {errors.description && (
-                  <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description}</p>
                 )}
               </div>
 
@@ -352,7 +352,7 @@ const navigate = useNavigate();
                     type="checkbox"
                     checked={formData.is_active}
                     onChange={(e) => handleInputChange('is_active', e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:text-blue-400"
                   />
                   <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700 dark:text-gray-200">
                     Active Category

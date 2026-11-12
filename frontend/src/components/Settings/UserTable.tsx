@@ -52,7 +52,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onDelete, onView }
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="h-10 w-10 flex-shrink-0">
-                      <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center dark:bg-gray-600">
                         <UserIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
                       </div>
                     </div>
@@ -71,7 +71,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onDelete, onView }
                     {user.roles && user.roles.length > 0 ? user.roles.map((role, index) => (
                       <span
                         key={`user-${user.id}-role-${role.id || role.name || index}`}
-                        className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800"
+                        className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                       >
                         {role.name || 'Unknown Role'}
                       </span>
@@ -84,13 +84,13 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onDelete, onView }
                   <div className="flex items-center">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       user.is_active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                     }`}>
                       {user.is_active ? 'Active' : 'Inactive'}
                     </span>
                     {user.is_admin && (
-                      <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                      <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
                       </span>
                     )}
                   </div>
@@ -105,21 +105,21 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onDelete, onView }
                   <div className="flex items-center justify-end space-x-2">
                     <button
                       onClick={() => onView(user)}
-                      className="text-blue-600 hover:text-blue-900 p-1 rounded-md hover:bg-blue-50"
+                      className="text-blue-600 hover:text-blue-900 p-1 rounded-md hover:bg-blue-50 dark:text-blue-400"
                       title="View Details"
                     >
                       <EyeIcon className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => onEdit(user)}
-                      className="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-50"
+                      className="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-50 dark:text-indigo-400"
                       title="Edit User"
                     >
                       <PencilIcon className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => onDelete(user)}
-                      className="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50"
+                      className="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50 dark:text-red-400"
                       title="Delete User"
                     >
                       <TrashIcon className="h-4 w-4" />

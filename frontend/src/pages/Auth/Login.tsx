@@ -183,11 +183,11 @@ export default function Login() {
         <div className="flex flex-col justify-between w-full px-12 xl:px-20 py-14">
           <div className="flex items-center gap-3">
             {logoUrl ? (
-              <span className="flex h-12 items-center rounded-lg bg-white px-2">
+              <span className="flex h-12 items-center rounded-lg bg-white px-2 dark:bg-gray-800">
                 <img src={logoUrl} alt={companyName} className="h-9 w-auto max-w-[9rem] object-contain" />
               </span>
             ) : (
-              <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white text-base font-semibold text-primary-700">
+              <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white text-base font-semibold text-primary-700 dark:bg-gray-800 dark:text-primary-300">
                 {companyName.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || 'ER'}
               </span>
             )}
@@ -351,11 +351,11 @@ export default function Login() {
                   id="remember-me"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-600 cursor-pointer"
+                  className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-600 cursor-pointer dark:border-slate-600 dark:text-primary-400"
                 />
                 <span className="text-sm text-slate-600 dark:text-slate-400">Ingat saya</span>
               </label>
-              <Link to="/forgot-password" className="text-sm font-medium text-primary-600 hover:text-emerald-700 transition-colors">
+              <Link to="/forgot-password" className="text-sm font-medium text-primary-600 hover:text-emerald-700 transition-colors dark:text-primary-400">
                 Lupa kata sandi?
               </Link>
             </div>
@@ -386,7 +386,7 @@ export default function Login() {
               <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-slate-50 dark:bg-slate-900 text-slate-500">atau</span>
+              <span className="px-4 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400">atau</span>
             </div>
           </div>
 
@@ -423,7 +423,7 @@ export default function Login() {
           <div className="text-center mt-6">
             <p className="text-slate-600 dark:text-slate-400">
               Belum punya akun?{' '}
-              <Link to="/register" className="font-semibold text-primary-600 hover:text-emerald-700 transition-colors">
+              <Link to="/register" className="font-semibold text-primary-600 hover:text-emerald-700 transition-colors dark:text-primary-400">
                 Daftar
               </Link>
             </p>

@@ -80,14 +80,14 @@ const ReimbursementDetail: React.FC = () => {
   }, [id]);
 
   if (loading) {
-    return <div className="p-6 text-gray-500">Memuat...</div>;
+    return <div className="p-6 text-gray-500 dark:text-gray-400">Memuat...</div>;
   }
 
   if (error || !data) {
     return (
       <div className="p-6">
-        <p className="text-red-600">{error || 'Reimbursement tidak ditemukan.'}</p>
-        <button onClick={() => navigate(-1)} className="mt-4 text-primary-600 hover:underline">
+        <p className="text-red-600 dark:text-red-400">{error || 'Reimbursement tidak ditemukan.'}</p>
+        <button onClick={() => navigate(-1)} className="mt-4 text-primary-600 hover:underline dark:text-primary-400">
           &larr; Kembali
         </button>
       </div>
@@ -96,7 +96,7 @@ const ReimbursementDetail: React.FC = () => {
 
   return (
     <div className="p-6 max-w-2xl">
-      <button onClick={() => navigate(-1)} className="text-sm text-gray-500 hover:text-gray-700 mb-4">
+      <button onClick={() => navigate(-1)} className="text-sm text-gray-500 hover:text-gray-700 mb-4 dark:text-gray-400 dark:hover:text-white">
         &larr; Kembali
       </button>
 
@@ -105,7 +105,7 @@ const ReimbursementDetail: React.FC = () => {
       <div className="mb-6">
         {data.status === 'paid'
           ? <DocumentGenerateButton transactionType="reimbursement" transactionId={data.id} transactionNumber={data.reimbursement_number} label="Cetak Bukti" />
-          : <p className="text-xs text-gray-500">Bukti reimbursement bisa dicetak setelah dibayar.</p>}
+          : <p className="text-xs text-gray-500 dark:text-gray-400">Bukti reimbursement bisa dicetak setelah dibayar.</p>}
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 mb-6">
@@ -151,7 +151,7 @@ const ReimbursementDetail: React.FC = () => {
                 <div key={st.level} className="rounded-md border border-gray-100 p-3 dark:border-gray-700">
                   <div className="flex items-center justify-between text-sm">
                     <span><b>{st.kind === 'mengetahui' ? 'Mengetahui' : 'Menyetujui'}</b>: {st.assigned_user_name}</span>
-                    <span className={st.status === 'approved' ? 'text-emerald-700' : st.status === 'rejected' ? 'text-red-600' : 'text-amber-600'}>{st.status === 'approved' ? 'Disetujui' : st.status === 'rejected' ? 'Ditolak' : 'Menunggu'}</span>
+                    <span className={st.status === 'approved' ? 'text-emerald-700 dark:text-emerald-300' : st.status === 'rejected' ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}>{st.status === 'approved' ? 'Disetujui' : st.status === 'rejected' ? 'Ditolak' : 'Menunggu'}</span>
                   </div>
                   {st.approved_at && <p className="mt-1 text-xs text-gray-400">{st.approver_name} · {new Date(st.approved_at).toLocaleString('id-ID')}{st.comments ? ` · ${st.comments}` : ''}</p>}
                   {actionable && (rejecting === st.level ? (
@@ -165,7 +165,7 @@ const ReimbursementDetail: React.FC = () => {
                   ) : (
                     <div className="mt-2 flex gap-2">
                       <button type="button" disabled={busy} className="rounded bg-emerald-600 px-3 py-1 text-xs text-white disabled:opacity-50" onClick={() => act(st.level, 'approve')}>Setujui</button>
-                      <button type="button" className="rounded border border-red-200 px-3 py-1 text-xs text-red-600" onClick={() => setRejecting(st.level)}>Tolak</button>
+                      <button type="button" className="rounded border border-red-200 px-3 py-1 text-xs text-red-600 dark:text-red-400 dark:border-red-800" onClick={() => setRejecting(st.level)}>Tolak</button>
                     </div>
                   ))}
                 </div>
@@ -177,7 +177,7 @@ const ReimbursementDetail: React.FC = () => {
 
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Daftar Expense</h2>
       {data.expenses.length === 0 ? (
-        <p className="text-sm text-gray-500">Tidak ada expense dalam reimbursement ini.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Tidak ada expense dalam reimbursement ini.</p>
       ) : (
         <table className="w-full text-sm bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
           <thead>

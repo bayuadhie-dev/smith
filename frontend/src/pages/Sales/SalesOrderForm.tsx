@@ -518,7 +518,7 @@ const navigate = useNavigate()
                 className="w-full"
               />
               {errors.customer_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.customer_id.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.customer_id.message}</p>
               )}
             </div>
 
@@ -553,7 +553,7 @@ const navigate = useNavigate()
                 className="input-field"
               />
               {errors.order_date && (
-                <p className="mt-1 text-sm text-red-600">{errors.order_date.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.order_date.message}</p>
               )}
             </div>
 
@@ -594,23 +594,23 @@ const navigate = useNavigate()
 
           {/* Customer Info Display */}
           {selectedCustomer && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">Customer Information</h4>
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
+              <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">Customer Information</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <span className="text-blue-600">Type:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Type:</span>
                   <p className="font-medium">{selectedCustomer.customer_type?.replace('_', ' ')}</p>
                 </div>
                 <div>
-                  <span className="text-blue-600">Credit Limit:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Credit Limit:</span>
                   <p className="font-medium">Rp {selectedCustomer.credit_limit?.toLocaleString() || '0'}</p>
                 </div>
                 <div>
-                  <span className="text-blue-600">Payment Terms:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Payment Terms:</span>
                   <p className="font-medium">{selectedCustomer.payment_terms_days || 30} days</p>
                 </div>
                 <div>
-                  <span className="text-blue-600">Contact:</span>
+                  <span className="text-blue-600 dark:text-blue-400">Contact:</span>
                   <p className="font-medium">{selectedCustomer.contact_person || 'N/A'}</p>
                 </div>
               </div>
@@ -747,7 +747,7 @@ const navigate = useNavigate()
                         placeholder="mis. 10+5+2"
                       />
                       {String(watchedItems[index]?.discount_tiers || '').includes('+') && (
-                        <p className="text-xs text-gray-500 mt-1">Efektif {effectiveDiscount(watchedItems[index]?.discount_tiers).toFixed(2)}%</p>
+                        <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">Efektif {effectiveDiscount(watchedItems[index]?.discount_tiers).toFixed(2)}%</p>
                       )}
                     </div>
 
@@ -774,18 +774,18 @@ const navigate = useNavigate()
                   {/* Product Info */}
                   {selectedProduct && (
                     <div className="mt-3 space-y-2">
-                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg dark:bg-green-900/20 dark:border-green-800">
                         <div className="grid grid-cols-3 gap-4 text-sm">
                           <div>
-                            <span className="text-green-600">Category:</span>
+                            <span className="text-green-600 dark:text-green-400">Category:</span>
                             <p className="font-medium">{selectedProduct.category || 'N/A'}</p>
                           </div>
                           <div>
-                            <span className="text-green-600">Stock Available:</span>
+                            <span className="text-green-600 dark:text-green-400">Stock Available:</span>
                             <p className="font-medium">Check inventory</p>
                           </div>
                           <div>
-                            <span className="text-green-600">List Price:</span>
+                            <span className="text-green-600 dark:text-green-400">List Price:</span>
                             <p className="font-medium">Rp {selectedProduct.price?.toLocaleString()}</p>
                           </div>
                         </div>
@@ -795,14 +795,14 @@ const navigate = useNavigate()
                       {(() => {
                         const bomData = getProductBOMInfo(selectedProduct.product_id)
                         return bomData.hasBOM ? (
-                          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
                             <div className="flex items-center gap-2 mb-2">
-                              <CheckCircleIcon className="h-5 w-5 text-blue-600" />
-                              <span className="text-sm font-medium text-blue-900">
+                              <CheckCircleIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                              <span className="text-sm font-medium text-blue-900 dark:text-blue-200">
                                 BOM Available - Production Ready
                               </span>
                             </div>
-                            <div className="grid grid-cols-3 gap-4 text-xs text-blue-700">
+                            <div className="grid grid-cols-3 gap-4 text-xs text-blue-700 dark:text-blue-300">
                               <div>
                                 <span className="font-medium">BOM:</span> {bomData.bom_number} (v{bomData.version})
                               </div>
@@ -815,10 +815,10 @@ const navigate = useNavigate()
                             </div>
                           </div>
                         ) : (
-                          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:border-yellow-800">
                             <div className="flex items-center gap-2">
-                              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600" />
-                              <span className="text-sm font-medium text-yellow-900">
+                              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                              <span className="text-sm font-medium text-yellow-900 dark:text-yellow-200">
                                 No BOM - Manual production planning required
                               </span>
                             </div>
@@ -834,7 +834,7 @@ const navigate = useNavigate()
 
           {/* MRP Material Requirements Panel - Inside Order Items Card */}
           {(materialRequirements.length > 0 || loadingMRP || showMRPPanel) && (
-            <div className="mt-6 pt-4 border-t border-orange-200 bg-orange-50 -mx-6 px-6 pb-4">
+            <div className="mt-6 pt-4 border-t border-orange-200 bg-orange-50 -mx-6 px-6 pb-4 dark:bg-orange-900/20 dark:border-orange-800">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
                 <svg className="h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -845,7 +845,7 @@ const navigate = useNavigate()
               <button
                 type="button"
                 onClick={() => setShowMRPPanel(!showMRPPanel)}
-                className="text-sm text-blue-600 hover:text-blue-800"
+                className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
               >
                 {showMRPPanel ? 'Hide Details' : 'Show Details'}
               </button>
@@ -862,29 +862,29 @@ const navigate = useNavigate()
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <div className={`p-4 rounded-lg ${
                     materialRequirements.every(r => r.has_sufficient_stock) 
-                      ? 'bg-green-50 border border-green-200' 
-                      : 'bg-red-50 border border-red-200'
+                      ? 'bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800' 
+                      : 'bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800'
                   }`}>
                     <p className="text-sm text-gray-600 dark:text-gray-300">Material Status</p>
                     <p className={`text-lg font-bold ${
                       materialRequirements.every(r => r.has_sufficient_stock) 
-                        ? 'text-green-700' 
-                        : 'text-red-700'
+                        ? 'text-green-700 dark:text-green-300' 
+                        : 'text-red-700 dark:text-red-300'
                     }`}>
                       {materialRequirements.every(r => r.has_sufficient_stock) 
                         ? '✓ All Available' 
                         : '⚠ Shortage Detected'}
                     </p>
                   </div>
-                  <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                  <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg dark:bg-orange-900/20 dark:border-orange-800">
                     <p className="text-sm text-gray-600 dark:text-gray-300">Total Shortage Items</p>
-                    <p className="text-lg font-bold text-orange-700">
+                    <p className="text-lg font-bold text-orange-700 dark:text-orange-300">
                       {materialRequirements.reduce((sum, r) => sum + r.total_shortage_items, 0)} items
                     </p>
                   </div>
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
                     <p className="text-sm text-gray-600 dark:text-gray-300">Est. Shortage Cost</p>
-                    <p className="text-lg font-bold text-blue-700">
+                    <p className="text-lg font-bold text-blue-700 dark:text-blue-300">
                       {formatRupiah(materialRequirements.reduce((sum, r) => sum + r.total_shortage_cost, 0))}
                     </p>
                   </div>
@@ -894,19 +894,19 @@ const navigate = useNavigate()
                 {showMRPPanel && materialRequirements.map((req, idx) => (
                   <div key={idx} className="mb-4 border rounded-lg overflow-hidden">
                     <div className={`px-4 py-3 flex items-center justify-between ${
-                      req.has_sufficient_stock ? 'bg-green-100' : 'bg-red-100'
+                      req.has_sufficient_stock ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
                     }`}>
                       <div className="flex items-center gap-2">
                         {req.has_sufficient_stock ? (
-                          <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                          <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
                         ) : (
-                          <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
+                          <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
                         )}
                         <span className="font-medium">{req.product_name}</span>
                         <span className="text-sm text-gray-600 dark:text-gray-300">({req.quantity.toLocaleString()} pcs)</span>
                       </div>
                       <span className={`text-sm font-medium ${
-                        req.has_sufficient_stock ? 'text-green-700' : 'text-red-700'
+                        req.has_sufficient_stock ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'
                       }`}>
                         {req.has_sufficient_stock ? 'Stock OK' : `${req.total_shortage_items} shortage`}
                       </span>
@@ -937,16 +937,16 @@ const navigate = useNavigate()
 
                 {/* Action Info */}
                 {!materialRequirements.every(r => r.has_sufficient_stock) && (
-                  <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg dark:bg-amber-900/20 dark:border-amber-800">
                     <div className="flex items-start gap-3">
-                      <ExclamationTriangleIcon className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <ExclamationTriangleIcon className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5 dark:text-amber-400" />
                       <div>
-                        <p className="font-medium text-amber-800">Material Shortage Detected</p>
-                        <p className="text-sm text-amber-700 mt-1">
+                        <p className="font-medium text-amber-800 dark:text-amber-300">Material Shortage Detected</p>
+                        <p className="text-sm text-amber-700 mt-1 dark:text-amber-300">
                           When you submit this order, the system will automatically create a <strong>Purchase Requisition</strong> for 
                           the missing materials. The order will proceed to production once materials are received.
                         </p>
-                        <p className="text-sm text-amber-600 mt-2">
+                        <p className="text-sm text-amber-600 mt-2 dark:text-amber-400">
                           Workflow: Sales Order → Purchase Requisition → PO → GRN → SPK → QC → Shipping
                         </p>
                       </div>
@@ -1020,9 +1020,9 @@ const navigate = useNavigate()
       </form>
 
       {/* Sales Tips */}
-      <div className="card p-4 bg-blue-50 border border-blue-200">
-        <h4 className="font-medium text-blue-900 mb-2">💡 Sales Tips</h4>
-        <ul className="text-sm text-blue-800 space-y-1">
+      <div className="card p-4 bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+        <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">💡 Sales Tips</h4>
+        <ul className="text-sm text-blue-800 space-y-1 dark:text-blue-300">
           <li>• Verify customer credit limit before processing large orders</li>
           <li>• Check product availability in inventory before confirming orders</li>
           <li>• Set realistic delivery dates considering production schedules</li>

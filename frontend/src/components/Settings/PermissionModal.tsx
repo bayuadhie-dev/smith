@@ -219,7 +219,7 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
                   id="is_active"
                   checked={formData.is_active}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 dark:border-gray-600 rounded"
+                  className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 dark:border-gray-600 rounded dark:text-purple-400"
                 />
                 <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700 dark:text-gray-200">
                   Active (permission is enabled and can be assigned to roles)
@@ -227,8 +227,8 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
               </div>
 
               {/* Info Box */}
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <p className="text-sm text-purple-800">
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 dark:bg-purple-900/20 dark:border-purple-800">
+                <p className="text-sm text-purple-800 dark:text-purple-300">
                   <strong>Note:</strong> Permissions control what actions users can perform in each module. 
                   After creating a permission, assign it to roles to grant access to users.
                 </p>

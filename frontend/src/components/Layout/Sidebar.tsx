@@ -800,7 +800,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                                       <>
                                                         <span className={clsx(
                                                           'h-1 w-1 rounded-full shrink-0 transition-colors duration-150',
-                                                          isActive ? 'bg-white' : 'bg-gray-300 dark:bg-gray-600 group-hover:bg-primary-600'
+                                                          isActive ? 'bg-white dark:bg-gray-800' : 'bg-gray-300 dark:bg-gray-600 group-hover:bg-primary-600'
                                                         )} />
                                                         <span className="truncate">{subChild.name}</span>
                                                       </>

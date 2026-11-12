@@ -369,7 +369,7 @@ export default function OEERecordForm() {
                         <button
                           type="button"
                           onClick={() => removeDowntimeRecord(index)}
-                          className="text-red-600 hover:text-red-900 text-sm"
+                          className="text-red-600 hover:text-red-900 text-sm dark:text-red-400"
                         >
                         </button>
                       )}
@@ -447,17 +447,17 @@ export default function OEERecordForm() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-300">Availability</span>
-                  <span className="text-lg font-semibold text-blue-600">{metrics.availability}%</span>
+                  <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">{metrics.availability}%</span>
                 </div>
                 
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-300">Performance</span>
-                  <span className="text-lg font-semibold text-green-600">{metrics.performance}%</span>
+                  <span className="text-lg font-semibold text-green-600 dark:text-green-400">{metrics.performance}%</span>
                 </div>
                 
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-300">{t('navigation.quality')}</span>
-                  <span className="text-lg font-semibold text-purple-600">{metrics.quality}%</span>
+                  <span className="text-lg font-semibold text-purple-600 dark:text-purple-400">{metrics.quality}%</span>
                 </div>
                 
                 <hr />
@@ -465,9 +465,9 @@ export default function OEERecordForm() {
                 <div className="flex justify-between items-center">
                   <span className="text-base font-medium text-gray-900 dark:text-white">Overall OEE</span>
                   <span className={`text-2xl font-bold ${
-                    parseFloat(metrics.oee) >= 85 ? 'text-green-600' :
-                    parseFloat(metrics.oee) >= 70 ? 'text-yellow-600' :
-                    'text-red-600'
+                    parseFloat(metrics.oee) >= 85 ? 'text-green-600 dark:text-green-400' :
+                    parseFloat(metrics.oee) >= 70 ? 'text-yellow-600 dark:text-yellow-400' :
+                    'text-red-600 dark:text-red-400'
                   }`}>
                     {metrics.oee}%
                   </span>

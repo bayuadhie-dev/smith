@@ -182,7 +182,7 @@ export default function HRDashboard() {
             />
             <button
               onClick={() => window.location.reload()}
-              className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+              className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
             >
               <ArrowPathIcon className="h-4 w-4" />
               Muat ulang
@@ -217,7 +217,7 @@ export default function HRDashboard() {
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Absensi hari ini</h2>
           <div className="space-y-3">
             {attendanceData?.attendances?.slice(0, 5).map((attendance: any) => (
-              <div key={attendance.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+              <div key={attendance.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0 dark:border-gray-800">
                 <div className="flex items-center">
                   <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                     <UserGroupIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
@@ -254,26 +254,26 @@ export default function HRDashboard() {
           <div className="space-y-3">
             {/* Pending Leave Approvals */}
             {pendingLeaves > 0 && (
-              <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
-                <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg dark:bg-yellow-900/20">
+                <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 mt-0.5 dark:text-yellow-400" />
                 <div>
-                  <p className="text-sm font-medium text-yellow-800">
+                  <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
                     {pendingLeaves} leave request{pendingLeaves > 1 ? 's' : ''} pending approval
                   </p>
-                  <p className="text-xs text-yellow-700">Review and approve employee leave requests</p>
+                  <p className="text-xs text-yellow-700 dark:text-yellow-300">Review and approve employee leave requests</p>
                 </div>
               </div>
             )}
 
             {/* Payroll Processing */}
             {payrollData && payrollData.periods && payrollData.periods.length > 0 && (
-              <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                <BanknotesIcon className="w-5 h-5 text-blue-600 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg dark:bg-blue-900/20">
+                <BanknotesIcon className="w-5 h-5 text-blue-600 mt-0.5 dark:text-blue-400" />
                 <div>
-                  <p className="text-sm font-medium text-blue-800">
+                  <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
                     Payroll processing in progress
                   </p>
-                  <p className="text-xs text-blue-700">
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
                     {payrollData.periods.length} payroll period{payrollData.periods.length > 1 ? 's' : ''} being processed
                   </p>
                 </div>
@@ -282,26 +282,26 @@ export default function HRDashboard() {
 
             {/* Training Sessions */}
             {ongoingTrainings > 0 && (
-              <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
-                <AcademicCapIcon className="w-5 h-5 text-purple-600 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg dark:bg-purple-900/20">
+                <AcademicCapIcon className="w-5 h-5 text-purple-600 mt-0.5 dark:text-purple-400" />
                 <div>
-                  <p className="text-sm font-medium text-purple-800">
+                  <p className="text-sm font-medium text-purple-800 dark:text-purple-300">
                     {ongoingTrainings} training session{ongoingTrainings > 1 ? 's' : ''} in progress
                   </p>
-                  <p className="text-xs text-purple-700">Monitor attendance and progress</p>
+                  <p className="text-xs text-purple-700 dark:text-purple-300">Monitor attendance and progress</p>
                 </div>
               </div>
             )}
 
             {/* High Attendance Rate */}
             {parseFloat(attendanceRate) >= 95 && (
-              <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                <CheckCircleIcon className="w-5 h-5 text-green-600 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg dark:bg-green-900/20">
+                <CheckCircleIcon className="w-5 h-5 text-green-600 mt-0.5 dark:text-green-400" />
                 <div>
-                  <p className="text-sm font-medium text-green-800">
+                  <p className="text-sm font-medium text-green-800 dark:text-green-300">
                     Excellent attendance rate today!
                   </p>
-                  <p className="text-xs text-green-700">{attendanceRate}% attendance rate achieved</p>
+                  <p className="text-xs text-green-700 dark:text-green-300">{attendanceRate}% attendance rate achieved</p>
                 </div>
               </div>
             )}

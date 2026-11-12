@@ -123,9 +123,9 @@ const BatchTraceability: React.FC = () => {
                         <td className="px-4 py-2 text-sm text-right font-medium">{inv.quantity.toLocaleString()}</td>
                         <td className="px-4 py-2">
                           <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                            inv.stock_status === 'released' || inv.stock_status === 'available' ? 'bg-green-100 text-green-700' :
-                            inv.stock_status === 'quarantine' || inv.stock_status === 'on_hold' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-red-100 text-red-700'
+                            inv.stock_status === 'released' || inv.stock_status === 'available' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                            inv.stock_status === 'quarantine' || inv.stock_status === 'on_hold' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                            'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                           } dark:bg-green-900/30 dark:bg-yellow-900/30 dark:bg-red-900/30 dark:text-green-300 dark:text-yellow-300 dark:text-red-300`}>{inv.stock_status}</span>
                         </td>
                       </tr>
@@ -147,7 +147,7 @@ const BatchTraceability: React.FC = () => {
                 {result.transactions.map((txn: any) => (
                   <div key={txn.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg dark:bg-gray-900">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                      txn.direction === 'in' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      txn.direction === 'in' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                     } dark:bg-green-900/30 dark:bg-red-900/30 dark:text-green-300 dark:text-red-300`}>
                       {txn.direction === 'in' ? 'IN' : 'OUT'}
                     </div>

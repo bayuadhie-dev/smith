@@ -188,7 +188,7 @@ export default function CloseWorkOrder() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Link to={`/app/production/work-orders/${workOrderId}`} className="text-gray-500 hover:text-gray-700">
+        <Link to={`/app/production/work-orders/${workOrderId}`} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
         <div>
@@ -265,13 +265,13 @@ export default function CloseWorkOrder() {
                     <td><span className="badge badge-info">{b.status}</span></td>
                     <td>
                       {b.admin_closed ? (
-                        <span className="inline-flex items-center gap-1 text-green-600 text-sm"><LockClosedIcon className="h-4 w-4" /> Tertutup</span>
+                        <span className="inline-flex items-center gap-1 text-green-600 text-sm dark:text-green-400"><LockClosedIcon className="h-4 w-4" /> Tertutup</span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-amber-600 text-sm"><LockOpenIcon className="h-4 w-4" /> Belum ditutup</span>
+                        <span className="inline-flex items-center gap-1 text-amber-600 text-sm dark:text-amber-400"><LockOpenIcon className="h-4 w-4" /> Belum ditutup</span>
                       )}
                     </td>
                     <td>
-                      <Link to={`/app/production/batches/${b.id}/close`} className="text-primary-600 hover:underline text-sm">
+                      <Link to={`/app/production/batches/${b.id}/close`} className="text-primary-600 hover:underline text-sm dark:text-primary-400">
                         {b.admin_closed ? 'Lihat' : 'Tutup Batch'}
                       </Link>
                     </td>
@@ -313,7 +313,7 @@ export default function CloseWorkOrder() {
                     <td>{mi.total_items}</td>
                     <td>{mi.issue_date}</td>
                     <td>
-                      <Link to={`/app/production/material-issues/${mi.id}`} className="text-primary-600 hover:underline text-sm">
+                      <Link to={`/app/production/material-issues/${mi.id}`} className="text-primary-600 hover:underline text-sm dark:text-primary-400">
                         Detail
                       </Link>
                     </td>

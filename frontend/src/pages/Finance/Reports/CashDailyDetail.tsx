@@ -10,7 +10,7 @@ export default function CashDailyDetail() {
   const { data, loading, error } = useReport<any>('cash-daily-detail', params)
   return (
     <ReportShell title={`Kas & Bank — ${fmtDate(date)}`} subtitle="Semua transaksi kas/bank pada hari ini beserta akun lawannya"
-      icon={<CalendarDaysIcon className="h-7 w-7 text-emerald-600" />} backTo="/app/finance/reports/cash-daily" backLabel="Rekap Kas Harian"
+      icon={<CalendarDaysIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />} backTo="/app/finance/reports/cash-daily" backLabel="Rekap Kas Harian"
       actions={<ExportButtons report={['cash-daily-detail', params]} />}>
       {data && <StatCards items={[
         { label: 'Penerimaan', value: idr(data.totals.receipts), tone: 'green' }, { label: 'Pengeluaran', value: idr(data.totals.disbursements), tone: 'red' },
@@ -24,9 +24,9 @@ export default function CashDailyDetail() {
               {data.rows.map((r: any) => (
                 <tr key={r.id} className="border-t border-gray-100 dark:border-gray-700">
                   <Td className="whitespace-nowrap font-mono text-xs">{r.entry_number}</Td><Td className="whitespace-nowrap"><Link className="hover:text-emerald-700 hover:underline" title="Buka di Buku Besar" to={`/app/accounting/general-ledger?account_code=${encodeURIComponent(r.account_code)}&start_date=${date}&end_date=${date}`}>{r.account_code} {r.account_name}</Link></Td>
-                  <Td className="max-w-sm">{r.description}</Td><Td className="max-w-xs text-xs text-gray-600">{r.counter_accounts || '-'}</Td>
+                  <Td className="max-w-sm">{r.description}</Td><Td className="max-w-xs text-xs text-gray-600 dark:text-gray-300">{r.counter_accounts || '-'}</Td>
                   <Td><DocLink url={r.document_url}>{r.reference_number || r.reference_type || '-'}</DocLink></Td>
-                  <Td right className="text-emerald-700"><Money v={r.receipt} /></Td><Td right className="text-red-600"><Money v={r.disbursement} /></Td>
+                  <Td right className="text-emerald-700 dark:text-emerald-300"><Money v={r.receipt} /></Td><Td right className="text-red-600 dark:text-red-400"><Money v={r.disbursement} /></Td>
                 </tr>
               ))}
             </tbody>

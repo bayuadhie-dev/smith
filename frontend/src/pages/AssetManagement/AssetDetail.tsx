@@ -132,7 +132,7 @@ const AssetDetail: React.FC = () => {
       idle: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
       retired: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+    return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
   };
 
   if (loading) {
@@ -354,7 +354,7 @@ const AssetDetail: React.FC = () => {
             {/* Maintenance Summary */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6">
               <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-                <WrenchScrewdriverIcon className="h-5 w-5 text-orange-600" />
+                <WrenchScrewdriverIcon className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                 Maintenance
               </h3>
               <div className="space-y-3">

@@ -425,7 +425,7 @@ const { reportId } = useParams()
                         setSelectedFields(selectedFields.filter(f => f !== field))
                       }
                     }}
-                    className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:text-blue-400"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">
                     {field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
@@ -446,7 +446,7 @@ const { reportId } = useParams()
                   value="table"
                   checked={chartType === 'table'}
                   onChange={(e) => setChartType(e.target.value)}
-                  className="text-blue-600 focus:ring-blue-500"
+                  className="text-blue-600 focus:ring-blue-500 dark:text-blue-400"
                 />
                 <TableCellsIcon className="h-4 w-4 ml-2 mr-1" />
                 <span className="text-sm text-gray-700 dark:text-gray-200">Table</span>
@@ -459,7 +459,7 @@ const { reportId } = useParams()
                     value={type}
                     checked={chartType === type}
                     onChange={(e) => setChartType(e.target.value)}
-                    className="text-blue-600 focus:ring-blue-500"
+                    className="text-blue-600 focus:ring-blue-500 dark:text-blue-400"
                   />
                   <ChartBarIcon className="h-4 w-4 ml-2 mr-1" />
                   <span className="text-sm text-gray-700 dark:text-gray-200">

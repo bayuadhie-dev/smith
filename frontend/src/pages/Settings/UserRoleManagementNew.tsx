@@ -140,12 +140,12 @@ const UserRoleManagementNew: React.FC = () => {
   
   if (usersError || rolesError) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-md p-4">
+      <div className="bg-red-50 border border-red-200 rounded-md p-4 dark:bg-red-900/20 dark:border-red-800">
         <div className="flex">
           <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error Loading Data</h3>
-            <p className="text-sm text-red-700 mt-1">Failed to load user management data. Please try again.</p>
+            <h3 className="text-sm font-medium text-red-800 dark:text-red-300">Error Loading Data</h3>
+            <p className="text-sm text-red-700 mt-1 dark:text-red-300">Failed to load user management data. Please try again.</p>
           </div>
         </div>
       </div>
@@ -209,7 +209,7 @@ const UserRoleManagementNew: React.FC = () => {
                     <div key={permission.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-3">
                       <div className="font-medium text-gray-900 dark:text-white text-sm">{permission.name}</div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{permission.description}</div>
-                      <div className="text-xs text-blue-600 mt-2 font-medium">
+                      <div className="text-xs text-blue-600 mt-2 font-medium dark:text-blue-400">
                         Action: {permission.action}
                       </div>
                     </div>
@@ -241,8 +241,8 @@ const UserRoleManagementNew: React.FC = () => {
             <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                    <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10 dark:bg-red-900/30">
+                    <ExclamationTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
@@ -286,7 +286,7 @@ const UserRoleManagementNew: React.FC = () => {
                   <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">User Details</h3>
                   <button
                     onClick={() => setViewingUser(null)}
-                    className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
+                    className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white"
                   >
                     <span className="sr-only">Close</span>
                     ×
@@ -310,7 +310,7 @@ const UserRoleManagementNew: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.status')}</label>
                       <span className={`mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        viewingUser.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        viewingUser.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                       }`}>
                         {viewingUser.is_active ? 'Active' : 'Inactive'}
                       </span>
@@ -322,7 +322,7 @@ const UserRoleManagementNew: React.FC = () => {
                     <div className="flex flex-wrap gap-2">
                       {viewingUser.roles && viewingUser.roles.length > 0 ? (
                         viewingUser.roles.map((role) => (
-                          <span key={role.id} className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                          <span key={role.id} className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                             {role.name}
                           </span>
                         ))

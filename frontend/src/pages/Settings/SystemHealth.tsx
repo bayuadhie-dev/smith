@@ -41,16 +41,16 @@ function fmtUptime(ms?: number) {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { bg: string; text: string; dot: string; label: string }> = {
-    healthy:      { bg: 'bg-green-50',  text: 'text-green-700',  dot: 'bg-green-500',  label: 'Healthy'       },
-    ready:        { bg: 'bg-green-50',  text: 'text-green-700',  dot: 'bg-green-500',  label: 'Connected'     },
-    online:       { bg: 'bg-green-50',  text: 'text-green-700',  dot: 'bg-green-500',  label: 'Online'        },
-    warning:      { bg: 'bg-amber-50',  text: 'text-amber-700',  dot: 'bg-amber-500',  label: 'Warning'       },
-    error:        { bg: 'bg-red-50',    text: 'text-red-700',    dot: 'bg-red-500',    label: 'Error'         },
-    stopped:      { bg: 'bg-red-50',    text: 'text-red-700',    dot: 'bg-red-500',    label: 'Stopped'       },
-    disconnected: { bg: 'bg-red-50',    text: 'text-red-700',    dot: 'bg-red-500',    label: 'Disconnected'  },
-    not_configured: { bg: 'bg-gray-100', text: 'text-gray-500',  dot: 'bg-gray-400',  label: 'Not configured'},
+    healthy:      { bg: 'bg-green-50 dark:bg-green-900/20',  text: 'text-green-700 dark:text-green-300',  dot: 'bg-green-500',  label: 'Healthy'       },
+    ready:        { bg: 'bg-green-50 dark:bg-green-900/20',  text: 'text-green-700 dark:text-green-300',  dot: 'bg-green-500',  label: 'Connected'     },
+    online:       { bg: 'bg-green-50 dark:bg-green-900/20',  text: 'text-green-700 dark:text-green-300',  dot: 'bg-green-500',  label: 'Online'        },
+    warning:      { bg: 'bg-amber-50 dark:bg-amber-900/20',  text: 'text-amber-700 dark:text-amber-300',  dot: 'bg-amber-500',  label: 'Warning'       },
+    error:        { bg: 'bg-red-50 dark:bg-red-900/20',    text: 'text-red-700 dark:text-red-300',    dot: 'bg-red-500',    label: 'Error'         },
+    stopped:      { bg: 'bg-red-50 dark:bg-red-900/20',    text: 'text-red-700 dark:text-red-300',    dot: 'bg-red-500',    label: 'Stopped'       },
+    disconnected: { bg: 'bg-red-50 dark:bg-red-900/20',    text: 'text-red-700 dark:text-red-300',    dot: 'bg-red-500',    label: 'Disconnected'  },
+    not_configured: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-500 dark:text-gray-400',  dot: 'bg-gray-400',  label: 'Not configured'},
   };
-  const s = map[status] ?? { bg: 'bg-gray-100', text: 'text-gray-500', dot: 'bg-gray-400', label: status };
+  const s = map[status] ?? { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-500 dark:text-gray-400', dot: 'bg-gray-400', label: status };
   return (
     <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md ${s.bg} ${s.text}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
@@ -71,7 +71,7 @@ function UsageBar({ percent, status }: { percent: number; status: string }) {
 function MetricRow({ icon, label, value }: { icon: string; label: string; value: string }) {
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-gray-100 dark:border-gray-800 last:border-0">
-      <span className="flex items-center gap-2 text-sm text-gray-500">
+      <span className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
         <i className={`ti ${icon} text-base`} aria-hidden="true" />
         {label}
       </span>
@@ -130,7 +130,7 @@ function StatusUptimeBar({ points, statusKey, label }: { points: StatusPoint[]; 
   return (
     <div className="mb-4 last:mb-0">
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-500">{label}</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
         <span className="text-xs text-gray-400">
           {points.length > 0
             ? `${Math.round((points.filter(p => healthyValues.includes(p[statusKey])).length / points.length) * 100)}% uptime`
@@ -180,7 +180,7 @@ function HealthHistorySection({ apiBase }: { apiBase: string }) {
               key={r}
               onClick={() => setRange(r)}
               className={`text-xs font-medium px-2.5 py-1 rounded-md transition-colors ${
-                range === r ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500'
+                range === r ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'
               }`}
             >
               {r === '24h' ? '24 Jam' : r === '7d' ? '7 Hari' : '30 Hari'}
@@ -300,7 +300,7 @@ export default function SystemHealth() {
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="text-center">
         <i className="ti ti-loader-2 text-3xl text-gray-400 animate-spin block mb-3" />
-        <p className="text-sm text-gray-500">Loading system health…</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Loading system health…</p>
       </div>
     </div>
   );
@@ -309,7 +309,7 @@ export default function SystemHealth() {
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="text-center">
         <i className="ti ti-alert-circle text-3xl text-red-400 block mb-3" />
-        <p className="text-sm text-gray-500">Failed to load health data.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Failed to load health data.</p>
         <button className="mt-4 text-sm px-4 py-2 border rounded-lg" onClick={() => fetchHealth()}>Retry</button>
       </div>
     </div>
@@ -355,7 +355,7 @@ export default function SystemHealth() {
           <Card key={label}>
             <div className="flex items-center gap-2 mb-3">
               <i className={`ti ${icon} text-lg text-gray-400`} aria-hidden="true" />
-              <span className="text-xs text-gray-500 font-medium">{label}</span>
+              <span className="text-xs text-gray-500 font-medium dark:text-gray-400">{label}</span>
             </div>
             <StatusBadge status={status} />
             <p className="text-xs text-gray-400 mt-2">{sub}</p>
@@ -374,11 +374,11 @@ export default function SystemHealth() {
             ].map(({ icon, label, value, percent, status }) => (
               <div key={label}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="flex items-center gap-2 text-sm text-gray-500">
+                  <span className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                     <i className={`ti ${icon} text-base`} aria-hidden="true" />
                     {label}
                   </span>
-                  <span className={`text-sm font-medium ${status === 'warning' ? 'text-amber-600' : 'text-gray-900 dark:text-gray-100'}`}>{value}</span>
+                  <span className={`text-sm font-medium ${status === 'warning' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-gray-100'}`}>{value}</span>
                 </div>
                 <UsageBar percent={percent} status={status} />
               </div>
@@ -401,7 +401,7 @@ export default function SystemHealth() {
           <SectionTitle>WhatsApp gateway</SectionTitle>
           <div className="flex items-center gap-3">
             {reconnectMsg && (
-              <span className={`text-xs ${reconnectMsg.startsWith('Failed') || reconnectMsg.startsWith('Request') ? 'text-red-500' : 'text-green-600'}`}>
+              <span className={`text-xs ${reconnectMsg.startsWith('Failed') || reconnectMsg.startsWith('Request') ? 'text-red-500' : 'text-green-600 dark:text-green-400'}`}>
                 {reconnectMsg}
               </span>
             )}
@@ -470,7 +470,7 @@ export default function SystemHealth() {
       <Card>
         <SectionTitle>Recent errors</SectionTitle>
         {recent_errors.length === 0 ? (
-          <div className="flex items-center gap-2 text-sm text-green-600">
+          <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
             <i className="ti ti-circle-check text-base" aria-hidden="true" />
             No errors in the recent log
           </div>

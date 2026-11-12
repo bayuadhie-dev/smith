@@ -285,7 +285,7 @@ const AssetForm: React.FC = () => {
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-gray-500 mt-1">Opsional - hierarki Plant/Building/Line, dikelola di Master Data Functional Location.</p>
+              <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">Opsional - hierarki Plant/Building/Line, dikelola di Master Data Functional Location.</p>
             </div>
 
             <div className="md:col-span-2">
@@ -388,7 +388,7 @@ const AssetForm: React.FC = () => {
 
           <div className="border-t border-slate-200 dark:border-gray-700 mt-4 pt-4">
             <h3 className="text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1">Penyusutan Fiskal (Pajak) - Opsional</h3>
-            <p className="text-xs text-gray-500 mb-3">Kalau diisi, sistem membuat jadwal penyusutan paralel untuk pelaporan pajak - tidak diposting ke GL, hanya untuk pelaporan (buku komersial di atas tetap yang diposting).</p>
+            <p className="text-xs text-gray-500 mb-3 dark:text-gray-400">Kalau diisi, sistem membuat jadwal penyusutan paralel untuk pelaporan pajak - tidak diposting ke GL, hanya untuk pelaporan (buku komersial di atas tetap yang diposting).</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Metode Penyusutan Fiskal</label>
@@ -426,7 +426,7 @@ const AssetForm: React.FC = () => {
               name="is_production_machine"
               checked={formData.is_production_machine}
               onChange={handleChange}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:text-blue-400"
             />
             <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
               Mesin Produksi

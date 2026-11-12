@@ -124,7 +124,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, role, permission
                 <button
                   type="button"
                   onClick={onClose}
-                  className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white"
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
@@ -143,11 +143,11 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, role, permission
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                       className={`mt-1 block w-full border rounded-md px-3 py-2 ${
-                        errors.name ? 'border-red-300' : 'border-gray-300'
+                        errors.name ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
                       } focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                       placeholder="Enter role name"
                     />
-                    {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+                    {errors.name && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
                   </div>
 
                   {/* Description */}
@@ -169,7 +169,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, role, permission
                         type="checkbox"
                         checked={formData.is_active}
                         onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.checked }))}
-                        className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:text-blue-400"
                       />
                       <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">Active Role</span>
                     </label>
@@ -227,7 +227,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, role, permission
                                     ]
                                   }));
                                 }}
-                                className="text-xs text-blue-600 hover:text-blue-800"
+                                className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400"
                               >
                                 Select All
                               </button>
@@ -240,7 +240,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, role, permission
                                     selectedPermissions: prev.selectedPermissions.filter(id => !modulePermissionIds.includes(id))
                                   }));
                                 }}
-                                className="text-xs text-red-600 hover:text-red-800"
+                                className="text-xs text-red-600 hover:text-red-800 dark:text-red-400"
                               >
                                 Clear All
                               </button>
@@ -255,12 +255,12 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, role, permission
                                 type="checkbox"
                                 checked={formData.selectedPermissions.includes(permission.id)}
                                 onChange={() => handlePermissionToggle(permission.id)}
-                                className="mt-1 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+                                className="mt-1 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:text-blue-400"
                               />
                               <div className="ml-2 flex-1">
                                 <div className="text-sm font-medium text-gray-900 dark:text-white">{permission.name}</div>
                                 <div className="text-xs text-gray-500 dark:text-gray-400">{permission.description}</div>
-                                <div className="text-xs text-blue-600 font-medium">Action: {permission.action}</div>
+                                <div className="text-xs text-blue-600 font-medium dark:text-blue-400">Action: {permission.action}</div>
                               </div>
                             </label>
                           ))}
@@ -272,7 +272,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, role, permission
               </div>
 
               {errors.submit && (
-                <div className="mt-4 text-sm text-red-600 bg-red-50 p-2 rounded">
+                <div className="mt-4 text-sm text-red-600 bg-red-50 p-2 rounded dark:bg-red-900/20 dark:text-red-400">
                   {errors.submit}
                 </div>
               )}

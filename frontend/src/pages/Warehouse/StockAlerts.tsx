@@ -178,7 +178,7 @@ const StockAlerts: React.FC = () => {
                 <td className="px-4 py-3 text-sm font-mono font-bold text-gray-900 dark:text-white">{alert.item_code}</td>
                 <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300"><Link to={`/app/warehouse/item-stock/${alert.item_type === 'product' ? 'product' : 'material'}/${alert.item_id}`} className="hover:text-emerald-700 hover:underline" title="Lihat stok per gudang dan mutasi">{alert.item_name}</Link></td>
                 <td className="px-4 py-3 text-sm text-right font-mono">
-                  <span className={alert.current_stock <= 0 ? 'text-red-600 font-bold' : 'text-amber-600 font-bold'}>
+                  <span className={alert.current_stock <= 0 ? 'text-red-600 font-bold dark:text-red-400' : 'text-amber-600 font-bold dark:text-amber-400'}>
                     {alert.current_stock.toLocaleString()}
                   </span>
                   <span className="text-gray-400 ml-1">{alert.uom}</span>
@@ -186,7 +186,7 @@ const StockAlerts: React.FC = () => {
                 <td className="px-4 py-3 text-sm text-right font-mono text-gray-600 dark:text-gray-400">
                   {alert.min_stock_level.toLocaleString()} {alert.uom}
                 </td>
-                <td className="px-4 py-3 text-sm text-right font-mono text-red-600 font-bold">
+                <td className="px-4 py-3 text-sm text-right font-mono text-red-600 font-bold dark:text-red-400">
                   -{alert.shortage.toLocaleString()} {alert.uom}
                 </td>
               </tr>

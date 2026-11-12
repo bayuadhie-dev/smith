@@ -185,20 +185,20 @@ const downloadFile = async (url: string, filename: string) => {
 // Status badges
 const StatusBadge = ({ status }: { status: string }) => {
   const config: Record<string, { bg: string; text: string; label: string }> = {
-    draft: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Draft' },
-    reviewing: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Reviewing' },
-    pending_approval: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Pending Approval' },
-    active: { bg: 'bg-green-100', text: 'text-green-700', label: 'Active' },
-    obsolete: { bg: 'bg-red-100', text: 'text-red-700', label: 'Obsolete' },
-    open: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Open' },
-    investigation: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Investigation' },
-    action_progress: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'In Progress' },
-    verifying: { bg: 'bg-cyan-100', text: 'text-cyan-700', label: 'Verifying' },
-    closed: { bg: 'bg-green-100', text: 'text-green-700', label: 'Closed' },
-    cancelled: { bg: 'bg-gray-100', text: 'text-gray-500', label: 'Cancelled' },
-    published: { bg: 'bg-green-100', text: 'text-green-700', label: 'Published' },
+    draft: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-700 dark:text-gray-200', label: 'Draft' },
+    reviewing: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300', label: 'Reviewing' },
+    pending_approval: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-300', label: 'Pending Approval' },
+    active: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300', label: 'Active' },
+    obsolete: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300', label: 'Obsolete' },
+    open: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300', label: 'Open' },
+    investigation: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300', label: 'Investigation' },
+    action_progress: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-300', label: 'In Progress' },
+    verifying: { bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-700 dark:text-cyan-300', label: 'Verifying' },
+    closed: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300', label: 'Closed' },
+    cancelled: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-500 dark:text-gray-400', label: 'Cancelled' },
+    published: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300', label: 'Published' },
   };
-  const c = config[status] || { bg: 'bg-gray-100', text: 'text-gray-700', label: status };
+  const c = config[status] || { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-700 dark:text-gray-200', label: status };
   return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${c.bg} ${c.text}`}>{c.label}</span>;
 };
 
@@ -438,7 +438,7 @@ const DocumentListTab = () => {
               <tr><td colSpan={7} className="text-center py-8 text-gray-400">Belum ada dokumen</td></tr>
             ) : sortedDocs.map(doc => (
               <tr key={doc.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 cursor-pointer" onClick={() => setSelectedDoc(doc.id)}>
-                <td className="px-4 py-3 font-mono font-medium text-blue-600">{doc.document_number}</td>
+                <td className="px-4 py-3 font-mono font-medium text-blue-600 dark:text-blue-400">{doc.document_number}</td>
                 <td className="px-4 py-3">{doc.title}</td>
                 <td className="px-4 py-3"><span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">{doc.level_name}</span></td>
                 <td className="px-4 py-3">{doc.department_code}</td>
@@ -446,7 +446,7 @@ const DocumentListTab = () => {
                 <td className="px-4 py-3"><StatusBadge status={doc.current_revision?.status || 'draft'} /></td>
                 <td className="px-4 py-3 text-center">
                   <div className="flex items-center justify-center gap-2">
-                    <button className="text-blue-600 hover:text-blue-800" title="Lihat Detail"><Eye className="w-4 h-4" /></button>
+                    <button className="text-blue-600 hover:text-blue-800 dark:text-blue-400" title="Lihat Detail"><Eye className="w-4 h-4" /></button>
                     <button onClick={(e) => handleDelete(e, doc.id, doc.document_number)} className="text-red-400 hover:text-red-600" title="Hapus">
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -618,7 +618,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
           </div>
           <div className="flex gap-2">
             <button onClick={openRevisionForm} disabled={!canCreateRevision}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm ${canCreateRevision ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm ${canCreateRevision ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700'}`}
               title={canCreateRevision ? `${availableDcns.length} DCN siap diproses` : 'Ajukan & setujui Change Notice (DCN) terlebih dahulu'}>
               <Plus className="w-3 h-3" /> Revisi Baru {canCreateRevision && <span className="bg-blue-500 text-white text-[10px] px-1.5 rounded-full">{availableDcns.length}</span>}
             </button>
@@ -641,11 +641,11 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
           {/* Section tabs */}
           <div className="flex border-b">
             <button onClick={() => setActiveSection('revisions')}
-              className={`px-4 py-2.5 text-sm font-medium border-b-2 ${activeSection === 'revisions' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'}`}>
+              className={`px-4 py-2.5 text-sm font-medium border-b-2 ${activeSection === 'revisions' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400'}`}>
               Revisi & Approval
             </button>
             <button onClick={() => setActiveSection('distribution')}
-              className={`px-4 py-2.5 text-sm font-medium border-b-2 flex items-center gap-1 ${activeSection === 'distribution' ? 'border-green-600 text-green-600' : 'border-transparent text-gray-500'}`}>
+              className={`px-4 py-2.5 text-sm font-medium border-b-2 flex items-center gap-1 ${activeSection === 'distribution' ? 'border-green-600 text-green-600 dark:text-green-400' : 'border-transparent text-gray-500 dark:text-gray-400'}`}>
               Distribusi <span className="text-xs bg-gray-100 dark:bg-gray-800 px-1.5 rounded-full">{distributions.length}</span>
             </button>
           </div>
@@ -685,19 +685,19 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
                       {/* Download */}
                       {rev.pdf_file_path && (
                         <button onClick={() => downloadFile(`/revisions/${rev.id}/download?type=pdf`, `${doc.document_number}_Rev${rev.revision_number.toString().padStart(2,'0')}.pdf`)}
-                          className="flex items-center gap-1 text-[11px] px-2 py-1 bg-red-50 border border-red-200 rounded hover:bg-red-100 text-red-700 font-medium">
+                          className="flex items-center gap-1 text-[11px] px-2 py-1 bg-red-50 border border-red-200 rounded hover:bg-red-100 text-red-700 font-medium dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
                           <Download className="w-3 h-3" /> PDF
                         </button>
                       )}
                       {rev.docx_file_path && (
                         <button onClick={() => downloadFile(`/revisions/${rev.id}/download?type=docx`, `${doc.document_number}_Rev${rev.revision_number.toString().padStart(2,'0')}.docx`)}
-                          className="flex items-center gap-1 text-[11px] px-2 py-1 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 text-blue-700 font-medium">
+                          className="flex items-center gap-1 text-[11px] px-2 py-1 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 text-blue-700 font-medium dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
                           <Download className="w-3 h-3" /> .docx
                         </button>
                       )}
                       {rev.xlsx_file_path && (
                         <button onClick={() => downloadFile(`/revisions/${rev.id}/download?type=xlsx`, `${doc.document_number}_Rev${rev.revision_number.toString().padStart(2,'0')}.xlsx`)}
-                          className="flex items-center gap-1 text-[11px] px-2 py-1 bg-emerald-50 border border-emerald-200 rounded hover:bg-emerald-100 text-emerald-700 font-medium">
+                          className="flex items-center gap-1 text-[11px] px-2 py-1 bg-emerald-50 border border-emerald-200 rounded hover:bg-emerald-100 text-emerald-700 font-medium dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800">
                           <Download className="w-3 h-3" /> .xlsx
                         </button>
                       )}
@@ -714,11 +714,11 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
                     <div className="mt-3">
                       <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Approval Chain (Sesuai QP-DCC-01)</p>
                       <div className="grid grid-cols-3 gap-2 text-xs">
-                        <div className={`p-3 rounded-lg ${rev.originator_signed_at ? 'bg-green-50 border-green-300' : 'bg-yellow-50 border-yellow-200'} border`}>
+                        <div className={`p-3 rounded-lg ${rev.originator_signed_at ? 'bg-green-50 border-green-300 dark:bg-green-900/20' : 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'} border`}>
                           <div className="font-semibold text-gray-700 dark:text-gray-200">1. Pembuat</div>
                           <div className="mt-1">{rev.originator || '-'}</div>
                           {rev.originator_signed_at ? (
-                            <><div className="text-green-700 mt-1 font-medium">✓ Ditandatangani</div>
+                            <><div className="text-green-700 mt-1 font-medium dark:text-green-300">✓ Ditandatangani</div>
                             <div className="text-gray-500 dark:text-gray-400 mt-0.5" style={{fontSize:'9px'}}>{new Date(rev.originator_signed_at).toLocaleString('id-ID', {timeZone:'Asia/Jakarta', day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})} WIB</div></>
                           ) : rev.status === 'draft' ? (
                             <button onClick={() => openSignDialog(rev.id, 'sign')} className="mt-2 w-full py-1.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">
@@ -727,12 +727,12 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
                           ) : <div className="text-gray-400 mt-1">Menunggu...</div>}
                         </div>
 
-                        <div className={`p-3 rounded-lg ${rev.reviewer_signed_at ? 'bg-green-50 border-green-300' : rev.status === 'reviewing' ? 'bg-yellow-50 border-yellow-300' : 'bg-gray-50 border-gray-200'} border`}>
+                        <div className={`p-3 rounded-lg ${rev.reviewer_signed_at ? 'bg-green-50 border-green-300 dark:bg-green-900/20' : rev.status === 'reviewing' ? 'bg-yellow-50 border-yellow-300 dark:bg-yellow-900/20' : 'bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-700'} border`}>
                           <div className="font-semibold text-gray-700 dark:text-gray-200">2. Pemeriksa / Pengkaji</div>
-                          {rev.assigned_reviewer && !rev.reviewer_signed_at && <div className="text-xs text-blue-600 mt-0.5">Ditugaskan: {rev.assigned_reviewer}</div>}
+                          {rev.assigned_reviewer && !rev.reviewer_signed_at && <div className="text-xs text-blue-600 mt-0.5 dark:text-blue-400">Ditugaskan: {rev.assigned_reviewer}</div>}
                           <div className="mt-1">{rev.reviewer || '-'}</div>
                           {rev.reviewer_signed_at ? (
-                            <><div className={`mt-1 font-medium ${rev.reviewer_status === 'approved' ? 'text-green-700' : 'text-red-600'}`}>
+                            <><div className={`mt-1 font-medium ${rev.reviewer_status === 'approved' ? 'text-green-700 dark:text-green-300' : 'text-red-600 dark:text-red-400'}`}>
                               {rev.reviewer_status === 'approved' ? '✓ Disetujui' : '✗ Ditolak'}
                             </div>
                             <div className="text-gray-500 dark:text-gray-400 mt-0.5" style={{fontSize:'9px'}}>{new Date(rev.reviewer_signed_at).toLocaleString('id-ID', {timeZone:'Asia/Jakarta', day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})} WIB</div></>
@@ -746,12 +746,12 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
 
                         {/* Reviewer 2 (jika required_reviewers >= 2) */}
                         {(rev.required_reviewers || 1) >= 2 && (
-                          <div className={`p-3 rounded-lg ${rev.reviewer2_signed_at ? 'bg-green-50 border-green-300' : rev.status === 'reviewing' ? 'bg-yellow-50 border-yellow-300' : 'bg-gray-50 border-gray-200'} border`}>
+                          <div className={`p-3 rounded-lg ${rev.reviewer2_signed_at ? 'bg-green-50 border-green-300 dark:bg-green-900/20' : rev.status === 'reviewing' ? 'bg-yellow-50 border-yellow-300 dark:bg-yellow-900/20' : 'bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-700'} border`}>
                             <div className="font-semibold text-gray-700 dark:text-gray-200">2b. Pengkaji 2</div>
-                            {rev.assigned_reviewer2 && !rev.reviewer2_signed_at && <div className="text-xs text-blue-600 mt-0.5">Ditugaskan: {rev.assigned_reviewer2}</div>}
+                            {rev.assigned_reviewer2 && !rev.reviewer2_signed_at && <div className="text-xs text-blue-600 mt-0.5 dark:text-blue-400">Ditugaskan: {rev.assigned_reviewer2}</div>}
                             <div className="mt-1">{rev.reviewer2 || '-'}</div>
                             {rev.reviewer2_signed_at ? (
-                              <><div className={`mt-1 font-medium ${rev.reviewer2_status === 'approved' ? 'text-green-700' : 'text-red-600'}`}>
+                              <><div className={`mt-1 font-medium ${rev.reviewer2_status === 'approved' ? 'text-green-700 dark:text-green-300' : 'text-red-600 dark:text-red-400'}`}>
                                 {rev.reviewer2_status === 'approved' ? '✓ Disetujui' : '✗ Ditolak'}
                               </div>
                               <div className="text-gray-500 dark:text-gray-400 mt-0.5" style={{fontSize:'9px'}}>{new Date(rev.reviewer2_signed_at).toLocaleString('id-ID', {timeZone:'Asia/Jakarta', day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})} WIB</div></>
@@ -764,12 +764,12 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
                           </div>
                         )}
 
-                        <div className={`p-3 rounded-lg ${rev.approver_signed_at ? 'bg-green-50 border-green-300' : rev.status === 'pending_approval' ? 'bg-yellow-50 border-yellow-300' : 'bg-gray-50 border-gray-200'} border`}>
+                        <div className={`p-3 rounded-lg ${rev.approver_signed_at ? 'bg-green-50 border-green-300 dark:bg-green-900/20' : rev.status === 'pending_approval' ? 'bg-yellow-50 border-yellow-300 dark:bg-yellow-900/20' : 'bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-700'} border`}>
                           <div className="font-semibold text-gray-700 dark:text-gray-200">{(rev.required_reviewers || 1) >= 2 ? '4' : '3'}. Pengesah</div>
-                          {rev.assigned_approver && !rev.approver_signed_at && <div className="text-xs text-blue-600 mt-0.5">Ditugaskan: {rev.assigned_approver}</div>}
+                          {rev.assigned_approver && !rev.approver_signed_at && <div className="text-xs text-blue-600 mt-0.5 dark:text-blue-400">Ditugaskan: {rev.assigned_approver}</div>}
                           <div className="mt-1">{rev.approver || '-'}</div>
                           {rev.approver_signed_at ? (
-                            <><div className={`mt-1 font-medium ${rev.approver_status === 'approved' ? 'text-green-700' : 'text-red-600'}`}>
+                            <><div className={`mt-1 font-medium ${rev.approver_status === 'approved' ? 'text-green-700 dark:text-green-300' : 'text-red-600 dark:text-red-400'}`}>
                               {rev.approver_status === 'approved' ? '✓ Disahkan' : '✗ Ditolak'}
                             </div>
                             <div className="text-gray-500 dark:text-gray-400 mt-0.5" style={{fontSize:'9px'}}>{new Date(rev.approver_signed_at).toLocaleString('id-ID', {timeZone:'Asia/Jakarta', day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})} WIB</div></>
@@ -803,9 +803,9 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
               ) : (
                 <div className="space-y-2">
                   {distributions.map((d: any) => (
-                    <div key={d.id} className={`flex items-center justify-between p-3 rounded-lg border ${d.is_acknowledged ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                    <div key={d.id} className={`flex items-center justify-between p-3 rounded-lg border ${d.is_acknowledged ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'}`}>
                       <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${d.is_acknowledged ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${d.is_acknowledged ? 'bg-green-200 text-green-800 dark:text-green-300' : 'bg-yellow-200 text-yellow-800 dark:text-yellow-300'}`}>
                           #{d.copy_number}
                         </div>
                         <div>
@@ -819,9 +819,9 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
                       <div className="text-right">
                         {d.is_acknowledged ? (
                           <div>
-                            <div className="text-xs text-green-700 font-medium">✓ Diterima</div>
+                            <div className="text-xs text-green-700 font-medium dark:text-green-300">✓ Diterima</div>
                             <div className="text-xs text-gray-500 dark:text-gray-400">{d.received_by} · {d.received_at?.split('T')[0]}</div>
-                            {d.old_copy_returned && <div className="text-xs text-blue-600">Revisi lama dikembalikan</div>}
+                            {d.old_copy_returned && <div className="text-xs text-blue-600 dark:text-blue-400">Revisi lama dikembalikan</div>}
                           </div>
                         ) : (
                           <button onClick={() => handleAcknowledge(d.id)}
@@ -940,8 +940,8 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]">
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm shadow-xl">
               <div className="text-center mb-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Edit className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 dark:bg-blue-900/30">
+                  <Edit className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <h3 className="text-lg font-semibold">Konfirmasi Tanda Tangan</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Masukkan password Anda untuk menandatangani dokumen ini</p>
@@ -961,7 +961,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
                   onKeyDown={e => e.key === 'Enter' && handleConfirmSign()}
                   placeholder="Masukkan password akun Anda"
                   className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" autoFocus />
-                {signError && <p className="text-red-600 text-xs mt-1.5 font-medium">{signError}</p>}
+                {signError && <p className="text-red-600 text-xs mt-1.5 font-medium dark:text-red-400">{signError}</p>}
               </div>
               <div className="flex gap-2">
                 <button onClick={() => { setPasswordDialog(null); setSignPassword(''); }} className="flex-1 px-4 py-2.5 border rounded-lg text-sm">Batal</button>
@@ -1181,16 +1181,16 @@ const CapaTab = () => {
               <tr><td colSpan={6} className="text-center py-8 text-gray-400">Belum ada CAPA</td></tr>
             ) : capas.map(c => (
               <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 cursor-pointer" onClick={() => setSelectedCapa(c.id)}>
-                <td className="px-4 py-3 font-mono font-medium text-orange-600">{c.capa_number}</td>
+                <td className="px-4 py-3 font-mono font-medium text-orange-600 dark:text-orange-400">{c.capa_number}</td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${c.capa_type === 'CPAR' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${c.capa_type === 'CPAR' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'}`}>
                     {c.capa_type}
                   </span>
                 </td>
                 <td className="px-4 py-3 max-w-[300px] truncate">{c.issue_description}</td>
                 <td className="px-4 py-3">{c.assigned_department || '-'}</td>
                 <td className="px-4 py-3">
-                  <span className={c.is_overdue ? 'text-red-600 font-medium' : ''}>{c.due_date || '-'}</span>
+                  <span className={c.is_overdue ? 'text-red-600 font-medium dark:text-red-400' : ''}>{c.due_date || '-'}</span>
                   {c.is_overdue && <span className="ml-1 text-xs text-red-500">OVERDUE</span>}
                 </td>
                 <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
@@ -1276,7 +1276,7 @@ const CapaDetailModal = ({ capaId, onClose }: { capaId: number; onClose: () => v
                 if (!reason) return;
                 try { await fetchApi(`/capa/${capaId}/cancel`, { method: 'POST', body: JSON.stringify({ reason }) }); loadDetail(); }
                 catch (e: any) { showError('Error: ' + e.message); }
-              }} className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200">
+              }} className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300">
                 Batalkan CAPA
               </button>
             )}
@@ -1288,7 +1288,7 @@ const CapaDetailModal = ({ capaId, onClose }: { capaId: number; onClose: () => v
         <div className="flex border-b px-6">
           {(['info', 'investigation', 'verification'] as const).map(s => (
             <button key={s} onClick={() => setActiveSection(s)}
-              className={`px-4 py-3 text-sm font-medium border-b-2 ${activeSection === s ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+              className={`px-4 py-3 text-sm font-medium border-b-2 ${activeSection === s ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'}`}>
               {s === 'info' ? 'Informasi' : s === 'investigation' ? 'Investigasi & RCA' : 'Verifikasi'}
             </button>
           ))}
@@ -1402,11 +1402,11 @@ const CapaDetailModal = ({ capaId, onClose }: { capaId: number; onClose: () => v
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="radio" checked={verForm.is_effective === true} onChange={() => setVerForm({ ...verForm, is_effective: true })} />
-                    <span className="text-sm text-green-700 font-medium">Ya, Efektif</span>
+                    <span className="text-sm text-green-700 font-medium dark:text-green-300">Ya, Efektif</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="radio" checked={verForm.is_effective === false} onChange={() => setVerForm({ ...verForm, is_effective: false })} />
-                    <span className="text-sm text-red-700 font-medium">Tidak Efektif</span>
+                    <span className="text-sm text-red-700 font-medium dark:text-red-300">Tidak Efektif</span>
                   </label>
                 </div>
               </div>
@@ -1574,7 +1574,7 @@ const MemoTab = () => {
               ))}
             </div>
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
-              <button onClick={() => setPublishDepts(deptList.map(d => d.code))} className="text-xs text-blue-600 underline">Pilih Semua</button>
+              <button onClick={() => setPublishDepts(deptList.map(d => d.code))} className="text-xs text-blue-600 underline dark:text-blue-400">Pilih Semua</button>
               <div className="flex gap-2">
                 <button onClick={() => setPublishMemoId(null)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
                 <button onClick={async () => {
@@ -1727,7 +1727,7 @@ const DestructionTab = () => {
                 <td className="px-4 py-3">{l.reason?.replace(/_/g, ' ')}</td>
                 <td className="px-4 py-3">{l.destroyed_by || '-'}</td>
                 <td className="px-4 py-3">
-                  {l.witness_confirmed ? <span className="text-green-600">✓ {l.witnessed_by}</span> : (
+                  {l.witness_confirmed ? <span className="text-green-600 dark:text-green-400">✓ {l.witnessed_by}</span> : (
                     <button onClick={async () => {
                       try { await fetchApi(`/destructions/${l.id}/witness`, { method: 'POST' }); loadLogs(); }
                       catch (e: any) { showError('Error: ' + e.message); }
@@ -1735,7 +1735,7 @@ const DestructionTab = () => {
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  {l.verified_at ? <span className="text-green-600">✓ {l.verified_by}</span> : (
+                  {l.verified_at ? <span className="text-green-600 dark:text-green-400">✓ {l.verified_by}</span> : (
                     l.witness_confirmed ? (
                       <button onClick={async () => {
                         try { await fetchApi(`/destructions/${l.id}/verify`, { method: 'POST' }); loadLogs(); }
@@ -1864,7 +1864,7 @@ const QualityRecordsTab = () => {
                 <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-4 py-3 font-mono font-medium">{r.record_number}</td>
                   <td className="px-4 py-3">{r.title}</td>
-                  <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded ${r.record_type === 'smm' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>{r.record_type === 'smm' ? 'SMM' : 'Produk'}</span></td>
+                  <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded ${r.record_type === 'smm' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'}`}>{r.record_type === 'smm' ? 'SMM' : 'Produk'}</span></td>
                   <td className="px-4 py-3">{r.department}</td>
                   <td className="px-4 py-3">{r.storage_location || '-'}</td>
                   <td className="px-4 py-3">{r.retention_period || '-'}</td>
@@ -2019,8 +2019,8 @@ const ChangeNoticeTab = () => {
                         <button onClick={() => handleApprove(n.id, 'rejected')} className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700">Reject</button>
                       </div>
                     )}
-                    {n.status === 'approved' && <span className="text-xs text-green-600">✓ {n.approved_by}</span>}
-                    {n.status === 'rejected' && <span className="text-xs text-red-600">✗ Ditolak</span>}
+                    {n.status === 'approved' && <span className="text-xs text-green-600 dark:text-green-400">✓ {n.approved_by}</span>}
+                    {n.status === 'rejected' && <span className="text-xs text-red-600 dark:text-red-400">✗ Ditolak</span>}
                   </td>
                 </tr>
               ))}
@@ -2074,9 +2074,9 @@ const DocumentReviewTab = () => {
   };
 
   const resultLabels: Record<string, { label: string; color: string }> = {
-    still_relevant: { label: 'Masih Relevan', color: 'bg-green-100 text-green-700' },
-    needs_revision: { label: 'Perlu Revisi', color: 'bg-yellow-100 text-yellow-700' },
-    obsolete: { label: 'Obsolete', color: 'bg-red-100 text-red-700' },
+    still_relevant: { label: 'Masih Relevan', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+    needs_revision: { label: 'Perlu Revisi', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' },
+    obsolete: { label: 'Obsolete', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
   };
 
   return (
@@ -2120,7 +2120,7 @@ const DocumentReviewTab = () => {
                     { value: 'needs_revision', label: 'Perlu Revisi — dokumen harus diperbarui', icon: '⚠' },
                     { value: 'obsolete', label: 'Obsolete — dokumen tidak berlaku lagi', icon: '✗' },
                   ].map(opt => (
-                    <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${formData.review_result === opt.value ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50'}`}>
+                    <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${formData.review_result === opt.value ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
                       <input type="radio" name="review_result" value={opt.value} checked={formData.review_result === opt.value}
                         onChange={e => setFormData({ ...formData, review_result: e.target.value })} className="w-4 h-4" />
                       <span className="text-sm">{opt.icon} {opt.label}</span>
@@ -2164,7 +2164,7 @@ const DocumentReviewTab = () => {
               {reviews.length === 0 ? (
                 <tr><td colSpan={5} className="text-center py-8 text-gray-400">Belum ada riwayat kaji ulang</td></tr>
               ) : reviews.map((r: any) => {
-                const res = resultLabels[r.review_result] || { label: r.review_result, color: 'bg-gray-100 text-gray-700' };
+                const res = resultLabels[r.review_result] || { label: r.review_result, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' };
                 return (
                   <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-4 py-3">{r.review_date}</td>
@@ -2214,14 +2214,14 @@ const DocumentControlCenter = () => {
   }, []);
 
   const tabs = [
-    { key: 'dashboard', label: 'Dashboard', icon: BarChart3, color: 'text-blue-600' },
-    { key: 'documents', label: 'Daftar Induk Dokumen', icon: FileText, color: 'text-indigo-600' },
-    { key: 'change_notice', label: 'Change Notice', icon: Edit, color: 'text-cyan-600' },
-    { key: 'review', label: 'Kaji Ulang', icon: BookOpen, color: 'text-teal-600' },
-    { key: 'quality_records', label: 'Rekaman Mutu', icon: Archive, color: 'text-purple-600' },
-    { key: 'capa', label: 'CAPA', icon: AlertTriangle, color: 'text-orange-600' },
-    { key: 'memos', label: 'Komunikasi Internal', icon: Mail, color: 'text-green-600' },
-    { key: 'destruction', label: 'Pemusnahan Dokumen', icon: Trash2, color: 'text-red-600' },
+    { key: 'dashboard', label: 'Dashboard', icon: BarChart3, color: 'text-blue-600 dark:text-blue-400' },
+    { key: 'documents', label: 'Daftar Induk Dokumen', icon: FileText, color: 'text-indigo-600 dark:text-indigo-400' },
+    { key: 'change_notice', label: 'Change Notice', icon: Edit, color: 'text-cyan-600 dark:text-cyan-400' },
+    { key: 'review', label: 'Kaji Ulang', icon: BookOpen, color: 'text-teal-600 dark:text-teal-400' },
+    { key: 'quality_records', label: 'Rekaman Mutu', icon: Archive, color: 'text-purple-600 dark:text-purple-400' },
+    { key: 'capa', label: 'CAPA', icon: AlertTriangle, color: 'text-orange-600 dark:text-orange-400' },
+    { key: 'memos', label: 'Komunikasi Internal', icon: Mail, color: 'text-green-600 dark:text-green-400' },
+    { key: 'destruction', label: 'Pemusnahan Dokumen', icon: Trash2, color: 'text-red-600 dark:text-red-400' },
   ];
 
   return (
@@ -2238,7 +2238,7 @@ const DocumentControlCenter = () => {
           const Icon = tab.icon;
           return (
             <button key={tab.key} onClick={() => setActiveTab(tab.key as any)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${activeTab === tab.key ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${activeTab === tab.key ? 'bg-white shadow-sm text-gray-900 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'}`}>
               <Icon className={`w-4 h-4 ${activeTab === tab.key ? tab.color : ''}`} />
               {tab.label}
             </button>
@@ -2251,12 +2251,12 @@ const DocumentControlCenter = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
-              { label: 'Total Dokumen', value: stats.statistics.total_documents, icon: FileText, color: 'bg-blue-50 text-blue-700' },
-              { label: 'CAPA Open', value: stats.statistics.capa_open, icon: AlertTriangle, color: 'bg-orange-50 text-orange-700' },
-              { label: 'CAPA Closed', value: stats.statistics.capa_closed, icon: CheckCircle, color: 'bg-green-50 text-green-700' },
-              { label: 'CAPA Overdue', value: stats.statistics.capa_overdue, icon: Clock, color: 'bg-red-50 text-red-700' },
-              { label: 'Memo', value: stats.statistics.total_memos, icon: Mail, color: 'bg-indigo-50 text-indigo-700' },
-              { label: 'Pemusnahan', value: stats.statistics.total_destructions, icon: Trash2, color: 'bg-gray-50 text-gray-700' },
+              { label: 'Total Dokumen', value: stats.statistics.total_documents, icon: FileText, color: 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300' },
+              { label: 'CAPA Open', value: stats.statistics.capa_open, icon: AlertTriangle, color: 'bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300' },
+              { label: 'CAPA Closed', value: stats.statistics.capa_closed, icon: CheckCircle, color: 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' },
+              { label: 'CAPA Overdue', value: stats.statistics.capa_overdue, icon: Clock, color: 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300' },
+              { label: 'Memo', value: stats.statistics.total_memos, icon: Mail, color: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300' },
+              { label: 'Pemusnahan', value: stats.statistics.total_destructions, icon: Trash2, color: 'bg-gray-50 text-gray-700 dark:bg-gray-900 dark:text-gray-200' },
             ].map((s, i) => {
               const Icon = s.icon;
               return (
@@ -2289,19 +2289,19 @@ const DocumentControlCenter = () => {
             )}
 
             {expiringDocs.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl border p-4 border-yellow-200">
+              <div className="bg-white dark:bg-gray-800 rounded-xl border p-4 border-yellow-200 dark:border-yellow-800">
                 <h3 className="font-semibold mb-3 flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-yellow-600" /> Dokumen Mendekati Expired
+                  <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" /> Dokumen Mendekati Expired
                 </h3>
                 <div className="space-y-2">
                   {expiringDocs.map((d: any, i: number) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                    <div key={i} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg dark:bg-yellow-900/20">
                       <div>
                         <span className="font-mono text-sm font-medium">{d.document_number}</span>
                         <p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">{d.title}</p>
                       </div>
                       <div className="text-right">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${d.days_remaining <= 30 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${d.days_remaining <= 30 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'}`}>
                           {d.days_remaining} hari lagi
                         </span>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Exp: {d.expiry_date}</p>

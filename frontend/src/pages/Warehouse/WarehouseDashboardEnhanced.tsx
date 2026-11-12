@@ -69,11 +69,11 @@ const [alertFilter, setAlertFilter] = useState('active')
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200'
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200'
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      case 'critical': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800'
+      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800'
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800'
+      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
+      default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-700'
     }
   }
 
@@ -120,8 +120,8 @@ const [alertFilter, setAlertFilter] = useState('active')
         subtitle="Stok, lokasi, dan peringatan gudang"
         actions={
           <>
-            <Link to="/app/warehouse/inventory" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Inventori</Link>
-            <Link to="/app/warehouse/stock-input" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Input Material</Link>
+            <Link to="/app/warehouse/inventory" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Inventori</Link>
+            <Link to="/app/warehouse/stock-input" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Input Material</Link>
             <Link to="/app/warehouse/inventory/add-product" className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Tambah Produk</Link>
           </>
         }
@@ -206,7 +206,7 @@ const [alertFilter, setAlertFilter] = useState('active')
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-300">Active:</span>
-                <span className="font-medium text-green-600">
+                <span className="font-medium text-green-600 dark:text-green-400">
                   {zones.filter(z => z.is_active !== false).length}
                 </span>
               </div>
@@ -238,7 +238,7 @@ const [alertFilter, setAlertFilter] = useState('active')
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-300">Available:</span>
-                <span className="font-medium text-green-600">
+                <span className="font-medium text-green-600 dark:text-green-400">
                   {locations.filter(l => l.is_available !== false).length}
                 </span>
               </div>
@@ -272,7 +272,7 @@ const [alertFilter, setAlertFilter] = useState('active')
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-300">Low Stock:</span>
-                <span className="font-medium text-orange-600">
+                <span className="font-medium text-orange-600 dark:text-orange-400">
                   {inventory.filter(i => (i.available_quantity || 0) < 10).length}
                 </span>
               </div>
@@ -358,7 +358,7 @@ const [alertFilter, setAlertFilter] = useState('active')
                         </button>
                         <button
                           onClick={() => handleResolveAlert(alert.id, 'Resolved from dashboard')}
-                          className="text-green-600 hover:text-green-800 text-xs"
+                          className="text-green-600 hover:text-green-800 text-xs dark:text-green-400"
                           title="Resolve"
                         >
                           ✓

@@ -160,7 +160,7 @@ export default function MasterDataAccountsTab() {
                       {a.level === 2 ? <span className="pl-4 inline-block">↳ </span> : null}
                       {a.name}
                     </td>
-                    <td className="text-sm text-gray-500">
+                    <td className="text-sm text-gray-500 dark:text-gray-400">
                       {a.parent_code ? `${a.parent_code} - ${a.parent_name}` : '-'}
                     </td>
                     <td>
@@ -174,7 +174,7 @@ export default function MasterDataAccountsTab() {
                       </span>
                     </td>
                     <td>
-                      <button onClick={() => openEdit(a)} className="text-primary-600 hover:text-primary-800">
+                      <button onClick={() => openEdit(a)} className="text-primary-600 hover:text-primary-800 dark:text-primary-400">
                         <PencilIcon className="h-5 w-5" />
                       </button>
                     </td>
@@ -182,7 +182,7 @@ export default function MasterDataAccountsTab() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="text-center py-8 text-gray-500">
+                    <td colSpan={8} className="text-center py-8 text-gray-500 dark:text-gray-400">
                       Tidak ada akun ditemukan
                     </td>
                   </tr>

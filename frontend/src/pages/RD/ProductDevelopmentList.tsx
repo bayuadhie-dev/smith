@@ -54,12 +54,12 @@ const ProductDevelopmentList: React.FC = () => {
   ];
 
   const stageColors: Record<string, string> = {
-    concept: 'bg-gray-100 text-gray-800',
-    design: 'bg-blue-100 text-blue-800',
-    prototype: 'bg-purple-100 text-purple-800',
-    testing: 'bg-yellow-100 text-yellow-800',
-    production_ready: 'bg-green-100 text-green-800',
-    launched: 'bg-emerald-100 text-emerald-800'
+    concept: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+    design: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+    prototype: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+    testing: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+    production_ready: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+    launched: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
   };
 
   useEffect(() => {
@@ -189,7 +189,7 @@ const ProductDevelopmentList: React.FC = () => {
 
           <button
             onClick={() => fetchProducts()}
-            className="p-2 text-gray-600 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-2 text-gray-600 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition-colors dark:text-gray-300"
           >
             <ArrowPathIcon className="w-5 h-5" />
           </button>
@@ -216,7 +216,7 @@ const ProductDevelopmentList: React.FC = () => {
                     <h3 className="font-semibold text-gray-900 dark:text-white text-lg">{product.name}</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{product.category?.replace('_', ' ')}</p>
                   </div>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${stageColors[product.development_stage] || 'bg-gray-100 text-gray-800'}`}>
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${stageColors[product.development_stage] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'}`}>
                     {product.development_stage?.replace('_', ' ')}
                   </span>
                 </div>
@@ -270,7 +270,7 @@ const ProductDevelopmentList: React.FC = () => {
                 {product.project && (
                   <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                     <span className="text-xs text-gray-500 dark:text-gray-400">Project: </span>
-                    <span className="text-xs text-blue-600">{product.project.project_code}</span>
+                    <span className="text-xs text-blue-600 dark:text-blue-400">{product.project.project_code}</span>
                   </div>
                 )}
               </div>
@@ -279,21 +279,21 @@ const ProductDevelopmentList: React.FC = () => {
               <div className="px-5 py-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 flex justify-end gap-2">
                 <Link
                   to={`/app/rd/products/${product.id}`}
-                  className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:text-gray-300"
                   title="View"
                 >
                   <EyeIcon className="w-4 h-4" />
                 </Link>
                 <Link
                   to={`/app/rd/products/${product.id}/edit`}
-                  className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                  className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors dark:text-gray-300"
                   title="Edit"
                 >
                   <PencilSquareIcon className="w-4 h-4" />
                 </Link>
                 <button
                   onClick={() => handleDelete(product.id)}
-                  className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors dark:text-gray-300"
                   title="Delete"
                 >
                   <TrashIcon className="w-4 h-4" />
@@ -310,17 +310,17 @@ const ProductDevelopmentList: React.FC = () => {
           <button
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
+            className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 dark:border-gray-600"
           >
             Previous
           </button>
-          <span className="px-4 py-2 text-gray-600">
+          <span className="px-4 py-2 text-gray-600 dark:text-gray-300">
             Page {currentPage} of {totalPages}
           </span>
           <button
             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
+            className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 dark:border-gray-600"
           >
             Next
           </button>

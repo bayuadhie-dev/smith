@@ -775,28 +775,28 @@ const Settings: React.FC = () => {
     if (systemError || companyError || usersError) {
       return (
         <div className="text-center py-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <h3 className="text-lg font-medium text-red-800 mb-2">API Connection Error</h3>
-            <p className="text-red-600 mb-4">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
+            <h3 className="text-lg font-medium text-red-800 mb-2 dark:text-red-300">API Connection Error</h3>
+            <p className="text-red-600 mb-4 dark:text-red-400">
               Cannot connect to backend services. Please check:
             </p>
-            <ul className="text-sm text-red-600 text-left space-y-1 max-w-md mx-auto">
+            <ul className="text-sm text-red-600 text-left space-y-1 max-w-md mx-auto dark:text-red-400">
               <li>• Backend server is running on port 5000</li>
               <li>• You are logged in with valid credentials</li>
               <li>• Network connection is stable</li>
             </ul>
             {systemError && (
-              <div className="mt-4 p-2 bg-red-100 rounded text-xs text-red-700">
+              <div className="mt-4 p-2 bg-red-100 rounded text-xs text-red-700 dark:bg-red-900/30 dark:text-red-300">
                 System Settings Error: {JSON.stringify(systemError)}
               </div>
             )}
             {companyError && (
-              <div className="mt-2 p-2 bg-red-100 rounded text-xs text-red-700">
+              <div className="mt-2 p-2 bg-red-100 rounded text-xs text-red-700 dark:bg-red-900/30 dark:text-red-300">
                 Company Profile Error: {JSON.stringify(companyError)}
               </div>
             )}
             {usersError && (
-              <div className="mt-2 p-2 bg-red-100 rounded text-xs text-red-700">
+              <div className="mt-2 p-2 bg-red-100 rounded text-xs text-red-700 dark:bg-red-900/30 dark:text-red-300">
                 UsersIcon Error: {JSON.stringify(usersError)}
               </div>
             )}
@@ -823,11 +823,11 @@ const Settings: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium mb-2">Logo Perusahaan</label>
-              <p className="text-xs text-gray-500 mb-3">
+              <p className="text-xs text-gray-500 mb-3 dark:text-gray-400">
                 Muncul di semua dokumen cetak (Invoice, SPK, Surat Jalan, dst) lewat field company.logo_url. PNG/JPG/SVG/WebP, maks 2MB.
               </p>
               <div className="flex items-center gap-4">
-                <div className="w-24 h-24 border border-dashed rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden shrink-0">
+                <div className="w-24 h-24 border border-dashed rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden shrink-0 dark:bg-gray-900">
                   {companyData?.logoUrl ? (
                     <img
                       src={`${axiosInstance.defaults.baseURL}${companyData.logoUrl}`}
@@ -839,7 +839,7 @@ const Settings: React.FC = () => {
                   )}
                 </div>
                 <div>
-                  <label className="inline-flex items-center gap-2 px-3 py-2 text-sm border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <label className="inline-flex items-center gap-2 px-3 py-2 text-sm border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
                     <ArrowDownTrayIcon className="w-4 h-4 rotate-180" />
                     {logoUploading ? 'Mengupload...' : companyData?.logoUrl ? 'Ganti Logo' : 'Upload Logo'}
                     <input
@@ -951,86 +951,86 @@ const Settings: React.FC = () => {
             
             {/* In-App Notifications Section */}
             <div className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
                 <div className="flex items-center mb-3">
-                  <BellIcon className="h-6 w-6 text-blue-600 mr-2" />
-                  <h4 className="font-medium text-blue-900">In-App Notifications</h4>
+                  <BellIcon className="h-6 w-6 text-blue-600 mr-2 dark:text-blue-400" />
+                  <h4 className="font-medium text-blue-900 dark:text-blue-200">In-App Notifications</h4>
                 </div>
-                <p className="text-sm text-blue-700 mb-4">
+                <p className="text-sm text-blue-700 mb-4 dark:text-blue-300">
                   Receive real-time notifications within the application interface
                 </p>
                 
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border dark:bg-gray-800">
                     <div>
-                      <h5 className="font-medium text-gray-900">System Alerts</h5>
-                      <p className="text-sm text-gray-600">Important system messages and updates</p>
+                      <h5 className="font-medium text-gray-900 dark:text-white">System Alerts</h5>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Important system messages and updates</p>
                     </div>
                     <input
                       type="checkbox"
                       checked={systemSettingsState.systemAlerts !== false}
                       onChange={(e) => handleSystemChange('systemAlerts', e.target.checked)}
-                      className="w-4 h-4 text-primary-600"
+                      className="w-4 h-4 text-primary-600 dark:text-primary-400"
                     />
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border dark:bg-gray-800">
                     <div>
-                      <h5 className="font-medium text-gray-900">Task Reminders</h5>
-                      <p className="text-sm text-gray-600">Reminders for pending tasks and deadlines</p>
+                      <h5 className="font-medium text-gray-900 dark:text-white">Task Reminders</h5>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Reminders for pending tasks and deadlines</p>
                     </div>
                     <input
                       type="checkbox"
                       checked={systemSettingsState.taskReminders !== false}
                       onChange={(e) => handleSystemChange('taskReminders', e.target.checked)}
-                      className="w-4 h-4 text-primary-600"
+                      className="w-4 h-4 text-primary-600 dark:text-primary-400"
                     />
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border dark:bg-gray-800">
                     <div>
-                      <h5 className="font-medium text-gray-900">Inventory Alerts</h5>
-                      <p className="text-sm text-gray-600">Low stock and reorder point notifications</p>
+                      <h5 className="font-medium text-gray-900 dark:text-white">Inventory Alerts</h5>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Low stock and reorder point notifications</p>
                     </div>
                     <input
                       type="checkbox"
                       checked={systemSettingsState.inventoryAlerts !== false}
                       onChange={(e) => handleSystemChange('inventoryAlerts', e.target.checked)}
-                      className="w-4 h-4 text-primary-600"
+                      className="w-4 h-4 text-primary-600 dark:text-primary-400"
                     />
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border dark:bg-gray-800">
                     <div>
-                      <h5 className="font-medium text-gray-900">Production Updates</h5>
-                      <p className="text-sm text-gray-600">Production status and completion notifications</p>
+                      <h5 className="font-medium text-gray-900 dark:text-white">Production Updates</h5>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Production status and completion notifications</p>
                     </div>
                     <input
                       type="checkbox"
                       checked={systemSettingsState.productionUpdates !== false}
                       onChange={(e) => handleSystemChange('productionUpdates', e.target.checked)}
-                      className="w-4 h-4 text-primary-600"
+                      className="w-4 h-4 text-primary-600 dark:text-primary-400"
                     />
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border dark:bg-gray-800">
                     <div>
-                      <h5 className="font-medium text-gray-900">Quality Alerts</h5>
-                      <p className="text-sm text-gray-600">Quality control and inspection notifications</p>
+                      <h5 className="font-medium text-gray-900 dark:text-white">Quality Alerts</h5>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Quality control and inspection notifications</p>
                     </div>
                     <input
                       type="checkbox"
                       checked={systemSettingsState.qualityAlerts !== false}
                       onChange={(e) => handleSystemChange('qualityAlerts', e.target.checked)}
-                      className="w-4 h-4 text-primary-600"
+                      className="w-4 h-4 text-primary-600 dark:text-primary-400"
                     />
                   </div>
                 </div>
               </div>
               
               {/* Notification Preferences */}
-              <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 rounded-lg p-4">
-                <h4 className="font-medium text-gray-900 mb-3">Notification Preferences</h4>
+              <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 rounded-lg p-4 dark:border-gray-700">
+                <h4 className="font-medium text-gray-900 mb-3 dark:text-white">Notification Preferences</h4>
                 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -1039,7 +1039,7 @@ const Settings: React.FC = () => {
                       type="checkbox"
                       checked={systemSettingsState.soundNotifications !== false}
                       onChange={(e) => handleSystemChange('soundNotifications', e.target.checked)}
-                      className="w-4 h-4 text-primary-600"
+                      className="w-4 h-4 text-primary-600 dark:text-primary-400"
                     />
                   </div>
                   
@@ -1049,7 +1049,7 @@ const Settings: React.FC = () => {
                       type="checkbox"
                       checked={systemSettingsState.desktopNotifications !== false}
                       onChange={(e) => handleSystemChange('desktopNotifications', e.target.checked)}
-                      className="w-4 h-4 text-primary-600"
+                      className="w-4 h-4 text-primary-600 dark:text-primary-400"
                     />
                   </div>
                   
@@ -1070,11 +1070,11 @@ const Settings: React.FC = () => {
               </div>
               
               {/* Test Notification */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 dark:bg-green-900/20 dark:border-green-800">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium text-green-900">Test Notification Center</h4>
-                    <p className="text-sm text-green-700">Send test notifications to the bell icon notification center in the header</p>
+                    <h4 className="font-medium text-green-900 dark:text-green-200">Test Notification Center</h4>
+                    <p className="text-sm text-green-700 dark:text-green-300">Send test notifications to the bell icon notification center in the header</p>
                   </div>
                   <button
                     onClick={() => handleTestInAppNotification()}
@@ -1107,7 +1107,7 @@ const Settings: React.FC = () => {
             {/* Enhanced Backup Info Card */}
             <div className="bg-orange-50 dark:bg-orange-900 border border-orange-200 dark:border-orange-700 rounded-lg p-6">
               <div className="flex items-center mb-4">
-                <DocumentArrowDownIcon className="h-8 w-8 text-orange-600 mr-3" />
+                <DocumentArrowDownIcon className="h-8 w-8 text-orange-600 mr-3 dark:text-orange-400" />
                 <div>
                   <h4 className="text-lg font-semibold text-orange-900 dark:text-orange-100">Enhanced Backup & Restore System</h4>
                   <p className="text-sm text-orange-700 dark:text-orange-200">Advanced backup management with scheduling and automation</p>
@@ -1160,7 +1160,7 @@ const Settings: React.FC = () => {
                     <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
                     {isLoading ? 'Creating...' : 'Create Backup Now'}
                   </button>
-                  <p className="text-xs text-gray-500">Basic backup functionality. Use Advanced Backup for more options.</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Basic backup functionality. Use Advanced Backup for more options.</p>
                 </div>
               </div>
               
@@ -1172,11 +1172,11 @@ const Settings: React.FC = () => {
                       type="checkbox"
                       checked={systemSettingsState.autoBackup}
                       onChange={(e) => handleSystemChange('autoBackup', e.target.checked)}
-                      className="w-4 h-4 text-primary-600 mr-3"
+                      className="w-4 h-4 text-primary-600 mr-3 dark:text-primary-400"
                     />
                     <label>Enable automatic backup</label>
                   </div>
-                  <p className="text-xs text-gray-500">Configure advanced scheduling in Advanced Backup system.</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Configure advanced scheduling in Advanced Backup system.</p>
                 </div>
               </div>
             </div>
@@ -1200,7 +1200,7 @@ const Settings: React.FC = () => {
             {/* Email Settings Info Card */}
             <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-6">
               <div className="flex items-center mb-4">
-                <EnvelopeIcon className="h-8 w-8 text-blue-600 mr-3" />
+                <EnvelopeIcon className="h-8 w-8 text-blue-600 mr-3 dark:text-blue-400" />
                 <div>
                   <h4 className="text-lg font-semibold text-blue-900 dark:text-blue-100">Email Notification System</h4>
                   <p className="text-sm text-blue-700 dark:text-blue-200">Configure email providers and notification settings</p>
@@ -1239,9 +1239,9 @@ const Settings: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p className="text-sm text-yellow-800">
-                <strong>Note:</strong> Email configuration is done in the backend <code className="bg-yellow-100 px-1 rounded">.env</code> file. 
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
+              <p className="text-sm text-yellow-800 dark:text-yellow-300">
+                <strong>Note:</strong> Email configuration is done in the backend <code className="bg-yellow-100 px-1 rounded dark:bg-yellow-900/30">.env</code> file. 
                 Visit the Email Settings page for detailed setup instructions.
               </p>
             </div>
@@ -1273,40 +1273,40 @@ const Settings: React.FC = () => {
             {/* Role Management Info Card */}
             <div className="bg-purple-50 dark:bg-purple-900 border border-purple-200 dark:border-purple-700 rounded-lg p-4">
               <div className="flex items-center">
-                <KeyIcon className="h-5 w-5 text-purple-600 mr-2" />
+                <KeyIcon className="h-5 w-5 text-purple-600 mr-2 dark:text-purple-400" />
                 <h4 className="text-sm font-medium text-purple-900 dark:text-purple-100">Advanced Role Management</h4>
               </div>
               <p className="text-sm text-purple-800 dark:text-purple-200 mt-1">
                 For detailed role and permission management, use the <button onClick={() => navigate('/app/settings/user-roles')} className="underline font-medium hover:text-purple-600">Advanced Role Management</button> system.
               </p>
             </div>
-            <div className="bg-white border rounded-lg overflow-hidden">
+            <div className="bg-white border rounded-lg overflow-hidden dark:bg-gray-800">
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.name')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">{t('common.name')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Role</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">{t('common.status')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">{t('common.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {usersData?.users?.length > 0 ? (
                     usersData.users.map((user: any) => (
-                      <tr key={user.id} className="hover:bg-gray-50 dark:bg-gray-900">
+                      <tr key={user.id} className="hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700">
                         <td className="px-6 py-4">
                           <div>
                             <div className="font-medium">{user.full_name}</div>
-                            <div className="text-sm text-gray-500">@{user.username}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">@{user.username}</div>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-sm">{user.email}</td>
                         <td className="px-6 py-4">
                           <span className={`px-2 py-1 rounded-full text-xs ${
                             user.is_admin 
-                              ? 'bg-red-100 text-red-800' 
-                              : 'bg-blue-100 text-blue-800'
+                              ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' 
+                              : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
                           }`}>
                             {user.is_admin ? 'Admin' : 'User'}
                           </span>
@@ -1314,8 +1314,8 @@ const Settings: React.FC = () => {
                         <td className="px-6 py-4">
                           <span className={`px-2 py-1 rounded-full text-xs ${
                             user.is_active 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                           }`}>
                             {user.is_active ? 'Active' : 'Inactive'}
                           </span>
@@ -1324,7 +1324,7 @@ const Settings: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <button 
                               onClick={() => openEditUserModal(user)}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
+                              className="text-blue-600 hover:text-blue-800 font-medium dark:text-blue-400"
                               title="Edit user"
                             >
                               Edit
@@ -1333,7 +1333,7 @@ const Settings: React.FC = () => {
                             {user.is_active ? (
                               <button 
                                 onClick={() => handleDeactivateUser(user.id, user.username)}
-                                className="text-yellow-600 hover:text-yellow-800 font-medium"
+                                className="text-yellow-600 hover:text-yellow-800 font-medium dark:text-yellow-400"
                                 title="Nonaktifkan user (data tetap tersimpan)"
                               >
                                 Nonaktifkan
@@ -1344,7 +1344,7 @@ const Settings: React.FC = () => {
                             <span className="text-gray-300">|</span>
                             <button 
                               onClick={() => handlePermanentDeleteUser(user.id, user.username)}
-                              className="text-red-600 hover:text-red-800 font-medium"
+                              className="text-red-600 hover:text-red-800 font-medium dark:text-red-400"
                               title="Hapus permanen (tidak dapat dikembalikan)"
                             >
                               Hapus
@@ -1355,7 +1355,7 @@ const Settings: React.FC = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                         No users found
                       </td>
                     </tr>
@@ -1374,7 +1374,7 @@ const Settings: React.FC = () => {
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <h4 className="font-medium">Session Timeout</h4>
-                  <p className="text-sm text-gray-600">Automatically log out after inactivity</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Automatically log out after inactivity</p>
                 </div>
                 <select 
                   className="border rounded-lg px-3 py-2"
@@ -1416,7 +1416,7 @@ const Settings: React.FC = () => {
               {/* Centralized Config Editor */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center mb-4">
-                  <CogIcon className="h-8 w-8 text-teal-600 mr-3" />
+                  <CogIcon className="h-8 w-8 text-teal-600 mr-3 dark:text-teal-400" />
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white">Centralized Config Editor</h4>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Manage all module configurations</p>
@@ -1436,7 +1436,7 @@ const Settings: React.FC = () => {
               {/* System Configuration */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center mb-4">
-                  <CogIcon className="h-8 w-8 text-blue-600 mr-3" />
+                  <CogIcon className="h-8 w-8 text-blue-600 mr-3 dark:text-blue-400" />
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white">System Configuration</h4>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Advanced system settings</p>
@@ -1453,7 +1453,7 @@ const Settings: React.FC = () => {
               {/* Audit Trail */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center mb-4">
-                  <DocumentTextIcon className="h-8 w-8 text-purple-600 mr-3" />
+                  <DocumentTextIcon className="h-8 w-8 text-purple-600 mr-3 dark:text-purple-400" />
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white">Audit Trail</h4>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Track system changes</p>
@@ -1470,7 +1470,7 @@ const Settings: React.FC = () => {
               {/* Enhanced Backup & Restore */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center mb-4">
-                  <DocumentArrowDownIcon className="h-8 w-8 text-orange-600 mr-3" />
+                  <DocumentArrowDownIcon className="h-8 w-8 text-orange-600 mr-3 dark:text-orange-400" />
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white">Enhanced Backup & Restore</h4>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Advanced backup management</p>
@@ -1508,7 +1508,7 @@ const Settings: React.FC = () => {
               {/* External Connectors */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center mb-4">
-                  <LinkIcon className="h-8 w-8 text-blue-600 mr-3" />
+                  <LinkIcon className="h-8 w-8 text-blue-600 mr-3 dark:text-blue-400" />
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white">External Connectors</h4>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Connect external systems</p>
@@ -1524,7 +1524,7 @@ const Settings: React.FC = () => {
               {/* API Gateway */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center mb-4">
-                  <GlobeAltIcon className="h-8 w-8 text-green-600 mr-3" />
+                  <GlobeAltIcon className="h-8 w-8 text-green-600 mr-3 dark:text-green-400" />
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white">API Gateway</h4>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Manage API endpoints</p>
@@ -1540,7 +1540,7 @@ const Settings: React.FC = () => {
               {/* Data Synchronization */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center mb-4">
-                  <ArrowPathIcon className="h-8 w-8 text-purple-600 mr-3" />
+                  <ArrowPathIcon className="h-8 w-8 text-purple-600 mr-3 dark:text-purple-400" />
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white">Data Sync</h4>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Synchronize data</p>
@@ -1556,7 +1556,7 @@ const Settings: React.FC = () => {
               {/* Webhook Management */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center mb-4">
-                  <BoltIcon className="h-8 w-8 text-orange-600 mr-3" />
+                  <BoltIcon className="h-8 w-8 text-orange-600 mr-3 dark:text-orange-400" />
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white">Webhooks</h4>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Event notifications</p>
@@ -1586,7 +1586,7 @@ const Settings: React.FC = () => {
       default:
         return (
           <div className="text-center py-8">
-            <p className="text-gray-500">Select a tab to view settings</p>
+            <p className="text-gray-500 dark:text-gray-400">Select a tab to view settings</p>
           </div>
         );
     }
@@ -1602,7 +1602,7 @@ const Settings: React.FC = () => {
       {/* Message Display */}
       {message && (
         <div className={`mb-6 p-4 rounded-lg ${
-          message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          message.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
         }`}>
           {message.text}
         </div>
@@ -1611,7 +1611,7 @@ const Settings: React.FC = () => {
       {/* Loading Overlay */}
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 text-center">
+          <div className="bg-white rounded-lg p-6 text-center dark:bg-gray-800">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
             <p className="text-lg">Processing...</p>
           </div>
@@ -1630,8 +1630,8 @@ const Settings: React.FC = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full text-left px-4 py-3 rounded-lg flex items-center ${
                     activeTab === tab.id
-                      ? 'bg-primary-100 text-primary-700 border-l-4 border-primary-600'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      ? 'bg-primary-100 text-primary-700 border-l-4 border-primary-600 dark:bg-primary-900/30 dark:text-primary-300'
+                      : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300'
                   }`}
                 >
                   <Icon className="h-5 w-5 mr-3" />
@@ -1644,7 +1644,7 @@ const Settings: React.FC = () => {
 
         {/* Content */}
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-800">
             {renderTabContent()}
             
             <div className="mt-8 pt-6 border-t flex justify-end space-x-4">

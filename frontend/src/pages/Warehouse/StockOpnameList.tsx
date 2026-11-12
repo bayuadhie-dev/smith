@@ -33,11 +33,11 @@ interface StockOpnameOrder {
 }
 
 const STATUS_COLORS: { [key: string]: string } = {
-  draft: 'bg-gray-100 text-gray-700',
-  scheduled: 'bg-blue-100 text-blue-700',
-  in_progress: 'bg-yellow-100 text-yellow-700',
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
+  draft: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
+  scheduled: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+  in_progress: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+  completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+  cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
 };
 
 const STATUS_LABELS: { [key: string]: string } = {
@@ -143,7 +143,7 @@ export default function StockOpnameList({ mode = 'perintah' }: StockOpnameListPr
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ClipboardDocumentCheckIcon className="h-8 w-8 text-blue-600" />
+            <ClipboardDocumentCheckIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             {mode === 'hasil' ? 'Hasil Opname' : 'Perintah Stok Opname'}
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
@@ -218,7 +218,7 @@ export default function StockOpnameList({ mode = 'perintah' }: StockOpnameListPr
                   <p>Belum ada data stok opname</p>
                   <Link
                     to="/app/warehouse/stock-opname/new"
-                    className="text-blue-600 hover:underline mt-2 inline-block"
+                    className="text-blue-600 hover:underline mt-2 inline-block dark:text-blue-400"
                   >
                     Buat perintah opname baru
                   </Link>
@@ -230,7 +230,7 @@ export default function StockOpnameList({ mode = 'perintah' }: StockOpnameListPr
                   <td className="px-6 py-4">
                     <Link
                       to={`/app/warehouse/stock-opname/${order.id}`}
-                      className="text-blue-600 hover:underline font-medium"
+                      className="text-blue-600 hover:underline font-medium dark:text-blue-400"
                     >
                       {order.opname_number}
                     </Link>
@@ -265,7 +265,7 @@ export default function StockOpnameList({ mode = 'perintah' }: StockOpnameListPr
                   <td className="px-6 py-4">
                     {order.status === 'completed' ? (
                       <div>
-                        <span className={`text-sm font-medium ${order.variance_items > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                        <span className={`text-sm font-medium ${order.variance_items > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                           {order.variance_items} item
                         </span>
                         {order.total_variance_value !== 0 && (
@@ -288,7 +288,7 @@ export default function StockOpnameList({ mode = 'perintah' }: StockOpnameListPr
                       {order.status === 'draft' && (
                         <button
                           onClick={() => handleStart(order.id)}
-                          className="p-2 text-green-600 hover:bg-green-50 rounded"
+                          className="p-2 text-green-600 hover:bg-green-50 rounded dark:text-green-400"
                           title="Mulai Opname"
                         >
                           <PlayIcon className="h-5 w-5" />
@@ -296,7 +296,7 @@ export default function StockOpnameList({ mode = 'perintah' }: StockOpnameListPr
                       )}
                       <Link
                         to={`/app/warehouse/stock-opname/${order.id}`}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded"
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded dark:text-blue-400"
                         title="Lihat Detail"
                       >
                         <EyeIcon className="h-5 w-5" />
@@ -304,7 +304,7 @@ export default function StockOpnameList({ mode = 'perintah' }: StockOpnameListPr
                       {(order.status === 'draft' || order.status === 'cancelled') && (
                         <button
                           onClick={() => handleDelete(order.id, order.opname_number)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded"
+                          className="p-2 text-red-600 hover:bg-red-50 rounded dark:text-red-400"
                           title="Hapus"
                         >
                           <TrashIcon className="h-5 w-5" />

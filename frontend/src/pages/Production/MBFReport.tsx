@@ -480,7 +480,7 @@ const MBFReportPage: React.FC = () => {
 
   if (loading && isEditing) {
     return (
-      <div className="flex items-center justify-center h-screen bg-slate-50">
+      <div className="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-900">
         <div className="relative">
           <div className="h-16 w-16 rounded-full border-t-4 border-b-4 border-blue-600 animate-spin"></div>
           <div className="absolute inset-0 flex items-center justify-center">
@@ -493,7 +493,7 @@ const MBFReportPage: React.FC = () => {
 
   if (isNew) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 dark:bg-slate-900">
         <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all">
            {/* Header with gradient */}
            <div className="bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500 px-6 py-10 text-center text-white relative">
@@ -515,7 +515,7 @@ const MBFReportPage: React.FC = () => {
                       Period Start
                     </label>
                     <Controller name="period_start" control={control} render={({ field }) => (
-                       <input {...field} type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 transition-all outline-none" />
+                       <input {...field} type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 transition-all outline-none dark:text-slate-200 dark:border-slate-700" />
                     )} />
                  </div>
                  <div className="space-y-1.5">
@@ -524,7 +524,7 @@ const MBFReportPage: React.FC = () => {
                       Period End
                     </label>
                     <Controller name="period_end" control={control} render={({ field }) => (
-                       <input {...field} type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 transition-all outline-none" />
+                       <input {...field} type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 transition-all outline-none dark:text-slate-200 dark:border-slate-700" />
                     )} />
                  </div>
               </div>
@@ -535,21 +535,21 @@ const MBFReportPage: React.FC = () => {
                     Delivery Date
                  </label>
                  <Controller name="delivery_date" control={control} render={({ field }) => (
-                    <input {...field} type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 transition-all outline-none" />
+                    <input {...field} type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 transition-all outline-none dark:text-slate-200 dark:border-slate-700" />
                  )} />
               </div>
 
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-50">
                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest ml-1">Target Octn (Ctn)</label>
+                    <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest ml-1 dark:text-blue-400">Target Octn (Ctn)</label>
                     <Controller name="target_octenic" control={control} render={({ field }) => (
-                       <input {...field} type="number" placeholder="0" className="w-full bg-blue-50/30 border border-blue-100 rounded-xl px-4 py-2.5 text-base font-black text-blue-900 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 outline-none" />
+                       <input {...field} type="number" placeholder="0" className="w-full bg-blue-50/30 border border-blue-100 rounded-xl px-4 py-2.5 text-base font-black text-blue-900 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 outline-none dark:text-blue-200" />
                     )} />
                  </div>
                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1">Target Glvc (Ctn)</label>
+                    <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1 dark:text-indigo-400">Target Glvc (Ctn)</label>
                     <Controller name="target_gloveclean" control={control} render={({ field }) => (
-                       <input {...field} type="number" placeholder="0" className="w-full bg-indigo-50/30 border border-indigo-100 rounded-xl px-4 py-2.5 text-base font-black text-indigo-900 focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 outline-none" />
+                       <input {...field} type="number" placeholder="0" className="w-full bg-indigo-50/30 border border-indigo-100 rounded-xl px-4 py-2.5 text-base font-black text-indigo-900 focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-gray-800 dark:bg-gray-800 outline-none dark:text-indigo-200" />
                     )} />
                  </div>
               </div>
@@ -584,7 +584,7 @@ const MBFReportPage: React.FC = () => {
     <div className="min-h-screen bg-[#f8fafc] p-2 md:p-3">
       <div className="max-w-[1600px] mx-auto space-y-3">
         {/* Header Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 overflow-hidden dark:border-gray-800">
           <div className="px-4 py-2 border-b border-gray-50 flex justify-between items-center bg-white dark:bg-gray-800">
             <div className="flex items-center space-x-3">
               <button 
@@ -596,7 +596,7 @@ const MBFReportPage: React.FC = () => {
               <div>
                 <h1 className="text-[13px] font-black text-gray-900 dark:text-white flex items-center gap-2 uppercase tracking-tight">
                   MBF Production & Delivery Target
-                  <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${report?.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                  <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${report?.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'}`}>
                     {report?.status || 'Draft'}
                   </span>
                 </h1>
@@ -667,7 +667,7 @@ const MBFReportPage: React.FC = () => {
                       name="target_octenic"
                       control={control}
                       render={({ field }) => (
-                        <input {...field} type="number" onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-0.5 text-[11px] font-black text-blue-900 transition-all" disabled={!canEdit} />
+                        <input {...field} type="number" onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-0.5 text-[11px] font-black text-blue-900 transition-all dark:text-blue-200" disabled={!canEdit} />
                       )}
                     />
                   </div>
@@ -677,7 +677,7 @@ const MBFReportPage: React.FC = () => {
                       name="target_gloveclean"
                       control={control}
                       render={({ field }) => (
-                        <input {...field} type="number" onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-0.5 text-[11px] font-black text-purple-900 transition-all" disabled={!canEdit} />
+                        <input {...field} type="number" onChange={e => field.onChange(parseFloat(e.target.value) || 0)} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-0.5 text-[11px] font-black text-purple-900 transition-all dark:text-purple-200" disabled={!canEdit} />
                       )}
                     />
                   </div>
@@ -685,20 +685,20 @@ const MBFReportPage: React.FC = () => {
 
                 <div className="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700/50">
                   <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-blue-600 uppercase tracking-tighter leading-none">Total Target</span>
-                    <span className="text-sm font-black text-blue-900 leading-tight">{computedTotalTargetKarton.toLocaleString()} <span className="text-[8px] font-bold opacity-60 uppercase">Ctn</span></span>
+                    <span className="text-[8px] font-black text-blue-600 uppercase tracking-tighter leading-none dark:text-blue-400">Total Target</span>
+                    <span className="text-sm font-black text-blue-900 leading-tight dark:text-blue-200">{computedTotalTargetKarton.toLocaleString()} <span className="text-[8px] font-bold opacity-60 uppercase">Ctn</span></span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-green-600 uppercase tracking-tighter leading-none">Total Actual</span>
-                    <span className="text-sm font-black text-green-700 leading-tight">{computedActualKarton.toFixed(1)} <span className="text-[8px] font-bold opacity-60 uppercase">Ctn</span></span>
+                    <span className="text-[8px] font-black text-green-600 uppercase tracking-tighter leading-none dark:text-green-400">Total Actual</span>
+                    <span className="text-sm font-black text-green-700 leading-tight dark:text-green-300">{computedActualKarton.toFixed(1)} <span className="text-[8px] font-bold opacity-60 uppercase">Ctn</span></span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-purple-600 uppercase tracking-tighter leading-none">Achievement</span>
-                    <span className="text-sm font-black text-purple-700 leading-tight">{computedAchievement.toFixed(1)}%</span>
+                    <span className="text-[8px] font-black text-purple-600 uppercase tracking-tighter leading-none dark:text-purple-400">Achievement</span>
+                    <span className="text-sm font-black text-purple-700 leading-tight dark:text-purple-300">{computedAchievement.toFixed(1)}%</span>
                   </div>
                   <div className="bg-orange-50/50 px-2 py-1 rounded-lg border border-orange-100 flex flex-col justify-center">
-                    <span className="text-[8px] font-black text-orange-600 uppercase leading-none mb-0.5">Report Month</span>
-                    <span className="text-[9px] font-black text-orange-800 uppercase leading-none">
+                    <span className="text-[8px] font-black text-orange-600 uppercase leading-none mb-0.5 dark:text-orange-400">Report Month</span>
+                    <span className="text-[9px] font-black text-orange-800 uppercase leading-none dark:text-orange-300">
                       {watchedValues.period_start ? format(new Date(watchedValues.period_start), 'MMM yyyy') : '---'}
                     </span>
                   </div>
@@ -706,7 +706,7 @@ const MBFReportPage: React.FC = () => {
               </div>
 
               {/* Remarks/Issue Group */}
-              <div className="lg:col-span-4 p-2.5 bg-white dark:bg-gray-800 border border-gray-100 rounded-xl flex flex-col">
+              <div className="lg:col-span-4 p-2.5 bg-white dark:bg-gray-800 border border-gray-100 rounded-xl flex flex-col dark:border-gray-800">
                 <div className="flex items-center gap-2 mb-1">
                   <InformationCircleIcon className="h-3.5 w-3.5 text-gray-300" />
                   <span className="text-[9px] font-bold text-gray-300 uppercase">Remarks & Issues</span>
@@ -718,7 +718,7 @@ const MBFReportPage: React.FC = () => {
                     <textarea
                       {...field}
                       placeholder={needsIssueExplanation ? "WAJIB: Jelaskan kendala target tidak tercapai..." : "Ringkasan kendala harian..."}
-                      className={`flex-grow w-full bg-gray-50/30 border-none focus:ring-0 text-[10px] text-gray-600 italic resize-none rounded-lg p-1 ${needsIssueExplanation && !field.value ? 'bg-red-50/50' : ''}`}
+                      className={`flex-grow w-full bg-gray-50/30 border-none focus:ring-0 text-[10px] text-gray-600 italic resize-none rounded-lg p-1 dark:text-gray-300 ${needsIssueExplanation && !field.value ? 'bg-red-50/50' : ''}`}
                       disabled={!canEdit}
                     />
                   )}
@@ -731,7 +731,7 @@ const MBFReportPage: React.FC = () => {
         {report && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 pb-1">
             {/* Box 1: Overall Achievement Gauge */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col h-[180px] relative overflow-hidden group">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col h-[180px] relative overflow-hidden group dark:border-gray-800">
                <div className="flex items-center gap-1.5 mb-2 relative z-10">
                   <div className="w-1 h-3 bg-emerald-500 rounded-full"></div>
                   <h3 className="text-[10px] font-black text-gray-800 dark:text-gray-100 uppercase tracking-widest">Efficiency Gauge</h3>
@@ -755,14 +755,14 @@ const MBFReportPage: React.FC = () => {
                     </RadialBarChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pt-4">
-                    <span className="text-2xl font-black text-emerald-600 leading-none">{computedAchievement.toFixed(1)}%</span>
+                    <span className="text-2xl font-black text-emerald-600 leading-none dark:text-emerald-400">{computedAchievement.toFixed(1)}%</span>
                     <span className="text-[8px] font-black text-emerald-400 uppercase tracking-tighter">Achievement</span>
                   </div>
                </div>
             </div>
 
             {/* Box 2: Production Benchmark */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col h-[180px]">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col h-[180px] dark:border-gray-800">
                <div className="flex items-center gap-1.5 mb-4">
                   <div className="w-1 h-3 bg-indigo-600 rounded-full"></div>
                   <h3 className="text-[10px] font-black text-gray-800 dark:text-gray-100 uppercase tracking-widest">Product Benchmark</h3>
@@ -777,7 +777,7 @@ const MBFReportPage: React.FC = () => {
                         content={({ active, payload }) => {
                           if (active && payload) {
                              return (
-                               <div className="bg-white dark:bg-gray-800/95 backdrop-blur-md border border-gray-100 p-2 rounded-xl shadow-xl">
+                               <div className="bg-white dark:bg-gray-800/95 backdrop-blur-md border border-gray-100 p-2 rounded-xl shadow-xl dark:border-gray-800">
                                   {payload.map((e: any, i: number) => (
                                     <p key={i} className="text-[8px] font-bold flex justify-between gap-4">
                                       <span className="text-gray-400">{e.name}:</span>
@@ -798,7 +798,7 @@ const MBFReportPage: React.FC = () => {
             </div>
 
             {/* Box 3: Detailed Waste Distribution */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col h-[180px]">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col h-[180px] dark:border-gray-800">
                <div className="flex items-center gap-1.5 mb-2">
                   <div className="w-1 h-3 bg-purple-600 rounded-full"></div>
                   <h3 className="text-[10px] font-black text-gray-800 dark:text-gray-100 uppercase tracking-widest">Waste Analytics</h3>
@@ -809,19 +809,19 @@ const MBFReportPage: React.FC = () => {
                      <span className="text-[7px] font-black text-indigo-500 uppercase tracking-wider block mb-1 border-b border-indigo-50/50 pb-0.5">OCTENIC LOSS</span>
                      <div className="flex justify-between items-center bg-indigo-50/30 px-1 py-0.5 rounded">
                        <span className="text-[7px] font-bold text-gray-400">CLOTH METERS</span>
-                       <span className="text-[9px] font-black text-indigo-900">{wasteMetrics.octn.cloth.toFixed(1)}<span className="text-[6px] ml-0.5">METERS</span></span>
+                       <span className="text-[9px] font-black text-indigo-900 dark:text-indigo-200">{wasteMetrics.octn.cloth.toFixed(1)}<span className="text-[6px] ml-0.5">METERS</span></span>
                      </div>
                      <div className="flex justify-between items-center bg-indigo-50/30 px-1 py-0.5 rounded">
                        <span className="text-[7px] font-bold text-gray-400">CHEMICAL GRAMS</span>
-                       <span className="text-[9px] font-black text-indigo-900">{Math.round(wasteMetrics.octn.chem)}<span className="text-[6px] ml-0.5">GRAMS</span></span>
+                       <span className="text-[9px] font-black text-indigo-900 dark:text-indigo-200">{Math.round(wasteMetrics.octn.chem)}<span className="text-[6px] ml-0.5">GRAMS</span></span>
                      </div>
                      <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 px-1 py-0.5 rounded">
                        <span className="text-[7px] font-bold text-gray-400 text-opacity-60 uppercase">PACKAGING / STICKER WASTE</span>
-                       <span className="text-[9px] font-black text-slate-700">{wasteMetrics.octn.pkg}/{wasteMetrics.octn.stc}</span>
+                       <span className="text-[9px] font-black text-slate-700 dark:text-slate-200">{wasteMetrics.octn.pkg}/{wasteMetrics.octn.stc}</span>
                      </div>
                      <div className="flex justify-between items-center bg-red-50/30 px-1 py-0.5 rounded">
                        <span className="text-[7px] font-bold text-red-400 uppercase">REJECT PIECES</span>
-                       <span className="text-[9px] font-black text-red-700">{wasteMetrics.octn.reject}<span className="text-[6px] ml-0.5">PIECES</span></span>
+                       <span className="text-[9px] font-black text-red-700 dark:text-red-300">{wasteMetrics.octn.reject}<span className="text-[6px] ml-0.5">PIECES</span></span>
                      </div>
                    </div>
 
@@ -830,19 +830,19 @@ const MBFReportPage: React.FC = () => {
                      <span className="text-[7px] font-black text-purple-500 uppercase tracking-wider block mb-1 border-b border-purple-50/50 pb-0.5">GLOVECLEAN LOSS</span>
                      <div className="flex justify-between items-center bg-purple-50/30 px-1 py-0.5 rounded">
                        <span className="text-[7px] font-bold text-gray-400">CLOTH METERS</span>
-                       <span className="text-[9px] font-black text-purple-900">{wasteMetrics.glvcn.cloth.toFixed(1)}<span className="text-[6px] ml-0.5">METERS</span></span>
+                       <span className="text-[9px] font-black text-purple-900 dark:text-purple-200">{wasteMetrics.glvcn.cloth.toFixed(1)}<span className="text-[6px] ml-0.5">METERS</span></span>
                      </div>
                      <div className="flex justify-between items-center bg-purple-50/30 px-1 py-0.5 rounded">
                        <span className="text-[7px] font-bold text-gray-400">CHEMICAL GRAMS</span>
-                       <span className="text-[9px] font-black text-purple-900">{Math.round(wasteMetrics.glvcn.chem)}<span className="text-[6px] ml-0.5">GRAMS</span></span>
+                       <span className="text-[9px] font-black text-purple-900 dark:text-purple-200">{Math.round(wasteMetrics.glvcn.chem)}<span className="text-[6px] ml-0.5">GRAMS</span></span>
                      </div>
                      <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 px-1 py-0.5 rounded">
                        <span className="text-[7px] font-bold text-gray-400 text-opacity-60 uppercase tracking-tighter">PACKAGING WASTE</span>
-                       <span className="text-[9px] font-black text-slate-700">{wasteMetrics.glvcn.pkg}</span>
+                       <span className="text-[9px] font-black text-slate-700 dark:text-slate-200">{wasteMetrics.glvcn.pkg}</span>
                      </div>
                      <div className="flex justify-between items-center bg-red-50/30 px-1 py-0.5 rounded">
                        <span className="text-[7px] font-bold text-red-400 uppercase tracking-tighter">REJECT PIECES</span>
-                       <span className="text-[9px] font-black text-red-700">{wasteMetrics.glvcn.reject}<span className="text-[6px] ml-0.5">PIECES</span></span>
+                       <span className="text-[9px] font-black text-red-700 dark:text-red-300">{wasteMetrics.glvcn.reject}<span className="text-[6px] ml-0.5">PIECES</span></span>
                      </div>
                    </div>
                </div>
@@ -852,7 +852,7 @@ const MBFReportPage: React.FC = () => {
 
         {/* Daily Production Cards */}
         {report && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 p-3">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 p-3 dark:border-gray-800">
             <div className="flex items-center justify-between mb-3 px-1">
               <h3 className="text-xs font-black text-gray-800 dark:text-gray-100 flex items-center gap-1.5 uppercase tracking-widest">
                 <span className="w-1 h-3 bg-blue-600 rounded-full"></span>
@@ -873,15 +873,15 @@ const MBFReportPage: React.FC = () => {
                 const dayAchieved = dayActual >= dayTarget;
 
                 return (
-                  <div key={dayKey} className={`bg-white rounded-xl shadow-sm border ${dayAchieved ? 'border-green-100' : 'border-red-100'} transition-all overflow-hidden`}>
+                  <div key={dayKey} className={`bg-white rounded-xl shadow-sm border dark:bg-gray-800 ${dayAchieved ? 'border-green-100' : 'border-red-100'} transition-all overflow-hidden`}>
                     <div className={`px-2 py-1 border-b flex justify-between items-center ${dayAchieved ? 'bg-green-50/20' : 'bg-red-50/20'}`}>
                       <div className="flex items-center gap-2">
-                         <span className={`text-[11px] font-black uppercase ${dayAchieved ? 'text-green-800' : 'text-red-800'}`}>{indonesianDay}</span>
+                         <span className={`text-[11px] font-black uppercase ${dayAchieved ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>{indonesianDay}</span>
                          <span className="text-[8px] text-gray-400 font-bold">{formattedDate}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <div className="text-right">
-                          <p className={`text-[10px] font-black leading-none ${dayAchieved ? 'text-green-700' : 'text-red-700'}`}>{dayActual.toLocaleString()} <span className="text-[7px] opacity-70 uppercase">pcs</span></p>
+                          <p className={`text-[10px] font-black leading-none ${dayAchieved ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>{dayActual.toLocaleString()} <span className="text-[7px] opacity-70 uppercase">pcs</span></p>
                         </div>
                         {dayAchieved ? <CheckCircleIcon className="h-3 w-3 text-green-500" /> : <InformationCircleIcon className="h-3 w-3 text-red-500" />}
                       </div>
@@ -914,7 +914,7 @@ const MBFReportPage: React.FC = () => {
                                       next.add(dayKey);
                                       setExpandedShift2Days(next);
                                     }}
-                                    className="p-0.5 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-all shadow-sm group"
+                                    className="p-0.5 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-all shadow-sm group dark:bg-blue-900/20 dark:text-blue-400"
                                     title="Tambah Shift 2"
                                   >
                                     <PlusIcon className="h-2 w-2" />
@@ -932,13 +932,13 @@ const MBFReportPage: React.FC = () => {
                                   <div className="flex gap-4">
                                     <div className="flex flex-col items-end">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Target Pcs</span>
-                                      <NumberInput value={detail.target_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'target_octenic', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-blue-200 rounded text-[10px] font-black text-center text-blue-900 focus:ring-1 focus:ring-blue-600 outline-none transition-all" disabled={!canEdit} />
+                                      <NumberInput value={detail.target_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'target_octenic', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-blue-200 rounded text-[10px] font-black text-center text-blue-900 focus:ring-1 focus:ring-blue-600 outline-none transition-all dark:border-blue-800 dark:text-blue-200" disabled={!canEdit} />
                                     </div>
                                     <div className="flex flex-col items-end">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Actual Pcs</span>
-                                      <NumberInput value={detail.actual_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_octenic', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-green-200 rounded text-[10px] font-black text-center text-green-700 focus:ring-1 focus:ring-green-600 outline-none transition-all" disabled={!canEdit} />
+                                      <NumberInput value={detail.actual_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_octenic', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-green-200 rounded text-[10px] font-black text-center text-green-700 focus:ring-1 focus:ring-green-600 outline-none transition-all dark:text-green-300 dark:border-green-800" disabled={!canEdit} />
                                     </div>
-                                    <div className="flex flex-col items-end bg-gray-50 dark:bg-gray-900 px-2 rounded-lg border border-gray-100">
+                                    <div className="flex flex-col items-end bg-gray-50 dark:bg-gray-900 px-2 rounded-lg border border-gray-100 dark:border-gray-800">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Cartons</span>
                                       <span className="text-[10px] font-black text-gray-800 dark:text-gray-100">{(detail.actual_octenic / 39).toFixed(2)}</span>
                                     </div>
@@ -948,39 +948,39 @@ const MBFReportPage: React.FC = () => {
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
                                   <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-blue-100/50">
                                     <span className="text-[6px] font-black text-blue-400 uppercase block mb-1">CLOTH METERS</span>
-                                    <span className="text-[10px] font-black text-blue-900">{detail.actual_cloth_octenic?.toFixed(1) || 0} <span className="text-[6px] text-gray-400">m</span></span>
+                                    <span className="text-[10px] font-black text-blue-900 dark:text-blue-200">{detail.actual_cloth_octenic?.toFixed(1) || 0} <span className="text-[6px] text-gray-400">m</span></span>
                                   </div>
                                   <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-blue-100/50">
                                     <span className="text-[6px] font-black text-blue-400 uppercase block mb-1">ISOLASI ROLL</span>
-                                    <NumberInput step="0.01" value={typeof detail.actual_isolation_roll === 'number' ? detail.actual_isolation_roll.toFixed(2) : detail.actual_isolation_roll || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_isolation_roll', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none" disabled={!canEdit} />
+                                    <NumberInput step="0.01" value={typeof detail.actual_isolation_roll === 'number' ? detail.actual_isolation_roll.toFixed(2) : detail.actual_isolation_roll || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_isolation_roll', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none dark:text-blue-200" disabled={!canEdit} />
                                   </div>
                                   <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-blue-100/50">
                                     <span className="text-[6px] font-black text-blue-400 uppercase block mb-1">PACKAGING ROLL</span>
-                                    <NumberInput step="0.01" value={typeof detail.actual_roll_packaging_octenic === 'number' ? detail.actual_roll_packaging_octenic.toFixed(2) : detail.actual_roll_packaging_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_packaging_octenic', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none" disabled={!canEdit} />
+                                    <NumberInput step="0.01" value={typeof detail.actual_roll_packaging_octenic === 'number' ? detail.actual_roll_packaging_octenic.toFixed(2) : detail.actual_roll_packaging_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_packaging_octenic', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none dark:text-blue-200" disabled={!canEdit} />
                                   </div>
                                   <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-blue-100/50">
                                     <span className="text-[6px] font-black text-blue-400 uppercase block mb-1">STICKER ROLL</span>
-                                    <NumberInput step="0.01" value={typeof detail.actual_roll_sticker_octenic === 'number' ? detail.actual_roll_sticker_octenic.toFixed(2) : detail.actual_roll_sticker_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_sticker_octenic', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none" disabled={!canEdit} />
+                                    <NumberInput step="0.01" value={typeof detail.actual_roll_sticker_octenic === 'number' ? detail.actual_roll_sticker_octenic.toFixed(2) : detail.actual_roll_sticker_octenic || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_sticker_octenic', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-blue-900 focus:ring-0 outline-none dark:text-blue-200" disabled={!canEdit} />
                                   </div>
                                 </div>
 
                                 <div className="bg-yellow-50/30 border border-yellow-100/60 rounded-lg p-1.5">
                                   <div className="flex items-center justify-between mb-1.5 pb-1 border-b border-yellow-100/50">
-                                    <span className="text-[7px] font-black text-yellow-700 uppercase tracking-widest">Quality & Waste Details</span>
+                                    <span className="text-[7px] font-black text-yellow-700 uppercase tracking-widest dark:text-yellow-300">Quality & Waste Details</span>
                                     <div className="flex gap-3 text-[7px] font-black">
-                                       <span className="text-red-600">PACKAGING WASTE: {detail.octn_waste_packaging?.toFixed(2) || 0}</span>
-                                       <span className="text-red-600">STICKER WASTE: {detail.octn_waste_sticker?.toFixed(2) || 0}</span>
+                                       <span className="text-red-600 dark:text-red-400">PACKAGING WASTE: {detail.octn_waste_packaging?.toFixed(2) || 0}</span>
+                                       <span className="text-red-600 dark:text-red-400">STICKER WASTE: {detail.octn_waste_sticker?.toFixed(2) || 0}</span>
                                     </div>
                                   </div>
                                   <div className="grid grid-cols-5 gap-1">
                                     <div className="bg-white dark:bg-gray-800/80 p-1 rounded border border-yellow-100 flex flex-col items-center">
                                       <span className="text-[5px] font-bold text-gray-400 uppercase">Waste METERS/GRAMS</span>
-                                      <span className="text-[8px] font-black text-yellow-800">{detail.octn_waste_cloth_chem || '0M / 0G'}</span>
+                                      <span className="text-[8px] font-black text-yellow-800 dark:text-yellow-300">{detail.octn_waste_cloth_chem || '0M / 0G'}</span>
                                     </div>
                                     {['octn_setting_packaging', 'octn_setting_sticker', 'octn_grade_b', 'octn_grade_c'].map(f => (
                                       <div key={f} className="bg-white dark:bg-gray-800/80 p-0.5 rounded border border-yellow-100 flex flex-col items-center">
                                         <span className="text-[5px] font-bold text-gray-400 uppercase">{f.split('_').slice(1).join(' ')}</span>
-                                        <NumberInput value={(detail as any)[f] || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, f, parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[9px] font-black text-center text-yellow-900 focus:ring-0 outline-none" disabled={!canEdit} />
+                                        <NumberInput value={(detail as any)[f] || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, f, parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[9px] font-black text-center text-yellow-900 focus:ring-0 outline-none dark:text-yellow-200" disabled={!canEdit} />
                                       </div>
                                     ))}
                                   </div>
@@ -994,13 +994,13 @@ const MBFReportPage: React.FC = () => {
                                   <div className="flex gap-4">
                                     <div className="flex flex-col items-end">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Target Pcs</span>
-                                      <NumberInput value={detail.target_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'target_gloveclean', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-purple-200 rounded text-[10px] font-black text-center text-purple-900 focus:ring-1 focus:ring-purple-600 outline-none transition-all" disabled={!canEdit} />
+                                      <NumberInput value={detail.target_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'target_gloveclean', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-purple-200 rounded text-[10px] font-black text-center text-purple-900 focus:ring-1 focus:ring-purple-600 outline-none transition-all dark:border-purple-800 dark:text-purple-200" disabled={!canEdit} />
                                     </div>
                                     <div className="flex flex-col items-end">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Actual Pcs</span>
-                                      <NumberInput value={detail.actual_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_gloveclean', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-green-200 rounded text-[10px] font-black text-center text-green-700 focus:ring-1 focus:ring-green-600 outline-none transition-all" disabled={!canEdit} />
+                                      <NumberInput value={detail.actual_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_gloveclean', parseFloat(e.target.value) || 0)} className="w-16 bg-white dark:bg-gray-800 border border-green-200 rounded text-[10px] font-black text-center text-green-700 focus:ring-1 focus:ring-green-600 outline-none transition-all dark:text-green-300 dark:border-green-800" disabled={!canEdit} />
                                     </div>
-                                    <div className="flex flex-col items-end bg-gray-50 dark:bg-gray-900 px-2 rounded-lg border border-gray-100">
+                                    <div className="flex flex-col items-end bg-gray-50 dark:bg-gray-900 px-2 rounded-lg border border-gray-100 dark:border-gray-800">
                                       <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Cartons</span>
                                       <span className="text-[10px] font-black text-gray-800 dark:text-gray-100">{(detail.actual_gloveclean / 72).toFixed(2)}</span>
                                     </div>
@@ -1010,30 +1010,30 @@ const MBFReportPage: React.FC = () => {
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
                                   <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-purple-100/50">
                                     <span className="text-[6px] font-black text-purple-400 uppercase block mb-1">CLOTH METERS</span>
-                                    <span className="text-[10px] font-black text-purple-900">{detail.actual_cloth_gloveclean?.toFixed(1) || 0} <span className="text-[6px] text-gray-400">m</span></span>
+                                    <span className="text-[10px] font-black text-purple-900 dark:text-purple-200">{detail.actual_cloth_gloveclean?.toFixed(1) || 0} <span className="text-[6px] text-gray-400">m</span></span>
                                   </div>
                                   <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-purple-100/50">
                                     <span className="text-[6px] font-black text-purple-400 uppercase block mb-1">PACKAGING ROLL</span>
-                                    <NumberInput step="0.01" value={typeof detail.actual_roll_packaging_gloveclean === 'number' ? detail.actual_roll_packaging_gloveclean.toFixed(2) : detail.actual_roll_packaging_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_packaging_gloveclean', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-purple-900 focus:ring-0 outline-none" disabled={!canEdit} />
+                                    <NumberInput step="0.01" value={typeof detail.actual_roll_packaging_gloveclean === 'number' ? detail.actual_roll_packaging_gloveclean.toFixed(2) : detail.actual_roll_packaging_gloveclean || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, 'actual_roll_packaging_gloveclean', parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[10px] font-black text-purple-900 focus:ring-0 outline-none dark:text-purple-200" disabled={!canEdit} />
                                   </div>
                                 </div>
 
                                 <div className="bg-emerald-50/30 border border-emerald-100/60 rounded-lg p-1.5">
                                   <div className="flex items-center justify-between mb-1.5 pb-1 border-b border-emerald-100/50">
-                                    <span className="text-[7px] font-black text-emerald-700 uppercase tracking-widest">Quality & Waste Details</span>
+                                    <span className="text-[7px] font-black text-emerald-700 uppercase tracking-widest dark:text-emerald-300">Quality & Waste Details</span>
                                     <div className="flex gap-3 text-[7px] font-black">
-                                       <span className="text-red-600">PACKAGING WASTE: {detail.glvcn_waste_packaging?.toFixed(2) || 0}</span>
+                                       <span className="text-red-600 dark:text-red-400">PACKAGING WASTE: {detail.glvcn_waste_packaging?.toFixed(2) || 0}</span>
                                     </div>
                                   </div>
                                   <div className="grid grid-cols-4 gap-1">
                                     <div className="bg-white dark:bg-gray-800/80 p-1 rounded border border-emerald-100 flex flex-col items-center">
                                       <span className="text-[5px] font-bold text-gray-400 uppercase">Waste METERS/GRAMS</span>
-                                      <span className="text-[8px] font-black text-emerald-800">{detail.glvcn_waste_cloth_chem || '0M / 0ML'}</span>
+                                      <span className="text-[8px] font-black text-emerald-800 dark:text-emerald-300">{detail.glvcn_waste_cloth_chem || '0M / 0ML'}</span>
                                     </div>
                                     {['glvcn_setting_packaging', 'glvcn_grade_b', 'glvcn_grade_c'].map(f => (
                                       <div key={f} className="bg-white dark:bg-gray-800/80 p-0.5 rounded border border-emerald-100 flex flex-col items-center">
                                         <span className="text-[5px] font-bold text-gray-400 uppercase">{f.split('_').slice(1).join(' ')}</span>
-                                        <NumberInput value={(detail as any)[f] || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, f, parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[9px] font-black text-center text-emerald-900 focus:ring-0 outline-none" disabled={!canEdit} />
+                                        <NumberInput value={(detail as any)[f] || ''} onChange={(e) => updateDetailValue(dayKey, detail.shift_number, f, parseFloat(e.target.value) || 0)} className="w-full bg-transparent border-none p-0 text-[9px] font-black text-center text-emerald-900 focus:ring-0 outline-none dark:text-emerald-200" disabled={!canEdit} />
                                       </div>
                                     ))}
                                   </div>
@@ -1042,7 +1042,7 @@ const MBFReportPage: React.FC = () => {
                             </div>
                             
                             {/* Shift Notes Overlay */}
-                            <div className="mt-1 flex items-center gap-1.5 p-1 bg-gray-50 dark:bg-gray-900/50 rounded-md border border-gray-100">
+                            <div className="mt-1 flex items-center gap-1.5 p-1 bg-gray-50 dark:bg-gray-900/50 rounded-md border border-gray-100 dark:border-gray-800">
                                <ChatBubbleBottomCenterTextIcon className="h-2.5 w-2.5 text-gray-300" />
                                <input 
                                  type="text" 
@@ -1063,8 +1063,8 @@ const MBFReportPage: React.FC = () => {
             </div>
             
             {/* Compact Legend Footer */}
-            <div className="mt-4 border-t border-gray-100 pt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[7px] font-black uppercase tracking-tighter text-gray-400">
-              <div className="flex items-center gap-2 pr-4 border-r border-gray-100">
+            <div className="mt-4 border-t border-gray-100 pt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[7px] font-black uppercase tracking-tighter text-gray-400 dark:border-gray-800">
+              <div className="flex items-center gap-2 pr-4 border-r border-gray-100 dark:border-gray-800">
                 <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_3px_rgba(34,197,94,0.4)]"></div> ACHIEVED</span>
                 <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div> MINUS</span>
               </div>
@@ -1087,8 +1087,8 @@ const MBFReportPage: React.FC = () => {
             { label: 'SUPERVISOR', name: report?.approvals.supervisor.name, date: report?.approvals.supervisor.date, role: 'supervisor' },
             { label: 'MANAGER', name: report?.approvals.manager.name, date: report?.approvals.manager.date, role: 'manager' }
           ].map((item, idx) => (
-            <div key={idx} className={`bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3 transition-all ${item.date ? 'bg-green-50/10' : ''}`}>
-               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${item.date ? 'bg-green-100 text-green-600' : 'bg-gray-50 text-gray-300'}`}>
+            <div key={idx} className={`bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3 transition-all dark:bg-gray-800 dark:border-gray-800 ${item.date ? 'bg-green-50/10' : ''}`}>
+               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${item.date ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-50 text-gray-300 dark:bg-gray-900'}`}>
                   {item.date ? <CheckCircleIcon className="h-5 w-5" /> : <UserIcon className="h-5 w-5" />}
                </div>
                <div className="flex-grow">

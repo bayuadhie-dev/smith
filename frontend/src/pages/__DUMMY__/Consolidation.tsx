@@ -77,9 +77,9 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
   }
 
   const getPerformanceColor = (percentage: number) => {
-    if (percentage >= 15) return 'text-green-600'
-    if (percentage >= 10) return 'text-yellow-600'
-    return 'text-red-600'
+    if (percentage >= 15) return 'text-green-600 dark:text-green-400'
+    if (percentage >= 10) return 'text-yellow-600 dark:text-yellow-400'
+    return 'text-red-600 dark:text-red-400'
   }
 
   const getROE = (entity: ConsolidatedData) => {
@@ -177,7 +177,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Consolidated Net Income</p>
-                <p className="text-2xl font-bold text-purple-600">{formatRupiah(summary.consolidated_net_income)}</p>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{formatRupiah(summary.consolidated_net_income)}</p>
               </div>
             </div>
           </div>
@@ -189,7 +189,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Consolidated Assets</p>
-                <p className="text-2xl font-bold text-orange-600">{formatRupiah(summary.consolidated_assets)}</p>
+                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{formatRupiah(summary.consolidated_assets)}</p>
               </div>
             </div>
           </div>
@@ -206,7 +206,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
               className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
                 viewMode === 'financial'
                   ? 'bg-blue-500 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200'
               }`}
             >
               Financial Position
@@ -216,7 +216,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
               className={`px-4 py-2 text-sm font-medium rounded-r-lg ${
                 viewMode === 'performance'
                   ? 'bg-blue-500 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200'
               }`}
             >
               Performance Metrics
@@ -263,24 +263,24 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-white">
                       {formatRupiah(entity.revenue)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600 dark:text-red-400">
                       {formatRupiah(entity.expenses)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <span className={entity.net_income >= 0 ? 'text-green-600' : 'text-red-600'}>
+                      <span className={entity.net_income >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                         {formatRupiah(entity.net_income)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-white">
                       {formatRupiah(entity.assets)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600 dark:text-red-400">
                       {formatRupiah(entity.liabilities)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-blue-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-blue-600 dark:text-blue-400">
                       {formatRupiah(entity.equity)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-orange-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-orange-600 dark:text-orange-400">
                       {formatRupiah(entity.elimination_adjustments)}
                     </td>
                   </tr>
@@ -292,22 +292,22 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                   <td className="px-6 py-4 text-right text-sm font-bold text-gray-900 dark:text-white">
                     {formatRupiah(consolidatedData.reduce((sum, e) => sum + e.revenue, 0))}
                   </td>
-                  <td className="px-6 py-4 text-right text-sm font-bold text-red-600">
+                  <td className="px-6 py-4 text-right text-sm font-bold text-red-600 dark:text-red-400">
                     {formatRupiah(consolidatedData.reduce((sum, e) => sum + e.expenses, 0))}
                   </td>
-                  <td className="px-6 py-4 text-right text-sm font-bold text-green-600">
+                  <td className="px-6 py-4 text-right text-sm font-bold text-green-600 dark:text-green-400">
                     {formatRupiah(consolidatedData.reduce((sum, e) => sum + e.net_income, 0))}
                   </td>
                   <td className="px-6 py-4 text-right text-sm font-bold text-gray-900 dark:text-white">
                     {formatRupiah(consolidatedData.reduce((sum, e) => sum + e.assets, 0))}
                   </td>
-                  <td className="px-6 py-4 text-right text-sm font-bold text-red-600">
+                  <td className="px-6 py-4 text-right text-sm font-bold text-red-600 dark:text-red-400">
                     {formatRupiah(consolidatedData.reduce((sum, e) => sum + e.liabilities, 0))}
                   </td>
-                  <td className="px-6 py-4 text-right text-sm font-bold text-blue-600">
+                  <td className="px-6 py-4 text-right text-sm font-bold text-blue-600 dark:text-blue-400">
                     {formatRupiah(consolidatedData.reduce((sum, e) => sum + e.equity, 0))}
                   </td>
-                  <td className="px-6 py-4 text-right text-sm font-bold text-orange-600">
+                  <td className="px-6 py-4 text-right text-sm font-bold text-orange-600 dark:text-orange-400">
                     {formatRupiah(consolidatedData.reduce((sum, e) => sum + e.elimination_adjustments, 0))}
                   </td>
                 </tr>
@@ -381,15 +381,15 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          profitMargin >= 15 && roa >= 10 ? 'bg-green-100 text-green-800' :
-                          profitMargin >= 10 && roa >= 5 ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
+                          profitMargin >= 15 && roa >= 10 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                          profitMargin >= 10 && roa >= 5 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                          'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                         }`}>
                           {profitMargin >= 15 && roa >= 10 ? 'Excellent' :
                            profitMargin >= 10 && roa >= 5 ? 'Good' : 'Needs Improvement'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-blue-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-blue-600 dark:text-blue-400">
                         {contribution.toFixed(1)}%
                       </td>
                     </tr>
@@ -442,7 +442,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
               <h3 className="text-lg font-semibold">🏢 Add Subsidiary Entity</h3>
               <button 
                 onClick={() => setShowAddEntityModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white"
               >
                 ✕
               </button>
@@ -602,9 +602,9 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                 </div>
               </div>
 
-              <div className="bg-yellow-50 p-4 rounded-lg">
-                <h4 className="font-medium text-yellow-900 mb-2">⚠️ Consolidation Guidelines</h4>
-                <ul className="text-sm text-yellow-800 space-y-1">
+              <div className="bg-yellow-50 p-4 rounded-lg dark:bg-yellow-900/20">
+                <h4 className="font-medium text-yellow-900 mb-2 dark:text-yellow-200">⚠️ Consolidation Guidelines</h4>
+                <ul className="text-sm text-yellow-800 space-y-1 dark:text-yellow-300">
                   <li>• Full consolidation for subsidiaries with &gt;50% ownership</li>
                   <li>• Equity method for associates with 20-50% ownership</li>
                   <li>• Ensure consistent accounting policies</li>

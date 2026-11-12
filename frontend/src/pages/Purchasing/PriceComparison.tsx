@@ -108,39 +108,39 @@ export default function PriceComparison() {
           {/* Price Analysis Summary */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center gap-2 mb-4">
-              <ChartBarIcon className="h-5 w-5 text-blue-600" />
+              <ChartBarIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               <h2 className="text-lg font-medium text-gray-900 dark:text-white">Price Analysis</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-green-50 p-4 rounded-lg">
+              <div className="bg-green-50 p-4 rounded-lg dark:bg-green-900/20">
                 <div className="flex items-center gap-2">
-                  <ArrowDownIcon className="h-5 w-5 text-green-600" />
-                  <span className="text-sm font-medium text-green-800">Lowest Price</span>
+                  <ArrowDownIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  <span className="text-sm font-medium text-green-800 dark:text-green-300">Lowest Price</span>
                 </div>
-                <div className="text-2xl font-bold text-green-900 mt-1">
+                <div className="text-2xl font-bold text-green-900 mt-1 dark:text-green-200">
                   {comparisonData.analysis.lowest_price ? 
                     formatRupiah(comparisonData.analysis.lowest_price) : 'N/A'}
                 </div>
               </div>
               
-              <div className="bg-red-50 p-4 rounded-lg">
+              <div className="bg-red-50 p-4 rounded-lg dark:bg-red-900/20">
                 <div className="flex items-center gap-2">
-                  <ArrowDownIcon className="h-5 w-5 text-red-600" />
-                  <span className="text-sm font-medium text-red-800">Highest Price</span>
+                  <ArrowDownIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
+                  <span className="text-sm font-medium text-red-800 dark:text-red-300">Highest Price</span>
                 </div>
-                <div className="text-2xl font-bold text-red-900 mt-1">
+                <div className="text-2xl font-bold text-red-900 mt-1 dark:text-red-200">
                   {comparisonData.analysis.highest_price ? 
                     formatRupiah(comparisonData.analysis.highest_price) : 'N/A'}
                 </div>
               </div>
               
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="bg-blue-50 p-4 rounded-lg dark:bg-blue-900/20">
                 <div className="flex items-center gap-2">
-                  <ChartBarIcon className="h-5 w-5 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-800">Average Price</span>
+                  <ChartBarIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <span className="text-sm font-medium text-blue-800 dark:text-blue-300">Average Price</span>
                 </div>
-                <div className="text-2xl font-bold text-blue-900 mt-1">
+                <div className="text-2xl font-bold text-blue-900 mt-1 dark:text-blue-200">
                   {comparisonData.analysis.average_price ? 
                     formatRupiah(comparisonData.analysis.average_price) : 'N/A'}
                 </div>
@@ -213,9 +213,9 @@ export default function PriceComparison() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            quote.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                            quote.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
-                            'bg-gray-100 text-gray-800'
+                            quote.status === 'accepted' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                            quote.status === 'submitted' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
                           }`}>
                             {quote.status}
                           </span>
@@ -274,10 +274,10 @@ export default function PriceComparison() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            history.source_type === 'po' ? 'bg-blue-100 text-blue-800' :
-                            history.source_type === 'quote' ? 'bg-green-100 text-green-800' :
-                            history.source_type === 'contract' ? 'bg-purple-100 text-purple-800' :
-                            'bg-gray-100 text-gray-800'
+                            history.source_type === 'po' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                            history.source_type === 'quote' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                            history.source_type === 'contract' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
+                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
                           }`}>
                             {history.source_type.toUpperCase()}
                           </span>

@@ -54,15 +54,15 @@ const SparePartDetail = () => {
       .finally(() => setLoading(false))
   }, [id])
 
-  if (loading) return <div className="p-6 text-sm text-gray-500">Memuat...</div>
-  if (!part) return <div className="p-6 text-sm text-gray-500">Sparepart tidak ditemukan. <Link to="/app/maintenance/spare-parts" className="text-emerald-700 hover:underline">Kembali ke daftar</Link></div>
+  if (loading) return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Memuat...</div>
+  if (!part) return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Sparepart tidak ditemukan. <Link to="/app/maintenance/spare-parts" className="text-emerald-700 hover:underline dark:text-emerald-300">Kembali ke daftar</Link></div>
 
   return (
     <div className="space-y-4 p-6">
       <PageHeader
         title={`${part.part_number} · ${part.part_name}`}
         subtitle={[part.category, part.warehouse_location ? `Rak ${part.warehouse_location}` : null].filter(Boolean).join(' · ') || undefined}
-        actions={<Link to="/app/maintenance/spare-parts" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">Kembali ke daftar</Link>}
+        actions={<Link to="/app/maintenance/spare-parts" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Kembali ke daftar</Link>}
       />
 
       <KpiStrip
@@ -77,16 +77,16 @@ const SparePartDetail = () => {
       {(part.supplier_name || part.lead_time_days || part.description) && (
         <Panel title="Keterangan">
           <dl className="grid gap-3 p-4 text-sm md:grid-cols-3">
-            <div><dt className="text-xs text-gray-500">Pemasok utama</dt><dd className="mt-0.5 text-gray-900 dark:text-white">{part.supplier_name || '-'}</dd></div>
-            <div><dt className="text-xs text-gray-500">Lead time</dt><dd className="mt-0.5 text-gray-900 dark:text-white">{part.lead_time_days ? `${part.lead_time_days} hari` : '-'}</dd></div>
-            <div className="md:col-span-3"><dt className="text-xs text-gray-500">Deskripsi</dt><dd className="mt-0.5 text-gray-900 dark:text-white">{part.description || '-'}</dd></div>
+            <div><dt className="text-xs text-gray-500 dark:text-gray-400">Pemasok utama</dt><dd className="mt-0.5 text-gray-900 dark:text-white">{part.supplier_name || '-'}</dd></div>
+            <div><dt className="text-xs text-gray-500 dark:text-gray-400">Lead time</dt><dd className="mt-0.5 text-gray-900 dark:text-white">{part.lead_time_days ? `${part.lead_time_days} hari` : '-'}</dd></div>
+            <div className="md:col-span-3"><dt className="text-xs text-gray-500 dark:text-gray-400">Deskripsi</dt><dd className="mt-0.5 text-gray-900 dark:text-white">{part.description || '-'}</dd></div>
           </dl>
         </Panel>
       )}
 
       <Panel title="Mesin yang memakai">
         {machines.length === 0 ? (
-          <p className="p-4 text-sm text-gray-500">Belum dihubungkan ke mesin mana pun.</p>
+          <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Belum dihubungkan ke mesin mana pun.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -110,7 +110,7 @@ const SparePartDetail = () => {
 
       <Panel title="Riwayat mutasi">
         {movements.length === 0 ? (
-          <p className="p-4 text-sm text-gray-500">Belum ada mutasi.</p>
+          <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Belum ada mutasi.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

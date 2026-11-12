@@ -92,13 +92,13 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-800'
-      case 'sent': return 'bg-blue-100 text-blue-800'
-      case 'accepted': return 'bg-green-100 text-green-800'
-      case 'rejected': return 'bg-red-100 text-red-800'
-      case 'expired': return 'bg-orange-100 text-orange-800'
-      case 'converted': return 'bg-purple-100 text-purple-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'draft': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
+      case 'sent': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+      case 'accepted': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+      case 'rejected': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+      case 'expired': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
+      case 'converted': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
     }
   }
 
@@ -312,8 +312,8 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
                   <tr key={quotation.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                          <DocumentTextIcon className="h-5 w-5 text-blue-600" />
+                        <div className="bg-blue-100 p-2 rounded-lg mr-3 dark:bg-blue-900/30">
+                          <DocumentTextIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
                           <div className="text-sm font-medium text-gray-900 dark:text-white">{quotation.quotation_number}</div>
@@ -345,7 +345,7 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
                           <CalendarIcon className="h-4 w-4 text-gray-400 mr-1" />
                           <span>Issued: {new Date(quotation.quote_date).toLocaleDateString()}</span>
                         </div>
-                        <div className={`flex items-center mt-1 ${expiringSoon ? 'text-orange-600' : ''}`}>
+                        <div className={`flex items-center mt-1 ${expiringSoon ? 'text-orange-600 dark:text-orange-400' : ''}`}>
                           <CalendarIcon className="h-4 w-4 text-gray-400 mr-1" />
                           <span>Expires: {new Date(quotation.valid_until).toLocaleDateString()}</span>
                           {expiringSoon && <span className="ml-1 text-xs">⚠️</span>}
@@ -371,18 +371,18 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
                       <div className="flex gap-2">
                         <button
                           onClick={() => setSelectedQuotationId(quotation.id)}
-                          className="text-indigo-600 hover:text-indigo-900"
+                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400"
                         >
                           <EyeIcon className="h-4 w-4" />
                         </button>
                         <Link
                           to={`/app/sales/quotations/${quotation.id}/edit`}
-                          className="text-green-600 hover:text-green-900"
+                          className="text-green-600 hover:text-green-900 dark:text-green-400"
                         >{t('common.edit')}</Link>
                         {quotation.status === 'accepted' && (
                           <button
                             onClick={() => handleConvertToOrder(quotation.id)}
-                            className="text-purple-600 hover:text-purple-900"
+                            className="text-purple-600 hover:text-purple-900 dark:text-purple-400"
                           >
                           </button>
                         )}
@@ -437,9 +437,9 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
       </div>
 
       {/* Quick Actions */}
-      <div className="card p-4 bg-blue-50 border border-blue-200">
-        <h4 className="font-medium text-blue-900 mb-2">💡 Quick Tips</h4>
-        <ul className="text-sm text-blue-800 space-y-1">
+      <div className="card p-4 bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+        <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">💡 Quick Tips</h4>
+        <ul className="text-sm text-blue-800 space-y-1 dark:text-blue-300">
           <li>• Quotations expiring within 7 days are highlighted with ⚠️</li>
           <li>• Convert accepted quotations to sales orders directly</li>
           <li>• Use filters to quickly find specific quotations</li>

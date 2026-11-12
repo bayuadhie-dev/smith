@@ -75,7 +75,7 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-blue-600">{totalQuantity.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{totalQuantity.toLocaleString()}</div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Total Quantity</div>
             </div>
             <TrashIcon className="h-8 w-8 text-blue-400" />
@@ -85,7 +85,7 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-orange-600">{productionRejectCount}</div>
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{productionRejectCount}</div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Production Rejects</div>
             </div>
             <div className="text-orange-400">🏭</div>
@@ -95,7 +95,7 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl font-bold text-red-600">{highHazardCount}</div>
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{highHazardCount}</div>
               <div className="text-sm text-gray-500 dark:text-gray-400">High Hazard</div>
             </div>
             <ExclamationTriangleIcon className="h-8 w-8 text-red-400" />
@@ -107,23 +107,23 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
       <div className="card p-6">
         <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Waste Categories</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-green-50 rounded-lg">
-            <h4 className="font-medium text-green-900">Production Waste</h4>
-            <p className="text-sm text-green-600">Recyclable materials</p>
+          <div className="p-4 bg-green-50 rounded-lg dark:bg-green-900/20">
+            <h4 className="font-medium text-green-900 dark:text-green-200">Production Waste</h4>
+            <p className="text-sm text-green-600 dark:text-green-400">Recyclable materials</p>
             <div className="mt-2">
               <span className="badge badge-success">Low Risk</span>
             </div>
           </div>
-          <div className="p-4 bg-blue-50 rounded-lg">
-            <h4 className="font-medium text-blue-900">Packaging Waste</h4>
-            <p className="text-sm text-blue-600">Cardboard, plastic</p>
+          <div className="p-4 bg-blue-50 rounded-lg dark:bg-blue-900/20">
+            <h4 className="font-medium text-blue-900 dark:text-blue-200">Packaging Waste</h4>
+            <p className="text-sm text-blue-600 dark:text-blue-400">Cardboard, plastic</p>
             <div className="mt-2">
               <span className="badge badge-info">No Risk</span>
             </div>
           </div>
-          <div className="p-4 bg-red-50 rounded-lg">
-            <h4 className="font-medium text-red-900">Chemical Waste</h4>
-            <p className="text-sm text-red-600">Requires special disposal</p>
+          <div className="p-4 bg-red-50 rounded-lg dark:bg-red-900/20">
+            <h4 className="font-medium text-red-900 dark:text-red-200">Chemical Waste</h4>
+            <p className="text-sm text-red-600 dark:text-red-400">Requires special disposal</p>
             <div className="mt-2">
               <span className="badge badge-danger">High Risk</span>
             </div>
@@ -160,11 +160,11 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {records.map((record: any) => (
-                  <tr key={record.id} className={record.source === 'production' ? 'bg-orange-50' : ''}>
+                  <tr key={record.id} className={record.source === 'production' ? 'bg-orange-50 dark:bg-orange-900/20' : ''}>
                     <td className="font-medium">
                       {record.record_number}
                       {record.source === 'production' && (
-                        <span className="ml-2 text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded">
+                        <span className="ml-2 text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded dark:bg-orange-900/30 dark:text-orange-300">
                           Production
                         </span>
                       )}
@@ -206,7 +206,7 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
                       {record.source !== 'production' && (
                         <Link 
                           to={`/app/waste/${record.id}`}
-                          className="text-primary-600 hover:text-primary-800 text-sm"
+                          className="text-primary-600 hover:text-primary-800 text-sm dark:text-primary-400"
                         >
                           View
                         </Link>
@@ -238,9 +238,9 @@ const { data, isLoading } = useGetWasteRecordsQuery({})
       )}
 
       {/* Environmental Tips */}
-      <div className="card p-4 bg-green-50 border border-green-200">
-        <h4 className="font-medium text-green-900 mb-2">🌱 Environmental Tips</h4>
-        <ul className="text-sm text-green-800 space-y-1">
+      <div className="card p-4 bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800">
+        <h4 className="font-medium text-green-900 mb-2 dark:text-green-200">🌱 Environmental Tips</h4>
+        <ul className="text-sm text-green-800 space-y-1 dark:text-green-300">
           <li>• Separate waste by category for proper recycling</li>
           <li>• Minimize chemical waste through process optimization</li>
           <li>• Track waste reduction goals and achievements</li>

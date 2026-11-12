@@ -16,7 +16,7 @@ const { data: zones } = useGetWarehouseZonesQuery({})
             <h3 className="font-semibold text-gray-900 dark:text-white">{zone.name}</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">{zone.code}</p>
             <p className="mt-2 text-xs text-gray-600 dark:text-gray-300">{zone.material_type}</p>
-            <p className="mt-1 text-sm font-medium text-primary-600">
+            <p className="mt-1 text-sm font-medium text-primary-600 dark:text-primary-400">
               {zone.location_count} locations
             </p>
           </div>
@@ -52,7 +52,7 @@ const { data: zones } = useGetWarehouseZonesQuery({})
                     <td>{location.position}</td>
                     <td>{location.capacity}</td>
                     <td>{location.occupied}</td>
-                    <td className="text-green-600 font-medium">{location.available}</td>
+                    <td className="text-green-600 font-medium dark:text-green-400">{location.available}</td>
                     <td>
                       <span className={`badge ${location.is_available ? 'badge-success' : 'badge-danger'}`}>
                         {location.is_available ? 'Available' : 'Full'}

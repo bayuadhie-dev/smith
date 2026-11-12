@@ -20,7 +20,7 @@ function DataTable({ title, cols, rows }: { title: string; cols: Col[]; rows: an
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead>
-            <tr className="text-xs text-slate-500 border-b">
+            <tr className="text-xs text-slate-500 border-b dark:text-slate-400">
               <th className="py-2 pr-3 text-left">#</th>
               {cols.map((c) => <th key={c.label} className={`py-2 px-3 ${c.align === 'right' ? 'text-right' : 'text-left'}`}>{c.label}</th>)}
             </tr>
@@ -52,7 +52,7 @@ function DataTable({ title, cols, rows }: { title: string; cols: Col[]; rows: an
 
 const KV = ({ label, value }: { label: string; value: any }) => (
   <div>
-    <p className="text-xs text-slate-500">{label}</p>
+    <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
     <p className="font-medium text-slate-800 dark:text-white">{value === null || value === undefined || value === '' ? '-' : value}</p>
   </div>
 )
@@ -71,11 +71,11 @@ export default function ConvertingDetail() {
       .finally(() => setLoading(false))
   }, [id])
 
-  if (loading) return <div className="p-8 text-slate-500">Memuat...</div>
+  if (loading) return <div className="p-8 text-slate-500 dark:text-slate-400">Memuat...</div>
   if (!p) return (
     <div className="p-8">
-      <p className="text-slate-600 mb-3">Data produksi tidak ditemukan.</p>
-      <Link to="/app/production/converting" className="text-blue-600 hover:underline">Kembali ke dashboard</Link>
+      <p className="text-slate-600 mb-3 dark:text-slate-300">Data produksi tidak ditemukan.</p>
+      <Link to="/app/production/converting" className="text-blue-600 hover:underline dark:text-blue-400">Kembali ke dashboard</Link>
     </div>
   )
 
@@ -156,7 +156,7 @@ export default function ConvertingDetail() {
         <button onClick={() => navigate('/app/production/converting')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg" aria-label="Kembali"><ArrowLeftIcon className="h-5 w-5" /></button>
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Detail Produksi {TYPE_LABEL[type] || type}</h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             {p.machine?.name} ({p.machine?.code}) · {new Date(p.production_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} · Shift {p.shift}
           </p>
         </div>
@@ -196,17 +196,17 @@ export default function ConvertingDetail() {
       {axisBlock('Pengaturan Axis Film', md.film_axis)}
       {axisBlock('Pengaturan Axis Nonwoven', md.nonwoven_axis)}
       {rows.length === 0 && type !== 'laminasi' && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 text-sm text-slate-500">Tidak ada data per baris untuk rekaman ini.</div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 text-sm text-slate-500 dark:text-slate-400">Tidak ada data per baris untuk rekaman ini.</div>
       )}
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5">
         <h2 className="font-semibold text-slate-800 dark:text-white mb-3">Downtime</h2>
         {downtime.length === 0 ? (
-          <p className="text-sm text-slate-500">Tidak ada downtime.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Tidak ada downtime.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead><tr className="text-xs text-slate-500 border-b"><th className="py-2 pr-3 text-left">Alasan</th><th className="py-2 px-3 text-left">Kategori</th><th className="py-2 px-3 text-right">Durasi (menit)</th><th className="py-2 px-3 text-right">Frekuensi</th><th className="py-2 pl-3 text-right">Total (menit)</th></tr></thead>
+              <thead><tr className="text-xs text-slate-500 border-b dark:text-slate-400"><th className="py-2 pr-3 text-left">Alasan</th><th className="py-2 px-3 text-left">Kategori</th><th className="py-2 px-3 text-right">Durasi (menit)</th><th className="py-2 px-3 text-right">Frekuensi</th><th className="py-2 pl-3 text-right">Total (menit)</th></tr></thead>
               <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
                 {downtime.map((e, i) => (
                   <tr key={i}>

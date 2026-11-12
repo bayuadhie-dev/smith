@@ -353,7 +353,7 @@ const InvoiceForm: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
               <ExclamationCircleIcon className="h-5 w-5" />
               <span>{error}</span>
             </div>
@@ -503,7 +503,7 @@ const InvoiceForm: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => removeItem(index)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-red-600 hover:text-red-700 dark:text-red-400"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -630,7 +630,7 @@ const InvoiceForm: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span>Total Discount:</span>
-                  <span className="text-red-600">-{formData.currency} {getTotalDiscount().toLocaleString('id-ID')}</span>
+                  <span className="text-red-600 dark:text-red-400">-{formData.currency} {getTotalDiscount().toLocaleString('id-ID')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Total Tax:</span>
@@ -638,7 +638,7 @@ const InvoiceForm: React.FC = () => {
                 </div>
                 <div className="flex justify-between font-bold text-lg border-t pt-2">
                   <span>Grand Total:</span>
-                  <span className="text-blue-600">{formData.currency} {getGrandTotal().toLocaleString('id-ID')}</span>
+                  <span className="text-blue-600 dark:text-blue-400">{formData.currency} {getGrandTotal().toLocaleString('id-ID')}</span>
                 </div>
               </div>
             </div>

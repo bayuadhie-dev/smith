@@ -39,18 +39,18 @@ interface WorkCenterSummary {
 }
 
 const statusConfig: Record<string, { label: string; badge: string; icon: any }> = {
-  running: { label: 'Berjalan', badge: 'bg-green-100 text-green-800', icon: PlayIcon },
-  active: { label: 'Aktif', badge: 'bg-green-100 text-green-800', icon: PlayIcon },
-  idle: { label: 'Idle', badge: 'bg-yellow-100 text-yellow-800', icon: PauseIcon },
-  maintenance: { label: 'Maintenance', badge: 'bg-blue-100 text-blue-800', icon: WrenchScrewdriverIcon },
-  breakdown: { label: 'Breakdown', badge: 'bg-red-100 text-red-800', icon: ExclamationTriangleIcon },
+  running: { label: 'Berjalan', badge: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', icon: PlayIcon },
+  active: { label: 'Aktif', badge: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', icon: PlayIcon },
+  idle: { label: 'Idle', badge: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300', icon: PauseIcon },
+  maintenance: { label: 'Maintenance', badge: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', icon: WrenchScrewdriverIcon },
+  breakdown: { label: 'Breakdown', badge: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', icon: ExclamationTriangleIcon },
 }
 
 const getOEEColor = (oee: number | null) => {
   if (oee === null) return 'text-gray-400'
-  if (oee >= 70) return 'text-green-600'
-  if (oee >= 40) return 'text-yellow-600'
-  return 'text-red-600'
+  if (oee >= 70) return 'text-green-600 dark:text-green-400'
+  if (oee >= 40) return 'text-yellow-600 dark:text-yellow-400'
+  return 'text-red-600 dark:text-red-400'
 }
 
 interface MachineDetail {
@@ -92,7 +92,7 @@ function MachineDetailModal({ machineId, onClose }: { machineId: number; onClose
         </div>
 
         <div className="p-5 space-y-6">
-          {detailLoading && <div className="text-center py-8 text-sm text-gray-500">Memuat detail...</div>}
+          {detailLoading && <div className="text-center py-8 text-sm text-gray-500 dark:text-gray-400">Memuat detail...</div>}
 
           {!detailLoading && !detail && (
             <div className="text-center py-8 text-sm text-red-500">Gagal memuat detail mesin.</div>
@@ -314,7 +314,7 @@ export default function WorkCenterDashboard() {
                         </div>
                         <div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">Total Downtime</div>
-                          <div className={`text-sm font-medium ${m.downtime.total > 60 ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>
+                          <div className={`text-sm font-medium ${m.downtime.total > 60 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
                             {m.downtime.total} menit
                           </div>
                         </div>

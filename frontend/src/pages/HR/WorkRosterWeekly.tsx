@@ -208,12 +208,12 @@ const SearchableLeaderSelect: React.FC<SearchableLeaderSelectProps> = ({
 
   return (
     <div className="relative w-full max-w-md" ref={dropdownRef}>
-      <label className="block text-xs font-semibold text-purple-900 mb-1.5">
+      <label className="block text-xs font-semibold text-purple-900 mb-1.5 dark:text-purple-200">
         Cari atau Ketik Nama Leader Baru (Free Text):
       </label>
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-white border border-purple-300 hover:border-purple-500 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 flex items-center justify-between cursor-pointer shadow-sm transition-all"
+        className="w-full bg-white border border-purple-300 hover:border-purple-500 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 flex items-center justify-between cursor-pointer shadow-sm transition-all dark:bg-gray-800 dark:text-gray-100"
       >
         <span className={currentLeaderName ? "font-bold text-purple-950 flex items-center gap-1.5" : "text-gray-400"}>
           {currentLeaderName ? `👤 ${currentLeaderName}` : "-- Cari atau ketik nama leader --"}
@@ -232,12 +232,12 @@ const SearchableLeaderSelect: React.FC<SearchableLeaderSelectProps> = ({
               <XMarkIcon className="h-4 w-4" />
             </button>
           )}
-          <ChevronDownIcon className="h-4 w-4 text-purple-600" />
+          <ChevronDownIcon className="h-4 w-4 text-purple-600 dark:text-purple-400" />
         </div>
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-2xl border border-purple-200 z-50 p-2 text-sm space-y-2 animate-fadeIn">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-2xl border border-purple-200 z-50 p-2 text-sm space-y-2 animate-fadeIn dark:bg-gray-800 dark:border-purple-800">
           {/* Search Input Box */}
           <div className="relative">
             <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 absolute left-3 top-3" />
@@ -246,7 +246,7 @@ const SearchableLeaderSelect: React.FC<SearchableLeaderSelectProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Ketik nama pencarian atau leader baru..."
-              className="w-full pl-9 pr-3 py-2 bg-purple-50/50 border border-purple-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full pl-9 pr-3 py-2 bg-purple-50/50 border border-purple-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:border-purple-800"
               autoFocus
             />
           </div>
@@ -283,7 +283,7 @@ const SearchableLeaderSelect: React.FC<SearchableLeaderSelectProps> = ({
                       setSearchQuery('');
                       setIsOpen(false);
                     }}
-                    className={`px-3 py-2 rounded-xl cursor-pointer flex items-center justify-between transition-colors ${currentLeaderId === emp.id ? 'bg-purple-600 text-white font-bold' : 'hover:bg-purple-50 text-gray-800'
+                    className={`px-3 py-2 rounded-xl cursor-pointer flex items-center justify-between transition-colors ${currentLeaderId === emp.id ? 'bg-purple-600 text-white font-bold' : 'hover:bg-purple-50 text-gray-800 dark:text-gray-100'
                       }`}
                   >
                     <span>{emp.full_name}</span>
@@ -298,7 +298,7 @@ const SearchableLeaderSelect: React.FC<SearchableLeaderSelectProps> = ({
             {/* Saved Custom Leaders Options */}
             {filteredCustomLeaders.length > 0 && (
               <div>
-                <p className="text-[10px] font-bold text-purple-600 uppercase tracking-wider px-2 py-1 mt-1">Leader Tersimpan (Custom)</p>
+                <p className="text-[10px] font-bold text-purple-600 uppercase tracking-wider px-2 py-1 mt-1 dark:text-purple-400">Leader Tersimpan (Custom)</p>
                 {filteredCustomLeaders.map(cName => (
                   <div
                     key={cName}
@@ -307,7 +307,7 @@ const SearchableLeaderSelect: React.FC<SearchableLeaderSelectProps> = ({
                       setSearchQuery('');
                       setIsOpen(false);
                     }}
-                    className={`px-3 py-2 rounded-xl cursor-pointer flex items-center justify-between transition-colors ${currentLeaderName === cName ? 'bg-purple-600 text-white font-bold' : 'hover:bg-purple-50 text-gray-800'
+                    className={`px-3 py-2 rounded-xl cursor-pointer flex items-center justify-between transition-colors ${currentLeaderName === cName ? 'bg-purple-600 text-white font-bold' : 'hover:bg-purple-50 text-gray-800 dark:text-gray-100'
                       }`}
                   >
                     <span className="flex items-center gap-1.5">
@@ -1133,9 +1133,9 @@ export default function WorkRosterWeekly() {
             >
               <ChevronLeftIcon className="h-5 w-5" />
             </button>
-            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg">
-              <CalendarIcon className="h-5 w-5 text-blue-600" />
-              <span className="font-semibold text-blue-800">
+            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg dark:bg-blue-900/20">
+              <CalendarIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <span className="font-semibold text-blue-800 dark:text-blue-300">
                 Minggu ke-{week} / {year}
               </span>
             </div>
@@ -1154,10 +1154,10 @@ export default function WorkRosterWeekly() {
           {/* Status Badge */}
           {roster && (
             <span className={`ml-auto px-3 py-1 rounded-full text-sm font-medium ${roster.status === 'published'
-                ? 'bg-green-100 text-green-800'
+                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                 : roster.status === 'completed'
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'bg-yellow-100 text-yellow-800'
+                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                  : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
               }`}>
               {roster.status === 'published' ? 'Published' : roster.status === 'completed' ? 'Completed' : 'Draft'}
             </span>
@@ -1175,15 +1175,15 @@ export default function WorkRosterWeekly() {
                 key={shift.value}
                 onClick={() => setSelectedShift(shift.value)}
                 className={`flex-1 px-6 py-4 text-center font-medium transition border-b-2 ${selectedShift === shift.value
-                    ? 'border-blue-600 text-blue-600 bg-blue-50'
-                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'border-blue-600 text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400'
+                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300 dark:hover:text-white'
                   }`}
               >
                 <div className="flex items-center justify-center gap-2">
                   <UserGroupIcon className="h-5 w-5" />
                   {shift.shortLabel}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">
                   Leader: {leaderIds[shift.value as keyof typeof leaderIds]
                     ? (shift.value === 'shift_1' ? roster?.leader_shift_1_name :
                       shift.value === 'shift_2' ? roster?.leader_shift_2_name :
@@ -1203,8 +1203,8 @@ export default function WorkRosterWeekly() {
         ) : (
           <div className="p-6 space-y-6">
             {/* Leader Section for current shift */}
-            <div className="bg-purple-50 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-purple-900 mb-3 flex items-center gap-2">
+            <div className="bg-purple-50 rounded-lg p-4 dark:bg-purple-900/20">
+              <h3 className="text-lg font-semibold text-purple-900 mb-3 flex items-center gap-2 dark:text-purple-200">
                 <UserGroupIcon className="h-5 w-5" />
                 Leader {SHIFTS.find(s => s.value === selectedShift)?.shortLabel}
               </h3>
@@ -1225,7 +1225,7 @@ export default function WorkRosterWeekly() {
             {/* Machine-based Assignments: Operator - Helper - Checker */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <CogIcon className="h-5 w-5 text-blue-600" />
+                <CogIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 Assignment per Mesin Produksi - {SHIFTS.find(s => s.value === selectedShift)?.shortLabel}
               </h3>
 
@@ -1273,14 +1273,14 @@ export default function WorkRosterWeekly() {
                         const keyProductSuffix = prods.length > 1 ? `_p${pIdx}` : '';
 
                         return (
-                          <tr key={`${machine.id}_${pIdx}`} className={`hover:bg-gray-50 ${machine.id < 0 ? 'bg-blue-50' : ''}`}>
+                          <tr key={`${machine.id}_${pIdx}`} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${machine.id < 0 ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
                             {isFirstRow && (
                               <td
                                 rowSpan={rowSpanCount}
                                 className="px-4 py-3 font-medium text-gray-900 dark:text-white border-r bg-gray-50 dark:bg-gray-900 align-top"
                               >
                                 <div className="font-semibold">{machine.name}</div>
-                                <div className="text-xs text-gray-500">{machine.code}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">{machine.code}</div>
                               </td>
                             )}
                             <td className="px-3 py-3 border-r min-w-[220px] align-top">
@@ -1338,7 +1338,7 @@ export default function WorkRosterWeekly() {
                                             value={name}
                                             onChange={(e) => updateName(idx, e.target.value)}
                                             placeholder="Nama..."
-                                            className={`flex-1 text-xs border rounded px-1 py-0.5 w-16 focus:ring-1 ${isDup ? 'border-red-500 bg-red-50 focus:ring-red-500' : 'focus:ring-blue-500'}`}
+                                            className={`flex-1 text-xs border rounded px-1 py-0.5 w-16 focus:ring-1 ${isDup ? 'border-red-500 bg-red-50 focus:ring-red-500 dark:bg-red-900/20' : 'focus:ring-blue-500'}`}
                                             title={isDup ? 'Nama sudah digunakan!' : ''}
                                           />
                                           <span
@@ -1350,7 +1350,7 @@ export default function WorkRosterWeekly() {
                                     })}
                                     <span
                                       onClick={addName}
-                                      className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-block py-1"
+                                      className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-block py-1 dark:text-blue-400"
                                     >+ Tambah</span>
                                   </div>
                                 </td>
@@ -1395,7 +1395,7 @@ export default function WorkRosterWeekly() {
                                               value={name}
                                               onChange={(e) => updateName(idx, e.target.value)}
                                               placeholder="Nama..."
-                                              className={`flex-1 text-xs border rounded px-1 py-0.5 w-16 focus:ring-1 ${isDup ? 'border-red-500 bg-red-50 focus:ring-red-500' : 'focus:ring-blue-500'}`}
+                                              className={`flex-1 text-xs border rounded px-1 py-0.5 w-16 focus:ring-1 ${isDup ? 'border-red-500 bg-red-50 focus:ring-red-500 dark:bg-red-900/20' : 'focus:ring-blue-500'}`}
                                               title={isDup ? 'Nama sudah digunakan!' : ''}
                                             />
                                             <span
@@ -1407,7 +1407,7 @@ export default function WorkRosterWeekly() {
                                       })}
                                       <span
                                         onClick={addName}
-                                        className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-block py-1"
+                                        className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-block py-1 dark:text-blue-400"
                                       >+ Tambah</span>
                                     </div>
                                   </td>
@@ -1456,7 +1456,7 @@ export default function WorkRosterWeekly() {
 
                       {/* Manual input for packing line workers */}
                       <div className="mb-3">
-                        <label className="block text-xs text-gray-500 mb-1">Petugas</label>
+                        <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Petugas</label>
                         {(() => {
                           const key = `${selectedShift}_${line}`;
                           const rawValue = manualRoster[key];
@@ -1487,7 +1487,7 @@ export default function WorkRosterWeekly() {
                                         setManualRoster(prev => ({ ...prev, [key]: newNames.join('\n') }));
                                       }}
                                       placeholder="Nama..."
-                                      className={`flex-1 text-xs border rounded px-2 py-1 ${isDup ? 'border-red-500 bg-red-50' : ''}`}
+                                      className={`flex-1 text-xs border rounded px-2 py-1 ${isDup ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : ''}`}
                                       title={isDup ? 'Nama sudah digunakan!' : ''}
                                     />
                                     <span
@@ -1502,7 +1502,7 @@ export default function WorkRosterWeekly() {
                               })}
                               <span
                                 onClick={addName}
-                                className="text-xs text-pink-600 hover:text-pink-800 hover:underline cursor-pointer inline-block py-1"
+                                className="text-xs text-pink-600 hover:text-pink-800 hover:underline cursor-pointer inline-block py-1 dark:text-pink-400"
                               >+ Tambah</span>
                             </div>
                           );
@@ -1511,7 +1511,7 @@ export default function WorkRosterWeekly() {
 
                       {/* Timbang Box */}
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Timbang Box</label>
+                        <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Timbang Box</label>
                         {(() => {
                           const key = `${selectedShift}_${line}_timbang`;
                           const rawValue = manualRoster[key];
@@ -1542,7 +1542,7 @@ export default function WorkRosterWeekly() {
                                         setManualRoster(prev => ({ ...prev, [key]: newNames.join('\n') }));
                                       }}
                                       placeholder="Nama..."
-                                      className={`flex-1 text-xs border rounded px-2 py-1 ${isDup ? 'border-red-500 bg-red-50' : ''}`}
+                                      className={`flex-1 text-xs border rounded px-2 py-1 ${isDup ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : ''}`}
                                       title={isDup ? 'Nama sudah digunakan!' : ''}
                                     />
                                     <span
@@ -1557,7 +1557,7 @@ export default function WorkRosterWeekly() {
                               })}
                               <span
                                 onClick={addName}
-                                className="text-xs text-purple-600 hover:text-purple-800 hover:underline cursor-pointer inline-block py-1"
+                                className="text-xs text-purple-600 hover:text-purple-800 hover:underline cursor-pointer inline-block py-1 dark:text-purple-400"
                               >+ Tambah</span>
                             </div>
                           );
@@ -1596,7 +1596,7 @@ export default function WorkRosterWeekly() {
                       {/* Distribusi - per mesin per employee */}
                       {role === 'distribusi' ? (
                         <div>
-                          <label className="block text-xs text-gray-500 mb-1">Mesin & Petugas</label>
+                          <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Mesin & Petugas</label>
                           {(() => {
                             const key = `${selectedShift}_${role}`;
                             const rawValue = manualRoster[key];
@@ -1650,7 +1650,7 @@ export default function WorkRosterWeekly() {
                                         value={name || ''}
                                         onChange={(e) => updateEntry(idx, machineId || '', e.target.value)}
                                         placeholder="Nama..."
-                                        className={`flex-1 text-sm border rounded px-2 py-1 ${isDup ? 'border-red-500 bg-red-50' : ''}`}
+                                        className={`flex-1 text-sm border rounded px-2 py-1 ${isDup ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : ''}`}
                                         title={isDup ? 'Nama sudah digunakan!' : ''}
                                       />
                                       <span
@@ -1662,7 +1662,7 @@ export default function WorkRosterWeekly() {
                                 })}
                                 <span
                                   onClick={addEntry}
-                                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-block py-1"
+                                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-block py-1 dark:text-blue-400"
                                 >+ Tambah</span>
                               </div>
                             );
@@ -1671,7 +1671,7 @@ export default function WorkRosterWeekly() {
                       ) : (
                         /* Manual input for workers (QC IPC, QC FG) */
                         <div>
-                          <label className="block text-xs text-gray-500 mb-1">Petugas</label>
+                          <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Petugas</label>
                           {(() => {
                             const key = `${selectedShift}_${role}`;
                             const rawValue = manualRoster[key];
@@ -1702,7 +1702,7 @@ export default function WorkRosterWeekly() {
                                           setManualRoster(prev => ({ ...prev, [key]: newNames.join('\n') }));
                                         }}
                                         placeholder="Nama..."
-                                        className={`flex-1 text-sm border rounded px-2 py-1 ${isDup ? 'border-red-500 bg-red-50' : ''}`}
+                                        className={`flex-1 text-sm border rounded px-2 py-1 ${isDup ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : ''}`}
                                         title={isDup ? 'Nama sudah digunakan!' : ''}
                                       />
                                       <span
@@ -1717,7 +1717,7 @@ export default function WorkRosterWeekly() {
                                 })}
                                 <span
                                   onClick={addName}
-                                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-block py-1"
+                                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer inline-block py-1 dark:text-blue-400"
                                 >+ Tambah</span>
                               </div>
                             );
@@ -1755,7 +1755,7 @@ export default function WorkRosterWeekly() {
               </h3>
               <button
                 onClick={() => setShowEmployeeModal(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-200 text-xl"
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-200 text-xl dark:hover:text-white"
               >
                 ×
               </button>
@@ -1776,7 +1776,7 @@ export default function WorkRosterWeekly() {
 
             <div className="overflow-y-auto max-h-96">
               {employees.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
+                <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                   Tidak ada karyawan ditemukan
                 </div>
               ) : (
@@ -1794,7 +1794,7 @@ export default function WorkRosterWeekly() {
                       <tr key={emp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                         <td className="px-4 py-2 text-sm">{emp.employee_number}</td>
                         <td className="px-4 py-2 text-sm font-medium">{emp.full_name}</td>
-                        <td className="px-4 py-2 text-sm text-gray-500">{emp.department || '-'}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">{emp.department || '-'}</td>
                         <td className="px-4 py-2">
                           <button
                             onClick={() => addEmployee(emp)}
