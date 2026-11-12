@@ -554,7 +554,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                       className="input w-full" 
                       placeholder="0"
                       min="0"
-                      step="1000"
+                      step="0.01"
                     />
                   </div>
 
@@ -568,7 +568,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                       className="input w-full" 
                       placeholder="0"
                       min="0"
-                      step="1000"
+                      step="0.01"
                     />
                   </div>
 
@@ -582,7 +582,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                       className="input w-full" 
                       placeholder="0"
                       min="0"
-                      step="1000"
+                      step="0.01"
                     />
                   </div>
 
@@ -596,7 +596,7 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
                       className="input w-full" 
                       placeholder="0"
                       min="0"
-                      step="1000"
+                      step="0.01"
                     />
                   </div>
                 </div>

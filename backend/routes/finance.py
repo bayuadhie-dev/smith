@@ -3851,6 +3851,22 @@ def get_journal_entries():
             journals[base]['total_credit'] += float(r.credit_amount or 0)
 
         all_journals = list(journals.values())
+        source = request.args.get('source')
+        if source == 'manual':
+            all_journals = [j for j in all_journals if j['reference_type'] == 'manual_journal']
+        elif source == 'auto':
+            all_journals = [j for j in all_journals if j['reference_type'] != 'manual_journal']
+        sort_key = request.args.get('sort')
+        sort_fns = {
+            'entry_number': lambda j: j['entry_number'] or '',
+            'entry_date': lambda j: (j['entry_date'], j['id']),
+            'description': lambda j: (j['description'] or '').lower(),
+            'total_debit': lambda j: j['total_debit'],
+            'status': lambda j: j['kind'] + (j['status'] or ''),
+            'created_by': lambda j: (j['created_by'] or '').lower(),
+        }
+        if sort_key in sort_fns:
+            all_journals.sort(key=sort_fns[sort_key], reverse=request.args.get('dir', 'desc') != 'asc')
         normal = [j for j in all_journals if j['kind'] == 'normal']
         summary = {'journals': len(normal), 'total_debit': round(sum(j['total_debit'] for j in normal), 2),
                    'total_credit': round(sum(j['total_credit'] for j in normal), 2),

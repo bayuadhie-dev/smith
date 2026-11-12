@@ -16,7 +16,7 @@ export interface NumberInputProps extends NativeProps {
 function decimalsFor(props: { currency?: boolean; decimals?: number; step?: string | number }): number {
   if (props.decimals !== undefined) return props.decimals
   const step = props.step === undefined ? undefined : String(props.step)
-  if (step && /^\d+$/.test(step) && step !== '0') return props.currency ? 2 : 0
+  if (step && /^\d+$/.test(step) && step !== '0') return props.currency || Number(step) >= 100 ? 2 : 0
   return props.currency ? 2 : 6
 }
 

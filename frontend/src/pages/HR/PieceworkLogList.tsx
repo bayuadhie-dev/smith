@@ -325,7 +325,7 @@ export default function PieceworkLogList() {
                 </div>
                 <div>
                   <label className={labelClass}>Tarif per Unit (Rp) <span className="text-red-500">*</span></label>
-                  <NumberInput step="1" className={inputClass} value={formData.rate_per_unit} required
+                  <NumberInput decimals={2} className={inputClass} value={formData.rate_per_unit} required
                     onChange={e => setFormData({...formData, rate_per_unit: e.target.value})} placeholder="0" />
                 </div>
               </div>

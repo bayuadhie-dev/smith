@@ -28,6 +28,12 @@ interface Account {
   is_header?: boolean;
   is_active?: boolean;
   description?: string;
+  currency?: string;
+}
+
+interface JLine {
+  account_id: string; debit: number; credit: number; description: string;
+  fx_debit?: number; fx_credit?: number; fx_rate?: number;
 }
 
 interface JournalEntry {
@@ -67,7 +73,10 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
   const [loadingJournalDetail, setLoadingJournalDetail] = useState(false);
   const [showAddJournalModal, setShowAddJournalModal] = useState(false);
   const [editingJournalId, setEditingJournalId] = useState<number | null>(null);
-  const [journalFormData, setJournalFormData] = useState({
+  const [fxRates, setFxRates] = useState<Record<string, number>>({});
+  const [sourceFilter, setSourceFilter] = useState('');
+  const [journalSort, setJournalSort] = useState<{ key: string; dir: 'asc' | 'desc' }>({ key: 'entry_date', dir: 'desc' });
+  const [journalFormData, setJournalFormData] = useState<{ entry_date: string; description: string; reference_number: string; lines: JLine[] }>({
     entry_date: new Date().toISOString().split('T')[0],
     description: '',
     reference_number: '',
@@ -79,7 +88,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
 
   useEffect(() => {
     loadData();
-  }, [activeTab, showVoided, journalPage]);
+  }, [activeTab, showVoided, journalPage, journalSort, sourceFilter]);
 
   const loadData = async () => {
     try {
@@ -90,7 +99,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
         setAccounts(response.data?.accounts || []);
       } else {
         const [response, coa] = await Promise.all([
-          axiosInstance.get(`/api/finance/accounting/journal-entries?per_page=50&page=${journalPage}&hide_voided=${showVoided ? 0 : 1}`),
+          axiosInstance.get(`/api/finance/accounting/journal-entries?per_page=50&page=${journalPage}&hide_voided=${showVoided ? 0 : 1}&sort=${journalSort.key}&dir=${journalSort.dir}${sourceFilter ? `&source=${sourceFilter}` : ''}`),
           axiosInstance.get('/api/finance/chart-of-accounts').catch(() => null),
         ]);
         setJournalEntries(response.data?.entries || []);
@@ -160,7 +169,14 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
         description: d.description || '',
         reference_number: d.reference_number || '',
         lines: (d.lines || []).map((l: any) => ({
-          account_id: String(l.account_id), debit: Number(l.debit_amount) || 0, credit: Number(l.credit_amount) || 0, description: l.description || '',
+          ...(() => {
+            const m = /\s*\[FX ([A-Z]{3}) ([0-9.]+) @ ([0-9.]+)\]$/.exec(l.description || '');
+            const debit = Number(l.debit_amount) || 0; const credit = Number(l.credit_amount) || 0;
+            const base = { account_id: String(l.account_id), debit, credit, description: (l.description || '').replace(/\s*\[FX [A-Z]{3} [0-9.]+ @ [0-9.]+\]$/, '') };
+            if (!m) return base;
+            const amt = Number(m[2]); const rate = Number(m[3]);
+            return { ...base, fx_rate: rate, fx_debit: debit ? amt : undefined, fx_credit: credit ? amt : undefined };
+          })(),
         })),
       });
       setEditingJournalId(entry.id);
@@ -193,7 +209,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
     const totalDebit = journalFormData.lines.reduce((sum, line) => sum + (line.debit || 0), 0);
     const totalCredit = journalFormData.lines.reduce((sum, line) => sum + (line.credit || 0), 0);
     
-    if (totalDebit !== totalCredit) {
+    if (Math.abs(totalDebit - totalCredit) > 0.01) {
       showWarning(`Entry is not balanced!\nTotal Debit: ${formatRupiah(totalDebit)}\nTotal Credit: ${formatRupiah(totalCredit)}\nDifference: ${formatRupiah(Math.abs(totalDebit - totalCredit))}`);
       return;
     }
@@ -207,10 +223,10 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
       // already produces) rather than building a second near-duplicate
       // endpoint for the same underlying table.
       if (editingJournalId) {
-        await axiosInstance.put(`/api/finance/general-ledger/${editingJournalId}`, journalFormData);
+        await axiosInstance.put(`/api/finance/general-ledger/${editingJournalId}`, apiJournal());
         showSuccess('Jurnal manual diperbarui');
       } else {
-        await axiosInstance.post('/api/finance/general-ledger', journalFormData);
+        await axiosInstance.post('/api/finance/general-ledger', apiJournal());
         showSuccess('Journal entry created successfully!');
       }
       handleCloseJournalModal();
@@ -220,6 +236,46 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
       showError(error.response?.data?.error || 'Failed to create journal entry. Please try again.');
     }
   };
+
+  const currencyOfAccount = (accountId: string) =>
+    ((accounts.find((a) => String(a.id) === String(accountId))?.currency || 'IDR') as string).toUpperCase();
+
+  const ensureRate = (cur: string) => {
+    if (cur === 'IDR' || fxRates[cur]) return;
+    axiosInstance.get('/api/purchasing/exchange-rate', { params: { currency: cur } })
+      .then((r) => { if (r.data?.rate) setFxRates((m) => ({ ...m, [cur]: Number(r.data.rate) })); })
+      .catch(() => undefined);
+  };
+
+  const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+
+  const apiJournal = () => ({
+    ...journalFormData,
+    lines: journalFormData.lines.map((l) => {
+      const cur = currencyOfAccount(l.account_id);
+      const fx = cur !== 'IDR' && l.fx_rate && (l.fx_debit || l.fx_credit);
+      const amt = (l.fx_debit || 0) || (l.fx_credit || 0);
+      return {
+        account_id: l.account_id, debit: l.debit, credit: l.credit,
+        description: fx ? `${(l.description || '').trim()} [FX ${cur} ${amt} @ ${l.fx_rate}]`.trim() : l.description,
+      };
+    }),
+  });
+
+  const toggleSort = (key: string) => {
+    setJournalPage(1);
+    setJournalSort((cur) => (cur.key === key ? { key, dir: cur.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: key === 'entry_date' || key === 'total_debit' ? 'desc' : 'asc' }));
+  };
+
+  const sortTh = (label: string, key: string, align: 'left' | 'right' | 'center' = 'left') => (
+    <th
+      onClick={() => toggleSort(key)}
+      className={`px-6 py-3 text-${align} text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-200`}
+      title="Klik untuk mengurutkan"
+    >
+      {label} <span className="text-[10px]">{journalSort.key === key ? (journalSort.dir === 'asc' ? '▲' : '▼') : ''}</span>
+    </th>
+  );
 
   const addJournalLine = () => {
     setJournalFormData({
@@ -237,9 +293,37 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
 
   const updateJournalLine = (index: number, field: string, value: any) => {
     const newLines = [...journalFormData.lines];
-    newLines[index] = { ...newLines[index], [field]: value };
+    let line: JLine = { ...newLines[index], [field]: value };
+    if (field === 'account_id') {
+      const cur = currencyOfAccount(value);
+      if (cur !== 'IDR') {
+        ensureRate(cur);
+        line = { ...line, fx_rate: fxRates[cur] || line.fx_rate, fx_debit: undefined, fx_credit: undefined, debit: 0, credit: 0 };
+      } else {
+        line = { ...line, fx_rate: undefined, fx_debit: undefined, fx_credit: undefined };
+      }
+    }
+    if (field === 'fx_debit' || field === 'fx_credit' || field === 'fx_rate') {
+      const rate = line.fx_rate || 0;
+      line = { ...line, debit: round2((line.fx_debit || 0) * rate), credit: round2((line.fx_credit || 0) * rate) };
+    }
+    newLines[index] = line;
     setJournalFormData({ ...journalFormData, lines: newLines });
   };
+
+  useEffect(() => {
+    // kurs hasil unduhan mengisi baris valuta asing yang belum punya kurs
+    setJournalFormData((f) => ({
+      ...f,
+      lines: f.lines.map((l) => {
+        const cur = currencyOfAccount(l.account_id);
+        if (cur === 'IDR' || l.fx_rate || !fxRates[cur]) return l;
+        const rate = fxRates[cur];
+        return { ...l, fx_rate: rate, debit: round2((l.fx_debit || 0) * rate), credit: round2((l.fx_credit || 0) * rate) };
+      }),
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fxRates]);
 
   const getAccountTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
@@ -356,6 +440,16 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
               <option value="draft">Draft</option>
               <option value="cancelled">Dibatalkan</option>
             </select>
+            <select
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={sourceFilter}
+              onChange={(e) => { setSourceFilter(e.target.value); setJournalPage(1); }}
+              title="Jurnal manual = diinput langsung, otomatis = dibuat dari transaksi"
+            >
+              <option value="">Semua sumber</option>
+              <option value="manual">Jurnal input langsung</option>
+              <option value="auto">Jurnal otomatis</option>
+            </select>
             <label className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 ml-3">
               <input type="checkbox" checked={showVoided} onChange={(e) => { setShowVoided(e.target.checked); setJournalPage(1); }} />
               Tampilkan jurnal pembalik &amp; dibatalkan
@@ -374,18 +468,12 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">
-                  No. jurnal
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">Tanggal</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">Deskripsi</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">
-                  Total debit
-                </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">
-                  Dibuat oleh
-                </th>
+                {sortTh('No. jurnal', 'entry_number')}
+                {sortTh('Tanggal', 'entry_date')}
+                {sortTh('Deskripsi', 'description')}
+                {sortTh('Total debit', 'total_debit', 'right')}
+                {sortTh('Status', 'status', 'center')}
+                {sortTh('Dibuat oleh', 'created_by')}
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">Aksi</th>
               </tr>
             </thead>
@@ -659,7 +747,10 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                   </div>
 
                   <div className="space-y-3">
-                    {journalFormData.lines.map((line, index) => (
+                    {journalFormData.lines.map((line, index) => {
+                      const cur = currencyOfAccount(line.account_id);
+                      const foreign = cur !== 'IDR';
+                      return (
                       <div key={index} className="grid grid-cols-12 gap-2 items-start p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                         <div className="col-span-4">
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -675,26 +766,26 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
 
                         <div className="col-span-3">
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-                            Debit (IDR)
+                            Debit ({foreign ? cur : 'IDR'})
                           </label>
                           <NumberInput 
                             className="input w-full text-sm"
-                            value={line.debit || ''}
-                            onChange={(e) => updateJournalLine(index, 'debit', parseFloat(e.target.value) || 0)}
-                            step="1000"
+                            value={(foreign ? line.fx_debit : line.debit) || ''}
+                            onChange={(e) => updateJournalLine(index, foreign ? 'fx_debit' : 'debit', parseFloat(e.target.value) || 0)}
+                            decimals={2}
                             min="0"
                           />
                         </div>
 
                         <div className="col-span-3">
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-                            Credit (IDR)
+                            Credit ({foreign ? cur : 'IDR'})
                           </label>
                           <NumberInput 
                             className="input w-full text-sm"
-                            value={line.credit || ''}
-                            onChange={(e) => updateJournalLine(index, 'credit', parseFloat(e.target.value) || 0)}
-                            step="1000"
+                            value={(foreign ? line.fx_credit : line.credit) || ''}
+                            onChange={(e) => updateJournalLine(index, foreign ? 'fx_credit' : 'credit', parseFloat(e.target.value) || 0)}
+                            decimals={2}
                             min="0"
                           />
                         </div>
@@ -711,6 +802,17 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                           )}
                         </div>
 
+                        {foreign && (
+                          <div className="col-span-12 flex flex-wrap items-center gap-3 text-sm">
+                            <label className="text-xs font-medium text-gray-700 dark:text-gray-200">Kurs (Rp per {cur})</label>
+                            <NumberInput className="input w-40 text-sm" value={line.fx_rate || ''} decimals={4} min="0"
+                              onChange={(e) => updateJournalLine(index, 'fx_rate', parseFloat(e.target.value) || 0)} />
+                            <span className="text-gray-600 dark:text-gray-300">
+                              Setara {line.debit ? `debit ${formatRupiah(line.debit)}` : line.credit ? `kredit ${formatRupiah(line.credit)}` : 'Rp 0'}
+                            </span>
+                          </div>
+                        )}
+
                         <div className="col-span-12">
                           <input 
                             type="text" 
@@ -721,7 +823,8 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                           />
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg">
