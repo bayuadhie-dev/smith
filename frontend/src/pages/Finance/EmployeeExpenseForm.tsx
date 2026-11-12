@@ -236,7 +236,7 @@ const EmployeeExpenseForm: React.FC = () => {
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600 dark:text-gray-300">Loading...</p>
         </div>
       </div>
     );
@@ -247,31 +247,31 @@ const EmployeeExpenseForm: React.FC = () => {
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={() => navigate('/app/finance/expenses')}
-          className="p-2 hover:bg-gray-100 rounded-lg"
+          className="p-2 hover:bg-gray-100 rounded-lg dark:hover:bg-gray-700"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? 'Edit Expense' : 'New Expense'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update expense claim' : 'Submit expense claim for reimbursement'}
           </p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="max-w-4xl">
-        <div className="bg-white rounded-lg shadow p-6 space-y-6">
+        <div className="bg-white rounded-lg shadow p-6 space-y-6 dark:bg-gray-800">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
               Employee *
             </label>
             <select
               required
               value={formData.employee_id}
               onChange={(e) => setFormData({ ...formData, employee_id: parseInt(e.target.value) })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
             >
               <option value="">Select Employee</option>
               {Array.isArray(employees) && employees.map((emp: any) => (
@@ -284,7 +284,7 @@ const EmployeeExpenseForm: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 Expense Date *
               </label>
               <input
@@ -292,18 +292,18 @@ const EmployeeExpenseForm: React.FC = () => {
                 required
                 value={formData.expense_date}
                 onChange={(e) => setFormData({ ...formData, expense_date: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 Expense Type *
               </label>
               <select
                 required
                 value={formData.expense_type}
                 onChange={(e) => setFormData({ ...formData, expense_type: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
               >
                 {expenseTypes.map((type) => (
                   <option key={type} value={type}>
@@ -315,14 +315,14 @@ const EmployeeExpenseForm: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
               Category *
             </label>
             <select
               required
               value={formData.expense_category}
               onChange={(e) => setFormData({ ...formData, expense_category: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
             >
               <option value="">Select Category</option>
               {categories.map((cat) => (
@@ -334,7 +334,7 @@ const EmployeeExpenseForm: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
               Description *
             </label>
             <textarea
@@ -342,14 +342,14 @@ const EmployeeExpenseForm: React.FC = () => {
               rows={3}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
               placeholder="Describe the expense..."
             />
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 Amount *
               </label>
               <NumberInput currency
@@ -358,18 +358,18 @@ const EmployeeExpenseForm: React.FC = () => {
                 min="0.01"
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
                 placeholder="0.00"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 Currency
               </label>
               <select
                 value={formData.currency}
                 onChange={(e) => handleCurrencyChange(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
               >
                 <option value="IDR">IDR</option>
                 <option value="USD">USD</option>
@@ -379,7 +379,7 @@ const EmployeeExpenseForm: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
               Exchange Rate {formData.currency !== 'IDR' && loadingRate && <span className="text-gray-400 text-xs">(memuat kurs...)</span>}
             </label>
             <NumberInput
@@ -387,17 +387,17 @@ const EmployeeExpenseForm: React.FC = () => {
               min="0"
               value={formData.exchange_rate}
               onChange={(e) => setFormData({ ...formData, exchange_rate: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
               placeholder="1.0"
               disabled={formData.currency === 'IDR'}
             />
             {formData.currency !== 'IDR' && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">
                 Kurs otomatis dari sistem, bisa diubah manual jika perlu.
               </p>
             )}
             {formData.amount && formData.exchange_rate && (
-              <p className="text-sm font-medium text-gray-700 mt-2">
+              <p className="text-sm font-medium text-gray-700 mt-2 dark:text-gray-200">
                 Nilai dalam IDR: Rp{(parseFloat(formData.amount) * parseFloat(formData.exchange_rate)).toLocaleString('id-ID', { maximumFractionDigits: 0 })}
               </p>
             )}
@@ -405,26 +405,26 @@ const EmployeeExpenseForm: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 Reference Number
               </label>
               <input
                 type="text"
                 value={formData.reference_number}
                 onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
                 placeholder="Invoice/Receipt number"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 Vendor Name
               </label>
               <input
                 type="text"
                 value={formData.vendor_name}
                 onChange={(e) => setFormData({ ...formData, vendor_name: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
                 placeholder="Vendor/Supplier name"
               />
             </div>
@@ -432,13 +432,13 @@ const EmployeeExpenseForm: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 Cost Center
               </label>
               <select
                 value={formData.cost_center_id}
                 onChange={(e) => setFormData({ ...formData, cost_center_id: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
               >
                 <option value="">Select Cost Center</option>
                 {Array.isArray(costCenters) && costCenters.map((cc: any) => (
@@ -449,13 +449,13 @@ const EmployeeExpenseForm: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 Account
               </label>
               <select
                 value={formData.account_id}
                 onChange={(e) => setFormData({ ...formData, account_id: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
               >
                 <option value="">Select Account</option>
                 {Array.isArray(accounts) && accounts.map((acc: any) => (
@@ -468,20 +468,20 @@ const EmployeeExpenseForm: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
               Receipt (Photo/PDF)
             </label>
             {receiptPreview || existingReceipt ? (
-              <div className="border border-gray-300 rounded-lg p-4">
+              <div className="border border-gray-300 rounded-lg p-4 dark:border-gray-600">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
                     {receiptPreview ? (typeof receiptPreview === 'string' && receiptPreview.startsWith('data:') ? 'Image Preview' : receiptPreview) : existingReceipt}
                   </span>
                   {existingReceipt && (
                     <button
                       type="button"
                       onClick={() => window.open(`/api/expenses/${id}/receipt`, '_blank')}
-                      className="text-blue-600 hover:text-blue-800"
+                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
@@ -490,7 +490,7 @@ const EmployeeExpenseForm: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleRemoveReceipt}
-                      className="text-red-600 hover:text-red-800"
+                      className="text-red-600 hover:text-red-800 dark:text-red-400"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -505,7 +505,7 @@ const EmployeeExpenseForm: React.FC = () => {
                 )}
               </div>
             ) : (
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center dark:border-gray-600">
                 <input
                   type="file"
                   id="receipt"
@@ -518,7 +518,7 @@ const EmployeeExpenseForm: React.FC = () => {
                   className="cursor-pointer flex flex-col items-center"
                 >
                   <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
                     Click to upload receipt (JPEG, PNG, GIF, PDF)
                   </span>
                   <span className="text-xs text-gray-400 mt-1">Max size: 5MB</span>
@@ -528,14 +528,14 @@ const EmployeeExpenseForm: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
               Notes
             </label>
             <textarea
               rows={2}
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
               placeholder="Additional notes..."
             />
           </div>
@@ -545,7 +545,7 @@ const EmployeeExpenseForm: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/app/finance/expenses')}
-            className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600"
           >
             Cancel
           </button>

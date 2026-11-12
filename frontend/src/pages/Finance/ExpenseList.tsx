@@ -113,17 +113,17 @@ const ExpenseList: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'draft':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
       case 'submitted':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
       case 'approved':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       case 'rejected':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
       case 'paid':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
     }
   };
 
@@ -143,8 +143,8 @@ const ExpenseList: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-700">Access Denied</h2>
-          <p className="text-gray-500">You don't have permission to view expenses</p>
+          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">Access Denied</h2>
+          <p className="text-gray-500 dark:text-gray-400">You don't have permission to view expenses</p>
         </div>
       </div>
     );
@@ -155,8 +155,8 @@ const ExpenseList: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Beban</h1>
-          <p className="text-gray-600">Manage employee expense claims</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Beban</h1>
+          <p className="text-gray-600 dark:text-gray-300">Manage employee expense claims</p>
         </div>
         {hasPermission('expense.create') && (
           <button
@@ -170,7 +170,7 @@ const ExpenseList: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className="bg-white rounded-lg shadow p-4 mb-6 dark:bg-gray-800">
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[200px]">
             <div className="relative">
@@ -180,14 +180,14 @@ const ExpenseList: React.FC = () => {
                 placeholder="Search expenses..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
               />
             </div>
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
           >
             <option value="">All Status</option>
             <option value="draft">Draft</option>
@@ -199,7 +199,7 @@ const ExpenseList: React.FC = () => {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
           >
             <option value="">All Categories</option>
             {categories.map((cat) => (
@@ -212,72 +212,72 @@ const ExpenseList: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded-lg shadow overflow-hidden dark:bg-gray-800">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Expense No
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Employee
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Category
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Description
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Amount
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Status
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Receipt
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                     Loading...
                   </td>
                 </tr>
               ) : expenses.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                     No expenses found
                   </td>
                 </tr>
               ) : (
                 expenses.map((expense) => (
-                  <tr key={expense.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                  <tr key={expense.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-white">
                       {expense.expense_number}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">
                       {expense.employee_name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">
                       {new Date(expense.expense_date).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">
                       {expense.expense_category}
                     </td>
-                    <td className="px-6 py-4 text-gray-900 max-w-xs truncate">
+                    <td className="px-6 py-4 text-gray-900 max-w-xs truncate dark:text-white">
                       {expense.description}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 font-medium dark:text-white">
                       Rp {expense.amount_base.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -285,19 +285,19 @@ const ExpenseList: React.FC = () => {
                         {expense.status_display}
                       </span>
                       {expense.required_manager_id && (
-                        <div className="mt-1 text-xs text-gray-500">
+                        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                           Manager: {expense.manager_status === 'approved' ? '✓ Disetujui' : expense.manager_status === 'rejected' ? '✗ Ditolak' : '⏳ Menunggu'}
                         </div>
                       )}
                       {expense.reimbursement_number && (
-                        <div className="mt-1 text-xs text-gray-500">
+                        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                           Pembayaran: {expense.reimbursement_status_display}
                         </div>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       {expense.receipt_file_name ? (
-                        <Eye className="w-5 h-5 text-blue-600 mx-auto cursor-pointer hover:text-blue-800" />
+                        <Eye className="w-5 h-5 text-blue-600 mx-auto cursor-pointer hover:text-blue-800 dark:text-blue-400" />
                       ) : (
                         <span className="text-gray-400">—</span>
                       )}
@@ -307,7 +307,7 @@ const ExpenseList: React.FC = () => {
                         {expense.status === 'draft' && hasPermission('expense.submit') && (
                           <button
                             onClick={() => handleStatusChange(expense.id, 'submit')}
-                            className="p-1 text-yellow-600 hover:text-yellow-800"
+                            className="p-1 text-yellow-600 hover:text-yellow-800 dark:text-yellow-400"
                             title="Submit"
                           >
                             <Send className="w-4 h-4" />
@@ -316,7 +316,7 @@ const ExpenseList: React.FC = () => {
                         {expense.status === 'submitted' && expense.manager_status === 'pending' && (
                           <button
                             onClick={() => handleStatusChange(expense.id, 'manager-approve')}
-                            className="p-1 text-blue-600 hover:text-blue-800"
+                            className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400"
                             title="Approve sebagai Manager Departemen"
                           >
                             <CheckCircle className="w-4 h-4" />
@@ -326,14 +326,14 @@ const ExpenseList: React.FC = () => {
                           <>
                             <button
                               onClick={() => handleStatusChange(expense.id, 'approve')}
-                              className="p-1 text-green-600 hover:text-green-800"
+                              className="p-1 text-green-600 hover:text-green-800 dark:text-green-400"
                               title={expense.manager_status === 'pending' ? 'Approve (menunggu manager approve dulu)' : 'Approve'}
                             >
                               <CheckCircle className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleStatusChange(expense.id, 'reject')}
-                              className="p-1 text-red-600 hover:text-red-800"
+                              className="p-1 text-red-600 hover:text-red-800 dark:text-red-400"
                               title="Reject"
                             >
                               <XCircle className="w-4 h-4" />
@@ -343,7 +343,7 @@ const ExpenseList: React.FC = () => {
                         {expense.status === 'draft' && hasPermission('expense.edit') && (
                           <button
                             onClick={() => navigate(`/app/finance/expenses/${expense.id}/edit`)}
-                            className="p-1 text-blue-600 hover:text-blue-800"
+                            className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400"
                             title="Edit"
                           >
                             <Edit className="w-4 h-4" />
@@ -352,7 +352,7 @@ const ExpenseList: React.FC = () => {
                         {(expense.status === 'draft' || expense.status === 'rejected') && hasPermission('expense.delete') && (
                           <button
                             onClick={() => handleStatusChange(expense.id, 'delete')}
-                            className="p-1 text-red-600 hover:text-red-800"
+                            className="p-1 text-red-600 hover:text-red-800 dark:text-red-400"
                             title="Delete"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -369,21 +369,21 @@ const ExpenseList: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+          <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center dark:border-gray-700">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600"
             >
               Previous
             </button>
-            <span className="text-gray-600">
+            <span className="text-gray-600 dark:text-gray-300">
               Page {page} of {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600"
             >
               Next
             </button>

@@ -64,21 +64,21 @@ const CycleCountPage: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <ChartBarIcon className="h-7 w-7 text-teal-600" />
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 dark:text-white">
+          <ChartBarIcon className="h-7 w-7 text-teal-600 dark:text-teal-400" />
           Cycle Count
         </h1>
-        <p className="text-gray-500 mt-1">Jadwal penghitungan stok berkala untuk menjaga akurasi inventori</p>
+        <p className="text-gray-500 mt-1 dark:text-gray-400">Jadwal penghitungan stok berkala untuk menjaga akurasi inventori</p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 dark:bg-gray-800 dark:border-gray-700">
         <div className="flex items-center gap-3">
           <FunnelIcon className="h-5 w-5 text-gray-400" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm dark:border-gray-600"
           >
             <option value="">Semua Status</option>
             <option value="active">Active</option>
@@ -94,7 +94,7 @@ const CycleCountPage: React.FC = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
       ) : data.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center text-gray-400">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center text-gray-400 dark:bg-gray-800 dark:border-gray-700">
           <ChartBarIcon className="h-12 w-12 mx-auto mb-3" />
           <p>Belum ada jadwal cycle count</p>
         </div>
@@ -105,14 +105,14 @@ const CycleCountPage: React.FC = () => {
             return (
               <div
                 key={cc.id}
-                className={`bg-white rounded-xl shadow-sm border p-5 ${overdue ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}
+                className={`bg-white rounded-xl shadow-sm border p-5 ${overdue ? 'border-red-300 bg-red-50' : 'border-gray-200'} dark:bg-gray-800 dark:border-gray-700 dark:bg-red-900/20`}
               >
                 <div className="flex items-start justify-between mb-3">
-                  <span className="font-mono text-sm font-bold text-gray-700">{cc.schedule_number}</span>
+                  <span className="font-mono text-sm font-bold text-gray-700 dark:text-gray-200">{cc.schedule_number}</span>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     cc.status === 'active' ? (overdue ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700') :
                     cc.status === 'paused' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'
-                  }`}>
+                  } dark:bg-gray-700 dark:text-gray-200 dark:bg-red-900/30 dark:bg-green-900/30 dark:bg-yellow-900/30 dark:text-red-300 dark:text-green-300 dark:text-yellow-300`}>
                     {overdue ? 'Overdue' : cc.status}
                   </span>
                 </div>
@@ -133,17 +133,17 @@ const CycleCountPage: React.FC = () => {
                   {cc.abc_category && (
                     <div className="flex items-center gap-2">
                       <span className="text-gray-400 w-20">ABC:</span>
-                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold">{cc.abc_category}</span>
+                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold dark:bg-blue-900/30 dark:text-blue-300">{cc.abc_category}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Next count */}
-                <div className={`mt-3 p-3 rounded-lg ${overdue ? 'bg-red-100' : 'bg-gray-50'}`}>
+                <div className={`mt-3 p-3 rounded-lg ${overdue ? 'bg-red-100' : 'bg-gray-50'} dark:bg-gray-900 dark:bg-red-900/30`}>
                   <div className="flex items-center gap-2 text-sm">
                     <CalendarDaysIcon className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-500">Counting berikutnya:</span>
-                    <span className={`font-medium ${overdue ? 'text-red-700' : 'text-gray-900'}`}>
+                    <span className="text-gray-500 dark:text-gray-400">Counting berikutnya:</span>
+                    <span className={`font-medium ${overdue ? 'text-red-700' : 'text-gray-900'} dark:text-white dark:text-red-300`}>
                       {new Date(cc.next_count_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </span>
                   </div>
@@ -152,12 +152,12 @@ const CycleCountPage: React.FC = () => {
                 {/* Stats */}
                 {cc.total_items_counted > 0 && (
                   <div className="mt-3 flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-1 text-green-600">
+                    <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
                       <CheckCircleIcon className="h-4 w-4" />
                       <span>{cc.accuracy_percentage}% akurasi</span>
                     </div>
                     {cc.discrepancies_found > 0 && (
-                      <div className="flex items-center gap-1 text-orange-600">
+                      <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
                         <ExclamationCircleIcon className="h-4 w-4" />
                         <span>{cc.discrepancies_found} selisih</span>
                       </div>

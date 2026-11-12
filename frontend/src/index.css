@@ -41,6 +41,13 @@
   --cta-700: 26 79 174;
   --cta-800: 52 58 65;
   --cta-900: 38 43 49;
+  --gray-700: 52 58 65;
+  --gray-800: 38 43 49;
+  --gray-900: 27 31 36;
+  --gray-950: 18 21 25;
+  --slate-700: 52 58 65;
+  --slate-800: 38 43 49;
+  --slate-900: 27 31 36;
 }
 
 html[data-company='fengsheng'] {
@@ -80,6 +87,13 @@ html[data-company='fengsheng'] {
   --cta-700: 161 71 11;
   --cta-800: 127 58 14;
   --cta-900: 102 49 15;
+  --gray-700: 42 61 51;
+  --gray-800: 27 41 34;
+  --gray-900: 19 28 23;
+  --gray-950: 12 19 16;
+  --slate-700: 42 61 51;
+  --slate-800: 27 41 34;
+  --slate-900: 19 28 23;
 }
 
 /* Sidebar gelap per perusahaan: Falmaco gunmetal, Fengsheng forest green. Pakai varian dark: bawaan sidebar. */
@@ -362,4 +376,12 @@ input::-webkit-inner-spin-button {
 
 input[type=number] {
   -moz-appearance: textfield;
+}
+
+/* Mode gelap: teks bermerek yang tidak punya varian dark: memakai warna merek yang lebih terang agar terbaca. */
+:where(.dark) .text-primary-600,
+:where(.dark) .text-primary-700,
+:where(.dark) .text-emerald-600,
+:where(.dark) .text-emerald-700 {
+  color: rgb(var(--brand-300));
 }

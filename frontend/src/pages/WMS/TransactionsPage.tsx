@@ -477,11 +477,11 @@ const TransactionsPage: React.FC = () => {
   const renderCell = (txn: Transaction, key: string) => {
     switch (key) {
       case 'transaction_number':
-        return <span className="text-gray-700">{txn.transaction_number}</span>;
+        return <span className="text-gray-700 dark:text-gray-200">{txn.transaction_number}</span>;
       case 'movement_type_code':
         return (
           <>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-gray-100 text-gray-700" title={txn.movement_type_label}>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200" title={txn.movement_type_label}>
               {txn.movement_type_code}
             </span>
             <span className="ml-1 font-sans text-[11px] text-gray-400">{txn.movement_type_label}</span>
@@ -489,14 +489,14 @@ const TransactionsPage: React.FC = () => {
         );
       case 'direction':
         return txn.direction === 'in' ? (
-          <ArrowDownIcon className="h-4 w-4 text-green-600 inline" />
+          <ArrowDownIcon className="h-4 w-4 text-green-600 inline dark:text-green-400" />
         ) : (
-          <ArrowUpIcon className="h-4 w-4 text-red-600 inline" />
+          <ArrowUpIcon className="h-4 w-4 text-red-600 inline dark:text-red-400" />
         );
       case 'item':
         return (
           <div className="font-sans">
-            <div className="font-medium text-gray-900">{txn.item_name}</div>
+            <div className="font-medium text-gray-900 dark:text-white">{txn.item_name}</div>
             <div className="text-[11px] text-gray-400">{txn.item_code}</div>
           </div>
         );
@@ -504,7 +504,7 @@ const TransactionsPage: React.FC = () => {
         return <>{txn.quantity.toLocaleString('id-ID')} <span className="text-gray-400 text-[11px]">{txn.uom}</span></>;
       case 'running_balance':
         return txn.running_balance !== null && txn.running_balance !== undefined ? (
-          <span className={txn.running_balance < 0 ? 'text-red-600 font-medium' : 'text-gray-700'}>
+          <span className={txn.running_balance < 0 ? 'text-red-600 font-medium dark:text-red-400' : 'text-gray-700 dark:text-gray-200'}>
             {txn.running_balance.toLocaleString('id-ID')}
           </span>
         ) : <span className="text-gray-300">-</span>;
@@ -513,43 +513,43 @@ const TransactionsPage: React.FC = () => {
       case 'resolved_account':
         return txn.resolved_account?.code ? (
           <div className="font-sans">
-            <div className="text-gray-900 text-xs">{txn.resolved_account.code}</div>
+            <div className="text-gray-900 text-xs dark:text-white">{txn.resolved_account.code}</div>
             <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
               txn.resolved_account.source === 'item_override' ? 'bg-blue-50 text-blue-600' :
               txn.resolved_account.source === 'category_default' ? 'bg-purple-50 text-purple-600' :
               'bg-gray-100 text-gray-500'
-            }`}>
+            } dark:bg-gray-700 dark:text-gray-400 dark:bg-blue-900/20 dark:bg-purple-900/20 dark:text-blue-400 dark:text-purple-400`}>
               {ACCOUNT_SOURCE_LABEL[txn.resolved_account.source] || txn.resolved_account.source}
             </span>
           </div>
         ) : (
-          <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600 font-sans">Belum resolve</span>
+          <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600 font-sans dark:bg-amber-900/20 dark:text-amber-400">Belum resolve</span>
         );
       case 'accounting_entry_number':
-        return txn.accounting_entry_number ? <span className="text-green-700">{txn.accounting_entry_number}</span> : <span className="text-gray-300">-</span>;
+        return txn.accounting_entry_number ? <span className="text-green-700 dark:text-green-300">{txn.accounting_entry_number}</span> : <span className="text-gray-300">-</span>;
       case 'batch_number':
-        return <span className="text-gray-600">{txn.batch_number || '-'}</span>;
+        return <span className="text-gray-600 dark:text-gray-300">{txn.batch_number || '-'}</span>;
       case 'location':
-        return <span className="font-sans text-xs text-gray-600">{txn.from_location || '-'} {txn.to_location ? `→ ${txn.to_location}` : ''}</span>;
+        return <span className="font-sans text-xs text-gray-600 dark:text-gray-300">{txn.from_location || '-'} {txn.to_location ? `→ ${txn.to_location}` : ''}</span>;
       case 'unit_cost':
         return txn.unit_cost ? formatRupiah(txn.unit_cost) : '-';
       case 'reference':
         return (
           <div className="font-sans text-xs">
-            {txn.reference_type && <div className="text-gray-700">{REFERENCE_TYPE_LABELS[txn.reference_type] || txn.reference_type}</div>}
+            {txn.reference_type && <div className="text-gray-700 dark:text-gray-200">{REFERENCE_TYPE_LABELS[txn.reference_type] || txn.reference_type}</div>}
             {txn.reference_number && <div className="text-gray-400">{txn.reference_number}</div>}
           </div>
         );
       case 'machine_shift':
-        return <span className="font-sans text-xs text-gray-600">{[txn.machine_name, txn.shift].filter(Boolean).join(' / ') || '-'}</span>;
+        return <span className="font-sans text-xs text-gray-600 dark:text-gray-300">{[txn.machine_name, txn.shift].filter(Boolean).join(' / ') || '-'}</span>;
       case 'transaction_date':
         return (
-          <span className="font-sans text-xs text-gray-500">
+          <span className="font-sans text-xs text-gray-500 dark:text-gray-400">
             {txn.transaction_date ? new Date(txn.transaction_date).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
           </span>
         );
       case 'created_by':
-        return <span className="font-sans text-xs text-gray-500">{txn.created_by || '-'}</span>;
+        return <span className="font-sans text-xs text-gray-500 dark:text-gray-400">{txn.created_by || '-'}</span>;
       default:
         return null;
     }
@@ -564,39 +564,39 @@ const TransactionsPage: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <ArrowsRightLeftIcon className="h-7 w-7 text-green-600" />
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 dark:text-white">
+          <ArrowsRightLeftIcon className="h-7 w-7 text-green-600 dark:text-green-400" />
           Transaksi Stok
         </h1>
-        <p className="text-gray-500 mt-1">Log pergerakan fisik material, nilai valuasi finansial, dan buku besar akuntansi (COA) — terintegrasi dengan Produksi, PO, SO, dan Transfer</p>
+        <p className="text-gray-500 mt-1 dark:text-gray-400">Log pergerakan fisik material, nilai valuasi finansial, dan buku besar akuntansi (COA) — terintegrasi dengan Produksi, PO, SO, dan Transfer</p>
       </div>
 
       {/* Kartu Ringkasan Finansial & Fisik */}
       {summary && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-green-600">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 dark:bg-gray-800 dark:border-gray-700">
+            <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
               <ArrowDownIcon className="h-5 w-5" />
               <span className="text-sm font-medium">Total Masuk</span>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mt-1">{summary.total_in.toLocaleString('id-ID')}</div>
-            <div className="text-sm text-green-700 mt-0.5">{formatRupiah(summary.total_amount_in)}</div>
+            <div className="text-2xl font-bold text-gray-900 mt-1 dark:text-white">{summary.total_in.toLocaleString('id-ID')}</div>
+            <div className="text-sm text-green-700 mt-0.5 dark:text-green-300">{formatRupiah(summary.total_amount_in)}</div>
           </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-red-600">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 dark:bg-gray-800 dark:border-gray-700">
+            <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
               <ArrowUpIcon className="h-5 w-5" />
               <span className="text-sm font-medium">Total Keluar</span>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mt-1">{summary.total_out.toLocaleString('id-ID')}</div>
-            <div className="text-sm text-red-700 mt-0.5">{formatRupiah(summary.total_amount_out)}</div>
+            <div className="text-2xl font-bold text-gray-900 mt-1 dark:text-white">{summary.total_out.toLocaleString('id-ID')}</div>
+            <div className="text-sm text-red-700 mt-0.5 dark:text-red-300">{formatRupiah(summary.total_amount_out)}</div>
           </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-blue-600">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 dark:bg-gray-800 dark:border-gray-700">
+            <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
               <FunnelIcon className="h-5 w-5" />
               <span className="text-sm font-medium">Mutasi Bersih (Net)</span>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mt-1">{summary.net >= 0 ? '+' : ''}{summary.net.toLocaleString('id-ID')}</div>
-            <div className={`text-sm mt-0.5 ${summary.net_amount >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+            <div className="text-2xl font-bold text-gray-900 mt-1 dark:text-white">{summary.net >= 0 ? '+' : ''}{summary.net.toLocaleString('id-ID')}</div>
+            <div className={`text-sm mt-0.5 ${summary.net_amount >= 0 ? 'text-blue-700' : 'text-red-700'} dark:text-blue-300 dark:text-red-300`}>
               {summary.net_amount >= 0 ? '+' : ''}{formatRupiah(summary.net_amount)}
             </div>
           </div>
@@ -604,31 +604,31 @@ const TransactionsPage: React.FC = () => {
       )}
 
       {/* Panel Kriteria Seleksi (Selection Screen) */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-3">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-3 dark:bg-gray-800 dark:border-gray-700">
         <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Kriteria Seleksi</div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Rentang tanggal + shortcut */}
           <div className="lg:col-span-2">
-            <label className="block text-xs text-gray-500 mb-1">Rentang Tanggal</label>
+            <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Rentang Tanggal</label>
             <div className="flex items-center gap-2 flex-wrap">
               <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
-                className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm" />
+                className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm dark:border-gray-600" />
               <span className="text-gray-400 text-sm">s/d</span>
               <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
-                className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm" />
-              <button onClick={() => applyDateShortcut('today')} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md text-gray-600">Hari Ini</button>
-              <button onClick={() => applyDateShortcut('7days')} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md text-gray-600">7 Hari</button>
-              <button onClick={() => applyDateShortcut('month')} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md text-gray-600">Bulan Ini</button>
+                className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm dark:border-gray-600" />
+              <button onClick={() => applyDateShortcut('today')} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md text-gray-600 dark:bg-gray-700 dark:text-gray-300">Hari Ini</button>
+              <button onClick={() => applyDateShortcut('7days')} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md text-gray-600 dark:bg-gray-700 dark:text-gray-300">7 Hari</button>
+              <button onClick={() => applyDateShortcut('month')} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md text-gray-600 dark:bg-gray-700 dark:text-gray-300">Bulan Ini</button>
             </div>
           </div>
 
           {/* Movement type multi-select */}
           <div className="relative">
-            <label className="block text-xs text-gray-500 mb-1">Kode Gerakan / Tipe</label>
+            <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Kode Gerakan / Tipe</label>
             <button
               onClick={() => setTypeDropdownOpen((v) => !v)}
-              className="w-full flex items-center justify-between border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white"
+              className="w-full flex items-center justify-between border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:border-gray-600"
             >
               <span className="truncate text-left">
                 {typeFilters.length === 0 ? 'Semua Tipe' : `${typeFilters.length} tipe dipilih`}
@@ -636,24 +636,24 @@ const TransactionsPage: React.FC = () => {
               <ChevronDownIcon className="h-4 w-4 text-gray-400 shrink-0" />
             </button>
             {typeDropdownOpen && (
-              <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto p-2">
+              <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto p-2 dark:bg-gray-800 dark:border-gray-700">
                 {Object.entries(typeLabels).map(([k, v]) => (
-                  <label key={k} className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-50 rounded cursor-pointer">
+                  <label key={k} className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-50 rounded cursor-pointer dark:hover:bg-gray-700">
                     <input type="checkbox" checked={typeFilters.includes(k)} onChange={() => toggleTypeFilter(k)} />
                     {v}
                   </label>
                 ))}
-                <button onClick={() => setTypeDropdownOpen(false)} className="w-full mt-1 text-xs text-blue-600 py-1">Tutup</button>
+                <button onClick={() => setTypeDropdownOpen(false)} className="w-full mt-1 text-xs text-blue-600 py-1 dark:text-blue-400">Tutup</button>
               </div>
             )}
           </div>
 
           {/* SAP movement type multi-select (MB51-style, persisted column) */}
           <div className="relative">
-            <label className="block text-xs text-gray-500 mb-1">Kode Gerakan Stok</label>
+            <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Kode Gerakan Stok</label>
             <button
               onClick={() => setMovementTypeDropdownOpen((v) => !v)}
-              className="w-full flex items-center justify-between border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white"
+              className="w-full flex items-center justify-between border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-800 dark:border-gray-600"
             >
               <span className="truncate text-left">
                 {movementTypeFilters.length === 0 ? 'Semua Kode' : `${movementTypeFilters.length} kode dipilih`}
@@ -661,23 +661,23 @@ const TransactionsPage: React.FC = () => {
               <ChevronDownIcon className="h-4 w-4 text-gray-400 shrink-0" />
             </button>
             {movementTypeDropdownOpen && (
-              <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto p-2">
+              <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto p-2 dark:bg-gray-800 dark:border-gray-700">
                 {Object.entries(MOVEMENT_TYPE_LABELS).map(([k, v]) => (
-                  <label key={k} className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-50 rounded cursor-pointer">
+                  <label key={k} className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-50 rounded cursor-pointer dark:hover:bg-gray-700">
                     <input type="checkbox" checked={movementTypeFilters.includes(k)} onChange={() => toggleMovementTypeFilter(k)} />
                     {v}
                   </label>
                 ))}
-                <button onClick={() => setMovementTypeDropdownOpen(false)} className="w-full mt-1 text-xs text-blue-600 py-1">Tutup</button>
+                <button onClick={() => setMovementTypeDropdownOpen(false)} className="w-full mt-1 text-xs text-blue-600 py-1 dark:text-blue-400">Tutup</button>
               </div>
             )}
           </div>
 
           {/* Akun COA */}
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Akun COA</label>
+            <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Akun COA</label>
             <select value={accountFilter} onChange={(e) => setAccountFilter(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm">
+              className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm dark:border-gray-600">
               <option value="">Semua Akun</option>
               {accounts.map((a) => (
                 <option key={a.id} value={a.code}>{a.code} - {a.name}</option>
@@ -688,15 +688,15 @@ const TransactionsPage: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Barang / Item</label>
+            <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Barang / Item</label>
             <input type="text" placeholder="Cari nama/kode barang..." value={itemSearch}
               onChange={(e) => setItemSearch(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" />
+              className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm dark:border-gray-600" />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Gudang / Lokasi</label>
+            <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Gudang / Lokasi</label>
             <select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm">
+              className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm dark:border-gray-600">
               <option value="">Semua Gudang / Lokasi</option>
               {locations.map((l) => (
                 <option key={l.id} value={l.id}>{l.location_code}</option>
@@ -704,15 +704,15 @@ const TransactionsPage: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">No. Batch</label>
+            <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">No. Batch</label>
             <input type="text" value={batchFilter} onChange={(e) => setBatchFilter(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm" />
+              className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm dark:border-gray-600" />
           </div>
           <div className="flex items-end gap-2">
             <button onClick={runSearch} className="flex-1 px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium">
               Jalankan Pencarian
             </button>
-            <button onClick={resetFilters} className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg">
+            <button onClick={resetFilters} className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-300">
               Reset
             </button>
           </div>
@@ -720,7 +720,7 @@ const TransactionsPage: React.FC = () => {
       </div>
 
       {/* Toolbar tabel */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 flex flex-wrap items-center gap-3">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 flex flex-wrap items-center gap-3 dark:bg-gray-800 dark:border-gray-700">
         <div className="relative flex-1 min-w-[200px]">
           <MagnifyingGlassIcon className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -728,41 +728,41 @@ const TransactionsPage: React.FC = () => {
             placeholder="Cari di hasil..."
             value={resultSearch}
             onChange={(e) => setResultSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+            className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm dark:border-gray-600"
           />
         </div>
         <div className="relative">
           <button
             onClick={() => setCatalogOpen((v) => !v)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
           >
             <TableCellsIcon className="h-3.5 w-3.5" /> Tampilan Kolom ({visibleColumns.length}/{COLUMN_CATALOG.length})
           </button>
           {catalogOpen && (
-            <div className="absolute z-20 mt-1 right-0 w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-3">
+            <div className="absolute z-20 mt-1 right-0 w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-3 dark:bg-gray-800 dark:border-gray-700">
               <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Field Catalog</div>
               <div className="max-h-72 overflow-y-auto space-y-0.5">
                 {visibleColumns.map((key) => {
                   const col = COLUMN_CATALOG.find((c) => c.key === key);
                   if (!col) return null;
                   return (
-                    <div key={key} className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-gray-50">
+                    <div key={key} className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
                       <input type="checkbox" checked={true} onChange={() => toggleColumn(key)} className="cursor-pointer" />
-                      <span className="flex-1 text-sm text-gray-700">{col.label}</span>
+                      <span className="flex-1 text-sm text-gray-700 dark:text-gray-200">{col.label}</span>
                       <button onClick={() => moveColumn(key, -1)} className="text-gray-400 hover:text-gray-700 px-1">↑</button>
                       <button onClick={() => moveColumn(key, 1)} className="text-gray-400 hover:text-gray-700 px-1">↓</button>
                     </div>
                   );
                 })}
                 {COLUMN_CATALOG.filter((c) => !visibleColumns.includes(c.key)).map((col) => (
-                  <div key={col.key} className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-gray-50 opacity-60">
+                  <div key={col.key} className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-gray-50 opacity-60 dark:hover:bg-gray-700">
                     <input type="checkbox" checked={false} onChange={() => toggleColumn(col.key)} className="cursor-pointer" />
-                    <span className="flex-1 text-sm text-gray-500">{col.label}</span>
+                    <span className="flex-1 text-sm text-gray-500 dark:text-gray-400">{col.label}</span>
                   </div>
                 ))}
               </div>
               <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100">
-                <button onClick={resetColumnCatalog} className="text-xs text-gray-500 hover:text-gray-700">Reset Default</button>
+                <button onClick={resetColumnCatalog} className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400">Reset Default</button>
                 <button
                   onClick={saveColumnCatalog}
                   disabled={catalogSaving}
@@ -774,21 +774,21 @@ const TransactionsPage: React.FC = () => {
             </div>
           )}
         </div>
-        <button onClick={handleExportExcel} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50">
+        <button onClick={handleExportExcel} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
           <ArrowDownTrayIcon className="h-3.5 w-3.5" /> Export Excel
         </button>
-        <button onClick={handleExportCSV} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50">
+        <button onClick={handleExportCSV} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
           <ArrowDownTrayIcon className="h-3.5 w-3.5" /> Export CSV
         </button>
         <span className="text-xs text-gray-400 ml-auto">{total.toLocaleString('id-ID')} dokumen</span>
       </div>
 
       {/* Tabel Data Audit (Dense Enterprise View) */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
         {!hasSearched ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
             <MagnifyingGlassIcon className="h-10 w-10 text-gray-300 mb-3" />
-            <p className="text-sm font-medium text-gray-500">Atur kriteria seleksi di atas, lalu klik "Jalankan Pencarian"</p>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Atur kriteria seleksi di atas, lalu klik "Jalankan Pencarian"</p>
             <p className="text-xs text-gray-400 mt-1">Data tidak dimuat otomatis - pilih rentang tanggal/filter dulu supaya hasilnya relevan.</p>
           </div>
         ) : loading ? (
@@ -797,8 +797,8 @@ const TransactionsPage: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
                   {visibleColumns.map((key) => {
                     const col = COLUMN_CATALOG.find((c) => c.key === key);
@@ -808,7 +808,7 @@ const TransactionsPage: React.FC = () => {
                       <th
                         key={key}
                         onClick={() => handleSort(col)}
-                        className={`px-3 py-2.5 ${alignClass} text-[11px] font-semibold text-gray-500 uppercase ${col.sortKey ? 'cursor-pointer hover:text-gray-800 select-none' : ''}`}
+                        className={`px-3 py-2.5 ${alignClass} text-[11px] font-semibold text-gray-500 uppercase ${col.sortKey ? 'cursor-pointer hover:text-gray-800 select-none' : ''} dark:text-gray-400`}
                       >
                         <span className="inline-flex items-center gap-1">
                           {col.label}
@@ -821,9 +821,9 @@ const TransactionsPage: React.FC = () => {
                   })}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 font-mono text-[13px]">
+              <tbody className="divide-y divide-gray-100 font-mono text-[13px] dark:divide-gray-800">
                 {visibleRows.map((txn) => (
-                  <tr key={txn.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => openDrawer(txn.id)}>
+                  <tr key={txn.id} className="hover:bg-gray-50 cursor-pointer dark:hover:bg-gray-700" onClick={() => openDrawer(txn.id)}>
                     {visibleColumns.map((key) => {
                       const col = COLUMN_CATALOG.find((c) => c.key === key);
                       const alignClass = col?.align === 'right' ? 'text-right' : col?.align === 'center' ? 'text-center' : 'text-left';
@@ -837,7 +837,7 @@ const TransactionsPage: React.FC = () => {
                 ))}
               </tbody>
               {visibleRows.length > 0 && (
-                <tfoot className="bg-gray-50 border-t-2 border-gray-200 font-sans text-xs font-semibold text-gray-600">
+                <tfoot className="bg-gray-50 border-t-2 border-gray-200 font-sans text-xs font-semibold text-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700">
                   <tr>
                     {visibleColumns.map((key, idx) => {
                       const col = COLUMN_CATALOG.find((c) => c.key === key);
@@ -859,9 +859,9 @@ const TransactionsPage: React.FC = () => {
         )}
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
             <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">Sebelumnya</button>
-            <span className="text-sm text-gray-600">Halaman {page} dari {totalPages}</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Halaman {page} dari {totalPages}</span>
             <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">Selanjutnya</button>
           </div>
         )}
@@ -871,18 +871,18 @@ const TransactionsPage: React.FC = () => {
       {drawerTxnId !== null && (
         <div className="fixed inset-0 z-50 overflow-hidden">
           <div className="absolute inset-0 bg-black/30" onClick={closeDrawer} />
-          <div className="absolute right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+          <div className="absolute right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl flex flex-col dark:bg-gray-800">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Detail Transaksi</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Detail Transaksi</h2>
                 <p className="text-xs text-gray-400 font-mono">{drawerData?.transaction_number || '...'}</p>
               </div>
-              <button onClick={closeDrawer} className="p-1.5 hover:bg-gray-100 rounded-lg">
-                <XMarkIcon className="h-5 w-5 text-gray-500" />
+              <button onClick={closeDrawer} className="p-1.5 hover:bg-gray-100 rounded-lg dark:hover:bg-gray-700">
+                <XMarkIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
 
-            <div className="flex border-b border-gray-200">
+            <div className="flex border-b border-gray-200 dark:border-gray-700">
               {[
                 { key: 'fisik', label: 'Fisik Material', icon: CubeIcon },
                 { key: 'jurnal', label: 'Jurnal Akuntansi', icon: BanknotesIcon },
@@ -893,7 +893,7 @@ const TransactionsPage: React.FC = () => {
                   onClick={() => setDrawerTab(tab.key as any)}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-sm font-medium border-b-2 ${
                     drawerTab === tab.key ? 'border-green-600 text-green-700' : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
+                  } dark:text-gray-400 dark:text-green-300`}
                 >
                   <tab.icon className="h-4 w-4" /> {tab.label}
                 </button>
@@ -928,15 +928,15 @@ const TransactionsPage: React.FC = () => {
 
                   {drawerTab === 'jurnal' && (
                     <div className="space-y-4">
-                      <div className="bg-gray-50 rounded-lg p-3 space-y-1">
+                      <div className="bg-gray-50 rounded-lg p-3 space-y-1 dark:bg-gray-900">
                         <DrawerRow label="Unit Cost" value={formatRupiah(drawerData.unit_cost)} />
                         <DrawerRow label="Total Nilai" value={formatRupiah(drawerData.total_cost)} />
                       </div>
                       {drawerData.accounting_entry_number ? (
                         <div>
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700">Jurnal Aktual</span>
-                            <span className="font-mono text-sm text-gray-700">{drawerData.accounting_entry_number}</span>
+                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300">Jurnal Aktual</span>
+                            <span className="font-mono text-sm text-gray-700 dark:text-gray-200">{drawerData.accounting_entry_number}</span>
                           </div>
                           <p className="text-xs text-gray-400">
                             Nomor jurnal ini sudah benar-benar diposting saat transaksi ini terjadi — lihat rincian
@@ -949,13 +949,13 @@ const TransactionsPage: React.FC = () => {
                             <span className="text-xs text-gray-400 uppercase tracking-wide">Akun COA (hasil resolve)</span>
                             {drawerData.resolved_account?.code ? (
                               <div className="flex items-center gap-2 mt-1">
-                                <span className="text-sm text-gray-900">{drawerData.resolved_account.code} - {drawerData.resolved_account.name}</span>
-                                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500">
+                                <span className="text-sm text-gray-900 dark:text-white">{drawerData.resolved_account.code} - {drawerData.resolved_account.name}</span>
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
                                   {ACCOUNT_SOURCE_LABEL[drawerData.resolved_account.source] || drawerData.resolved_account.source}
                                 </span>
                               </div>
                             ) : (
-                              <div className="text-amber-600 text-sm mt-1">Belum resolve</div>
+                              <div className="text-amber-600 text-sm mt-1 dark:text-amber-400">Belum resolve</div>
                             )}
                           </div>
                           <p className="text-xs text-gray-400">
@@ -983,17 +983,17 @@ const TransactionsPage: React.FC = () => {
                           )}
                           <div className="pt-3 border-t border-gray-100">
                             <div className="flex items-center gap-2 text-sm">
-                              <span className="px-2 py-1 rounded bg-gray-100 text-gray-700 font-mono text-xs">
+                              <span className="px-2 py-1 rounded bg-gray-100 text-gray-700 font-mono text-xs dark:bg-gray-700 dark:text-gray-200">
                                 {drawerData.document_flow.reference_number || drawerData.document_flow.reference_type || 'Dokumen Sumber'}
                               </span>
                               <span className="text-gray-300">→</span>
-                              <span className="px-2 py-1 rounded bg-green-50 text-green-700 font-mono text-xs">
+                              <span className="px-2 py-1 rounded bg-green-50 text-green-700 font-mono text-xs dark:bg-green-900/20 dark:text-green-300">
                                 {drawerData.transaction_number}
                               </span>
                               {drawerData.accounting_entry_number && (
                                 <>
                                   <span className="text-gray-300">→</span>
-                                  <span className="px-2 py-1 rounded bg-blue-50 text-blue-700 font-mono text-xs">
+                                  <span className="px-2 py-1 rounded bg-blue-50 text-blue-700 font-mono text-xs dark:bg-blue-900/20 dark:text-blue-300">
                                     {drawerData.accounting_entry_number}
                                   </span>
                                 </>
@@ -1018,8 +1018,8 @@ const TransactionsPage: React.FC = () => {
 
 const DrawerRow: React.FC<{ label: string; value: any }> = ({ label, value }) => (
   <div className="flex justify-between py-2 border-b border-gray-100 last:border-0 text-sm">
-    <span className="text-gray-500">{label}</span>
-    <span className="font-medium text-gray-900 text-right">{value || '-'}</span>
+    <span className="text-gray-500 dark:text-gray-400">{label}</span>
+    <span className="font-medium text-gray-900 text-right dark:text-white">{value || '-'}</span>
   </div>
 );
 

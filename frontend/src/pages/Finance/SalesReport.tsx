@@ -89,17 +89,17 @@ const SalesReport: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-2">
-        <ChartBarIcon className="w-6 h-6 text-green-700" />
+        <ChartBarIcon className="w-6 h-6 text-green-700 dark:text-green-300" />
         <h1 className="text-2xl font-bold">Laporan Penjualan</h1>
       </div>
-      <p className="text-gray-500 text-sm">
+      <p className="text-gray-500 text-sm dark:text-gray-400">
         Nilai Penjualan, Diskon, dan BPP (HPP) per invoice — setiap kolom langsung terhubung
         ke akun yang sama di Laporan Laba Rugi untuk periode yang dipilih.
       </p>
 
-      <div className="bg-white rounded-lg shadow p-4 flex flex-wrap items-end gap-4">
+      <div className="bg-white rounded-lg shadow p-4 flex flex-wrap items-end gap-4 dark:bg-gray-800">
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Dari Tanggal</label>
+          <label className="block text-sm text-gray-600 mb-1 dark:text-gray-300">Dari Tanggal</label>
           <input
             type="date"
             value={dateFrom}
@@ -108,7 +108,7 @@ const SalesReport: React.FC = () => {
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Sampai Tanggal</label>
+          <label className="block text-sm text-gray-600 mb-1 dark:text-gray-300">Sampai Tanggal</label>
           <input
             type="date"
             value={dateTo}
@@ -122,16 +122,16 @@ const SalesReport: React.FC = () => {
         >
           Tampilkan
         </button>
-        <div className="flex gap-1 bg-gray-100 rounded p-1">
+        <div className="flex gap-1 bg-gray-100 rounded p-1 dark:bg-gray-700">
           <button
             onClick={() => setView('invoice')}
-            className={`px-3 py-1.5 rounded text-sm ${view === 'invoice' ? 'bg-white shadow font-medium' : 'text-gray-500'}`}
+            className={`px-3 py-1.5 rounded text-sm ${view === 'invoice' ? 'bg-white shadow font-medium' : 'text-gray-500'} dark:bg-gray-800 dark:text-gray-400`}
           >
             Per Invoice
           </button>
           <button
             onClick={() => setView('product')}
-            className={`px-3 py-1.5 rounded text-sm ${view === 'product' ? 'bg-white shadow font-medium' : 'text-gray-500'}`}
+            className={`px-3 py-1.5 rounded text-sm ${view === 'product' ? 'bg-white shadow font-medium' : 'text-gray-500'} dark:bg-gray-800 dark:text-gray-400`}
           >
             Per Produk
           </button>
@@ -139,12 +139,12 @@ const SalesReport: React.FC = () => {
       </div>
 
       {loading && <LoadingSpinner />}
-      {error && <div className="bg-red-50 text-red-700 p-3 rounded">{error}</div>}
+      {error && <div className="bg-red-50 text-red-700 p-3 rounded dark:bg-red-900/20 dark:text-red-300">{error}</div>}
 
       {view === 'product' && productData && !loading && (
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
+        <div className="bg-white rounded-lg shadow overflow-x-auto dark:bg-gray-800">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <th className="px-4 py-2 text-left">Produk</th>
                 <th className="px-4 py-2 text-right">Qty Terjual</th>
@@ -167,7 +167,7 @@ const SalesReport: React.FC = () => {
                   <td className="px-4 py-2">{row.product_name}</td>
                   <td className="px-4 py-2 text-right">{row.qty_terjual.toLocaleString('id-ID')}</td>
                   <td className="px-4 py-2 text-right">{formatRupiah(row.penjualan)}</td>
-                  <td className="px-4 py-2 text-right text-red-600">
+                  <td className="px-4 py-2 text-right text-red-600 dark:text-red-400">
                     {row.diskon > 0 ? `(${formatRupiah(row.diskon)})` : formatRupiah(0)}
                   </td>
                   <td className="px-4 py-2 text-right">{formatRupiah(row.bpp)}</td>
@@ -175,11 +175,11 @@ const SalesReport: React.FC = () => {
                 </tr>
               ))}
             </tbody>
-            <tfoot className="bg-gray-50 font-semibold border-t-2">
+            <tfoot className="bg-gray-50 font-semibold border-t-2 dark:bg-gray-900">
               <tr>
                 <td className="px-4 py-2" colSpan={2}>TOTAL</td>
                 <td className="px-4 py-2 text-right">{formatRupiah(productData.totals.penjualan)}</td>
-                <td className="px-4 py-2 text-right text-red-600">
+                <td className="px-4 py-2 text-right text-red-600 dark:text-red-400">
                   {productData.totals.diskon > 0 ? `(${formatRupiah(productData.totals.diskon)})` : formatRupiah(0)}
                 </td>
                 <td className="px-4 py-2 text-right">{formatRupiah(productData.totals.bpp)}</td>
@@ -192,9 +192,9 @@ const SalesReport: React.FC = () => {
 
       {view === 'invoice' && data && !loading && (
         <>
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
+          <div className="bg-white rounded-lg shadow overflow-x-auto dark:bg-gray-800">
             <table className="min-w-full text-sm">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
                   <th className="px-4 py-2 text-left">No Invoice</th>
                   <th className="px-4 py-2 text-left">Tanggal</th>
@@ -228,7 +228,7 @@ const SalesReport: React.FC = () => {
                     <td className="px-4 py-2 text-center">{row.satuan || '-'}</td>
                     <td className="px-4 py-2 text-right">{row.jumlah?.toLocaleString('id-ID') ?? '-'}</td>
                     <td className="px-4 py-2 text-right">{formatRupiah(row.penjualan)}</td>
-                    <td className="px-4 py-2 text-right text-red-600">
+                    <td className="px-4 py-2 text-right text-red-600 dark:text-red-400">
                       {row.diskon > 0 ? `(${formatRupiah(row.diskon)})` : formatRupiah(0)}
                     </td>
                     <td className="px-4 py-2 text-right">{row.diskon_percent > 0 ? `${row.diskon_percent}%` : '-'}</td>
@@ -237,11 +237,11 @@ const SalesReport: React.FC = () => {
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-gray-50 font-semibold border-t-2">
+              <tfoot className="bg-gray-50 font-semibold border-t-2 dark:bg-gray-900">
                 <tr>
                   <td className="px-4 py-2" colSpan={7}>TOTAL</td>
                   <td className="px-4 py-2 text-right">{formatRupiah(data.totals.penjualan)}</td>
-                  <td className="px-4 py-2 text-right text-red-600">
+                  <td className="px-4 py-2 text-right text-red-600 dark:text-red-400">
                     {data.totals.diskon > 0 ? `(${formatRupiah(data.totals.diskon)})` : formatRupiah(0)}
                   </td>
                   <td className="px-4 py-2 text-right"></td>

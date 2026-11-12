@@ -27,11 +27,11 @@ interface WOStock {
 }
 
 const statusColors: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-700',
-  confirmed: 'bg-blue-100 text-blue-700',
-  in_progress: 'bg-yellow-100 text-yellow-700',
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
+  draft: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
+  confirmed: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+  in_progress: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+  completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+  cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
 };
 
 const StockByWorkOrder: React.FC = () => {
@@ -72,15 +72,15 @@ const StockByWorkOrder: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <DocumentTextIcon className="h-7 w-7 text-blue-600" />
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 dark:text-white">
+          <DocumentTextIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
           Stok per SPK
         </h1>
-        <p className="text-gray-500 mt-1">Lihat inventori, WIP, dan konsumsi material per SPK</p>
+        <p className="text-gray-500 mt-1 dark:text-gray-400">Lihat inventori, WIP, dan konsumsi material per SPK</p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 dark:bg-gray-800 dark:border-gray-700">
         <div className="flex flex-wrap items-center gap-3">
           <form onSubmit={handleSearch} className="flex-1 min-w-[200px]">
             <div className="relative">
@@ -90,7 +90,7 @@ const StockByWorkOrder: React.FC = () => {
                 placeholder="Cari WO number..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
               />
             </div>
           </form>
@@ -99,7 +99,7 @@ const StockByWorkOrder: React.FC = () => {
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm dark:border-gray-600"
             >
               <option value="">Semua Status</option>
               <option value="draft">Draft</option>
@@ -112,7 +112,7 @@ const StockByWorkOrder: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -124,32 +124,32 @@ const StockByWorkOrder: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">WO Number</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">QTY WO</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">FG Stock</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">WIP (Carton)</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesin</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Material</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Detail</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">WO Number</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Produk</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Status</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">QTY WO</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">FG Stock</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">WIP (Carton)</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Mesin</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Material</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Detail</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {data.map((wo) => {
                   const variance = wo.material_actual - wo.material_planned;
                   return (
-                    <tr key={wo.wo_id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-blue-600">{wo.wo_number}</td>
+                    <tr key={wo.wo_id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-4 py-3 text-sm font-medium text-blue-600 dark:text-blue-400">{wo.wo_number}</td>
                       <td className="px-4 py-3 text-sm">
-                        <div className="font-medium text-gray-900">{wo.product_name}</div>
+                        <div className="font-medium text-gray-900 dark:text-white">{wo.product_name}</div>
                         <div className="text-xs text-gray-400">{wo.product_code}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[wo.status] || 'bg-gray-100 text-gray-600'}`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[wo.status] || 'bg-gray-100 text-gray-600'} dark:bg-gray-700 dark:text-gray-300`}>
                           {wo.status?.replace('_', ' ')}
                         </span>
                       </td>
@@ -159,9 +159,9 @@ const StockByWorkOrder: React.FC = () => {
                         <span className="font-medium">{wo.wip_cartons.toLocaleString()}</span>
                         <span className="text-xs text-gray-400 ml-1">({wo.wip_pcs.toLocaleString()} pcs)</span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{wo.machine_name || '-'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{wo.machine_name || '-'}</td>
                       <td className="px-4 py-3 text-sm text-right">
-                        <span className="text-gray-600">{wo.materials_count} items</span>
+                        <span className="text-gray-600 dark:text-gray-300">{wo.materials_count} items</span>
                         {variance !== 0 && (
                           <span className={`ml-1 text-xs ${variance > 0 ? 'text-red-500' : 'text-green-500'}`}>
                             ({variance > 0 ? '+' : ''}{variance.toFixed(1)})
@@ -171,7 +171,7 @@ const StockByWorkOrder: React.FC = () => {
                       <td className="px-4 py-3 text-center">
                         <button
                           onClick={() => navigate(`/app/wms/stock-by-wo/${wo.wo_id}`)}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
                         >
                           <ChevronRightIcon className="h-5 w-5" />
                         </button>
@@ -186,7 +186,7 @@ const StockByWorkOrder: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
@@ -194,7 +194,7 @@ const StockByWorkOrder: React.FC = () => {
             >
               Sebelumnya
             </button>
-            <span className="text-sm text-gray-600">Halaman {page} dari {totalPages}</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Halaman {page} dari {totalPages}</span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}

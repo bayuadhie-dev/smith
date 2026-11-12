@@ -55,15 +55,15 @@ const BatchTraceability: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <DocumentMagnifyingGlassIcon className="h-7 w-7 text-cyan-600" />
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 dark:text-white">
+          <DocumentMagnifyingGlassIcon className="h-7 w-7 text-cyan-600 dark:text-cyan-400" />
           Batch Traceability
         </h1>
-        <p className="text-gray-500 mt-1">Lacak nomor batch di seluruh sistem — inventori, transaksi, konsumsi material, dan WIP</p>
+        <p className="text-gray-500 mt-1 dark:text-gray-400">Lacak nomor batch di seluruh sistem — inventori, transaksi, konsumsi material, dan WIP</p>
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 dark:bg-gray-800 dark:border-gray-700">
         <form onSubmit={handleSearch} className="flex items-center gap-3">
           <div className="relative flex-1 max-w-md">
             <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -72,7 +72,7 @@ const BatchTraceability: React.FC = () => {
               placeholder="Masukkan nomor batch..."
               value={batchNumber}
               onChange={(e) => setBatchNumber(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg dark:border-gray-600"
             />
           </div>
           <button
@@ -89,36 +89,36 @@ const BatchTraceability: React.FC = () => {
       {searched && result && (
         <div className="space-y-6">
           {/* Summary */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Batch: <span className="font-mono text-blue-600">{result.batch_number}</span>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 dark:bg-gray-800 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 dark:text-white">
+              Batch: <span className="font-mono text-blue-600 dark:text-blue-400">{result.batch_number}</span>
             </h3>
-            <p className="text-gray-500">{result.total_records} total record ditemukan</p>
+            <p className="text-gray-500 dark:text-gray-400">{result.total_records} total record ditemukan</p>
           </div>
 
           {/* Current Inventory */}
           {result.inventory.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <CubeIcon className="h-5 w-5 text-blue-600" />
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 dark:bg-gray-800 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2 dark:text-white">
+                <CubeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 Posisi Stok Saat Ini ({result.inventory.length})
               </h3>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Lokasi</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">QTY</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Item</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Tipe</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Lokasi</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">QTY</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                     {result.inventory.map((inv) => (
                       <tr key={inv.id}>
                         <td className="px-4 py-2 text-sm font-medium">{inv.item_name}</td>
-                        <td className="px-4 py-2 text-sm text-gray-500 capitalize">{inv.item_type}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500 capitalize dark:text-gray-400">{inv.item_type}</td>
                         <td className="px-4 py-2 text-sm">{inv.location || '-'}</td>
                         <td className="px-4 py-2 text-sm text-right font-medium">{inv.quantity.toLocaleString()}</td>
                         <td className="px-4 py-2">
@@ -126,7 +126,7 @@ const BatchTraceability: React.FC = () => {
                             inv.stock_status === 'released' || inv.stock_status === 'available' ? 'bg-green-100 text-green-700' :
                             inv.stock_status === 'quarantine' || inv.stock_status === 'on_hold' ? 'bg-yellow-100 text-yellow-700' :
                             'bg-red-100 text-red-700'
-                          }`}>{inv.stock_status}</span>
+                          } dark:bg-green-900/30 dark:bg-yellow-900/30 dark:bg-red-900/30 dark:text-green-300 dark:text-yellow-300 dark:text-red-300`}>{inv.stock_status}</span>
                         </td>
                       </tr>
                     ))}
@@ -138,17 +138,17 @@ const BatchTraceability: React.FC = () => {
 
           {/* Transactions */}
           {result.transactions.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <ArrowsRightLeftIcon className="h-5 w-5 text-green-600" />
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 dark:bg-gray-800 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2 dark:text-white">
+                <ArrowsRightLeftIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
                 Riwayat Transaksi ({result.transactions.length})
               </h3>
               <div className="space-y-2">
                 {result.transactions.map((txn: any) => (
-                  <div key={txn.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div key={txn.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg dark:bg-gray-900">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
                       txn.direction === 'in' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}>
+                    } dark:bg-green-900/30 dark:bg-red-900/30 dark:text-green-300 dark:text-red-300`}>
                       {txn.direction === 'in' ? 'IN' : 'OUT'}
                     </div>
                     <div className="flex-1">
@@ -156,7 +156,7 @@ const BatchTraceability: React.FC = () => {
                         <span className="font-mono text-sm">{txn.transaction_number}</span>
                         <span className="text-xs text-gray-400">{txn.transaction_type}</span>
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 dark:text-gray-300">
                         {txn.item_name} · <strong>{txn.quantity}</strong> unit
                         {txn.from_location && <span> dari {txn.from_location}</span>}
                         {txn.to_location && <span> ke {txn.to_location}</span>}
@@ -171,30 +171,30 @@ const BatchTraceability: React.FC = () => {
 
           {/* Material Consumptions */}
           {result.material_consumptions.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <ArchiveBoxIcon className="h-5 w-5 text-purple-600" />
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 dark:bg-gray-800 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2 dark:text-white">
+                <ArchiveBoxIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                 Konsumsi Material ({result.material_consumptions.length})
               </h3>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Material</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Planned</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Actual</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Variance</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Material</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Planned</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Actual</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Variance</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                     {result.material_consumptions.map((mc: any) => (
                       <tr key={mc.id}>
                         <td className="px-4 py-2 text-sm font-medium">{mc.material_name}</td>
                         <td className="px-4 py-2 text-sm text-right">{mc.quantity_planned.toLocaleString()}</td>
                         <td className="px-4 py-2 text-sm text-right">{mc.quantity_actual.toLocaleString()}</td>
                         <td className="px-4 py-2 text-sm text-right">
-                          <span className={mc.variance > 0 ? 'text-red-600' : mc.variance < 0 ? 'text-green-600' : ''}>
+                          <span className={mc.variance > 0 ? 'text-red-600 dark:text-red-400' : mc.variance < 0 ? 'text-green-600 dark:text-green-400' : ''}>
                             {mc.variance > 0 ? '+' : ''}{mc.variance.toFixed(1)}
                           </span>
                         </td>
@@ -208,7 +208,7 @@ const BatchTraceability: React.FC = () => {
           )}
 
           {result.total_records === 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center text-gray-400">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center text-gray-400 dark:bg-gray-800 dark:border-gray-700">
               <DocumentMagnifyingGlassIcon className="h-12 w-12 mx-auto mb-3" />
               <p>Batch <strong>{result.batch_number}</strong> tidak ditemukan</p>
             </div>

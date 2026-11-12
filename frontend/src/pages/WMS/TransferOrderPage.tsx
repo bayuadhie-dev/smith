@@ -31,12 +31,12 @@ interface TransferOrder {
 }
 
 const statusMap: Record<string, { color: string; label: string }> = {
-  draft: { color: 'bg-gray-100 text-gray-700', label: 'Draft' },
-  pending_approval: { color: 'bg-amber-100 text-amber-700', label: 'Menunggu Persetujuan' },
-  approved: { color: 'bg-blue-100 text-blue-700', label: 'Approved' },
-  in_transit: { color: 'bg-yellow-100 text-yellow-700', label: 'In Transit' },
-  completed: { color: 'bg-green-100 text-green-700', label: 'Completed' },
-  cancelled: { color: 'bg-red-100 text-red-700', label: 'Cancelled' },
+  draft: { color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200', label: 'Draft' },
+  pending_approval: { color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', label: 'Menunggu Persetujuan' },
+  approved: { color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300', label: 'Approved' },
+  in_transit: { color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300', label: 'In Transit' },
+  completed: { color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300', label: 'Completed' },
+  cancelled: { color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', label: 'Cancelled' },
 };
 
 const reasonLabels: Record<string, string> = {
@@ -101,21 +101,21 @@ const TransferOrderPage: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <TruckIcon className="h-7 w-7 text-orange-600" />
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 dark:text-white">
+          <TruckIcon className="h-7 w-7 text-orange-600 dark:text-orange-400" />
           Transfer Stok
         </h1>
-        <p className="text-gray-500 mt-1">Pemindahan barang antar zona dan lokasi gudang</p>
+        <p className="text-gray-500 mt-1 dark:text-gray-400">Pemindahan barang antar zona dan lokasi gudang</p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 dark:bg-gray-800 dark:border-gray-700">
         <div className="flex items-center gap-3">
           <FunnelIcon className="h-5 w-5 text-gray-400" />
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm dark:border-gray-600"
           >
             <option value="">Semua Status</option>
             <option value="draft">Draft</option>
@@ -127,7 +127,7 @@ const TransferOrderPage: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -139,25 +139,25 @@ const TransferOrderPage: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Transfer</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dari → Ke</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alasan</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Items</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Diminta Oleh</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">No. Transfer</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Dari → Ke</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Alasan</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Items</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Diminta Oleh</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Tanggal</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {data.map((t) => {
                   const st = statusMap[t.status] || statusMap.draft;
                   return (
-                    <tr key={t.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-mono font-medium text-gray-900">{t.transfer_number}</td>
+                    <tr key={t.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-4 py-3 text-sm font-mono font-medium text-gray-900 dark:text-white">{t.transfer_number}</td>
                       <td className="px-4 py-3 text-sm">
                         <div className="flex items-center gap-1">
                           <span className="font-medium">{t.from_zone}</span>
@@ -168,13 +168,13 @@ const TransferOrderPage: React.FC = () => {
                           <div className="text-xs text-gray-400">{t.from_location || '?'} → {t.to_location || '?'}</div>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{reasonLabels[t.reason] || t.reason}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{reasonLabels[t.reason] || t.reason}</td>
                       <td className="px-4 py-3 text-sm text-center font-medium">{t.total_items}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${st.color}`}>{st.label}</span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{t.requested_by}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{t.requested_by}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
                         {t.created_at ? new Date(t.created_at).toLocaleDateString('id-ID') : '-'}
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -184,7 +184,7 @@ const TransferOrderPage: React.FC = () => {
                           </button>
                         )}
                         {t.status === 'pending_approval' && (
-                          <span className="text-xs text-amber-600 flex items-center justify-center gap-1">
+                          <span className="text-xs text-amber-600 flex items-center justify-center gap-1 dark:text-amber-400">
                             <ClockIcon className="h-4 w-4" /> Menunggu Approval
                           </span>
                         )}
@@ -194,7 +194,7 @@ const TransferOrderPage: React.FC = () => {
                           </button>
                         )}
                         {t.status === 'completed' && (
-                          <span className="text-xs text-green-600 flex items-center justify-center gap-1">
+                          <span className="text-xs text-green-600 flex items-center justify-center gap-1 dark:text-green-400">
                             <CheckBadgeIcon className="h-4 w-4" /> Selesai
                           </span>
                         )}
@@ -208,9 +208,9 @@ const TransferOrderPage: React.FC = () => {
         )}
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
             <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">Sebelumnya</button>
-            <span className="text-sm text-gray-600">Halaman {page} dari {totalPages}</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Halaman {page} dari {totalPages}</span>
             <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">Selanjutnya</button>
           </div>
         )}

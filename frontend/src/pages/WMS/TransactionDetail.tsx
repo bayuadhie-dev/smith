@@ -59,9 +59,9 @@ const TransactionDetail: React.FC = () => {
 
   if (!txn) {
     return (
-      <div className="p-6 text-center text-gray-500">
+      <div className="p-6 text-center text-gray-500 dark:text-gray-400">
         <p>Transaksi tidak ditemukan</p>
-        <button onClick={() => navigate('/app/wms/transactions')} className="mt-3 text-blue-600 hover:underline">
+        <button onClick={() => navigate('/app/wms/transactions')} className="mt-3 text-blue-600 hover:underline dark:text-blue-400">
           Kembali
         </button>
       </div>
@@ -70,8 +70,8 @@ const TransactionDetail: React.FC = () => {
 
   const InfoRow = ({ label, value, className = '' }: { label: string; value: any; className?: string }) => (
     <div className="flex justify-between py-2 border-b border-gray-100 last:border-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className={`text-sm font-medium text-gray-900 ${className}`}>{value || '-'}</span>
+      <span className="text-sm text-gray-500 dark:text-gray-400">{label}</span>
+      <span className={`text-sm font-medium text-gray-900 ${className} dark:text-white`}>{value || '-'}</span>
     </div>
   );
 
@@ -79,22 +79,22 @@ const TransactionDetail: React.FC = () => {
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <button onClick={() => navigate('/app/wms/transactions')} className="p-2 hover:bg-gray-100 rounded-lg">
-          <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+        <button onClick={() => navigate('/app/wms/transactions')} className="p-2 hover:bg-gray-100 rounded-lg dark:hover:bg-gray-700">
+          <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <DocumentTextIcon className="h-7 w-7 text-purple-600" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 dark:text-white">
+            <DocumentTextIcon className="h-7 w-7 text-purple-600 dark:text-purple-400" />
             Detail Transaksi
           </h1>
-          <p className="text-gray-500 font-mono">{txn.transaction_number}</p>
+          <p className="text-gray-500 font-mono dark:text-gray-400">{txn.transaction_number}</p>
         </div>
         {txn.direction === 'in' ? (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium dark:bg-green-900/30 dark:text-green-300">
             <ArrowDownIcon className="h-4 w-4" /> MASUK
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-medium">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-medium dark:bg-red-900/30 dark:text-red-300">
             <ArrowUpIcon className="h-4 w-4" /> KELUAR
           </span>
         )}
@@ -102,8 +102,8 @@ const TransactionDetail: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Informasi Transaksi */}
-        <div className="bg-white rounded-xl shadow-sm border p-5">
-          <h2 className="font-semibold text-gray-900 mb-3">Informasi Transaksi</h2>
+        <div className="bg-white rounded-xl shadow-sm border p-5 dark:bg-gray-800">
+          <h2 className="font-semibold text-gray-900 mb-3 dark:text-white">Informasi Transaksi</h2>
           <InfoRow label="No. Transaksi" value={txn.transaction_number} />
           <InfoRow label="Tipe" value={typeLabels[txn.transaction_type] || txn.transaction_type} />
           <InfoRow label="Arah" value={txn.direction === 'in' ? 'Masuk (IN)' : 'Keluar (OUT)'} />
@@ -112,7 +112,7 @@ const TransactionDetail: React.FC = () => {
               txn.status === 'completed' ? 'bg-green-100 text-green-700' :
               txn.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
               'bg-gray-100 text-gray-600'
-            }`}>{txn.status}</span>
+            } dark:bg-gray-700 dark:text-gray-300 dark:bg-green-900/30 dark:bg-yellow-900/30 dark:text-green-300 dark:text-yellow-300`}>{txn.status}</span>
           } />
           <InfoRow label="Tanggal" value={txn.transaction_date ? new Date(txn.transaction_date).toLocaleString('id-ID') : '-'} />
           <InfoRow label="Dibuat oleh" value={txn.created_by} />
@@ -121,15 +121,15 @@ const TransactionDetail: React.FC = () => {
 
         {/* Akun COA & Kode Gerakan */}
         {(txn.movement_type_code || txn.resolved_account) && (
-          <div className="bg-white rounded-xl shadow-sm border p-5">
-            <h2 className="font-semibold text-gray-900 mb-3">Akun COA & Kode Gerakan</h2>
+          <div className="bg-white rounded-xl shadow-sm border p-5 dark:bg-gray-800">
+            <h2 className="font-semibold text-gray-900 mb-3 dark:text-white">Akun COA & Kode Gerakan</h2>
             <InfoRow label="Kode Gerakan" value={
               <span className="font-mono">{txn.movement_type_code} - {txn.movement_type_label}</span>
             } />
             {txn.accounting_entry_number ? (
               <>
                 <InfoRow label="No. Jurnal (aktual)" value={
-                  <span className="font-mono px-2 py-0.5 rounded bg-green-50 text-green-700">{txn.accounting_entry_number}</span>
+                  <span className="font-mono px-2 py-0.5 rounded bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300">{txn.accounting_entry_number}</span>
                 } />
                 <InfoRow label="Status Jurnal" value={txn.accounting_entry_status === 'posted' ? 'Sudah diposting' : txn.accounting_entry_status} />
                 <p className="text-xs text-gray-400 mt-2">
@@ -143,7 +143,7 @@ const TransactionDetail: React.FC = () => {
                 <InfoRow label="Akun COA (hasil resolve)" value={
                   txn.resolved_account?.code
                     ? `${txn.resolved_account.code} - ${txn.resolved_account.name}`
-                    : <span className="text-amber-600">Belum resolve</span>
+                    : <span className="text-amber-600 dark:text-amber-400">Belum resolve</span>
                 } />
                 {txn.resolved_account?.source && (
                   <InfoRow label="Sumber Resolusi" value={
@@ -164,8 +164,8 @@ const TransactionDetail: React.FC = () => {
 
         {/* Document Flow */}
         {txn.document_flow && (
-          <div className="bg-white rounded-xl shadow-sm border p-5">
-            <h2 className="font-semibold text-gray-900 mb-3">Alur Dokumen</h2>
+          <div className="bg-white rounded-xl shadow-sm border p-5 dark:bg-gray-800">
+            <h2 className="font-semibold text-gray-900 mb-3 dark:text-white">Alur Dokumen</h2>
             <InfoRow label="Tipe Dokumen Sumber" value={txn.document_flow.reference_type} />
             <InfoRow label="No. Dokumen" value={txn.document_flow.reference_number} />
             {txn.document_flow.resolved ? (
@@ -181,8 +181,8 @@ const TransactionDetail: React.FC = () => {
         )}
 
         {/* Item & Quantity */}
-        <div className="bg-white rounded-xl shadow-sm border p-5">
-          <h2 className="font-semibold text-gray-900 mb-3">Item & Kuantitas</h2>
+        <div className="bg-white rounded-xl shadow-sm border p-5 dark:bg-gray-800">
+          <h2 className="font-semibold text-gray-900 mb-3 dark:text-white">Item & Kuantitas</h2>
           <InfoRow label="Tipe Item" value={txn.item_type === 'product' ? 'Produk' : txn.item_type === 'material' ? 'Material' : txn.item_type || '-'} />
           <InfoRow label="Nama Item" value={txn.item_name} />
           <InfoRow label="Kode Item" value={txn.item_code} />
@@ -194,22 +194,22 @@ const TransactionDetail: React.FC = () => {
         </div>
 
         {/* Lokasi */}
-        <div className="bg-white rounded-xl shadow-sm border p-5">
-          <h2 className="font-semibold text-gray-900 mb-3">Lokasi</h2>
+        <div className="bg-white rounded-xl shadow-sm border p-5 dark:bg-gray-800">
+          <h2 className="font-semibold text-gray-900 mb-3 dark:text-white">Lokasi</h2>
           <InfoRow label="Dari Lokasi" value={txn.from_location} />
           <InfoRow label="Ke Lokasi" value={txn.to_location} />
         </div>
 
         {/* Referensi */}
-        <div className="bg-white rounded-xl shadow-sm border p-5">
-          <h2 className="font-semibold text-gray-900 mb-3">Referensi</h2>
+        <div className="bg-white rounded-xl shadow-sm border p-5 dark:bg-gray-800">
+          <h2 className="font-semibold text-gray-900 mb-3 dark:text-white">Referensi</h2>
           <InfoRow label="Tipe Referensi" value={txn.reference_type} />
           <InfoRow label="No. Referensi" value={txn.reference_number} />
           {txn.wo_number && (
             <InfoRow label="SPK" value={
               <button
                 onClick={() => navigate(`/app/wms/stock-by-wo/${txn.work_order_id}`)}
-                className="text-blue-600 hover:underline"
+                className="text-blue-600 hover:underline dark:text-blue-400"
               >
                 {txn.wo_number}
               </button>
@@ -221,8 +221,8 @@ const TransactionDetail: React.FC = () => {
 
         {/* Cost */}
         {(txn.unit_cost || txn.total_cost) && (
-          <div className="bg-white rounded-xl shadow-sm border p-5">
-            <h2 className="font-semibold text-gray-900 mb-3">Biaya</h2>
+          <div className="bg-white rounded-xl shadow-sm border p-5 dark:bg-gray-800">
+            <h2 className="font-semibold text-gray-900 mb-3 dark:text-white">Biaya</h2>
             <InfoRow label="Harga Satuan" value={txn.unit_cost ? `Rp ${txn.unit_cost.toLocaleString()}` : '-'} />
             <InfoRow label="Total Biaya" value={txn.total_cost ? `Rp ${txn.total_cost.toLocaleString()}` : '-'} />
           </div>
@@ -230,12 +230,12 @@ const TransactionDetail: React.FC = () => {
 
         {/* Balance */}
         {(txn.balance_before !== null || txn.balance_after !== null) && (
-          <div className="bg-white rounded-xl shadow-sm border p-5">
-            <h2 className="font-semibold text-gray-900 mb-3">Saldo Stok</h2>
+          <div className="bg-white rounded-xl shadow-sm border p-5 dark:bg-gray-800">
+            <h2 className="font-semibold text-gray-900 mb-3 dark:text-white">Saldo Stok</h2>
             <InfoRow label="Sebelum" value={txn.balance_before?.toLocaleString()} />
             <InfoRow label="Sesudah" value={txn.balance_after?.toLocaleString()} />
             <InfoRow label="Perubahan" value={
-              <span className={txn.direction === 'in' ? 'text-green-600' : 'text-red-600'}>
+              <span className={txn.direction === 'in' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                 {txn.direction === 'in' ? '+' : '-'}{txn.quantity?.toLocaleString()}
               </span>
             } />
@@ -245,9 +245,9 @@ const TransactionDetail: React.FC = () => {
 
       {/* Notes */}
       {txn.notes && (
-        <div className="bg-white rounded-xl shadow-sm border p-5">
-          <h2 className="font-semibold text-gray-900 mb-2">Catatan</h2>
-          <p className="text-sm text-gray-700 whitespace-pre-wrap">{txn.notes}</p>
+        <div className="bg-white rounded-xl shadow-sm border p-5 dark:bg-gray-800">
+          <h2 className="font-semibold text-gray-900 mb-2 dark:text-white">Catatan</h2>
+          <p className="text-sm text-gray-700 whitespace-pre-wrap dark:text-gray-200">{txn.notes}</p>
         </div>
       )}
     </div>

@@ -29,18 +29,18 @@ interface PickListData {
 }
 
 const statusConfig: Record<string, { color: string; icon: any }> = {
-  draft: { color: 'bg-gray-100 text-gray-700', icon: ClipboardDocumentListIcon },
-  assigned: { color: 'bg-blue-100 text-blue-700', icon: ClockIcon },
-  in_progress: { color: 'bg-yellow-100 text-yellow-700', icon: PlayIcon },
-  completed: { color: 'bg-green-100 text-green-700', icon: CheckCircleIcon },
-  cancelled: { color: 'bg-red-100 text-red-700', icon: ClipboardDocumentListIcon },
+  draft: { color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200', icon: ClipboardDocumentListIcon },
+  assigned: { color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300', icon: ClockIcon },
+  in_progress: { color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300', icon: PlayIcon },
+  completed: { color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300', icon: CheckCircleIcon },
+  cancelled: { color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', icon: ClipboardDocumentListIcon },
 };
 
 const priorityColors: Record<string, string> = {
-  low: 'text-gray-500',
-  normal: 'text-blue-600',
-  high: 'text-orange-600 font-bold',
-  urgent: 'text-red-600 font-bold',
+  low: 'text-gray-500 dark:text-gray-400',
+  normal: 'text-blue-600 dark:text-blue-400',
+  high: 'text-orange-600 font-bold dark:text-orange-400',
+  urgent: 'text-red-600 font-bold dark:text-red-400',
 };
 
 const PickListPage: React.FC = () => {
@@ -73,22 +73,22 @@ const PickListPage: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <ClipboardDocumentListIcon className="h-7 w-7 text-indigo-600" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 dark:text-white">
+            <ClipboardDocumentListIcon className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
             Pick List
           </h1>
-          <p className="text-gray-500 mt-1">Daftar pengambilan barang untuk produksi, pengiriman, dan transfer</p>
+          <p className="text-gray-500 mt-1 dark:text-gray-400">Daftar pengambilan barang untuk produksi, pengiriman, dan transfer</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 dark:bg-gray-800 dark:border-gray-700">
         <div className="flex items-center gap-3">
           <FunnelIcon className="h-5 w-5 text-gray-400" />
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm dark:border-gray-600"
           >
             <option value="">Semua Status</option>
             <option value="draft">Draft</option>
@@ -106,7 +106,7 @@ const PickListPage: React.FC = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         ) : data.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center text-gray-400">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center text-gray-400 dark:bg-gray-800 dark:border-gray-700">
             <ClipboardDocumentListIcon className="h-12 w-12 mx-auto mb-3" />
             <p>Belum ada pick list</p>
           </div>
@@ -115,13 +115,13 @@ const PickListPage: React.FC = () => {
             const cfg = statusConfig[pl.status] || statusConfig.draft;
             const progress = pl.total_items > 0 ? Math.round(pl.picked_items / pl.total_items * 100) : 0;
             return (
-              <div key={pl.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+              <div key={pl.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-gray-700">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="font-mono font-bold text-gray-900">{pl.pick_number}</span>
+                      <span className="font-mono font-bold text-gray-900 dark:text-white">{pl.pick_number}</span>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${cfg.color}`}>{pl.status.replace('_', ' ')}</span>
-                      <span className={`text-xs uppercase ${priorityColors[pl.priority] || 'text-gray-500'}`}>{pl.priority}</span>
+                      <span className={`text-xs uppercase ${priorityColors[pl.priority] || 'text-gray-500'} dark:text-gray-400`}>{pl.priority}</span>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
@@ -143,13 +143,13 @@ const PickListPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-right ml-4">
-                    <p className="text-2xl font-bold text-gray-900">{pl.picked_items}/{pl.total_items}</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{pl.picked_items}/{pl.total_items}</p>
                     <p className="text-xs text-gray-400">items picked</p>
                   </div>
                 </div>
                 {/* Progress bar */}
                 <div className="mt-3">
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
                     <div
                       className={`h-2 rounded-full transition-all ${progress >= 100 ? 'bg-green-500' : 'bg-blue-500'}`}
                       style={{ width: `${progress}%` }}
@@ -166,7 +166,7 @@ const PickListPage: React.FC = () => {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">Sebelumnya</button>
-          <span className="text-sm text-gray-600">Halaman {page} dari {totalPages}</span>
+          <span className="text-sm text-gray-600 dark:text-gray-300">Halaman {page} dari {totalPages}</span>
           <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">Selanjutnya</button>
         </div>
       )}
