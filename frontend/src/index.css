@@ -56,6 +56,31 @@ html[data-company='fengsheng'] {
   --surface-200: 223 211 188;
 }
 
+/* Fengsheng: kartu/panel putih jadi oatmilk terang; tombol utama dan item menu aktif pakai burnt orange (aksen 10%). */
+html[data-company='fengsheng']:not(.dark) .bg-white {
+  background-color: #FBF8F1;
+}
+html[data-company='fengsheng'] .btn-primary {
+  background-color: rgb(var(--accent-600));
+}
+html[data-company='fengsheng'] .btn-primary:hover {
+  background-color: rgb(var(--accent-700));
+}
+html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-emerald-6'],
+html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-emerald-7'],
+html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-emerald-8'],
+html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-primary-6'],
+html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-primary-7'] {
+  background-color: rgb(var(--accent-600)) !important;
+}
+html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-emerald-6']:hover,
+html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-emerald-7']:hover,
+html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-emerald-8']:hover,
+html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-primary-6']:hover,
+html[data-company='fengsheng'] :is(button, a, input[type='submit'])[class*='bg-primary-7']:hover {
+  background-color: rgb(var(--accent-700)) !important;
+}
+
 @layer base {
   body {
     @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
