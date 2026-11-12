@@ -591,6 +591,10 @@ const FinancialReports = () => {
                       <span>Retained Earnings</span>
                       <span>{formatRupiah(balanceSheet.equity.retained_earnings)}</span>
                     </div>
+                    <div className="flex justify-between">
+                      <span>Laba/Rugi Tahun Berjalan</span>
+                      <span className={(balanceSheet.equity.current_year_earnings || 0) < 0 ? 'text-red-600' : ''}>{formatRupiah(balanceSheet.equity.current_year_earnings || 0)}</span>
+                    </div>
                     <div className="flex justify-between font-semibold border-t pt-1">
                       <span>Total Equity</span>
                       <span>{formatRupiah(balanceSheet.equity.total_equity)}</span>
@@ -763,7 +767,8 @@ const FinancialReports = () => {
                     { Category: 'Current Liabilities', Item: 'Accounts Payable', Amount: balanceSheet.liabilities?.current_liabilities?.accounts_payable || 0 },
                     { Category: 'Current Liabilities', Item: 'Short Term Debt', Amount: balanceSheet.liabilities?.current_liabilities?.short_term_debt || 0 },
                     { Category: 'Equity', Item: 'Common Stock', Amount: balanceSheet.equity?.common_stock || 0 },
-                    { Category: 'Equity', Item: 'Retained Earnings', Amount: balanceSheet.equity?.retained_earnings || 0 }
+                    { Category: 'Equity', Item: 'Retained Earnings', Amount: balanceSheet.equity?.retained_earnings || 0 },
+                    { Category: 'Equity', Item: 'Laba/Rugi Tahun Berjalan', Amount: balanceSheet.equity?.current_year_earnings || 0 }
                   ] : []
                 } else {
                   reportData = cashFlow ? [
