@@ -30,6 +30,9 @@ function TabPane({ tab, active, onNav }: { tab: TabState; active: boolean; onNav
   const first = useRef(true)
   const reduxCtx = useContext(ReactReduxContext)
   const [nonce, setNonce] = useState(0)
+  // Tab hasil pemulihan tidak dimuat sampai pertama kali dibuka; setelah itu tetap terpasang agar isiannya terjaga.
+  const [loaded, setLoaded] = useState(active)
+  useEffect(() => { if (active) setLoaded(true) }, [active])
   const [spin, setSpin] = useState(false)
   // Tombol muat ulang hanya di halaman daftar (bukan form atau detail), supaya isian tidak hilang.
   const isList = !isFormPath(pathname) && !/\/\d+(\/|$)/.test(pathname) && /\/app\/[^/]+\/[^/]+/.test(pathname)
@@ -63,7 +66,7 @@ function TabPane({ tab, active, onNav }: { tab: TabState; active: boolean; onNav
             </button>
           </div>
         )}
-        <ErrorBoundary>
+        {loaded && <ErrorBoundary>
           <Suspense fallback={<LoadingSpinner />}>
             <TabRouter key={nonce}
               tabId={tab.id}
@@ -76,7 +79,7 @@ function TabPane({ tab, active, onNav }: { tab: TabState; active: boolean; onNav
               onPathChange={(path, meta) => { onNav(tab.id, meta); ws.setTabPath(tab.id, path) }}
             />
           </Suspense>
-        </ErrorBoundary>
+        </ErrorBoundary>}
        </TabActiveContext.Provider>
       </TabContext.Provider>
     </div>
