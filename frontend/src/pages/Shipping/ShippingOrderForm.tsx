@@ -44,6 +44,7 @@ export default function ShippingOrderForm() {
   const [mode, setMode] = useState<'so' | 'manual'>('so')
   const [customers, setCustomers] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
+  const [services, setServices] = useState<any[]>([])
   const [customerId, setCustomerId] = useState<number | string | null>(null)
   const [manual, setManual] = useState<ManualLine[]>([])
   const [f, setF] = useState({
@@ -67,6 +68,7 @@ export default function ShippingOrderForm() {
   useEffect(() => {
     if (mode !== 'manual' || customers.length) return
     axiosInstance.get('/api/sales/customers?per_page=1000').then((r) => setCustomers(r.data?.customers || [])).catch(() => toast.error('Gagal memuat pelanggan'))
+    axiosInstance.get('/api/shipping/service-items').then((r) => setServices(r.data?.items || [])).catch(() => toast.error('Gagal memuat master non persediaan'))
     axiosInstance.get('/api/products?status=active&per_page=2000').then((r) => setProducts(r.data?.products || r.data?.items || [])).catch(() => toast.error('Gagal memuat barang'))
   }, [mode, customers.length])
 
@@ -267,7 +269,15 @@ export default function ShippingOrderForm() {
                         placeholder="Pilih barang / waste"
                       />
                     ) : (
-                      <input className="input-field" value={l.description} onChange={(e) => patchManual(l.key, { description: e.target.value })} placeholder="Keterangan jasa / lainnya" />
+                      <div className="space-y-2">
+                        <SearchableSelect
+                          options={services.map((p: any) => ({ id: p.id, code: p.code, name: p.name }))}
+                          value={null}
+                          onChange={(v) => { const it = services.find((x: any) => x.id === v); if (it) patchManual(l.key, { description: it.name, uom: it.uom || l.uom }) }}
+                          placeholder="Cari jasa dari master non persediaan"
+                        />
+                        <input className="input-field" value={l.description} onChange={(e) => patchManual(l.key, { description: e.target.value })} placeholder="Keterangan jasa / lainnya (bisa diubah)" />
+                      </div>
                     )}
                   </div>
                   <div className="md:col-span-3"><NumberInput className="input-field text-right" value={l.qty} onChange={(e: any) => patchManual(l.key, { qty: e.target.value })} placeholder="Qty" /></div>

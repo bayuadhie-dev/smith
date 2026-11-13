@@ -17,9 +17,9 @@ shipping_bp = Blueprint('shipping', __name__)
 def get_shipping_orders():
     try:
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
+        per_page = min(request.args.get('per_page', 50, type=int), 1000)
         
-        orders = ShippingOrder.query.order_by(ShippingOrder.shipping_date.desc()).paginate(page=page, per_page=per_page)
+        orders = ShippingOrder.query.order_by(ShippingOrder.shipping_date.desc(), ShippingOrder.id.desc()).paginate(page=page, per_page=per_page)
         
         return jsonify({
             'shipping_orders': [{
@@ -27,8 +27,11 @@ def get_shipping_orders():
                 'shipping_number': o.shipping_number,
                 'customer_name': o.customer.company_name,
                 'shipping_date': o.shipping_date.isoformat(),
+                'expected_delivery_date': o.expected_delivery_date.isoformat() if o.expected_delivery_date else None,
                 'status': o.status,
-                'tracking_number': o.tracking_number
+                'tracking_number': o.tracking_number,
+                'driver_name': o.driver_name,
+                'vehicle_number': o.vehicle_number,
             } for o in orders.items],
             'total': orders.total
         }), 200
@@ -529,6 +532,16 @@ def delete_provider(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+@shipping_bp.route('/service-items', methods=['GET'])
+@jwt_required()
+@require_permission('shipping.create', 'shipping.view')
+def list_service_items():
+    """Master non-persediaan (jasa dan sejenisnya) untuk baris jasa di surat jalan tanpa Sales Order."""
+    from models.product import Material
+    rows = Material.query.filter(Material.material_type == 'non_inventory', Material.is_active.is_(True)).order_by(Material.code).all()
+    return jsonify({'items': [{'id': m.id, 'code': m.code, 'name': m.name, 'uom': m.primary_uom} for m in rows]}), 200
+
 
 @shipping_bp.route('/orders/uninvoiced', methods=['GET'])
 @jwt_required()

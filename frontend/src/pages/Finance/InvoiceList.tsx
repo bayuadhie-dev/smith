@@ -4,6 +4,8 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetInvoicesQuery } from '../../services/api'
 import { useUrlState } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 import { format } from 'date-fns'
 import {
   LinkIcon
@@ -16,6 +18,20 @@ const formatDateSafe = (value: string | null | undefined) => {
   return isNaN(d.getTime()) ? '-' : format(d, 'dd MMM yyyy')
 }
 
+const TYPE_LABEL: Record<string, string> = { sales: 'Penjualan', purchase: 'Pembelian' }
+const STATUS_LABEL_X: Record<string, string> = { draft: 'Draft', sent: 'Terkirim', partial: 'Dibayar sebagian', paid: 'Lunas', overdue: 'Jatuh tempo', cancelled: 'Batal' }
+const COLUMNS: ListColumn<any>[] = [
+  { key: 'invoice_number', label: 'No. Faktur', value: (i) => i.invoice_number },
+  { key: 'invoice_type', label: 'Jenis', value: (i) => i.invoice_type, exportValue: (i) => TYPE_LABEL[i.invoice_type] || i.invoice_type },
+  { key: 'party', label: 'Pelanggan / Pemasok', value: (i) => i.customer_name || i.supplier_name },
+  { key: 'invoice_date', label: 'Tanggal', value: (i) => i.invoice_date, type: 'date' },
+  { key: 'due_date', label: 'Jatuh Tempo', value: (i) => i.due_date, type: 'date' },
+  { key: 'total_amount', label: 'Total', value: (i) => i.total_amount, type: 'number' },
+  { key: 'paid_amount', label: 'Dibayar', value: (i) => i.paid_amount, type: 'number' },
+  { key: 'balance_due', label: 'Sisa', value: (i) => i.balance_due, type: 'number' },
+  { key: 'status', label: 'Status', value: (i) => i.status, exportValue: (i) => STATUS_LABEL_X[i.status] || i.status },
+]
+
 export default function InvoiceList() {
     const { t } = useLanguage();
 
@@ -25,6 +41,7 @@ const [scope] = useUrlState<'all' | 'sales' | 'purchase'>('scope', 'all', ['all'
   const { data, isLoading } = useGetInvoicesQuery(type === 'all' ? {} : { type })
   const title = type === 'sales' ? 'Faktur Penjualan' : type === 'purchase' ? 'Faktur Pembelian' : 'Faktur Penjualan & Pembelian'
   useBreadcrumbTrail([])
+  const tools = useListTools<any>(data?.invoices, COLUMNS, { filename: type === 'sales' ? 'Faktur_Penjualan' : type === 'purchase' ? 'Faktur_Pembelian' : 'Faktur', initialSort: { key: 'invoice_date', dir: 'desc' } })
   const STATUS_LABEL: Record<string, string> = { draft: 'Draft', sent: 'Terkirim', partial: 'Dibayar sebagian', paid: 'Lunas', overdue: 'Jatuh tempo', cancelled: 'Batal' }
 
   const getStatusBadge = (status: string) => {
@@ -60,6 +77,8 @@ const [scope] = useUrlState<'all' | 'sales' | 'purchase'>('scope', 'all', ['all'
         </div>
       )}
 
+      <ListToolbar tools={tools} placeholder="Cari nomor faktur, pelanggan, atau pemasok" />
+
       {isLoading ? (
         <div className="text-center py-12">{t('common.loading')}</div>
       ) : (
@@ -68,20 +87,20 @@ const [scope] = useUrlState<'all' | 'sales' | 'purchase'>('scope', 'all', ['all'
             <table className="table">
               <thead>
                 <tr>
-                  <th>No. Faktur</th>
-                  <th>Jenis</th>
-                  <th>Pelanggan / Pemasok</th>
-                  <th>Tanggal</th>
-                  <th>Jatuh Tempo</th>
-                  <th>Total</th>
-                  <th>Dibayar</th>
-                  <th>Sisa</th>
-                  <th>{t('common.status')}</th>
+                  <SortTh tools={tools} col="invoice_number">No. Faktur</SortTh>
+                  <SortTh tools={tools} col="invoice_type">Jenis</SortTh>
+                  <SortTh tools={tools} col="party">Pelanggan / Pemasok</SortTh>
+                  <SortTh tools={tools} col="invoice_date">Tanggal</SortTh>
+                  <SortTh tools={tools} col="due_date">Jatuh Tempo</SortTh>
+                  <SortTh tools={tools} col="total_amount">Total</SortTh>
+                  <SortTh tools={tools} col="paid_amount">Dibayar</SortTh>
+                  <SortTh tools={tools} col="balance_due">Sisa</SortTh>
+                  <SortTh tools={tools} col="status">Status</SortTh>
                   <th>{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {data?.invoices?.map((invoice: any) => (
+                {tools.rows.map((invoice: any) => (
                   <tr key={invoice.id}>
                     <td className="font-medium">
                       <Link to={invoice.invoice_type === 'sales' ? `/app/sales/invoices/${invoice.id}` : `/app/purchasing/invoices/${invoice.id}`} className="text-primary-700 hover:underline dark:text-primary-300">{invoice.invoice_number}</Link>
@@ -121,9 +140,9 @@ const [scope] = useUrlState<'all' | 'sales' | 'purchase'>('scope', 'all', ['all'
       )}
 
       {/* Empty State */}
-      {!isLoading && (!data?.invoices || data.invoices.length === 0) && (
+      {!isLoading && tools.rows.length === 0 && (
         <div className="text-center py-12">
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Belum ada faktur</h3>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">{tools.total === 0 ? 'Belum ada faktur' : 'Tidak ada faktur yang cocok'}</h3>
           {type !== 'purchase' && (
             <div className="mt-6">
               <Link to="/app/finance/invoices/new" className="btn-primary">

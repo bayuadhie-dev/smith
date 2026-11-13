@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDownIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 interface Option {
@@ -37,6 +38,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top?: number; bottom?: number; left: number; width: number } | null>(null);
 
   const selectedOption = options.find(opt => opt.id === value);
 
@@ -62,7 +65,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const t = event.target as Node;
+      if (dropdownRef.current && !dropdownRef.current.contains(t) && !(panelRef.current && panelRef.current.contains(t))) {
         setIsOpen(false);
         setSearchTerm('');
         setHighlightedIndex(-1);
@@ -72,6 +76,28 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Panel dirender di body (fixed) supaya tidak terpotong tabel/kartu yang overflow
+  const place = useCallback(() => {
+    const el = dropdownRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const width = Math.max(r.width, window.innerWidth >= 1024 ? 400 : 300);
+    const left = Math.max(8, Math.min(r.left, window.innerWidth - width - 8));
+    const flip = r.bottom + 410 > window.innerHeight && r.top > 410;
+    setPos(flip ? { bottom: window.innerHeight - r.top + 4, left, width } : { top: r.bottom + 4, left, width });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!isOpen) { setPos(null); return; }
+    place();
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, true);
+    return () => {
+      window.removeEventListener('resize', place);
+      window.removeEventListener('scroll', place, true);
+    };
+  }, [isOpen, place]);
 
   // Scroll highlighted item into view
   useEffect(() => {
@@ -219,8 +245,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
       </div>
 
       {/* Dropdown */}
-      {isOpen && !disabled && (
-        <div className="absolute z-[9999] min-w-[300px] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg overflow-hidden lg:min-w-[400px]">
+      {isOpen && !disabled && pos && createPortal(
+        <div ref={panelRef} style={{ position: 'fixed', top: pos.top, bottom: pos.bottom, left: pos.left, width: pos.width, zIndex: 10000 }} className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg overflow-hidden">
           {/* Search Input */}
           <div className="p-2 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800">
             <div className="relative">
@@ -284,7 +310,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
           <div className="px-3 py-2 bg-gray-50 dark:bg-gray-900 border-t text-xs text-gray-400">
             ↑↓ navigasi • Enter pilih • Esc tutup
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
