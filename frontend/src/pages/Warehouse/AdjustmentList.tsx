@@ -5,8 +5,9 @@ import { toast } from 'react-hot-toast';
 import {
   ScaleIcon,
   PlusIcon,
-  FunnelIcon,
 } from '@heroicons/react/24/outline';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 interface Adjustment {
   id: number;
@@ -42,11 +43,24 @@ const reasonLabels: Record<string, string> = {
   other: 'Lainnya',
 };
 
+const COLUMNS: ListColumn<Adjustment>[] = [
+  { key: 'adjustment_number', label: 'No. Penyesuaian', value: (a) => a.adjustment_number },
+  { key: 'item', label: 'Item', value: (a) => a.product_name || a.material_name },
+  { key: 'location_name', label: 'Lokasi', value: (a) => a.location_name },
+  { key: 'mode', label: 'Mode', value: (a) => (a.is_value_adjustment ? 'Nilai' : 'Jumlah') },
+  { key: 'reason', label: 'Alasan', value: (a) => a.reason, exportValue: (a) => reasonLabels[a.reason] || a.reason },
+  { key: 'adjustment_quantity', label: 'Selisih', value: (a) => a.adjustment_quantity, type: 'number' },
+  { key: 'status', label: 'Status', value: (a) => a.status, exportValue: (a) => (statusMap[a.status] || statusMap.pending).label },
+  { key: 'created_at', label: 'Tanggal', value: (a) => a.created_at, type: 'date' },
+];
+
 const AdjustmentList: React.FC = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<Adjustment[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
+
+  const tools = useListTools<Adjustment>(data, COLUMNS, { filename: 'Penyesuaian_Stok', initialSort: { key: 'created_at', dir: 'desc' } });
 
   useEffect(() => {
     fetchData();
@@ -80,56 +94,54 @@ const AdjustmentList: React.FC = () => {
         </div>
         <button
           onClick={() => navigate('/app/warehouse/adjustments/new')}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="flex items-center gap-2 px-4 py-2 bg-cta-600 text-white rounded-lg hover:bg-cta-700"
         >
           <PlusIcon className="h-5 w-5" /> Buat Penyesuaian
         </button>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <div className="flex items-center gap-3">
-          <FunnelIcon className="h-5 w-5 text-gray-400" />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-900"
-          >
-            <option value="">Semua Status</option>
-            <option value="pending">Draft</option>
-            <option value="pending_approval">Menunggu Persetujuan</option>
-            <option value="applied">Diterapkan</option>
-            <option value="rejected">Ditolak</option>
-          </select>
-        </div>
-      </div>
+      <ListToolbar tools={tools} placeholder="Cari nomor, item, lokasi, alasan" extra={
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          aria-label="Filter status"
+          className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-900"
+        >
+          <option value="">Semua Status</option>
+          <option value="pending">Draft</option>
+          <option value="pending_approval">Menunggu Persetujuan</option>
+          <option value="applied">Diterapkan</option>
+          <option value="rejected">Ditolak</option>
+        </select>
+      } />
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
           </div>
-        ) : data.length === 0 ? (
+        ) : tools.rows.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
             <ScaleIcon className="h-12 w-12 mx-auto mb-3" />
-            <p>Belum ada penyesuaian stok</p>
+            <p>{tools.total === 0 ? 'Belum ada penyesuaian stok' : 'Tidak ada penyesuaian yang cocok'}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Adjustment</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Lokasi</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mode</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Alasan</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Selisih</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
+                  <SortTh tools={tools} col="adjustment_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Penyesuaian</SortTh>
+                  <SortTh tools={tools} col="item" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</SortTh>
+                  <SortTh tools={tools} col="location_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Lokasi</SortTh>
+                  <SortTh tools={tools} col="mode" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mode</SortTh>
+                  <SortTh tools={tools} col="reason" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Alasan</SortTh>
+                  <SortTh tools={tools} col="adjustment_quantity" align="right" className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Selisih</SortTh>
+                  <SortTh tools={tools} col="status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
+                  <SortTh tools={tools} col="created_at" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</SortTh>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {data.map((a) => {
+                {tools.rows.map((a) => {
                   const st = statusMap[a.status] || statusMap.pending;
                   return (
                     <tr
@@ -142,9 +154,9 @@ const AdjustmentList: React.FC = () => {
                       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{a.location_name || '-'}</td>
                       <td className="px-4 py-3 text-sm">
                         {a.is_value_adjustment ? (
-                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">Value</span>
+                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">Nilai</span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">Quantity</span>
+                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">Jumlah</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{reasonLabels[a.reason] || a.reason}</td>

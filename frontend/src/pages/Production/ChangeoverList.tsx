@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 import {
   ArrowPathIcon,
   CheckCircleIcon,
   ClockIcon,
   XCircleIcon,
-  FunnelIcon,
 } from '@heroicons/react/24/outline';
 
 interface Changeover {
@@ -39,6 +40,21 @@ const REASON_LABELS: Record<string, string> = {
   other: 'Lainnya',
 };
 
+const STATUS_LABEL: Record<string, string> = { in_progress: 'Sedang Berlangsung', completed: 'Selesai', cancelled: 'Dibatalkan' };
+const COLUMNS: ListColumn<Changeover>[] = [
+  { key: 'changeover_number', label: 'No. Changeover', value: (c) => c.changeover_number },
+  { key: 'from_wo_number', label: 'Dari SPK', value: (c) => c.from_wo_number },
+  { key: 'from_product_name', label: 'Produk Asal', value: (c) => c.from_product_name, sortable: false },
+  { key: 'to_wo_number', label: 'Ke SPK', value: (c) => c.to_wo_number },
+  { key: 'to_product_name', label: 'Produk Tujuan', value: (c) => c.to_product_name, sortable: false },
+  { key: 'machine_name', label: 'Mesin', value: (c) => c.machine_name },
+  { key: 'reason', label: 'Alasan', value: (c) => c.reason, exportValue: (c) => REASON_LABELS[c.reason] || c.reason },
+  { key: 'progress_percentage', label: 'Progres (%)', value: (c) => c.progress_percentage, type: 'number' },
+  { key: 'changeover_start', label: 'Waktu Mulai', value: (c) => c.changeover_start, type: 'date' },
+  { key: 'setup_time_minutes', label: 'Waktu Setup (menit)', value: (c) => c.setup_time_minutes, type: 'number', sortable: false },
+  { key: 'status', label: 'Status', value: (c) => c.status, exportValue: (c) => STATUS_LABEL[c.status] || c.status },
+];
+
 const ChangeoverList: React.FC = () => {
   const [changeovers, setChangeovers] = useState<Changeover[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,10 +65,12 @@ const ChangeoverList: React.FC = () => {
     fetchChangeovers();
   }, [statusFilter]);
 
+  const tools = useListTools<Changeover>(changeovers, COLUMNS, { filename: 'Changeover', initialSort: { key: 'changeover_start', dir: 'desc' } });
+
   const fetchChangeovers = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams();
+      const params = new URLSearchParams({ per_page: '1000' });
       if (statusFilter) params.append('status', statusFilter);
       
       const response = await axiosInstance.get(`/api/production/changeovers?${params}`);
@@ -136,32 +154,31 @@ const ChangeoverList: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
+        <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 dark:bg-primary-900/20 dark:border-primary-800">
           <div className="flex items-center gap-3">
-            <ArrowPathIcon className="h-8 w-8 text-blue-500" />
+            <ArrowPathIcon className="h-8 w-8 text-primary-500" />
             <div>
-              <p className="text-sm text-blue-600 dark:text-blue-400">Total Changeover</p>
-              <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{changeovers.length}</p>
+              <p className="text-sm text-primary-600 dark:text-primary-400">Total Changeover</p>
+              <p className="text-2xl font-bold text-primary-700 dark:text-primary-300">{tools.total}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
-        <div className="flex items-center gap-4">
-          <FunnelIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+      <div className="mb-6">
+        <ListToolbar tools={tools} placeholder="Cari nomor, SPK, produk, mesin, alasan" extra={
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500"
+            aria-label="Filter status"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 dark:bg-gray-800"
           >
             <option value="">Semua Status</option>
             <option value="in_progress">Sedang Berlangsung</option>
             <option value="completed">Selesai</option>
             <option value="cancelled">Dibatalkan</option>
           </select>
-        </div>
+        } />
       </div>
 
       {/* Table */}
@@ -170,28 +187,28 @@ const ChangeoverList: React.FC = () => {
           <div className="flex items-center justify-center p-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
           </div>
-        ) : changeovers.length === 0 ? (
+        ) : tools.rows.length === 0 ? (
           <div className="text-center p-12 text-gray-500 dark:text-gray-400">
             <ArrowPathIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-            <p>Belum ada data changeover</p>
+            <p>{tools.total === 0 ? 'Belum ada data changeover' : 'Tidak ada changeover yang cocok'}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Changeover</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dari WO</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ke WO</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Alasan</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Progress</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Waktu</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                  <SortTh tools={tools} col="changeover_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Changeover</SortTh>
+                  <SortTh tools={tools} col="from_wo_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dari SPK</SortTh>
+                  <SortTh tools={tools} col="to_wo_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ke SPK</SortTh>
+                  <SortTh tools={tools} col="machine_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</SortTh>
+                  <SortTh tools={tools} col="reason" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Alasan</SortTh>
+                  <SortTh tools={tools} col="progress_percentage" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Progres</SortTh>
+                  <SortTh tools={tools} col="changeover_start" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Waktu</SortTh>
+                  <SortTh tools={tools} col="status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {changeovers.map((co) => (
+                {tools.rows.map((co) => (
                   <tr key={co.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-4 py-3">
                       <span className="font-medium text-orange-600 dark:text-orange-400">{co.changeover_number}</span>
@@ -223,7 +240,7 @@ const ChangeoverList: React.FC = () => {
                         </div>
                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div 
-                            className="bg-blue-500 h-2 rounded-full"
+                            className="bg-primary-500 h-2 rounded-full"
                             style={{ width: `${Math.min(co.progress_percentage, 100)}%` }}
                           ></div>
                         </div>

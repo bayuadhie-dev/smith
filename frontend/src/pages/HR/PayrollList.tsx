@@ -13,14 +13,33 @@ import {
 
 } from '@heroicons/react/24/outline';
 import { confirmDialog, showSuccess, showError } from '../../components/ui';
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+
+const STATUS_LABEL: Record<string, string> = { draft: 'Draft', processing: 'Diproses', completed: 'Selesai', locked: 'Terkunci' }
+const fmtDate = (v?: string | null) => (v ? new Date(v).toLocaleDateString('id-ID') : '-')
+const rp = (v: any) => `Rp ${Number(v || 0).toLocaleString('id-ID')}`
+const COLUMNS: ListColumn<any>[] = [
+  { key: 'period_name', label: 'Nama Periode', value: (p) => p.period_name },
+  { key: 'start_date', label: 'Mulai', value: (p) => p.start_date, type: 'date' },
+  { key: 'end_date', label: 'Selesai', value: (p) => p.end_date, type: 'date' },
+  { key: 'status', label: 'Status', value: (p) => p.status, exportValue: (p) => STATUS_LABEL[p.status] || p.status },
+  { key: 'total_employees', label: 'Jumlah Karyawan', value: (p) => p.total_employees, type: 'number' },
+  { key: 'total_gross_salary', label: 'Gaji Kotor', value: (p) => p.total_gross_salary, type: 'number' },
+  { key: 'total_net_salary', label: 'Gaji Bersih', value: (p) => p.total_net_salary, type: 'number' },
+  { key: 'processed_at', label: 'Tanggal Diproses', value: (p) => p.processed_at, type: 'date' },
+]
+
 export default function PayrollList() {
     const { t } = useLanguage();
 
 const navigate = useNavigate()
   const [selectedStatus, setSelectedStatus] = useState('')
   const { data, isLoading, refetch } = useGetPayrollPeriodsQuery({
-    status: selectedStatus || undefined
+    status: selectedStatus || undefined,
+    per_page: 1000,
   })
+  const tools = useListTools<any>(data?.periods, COLUMNS, { filename: 'Periode_Payroll', initialSort: { key: 'start_date', dir: 'desc' } })
   const [calculatePayroll] = useCalculatePayrollMutation()
 
   const handleCalculatePayroll = async (periodId: number) => {
@@ -33,7 +52,7 @@ const navigate = useNavigate()
         msg += result.summary.skipped.map((s: any) => `- ${s.name}`).join('\n')
       }
       if (result?.summary?.unaccounted_warnings?.length > 0) {
-        msg += '\n\n⚠️ Hari tanpa absensi maupun cuti disetujui (cek dulu sebelum approve):\n'
+        msg += '\n\nHari tanpa absensi maupun cuti disetujui (cek dulu sebelum approve):\n'
         msg += result.summary.unaccounted_warnings.map((w: any) => `- ${w.name}: ${w.dates.join(', ')}`).join('\n')
       }
       showSuccess(msg)
@@ -43,7 +62,7 @@ const navigate = useNavigate()
   }
 
   const handleApprovePayroll = async (periodId: number) => {
-    if (!(await confirmDialog('Approve payroll for this period?'))) return
+    if (!(await confirmDialog('Setujui payroll untuk periode ini?'))) return
     try {
       const response = await fetch(`/api/hr/payroll/periods/${periodId}/approve`, {
         method: 'POST',
@@ -54,12 +73,12 @@ const navigate = useNavigate()
       })
       if (response.ok) {
         refetch()
-        showSuccess('Payroll approved successfully!')
+        showSuccess('Payroll berhasil disetujui')
       } else {
-        showError('Error approving payroll')
+        showError('Gagal menyetujui payroll')
       }
     } catch (error) {
-      showError('Error approving payroll')
+      showError('Gagal menyetujui payroll')
     }
   }
 
@@ -97,7 +116,7 @@ const navigate = useNavigate()
             className="btn-primary inline-flex items-center gap-2"
           >
             <PlusIcon className="h-5 w-5" />
-            Create Payroll Period
+            Buat Periode Payroll
           </button>
         </div>
       </div>
@@ -112,15 +131,17 @@ const navigate = useNavigate()
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="input"
             >
-              <option value="">All Status</option>
+              <option value="">Semua Status</option>
               <option value="draft">Draft</option>
-              <option value="processing">Processing</option>
-              <option value="completed">Completed</option>
-              <option value="locked">Locked</option>
+              <option value="processing">Diproses</option>
+              <option value="completed">Selesai</option>
+              <option value="locked">Terkunci</option>
             </select>
           </div>
         </div>
       </div>
+
+      <ListToolbar tools={tools} placeholder="Cari periode atau status" />
 
       {/* Payroll Periods Table */}
       {isLoading ? (
@@ -131,44 +152,40 @@ const navigate = useNavigate()
             <table className="table">
               <thead>
                 <tr>
-                  <th>Period Name</th>
-                  <th>Period</th>
-                  <th>{t('common.status')}</th>
-                  <th>Employees</th>
-                  <th>Gross Salary</th>
-                  <th>Net Salary</th>
-                  <th>Processed Date</th>
-                  <th>{t('common.actions')}</th>
+                  <SortTh tools={tools} col="period_name">Nama Periode</SortTh>
+                  <SortTh tools={tools} col="start_date">Periode</SortTh>
+                  <SortTh tools={tools} col="status">Status</SortTh>
+                  <SortTh tools={tools} col="total_employees" align="right">Karyawan</SortTh>
+                  <SortTh tools={tools} col="total_gross_salary" align="right">Gaji Kotor</SortTh>
+                  <SortTh tools={tools} col="total_net_salary" align="right">Gaji Bersih</SortTh>
+                  <SortTh tools={tools} col="processed_at">Tanggal Diproses</SortTh>
+                  <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                {data?.periods?.map((period: any) => (
+                {tools.rows.map((period: any) => (
                   <tr key={period.id}>
                     <td className="font-medium">{period.period_name}</td>
                     <td>
-                      {new Date(period.start_date).toLocaleDateString()} - {' '}
-                      {new Date(period.end_date).toLocaleDateString()}
+                      {fmtDate(period.start_date)} - {fmtDate(period.end_date)}
                     </td>
                     <td>
                       <span className={`badge ${getStatusBadge(period.status)}`}>
-                        {period.status}
+                        {STATUS_LABEL[period.status] || period.status}
                       </span>
                     </td>
-                    <td>{period.total_employees}</td>
-                    <td>Rp {period.total_gross_salary?.toLocaleString()}</td>
-                    <td>Rp {period.total_net_salary?.toLocaleString()}</td>
+                    <td className="text-right">{period.total_employees}</td>
+                    <td className="text-right">{rp(period.total_gross_salary)}</td>
+                    <td className="text-right">{rp(period.total_net_salary)}</td>
                     <td>
-                      {period.processed_at 
-                        ? new Date(period.processed_at).toLocaleDateString()
-                        : '-'
-                      }
+                      {fmtDate(period.processed_at)}
                     </td>
                     <td>
                       <div className="flex gap-2">
                         <button
                           onClick={() => navigate(`/app/hr/payroll/periods/${period.id}/records`)}
                           className="btn-sm btn-outline inline-flex items-center gap-1"
-                          title="View Records"
+                          title="Lihat Data Gaji"
                         >
                           <EyeIcon className="h-4 w-4" />
                         </button>
@@ -185,7 +202,7 @@ const navigate = useNavigate()
                           <button
                             onClick={() => handleApprovePayroll(period.id)}
                             className="btn-sm btn-success inline-flex items-center gap-1"
-                            title="Approve Payroll"
+                            title="Setujui Payroll"
                           >
                             <CheckIcon className="h-4 w-4" />
                           </button>

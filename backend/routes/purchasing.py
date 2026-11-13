@@ -458,7 +458,7 @@ def delete_supplier(id):
 def get_purchase_orders():
     try:
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
+        per_page = min(request.args.get('per_page', 50, type=int), 1000)
         search = request.args.get('search', '').strip()
         status = request.args.get('status', '').strip()
         priority = request.args.get('priority', '').strip()
@@ -493,6 +493,7 @@ def get_purchase_orders():
                 'supplier_id': po.supplier_id,
                 'supplier_name': po.supplier.company_name if po.supplier else None,
                 'order_date': po.order_date.isoformat(),
+                'required_date': po.required_date.isoformat() if getattr(po, 'required_date', None) else None,
                 'status': po.status,
                 'notes': po.notes,
                 'priority': po.priority,
@@ -2474,6 +2475,7 @@ def get_quotes():
                 'status': q.status,
                 'currency': q.currency,
                 'total_amount': float(q.total_amount),
+                'lead_time_days': getattr(q, 'lead_time_days', None),
                 'rfq_number': q.rfq.rfq_number if q.rfq else None
             } for q in quotes.items],
             'total': quotes.total,

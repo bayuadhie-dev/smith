@@ -1,197 +1,100 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useGetRFQsQuery } from '../../services/api'
 import { format } from 'date-fns'
-import {
-  DocumentTextIcon,
-  EyeIcon,
-  FunnelIcon,
-  LinkIcon,
-  MagnifyingGlassIcon,
-  PencilIcon
-,
-  PlusIcon
-} from '@heroicons/react/24/outline';
+import { DocumentTextIcon, EyeIcon, PencilIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+
+const STATUS: Record<string, { cls: string; label: string }> = {
+  draft: { cls: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: 'Draft' },
+  issued: { cls: 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300', label: 'Diterbitkan' },
+  closed: { cls: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', label: 'Ditutup' },
+  cancelled: { cls: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Batal' },
+}
+
+const COLUMNS: ListColumn<any>[] = [
+  { key: 'rfq_number', label: 'No. RFQ', value: (r) => r.rfq_number },
+  { key: 'title', label: 'Judul', value: (r) => r.title },
+  { key: 'description', label: 'Keterangan', value: (r) => r.description },
+  { key: 'created_by', label: 'Dibuat oleh', value: (r) => r.created_by },
+  { key: 'issue_date', label: 'Tgl Terbit', value: (r) => r.issue_date, type: 'date' },
+  { key: 'closing_date', label: 'Tgl Tutup', value: (r) => r.closing_date, type: 'date' },
+  { key: 'status', label: 'Status', value: (r) => r.status, exportValue: (r) => STATUS[r.status]?.label || r.status },
+  { key: 'quotes_count', label: 'Jumlah Penawaran', value: (r) => r.quotes_count || 0, type: 'number' },
+]
+
+const fmt = (v?: string | null) => (v ? format(new Date(v), 'dd MMM yyyy') : '-')
+
 export default function RFQList() {
-    const { t } = useLanguage();
-
-const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
-  const [page, setPage] = useState(1)
-  
-  const { data, isLoading, refetch } = useGetRFQsQuery({
-    search,
-    status,
-    page
-  })
-
-  const getStatusBadge = (status: string) => {
-    const badges: Record<string, { class: string; label: string }> = {
-      draft: { class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: 'Draft' },
-      issued: { class: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', label: 'Issued' },
-      closed: { class: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', label: 'Closed' },
-      cancelled: { class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Cancelled' }
-    }
-    return badges[status] || { class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: status }
-  }
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setPage(1)
-    refetch()
-  }
+  const { data, isLoading } = useGetRFQsQuery({ status, per_page: 1000 })
+  const tools = useListTools<any>(data?.rfqs, COLUMNS, { filename: 'RFQ', initialSort: { key: 'issue_date', dir: 'desc' } })
+  const th = 'px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider'
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">RFQ</h1>
-          <p className="text-gray-600 dark:text-gray-300">Manage RFQs and collect supplier quotes</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Permintaan Penawaran (RFQ)</h1>
+          <p className="text-gray-600 dark:text-gray-300">Kelola RFQ dan kumpulkan penawaran pemasok</p>
         </div>
-        <Link
-          to="/app/purchasing/rfqs/new"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <PlusIcon className="h-5 w-5" />
-          Create RFQ
+        <Link to="/app/purchasing/rfqs/new" className="btn-primary">
+          <PlusIcon className="mr-1.5 h-5 w-5" />
+          Buat RFQ
         </Link>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.search')}</label>
-            <div className="relative">
-              <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search RFQ number, title..."
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.status')}</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Status</option>
-              <option value="draft">Draft</option>
-              <option value="issued">Issued</option>
-              <option value="closed">Closed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </div>
-          
-          <div className="flex items-end">
-            <button
-              type="submit"
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-200 dark:bg-gray-700 transition-colors dark:hover:bg-gray-600"
-            >
-              <FunnelIcon className="h-5 w-5" />{t('common.filter')}</button>
-          </div>
-        </form>
-      </div>
+      <ListToolbar tools={tools} placeholder="Cari nomor RFQ, judul, atau pembuat" extra={(
+        <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Status" className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+          <option value="">Semua status</option>
+          {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+        </select>
+      )} />
 
-      {/* RFQs Table */}
       {isLoading ? (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">Loading RFQs...</p>
-        </div>
+        <div className="rounded-lg border border-gray-200 bg-white p-12 text-center text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">Memuat RFQ...</div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              RFQs ({data?.total || 0})
-            </h3>
-          </div>
-          
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    RFQ Details
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
+                  <SortTh tools={tools} col="rfq_number" className={th}>No. RFQ</SortTh>
+                  <SortTh tools={tools} col="title" className={th}>Judul</SortTh>
+                  <SortTh tools={tools} col="issue_date" className={th}>Tgl Terbit</SortTh>
+                  <SortTh tools={tools} col="closing_date" className={th}>Tgl Tutup</SortTh>
+                  <SortTh tools={tools} col="status" className={th}>Status</SortTh>
+                  <SortTh tools={tools} col="quotes_count" className={th}>Penawaran</SortTh>
+                  <th className={`${th} text-right`}>Aksi</th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {data?.rfqs?.map((rfq: any) => {
-                  const statusBadge = getStatusBadge(rfq.status)
-                  
+              <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+                {tools.rows.map((rfq: any) => {
+                  const badge = STATUS[rfq.status] || { cls: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: rfq.status }
                   return (
-                    <tr key={rfq.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {rfq.rfq_number}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            By: {rfq.created_by}
-                          </div>
-                        </div>
+                    <tr key={rfq.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{rfq.rfq_number}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Oleh: {rfq.created_by || '-'}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900 dark:text-white">{rfq.title}</div>
-                        {rfq.description && (
-                          <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
-                            {rfq.description}
-                          </div>
-                        )}
+                        {rfq.description && <div className="max-w-xs truncate text-sm text-gray-500 dark:text-gray-400">{rfq.description}</div>}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm text-gray-900 dark:text-white">
-                            Issued: {format(new Date(rfq.issue_date), 'dd MMM yyyy')}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            Closes: {format(new Date(rfq.closing_date), 'dd MMM yyyy')}
-                          </div>
-                        </div>
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">{fmt(rfq.issue_date)}</td>
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">{fmt(rfq.closing_date)}</td>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.cls}`}>{badge.label}</span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge.class}`}>
-                          {statusBadge.label}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {rfq.quotes_count || 0} quotes
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{rfq.quotes_count || 0} penawaran</td>
+                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
-                          <Link
-                            to={`/app/purchasing/rfqs/${rfq.id}`}
-                            className="text-blue-600 hover:text-blue-900 p-1 dark:text-blue-400"
-                            title="View Details"
-                          >
+                          <Link to={`/app/purchasing/rfqs/${rfq.id}`} className="p-1 text-primary-700 hover:text-primary-900 dark:text-primary-300" title="Lihat detail" aria-label="Lihat detail">
                             <EyeIcon className="h-4 w-4" />
                           </Link>
-                          
                           {rfq.status === 'draft' && (
-                            <Link
-                              to={`/app/purchasing/rfqs/${rfq.id}/edit`}
-                              className="text-indigo-600 hover:text-indigo-900 p-1 dark:text-indigo-400"
-                              title={t('common.edit')}
-                            >
+                            <Link to={`/app/purchasing/rfqs/${rfq.id}/edit`} className="p-1 text-gray-600 hover:text-gray-900 dark:text-gray-300" title="Ubah" aria-label="Ubah">
                               <PencilIcon className="h-4 w-4" />
                             </Link>
                           )}
@@ -203,47 +106,21 @@ const [search, setSearch] = useState('')
               </tbody>
             </table>
           </div>
-          
-          {/* Pagination */}
-          {data?.pages && data.pages > 1 && (
-            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <div className="text-sm text-gray-700 dark:text-gray-200">
-                Showing page {data.current_page} of {data.pages}
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setPage(page - 1)}
-                  disabled={page <= 1}
-                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
-                >
-                </button>
-                <button
-                  onClick={() => setPage(page + 1)}
-                  disabled={page >= data.pages}
-                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
-                >
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
-      {/* Empty State */}
-      {!isLoading && (!data?.rfqs || data.rfqs.length === 0) && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+      {!isLoading && tools.rows.length === 0 && (
+        <div className="rounded-lg border border-gray-200 bg-white p-12 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No RFQs</h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating your first RFQ.</p>
-          <div className="mt-6">
-            <Link
-              to="/app/purchasing/rfqs/new"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <PlusIcon className="h-5 w-5" />
-              Create RFQ
-            </Link>
-          </div>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">{tools.total === 0 ? 'Belum ada RFQ' : 'Tidak ada RFQ yang cocok'}</h3>
+          {tools.total === 0 && (
+            <div className="mt-6">
+              <Link to="/app/purchasing/rfqs/new" className="btn-primary">
+                <PlusIcon className="mr-1.5 h-5 w-5" />
+                Buat RFQ
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>

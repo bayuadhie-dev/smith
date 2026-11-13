@@ -9,6 +9,23 @@ import {
 
 } from '@heroicons/react/24/outline';
 import { showSuccess, showError, showInfo } from '../../components/ui';
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+
+const STATUS_LABEL: Record<string, string> = { present: 'Hadir', absent: 'Tidak hadir', late: 'Terlambat', half_day: 'Setengah hari' }
+const clock = (v?: string | null) => (v ? new Date(v).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '')
+const COLUMNS: ListColumn<any>[] = [
+  { key: 'name', label: 'Karyawan', value: (a) => a.employee.full_name },
+  { key: 'nik', label: 'NIK', value: (a) => a.employee.employee_number },
+  { key: 'department', label: 'Departemen', value: (a) => a.employee.department },
+  { key: 'shift', label: 'Shift', value: (a) => a.shift?.name, exportValue: (a) => (a.shift ? `${a.shift.name} (${a.shift.start_time}-${a.shift.end_time})` : '') },
+  { key: 'clock_in', label: 'Jam Masuk', value: (a) => a.clock_in, exportValue: (a) => clock(a.clock_in), type: 'date' },
+  { key: 'clock_out', label: 'Jam Pulang', value: (a) => a.clock_out, exportValue: (a) => clock(a.clock_out), type: 'date' },
+  { key: 'worked_hours', label: 'Jam Kerja', value: (a) => a.worked_hours, type: 'number' },
+  { key: 'overtime_hours', label: 'Lembur (jam)', value: (a) => a.overtime_hours, type: 'number' },
+  { key: 'status', label: 'Status', value: (a) => a.status, exportValue: (a) => STATUS_LABEL[a.status] || a.status },
+]
+
 export default function AttendanceManagement() {
     const { t } = useLanguage();
 
@@ -20,10 +37,13 @@ const navigate = useNavigate()
   const { data, isLoading, refetch } = useGetAttendanceRecordsQuery({
     start_date: selectedDate,
     end_date: selectedDate,
+    per_page: 1000,
     department_id: selectedDepartment || undefined,
     employee_id: selectedEmployee || undefined
   })
   
+  const tools = useListTools<any>(data?.attendances, COLUMNS, { filename: `Absensi_${selectedDate}`, initialSort: { key: 'name' } })
+
   const [clockIn] = useClockInMutation()
   const [clockOut] = useClockOutMutation()
   const [bulkMarkAttendance] = useBulkMarkAttendanceMutation()
@@ -32,9 +52,9 @@ const navigate = useNavigate()
     try {
       await clockIn({ employee_id: employeeId }).unwrap()
       refetch()
-      showSuccess('Clocked in successfully!')
+      showSuccess('Clock in berhasil')
     } catch (error) {
-      showError('Error clocking in')
+      showError('Gagal clock in')
     }
   }
 
@@ -42,9 +62,9 @@ const navigate = useNavigate()
     try {
       await clockOut({ employee_id: employeeId }).unwrap()
       refetch()
-      showSuccess('Clocked out successfully!')
+      showSuccess('Clock out berhasil')
     } catch (error) {
-      showError('Error clocking out')
+      showError('Gagal clock out')
     }
   }
 
@@ -100,7 +120,7 @@ const navigate = useNavigate()
               onChange={(e) => setSelectedDepartment(e.target.value)}
               className="input"
             >
-              <option value="">All Departments</option>
+              <option value="">Semua Departemen</option>
               <option value="1">{t('navigation.production')}</option>
               <option value="2">Quality Control</option>
               <option value="3">{t('navigation.maintenance')}</option>
@@ -115,7 +135,7 @@ const navigate = useNavigate()
               onChange={(e) => setSelectedEmployee(e.target.value)}
               className="input"
             >
-              <option value="">All Employees</option>
+              <option value="">Semua Karyawan</option>
             </select>
           </div>
           <div className="flex items-end">
@@ -137,7 +157,7 @@ const navigate = useNavigate()
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-green-600 dark:text-green-400">Present</p>
+              <p className="text-sm font-medium text-green-600 dark:text-green-400">Hadir</p>
               <p className="text-2xl font-bold text-green-900 dark:text-green-200">
                 {data?.attendances?.filter((a: any) => a.status === 'present').length || 0}
               </p>
@@ -153,7 +173,7 @@ const navigate = useNavigate()
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-red-600 dark:text-red-400">Absent</p>
+              <p className="text-sm font-medium text-red-600 dark:text-red-400">Tidak hadir</p>
               <p className="text-2xl font-bold text-red-900 dark:text-red-200">
                 {data?.attendances?.filter((a: any) => a.status === 'absent').length || 0}
               </p>
@@ -169,7 +189,7 @@ const navigate = useNavigate()
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">Late</p>
+              <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">Terlambat</p>
               <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-200">
                 {data?.attendances?.filter((a: any) => a.status === 'late').length || 0}
               </p>
@@ -185,7 +205,7 @@ const navigate = useNavigate()
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Half Day</p>
+              <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Setengah hari</p>
               <p className="text-2xl font-bold text-blue-900 dark:text-blue-200">
                 {data?.attendances?.filter((a: any) => a.status === 'half_day').length || 0}
               </p>
@@ -193,6 +213,8 @@ const navigate = useNavigate()
           </div>
         </div>
       </div>
+
+      <ListToolbar tools={tools} placeholder="Cari karyawan, NIK, atau departemen" />
 
       {/* Attendance Records Table */}
       {isLoading ? (
@@ -203,19 +225,19 @@ const navigate = useNavigate()
             <table className="table">
               <thead>
                 <tr>
-                  <th>Employee</th>
-                  <th>Department</th>
-                  <th>{t('production.shift')}</th>
-                  <th>Clock In</th>
-                  <th>Clock Out</th>
-                  <th>Worked Hours</th>
-                  <th>Overtime</th>
-                  <th>{t('common.status')}</th>
-                  <th>{t('common.actions')}</th>
+                  <SortTh tools={tools} col="name">Karyawan</SortTh>
+                  <SortTh tools={tools} col="department">Departemen</SortTh>
+                  <SortTh tools={tools} col="shift">Shift</SortTh>
+                  <SortTh tools={tools} col="clock_in">Jam Masuk</SortTh>
+                  <SortTh tools={tools} col="clock_out">Jam Pulang</SortTh>
+                  <SortTh tools={tools} col="worked_hours">Jam Kerja</SortTh>
+                  <SortTh tools={tools} col="overtime_hours">Lembur</SortTh>
+                  <SortTh tools={tools} col="status">Status</SortTh>
+                  <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                {data?.attendances?.map((attendance: any) => (
+                {tools.rows.map((attendance: any) => (
                   <tr key={attendance.id}>
                     <td>
                       <div>
@@ -246,11 +268,11 @@ const navigate = useNavigate()
                         : '-'
                       }
                     </td>
-                    <td>{attendance.worked_hours} hrs</td>
-                    <td>{attendance.overtime_hours} hrs</td>
+                    <td>{attendance.worked_hours} jam</td>
+                    <td>{attendance.overtime_hours} jam</td>
                     <td>
                       <span className={`badge ${getStatusBadge(attendance.status)}`}>
-                        {attendance.status}
+                        {STATUS_LABEL[attendance.status] || attendance.status}
                       </span>
                     </td>
                     <td>

@@ -5,6 +5,8 @@ import toast from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
 import { Search, Eye, Pencil, Trash2, Play, CheckCircle2 } from 'lucide-react';
 import { PageHeader, KpiStrip, Panel } from '../../components/ui/PageKit';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 interface MaintenanceRecord {
   id: number;
@@ -54,6 +56,21 @@ const STATUS_BADGE: Record<string, string> = {
   cancelled: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
 };
 
+const COLUMNS: ListColumn<MaintenanceRecord>[] = [
+  { key: 'record_number', label: 'No. SPK', value: (r) => r.record_number },
+  { key: 'machine_name', label: 'Mesin', value: (r) => r.machine_name },
+  { key: 'maintenance_type', label: 'Jenis', value: (r) => r.maintenance_type, exportValue: (r) => TYPE_LABEL[r.maintenance_type] || r.maintenance_type },
+  { key: 'maintenance_date', label: 'Tanggal', value: (r) => r.maintenance_date, type: 'date' },
+  { key: 'scheduled_date', label: 'Tanggal Jadwal', value: (r) => r.scheduled_date, type: 'date' },
+  { key: 'status', label: 'Status', value: (r) => r.status, exportValue: (r) => STATUS_LABEL[r.status] || r.status },
+  { key: 'priority', label: 'Prioritas', value: (r) => r.priority },
+  { key: 'duration_hours', label: 'Durasi (jam)', value: (r) => r.duration_hours, type: 'number' },
+  { key: 'problem_description', label: 'Masalah', value: (r) => r.problem_description },
+  { key: 'work_performed', label: 'Pekerjaan', value: (r) => r.work_performed },
+  { key: 'performed_by_name', label: 'Dikerjakan Oleh', value: (r) => r.performed_by_name },
+  { key: 'cost', label: 'Biaya', value: (r) => r.cost, type: 'number' },
+];
+
 const MaintenanceList: React.FC = () => {
     const navigate = useNavigate();
   const [records, setRecords] = useState<MaintenanceRecord[]>([]);
@@ -61,7 +78,6 @@ const MaintenanceList: React.FC = () => {
   const [completingRecord, setCompletingRecord] = useState<MaintenanceRecord | null>(null);
   const [rootCauseForm, setRootCauseForm] = useState({ root_cause_category: '', root_cause: '' });
   const [submittingComplete, setSubmittingComplete] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
@@ -145,17 +161,10 @@ const MaintenanceList: React.FC = () => {
   };
 
   // Filter records
-  const filteredRecords = records.filter(record => {
-    const matchesSearch = 
-      record.record_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.machine_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.maintenance_type.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || record.status === statusFilter;
-    const matchesType = typeFilter === 'all' || record.maintenance_type === typeFilter;
-    
-    return matchesSearch && matchesStatus && matchesType;
-  });
+  const filterBase = records.filter(record => (statusFilter === 'all' || record.status === statusFilter) && (typeFilter === 'all' || record.maintenance_type === typeFilter));
+  const tools = useListTools<MaintenanceRecord>(filterBase, COLUMNS, { filename: 'Catatan_Perawatan', initialSort: { key: 'maintenance_date', dir: 'desc' } });
+  const filteredRecords = tools.rows;
+  useEffect(() => { setCurrentPage(1); }, [tools.query, tools.sortKey, tools.sortDir]);
 
   // Pagination
   const totalPages = Math.ceil(filteredRecords.length / itemsPerPage);
@@ -201,42 +210,34 @@ const MaintenanceList: React.FC = () => {
         ]}
       />
 
-      <div className="flex flex-col gap-2 md:flex-row">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Cari nomor SPK, mesin, atau jenis"
-            value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-            className={`${inputCls} pl-9`}
-          />
-        </div>
-        <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }} className={`${inputCls} md:w-44`}>
+      <ListToolbar tools={tools} placeholder="Cari nomor SPK, mesin, atau jenis" extra={
+        <>
+        <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }} className={`${inputCls}`}>
           <option value="all">Semua status</option>
           <option value="scheduled">Terjadwal</option>
           <option value="in_progress">Berjalan</option>
           <option value="completed">Selesai</option>
           <option value="cancelled">Dibatalkan</option>
         </select>
-        <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }} className={`${inputCls} md:w-44`}>
+        <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }} className={`${inputCls}`}>
           <option value="all">Semua jenis</option>
           {maintenanceTypes.map(type => (
             <option key={type} value={type}>{TYPE_LABEL[type] || type}</option>
           ))}
         </select>
-      </div>
+        </>
+      } />
 
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th className={th}>No. SPK</th>
-              <th className={th}>Mesin</th>
-              <th className={th}>Jenis</th>
-              <th className={th}>Tanggal</th>
-              <th className={th}>Status</th>
-              <th className={`${th} text-right`}>Biaya</th>
+              <SortTh tools={tools} col="record_number" className={th}>No. SPK</SortTh>
+              <SortTh tools={tools} col="machine_name" className={th}>Mesin</SortTh>
+              <SortTh tools={tools} col="maintenance_type" className={th}>Jenis</SortTh>
+              <SortTh tools={tools} col="maintenance_date" className={th}>Tanggal</SortTh>
+              <SortTh tools={tools} col="status" className={th}>Status</SortTh>
+              <SortTh tools={tools} col="cost" align="right" className={`${th} text-right`}>Biaya</SortTh>
               <th className={`${th} text-right`}>Aksi</th>
             </tr>
           </thead>

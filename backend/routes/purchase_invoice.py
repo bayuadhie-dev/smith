@@ -1335,7 +1335,7 @@ def invoice_match_summary():
     try:
         from models import GoodsReceivedNote, GRNItem
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 30, type=int)
+        per_page = min(request.args.get('per_page', 30, type=int), 1000)
         status = request.args.get('status')
         search = request.args.get('search', '').strip()
 
@@ -1364,6 +1364,7 @@ def invoice_match_summary():
             result.append({
                 'id': inv.id,
                 'invoice_number': inv.invoice_number,
+                'supplier_invoice_number': inv.supplier_invoice_number,
                 'po_number': po.po_number if po else None,
                 'supplier_name': inv.supplier.company_name if inv.supplier else None,
                 'invoice_date': inv.invoice_date.isoformat() if inv.invoice_date else None,

@@ -22,7 +22,7 @@ def get_payroll_periods():
     """Get all payroll periods"""
     try:
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
+        per_page = min(request.args.get('per_page', 50, type=int), 1000)
         status = request.args.get('status')
         
         query = PayrollPeriod.query
@@ -796,7 +796,7 @@ def get_payroll_records(period_id):
     """Get payroll records for a period"""
     try:
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
+        per_page = min(request.args.get('per_page', 50, type=int), 1000)
         
         records = PayrollRecord.query.filter_by(payroll_period_id=period_id)\
             .join(Employee).paginate(page=page, per_page=per_page, error_out=False)
@@ -1394,7 +1394,7 @@ def get_piecework_logs():
     """Get piecework logs with filters"""
     try:
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
+        per_page = min(request.args.get('per_page', 50, type=int), 1000)
         employee_id = request.args.get('employee_id', type=int)
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')

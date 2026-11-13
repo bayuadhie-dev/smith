@@ -23,7 +23,7 @@ def get_material_issues():
     """Get all material issues with filters"""
     try:
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
+        per_page = min(request.args.get('per_page', 20, type=int), 1000)
         status = request.args.get('status')
         work_order_id = request.args.get('work_order_id', type=int)
         

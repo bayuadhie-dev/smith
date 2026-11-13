@@ -5,6 +5,8 @@ import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { showSuccess, showError, confirmDialog } from '../../components/ui';
 import { ReceiptRefundIcon } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 interface Memo {
   id: number;
@@ -21,11 +23,23 @@ interface Memo {
   open_invoices?: { id: number; invoice_number: string; balance_due: number }[];
 }
 
+const COLUMNS: ListColumn<Memo>[] = [
+  { key: 'memo_number', label: 'No. Nota Kredit', value: (m) => m.memo_number },
+  { key: 'customer_name', label: 'Pelanggan', value: (m) => m.customer_name },
+  { key: 'memo_date', label: 'Tanggal', value: (m) => m.memo_date, type: 'date' },
+  { key: 'amount', label: 'Nilai (Rp)', value: (m) => m.amount, type: 'number' },
+  { key: 'amount_applied', label: 'Dipakai (Rp)', value: (m) => m.amount_applied, type: 'number' },
+  { key: 'amount_refunded', label: 'Dikembalikan (Rp)', value: (m) => m.amount_refunded, type: 'number' },
+  { key: 'balance', label: 'Sisa (Rp)', value: (m) => m.balance, type: 'number' },
+  { key: 'status', label: 'Status', value: (m) => m.status, exportValue: (m) => (m.status === 'open' ? 'Masih ada sisa' : 'Sudah habis dipakai') },
+];
+
 const CreditMemoList: React.FC = () => {
   const [memos, setMemos] = useState<Memo[]>([]);
   const [openBalance, setOpenBalance] = useState(0);
   const [status, setStatus] = useState<'open' | 'closed' | ''>('open');
   const [loading, setLoading] = useState(false);
+  const tools = useListTools<Memo>(memos, COLUMNS, { filename: 'Nota_Kredit', initialSort: { key: 'memo_date', dir: 'desc' } });
   const [active, setActive] = useState<Memo | null>(null);
   const [mode, setMode] = useState<'apply' | 'refund'>('apply');
   const [invoiceId, setInvoiceId] = useState('');
@@ -110,7 +124,7 @@ const CreditMemoList: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-2">
-        <ReceiptRefundIcon className="w-6 h-6 text-green-700 dark:text-green-300" />
+        <ReceiptRefundIcon className="w-6 h-6 text-primary-700 dark:text-primary-300" />
         <h1 className="text-2xl font-bold">Nota Kredit Customer</h1>
       </div>
       <p className="text-gray-500 text-sm dark:text-gray-400">
@@ -127,26 +141,28 @@ const CreditMemoList: React.FC = () => {
         <div className="ml-auto text-sm">Total sisa kredit: <span className="font-bold">{formatRupiah(openBalance)}</span></div>
       </div>
 
+      <ListToolbar tools={tools} placeholder="Cari nomor, pelanggan, nilai" />
+
       {loading ? <LoadingSpinner /> : (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="text-left px-4 py-2">No. Nota Kredit</th>
-                <th className="text-left px-4 py-2">Customer</th>
-                <th className="text-left px-4 py-2">Tanggal</th>
-                <th className="text-right px-4 py-2">Nilai</th>
-                <th className="text-right px-4 py-2">Dipakai</th>
-                <th className="text-right px-4 py-2">Dikembalikan</th>
-                <th className="text-right px-4 py-2">Sisa</th>
-                <th className="px-4 py-2"></th>
+                <SortTh tools={tools} col="memo_number" className="text-left px-4 py-2">No. Nota Kredit</SortTh>
+                <SortTh tools={tools} col="customer_name" className="text-left px-4 py-2">Pelanggan</SortTh>
+                <SortTh tools={tools} col="memo_date" className="text-left px-4 py-2">Tanggal</SortTh>
+                <SortTh tools={tools} col="amount" align="right" className="text-right px-4 py-2">Nilai</SortTh>
+                <SortTh tools={tools} col="amount_applied" align="right" className="text-right px-4 py-2">Dipakai</SortTh>
+                <SortTh tools={tools} col="amount_refunded" align="right" className="text-right px-4 py-2">Dikembalikan</SortTh>
+                <SortTh tools={tools} col="balance" align="right" className="text-right px-4 py-2">Sisa</SortTh>
+                <th className="px-4 py-2 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {memos.length === 0 && (
-                <tr><td colSpan={8} className="text-center text-gray-500 py-6 dark:text-gray-400">Tidak ada nota kredit</td></tr>
+              {tools.rows.length === 0 && (
+                <tr><td colSpan={8} className="text-center text-gray-500 py-6 dark:text-gray-400">{tools.total === 0 ? 'Tidak ada nota kredit' : 'Tidak ada nota kredit yang cocok'}</td></tr>
               )}
-              {memos.map((m) => (
+              {tools.rows.map((m) => (
                 <tr key={m.id} className="border-t">
                   <td className="px-4 py-2 font-medium">{m.memo_number}</td>
                   <td className="px-4 py-2">{m.customer_name}</td>
@@ -158,8 +174,8 @@ const CreditMemoList: React.FC = () => {
                   <td className="px-4 py-2 text-right whitespace-nowrap">
                     {m.status === 'open' && (
                       <>
-                        <button onClick={() => openDialog(m, 'apply')} className="text-green-700 hover:underline mr-3 dark:text-green-300">Pakai ke faktur</button>
-                        <button onClick={() => openDialog(m, 'refund')} className="text-blue-700 hover:underline dark:text-blue-300">Kembalikan dana</button>
+                        <button onClick={() => openDialog(m, 'apply')} className="text-primary-700 hover:underline mr-3 dark:text-primary-300">Pakai ke faktur</button>
+                        <button onClick={() => openDialog(m, 'refund')} className="text-primary-700 hover:underline dark:text-primary-300">Kembalikan dana</button>
                       </>
                     )}
                   </td>

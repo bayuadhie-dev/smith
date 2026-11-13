@@ -25,7 +25,7 @@ def get_opname_orders():
     """Get list of stock opname orders"""
     try:
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
+        per_page = min(request.args.get('per_page', 20, type=int), 1000)
         status = request.args.get('status')
         zone_id = request.args.get('zone_id', type=int)
         

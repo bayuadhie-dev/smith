@@ -12,6 +12,8 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
 interface MaterialIssue {
   id: number
@@ -28,6 +30,19 @@ interface MaterialIssue {
   created_at: string
 }
 
+const STATUS_LABEL: Record<string, string> = { pending: 'Menunggu', approved: 'Disetujui', issued: 'Dikeluarkan', partial: 'Sebagian', cancelled: 'Dibatalkan' }
+const PRIORITY_LABEL: Record<string, string> = { urgent: 'Urgent', high: 'Tinggi', normal: 'Normal', low: 'Rendah' }
+const COLUMNS: ListColumn<MaterialIssue>[] = [
+  { key: 'issue_number', label: 'No. Permintaan', value: (i) => i.issue_number },
+  { key: 'wo_number', label: 'SPK', value: (i) => i.wo_number },
+  { key: 'product_name', label: 'Produk', value: (i) => i.product_name },
+  { key: 'issue_date', label: 'Tanggal', value: (i) => i.issue_date, type: 'date' },
+  { key: 'total_items', label: 'Jumlah Item', value: (i) => i.total_items, type: 'number' },
+  { key: 'priority', label: 'Prioritas', value: (i) => i.priority, exportValue: (i) => PRIORITY_LABEL[i.priority] || i.priority },
+  { key: 'status', label: 'Status', value: (i) => i.status, exportValue: (i) => STATUS_LABEL[i.status] || i.status },
+  { key: 'requested_by', label: 'Diminta Oleh', value: (i) => i.requested_by },
+]
+
 const MaterialIssueList: React.FC = () => {
   const [issues, setIssues] = useState<MaterialIssue[]>([])
   const [loading, setLoading] = useState(true)
@@ -35,14 +50,15 @@ const MaterialIssueList: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false)
   const [pagination, setPagination] = useState({
     page: 1,
-    per_page: 20,
+    per_page: 1000,
     total: 0,
     pages: 0
   })
+  const tools = useListTools<MaterialIssue>(issues, COLUMNS, { filename: 'Permintaan_Barang', initialSort: { key: 'issue_date', dir: 'desc' } })
 
   useEffect(() => {
     fetchIssues()
-  }, [pagination.page, statusFilter])
+  }, [statusFilter])
 
   const fetchIssues = async () => {
     try {
@@ -78,7 +94,7 @@ const MaterialIssueList: React.FC = () => {
         )
       case 'approved':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300">
             <CheckCircleIcon className="h-3 w-3" />
             Disetujui
           </span>
@@ -122,7 +138,7 @@ const MaterialIssueList: React.FC = () => {
       case 'normal':
         return <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">Normal</span>
       case 'low':
-        return <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Rendah</span>
+        return <span className="px-2 py-1 rounded text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300">Rendah</span>
       default:
         return <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">{priority}</span>
     }
@@ -156,7 +172,7 @@ const MaterialIssueList: React.FC = () => {
             className="btn btn-secondary flex items-center gap-2"
           >
             <ArrowPathIcon className="h-5 w-5" />
-            Refresh
+            Muat Ulang
           </button>
         </div>
       </div>
@@ -184,15 +200,17 @@ const MaterialIssueList: React.FC = () => {
         </div>
       )}
 
+      <div className="mb-6"><ListToolbar tools={tools} placeholder="Cari nomor, SPK, produk, peminta" /></div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Total Issue</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Total Permintaan</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{pagination.total}</p>
             </div>
-            <DocumentTextIcon className="h-10 w-10 text-blue-500" />
+            <DocumentTextIcon className="h-10 w-10 text-primary-500" />
           </div>
         </div>
         <div className="card p-4">
@@ -210,11 +228,11 @@ const MaterialIssueList: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-300">Disetujui</p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">
                 {issues.filter(i => i.status === 'approved').length}
               </p>
             </div>
-            <CheckCircleIcon className="h-10 w-10 text-blue-500" />
+            <CheckCircleIcon className="h-10 w-10 text-primary-500" />
           </div>
         </div>
         <div className="card p-4">
@@ -237,33 +255,33 @@ const MaterialIssueList: React.FC = () => {
             <ArrowPathIcon className="h-8 w-8 animate-spin mx-auto text-gray-400" />
             <p className="mt-2 text-gray-500 dark:text-gray-400">Memuat data...</p>
           </div>
-        ) : issues.length === 0 ? (
+        ) : tools.rows.length === 0 ? (
           <div className="p-8 text-center">
             <DocumentTextIcon className="h-12 w-12 mx-auto text-gray-300" />
-            <p className="mt-2 text-gray-500 dark:text-gray-400">Tidak ada data pengeluaran material</p>
+            <p className="mt-2 text-gray-500 dark:text-gray-400">{tools.total === 0 ? 'Belum ada permintaan barang' : 'Tidak ada permintaan yang cocok'}</p>
           </div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Issue</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SPK</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Prioritas</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <SortTh tools={tools} col="issue_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Permintaan</SortTh>
+                <SortTh tools={tools} col="wo_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SPK</SortTh>
+                <SortTh tools={tools} col="product_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</SortTh>
+                <SortTh tools={tools} col="issue_date" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</SortTh>
+                <SortTh tools={tools} col="total_items" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</SortTh>
+                <SortTh tools={tools} col="priority" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Prioritas</SortTh>
+                <SortTh tools={tools} col="status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {issues.map((issue) => (
+              {tools.rows.map((issue) => (
                 <tr key={issue.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-4 py-3 whitespace-nowrap">
-                    <span className="font-medium text-blue-600 dark:text-blue-400">{issue.issue_number}</span>
+                    <span className="font-medium text-primary-600 dark:text-primary-400">{issue.issue_number}</span>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
-                    <Link to={`/app/production/work-orders/${issue.work_order_id}`} className="text-blue-600 hover:underline dark:text-blue-400">
+                    <Link to={`/app/production/work-orders/${issue.work_order_id}`} className="text-primary-600 hover:underline dark:text-primary-400">
                       {issue.wo_number}
                     </Link>
                   </td>
@@ -285,9 +303,10 @@ const MaterialIssueList: React.FC = () => {
                   <td className="px-4 py-3 whitespace-nowrap">
                     <Link
                       to={`/app/production/material-issues/${issue.id}`}
-                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                      className="text-primary-600 hover:text-primary-800 dark:text-primary-400"
                     >
-                      <EyeIcon className="h-5 w-5" />
+                      <EyeIcon className="h-5 w-5" aria-hidden="true" />
+                      <span className="sr-only">Lihat</span>
                     </Link>
                   </td>
                 </tr>
@@ -296,30 +315,6 @@ const MaterialIssueList: React.FC = () => {
           </table>
         )}
 
-        {/* Pagination */}
-        {pagination.pages > 1 && (
-          <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Halaman {pagination.page} dari {pagination.pages} ({pagination.total} total)
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
-                disabled={pagination.page <= 1}
-                className="btn btn-secondary btn-sm"
-              >
-                Sebelumnya
-              </button>
-              <button
-                onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
-                disabled={pagination.page >= pagination.pages}
-                className="btn btn-secondary btn-sm"
-              >
-                Selanjutnya
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )

@@ -125,7 +125,7 @@ def list_transfers():
         like = f'%{s}%'
         q = q.filter(or_(StockTransfer.transfer_number.ilike(like), StockTransfer.source_number.ilike(like)))
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 30, type=int)
+    per_page = min(request.args.get('per_page', 30, type=int), 1000)
     res = q.order_by(StockTransfer.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
     return jsonify({'transfers': [_dict(t) for t in res.items], 'total': res.total, 'pages': res.pages, 'current_page': res.page}), 200
 
@@ -403,7 +403,7 @@ def receipts():
     s = (request.args.get('search') or '').strip().lower()
     rows = []
     if origin in (None, '', 'grn'):
-        for g in GoodsReceivedNote.query.order_by(GoodsReceivedNote.id.desc()).limit(200).all():
+        for g in GoodsReceivedNote.query.order_by(GoodsReceivedNote.id.desc()).limit(1000).all():
             locs = []
             for it in g.items:
                 if it.location_id:
@@ -415,7 +415,7 @@ def receipts():
                          'from_label': g.supplier.company_name if getattr(g, 'supplier', None) else None, 'to_label': ', '.join(locs) or '-',
                          'status': g.status, 'href': f'/app/purchasing/grn/{g.id}'})
     if origin in (None, '', 'transfer'):
-        for t in StockTransfer.query.filter(StockTransfer.status != 'cancelled', StockTransfer.status != 'draft').order_by(StockTransfer.id.desc()).limit(200).all():
+        for t in StockTransfer.query.filter(StockTransfer.status != 'cancelled', StockTransfer.status != 'draft').order_by(StockTransfer.id.desc()).limit(1000).all():
             rows.append({'origin': 'transfer', 'id': t.id, 'number': t.transfer_number, 'source_number': t.source_number,
                          'date': (t.shipped_at or t.created_at).isoformat(), 'from_label': _loc_label(t.from_location), 'to_label': _loc_label(t.to_location),
                          'status': t.status, 'href': f'/app/warehouse/transfers/{t.id}'})

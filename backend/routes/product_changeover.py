@@ -23,7 +23,7 @@ def get_changeovers():
         status = request.args.get('status')
         machine_id = request.args.get('machine_id', type=int)
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
+        per_page = min(request.args.get('per_page', 20, type=int), 1000)
         
         query = ProductChangeover.query
         

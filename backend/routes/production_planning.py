@@ -32,7 +32,7 @@ def get_production_plans():
     """Get all production plans with filters"""
     try:
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
+        per_page = min(request.args.get('per_page', 20, type=int), 1000)
         status = request.args.get('status', '')
         plan_type = request.args.get('plan_type', '')
         product_id = request.args.get('product_id', type=int)

@@ -3,6 +3,8 @@ import axios from '../../lib/axios';
 import NumberInput from '../../components/ui/NumberInput'
 import { useUrlNumber } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
 interface RecurringPaymentMaster {
   id: number;
@@ -21,6 +23,14 @@ interface RecurringPaymentTx {
   amount: number;
   notes: string | null;
 }
+
+const TX_COLUMNS: ListColumn<RecurringPaymentTx>[] = [
+  { key: 'transaction_number', label: 'No. Transaksi', value: (t) => t.transaction_number },
+  { key: 'payment_date', label: 'Tanggal', value: (t) => t.payment_date, type: 'date' },
+  { key: 'period_label', label: 'Periode', value: (t) => t.period_label },
+  { key: 'amount', label: 'Jumlah (Rp)', value: (t) => t.amount, type: 'number' },
+  { key: 'notes', label: 'Catatan', value: (t) => t.notes },
+];
 
 const CATEGORY_LABELS: Record<string, string> = {
   electricity: 'Listrik',
@@ -44,6 +54,7 @@ const RecurringPayment: React.FC = () => {
   useBreadcrumbTrail(selectedMaster ? [{ label: selectedMaster.name }] : []);
   const [transactions, setTransactions] = useState<RecurringPaymentTx[]>([]);
   const [loadingTx, setLoadingTx] = useState(false);
+  const txTools = useListTools<RecurringPaymentTx>(transactions, TX_COLUMNS, { filename: 'Tagihan_Rutin', initialSort: { key: 'payment_date', dir: 'desc' } });
 
   const [showNewMasterForm, setShowNewMasterForm] = useState(false);
   const [newMaster, setNewMaster] = useState({ name: '', category: 'electricity', vendor_name: '', notes: '', is_factory_cost: false });
@@ -296,26 +307,29 @@ const RecurringPayment: React.FC = () => {
               ) : transactions.length === 0 ? (
                 <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Belum ada riwayat pembayaran.</p>
               ) : (
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                      <th className="p-3">Tanggal</th>
-                      <th className="p-3">Periode</th>
-                      <th className="p-3 text-right">Jumlah</th>
-                      <th className="p-3">Catatan</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.map((t) => (
-                      <tr key={t.id} className="border-b border-gray-100 dark:border-gray-800">
-                        <td className="p-3">{new Date(t.payment_date).toLocaleDateString('id-ID')}</td>
-                        <td className="p-3">{t.period_label}</td>
-                        <td className="p-3 text-right">Rp{t.amount.toLocaleString('id-ID')}</td>
-                        <td className="p-3 text-gray-500 dark:text-gray-400">{t.notes}</td>
+                <>
+                  <div className="p-3"><ListToolbar tools={txTools} placeholder="Cari periode atau catatan" /></div>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                        <SortTh tools={txTools} col="payment_date" className="p-3">Tanggal</SortTh>
+                        <SortTh tools={txTools} col="period_label" className="p-3">Periode</SortTh>
+                        <SortTh tools={txTools} col="amount" align="right" className="p-3 text-right">Jumlah</SortTh>
+                        <SortTh tools={txTools} col="notes" className="p-3">Catatan</SortTh>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {txTools.rows.map((t) => (
+                        <tr key={t.id} className="border-b border-gray-100 dark:border-gray-800">
+                          <td className="p-3">{new Date(t.payment_date).toLocaleDateString('id-ID')}</td>
+                          <td className="p-3">{t.period_label}</td>
+                          <td className="p-3 text-right">Rp{t.amount.toLocaleString('id-ID')}</td>
+                          <td className="p-3 text-gray-500 dark:text-gray-400">{t.notes}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
               )}
             </div>
           )}

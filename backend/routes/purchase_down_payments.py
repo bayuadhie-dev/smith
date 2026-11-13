@@ -106,7 +106,7 @@ def list_dp():
             db.or_(PurchaseDownPayment.dp_number.ilike(f'%{s}%'), Supplier.company_name.ilike(f'%{s}%')))
     page = request.args.get('page', 1, type=int)
     pag = q.order_by(PurchaseDownPayment.dp_date.desc(), PurchaseDownPayment.id.desc()).paginate(
-        page=page, per_page=min(request.args.get('per_page', 50, type=int), 200), error_out=False)
+        page=page, per_page=min(request.args.get('per_page', 50, type=int), 1000), error_out=False)
     live = PurchaseDownPayment.query.filter(PurchaseDownPayment.status == 'posted')
     tot = db.session.query(func.coalesce(func.sum(PurchaseDownPayment.amount), 0), func.coalesce(func.sum(PurchaseDownPayment.allocated_amount), 0)).filter(
         PurchaseDownPayment.status == 'posted').one()

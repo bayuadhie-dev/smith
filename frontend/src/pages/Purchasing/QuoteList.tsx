@@ -1,230 +1,105 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { useGetQuotesQuery } from '../../services/api';
-import { format } from 'date-fns';
-import {
-  BanknotesIcon,
-  EyeIcon,
-  FunnelIcon,
-  LinkIcon,
-  MagnifyingGlassIcon,
-  PencilIcon,
-  PlusIcon
-} from '@heroicons/react/24/outline';
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useGetQuotesQuery } from '../../services/api'
+import { format } from 'date-fns'
+import { BanknotesIcon, EyeIcon, PencilIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+
+const STATUS: Record<string, { cls: string; label: string }> = {
+  draft: { cls: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: 'Draft' },
+  submitted: { cls: 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300', label: 'Diajukan' },
+  accepted: { cls: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', label: 'Diterima' },
+  rejected: { cls: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Ditolak' },
+  expired: { cls: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300', label: 'Kedaluwarsa' },
+}
+
+const COLUMNS: ListColumn<any>[] = [
+  { key: 'quote_number', label: 'No. Penawaran', value: (q) => q.quote_number },
+  { key: 'rfq_number', label: 'No. RFQ', value: (q) => q.rfq_number },
+  { key: 'supplier_name', label: 'Pemasok', value: (q) => q.supplier_name },
+  { key: 'quote_date', label: 'Tgl Penawaran', value: (q) => q.quote_date, type: 'date' },
+  { key: 'valid_until', label: 'Berlaku Sampai', value: (q) => q.valid_until, type: 'date' },
+  { key: 'currency', label: 'Mata Uang', value: (q) => q.currency },
+  { key: 'total_amount', label: 'Total', value: (q) => q.total_amount, type: 'number' },
+  { key: 'lead_time_days', label: 'Lead Time (hari)', value: (q) => q.lead_time_days, type: 'number' },
+  { key: 'status', label: 'Status', value: (q) => q.status, exportValue: (q) => STATUS[q.status]?.label || q.status },
+]
+
+const fmt = (v?: string | null) => (v ? format(new Date(v), 'dd MMM yyyy') : '-')
 
 export default function QuoteList() {
-    const { t } = useLanguage();
-
-    const [search, setSearch] = useState('')
-    const [status, setStatus] = useState('')
-    const [supplierId, setSupplierId] = useState('')
-    const [page, setPage] = useState(1)
-  
-  const { data, isLoading, refetch } = useGetQuotesQuery({
-    search,
-    status,
-    supplier_id: supplierId,
-    page
-  })
-
-  const getStatusBadge = (status: string) => {
-    const badges: Record<string, { class: string; label: string }> = {
-      draft: { class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: 'Draft' },
-      submitted: { class: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', label: 'Submitted' },
-      accepted: { class: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', label: 'Accepted' },
-      rejected: { class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Rejected' },
-      expired: { class: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300', label: 'Expired' }
-    }
-    return badges[status] || { class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: status }
-  }
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setPage(1)
-    refetch()
-  }
-
-  const isExpired = (validUntil: string) => {
-    if (!validUntil) return false
-    return new Date(validUntil) < new Date()
-  }
+  const [status, setStatus] = useState('')
+  const { data, isLoading } = useGetQuotesQuery({ status, per_page: 1000 })
+  const tools = useListTools<any>(data?.quotes, COLUMNS, { filename: 'Penawaran_Pemasok', initialSort: { key: 'quote_date', dir: 'desc' } })
+  const th = 'px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider'
+  const isExpired = (v?: string | null) => !!v && new Date(v) < new Date()
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Supplier Quotes</h1>
-          <p className="text-gray-600 dark:text-gray-300">Manage supplier quotations and pricing</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Penawaran Pemasok</h1>
+          <p className="text-gray-600 dark:text-gray-300">Kelola penawaran dan harga dari pemasok</p>
         </div>
-        <Link
-          to="/app/purchasing/quotes/new"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <PlusIcon className="h-5 w-5" />
-          Create Quote
+        <Link to="/app/purchasing/quotes/new" className="btn-primary">
+          <PlusIcon className="mr-1.5 h-5 w-5" />
+          Buat Penawaran
         </Link>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.search')}</label>
-            <div className="relative">
-              <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search quote number, supplier..."
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.status')}</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Status</option>
-              <option value="draft">Draft</option>
-              <option value="submitted">Submitted</option>
-              <option value="accepted">Accepted</option>
-              <option value="rejected">Rejected</option>
-              <option value="expired">Expired</option>
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-            </label>
-            <input
-              type="text"
-              value={supplierId}
-              onChange={(e) => setSupplierId(e.target.value)}
-              placeholder="Supplier ID"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          
-          <div className="flex items-end">
-            <button
-              type="submit"
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-200 dark:bg-gray-700 transition-colors dark:hover:bg-gray-600"
-            >
-              <FunnelIcon className="h-5 w-5" />{t('common.filter')}</button>
-          </div>
-        </form>
-      </div>
+      <ListToolbar tools={tools} placeholder="Cari nomor penawaran, RFQ, atau pemasok" extra={(
+        <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Status" className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+          <option value="">Semua status</option>
+          {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+        </select>
+      )} />
 
-      {/* Quotes Table */}
       {isLoading ? (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">Loading quotes...</p>
-        </div>
+        <div className="rounded-lg border border-gray-200 bg-white p-12 text-center text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">Memuat penawaran...</div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              Quotes ({data?.total || 0})
-            </h3>
-          </div>
-          
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Quote Details
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
+                  <SortTh tools={tools} col="quote_number" className={th}>No. Penawaran</SortTh>
+                  <SortTh tools={tools} col="supplier_name" className={th}>Pemasok</SortTh>
+                  <SortTh tools={tools} col="quote_date" className={th}>Tgl Penawaran</SortTh>
+                  <SortTh tools={tools} col="valid_until" className={th}>Berlaku Sampai</SortTh>
+                  <SortTh tools={tools} col="total_amount" className={th}>Total</SortTh>
+                  <SortTh tools={tools} col="status" className={th}>Status</SortTh>
+                  <th className={`${th} text-right`}>Aksi</th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {data?.quotes?.map((quote: any) => {
-                  const statusBadge = getStatusBadge(quote.status)
+              <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+                {tools.rows.map((quote: any) => {
+                  const badge = STATUS[quote.status] || { cls: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: quote.status }
                   const expired = isExpired(quote.valid_until)
-                  
                   return (
-                    <tr key={quote.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {quote.quote_number}
-                          </div>
-                          {quote.rfq_number && (
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              RFQ: {quote.rfq_number}
-                            </div>
-                          )}
-                          {expired && (
-                            <div className="text-xs text-red-600 mt-1 dark:text-red-400">
-                              ⚠️ Expired
-                            </div>
-                          )}
-                        </div>
+                    <tr key={quote.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{quote.quote_number}</div>
+                        {quote.rfq_number && <div className="text-sm text-gray-500 dark:text-gray-400">RFQ: {quote.rfq_number}</div>}
+                        {expired && <div className="mt-1 text-xs text-red-600 dark:text-red-400">Sudah lewat masa berlaku</div>}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 dark:text-white">{quote.supplier_name}</div>
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">{quote.supplier_name}</td>
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">{fmt(quote.quote_date)}</td>
+                      <td className={`whitespace-nowrap px-6 py-4 text-sm ${expired ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>{fmt(quote.valid_until)}</td>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{quote.currency} {quote.total_amount?.toLocaleString('id-ID') || '0'}</div>
+                        {quote.lead_time_days && <div className="text-sm text-gray-500 dark:text-gray-400">Lead time: {quote.lead_time_days} hari</div>}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm text-gray-900 dark:text-white">
-                            Quote: {format(new Date(quote.quote_date), 'dd MMM yyyy')}
-                          </div>
-                          {quote.valid_until && (
-                            <div className={`text-sm ${expired ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
-                              Valid until: {format(new Date(quote.valid_until), 'dd MMM yyyy')}
-                            </div>
-                          )}
-                        </div>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.cls}`}>{badge.label}</span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {quote.currency} {quote.total_amount?.toLocaleString() || '0'}
-                          </div>
-                          {quote.lead_time_days && (
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              Lead time: {quote.lead_time_days} days
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge.class}`}>
-                          {statusBadge.label}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
-                          <Link
-                            to={`/app/purchasing/quotes/${quote.id}`}
-                            className="text-blue-600 hover:text-blue-900 p-1 dark:text-blue-400"
-                            title="View Details"
-                          >
+                          <Link to={`/app/purchasing/quotes/${quote.id}`} className="p-1 text-primary-700 hover:text-primary-900 dark:text-primary-300" title="Lihat detail" aria-label="Lihat detail">
                             <EyeIcon className="h-4 w-4" />
                           </Link>
-                          
                           {quote.status === 'draft' && (
-                            <Link
-                              to={`/app/purchasing/quotes/${quote.id}/edit`}
-                              className="text-indigo-600 hover:text-indigo-900 p-1 dark:text-indigo-400"
-                              title={t('common.edit')}
-                            >
+                            <Link to={`/app/purchasing/quotes/${quote.id}/edit`} className="p-1 text-gray-600 hover:text-gray-900 dark:text-gray-300" title="Ubah" aria-label="Ubah">
                               <PencilIcon className="h-4 w-4" />
                             </Link>
                           )}
@@ -236,47 +111,21 @@ export default function QuoteList() {
               </tbody>
             </table>
           </div>
-          
-          {/* Pagination */}
-          {data?.pages && data.pages > 1 && (
-            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <div className="text-sm text-gray-700 dark:text-gray-200">
-                Showing page {data.current_page} of {data.pages}
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setPage(page - 1)}
-                  disabled={page <= 1}
-                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
-                >
-                </button>
-                <button
-                  onClick={() => setPage(page + 1)}
-                  disabled={page >= data.pages}
-                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
-                >
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
-      {/* Empty State */}
-      {!isLoading && (!data?.quotes || data.quotes.length === 0) && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+      {!isLoading && tools.rows.length === 0 && (
+        <div className="rounded-lg border border-gray-200 bg-white p-12 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <BanknotesIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No quotes</h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating your first quote.</p>
-          <div className="mt-6">
-            <Link
-              to="/app/purchasing/quotes/new"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <PlusIcon className="h-5 w-5" />
-              Create Quote
-            </Link>
-          </div>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">{tools.total === 0 ? 'Belum ada penawaran' : 'Tidak ada penawaran yang cocok'}</h3>
+          {tools.total === 0 && (
+            <div className="mt-6">
+              <Link to="/app/purchasing/quotes/new" className="btn-primary">
+                <PlusIcon className="mr-1.5 h-5 w-5" />
+                Buat Penawaran
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>

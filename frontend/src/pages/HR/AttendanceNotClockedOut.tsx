@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Clock, Users, AlertTriangle, RefreshCw, ArrowLeft } from 'lucide-react';
 import axiosInstance from '../../lib/axios';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 interface NotClockedOutRecord {
   id: number;
@@ -14,6 +16,16 @@ interface NotClockedOutRecord {
   hours_since_clock_in: number;
 }
 
+const durasiLabel = (h: number) => (h >= 10 ? 'Sangat lama' : h >= 8 ? 'Perlu perhatian' : 'Normal');
+const COLUMNS: ListColumn<NotClockedOutRecord>[] = [
+  { key: 'name', label: 'Nama', value: (r) => r.name },
+  { key: 'jabatan', label: 'Jabatan', value: (r) => r.jabatan },
+  { key: 'departemen', label: 'Departemen', value: (r) => r.departemen },
+  { key: 'clock_in', label: 'Clock In', value: (r) => r.clock_in },
+  { key: 'hours_since_clock_in', label: 'Durasi (jam)', value: (r) => Number(r.hours_since_clock_in.toFixed(1)), type: 'number' },
+  { key: 'status', label: 'Status', value: (r) => r.hours_since_clock_in, type: 'number', exportValue: (r) => durasiLabel(r.hours_since_clock_in) },
+];
+
 const AttendanceNotClockedOut: React.FC = () => {
   const navigate = useNavigate();
   const [records, setRecords] = useState<NotClockedOutRecord[]>([]);
@@ -21,6 +33,7 @@ const AttendanceNotClockedOut: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [date, setDate] = useState<string>('');
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const tools = useListTools<NotClockedOutRecord>(records, COLUMNS, { filename: 'Belum_Clock_Out', initialSort: { key: 'hours_since_clock_in', dir: 'desc' } });
 
   const fetchData = async () => {
     setLoading(true);
@@ -51,7 +64,7 @@ const AttendanceNotClockedOut: React.FC = () => {
 
   const getStatusBadge = (hours: number) => {
     if (hours >= 10) {
-      return <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium dark:bg-red-900/30 dark:text-red-300">⚠️ Sangat Lama</span>;
+      return <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium dark:bg-red-900/30 dark:text-red-300">Sangat Lama</span>;
     } else if (hours >= 8) {
       return <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium dark:bg-orange-900/30 dark:text-orange-300">Perlu Perhatian</span>;
     }
@@ -139,6 +152,10 @@ const AttendanceNotClockedOut: React.FC = () => {
         </div>
       )}
 
+      <div className="mb-4">
+        <ListToolbar tools={tools} placeholder="Cari nama, jabatan, atau departemen" />
+      </div>
+
       {/* Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         {loading ? (
@@ -151,7 +168,7 @@ const AttendanceNotClockedOut: React.FC = () => {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-green-900/30">
               <Clock className="w-8 h-8 text-green-600 dark:text-green-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Semua Sudah Clock Out! 🎉</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Semua Sudah Clock Out</h3>
             <p className="text-gray-500 dark:text-gray-400">Tidak ada staff yang belum clock out hari ini.</p>
           </div>
         ) : (
@@ -159,16 +176,16 @@ const AttendanceNotClockedOut: React.FC = () => {
             <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jabatan</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Departemen</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Clock In</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Durasi</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <SortTh tools={tools} col="name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Nama</SortTh>
+                <SortTh tools={tools} col="jabatan" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Jabatan</SortTh>
+                <SortTh tools={tools} col="departemen" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Departemen</SortTh>
+                <SortTh tools={tools} col="clock_in" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Clock In</SortTh>
+                <SortTh tools={tools} col="hours_since_clock_in" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Durasi</SortTh>
+                <SortTh tools={tools} col="status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Status</SortTh>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {records.map((record, index) => (
+              {tools.rows.map((record, index) => (
                 <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{index + 1}</td>
                   <td className="px-4 py-3">
@@ -192,7 +209,7 @@ const AttendanceNotClockedOut: React.FC = () => {
       {records.length > 0 && (
         <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:border-yellow-800">
           <p className="text-sm text-yellow-800 dark:text-yellow-300">
-            💡 <strong>Tips:</strong> Ingatkan staff untuk melakukan clock out sebelum pulang. 
+            <strong>Tips:</strong> Ingatkan staff untuk melakukan clock out sebelum pulang. 
             Staff dapat membuka halaman absensi dan data mereka akan otomatis terisi jika sudah clock in hari ini.
           </p>
         </div>

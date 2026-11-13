@@ -38,7 +38,7 @@ export default function InvoiceList() {
 const [scope] = useUrlState<'all' | 'sales' | 'purchase'>('scope', 'all', ['all', 'sales', 'purchase'])
   const [filterType, setType] = useUrlState<'all' | 'sales' | 'purchase'>('type', 'all', ['all', 'sales', 'purchase'])
   const type = scope !== 'all' ? scope : filterType
-  const { data, isLoading } = useGetInvoicesQuery(type === 'all' ? {} : { type })
+  const { data, isLoading } = useGetInvoicesQuery(type === 'all' ? { per_page: 1000 } : { type, per_page: 1000 })
   const title = type === 'sales' ? 'Faktur Penjualan' : type === 'purchase' ? 'Faktur Pembelian' : 'Faktur Penjualan & Pembelian'
   useBreadcrumbTrail([])
   const tools = useListTools<any>(data?.invoices, COLUMNS, { filename: type === 'sales' ? 'Faktur_Penjualan' : type === 'purchase' ? 'Faktur_Pembelian' : 'Faktur', initialSort: { key: 'invoice_date', dir: 'desc' } })

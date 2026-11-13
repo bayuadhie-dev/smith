@@ -59,7 +59,7 @@ def get_expenses():
         
         # Query parameters
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
+        per_page = min(request.args.get('per_page', 20, type=int), 1000)
         status = request.args.get('status')
         employee_id = request.args.get('employee_id', type=int)
         category = request.args.get('category')
@@ -728,7 +728,7 @@ def get_reimbursements():
         #     return jsonify({'success': False, 'error': 'Permission denied'}), 403
         
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
+        per_page = min(request.args.get('per_page', 20, type=int), 1000)
         status = request.args.get('status')
         employee_id = request.args.get('employee_id', type=int)
         

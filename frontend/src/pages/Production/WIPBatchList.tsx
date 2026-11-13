@@ -15,6 +15,8 @@ import {
   PlusIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 interface WIPBatch {
   id: number;
   wip_batch_no: string;
@@ -50,6 +52,22 @@ interface Filters {
   search: string;
 }
 
+const STATUS_LABEL: Record<string, string> = { open: 'Dibuka', in_progress: 'Berjalan', completed: 'Selesai', closed: 'Ditutup' };
+const COLUMNS: ListColumn<WIPBatch>[] = [
+  { key: 'wip_batch_no', label: 'No. Batch WIP', value: (b) => b.wip_batch_no },
+  { key: 'work_order_no', label: 'SPK', value: (b) => b.work_order_no },
+  { key: 'product_name', label: 'Produk', value: (b) => b.product_name },
+  { key: 'current_stage', label: 'Tahap Saat Ini', value: (b) => b.current_stage },
+  { key: 'completion_percentage', label: 'Progres (%)', value: (b) => b.completion_percentage, type: 'number' },
+  { key: 'qty_started', label: 'Qty Mulai', value: (b) => b.qty_started, type: 'number' },
+  { key: 'qty_completed', label: 'Qty Baik', value: (b) => b.qty_completed, type: 'number' },
+  { key: 'qty_rejected', label: 'Qty Reject', value: (b) => b.qty_rejected, type: 'number' },
+  { key: 'qty_in_process', label: 'Qty Proses', value: (b) => b.qty_in_process, type: 'number' },
+  { key: 'total_wip_value', label: 'Nilai WIP (Rp)', value: (b) => b.total_wip_value, type: 'number' },
+  { key: 'status', label: 'Status', value: (b) => b.status, exportValue: (b) => STATUS_LABEL[b.status] || b.status },
+  { key: 'started_at', label: 'Dimulai', value: (b) => b.started_at, type: 'date' },
+];
+
 const WIPBatchList: React.FC = () => {
   const { t } = useLanguage();
 
@@ -67,6 +85,7 @@ const WIPBatchList: React.FC = () => {
   });
 
   const [stages, setStages] = useState<Array<{ value: string; label: string }>>([]);
+  const tools = useListTools<WIPBatch>(wipBatches, COLUMNS, { filename: 'Batch_WIP', initialSort: { key: 'started_at', dir: 'desc' } });
 
   useEffect(() => {
     fetchWipBatches();
@@ -84,25 +103,14 @@ const WIPBatchList: React.FC = () => {
       if (filters.date_from) params.date_from = filters.date_from;
       if (filters.date_to) params.date_to = filters.date_to;
 
-      const response = await axiosInstance.get('/api/wip/wip-batches', { params });
-      let batches = response.data.wip_batches || [];
-
-      // Apply client-side search filter
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        batches = batches.filter((batch: WIPBatch) =>
-          batch.wip_batch_no.toLowerCase().includes(searchLower) ||
-          batch.work_order_no.toLowerCase().includes(searchLower) ||
-          batch.product_name.toLowerCase().includes(searchLower) ||
-          batch.current_stage.toLowerCase().includes(searchLower)
-        );
-      }
+      const response = await axiosInstance.get('/api/wip/wip-batches', { params: { ...params, per_page: 1000 } });
+      const batches = response.data.wip_batches || [];
 
       setWipBatches(batches);
       setError(null);
     } catch (error: any) {
       console.error('Failed to fetch WIP batches:', error);
-      setError(error.response?.data?.error || 'Failed to fetch WIP batches');
+      setError(error.response?.data?.error || 'Gagal memuat batch WIP');
       setWipBatches([]);
     } finally {
       setLoading(false);
@@ -145,7 +153,7 @@ const WIPBatchList: React.FC = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'open':
-        return <PlayIcon className="h-4 w-4 text-blue-500" />;
+        return <PlayIcon className="h-4 w-4 text-primary-500" />;
       case 'in_progress':
         return <CogIcon className="h-4 w-4 text-yellow-500 animate-spin" />;
       case 'completed':
@@ -159,7 +167,7 @@ const WIPBatchList: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { bg: string; text: string }> = {
-      open: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300' },
+      open: { bg: 'bg-primary-100 dark:bg-primary-900/30', text: 'text-primary-800 dark:text-primary-300' },
       in_progress: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
       completed: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
       closed: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-800 dark:text-gray-100' }
@@ -171,7 +179,7 @@ const WIPBatchList: React.FC = () => {
   const getStageBadge = (stage: string) => {
     const stageColors: Record<string, string> = {
       ready_to_start: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
-      cutting: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      cutting: 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300',
       filling: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
       sealing: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
       packing: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
@@ -198,32 +206,22 @@ const WIPBatchList: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">WIP Batches</h1>
-          <p className="text-gray-600 dark:text-gray-300">Work in Progress batch tracking and management</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Batch WIP</h1>
+          <p className="text-gray-600 dark:text-gray-300">Pelacakan dan pengelolaan batch barang dalam proses (WIP)</p>
         </div>
         <Link to="/app/production/wip-batches/new" className="btn-primary inline-flex items-center gap-2">
           <PlusIcon className="h-5 w-5" />
-          Create WIP Batch
+          Buat Batch WIP
         </Link>
       </div>
 
-      {/* Search and Filters */}
+      <ListToolbar tools={tools} placeholder="Cari batch WIP, SPK, produk, tahap" />
+
+      {/* Filters */}
       <div className="card">
         <div className="card-body">
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1">
-              <div className="relative">
-                <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search WIP batches, SPK, products..."
-                  value={filters.search}
-                  onChange={(e) => handleFilterChange('search', e.target.value)}
-                  className="input-field pl-10"
-                />
-              </div>
-            </div>
+            <div className="flex-1" />
 
             {/* FunnelIcon Toggle */}
             <button
@@ -231,6 +229,7 @@ const WIPBatchList: React.FC = () => {
               className="btn-secondary inline-flex items-center gap-2"
             >
               <FunnelIcon className="h-5 w-5" />
+              Filter
             </button>
 
             {/* Refresh */}
@@ -254,22 +253,22 @@ const WIPBatchList: React.FC = () => {
                     onChange={(e) => handleFilterChange('status', e.target.value)}
                     className="input-field"
                   >
-                    <option value="">All Status</option>
-                    <option value="open">Open</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                    <option value="closed">Closed</option>
+                    <option value="">Semua Status</option>
+                    <option value="open">Dibuka</option>
+                    <option value="in_progress">Berjalan</option>
+                    <option value="completed">Selesai</option>
+                    <option value="closed">Ditutup</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Stage</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tahap</label>
                   <select
                     value={filters.stage}
                     onChange={(e) => handleFilterChange('stage', e.target.value)}
                     className="input-field"
                   >
-                    <option value="">All Stages</option>
+                    <option value="">Semua Tahap</option>
                     {stages.map((stage) => (
                       <option key={stage.value} value={stage.value}>
                         {stage.label}
@@ -279,7 +278,7 @@ const WIPBatchList: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Date From</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Dari Tanggal</label>
                   <input
                     type="date"
                     value={filters.date_from}
@@ -289,7 +288,7 @@ const WIPBatchList: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Date To</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Sampai Tanggal</label>
                   <input
                     type="date"
                     value={filters.date_to}
@@ -303,7 +302,7 @@ const WIPBatchList: React.FC = () => {
                     onClick={clearFilters}
                     className="btn-secondary w-full"
                   >
-                    Clear Filters
+                    Hapus Filter
                   </button>
                 </div>
               </div>
@@ -317,10 +316,10 @@ const WIPBatchList: React.FC = () => {
         <div className="card-header">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-medium">
-              WIP Batches ({wipBatches.length})
+              Batch WIP ({tools.rows.length})
             </h3>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              Total WIP Value: {formatCurrency(wipBatches.reduce((sum, batch) => sum + batch.total_wip_value, 0))}
+              Total Nilai WIP: {formatCurrency(tools.rows.reduce((sum, batch) => sum + batch.total_wip_value, 0))}
             </div>
           </div>
         </div>
@@ -328,38 +327,38 @@ const WIPBatchList: React.FC = () => {
         <div className="card-body">
           {loading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-2 text-gray-500 dark:text-gray-400">Loading WIP batches...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+              <p className="mt-2 text-gray-500 dark:text-gray-400">Memuat batch WIP...</p>
             </div>
           ) : error ? (
             <div className="text-center py-12">
               <div className="text-red-600 mb-4 dark:text-red-400">
                 <ExclamationTriangleIcon className="h-12 w-12 mx-auto" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Error Loading WIP Batches</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Gagal Memuat Batch WIP</h3>
               <p className="text-gray-500 dark:text-gray-400 mb-4">{error}</p>
               <button onClick={fetchWipBatches} className="btn-primary">
               </button>
             </div>
-          ) : wipBatches.length > 0 ? (
+          ) : tools.rows.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="table">
                 <thead>
                   <tr>
-                    <th>WIP Batch No</th>
-                    <th>SPK</th>
-                    <th>{t('production.product')}</th>
-                    <th>Current Stage</th>
-                    <th>Progress</th>
-                    <th>Quantities</th>
-                    <th>WIP Value</th>
-                    <th>{t('common.status')}</th>
-                    <th>Started</th>
-                    <th>{t('common.actions')}</th>
+                    <SortTh tools={tools} col="wip_batch_no">No. Batch WIP</SortTh>
+                    <SortTh tools={tools} col="work_order_no">SPK</SortTh>
+                    <SortTh tools={tools} col="product_name">Produk</SortTh>
+                    <SortTh tools={tools} col="current_stage">Tahap Saat Ini</SortTh>
+                    <SortTh tools={tools} col="completion_percentage">Progres</SortTh>
+                    <SortTh tools={tools} col="qty_started">Jumlah</SortTh>
+                    <SortTh tools={tools} col="total_wip_value">Nilai WIP</SortTh>
+                    <SortTh tools={tools} col="status">Status</SortTh>
+                    <SortTh tools={tools} col="started_at">Dimulai</SortTh>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {wipBatches.map((batch) => (
+                  {tools.rows.map((batch) => (
                     <tr key={batch.id}>
                       <td className="font-medium">{batch.wip_batch_no}</td>
                       <td>{batch.work_order_no}</td>
@@ -373,7 +372,7 @@ const WIPBatchList: React.FC = () => {
                         <div className="flex items-center">
                           <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
                             <div
-                              className="bg-blue-600 h-2 rounded-full"
+                              className="bg-primary-600 h-2 rounded-full"
                               style={{ width: `${batch.completion_percentage}%` }}
                             ></div>
                           </div>
@@ -384,10 +383,10 @@ const WIPBatchList: React.FC = () => {
                       </td>
                       <td>
                         <div className="text-xs">
-                          <div>Started: {batch.qty_started}</div>
-                          <div className="text-green-600 dark:text-green-400">Good: {batch.qty_completed}</div>
-                          <div className="text-red-600 dark:text-red-400">Rejected: {batch.qty_rejected}</div>
-                          <div className="text-blue-600 dark:text-blue-400">In Process: {batch.qty_in_process}</div>
+                          <div>Mulai: {batch.qty_started}</div>
+                          <div className="text-green-600 dark:text-green-400">Baik: {batch.qty_completed}</div>
+                          <div className="text-red-600 dark:text-red-400">Reject: {batch.qty_rejected}</div>
+                          <div className="text-primary-600 dark:text-primary-400">Proses: {batch.qty_in_process}</div>
                         </div>
                       </td>
                       <td>
@@ -408,7 +407,7 @@ const WIPBatchList: React.FC = () => {
                         <div className="flex items-center">
                           {getStatusIcon(batch.status)}
                           <span className={getStatusBadge(batch.status)}>
-                            {batch.status.toUpperCase()}
+                            {STATUS_LABEL[batch.status] || batch.status}
                           </span>
                         </div>
                       </td>
@@ -419,8 +418,8 @@ const WIPBatchList: React.FC = () => {
                         <div className="flex items-center space-x-2">
                           <Link
                             to={`/app/production/wip-batches/${batch.id}`}
-                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
-                            title="View Details"
+                            className="text-primary-600 hover:text-primary-800 dark:text-primary-400"
+                            title="Lihat Detail"
                           >
                             <EyeIcon className="h-4 w-4" />
                           </Link>
@@ -434,21 +433,21 @@ const WIPBatchList: React.FC = () => {
           ) : (
             <div className="text-center py-12">
               <CogIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No WIP Batches Found</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Batch WIP tidak ditemukan</h3>
               <p className="text-gray-500 dark:text-gray-400 mb-4">
                 {Object.values(filters).some(f => f) 
-                  ? 'No WIP batches match your current filters.'
-                  : 'No WIP batches have been created yet.'
+                  ? 'Tidak ada batch WIP yang cocok dengan filter atau pencarian.'
+                  : 'Belum ada batch WIP.'
                 }
               </p>
               <div className="flex justify-center space-x-4">
                 {Object.values(filters).some(f => f) && (
                   <button onClick={clearFilters} className="btn-secondary">
-                    Clear Filters
+                    Hapus Filter
                   </button>
                 )}
                 <Link to="/app/production/wip-batches/new" className="btn-primary">
-                  Create First WIP Batch
+                  Buat Batch WIP Pertama
                 </Link>
               </div>
             </div>

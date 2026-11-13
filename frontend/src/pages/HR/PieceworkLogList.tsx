@@ -11,6 +11,8 @@ import {
 import axiosInstance from '../../utils/axiosConfig'
 import toast from 'react-hot-toast'
 import NumberInput from '../../components/ui/NumberInput'
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
 interface PieceworkLogItem {
   id: number
@@ -36,6 +38,19 @@ interface Employee {
   full_name: string
   pay_type: string
 }
+
+const LOG_STATUS: Record<string, string> = { pending: 'Menunggu', verified: 'Terverifikasi', rejected: 'Ditolak' }
+const COLUMNS: ListColumn<PieceworkLogItem>[] = [
+  { key: 'work_date', label: 'Tanggal', value: (l) => l.work_date, type: 'date' },
+  { key: 'employee_name', label: 'Karyawan', value: (l) => l.employee_name },
+  { key: 'description', label: 'Deskripsi', value: (l) => l.description },
+  { key: 'quantity', label: 'Qty', value: (l) => l.quantity, type: 'number' },
+  { key: 'unit', label: 'Satuan', value: (l) => l.unit },
+  { key: 'rate_per_unit', label: 'Tarif per Unit', value: (l) => l.rate_per_unit, type: 'number' },
+  { key: 'total_amount', label: 'Total', value: (l) => l.total_amount, type: 'number' },
+  { key: 'verifier_name', label: 'Diverifikasi Oleh', value: (l) => l.verifier_name },
+  { key: 'status', label: 'Status', value: (l) => l.status, exportValue: (l) => LOG_STATUS[l.status] || l.status },
+]
 
 export default function PieceworkLogList() {
   const [logs, setLogs] = useState<PieceworkLogItem[]>([])
@@ -71,7 +86,7 @@ export default function PieceworkLogList() {
     setLoading(true)
     try {
       const params = new URLSearchParams()
-      params.append('per_page', '100')
+      params.append('per_page', '1000')
       if (filterEmployee) params.append('employee_id', filterEmployee)
       if (filterStatus) params.append('status', filterStatus)
       if (filterStartDate) params.append('start_date', filterStartDate)
@@ -130,6 +145,7 @@ export default function PieceworkLogList() {
 
   const formatCurrency = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
 
+  const tools = useListTools<PieceworkLogItem>(logs, COLUMNS, { filename: 'Log_Borongan', initialSort: { key: 'work_date', dir: 'desc' } })
   const totalAmount = logs.reduce((sum, l) => sum + l.total_amount, 0)
   const verifiedCount = logs.filter(l => l.status === 'verified').length
   const pendingCount = logs.filter(l => l.status === 'pending').length
@@ -143,7 +159,7 @@ export default function PieceworkLogList() {
       verified: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
       rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
     }
-    const labels: Record<string, string> = { pending: 'Pending', verified: 'Verified', rejected: 'Ditolak' }
+    const labels = LOG_STATUS
     return (
       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'}`}>
         {labels[status] || status}
@@ -179,11 +195,11 @@ export default function PieceworkLogList() {
           <p className="text-lg font-bold text-orange-700 dark:text-orange-300">{formatCurrency(totalAmount)}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Verified</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Terverifikasi</p>
           <p className="text-xl font-bold text-green-700 dark:text-green-300">{verifiedCount}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Pending</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Menunggu</p>
           <p className="text-xl font-bold text-yellow-700 dark:text-yellow-300">{pendingCount}</p>
         </div>
       </div>
@@ -203,14 +219,16 @@ export default function PieceworkLogList() {
           </select>
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={inputClass}>
             <option value="">Semua Status</option>
-            <option value="pending">Pending</option>
-            <option value="verified">Verified</option>
+            <option value="pending">Menunggu</option>
+            <option value="verified">Terverifikasi</option>
             <option value="rejected">Ditolak</option>
           </select>
           <input type="date" value={filterStartDate} onChange={e => setFilterStartDate(e.target.value)} className={inputClass} placeholder="Dari tanggal" />
           <input type="date" value={filterEndDate} onChange={e => setFilterEndDate(e.target.value)} className={inputClass} placeholder="Sampai tanggal" />
         </div>
       </div>
+
+      <ListToolbar tools={tools} placeholder="Cari karyawan, deskripsi, atau satuan" />
 
       {/* Table */}
       {loading ? (
@@ -226,19 +244,19 @@ export default function PieceworkLogList() {
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Karyawan</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Deskripsi</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Satuan</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tarif/Unit</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                  <SortTh tools={tools} col="work_date" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</SortTh>
+                  <SortTh tools={tools} col="employee_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Karyawan</SortTh>
+                  <SortTh tools={tools} col="description" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Deskripsi</SortTh>
+                  <SortTh tools={tools} col="quantity" className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400" align="right">Qty</SortTh>
+                  <SortTh tools={tools} col="unit" className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400" align="center">Satuan</SortTh>
+                  <SortTh tools={tools} col="rate_per_unit" className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400" align="right">Tarif/Unit</SortTh>
+                  <SortTh tools={tools} col="total_amount" className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400" align="right">Total</SortTh>
+                  <SortTh tools={tools} col="status" className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400" align="center">Status</SortTh>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {logs.map(log => (
+                {tools.rows.map(log => (
                   <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-4 py-3 text-sm">{new Date(log.work_date).toLocaleDateString('id-ID')}</td>
                     <td className="px-4 py-3 text-sm font-medium">{log.employee_name || '-'}</td>

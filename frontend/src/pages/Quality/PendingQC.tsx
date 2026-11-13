@@ -15,6 +15,8 @@ import {
 import { toast } from 'react-hot-toast';
 import { useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 interface PendingQCWorkOrder {
   id: number;
@@ -36,12 +38,27 @@ interface PendingQCWorkOrder {
   qc_test_number: string | null;
 }
 
+const RESULT_LABEL: Record<string, string> = { passed: 'Lulus', failed: 'Tidak lulus', conditional: 'Bersyarat', pending: 'Menunggu' };
+const COLUMNS: ListColumn<PendingQCWorkOrder>[] = [
+  { key: 'wo_number', label: 'No. SPK', value: (w) => w.wo_number },
+  { key: 'batch_number', label: 'Batch', value: (w) => w.batch_number },
+  { key: 'product_code', label: 'Kode Produk', value: (w) => w.product_code },
+  { key: 'product_name', label: 'Nama Produk', value: (w) => w.product_name },
+  { key: 'quantity_produced', label: 'Qty Produksi', value: (w) => w.quantity_produced, type: 'number' },
+  { key: 'quantity_good', label: 'Qty Baik', value: (w) => w.quantity_good, type: 'number' },
+  { key: 'quantity_scrap', label: 'Qty Scrap', value: (w) => w.quantity_scrap, type: 'number' },
+  { key: 'uom', label: 'Satuan', value: (w) => w.uom },
+  { key: 'machine_name', label: 'Mesin', value: (w) => w.machine_name },
+  { key: 'completed_date', label: 'Tanggal Selesai', value: (w) => w.completed_date, type: 'date' },
+  { key: 'qc_result', label: 'Hasil QC', value: (w) => w.qc_result, exportValue: (w) => (w.qc_result ? RESULT_LABEL[w.qc_result] || w.qc_result : '') },
+  { key: 'qc_test_number', label: 'No. Uji QC', value: (w) => w.qc_test_number },
+];
+
 export default function PendingQC() {
   const navigate = useNavigate();
   const [pendingList, setPendingList] = useState<PendingQCWorkOrder[]>([]);
   const [completedList, setCompletedList] = useState<PendingQCWorkOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useUrlState<'pending' | 'completed'>('tab', 'pending', ['pending', 'completed']);
   useBreadcrumbTrail(activeTab === 'pending' ? [] : [{ label: ({ completed: 'Sudah QC' } as Record<string, string>)[activeTab] }]);
 
@@ -79,17 +96,10 @@ export default function PendingQC() {
     navigate(`/app/quality/pending-qc/${workOrder.id}`);
   };
 
-  const filteredPending = pendingList.filter(wo =>
-    wo.wo_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    wo.product_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    wo.product_code?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const filteredCompleted = completedList.filter(wo =>
-    wo.wo_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    wo.product_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    wo.product_code?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const tools = useListTools<PendingQCWorkOrder>(activeTab === 'pending' ? pendingList : completedList, COLUMNS, {
+    filename: activeTab === 'pending' ? 'QC_Menunggu' : 'QC_Selesai',
+    initialSort: { key: 'completed_date', dir: 'desc' },
+  });
 
   const getResultBadge = (result: string | null) => {
     switch (result) {
@@ -97,28 +107,28 @@ export default function PendingQC() {
         return (
           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
             <CheckCircleIcon className="w-3.5 h-3.5" />
-            Passed
+            Lulus
           </span>
         );
       case 'failed':
         return (
           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
             <XCircleIcon className="w-3.5 h-3.5" />
-            Failed
+            Tidak lulus
           </span>
         );
       case 'conditional':
         return (
           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
             <ExclamationTriangleIcon className="w-3.5 h-3.5" />
-            Conditional
+            Bersyarat
           </span>
         );
       case 'pending':
         return (
           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
             <ClockIcon className="w-3.5 h-3.5" />
-            Pending
+            Menunggu
           </span>
         );
       default:
@@ -199,19 +209,7 @@ export default function PendingQC() {
       {/* Search and Tabs */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col sm:flex-row gap-4">
-            {/* Search */}
-            <div className="relative flex-1">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Cari WO Number, Produk..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            {/* Tabs */}
+          <ListToolbar tools={tools} placeholder="Cari nomor SPK, produk, mesin, atau batch" extra={
             <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
               <button
                 onClick={() => setActiveTab('pending')}
@@ -221,7 +219,7 @@ export default function PendingQC() {
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
-                Menunggu QC ({filteredPending.length})
+                Menunggu QC ({pendingList.length})
               </button>
               <button
                 onClick={() => setActiveTab('completed')}
@@ -231,10 +229,10 @@ export default function PendingQC() {
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
-                Sudah QC ({filteredCompleted.length})
+                Sudah QC ({completedList.length})
               </button>
             </div>
-          </div>
+          } />
         </div>
 
         {/* Table */}
@@ -247,25 +245,13 @@ export default function PendingQC() {
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    SPK
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Produk
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Qty Produksi
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Mesin
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Selesai
-                  </th>
+                  <SortTh tools={tools} col="wo_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">SPK</SortTh>
+                  <SortTh tools={tools} col="product_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">Produk</SortTh>
+                  <SortTh tools={tools} col="quantity_produced" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">Qty Produksi</SortTh>
+                  <SortTh tools={tools} col="machine_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">Mesin</SortTh>
+                  <SortTh tools={tools} col="completed_date" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">Selesai</SortTh>
                   {activeTab === 'completed' && (
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Hasil QC
-                    </th>
+                    <SortTh tools={tools} col="qc_result" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">Hasil QC</SortTh>
                   )}
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Aksi
@@ -273,7 +259,7 @@ export default function PendingQC() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {(activeTab === 'pending' ? filteredPending : filteredCompleted).map((wo) => (
+                {tools.rows.map((wo) => (
                   <tr key={wo.id} className="hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700/50">
                     <td className="px-4 py-4">
                       <div>
@@ -295,7 +281,7 @@ export default function PendingQC() {
                           {wo.quantity_produced.toLocaleString()} {wo.uom}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          Good: {wo.quantity_good.toLocaleString()} | Scrap: {wo.quantity_scrap.toLocaleString()}
+                          Baik: {wo.quantity_good.toLocaleString()} | Scrap: {wo.quantity_scrap.toLocaleString()}
                         </p>
                       </div>
                     </td>
@@ -336,7 +322,7 @@ export default function PendingQC() {
                     </td>
                   </tr>
                 ))}
-                {(activeTab === 'pending' ? filteredPending : filteredCompleted).length === 0 && (
+                {tools.rows.length === 0 && (
                   <tr>
                     <td colSpan={activeTab === 'completed' ? 7 : 6} className="px-4 py-12 text-center">
                       <div className="flex flex-col items-center gap-2">

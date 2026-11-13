@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog, showError, showSuccess } from '../../components/ui';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 interface CorrectionRequest {
   id: number;
@@ -34,6 +36,26 @@ const MISMATCH_LABEL: Record<string, string> = {
   missing_production_log: 'Ada absensi (clock-in), tapi tidak ada log produksi',
 };
 
+const fmtChange = (c: CorrectionRequest) => {
+  const f = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-');
+  const parts: string[] = [];
+  if (c.requested_change.clock_in) parts.push(`Masuk: ${f(c.requested_change.clock_in.old)} menjadi ${f(c.requested_change.clock_in.new)}`);
+  if (c.requested_change.clock_out) parts.push(`Pulang: ${f(c.requested_change.clock_out.old)} menjadi ${f(c.requested_change.clock_out.new)}`);
+  return parts.join('; ');
+};
+const CORR_COLUMNS: ListColumn<CorrectionRequest>[] = [
+  { key: 'employee_name', label: 'Karyawan', value: (c) => c.employee_name },
+  { key: 'correction_date', label: 'Tanggal', value: (c) => c.correction_date, type: 'date' },
+  { key: 'change', label: 'Perubahan Diajukan', value: (c) => fmtChange(c) },
+  { key: 'reason', label: 'Alasan', value: (c) => c.reason },
+  { key: 'created_at', label: 'Diajukan Pada', value: (c) => c.created_at, type: 'date' },
+];
+const FLAG_COLUMNS: ListColumn<ReconciliationFlag>[] = [
+  { key: 'employee_name', label: 'Karyawan', value: (f) => f.employee_name },
+  { key: 'flag_date', label: 'Tanggal', value: (f) => f.flag_date, type: 'date' },
+  { key: 'mismatch_type', label: 'Jenis Mismatch', value: (f) => MISMATCH_LABEL[f.mismatch_type] || f.mismatch_type },
+];
+
 const AttendanceReconciliation: React.FC = () => {
   const [tab, setTab] = useUrlState<'correction' | 'reconciliation'>('tab', 'correction', ['correction', 'reconciliation']);
   useBreadcrumbTrail(tab === 'correction' ? [] : [{ label: ({ reconciliation: 'Rekonsiliasi vs Log Produksi' } as Record<string, string>)[tab] }]);
@@ -41,6 +63,7 @@ const AttendanceReconciliation: React.FC = () => {
   // Correction requests
   const [corrections, setCorrections] = useState<CorrectionRequest[]>([]);
   const [loadingCorrections, setLoadingCorrections] = useState(true);
+  const corrTools = useListTools<CorrectionRequest>(corrections, CORR_COLUMNS, { filename: 'Koreksi_Absensi', paramPrefix: 'c', initialSort: { key: 'correction_date', dir: 'desc' } });
 
   const fetchCorrections = async () => {
     setLoadingCorrections(true);
@@ -77,6 +100,7 @@ const AttendanceReconciliation: React.FC = () => {
   // Reconciliation
   const [flags, setFlags] = useState<ReconciliationFlag[]>([]);
   const [loadingFlags, setLoadingFlags] = useState(true);
+  const flagTools = useListTools<ReconciliationFlag>(flags, FLAG_COLUMNS, { filename: 'Mismatch_Absensi_vs_Produksi', paramPrefix: 'f', initialSort: { key: 'flag_date', dir: 'desc' } });
   const [running, setRunning] = useState(false);
   const [dateRange, setDateRange] = useState(() => {
     const end = new Date();
@@ -158,18 +182,20 @@ const AttendanceReconciliation: React.FC = () => {
           ) : corrections.length === 0 ? (
             <div className="text-center py-12 text-gray-500 dark:text-gray-400">Tidak ada pengajuan koreksi menunggu approval</div>
           ) : (
+            <>
+            <div className="p-4"><ListToolbar tools={corrTools} placeholder="Cari karyawan atau alasan" /></div>
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Karyawan</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Tanggal</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Perubahan Diajukan</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Alasan</th>
+                  <SortTh tools={corrTools} col="employee_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Karyawan</SortTh>
+                  <SortTh tools={corrTools} col="correction_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</SortTh>
+                  <SortTh tools={corrTools} col="change" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Perubahan Diajukan</SortTh>
+                  <SortTh tools={corrTools} col="reason" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Alasan</SortTh>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Aksi</th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {corrections.map(c => (
+                {corrTools.rows.map(c => (
                   <tr key={c.id}>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{c.employee_name}</td>
                     <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{new Date(c.correction_date).toLocaleDateString('id-ID')}</td>
@@ -196,6 +222,7 @@ const AttendanceReconciliation: React.FC = () => {
                 ))}
               </tbody>
             </table>
+            </>
           )}
         </div>
       )}
@@ -229,17 +256,19 @@ const AttendanceReconciliation: React.FC = () => {
             ) : flags.length === 0 ? (
               <div className="text-center py-12 text-gray-500 dark:text-gray-400">Tidak ada mismatch terbuka. Jalankan cross-check untuk memeriksa rentang tanggal di atas.</div>
             ) : (
+              <>
+              <div className="p-4"><ListToolbar tools={flagTools} placeholder="Cari karyawan atau jenis mismatch" /></div>
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Karyawan</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Tanggal</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Jenis Mismatch</th>
+                    <SortTh tools={flagTools} col="employee_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Karyawan</SortTh>
+                    <SortTh tools={flagTools} col="flag_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</SortTh>
+                    <SortTh tools={flagTools} col="mismatch_type" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Jenis Mismatch</SortTh>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {flags.map(f => (
+                  {flagTools.rows.map(f => (
                     <tr key={f.id}>
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{f.employee_name}</td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{new Date(f.flag_date).toLocaleDateString('id-ID')}</td>
@@ -260,6 +289,7 @@ const AttendanceReconciliation: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+              </>
             )}
           </div>
         </div>

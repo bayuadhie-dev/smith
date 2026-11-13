@@ -1,11 +1,9 @@
-import SortableTh, { useSort } from '../../components/SortableTh';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
-import {
-  PlusIcon, MagnifyingGlassIcon, ArrowPathIcon,
-  ArrowUturnLeftIcon,
-} from '@heroicons/react/24/outline';
+import { PlusIcon, ArrowPathIcon, ArrowUturnLeftIcon } from '@heroicons/react/24/outline';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
@@ -21,31 +19,29 @@ const APPROVAL_CONFIG: Record<string, { label: string; color: string }> = {
   rejected: { label: 'Ditolak',   color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
 };
 
+const COLUMNS: ListColumn<any>[] = [
+  { key: 'return_number', label: 'No. Retur', value: (r) => r.return_number },
+  { key: 'invoice_number', label: 'No. Faktur', value: (r) => r.invoice_number },
+  { key: 'supplier_name', label: 'Pemasok', value: (r) => r.supplier_name },
+  { key: 'return_date', label: 'Tgl Retur', value: (r) => r.return_date, type: 'date' },
+  { key: 'total_amount', label: 'Total (Rp)', value: (r) => r.total_amount, type: 'number' },
+  { key: 'status', label: 'Status', value: (r) => r.status, exportValue: (r) => STATUS_CONFIG[r.status]?.label || r.status },
+  { key: 'approval_status', label: 'Persetujuan', value: (r) => r.approval_status, exportValue: (r) => APPROVAL_CONFIG[r.approval_status]?.label || r.approval_status },
+];
+
 export default function PurchaseReturnList() {
   const navigate = useNavigate();
   const [returns, setReturns] = useState<any[]>([]);
-  const retAcc = useMemo(() => ({ return_number: (r: any) => r.return_number, invoice_number: (r: any) => r.invoice_number, supplier_name: (r: any) => r.supplier_name, return_date: (r: any) => r.return_date, total_amount: (r: any) => Number(r.total_amount), status: (r: any) => r.status, approval_status: (r: any) => r.approval_status }), []);
-  const { sorted: sortedReturns, sort, toggle } = useSort(returns, retAcc);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
   const fetchReturns = async () => {
     setLoading(true);
     try {
-      const params: Record<string, string> = {};
+      const params: Record<string, string | number> = { per_page: 1000 };
       if (statusFilter) params.status = statusFilter;
       const res = await axiosInstance.get('/api/purchasing/purchase-returns', { params });
-      let data: any[] = res.data.returns || [];
-      if (search) {
-        const q = search.toLowerCase();
-        data = data.filter(
-          (r) =>
-            r.return_number?.toLowerCase().includes(q) ||
-            r.invoice_number?.toLowerCase().includes(q) ||
-            r.supplier_name?.toLowerCase().includes(q),
-        );
-      }
+      const data: any[] = res.data.returns || [];
       setReturns(data);
     } catch (err) {
       console.error(err);
@@ -55,10 +51,8 @@ export default function PurchaseReturnList() {
   };
 
   useEffect(() => { fetchReturns(); }, [statusFilter]);
-  useEffect(() => {
-    const t = setTimeout(fetchReturns, 300);
-    return () => clearTimeout(t);
-  }, [search]);
+
+  const tools = useListTools<any>(returns, COLUMNS, { filename: 'Retur_Pembelian', initialSort: { key: 'return_date', dir: 'desc' } });
 
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n || 0);
@@ -68,7 +62,7 @@ export default function PurchaseReturnList() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Retur Pembelian</h1>
-          <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-400">Retur barang ke supplier dari Purchase Invoice</p>
+          <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-400">Retur barang ke pemasok dari faktur pembelian</p>
         </div>
         <Link
           to="/app/purchasing/returns/new"
@@ -79,17 +73,9 @@ export default function PurchaseReturnList() {
         </Link>
       </div>
 
+      <ListToolbar tools={tools} placeholder="Cari nomor retur, faktur, atau pemasok" />
+
       <div className="flex items-center gap-3">
-        <div className="relative max-w-xs flex-1">
-          <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Cari nomor retur / invoice / supplier..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white"
-          />
-        </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
@@ -107,26 +93,26 @@ export default function PurchaseReturnList() {
           <div className="flex items-center justify-center py-16 text-gray-400">
             <ArrowPathIcon className="h-5 w-5 animate-spin mr-2" /> Memuat...
           </div>
-        ) : returns.length === 0 ? (
+        ) : tools.rows.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <ArrowUturnLeftIcon className="h-12 w-12 mx-auto mb-3 opacity-40" />
-            <p>Belum ada retur pembelian</p>
+            <p>{tools.total === 0 ? 'Belum ada retur pembelian' : 'Tidak ada retur yang cocok'}</p>
           </div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <SortableTh label="No. Retur" k="return_number" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
-                <SortableTh label="No. Invoice" k="invoice_number" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
-                <SortableTh label="Supplier" k="supplier_name" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
-                <SortableTh label="Tgl Retur" k="return_date" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
-                <SortableTh label="Total" k="total_amount" sort={sort} toggle={toggle} className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300" />
-                <SortableTh label="Status" k="status" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
-                <SortableTh label="Persetujuan" k="approval_status" sort={sort} toggle={toggle} className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300" />
+                <SortTh tools={tools} col="return_number" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. Retur</SortTh>
+                <SortTh tools={tools} col="invoice_number" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. Faktur</SortTh>
+                <SortTh tools={tools} col="supplier_name" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Pemasok</SortTh>
+                <SortTh tools={tools} col="return_date" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tgl Retur</SortTh>
+                <SortTh tools={tools} col="total_amount" align="right" className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Total</SortTh>
+                <SortTh tools={tools} col="status" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Status</SortTh>
+                <SortTh tools={tools} col="approval_status" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Persetujuan</SortTh>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {sortedReturns.map((ret) => {
+              {tools.rows.map((ret) => {
                 const status = STATUS_CONFIG[ret.status] || { label: ret.status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
                 const approval = APPROVAL_CONFIG[ret.approval_status] || { label: ret.approval_status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
                 return (
@@ -135,7 +121,7 @@ export default function PurchaseReturnList() {
                     className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                     onClick={() => navigate(`/app/purchasing/returns/${ret.id}`)}
                   >
-                    <td className="px-4 py-3 font-medium text-blue-600 dark:text-blue-400">{ret.return_number}</td>
+                    <td className="px-4 py-3 font-medium text-primary-700 dark:text-primary-300">{ret.return_number}</td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{ret.invoice_number || '—'}</td>
                     <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{ret.supplier_name || '—'}</td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-400">

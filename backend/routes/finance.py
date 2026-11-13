@@ -94,7 +94,7 @@ def get_invoices():
     """
     try:
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
+        per_page = min(request.args.get('per_page', 50, type=int), 1000)
         invoice_type = request.args.get('type')
         
         query = Invoice.query
@@ -1537,7 +1537,7 @@ def _open_invoices_response(kind):
     Faktur draft dan batal tidak dihitung: belum menjadi tagihan sah."""
     from models.purchasing import Supplier
     page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 50, type=int), 200)
+    per_page = min(request.args.get('per_page', 50, type=int), 1000)
     search = (request.args.get('search') or '').strip()
     status = request.args.get('status') or ''
     today = get_local_now().date()

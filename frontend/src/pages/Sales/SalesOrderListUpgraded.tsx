@@ -7,7 +7,6 @@ import {
   ClipboardDocumentListIcon,
   EllipsisVerticalIcon,
   EyeIcon,
-  MagnifyingGlassIcon,
   PencilIcon,
   PlusIcon,
   PrinterIcon,
@@ -24,6 +23,8 @@ import toast from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
 import ConfirmAndStartProductionModal from '../../components/Sales/ConfirmAndStartProductionModal';
 import ImportCustomerPOModal from '../../components/Sales/ImportCustomerPOModal';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 interface SalesOrder {
   id: number;
@@ -40,8 +41,21 @@ interface SalesOrder {
   created_at: string;
 }
 
+const STATUS_LABEL: Record<string, string> = { draft: 'Draft', confirmed: 'Dikonfirmasi', in_production: 'Produksi', ready: 'Siap Kirim', shipped: 'Dikirim', delivered: 'Terkirim', cancelled: 'Batal' };
+const PRIORITY_LABEL: Record<string, string> = { low: 'Rendah', normal: 'Normal', high: 'Tinggi', urgent: 'Mendesak' };
+
+const COLUMNS: ListColumn<SalesOrder>[] = [
+  { key: 'order_number', label: 'No. Pesanan', value: (o) => o.order_number },
+  { key: 'customer_name', label: 'Pelanggan', value: (o) => o.customer_name },
+  { key: 'order_date', label: 'Tanggal', value: (o) => o.order_date, type: 'date' },
+  { key: 'required_date', label: 'Tgl Dibutuhkan', value: (o) => o.required_date, type: 'date' },
+  { key: 'status', label: 'Status', value: (o) => o.status, exportValue: (o) => STATUS_LABEL[o.status] || o.status },
+  { key: 'priority', label: 'Prioritas', value: (o) => o.priority || 'normal', exportValue: (o) => PRIORITY_LABEL[o.priority || 'normal'] || o.priority },
+  { key: 'item_count', label: 'Jumlah Barang', value: (o) => o.item_count || 0, type: 'number' },
+  { key: 'total_amount', label: 'Total (Rp)', value: (o) => o.total_amount || 0, type: 'number' },
+];
+
 const SalesOrderListUpgraded: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [showActions, setShowActions] = useState<number | null>(null);
@@ -63,12 +77,13 @@ const SalesOrderListUpgraded: React.FC = () => {
 
   const [showPoImport, setShowPoImport] = useState(false);
   const { data, isLoading, refetch } = useGetSalesOrdersQuery({
-    search: searchTerm,
     status: statusFilter,
-    priority: priorityFilter
+    priority: priorityFilter,
+    per_page: 1000
   });
 
   const orders = data?.orders || [];
+  const tools = useListTools<SalesOrder>(orders, COLUMNS, { filename: 'Pesanan_Penjualan', initialSort: { key: 'order_date', dir: 'desc' } });
 
   const stats = useMemo(() => {
     return {
@@ -82,24 +97,8 @@ const SalesOrderListUpgraded: React.FC = () => {
     };
   }, [orders]);
 
-  const statusOptions = [
-    { value: '', label: 'All Status' },
-    { value: 'draft', label: 'Draft' },
-    { value: 'confirmed', label: 'Confirmed' },
-    { value: 'in_production', label: 'In Production' },
-    { value: 'ready', label: 'Ready' },
-    { value: 'shipped', label: 'Shipped' },
-    { value: 'delivered', label: 'Delivered' },
-    { value: 'cancelled', label: 'Cancelled' }
-  ];
-
-  const priorityOptions = [
-    { value: '', label: 'All Priority' },
-    { value: 'low', label: 'Low' },
-    { value: 'normal', label: 'Normal' },
-    { value: 'high', label: 'High' },
-    { value: 'urgent', label: 'Urgent' }
-  ];
+  const statusOptions = [{ value: '', label: 'Semua status' }, ...Object.entries(STATUS_LABEL).map(([value, label]) => ({ value, label }))];
+  const priorityOptions = [{ value: '', label: 'Semua prioritas' }, ...Object.entries(PRIORITY_LABEL).map(([value, label]) => ({ value, label }))];
 
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { color: string; bgColor: string; icon: any }> = {
@@ -145,13 +144,13 @@ const SalesOrderListUpgraded: React.FC = () => {
       }
       return;
     }
-    if (!(await confirmDialog('Are you sure you want to cancel this order?'))) return;
+    if (!(await confirmDialog('Batalkan pesanan ini?'))) return;
     try {
       await axiosInstance.put(`/api/sales/orders/${id}`, { status: 'cancelled' });
-      toast.success('Order cancelled successfully');
+      toast.success('Pesanan dibatalkan');
       refetch();
     } catch (error) {
-      toast.error('Failed to cancel order');
+      toast.error('Gagal membatalkan pesanan');
     }
   };
 
@@ -166,20 +165,20 @@ const SalesOrderListUpgraded: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-xl shadow-lg p-6 text-white">
+      <div className="bg-gradient-to-r from-primary-600 to-primary-800 rounded-xl shadow-lg p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-3">
               <ShoppingCartIcon className="h-8 w-8" />
               Pesanan Penjualan
             </h1>
-            <p className="text-emerald-100 mt-1">Manage customer orders and fulfillment</p>
+            <p className="text-primary-100 mt-1">Kelola pesanan pelanggan dan pemenuhannya</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => refetch()}
               className="p-2 bg-white/10 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 rounded-lg transition-colors"
-              title="Refresh"
+              title="Muat ulang"
             >
               <ArrowPathIcon className="h-5 w-5" />
             </button>
@@ -194,14 +193,14 @@ const SalesOrderListUpgraded: React.FC = () => {
               to="/app/imports?kind=sales_order"
               className="inline-flex items-center px-4 py-2 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 transition-colors"
             >
-              Import
+              Impor
             </Link>
             <Link
               to="/app/sales/orders/new"
               className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-emerald-600 rounded-lg font-medium hover:bg-emerald-50 transition-colors shadow-md dark:text-emerald-400"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
-              New Order
+              Pesanan Baru
             </Link>
           </div>
         </div>
@@ -211,72 +210,40 @@ const SalesOrderListUpgraded: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_orders}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">Total Orders</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Total pesanan</div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 col-span-2">
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(stats.total_amount)}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">Total Value</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Total nilai</div>
         </div>
         <div className="bg-blue-50 rounded-lg border border-blue-200 p-4 dark:bg-blue-900/20 dark:border-blue-800">
           <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.pending_count}</div>
-          <div className="text-sm text-blue-600 dark:text-blue-400">Pending</div>
+          <div className="text-sm text-blue-600 dark:text-blue-400">Menunggu</div>
         </div>
         <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
           <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.in_production_count}</div>
-          <div className="text-sm text-yellow-600 dark:text-yellow-400">In Production</div>
+          <div className="text-sm text-yellow-600 dark:text-yellow-400">Dalam produksi</div>
         </div>
         <div className="bg-green-50 rounded-lg border border-green-200 p-4 dark:bg-green-900/20 dark:border-green-800">
           <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.ready_count}</div>
-          <div className="text-sm text-green-600 dark:text-green-400">Ready</div>
+          <div className="text-sm text-green-600 dark:text-green-400">Siap kirim</div>
         </div>
         <div className="bg-purple-50 rounded-lg border border-purple-200 p-4 dark:bg-purple-900/20 dark:border-purple-800">
           <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.shipped_count}</div>
-          <div className="text-sm text-purple-600 dark:text-purple-400">Shipped</div>
+          <div className="text-sm text-purple-600 dark:text-purple-400">Dikirim</div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-          {/* Search */}
-          <div className="relative flex-1">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by order number, customer..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-          >
-            {statusOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
+      <ListToolbar tools={tools} placeholder="Cari nomor pesanan atau pelanggan" extra={(
+        <>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} aria-label="Status" className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+            {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
           </select>
-
-          {/* Priority Filter */}
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-          >
-            {priorityOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
+          <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)} aria-label="Prioritas" className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+            {priorityOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
           </select>
-        </div>
-      </div>
+        </>
+      )} />
 
       {/* Orders Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -284,19 +251,19 @@ const SalesOrderListUpgraded: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Required</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Priority</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Items</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                <SortTh tools={tools} col="order_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">No. Pesanan</SortTh>
+                <SortTh tools={tools} col="customer_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pelanggan</SortTh>
+                <SortTh tools={tools} col="order_date" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tanggal</SortTh>
+                <SortTh tools={tools} col="required_date" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dibutuhkan</SortTh>
+                <SortTh tools={tools} col="status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</SortTh>
+                <SortTh tools={tools} col="priority" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Prioritas</SortTh>
+                <SortTh tools={tools} col="item_count" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Barang</SortTh>
+                <SortTh tools={tools} col="total_amount" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</SortTh>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {orders.map((order: SalesOrder) => {
+              {tools.rows.map((order: SalesOrder) => {
                 const statusConfig = getStatusConfig(order.status);
                 const priorityConfig = getPriorityConfig(order.priority || 'normal');
                 const StatusIcon = statusConfig.icon;
@@ -307,7 +274,7 @@ const SalesOrderListUpgraded: React.FC = () => {
                       <div>
                         <Link 
                           to={`/app/sales/orders/${order.id}`}
-                          className="font-medium text-emerald-600 hover:text-emerald-800 dark:text-emerald-400"
+                          className="font-medium text-primary-700 hover:text-primary-900 dark:text-primary-300"
                         >
                           {order.order_number}
                         </Link>
@@ -336,16 +303,16 @@ const SalesOrderListUpgraded: React.FC = () => {
                     <td className="px-4 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusConfig.bgColor} ${statusConfig.color}`}>
                         <StatusIcon className="h-3.5 w-3.5 mr-1" />
-                        {order.status.replace('_', ' ')}
+                        {STATUS_LABEL[order.status] || order.status.replace('_', ' ')}
                       </span>
                     </td>
                     <td className="px-4 py-4">
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${priorityConfig.bgColor} ${priorityConfig.color}`}>
-                        {order.priority || 'normal'}
+                        {PRIORITY_LABEL[order.priority || 'normal'] || order.priority}
                       </span>
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">
-                      {order.item_count || 0} items
+                      {order.item_count || 0} barang
                     </td>
                     <td className="px-4 py-4">
                       <div className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -357,11 +324,11 @@ const SalesOrderListUpgraded: React.FC = () => {
                         {order.status === 'draft' && (
                           <button
                             onClick={() => setApprovingOrder(order)}
-                            title="Approve & Mulai Produksi"
+                            title="Setujui dan mulai produksi"
                             className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
                           >
                             <CheckCircleIcon className="h-4 w-4" />
-                            Approve
+                            Setujui
                           </button>
                         )}
                         <button
@@ -377,14 +344,14 @@ const SalesOrderListUpgraded: React.FC = () => {
                               className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
                             >
                               <EyeIcon className="h-4 w-4 mr-2" />
-                              View Details
+                              Lihat Detail
                             </Link>
                             <Link
                               to={`/app/sales/orders/${order.id}/edit`}
                               className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
                             >
                               <PencilIcon className="h-4 w-4 mr-2" />
-                              Edit Order
+                              Ubah Pesanan
                             </Link>
                             {order.status !== 'draft' && (
                               <Link
@@ -400,7 +367,7 @@ const SalesOrderListUpgraded: React.FC = () => {
                               className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
                             >
                               <PrinterIcon className="h-4 w-4 mr-2" />
-                              Print
+                              Cetak
                             </button>
                             {!['delivered', 'cancelled'].includes(order.status) && (
                               <button
@@ -408,7 +375,7 @@ const SalesOrderListUpgraded: React.FC = () => {
                                 className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400"
                               >
                                 <XMarkIcon className="h-4 w-4 mr-2" />
-                                Cancel Order
+                                Batalkan Pesanan
                               </button>
                             )}
                           </div>
@@ -424,20 +391,17 @@ const SalesOrderListUpgraded: React.FC = () => {
       </div>
 
       {/* Empty State */}
-      {orders.length === 0 && !isLoading && (
+      {tools.rows.length === 0 && !isLoading && (
         <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <ShoppingCartIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-white">No sales orders</h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Get started by creating your first sales order.
-          </p>
+          <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-white">{tools.total === 0 ? 'Belum ada pesanan penjualan' : 'Tidak ada pesanan yang cocok'}</h3>
           <div className="mt-6">
             <Link
               to="/app/sales/orders/new"
               className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700"
             >
               <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-              Create Order
+              Buat Pesanan
             </Link>
           </div>
         </div>

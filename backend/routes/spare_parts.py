@@ -352,7 +352,7 @@ def list_requests():
     if request.args.get('status'):
         q = q.filter(SparePartRequest.status == request.args['status'])
     page = request.args.get('page', 1, type=int)
-    pag = q.order_by(SparePartRequest.requested_at.desc()).paginate(page=page, per_page=min(request.args.get('per_page', 50, type=int), 200), error_out=False)
+    pag = q.order_by(SparePartRequest.requested_at.desc()).paginate(page=page, per_page=min(request.args.get('per_page', 50, type=int), 1000), error_out=False)
     pending = SparePartRequest.query.filter_by(status='pending').count()
     return jsonify({'requests': [_req_dict(r, False) for r in pag.items], 'total': pag.total, 'pages': pag.pages, 'pending': pending}), 200
 

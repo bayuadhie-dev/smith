@@ -415,7 +415,7 @@ def get_leave_requests():
         start_date = request.args.get('start_date', '')
         end_date = request.args.get('end_date', '')
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
+        per_page = min(request.args.get('per_page', 20, type=int), 1000)
         
         query = StaffLeaveRequest.query
         

@@ -6,6 +6,8 @@ import {
 import axiosInstance from '../../lib/axios';
 import { confirmDialog, showSuccess, showError, showWarning } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
 interface LeaveRequest {
   id: number;
@@ -39,6 +41,21 @@ interface OfficeLocation {
   is_default: boolean;
   address?: string;
 }
+
+const MGR_TEXT = (r: LeaveRequest) => (r.manager_status === 'skipped' ? 'Tidak perlu' : r.manager_status === 'pending' ? 'Menunggu' : r.manager_status === 'approved' ? 'Disetujui manager' : 'Ditolak manager')
+const COLUMNS: ListColumn<LeaveRequest>[] = [
+  { key: 'request_number', label: 'No. Pengajuan', value: (r) => r.request_number },
+  { key: 'created_at', label: 'Tanggal Pengajuan', value: (r) => r.created_at, type: 'date' },
+  { key: 'staff_name', label: 'Nama', value: (r) => r.staff_name },
+  { key: 'leave_type', label: 'Tipe', value: (r) => r.leave_type_label },
+  { key: 'start_date', label: 'Mulai', value: (r) => r.start_date, type: 'date' },
+  { key: 'end_date', label: 'Sampai', value: (r) => r.end_date, type: 'date' },
+  { key: 'total_days', label: 'Durasi (hari)', value: (r) => r.total_days, type: 'number' },
+  { key: 'reason', label: 'Alasan', value: (r) => r.reason },
+  { key: 'manager', label: 'Persetujuan Manager', value: (r) => MGR_TEXT(r) },
+  { key: 'status', label: 'Status', value: (r) => r.status_label },
+  { key: 'approver_name', label: 'Disetujui Oleh', value: (r) => r.approver_name },
+]
 
 const StaffLeaveManagement: React.FC = () => {
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
@@ -85,6 +102,7 @@ const StaffLeaveManagement: React.FC = () => {
   // ke 'cuti_tahunan', supaya karyawan lihat sisa jatah SEBELUM submit
   // (backend tetap validasi ulang saat submit - ini cuma agar user tidak
   // perlu coba-coba submit dulu baru tahu kuotanya habis).
+  const tools = useListTools<LeaveRequest>(requests, COLUMNS, { filename: 'Pengajuan_Cuti_Staff', initialSort: { key: 'created_at', dir: 'desc' } });
   const [leaveBalance, setLeaveBalance] = useState<{ year: number; entitlement: number; used: number; remaining: number } | null>(null);
 
   const fetchLeaveBalance = async () => {
@@ -106,10 +124,9 @@ const StaffLeaveManagement: React.FC = () => {
     try {
       const params = new URLSearchParams();
       if (filter.status) params.append('status', filter.status);
-      if (filter.staff_name) params.append('staff_name', filter.staff_name);
       if (filter.leave_type) params.append('leave_type', filter.leave_type);
       params.append('page', pagination.page.toString());
-      params.append('per_page', '20');
+      params.append('per_page', '1000');
 
       const response = await axiosInstance.get(`/api/staff-leave/list?${params.toString()}`);
       setRequests(response.data.leave_requests || []);
@@ -300,7 +317,7 @@ const StaffLeaveManagement: React.FC = () => {
 
       {/* Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Status</label>
             <select
@@ -314,16 +331,6 @@ const StaffLeaveManagement: React.FC = () => {
               <option value="rejected">Ditolak</option>
               <option value="cancelled">Dibatalkan</option>
             </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Nama Staff</label>
-            <input
-              type="text"
-              value={filter.staff_name}
-              onChange={(e) => setFilter(prev => ({ ...prev, staff_name: e.target.value }))}
-              placeholder="Cari nama..."
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tipe</label>
@@ -351,6 +358,10 @@ const StaffLeaveManagement: React.FC = () => {
         </div>
       </div>
 
+      <div className="mb-4">
+        <ListToolbar tools={tools} placeholder="Cari nomor, nama, atau alasan" />
+      </div>
+
       {/* Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         {loading ? (
@@ -365,18 +376,18 @@ const StaffLeaveManagement: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Request</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipe</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Durasi</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Approval Manager</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <SortTh tools={tools} col="request_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">No. Pengajuan</SortTh>
+                <SortTh tools={tools} col="staff_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Nama</SortTh>
+                <SortTh tools={tools} col="leave_type" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tipe</SortTh>
+                <SortTh tools={tools} col="start_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</SortTh>
+                <SortTh tools={tools} col="total_days" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Durasi</SortTh>
+                <SortTh tools={tools} col="manager" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Persetujuan Manager</SortTh>
+                <SortTh tools={tools} col="status" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Status</SortTh>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {requests.map((req) => (
+              {tools.rows.map((req) => (
                 <tr key={req.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">{req.request_number}</p>

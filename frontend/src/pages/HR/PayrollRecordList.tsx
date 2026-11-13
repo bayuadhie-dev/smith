@@ -13,6 +13,8 @@ import {
   DocumentTextIcon
 } from '@heroicons/react/24/outline'
 import { confirmDialog, showError } from '../../components/ui'
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
 interface PayrollRecord {
   id: number
@@ -67,6 +69,24 @@ interface PeriodInfo {
   total_net_salary: number
 }
 
+const REC_STATUS: Record<string, string> = { draft: 'Draft', calculated: 'Dihitung', approved: 'Disetujui', paid: 'Dibayar', cancelled: 'Batal' }
+const PAY_TYPE: Record<string, string> = { fixed: 'Tetap', monthly: 'Bulanan', weekly: 'Mingguan', daily: 'Harian', piecework: 'Borongan', outsourcing: 'Outsourcing' }
+const COLUMNS: ListColumn<PayrollRecord>[] = [
+  { key: 'name', label: 'Karyawan', value: (r) => r.employee.full_name },
+  { key: 'nik', label: 'NIK', value: (r) => r.employee.employee_number },
+  { key: 'department', label: 'Departemen', value: (r) => r.employee.department },
+  { key: 'pay_type', label: 'Kategori', value: (r) => r.employee.pay_type || 'monthly', exportValue: (r) => PAY_TYPE[r.employee.pay_type || 'monthly'] || r.employee.pay_type },
+  { key: 'basic_salary', label: 'Gaji Pokok', value: (r) => r.basic_salary, type: 'number' },
+  { key: 'allowances', label: 'Tunjangan', value: (r) => r.allowances, type: 'number' },
+  { key: 'overtime_amount', label: 'Lembur', value: (r) => r.overtime_amount, type: 'number' },
+  { key: 'gross_salary', label: 'Gaji Kotor', value: (r) => r.gross_salary, type: 'number' },
+  { key: 'total_deductions', label: 'Potongan', value: (r) => r.total_deductions, type: 'number' },
+  { key: 'net_salary', label: 'Gaji Bersih', value: (r) => r.net_salary, type: 'number' },
+  { key: 'days_worked', label: 'Hari Hadir', value: (r) => r.days_worked, type: 'number' },
+  { key: 'days_absent', label: 'Hari Absen', value: (r) => r.days_absent, type: 'number' },
+  { key: 'status', label: 'Status', value: (r) => r.status, exportValue: (r) => REC_STATUS[r.status] || r.status },
+]
+
 export default function PayrollRecordList() {
   const { t } = useLanguage()
   const navigate = useNavigate()
@@ -76,7 +96,6 @@ export default function PayrollRecordList() {
   const [loading, setLoading] = useState(true)
   const [selectedRecord, setSelectedRecord] = useState<PayrollRecord | null>(null)
   const [showPayslip, setShowPayslip] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
 
   const token = localStorage.getItem('token')
 
@@ -105,7 +124,7 @@ export default function PayrollRecordList() {
   const fetchRecords = async () => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/hr/payroll/periods/${periodId}/records?per_page=200`, {
+      const response = await fetch(`/api/hr/payroll/periods/${periodId}/records?per_page=1000`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (response.ok) {
@@ -120,7 +139,7 @@ export default function PayrollRecordList() {
   }
 
   const handleApproveRecord = async (recordId: number) => {
-    if (!(await confirmDialog('Approve payroll record ini?'))) return
+    if (!(await confirmDialog('Setujui data gaji ini?'))) return
     try {
       const response = await fetch(`/api/hr/payroll/records/${recordId}/approve`, {
         method: 'POST',
@@ -129,10 +148,10 @@ export default function PayrollRecordList() {
       if (response.ok) {
         fetchRecords()
       } else {
-        showError('Gagal approve record')
+        showError('Gagal menyetujui data gaji')
       }
     } catch (error) {
-      showError('Error approving record')
+      showError('Gagal menyetujui data gaji')
     }
   }
 
@@ -150,7 +169,7 @@ export default function PayrollRecordList() {
         showError('Gagal menandai pembayaran')
       }
     } catch (error) {
-      showError('Error marking payment')
+      showError('Gagal menandai pembayaran')
     }
   }
 
@@ -345,11 +364,8 @@ export default function PayrollRecordList() {
     </span>
   )
 
-  const filteredRecords = records.filter(r =>
-    r.employee.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.employee.employee_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (r.employee.department || '').toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const tools = useListTools<PayrollRecord>(records, COLUMNS, { filename: `Payroll_${period?.period_name || 'Periode'}`.replace(/[^\w-]+/g, '_'), initialSort: { key: 'name' } })
+  const filteredRecords = tools.rows
 
   const summaryStats = {
     totalEmployees: records.length,
@@ -446,25 +462,16 @@ export default function PayrollRecordList() {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <input
-          type="text"
-          placeholder="Cari nama karyawan, NIK, atau departemen..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
+      <ListToolbar tools={tools} placeholder="Cari nama karyawan, NIK, atau departemen" />
 
       {/* Records Table */}
       {loading ? (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">Memuat data payroll...</div>
-      ) : filteredRecords.length === 0 ? (
+      ) : tools.total === 0 ? (
         <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <BanknotesIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-500 dark:text-gray-400">Belum ada record payroll untuk periode ini.</p>
-          <p className="text-sm text-gray-400 mt-1">Klik "Calculate Payroll" di halaman sebelumnya untuk generate otomatis.</p>
+          <p className="text-sm text-gray-400 mt-1">Klik "Hitung Payroll" di halaman sebelumnya untuk membuatnya otomatis.</p>
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -472,17 +479,17 @@ export default function PayrollRecordList() {
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Karyawan</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Departemen</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kategori</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Gaji Pokok</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tunjangan</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Lembur</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Gaji Kotor</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Potongan</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Gaji Bersih</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Hadir</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                  <SortTh tools={tools} col="name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Karyawan</SortTh>
+                  <SortTh tools={tools} col="department" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Departemen</SortTh>
+                  <SortTh tools={tools} col="pay_type" className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400" align="center">Kategori</SortTh>
+                  <SortTh tools={tools} col="basic_salary" className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400" align="right">Gaji Pokok</SortTh>
+                  <SortTh tools={tools} col="allowances" className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400" align="right">Tunjangan</SortTh>
+                  <SortTh tools={tools} col="overtime_amount" className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400" align="right">Lembur</SortTh>
+                  <SortTh tools={tools} col="gross_salary" className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400" align="right">Gaji Kotor</SortTh>
+                  <SortTh tools={tools} col="total_deductions" className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400" align="right">Potongan</SortTh>
+                  <SortTh tools={tools} col="net_salary" className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400" align="right">Gaji Bersih</SortTh>
+                  <SortTh tools={tools} col="days_worked" className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400" align="center">Hadir</SortTh>
+                  <SortTh tools={tools} col="status" className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400" align="center">Status</SortTh>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
               </thead>
@@ -523,7 +530,7 @@ export default function PayrollRecordList() {
                           <button
                             onClick={() => handleApproveRecord(record.id)}
                             className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors dark:text-green-400"
-                            title="Approve"
+                            title="Setujui"
                           >
                             <CheckIcon className="h-4 w-4" />
                           </button>

@@ -1,7 +1,5 @@
-import SortableTh, { useSort } from '../../components/SortableTh'
-import React, { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom';
-import { useLanguage } from '../../contexts/LanguageContext';
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { formatRupiah, formatCurrencyAmount } from '../../utils/currencyUtils'
@@ -21,13 +19,27 @@ import {
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
-export default function PurchaseOrderList() {
-    const { t } = useLanguage();
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
-const [search, setSearch] = useState('')
-  const [status, setStatus] = useState('')
+const STATUS_LABEL: Record<string, string> = { draft: 'Draft', pending_approval: 'Menunggu Persetujuan', approved: 'Disetujui', rejected: 'Ditolak', sent: 'Terkirim', confirmed: 'Dikonfirmasi', partial: 'Diterima Sebagian', received: 'Diterima', cancelled: 'Batal' }
+const PRIORITY_LABEL: Record<string, string> = { low: 'Rendah', normal: 'Normal', high: 'Tinggi', urgent: 'Mendesak' }
+const COLUMNS: ListColumn<any>[] = [
+  { key: 'po_number', label: 'No. PO', value: (p) => p.po_number },
+  { key: 'supplier_name', label: 'Pemasok', value: (p) => p.supplier_name },
+  { key: 'order_date', label: 'Tgl Pesanan', value: (p) => p.order_date, type: 'date' },
+  { key: 'required_date', label: 'Tgl Dibutuhkan', value: (p) => p.required_date, type: 'date' },
+  { key: 'status', label: 'Status', value: (p) => p.status, exportValue: (p) => STATUS_LABEL[p.status] || p.status },
+  { key: 'priority', label: 'Prioritas', value: (p) => p.priority, exportValue: (p) => PRIORITY_LABEL[p.priority] || p.priority },
+  { key: 'currency', label: 'Mata Uang', value: (p) => p.currency },
+  { key: 'total_amount', label: 'Total', value: (p) => p.total_amount, type: 'number' },
+  { key: 'total_amount_idr', label: 'Total (Rp)', value: (p) => p.total_amount_idr ?? p.total_amount, type: 'number' },
+]
+
+export default function PurchaseOrderList() {
+
+const [status, setStatus] = useState('')
   const [priority, setPriority] = useState('')
-  const [page, setPage] = useState(1)
   const [manualRateModal, setManualRateModal] = useState<{
     open: boolean
     poId: number | null
@@ -47,37 +59,35 @@ const [search, setSearch] = useState('')
   })
   
   const { data, isLoading, refetch } = useGetPurchaseOrdersQuery({
-    search,
     status,
     priority,
-    page
+    per_page: 1000
   })
   
   const [submitForApproval] = useSubmitForApprovalMutation()
-  const poAcc = useMemo(() => ({ po_number: (r: any) => r.po_number, supplier_name: (r: any) => r.supplier_name, order_date: (r: any) => r.order_date, status: (r: any) => r.status, total_amount: (r: any) => Number(r.total_amount_idr ?? r.total_amount) }), [])
-  const { sorted: sortedPOs, sort, toggle } = useSort(data?.purchase_orders || [], poAcc)
+  const tools = useListTools<any>(data?.purchase_orders, COLUMNS, { filename: 'Pesanan_Pembelian', initialSort: { key: 'order_date', dir: 'desc' } })
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { class: string; label: string }> = {
       draft: { class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: 'Draft' },
-      pending_approval: { class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300', label: 'Pending Approval' },
-      approved: { class: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', label: 'Approved' },
-      rejected: { class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Rejected' },
-      sent: { class: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', label: 'Sent' },
-      confirmed: { class: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300', label: 'Confirmed' },
-      partial: { class: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300', label: 'Partially Received' },
-      received: { class: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', label: 'Received' },
-      cancelled: { class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Cancelled' }
+      pending_approval: { class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300', label: 'Menunggu Persetujuan' },
+      approved: { class: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', label: 'Disetujui' },
+      rejected: { class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Ditolak' },
+      sent: { class: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', label: 'Terkirim' },
+      confirmed: { class: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300', label: 'Dikonfirmasi' },
+      partial: { class: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300', label: 'Diterima Sebagian' },
+      received: { class: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', label: 'Diterima' },
+      cancelled: { class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Batal' }
     }
     return badges[status] || { class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: status }
   }
 
   const getPriorityBadge = (priority: string) => {
     const badges: Record<string, { class: string; label: string }> = {
-      low: { class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: 'Low' },
+      low: { class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: 'Rendah' },
       normal: { class: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', label: 'Normal' },
-      high: { class: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300', label: 'High' },
-      urgent: { class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Urgent' }
+      high: { class: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300', label: 'Tinggi' },
+      urgent: { class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Mendesak' }
     }
     return badges[priority] || { class: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', label: 'Normal' }
   }
@@ -85,7 +95,7 @@ const [search, setSearch] = useState('')
   const handleSubmitApproval = async (po: any) => {
     try {
       await submitForApproval({ poId: po.id }).unwrap()
-      toast.success('Purchase order submitted for approval')
+      toast.success('PO diajukan untuk persetujuan')
       refetch()
     } catch (error: any) {
       if (error?.data?.error_code === 'EXCHANGE_RATE_UNAVAILABLE') {
@@ -100,7 +110,7 @@ const [search, setSearch] = useState('')
         })
         return
       }
-      toast.error(error?.data?.error || 'Failed to submit for approval')
+      toast.error(error?.data?.error || 'Gagal mengajukan persetujuan')
     }
   }
 
@@ -115,19 +125,13 @@ const [search, setSearch] = useState('')
         manual_exchange_rate: parsedRate,
         manual_rate_confirmed: true
       }).unwrap()
-      toast.success('Purchase order submitted with manual exchange rate')
+      toast.success('PO diajukan dengan kurs manual')
       setManualRateModal(m => ({ ...m, open: false, submitting: false }))
       refetch()
     } catch (error: any) {
-      toast.error(error?.data?.error || 'Failed to submit for approval')
+      toast.error(error?.data?.error || 'Gagal mengajukan persetujuan')
       setManualRateModal(m => ({ ...m, submitting: false }))
     }
-  }
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setPage(1)
-    refetch()
   }
 
   return (
@@ -136,7 +140,7 @@ const [search, setSearch] = useState('')
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pesanan Pembelian</h1>
-          <p className="text-gray-600 dark:text-gray-300">Manage purchase orders and approval workflow</p>
+          <p className="text-gray-600 dark:text-gray-300">Kelola pesanan pembelian dan alur persetujuan</p>
         </div>
         <div className="flex space-x-3">
           <Link
@@ -152,99 +156,46 @@ const [search, setSearch] = useState('')
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
           >
             <PlusIcon className="h-5 w-5" />
-            Create PO
+            Buat PO
           </Link>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.search')}</label>
-            <div className="relative">
-              <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search PO number, supplier..."
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.status')}</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Status</option>
-              <option value="draft">Draft</option>
-              <option value="pending_approval">Pending Approval</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
-              <option value="sent">Sent</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="received">Received</option>
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Prioritas</label>
-            <select
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Priorities</option>
-              <option value="low">Low</option>
-              <option value="normal">Normal</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
-            </select>
-          </div>
-          
-          <div className="flex items-end">
-            <button
-              type="submit"
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-200 dark:bg-gray-700 transition-colors dark:hover:bg-gray-600"
-            >
-              <FunnelIcon className="h-5 w-5" />{t('common.filter')}</button>
-          </div>
-        </form>
-      </div>
+      <ListToolbar tools={tools} placeholder="Cari nomor PO atau pemasok" extra={(
+        <>
+          <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Status" className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+            <option value="">Semua status</option>
+            {['draft', 'pending_approval', 'approved', 'rejected', 'sent', 'confirmed', 'received'].map((k) => <option key={k} value={k}>{STATUS_LABEL[k]}</option>)}
+          </select>
+          <select value={priority} onChange={(e) => setPriority(e.target.value)} aria-label="Prioritas" className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+            <option value="">Semua prioritas</option>
+            {Object.entries(PRIORITY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+        </>
+      )} />
 
       {/* Purchase Orders Table */}
       {isLoading ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">Loading purchase orders...</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">Memuat pesanan pembelian...</p>
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              Purchase Orders ({data?.total || 0})
-            </h3>
-          </div>
-          
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <SortableTh label="No. PO" k="po_number" sort={sort} toggle={toggle} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" />
-                  <SortableTh label="Supplier" k="supplier_name" sort={sort} toggle={toggle} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" />
-                  <SortableTh label="Tanggal Transaksi" k="order_date" sort={sort} toggle={toggle} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" />
-                  <SortableTh label="Status" k="status" sort={sort} toggle={toggle} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" />
-                  <SortableTh label="Total" k="total_amount" sort={sort} toggle={toggle} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" />
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
+                  <SortTh tools={tools} col="po_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">No. PO</SortTh>
+                  <SortTh tools={tools} col="supplier_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pemasok</SortTh>
+                  <SortTh tools={tools} col="order_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tanggal</SortTh>
+                  <SortTh tools={tools} col="status" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</SortTh>
+                  <SortTh tools={tools} col="total_amount" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</SortTh>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Aksi</th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {sortedPOs.map((po: any) => {
+                {tools.rows.map((po: any) => {
                   const statusBadge = getStatusBadge(po.status)
                   const priorityBadge = getPriorityBadge(po.priority)
                   
@@ -256,7 +207,7 @@ const [search, setSearch] = useState('')
                             {po.po_number}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
-                            Created: {format(new Date(po.created_at || po.order_date), 'dd MMM yyyy')}
+                            Dibuat: {format(new Date(po.created_at || po.order_date), 'dd MMM yyyy')}
                           </div>
                         </div>
                       </td>
@@ -266,11 +217,11 @@ const [search, setSearch] = useState('')
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm text-gray-900 dark:text-white">
-                            Order: {format(new Date(po.order_date), 'dd MMM yyyy')}
+                            Pesan: {format(new Date(po.order_date), 'dd MMM yyyy')}
                           </div>
                           {po.required_date && (
                             <div className="text-sm text-gray-500 dark:text-gray-400">
-                              Required: {format(new Date(po.required_date), 'dd MMM yyyy')}
+                              Dibutuhkan: {format(new Date(po.required_date), 'dd MMM yyyy')}
                             </div>
                           )}
                         </div>
@@ -304,7 +255,7 @@ const [search, setSearch] = useState('')
                           <Link
                             to={`/app/purchasing/purchase-orders/${po.id}`}
                             className="text-blue-600 hover:text-blue-900 p-1 dark:text-blue-400"
-                            title="View Details"
+                            title="Lihat detail" aria-label="Lihat detail"
                           >
                             <EyeIcon className="h-4 w-4" />
                           </Link>
@@ -314,14 +265,14 @@ const [search, setSearch] = useState('')
                               <Link
                                 to={`/app/purchasing/purchase-orders/${po.id}/edit`}
                                 className="text-indigo-600 hover:text-indigo-900 p-1 dark:text-indigo-400"
-                                title={t('common.edit')}
+                                title="Ubah" aria-label="Ubah"
                               >
                                 <PencilIcon className="h-4 w-4" />
                               </Link>
                               <button
                                 onClick={() => handleSubmitApproval(po)}
                                 className="text-yellow-600 hover:text-yellow-900 p-1 dark:text-yellow-400"
-                                title="Submit for Approval"
+                                title="Ajukan persetujuan" aria-label="Ajukan persetujuan"
                               >
                                 <ClockIcon className="h-4 w-4" />
                               </button>
@@ -346,46 +297,22 @@ const [search, setSearch] = useState('')
             </table>
           </div>
           
-          {/* Pagination */}
-          {data?.pages && data.pages > 1 && (
-            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <div className="text-sm text-gray-700 dark:text-gray-200">
-                Showing page {data.current_page} of {data.pages}
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setPage(page - 1)}
-                  disabled={page <= 1}
-                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
-                >
-                </button>
-                <button
-                  onClick={() => setPage(page + 1)}
-                  disabled={page >= data.pages}
-                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
-                >
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
       {/* Empty State */}
-      {!isLoading && (!data?.purchase_orders || data.purchase_orders.length === 0) && (
+      {!isLoading && tools.rows.length === 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
           <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No purchase orders</h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating your first purchase order.</p>
-          <div className="mt-6">
-            <Link
-              to="/app/purchasing/purchase-orders/new"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <PlusIcon className="h-5 w-5" />
-              Create Purchase Order
-            </Link>
-          </div>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">{tools.total === 0 ? 'Belum ada pesanan pembelian' : 'Tidak ada PO yang cocok'}</h3>
+          {tools.total === 0 && (
+            <div className="mt-6">
+              <Link to="/app/purchasing/purchase-orders/new" className="btn-primary">
+                <PlusIcon className="mr-1.5 h-5 w-5" />
+                Buat Pesanan Pembelian
+              </Link>
+            </div>
+          )}
         </div>
       )}
 

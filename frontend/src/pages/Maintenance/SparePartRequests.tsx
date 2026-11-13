@@ -6,6 +6,8 @@ import { PageHeader, Panel } from '../../components/ui/PageKit'
 import { useUrlState } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { confirmDialog, showError, showSuccess } from '../../components/ui'
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
 interface RequestRow {
   id: number
@@ -46,6 +48,19 @@ const STATUS: Record<string, { label: string; cls: string }> = {
   cancelled: { label: 'Dibatalkan', cls: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
 }
 
+const COLUMNS: ListColumn<RequestRow>[] = [
+  { key: 'request_number', label: 'Nomor', value: (r) => r.request_number },
+  { key: 'machine_name', label: 'Mesin', value: (r) => r.machine_name },
+  { key: 'requested_by', label: 'Peminta', value: (r) => r.requested_by },
+  { key: 'requested_at', label: 'Tanggal', value: (r) => r.requested_at, type: 'date' },
+  { key: 'items_count', label: 'Jumlah Item', value: (r) => r.items_count, type: 'number' },
+  { key: 'status', label: 'Status', value: (r) => r.status, exportValue: (r) => STATUS[r.status]?.label || r.status },
+  { key: 'decided_by', label: 'Diputuskan Oleh', value: (r) => r.decided_by },
+  { key: 'decided_at', label: 'Tanggal Keputusan', value: (r) => r.decided_at, type: 'date' },
+  { key: 'decision_note', label: 'Catatan Keputusan', value: (r) => r.decision_note },
+  { key: 'notes', label: 'Catatan', value: (r) => r.notes },
+]
+
 const th = 'px-4 py-2.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400'
 const fmtDate = (d: string | null) => (d ? new Date(d).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-')
 const fmtNum = (n: number) => n.toLocaleString('id-ID')
@@ -67,11 +82,12 @@ const SparePartRequests = () => {
   const [rejectOpen, setRejectOpen] = useState(false)
   const [reason, setReason] = useState('')
   const [busy, setBusy] = useState(false)
+  const tools = useListTools<RequestRow>(rows, COLUMNS, { filename: `Permintaan_Sparepart_${tabUrl}`, initialSort: { key: 'requested_at', dir: 'desc' } })
 
   const load = useCallback(async () => {
     try {
       setLoading(true)
-      const res = await axiosInstance.get('/api/spare-parts/requests', { params: { status: tab || undefined, per_page: 100 } })
+      const res = await axiosInstance.get('/api/spare-parts/requests', { params: { status: tab || undefined, per_page: 1000 } })
       setRows(res.data.requests || [])
       setPendingCount(res.data.pending || 0)
     } catch (e: any) {
@@ -147,22 +163,24 @@ const SparePartRequests = () => {
         ))}
       </div>
 
+      <ListToolbar tools={tools} placeholder="Cari nomor, mesin, atau peminta" />
+
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th className={th}>Nomor</th>
-              <th className={th}>Mesin</th>
-              <th className={th}>Peminta</th>
-              <th className={th}>Tanggal</th>
-              <th className={`${th} text-right`}>Item</th>
-              <th className={th}>Status</th>
+              <SortTh tools={tools} col="request_number" className={th}>Nomor</SortTh>
+              <SortTh tools={tools} col="machine_name" className={th}>Mesin</SortTh>
+              <SortTh tools={tools} col="requested_by" className={th}>Peminta</SortTh>
+              <SortTh tools={tools} col="requested_at" className={th}>Tanggal</SortTh>
+              <SortTh tools={tools} col="items_count" align="right" className={`${th} text-right`}>Item</SortTh>
+              <SortTh tools={tools} col="status" className={th}>Status</SortTh>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {loading && <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
-            {!loading && rows.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Tidak ada permintaan.</td></tr>}
-            {rows.map((r) => (
+            {!loading && tools.rows.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Tidak ada permintaan.</td></tr>}
+            {tools.rows.map((r) => (
               <tr key={r.id} onClick={() => openDetail(r)} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/40">
                 <td className="whitespace-nowrap px-4 py-2.5 text-sm font-medium text-emerald-700 dark:text-emerald-400">{r.request_number}</td>
                 <td className="px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200">{r.machine_name || '-'}</td>

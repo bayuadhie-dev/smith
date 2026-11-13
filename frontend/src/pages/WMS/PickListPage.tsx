@@ -6,8 +6,9 @@ import {
   CheckCircleIcon,
   ClockIcon,
   PlayIcon,
-  FunnelIcon,
 } from '@heroicons/react/24/outline';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 interface PickListData {
   id: number;
@@ -30,7 +31,7 @@ interface PickListData {
 
 const statusConfig: Record<string, { color: string; icon: any }> = {
   draft: { color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200', icon: ClipboardDocumentListIcon },
-  assigned: { color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300', icon: ClockIcon },
+  assigned: { color: 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300', icon: ClockIcon },
   in_progress: { color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300', icon: PlayIcon },
   completed: { color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300', icon: CheckCircleIcon },
   cancelled: { color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', icon: ClipboardDocumentListIcon },
@@ -38,30 +39,44 @@ const statusConfig: Record<string, { color: string; icon: any }> = {
 
 const priorityColors: Record<string, string> = {
   low: 'text-gray-500 dark:text-gray-400',
-  normal: 'text-blue-600 dark:text-blue-400',
+  normal: 'text-primary-700 dark:text-primary-300',
   high: 'text-orange-600 font-bold dark:text-orange-400',
   urgent: 'text-red-600 font-bold dark:text-red-400',
 };
+
+const STATUS_LABEL: Record<string, string> = { draft: 'Draft', assigned: 'Ditugaskan', in_progress: 'Berjalan', completed: 'Selesai', cancelled: 'Dibatalkan' };
+const PRIORITY_LABEL: Record<string, string> = { low: 'Rendah', normal: 'Normal', high: 'Tinggi', urgent: 'Mendesak' };
+const TYPE_LABEL = (t: string) => (t || '').replace(/_/g, ' ');
+const COLUMNS: ListColumn<PickListData>[] = [
+  { key: 'pick_number', label: 'No. Pick List', value: (p) => p.pick_number },
+  { key: 'pick_type', label: 'Tipe', value: (p) => TYPE_LABEL(p.pick_type) },
+  { key: 'reference_number', label: 'Referensi', value: (p) => p.reference_number },
+  { key: 'assigned_to', label: 'Ditugaskan Kepada', value: (p) => p.assigned_to },
+  { key: 'priority', label: 'Prioritas', value: (p) => p.priority, exportValue: (p) => PRIORITY_LABEL[p.priority] || p.priority },
+  { key: 'pick_date', label: 'Tanggal', value: (p) => p.pick_date, type: 'date' },
+  { key: 'picked_items', label: 'Item Terambil', value: (p) => p.picked_items, type: 'number' },
+  { key: 'total_items', label: 'Total Item', value: (p) => p.total_items, type: 'number', sortable: false },
+  { key: 'status', label: 'Status', value: (p) => p.status, exportValue: (p) => STATUS_LABEL[p.status] || p.status },
+];
 
 const PickListPage: React.FC = () => {
   const [data, setData] = useState<PickListData[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     fetchData();
-  }, [page, statusFilter]);
+  }, [statusFilter]);
+
+  const tools = useListTools<PickListData>(data, COLUMNS, { filename: 'Pick_List', initialSort: { key: 'pick_date', dir: 'desc' } });
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const params: any = { page, per_page: 20 };
+      const params: any = { page: 1, per_page: 1000 };
       if (statusFilter) params.status = statusFilter;
       const res = await axiosInstance.get('/api/wms/pick-lists', { params });
-      setData(res.data.pick_lists);
-      setTotalPages(res.data.pagination.pages);
+      setData(res.data.pick_lists || []);
     } catch (err: any) {
       toast.error('Gagal memuat pick list');
     } finally {
@@ -81,95 +96,75 @@ const PickListPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 dark:bg-gray-800 dark:border-gray-700">
-        <div className="flex items-center gap-3">
-          <FunnelIcon className="h-5 w-5 text-gray-400" />
-          <select
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm dark:border-gray-600"
-          >
-            <option value="">Semua Status</option>
-            <option value="draft">Draft</option>
-            <option value="assigned">Assigned</option>
-            <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
-          </select>
-        </div>
-      </div>
+      <ListToolbar tools={tools} placeholder="Cari nomor, tipe, referensi, petugas" extra={
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          aria-label="Filter status"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
+        >
+          <option value="">Semua Status</option>
+          <option value="draft">Draft</option>
+          <option value="assigned">Ditugaskan</option>
+          <option value="in_progress">Berjalan</option>
+          <option value="completed">Selesai</option>
+        </select>
+      } />
 
-      {/* Cards */}
-      <div className="space-y-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
           </div>
-        ) : data.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center text-gray-400 dark:bg-gray-800 dark:border-gray-700">
+        ) : tools.rows.length === 0 ? (
+          <div className="p-12 text-center text-gray-400">
             <ClipboardDocumentListIcon className="h-12 w-12 mx-auto mb-3" />
-            <p>Belum ada pick list</p>
+            <p>{tools.total === 0 ? 'Belum ada pick list' : 'Tidak ada pick list yang cocok'}</p>
           </div>
         ) : (
-          data.map((pl) => {
-            const cfg = statusConfig[pl.status] || statusConfig.draft;
-            const progress = pl.total_items > 0 ? Math.round(pl.picked_items / pl.total_items * 100) : 0;
-            return (
-              <div key={pl.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-gray-700">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="font-mono font-bold text-gray-900 dark:text-white">{pl.pick_number}</span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${cfg.color}`}>{pl.status.replace('_', ' ')}</span>
-                      <span className={`text-xs uppercase ${priorityColors[pl.priority] || 'text-gray-500 dark:text-gray-400'} dark:text-gray-400`}>{pl.priority}</span>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-400">Tipe:</span>
-                        <span className="ml-1 capitalize">{pl.pick_type.replace('_', ' ')}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-400">Referensi:</span>
-                        <span className="ml-1">{pl.reference_number || '-'}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-400">Ditugaskan:</span>
-                        <span className="ml-1">{pl.assigned_to || '-'}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-400">Tanggal:</span>
-                        <span className="ml-1">{pl.pick_date ? new Date(pl.pick_date).toLocaleDateString('id-ID') : '-'}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right ml-4">
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{pl.picked_items}/{pl.total_items}</p>
-                    <p className="text-xs text-gray-400">items picked</p>
-                  </div>
-                </div>
-                {/* Progress bar */}
-                <div className="mt-3">
-                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                    <div
-                      className={`h-2 rounded-full transition-all ${progress >= 100 ? 'bg-green-500' : 'bg-blue-500'}`}
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1">{progress}% selesai</p>
-                </div>
-              </div>
-            );
-          })
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <SortTh tools={tools} col="pick_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Pick List</SortTh>
+                  <SortTh tools={tools} col="pick_type" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipe</SortTh>
+                  <SortTh tools={tools} col="reference_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Referensi</SortTh>
+                  <SortTh tools={tools} col="assigned_to" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ditugaskan</SortTh>
+                  <SortTh tools={tools} col="pick_date" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</SortTh>
+                  <SortTh tools={tools} col="priority" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Prioritas</SortTh>
+                  <SortTh tools={tools} col="picked_items" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Progres</SortTh>
+                  <SortTh tools={tools} col="status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {tools.rows.map((pl) => {
+                  const cfg = statusConfig[pl.status] || statusConfig.draft;
+                  const progress = pl.total_items > 0 ? Math.round(pl.picked_items / pl.total_items * 100) : 0;
+                  return (
+                    <tr key={pl.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                      <td className="px-4 py-3 font-mono text-sm font-bold text-gray-900 dark:text-white">{pl.pick_number}</td>
+                      <td className="px-4 py-3 text-sm capitalize">{TYPE_LABEL(pl.pick_type)}</td>
+                      <td className="px-4 py-3 text-sm">{pl.reference_number || '-'}</td>
+                      <td className="px-4 py-3 text-sm">{pl.assigned_to || '-'}</td>
+                      <td className="px-4 py-3 text-sm">{pl.pick_date ? new Date(pl.pick_date).toLocaleDateString('id-ID') : '-'}</td>
+                      <td className={`px-4 py-3 text-xs uppercase ${priorityColors[pl.priority] || 'text-gray-500 dark:text-gray-400'}`}>{PRIORITY_LABEL[pl.priority] || pl.priority}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-20 rounded-full bg-gray-200 dark:bg-gray-700">
+                            <div className={`h-2 rounded-full ${progress >= 100 ? 'bg-green-500' : 'bg-primary-500'}`} style={{ width: `${progress}%` }} />
+                          </div>
+                          <span className="text-xs text-gray-600 dark:text-gray-300">{pl.picked_items}/{pl.total_items}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3"><span className={`px-2 py-1 rounded-full text-xs font-medium ${cfg.color}`}>{STATUS_LABEL[pl.status] || pl.status}</span></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">Sebelumnya</button>
-          <span className="text-sm text-gray-600 dark:text-gray-300">Halaman {page} dari {totalPages}</span>
-          <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">Selanjutnya</button>
-        </div>
-      )}
     </div>
   );
 };

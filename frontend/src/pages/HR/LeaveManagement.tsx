@@ -10,6 +10,26 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import { showSuccess, showError } from '../../components/ui';
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+
+const STATUS_LABEL: Record<string, string> = { pending: 'Menunggu', approved: 'Disetujui', rejected: 'Ditolak', cancelled: 'Dibatalkan' }
+const TYPE_LABEL: Record<string, string> = { annual: 'Cuti Tahunan', sick: 'Sakit', personal: 'Keperluan Pribadi', maternity: 'Melahirkan', unpaid: 'Tanpa Gaji' }
+const MGR_LABEL = (l: any) => (l.required_manager_id ? (l.manager_status === 'approved' ? 'Disetujui' : l.manager_status === 'rejected' ? 'Ditolak' : 'Menunggu') : 'Tidak perlu')
+const COLUMNS: ListColumn<any>[] = [
+  { key: 'leave_number', label: 'No. Cuti', value: (l) => l.leave_number },
+  { key: 'employee_name', label: 'Karyawan', value: (l) => l.employee_name },
+  { key: 'leave_type', label: 'Jenis Cuti', value: (l) => l.leave_type, exportValue: (l) => TYPE_LABEL[l.leave_type] || l.leave_type },
+  { key: 'start_date', label: 'Mulai', value: (l) => l.start_date, type: 'date' },
+  { key: 'end_date', label: 'Sampai', value: (l) => l.end_date, type: 'date' },
+  { key: 'total_days', label: 'Hari', value: (l) => l.total_days, type: 'number' },
+  { key: 'reason', label: 'Alasan', value: (l) => l.reason },
+  { key: 'manager', label: 'Persetujuan Manager', value: (l) => MGR_LABEL(l) },
+  { key: 'status', label: 'Status', value: (l) => l.status, exportValue: (l) => STATUS_LABEL[l.status] || l.status },
+  { key: 'approved_by', label: 'Disetujui Oleh', value: (l) => l.approved_by },
+]
+const fmtDate = (v?: string | null) => (v ? new Date(v).toLocaleDateString('id-ID') : '')
+
 export default function LeaveManagement() {
     const { t } = useLanguage();
 
@@ -22,6 +42,9 @@ const navigate = useNavigate()
     leave_type: selectedType || undefined
   })
   
+  const visibleLeaves = (data?.leaves || []).filter((l: any) => (!selectedStatus || l.status === selectedStatus) && (!selectedType || l.leave_type === selectedType))
+  const tools = useListTools<any>(visibleLeaves, COLUMNS, { filename: 'Cuti', initialSort: { key: 'start_date', dir: 'desc' } })
+
   const [approveLeave] = useApproveLeaveMutation()
   const [rejectLeave] = useRejectLeaveMutation()
   const [managerApproveLeave] = useManagerApproveLeaveMutation()
@@ -40,22 +63,22 @@ const navigate = useNavigate()
     try {
       await approveLeave(leaveId).unwrap()
       refetch()
-      showSuccess('Leave approved successfully!')
+      showSuccess('Cuti berhasil disetujui')
     } catch (error) {
-      showError('Error approving leave')
+      showError('Gagal menyetujui cuti')
     }
   }
 
   const handleReject = async (leaveId: number) => {
-    const reason = prompt('Please provide rejection reason:')
+    const reason = prompt('Isi alasan penolakan:')
     if (!reason) return
     
     try {
       await rejectLeave({ leaveId, rejection_reason: reason }).unwrap()
       refetch()
-      showSuccess('Leave rejected successfully!')
+      showSuccess('Cuti berhasil ditolak')
     } catch (error) {
-      showError('Error rejecting leave')
+      showError('Gagal menolak cuti')
     }
   }
 
@@ -89,7 +112,7 @@ const navigate = useNavigate()
           className="btn-primary inline-flex items-center gap-2"
         >
           <PlusIcon className="h-5 w-5" />
-          New Leave Request
+          Ajukan Cuti
         </button>
       </div>
 
@@ -103,28 +126,28 @@ const navigate = useNavigate()
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="input"
             >
-              <option value="">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="">Semua Status</option>
+              <option value="pending">Menunggu</option>
+              <option value="approved">Disetujui</option>
+              <option value="rejected">Ditolak</option>
+              <option value="cancelled">Dibatalkan</option>
             </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Leave Type
+              Jenis Cuti
             </label>
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
               className="input"
             >
-              <option value="">All Types</option>
-              <option value="annual">Annual Leave</option>
-              <option value="sick">Sick Leave</option>
-              <option value="personal">Personal Leave</option>
-              <option value="maternity">Maternity Leave</option>
-              <option value="unpaid">Unpaid Leave</option>
+              <option value="">Semua Jenis</option>
+              <option value="annual">Cuti Tahunan</option>
+              <option value="sick">Sakit</option>
+              <option value="personal">Keperluan Pribadi</option>
+              <option value="maternity">Melahirkan</option>
+              <option value="unpaid">Tanpa Gaji</option>
             </select>
           </div>
           <div className="flex items-end">
@@ -146,7 +169,7 @@ const navigate = useNavigate()
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">Pending</p>
+              <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">Menunggu</p>
               <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-200">
                 {data?.leaves?.filter((l: any) => l.status === 'pending').length || 0}
               </p>
@@ -162,7 +185,7 @@ const navigate = useNavigate()
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-green-600 dark:text-green-400">Approved</p>
+              <p className="text-sm font-medium text-green-600 dark:text-green-400">Disetujui</p>
               <p className="text-2xl font-bold text-green-900 dark:text-green-200">
                 {data?.leaves?.filter((l: any) => l.status === 'approved').length || 0}
               </p>
@@ -178,7 +201,7 @@ const navigate = useNavigate()
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-red-600 dark:text-red-400">Rejected</p>
+              <p className="text-sm font-medium text-red-600 dark:text-red-400">Ditolak</p>
               <p className="text-2xl font-bold text-red-900 dark:text-red-200">
                 {data?.leaves?.filter((l: any) => l.status === 'rejected').length || 0}
               </p>
@@ -194,7 +217,7 @@ const navigate = useNavigate()
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Days</p>
+              <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Hari</p>
               <p className="text-2xl font-bold text-blue-900 dark:text-blue-200">
                 {data?.leaves?.reduce((sum: number, l: any) => sum + l.total_days, 0) || 0}
               </p>
@@ -202,6 +225,8 @@ const navigate = useNavigate()
           </div>
         </div>
       </div>
+
+      <ListToolbar tools={tools} placeholder="Cari nomor cuti, karyawan, atau alasan" />
 
       {/* Leave Requests Table */}
       {isLoading ? (
@@ -212,20 +237,20 @@ const navigate = useNavigate()
             <table className="table">
               <thead>
                 <tr>
-                  <th>Leave Number</th>
-                  <th>Employee</th>
-                  <th>Leave Type</th>
-                  <th>Period</th>
-                  <th>Days</th>
-                  <th>Reason</th>
-                  <th>Approval Manager</th>
-                  <th>{t('common.status')}</th>
-                  <th>Approved By</th>
-                  <th>{t('common.actions')}</th>
+                  <SortTh tools={tools} col="leave_number">No. Cuti</SortTh>
+                  <SortTh tools={tools} col="employee_name">Karyawan</SortTh>
+                  <SortTh tools={tools} col="leave_type">Jenis Cuti</SortTh>
+                  <SortTh tools={tools} col="start_date">Periode</SortTh>
+                  <SortTh tools={tools} col="total_days">Hari</SortTh>
+                  <SortTh tools={tools} col="reason">Alasan</SortTh>
+                  <SortTh tools={tools} col="manager">Persetujuan Manager</SortTh>
+                  <SortTh tools={tools} col="status">Status</SortTh>
+                  <SortTh tools={tools} col="approved_by">Disetujui Oleh</SortTh>
+                  <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                {data?.leaves?.map((leave: any) => (
+                {tools.rows.map((leave: any) => (
                   <tr key={leave.id}>
                     <td className="font-medium">{leave.leave_number}</td>
                     <td>
@@ -233,19 +258,19 @@ const navigate = useNavigate()
                     </td>
                     <td>
                       <span className={`badge ${getTypeBadge(leave.leave_type)}`}>
-                        {leave.leave_type.replace('_', ' ')}
+                        {TYPE_LABEL[leave.leave_type] || leave.leave_type.replace('_', ' ')}
                       </span>
                     </td>
                     <td>
                       <div>
-                        <div>{new Date(leave.start_date).toLocaleDateString()}</div>
+                        <div>{fmtDate(leave.start_date)}</div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          to {new Date(leave.end_date).toLocaleDateString()}
+                          s/d {fmtDate(leave.end_date)}
                         </div>
                       </div>
                     </td>
                     <td>
-                      <span className="font-medium">{leave.total_days}</span> days
+                      <span className="font-medium">{leave.total_days}</span> hari
                     </td>
                     <td>
                       <div className="max-w-xs truncate" title={leave.reason}>
@@ -261,12 +286,12 @@ const navigate = useNavigate()
                           </span>
                         </div>
                       ) : (
-                        <span className="text-sm text-gray-400">Tidak perlu (skip)</span>
+                        <span className="text-sm text-gray-400">Tidak perlu</span>
                       )}
                     </td>
                     <td>
                       <span className={`badge ${getStatusBadge(leave.status)}`}>
-                        {leave.status}
+                        {STATUS_LABEL[leave.status] || leave.status}
                       </span>
                     </td>
                     <td>
@@ -274,7 +299,7 @@ const navigate = useNavigate()
                         <div>
                           <div className="font-medium">{leave.approved_by}</div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {leave.approved_at ? new Date(leave.approved_at).toLocaleDateString() : ''}
+                            {fmtDate(leave.approved_at)}
                           </div>
                         </div>
                       ) : '-'}
@@ -283,7 +308,7 @@ const navigate = useNavigate()
                       <div className="flex gap-2">
                         <button
                           className="btn-sm btn-outline inline-flex items-center gap-1"
-                          title="View Details"
+                          title="Lihat Detail"
                         >
                           <EyeIcon className="h-4 w-4" />
                         </button>
@@ -310,14 +335,14 @@ const navigate = useNavigate()
                             <button
                               onClick={() => handleApprove(leave.id)}
                               className="btn-sm btn-success inline-flex items-center gap-1"
-                              title="Approve Leave (Final)"
+                              title="Setujui Cuti (Final)"
                             >
                               <CheckIcon className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleReject(leave.id)}
                               className="btn-sm btn-danger inline-flex items-center gap-1"
-                              title="Reject Leave"
+                              title="Tolak Cuti"
                             >
                               <XMarkIcon className="h-4 w-4" />
                             </button>

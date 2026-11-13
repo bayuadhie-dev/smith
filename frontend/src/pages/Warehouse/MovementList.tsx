@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { showError } from '../../components/ui';
+import { useUrlState } from '../../hooks/useUrlState';
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
@@ -49,6 +50,7 @@ const MovementList: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [sort, setSort] = useUrlState<string>('sort', '');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 20;
@@ -72,7 +74,7 @@ const MovementList: React.FC = () => {
 
   useEffect(() => {
     fetchMovements();
-  }, [currentPage, searchTerm, filterType, filterStatus, dateFrom, dateTo]);
+  }, [currentPage, searchTerm, filterType, filterStatus, dateFrom, dateTo, sort]);
 
   const fetchMovements = async () => {
     setLoading(true);
@@ -80,6 +82,7 @@ const MovementList: React.FC = () => {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         per_page: itemsPerPage.toString(),
+        ...(sort && { sort }),
         ...(searchTerm && { search: searchTerm }),
         ...(filterType && { movement_type: filterType }),
         ...(filterStatus && { status: filterStatus }),
@@ -158,8 +161,27 @@ const MovementList: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to export movements:', error);
-      showError('Failed to export data');
+      showError('Gagal mengekspor data');
     }
+  };
+
+  const toggleSort = (key: string) => {
+    const [k, d] = sort.split(':');
+    setSort(k !== key ? `${key}:asc` : d !== 'desc' ? `${key}:desc` : '');
+    setCurrentPage(1);
+  };
+
+  const sortTh = (col: string, children: React.ReactNode) => {
+    const [k, d] = sort.split(':');
+    const active = k === col;
+    return (
+      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400" aria-sort={active ? (d === 'desc' ? 'descending' : 'ascending') : 'none'} scope="col">
+        <button type="button" onClick={() => toggleSort(col)} className="inline-flex items-center gap-1 uppercase hover:text-gray-900 dark:hover:text-white" title="Klik untuk mengurutkan">
+          <span>{children}</span>
+          <span className={`text-[10px] ${active ? 'text-primary-600 dark:text-primary-300' : 'text-gray-300 dark:text-gray-600'}`} aria-hidden="true">{active ? (d === 'desc' ? '▼' : '▲') : '↕'}</span>
+        </button>
+      </th>
+    );
   };
 
   const clearFilters = () => {
@@ -185,7 +207,7 @@ const MovementList: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pemindahan Barang</h1>
-          <p className="text-gray-600 dark:text-gray-300">Track all inventory movements and transactions</p>
+          <p className="text-gray-600 dark:text-gray-300">Riwayat semua pergerakan dan transaksi persediaan</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -198,7 +220,7 @@ const MovementList: React.FC = () => {
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             <Plus className="inline h-4 w-4 mr-2" />
-            New Movement
+            Pergerakan Baru
           </Link>
         </div>
       </div>
@@ -210,7 +232,7 @@ const MovementList: React.FC = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search movements..."
+              placeholder="Cari nomor, produk, referensi, catatan"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -302,14 +324,14 @@ const MovementList: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">No. Movement</th>
+                  {sortTh('movement_number', 'No. Pergerakan')}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">{t('production.product')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Tipe</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">{t('common.quantity')}</th>
+                  {sortTh('movement_type', 'Tipe')}
+                  {sortTh('quantity', t('common.quantity'))}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Nilai</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Lokasi</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">{t('common.date')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">{t('common.status')}</th>
+                  {sortTh('movement_date', t('common.date'))}
+                  {sortTh('status', t('common.status'))}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">{t('common.actions')}</th>
                 </tr>
               </thead>

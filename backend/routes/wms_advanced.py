@@ -1098,7 +1098,7 @@ def get_pick_lists():
         status = request.args.get('status')
         pick_type = request.args.get('type')
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
+        per_page = min(request.args.get('per_page', 20, type=int), 1000)
 
         query = PickList.query
         if status:
@@ -1774,7 +1774,7 @@ def get_adjustments():
         if status:
             query = query.filter_by(status=status)
         query = query.order_by(InventoryAdjustment.created_at.desc())
-        adjustments = query.limit(200).all()
+        adjustments = query.limit(1000).all()
         return jsonify({'adjustments': [a.to_dict() for a in adjustments]}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500

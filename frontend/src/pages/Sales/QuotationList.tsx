@@ -1,28 +1,13 @@
-import { Link } from 'react-router-dom';
-import { useLanguage } from '../../contexts/LanguageContext';
-import {
-  BanknotesIcon,
-  BuildingOfficeIcon,
-  CalendarIcon,
-  CheckCircleIcon
-,
-  ClockIcon,
-  DocumentTextIcon,
-  EyeIcon,
-  FunnelIcon,
-  InformationCircleIcon as StatusIcon,
-  MagnifyingGlassIcon,
-  PlusIcon,
-  UserIcon,
-  ArrowTopRightOnSquareIcon,
-  XCircleIcon,
-  DocumentDuplicateIcon
-} from '@heroicons/react/24/outline';
-import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { BanknotesIcon, CheckCircleIcon, ClockIcon, DocumentTextIcon, EyeIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect, useCallback } from 'react'
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
 import QuotationDetailModal from './QuotationDetailModal'
 import { showError, showSuccess } from '../../components/ui'
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+
 interface Quotation {
   id: number
   quotation_number: string
@@ -39,352 +24,174 @@ interface Quotation {
   created_at: string
 }
 
-const QuotationList = () => {
-    const { t } = useLanguage();
+const STATUS_LABEL: Record<string, string> = { draft: 'Draft', sent: 'Terkirim', accepted: 'Diterima', rejected: 'Ditolak', expired: 'Kedaluwarsa', converted: 'Jadi Pesanan' }
 
-const [quotations, setQuotations] = useState<Quotation[]>([])
+const COLUMNS: ListColumn<Quotation>[] = [
+  { key: 'quotation_number', label: 'No. Penawaran', value: (q) => q.quotation_number },
+  { key: 'customer_company', label: 'Pelanggan', value: (q) => q.customer_company },
+  { key: 'customer_name', label: 'Kontak', value: (q) => q.customer_name },
+  { key: 'quote_date', label: 'Tanggal', value: (q) => q.quote_date, type: 'date' },
+  { key: 'valid_until', label: 'Berlaku Sampai', value: (q) => q.valid_until, type: 'date' },
+  { key: 'items_count', label: 'Jumlah Barang', value: (q) => q.items_count, type: 'number' },
+  { key: 'total_amount', label: 'Total (Rp)', value: (q) => q.total_amount, type: 'number' },
+  { key: 'status', label: 'Status', value: (q) => q.status, exportValue: (q) => STATUS_LABEL[q.status] || q.status },
+  { key: 'created_by_name', label: 'Dibuat oleh', value: (q) => q.created_by_name },
+]
+
+const fmtDate = (v?: string) => (v ? new Date(v).toLocaleDateString('id-ID') : '-')
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'draft': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
+    case 'sent': return 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300'
+    case 'accepted': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+    case 'rejected': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+    case 'expired': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
+    case 'converted': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
+  }
+}
+
+const QuotationList = () => {
+  const [quotations, setQuotations] = useState<Quotation[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedQuotationId, setSelectedQuotationId] = useState<number | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [filters, setFilters] = useState({
-    search: '',
-    status: '',
-    date_from: '',
-    date_to: ''
-  })
+  const [filters, setFilters] = useState({ status: '', date_from: '', date_to: '' })
+  const tools = useListTools<Quotation>(quotations, COLUMNS, { filename: 'Penawaran_Penjualan', initialSort: { key: 'quote_date', dir: 'desc' } })
 
-  useEffect(() => {
-    loadQuotations()
-  }, [currentPage, filters])
-
-  const loadQuotations = async () => {
+  const loadQuotations = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
-        page: currentPage.toString(),
-        per_page: '20',
-        ...(filters.search && { search: filters.search }),
+        page: '1',
+        per_page: '1000',
         ...(filters.status && { status: filters.status }),
         ...(filters.date_from && { date_from: filters.date_from }),
-        ...(filters.date_to && { date_to: filters.date_to })
+        ...(filters.date_to && { date_to: filters.date_to }),
       })
-
       const response = await axiosInstance.get(`/api/sales/quotations?${params}`)
       setQuotations(response.data.quotations || [])
-      setTotalPages(response.data.pages || 1)
     } catch (error) {
-      console.error('Error loading quotations:', error)
+      showError('Gagal memuat penawaran')
     } finally {
       setLoading(false)
     }
-  }
+  }, [filters])
 
-  const handleFilterChange = (key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }))
-    setCurrentPage(1)
-  }
-
-  const clearFilters = () => {
-    setFilters({ search: '', status: '', date_from: '', date_to: '' })
-    setCurrentPage(1)
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
-      case 'sent': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-      case 'accepted': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-      case 'rejected': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-      case 'expired': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
-      case 'converted': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
-    }
-  }
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'draft': return ClockIcon
-      case 'sent': return ArrowTopRightOnSquareIcon
-      case 'accepted': return CheckCircleIcon
-      case 'rejected': return XCircleIcon
-      case 'expired': return CalendarIcon
-      case 'converted': return DocumentDuplicateIcon
-      default: return ClockIcon
-    }
-  }
+  useEffect(() => { loadQuotations() }, [loadQuotations])
 
   const isExpiringSoon = (expiryDate: string) => {
-    const expiry = new Date(expiryDate)
-    const today = new Date()
-    const diffTime = expiry.getTime() - today.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const diffDays = Math.ceil((new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     return diffDays <= 7 && diffDays > 0
   }
 
   const handleConvertToOrder = async (quotationId: number) => {
     try {
-      const response = await axiosInstance.post(`/api/sales/quotations/${quotationId}/convert`)
-      showSuccess('Quotation converted to sales order successfully!')
+      await axiosInstance.post(`/api/sales/quotations/${quotationId}/convert`)
+      showSuccess('Penawaran berhasil diubah menjadi pesanan penjualan')
       loadQuotations()
     } catch (error) {
-      console.error('Error converting quotation:', error)
-      showError('Failed to convert quotation')
+      showError('Gagal mengubah penawaran menjadi pesanan')
     }
   }
 
-  if (loading && quotations.length === 0) {
-    return <LoadingSpinner />
-  }
+  if (loading && quotations.length === 0) return <LoadingSpinner />
+
+  const th = 'px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider'
+  const inputCls = 'rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white'
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 p-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Penawaran</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage sales quotations and proposals</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Penawaran Penjualan</h1>
+          <p className="mt-1 text-gray-600 dark:text-gray-300">Kelola penawaran dan proposal untuk pelanggan</p>
         </div>
-        <div className="flex gap-3">
-          <Link to="/app/sales/quotations/new" className="btn-primary inline-flex items-center gap-2">
-            <PlusIcon className="h-5 w-5" />
-            New Quotation
-          </Link>
-        </div>
+        <Link to="/app/sales/quotations/new" className="btn-primary">
+          <PlusIcon className="mr-1.5 h-5 w-5" />
+          Penawaran Baru
+        </Link>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="card p-6">
-          <div className="flex items-center">
-            <div className="bg-blue-500 p-3 rounded-lg">
-              <DocumentTextIcon className="h-6 w-6 text-white" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Quotations</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{quotations.length}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="card p-6">
-          <div className="flex items-center">
-            <div className="bg-yellow-500 p-3 rounded-lg">
-              <ClockIcon className="h-6 w-6 text-white" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Pending</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {quotations.filter(q => q.status === 'sent').length}
-              </p>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+        {[
+          { icon: DocumentTextIcon, tone: 'bg-primary-600', label: 'Total penawaran', value: String(quotations.length) },
+          { icon: ClockIcon, tone: 'bg-yellow-500', label: 'Menunggu jawaban', value: String(quotations.filter((q) => q.status === 'sent').length) },
+          { icon: CheckCircleIcon, tone: 'bg-green-600', label: 'Diterima', value: String(quotations.filter((q) => q.status === 'accepted').length) },
+          { icon: BanknotesIcon, tone: 'bg-purple-600', label: 'Total nilai', value: `Rp ${quotations.reduce((sum, q) => sum + (q.total_amount || 0), 0).toLocaleString('id-ID')}` },
+        ].map((c) => (
+          <div key={c.label} className="card p-6">
+            <div className="flex items-center">
+              <div className={`${c.tone} rounded-lg p-3`}><c.icon className="h-6 w-6 text-white" /></div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{c.label}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{c.value}</p>
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div className="card p-6">
-          <div className="flex items-center">
-            <div className="bg-green-500 p-3 rounded-lg">
-              <CheckCircleIcon className="h-6 w-6 text-white" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Accepted</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {quotations.filter(q => q.status === 'accepted').length}
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="card p-6">
-          <div className="flex items-center">
-            <div className="bg-purple-500 p-3 rounded-lg">
-              <BanknotesIcon className="h-6 w-6 text-white" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Value</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                Rp {quotations.reduce((sum, q) => sum + q.total_amount, 0).toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Filters */}
-      <div className="card p-4">
-        <div className="flex items-center gap-4 mb-4">
-          <FunnelIcon className="h-5 w-5 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Filters</h3>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.search')}</label>
-            <div className="relative mt-1">
-              <input
-                type="text"
-                placeholder="Quotation number, customer..."
-                value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="input pl-10"
-              />
-              <MagnifyingGlassIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">{t('common.status')}</label>
-            <select
-              value={filters.status}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="input mt-1"
-            >
-              <option value="">All Statuses</option>
-              <option value="draft">Draft</option>
-              <option value="sent">Sent</option>
-              <option value="accepted">Accepted</option>
-              <option value="rejected">Rejected</option>
-              <option value="expired">Expired</option>
-              <option value="converted">Converted</option>
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Date From</label>
-            <input
-              type="date"
-              value={filters.date_from}
-              onChange={(e) => handleFilterChange('date_from', e.target.value)}
-              className="input mt-1"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Date To</label>
-            <input
-              type="date"
-              value={filters.date_to}
-              onChange={(e) => handleFilterChange('date_to', e.target.value)}
-              className="input mt-1"
-            />
-          </div>
-          
-          <div className="flex items-end">
-            <button
-              onClick={clearFilters}
-              className="btn-secondary w-full"
-            >
-              Clear Filters
-            </button>
-          </div>
-        </div>
-      </div>
+      <ListToolbar tools={tools} placeholder="Cari nomor penawaran atau pelanggan" extra={(
+        <>
+          <select value={filters.status} onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value }))} aria-label="Status" className={inputCls}>
+            <option value="">Semua status</option>
+            {Object.entries(STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+          <input type="date" value={filters.date_from} onChange={(e) => setFilters((p) => ({ ...p, date_from: e.target.value }))} aria-label="Dari tanggal" className={inputCls} />
+          <input type="date" value={filters.date_to} onChange={(e) => setFilters((p) => ({ ...p, date_to: e.target.value }))} aria-label="Sampai tanggal" className={inputCls} />
+          {(filters.status || filters.date_from || filters.date_to) && (
+            <button type="button" className="btn-secondary" onClick={() => setFilters({ status: '', date_from: '', date_to: '' })}>Hapus filter</button>
+          )}
+        </>
+      )} />
 
-      {/* Quotations Table */}
       <div className="card">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Quotation Database</h3>
-        </div>
-        
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Items & Value
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
+                <SortTh tools={tools} col="quotation_number" className={th}>No. Penawaran</SortTh>
+                <SortTh tools={tools} col="customer_company" className={th}>Pelanggan</SortTh>
+                <SortTh tools={tools} col="quote_date" className={th}>Tanggal</SortTh>
+                <SortTh tools={tools} col="valid_until" className={th}>Berlaku Sampai</SortTh>
+                <SortTh tools={tools} col="total_amount" className={th}>Barang dan Nilai</SortTh>
+                <SortTh tools={tools} col="status" className={th}>Status</SortTh>
+                <th className={th}>Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {quotations.map((quotation) => {
-                const StatusIcon = getStatusIcon(quotation.status)
+            <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+              {tools.rows.map((quotation) => {
                 const expiringSoon = isExpiringSoon(quotation.valid_until)
-                
                 return (
-                  <tr key={quotation.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="bg-blue-100 p-2 rounded-lg mr-3 dark:bg-blue-900/30">
-                          <DocumentTextIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">{quotation.quotation_number}</div>
-                          {quotation.created_by_name && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400">by {quotation.created_by_name}</div>
-                          )}
-                        </div>
-                      </div>
+                  <tr key={quotation.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{quotation.quotation_number}</div>
+                      {quotation.created_by_name && <div className="text-xs text-gray-500 dark:text-gray-400">oleh {quotation.created_by_name}</div>}
                     </td>
-                    
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <BuildingOfficeIcon className="h-4 w-4 text-gray-400 mr-2" />
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">{quotation.customer_company}</div>
-                          {quotation.customer_name && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
-                              <UserIcon className="h-3 w-3 mr-1" />
-                              {quotation.customer_name}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{quotation.customer_company}</div>
+                      {quotation.customer_name && <div className="text-xs text-gray-500 dark:text-gray-400">{quotation.customer_name}</div>}
                     </td>
-                    
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-white">
-                        <div className="flex items-center">
-                          <CalendarIcon className="h-4 w-4 text-gray-400 mr-1" />
-                          <span>Issued: {new Date(quotation.quote_date).toLocaleDateString()}</span>
-                        </div>
-                        <div className={`flex items-center mt-1 ${expiringSoon ? 'text-orange-600 dark:text-orange-400' : ''}`}>
-                          <CalendarIcon className="h-4 w-4 text-gray-400 mr-1" />
-                          <span>Expires: {new Date(quotation.valid_until).toLocaleDateString()}</span>
-                          {expiringSoon && <span className="ml-1 text-xs">⚠️</span>}
-                        </div>
-                      </div>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-white">{fmtDate(quotation.quote_date)}</td>
+                    <td className={`whitespace-nowrap px-6 py-4 text-sm ${expiringSoon ? 'font-medium text-orange-600 dark:text-orange-400' : 'text-gray-900 dark:text-white'}`}>
+                      {fmtDate(quotation.valid_until)}
+                      {expiringSoon && <span className="ml-1 text-xs">(segera berakhir)</span>}
                     </td>
-                    
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-white">
-                        <div className="font-medium">Rp {quotation.total_amount.toLocaleString()}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">{quotation.items_count} items</div>
-                      </div>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">Rp {(quotation.total_amount || 0).toLocaleString('id-ID')}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{quotation.items_count} barang</div>
                     </td>
-                    
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(quotation.status)}`}>
-                        <StatusIcon className="h-3 w-3" />
-                        {quotation.status}
-                      </div>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(quotation.status)}`}>{STATUS_LABEL[quotation.status] || quotation.status}</span>
                     </td>
-                    
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setSelectedQuotationId(quotation.id)}
-                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400"
-                        >
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
+                      <div className="flex items-center gap-3">
+                        <button type="button" onClick={() => setSelectedQuotationId(quotation.id)} className="text-primary-700 hover:text-primary-900 dark:text-primary-300" title="Lihat detail" aria-label="Lihat detail">
                           <EyeIcon className="h-4 w-4" />
                         </button>
-                        <Link
-                          to={`/app/sales/quotations/${quotation.id}/edit`}
-                          className="text-green-600 hover:text-green-900 dark:text-green-400"
-                        >{t('common.edit')}</Link>
+                        <Link to={`/app/sales/quotations/${quotation.id}/edit`} className="text-gray-700 hover:underline dark:text-gray-300">Ubah</Link>
                         {quotation.status === 'accepted' && (
-                          <button
-                            onClick={() => handleConvertToOrder(quotation.id)}
-                            className="text-purple-600 hover:text-purple-900 dark:text-purple-400"
-                          >
-                          </button>
+                          <button type="button" onClick={() => handleConvertToOrder(quotation.id)} className="text-purple-700 hover:underline dark:text-purple-300">Jadikan pesanan</button>
                         )}
                       </div>
                     </td>
@@ -394,57 +201,21 @@ const [quotations, setQuotations] = useState<Quotation[]>([])
             </tbody>
           </table>
         </div>
-        
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Page {currentPage} of {totalPages}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="btn-secondary disabled:opacity-50"
-              >
-              </button>
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="btn-secondary disabled:opacity-50"
-              >
-              </button>
-            </div>
-          </div>
-        )}
-        
-        {/* Empty State */}
-        {quotations.length === 0 && !loading && (
-          <div className="text-center py-12">
-            <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No quotations found</h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Get started by creating your first quotation
-            </p>
-            <div className="mt-6">
-              <Link to="/app/sales/quotations/new" className="btn-primary">
-                <PlusIcon className="h-5 w-5 mr-2" />
-                New Quotation
-              </Link>
-            </div>
-          </div>
-        )}
-      </div>
 
-      {/* Quick Actions */}
-      <div className="card p-4 bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
-        <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">💡 Quick Tips</h4>
-        <ul className="text-sm text-blue-800 space-y-1 dark:text-blue-300">
-          <li>• Quotations expiring within 7 days are highlighted with ⚠️</li>
-          <li>• Convert accepted quotations to sales orders directly</li>
-          <li>• Use filters to quickly find specific quotations</li>
-          <li>• Track quotation performance in the dashboard</li>
-        </ul>
+        {tools.rows.length === 0 && !loading && (
+          <div className="py-12 text-center">
+            <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">{tools.total === 0 ? 'Belum ada penawaran' : 'Tidak ada penawaran yang cocok'}</h3>
+            {tools.total === 0 && (
+              <div className="mt-6">
+                <Link to="/app/sales/quotations/new" className="btn-primary">
+                  <PlusIcon className="mr-1.5 h-5 w-5" />
+                  Penawaran Baru
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {selectedQuotationId && (

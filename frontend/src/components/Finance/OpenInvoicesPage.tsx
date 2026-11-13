@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Download } from 'lucide-react'
 import axiosInstance from '../../utils/axiosConfig'
 import { formatRupiah } from '../../utils/currencyUtils'
 import { PageHeader, KpiStrip } from '../ui/PageKit'
 import { showError } from '../ui'
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../ui/ListTools'
 
 export interface OpenInvoicesConfig {
   kind: 'receivable' | 'payable'
@@ -58,44 +59,34 @@ const OpenInvoicesPage = ({ cfg }: { cfg: OpenInvoicesConfig }) => {
   const [rows, setRows] = useState<Row[]>([])
   const [summary, setSummary] = useState<Summary | null>(null)
   const [loading, setLoading] = useState(true)
-  const [page, setPage] = useState(1)
-  const [pages, setPages] = useState(1)
-  const [search, setSearch] = useState('')
-  const [debounced, setDebounced] = useState('')
   const [status, setStatus] = useState('')
-
-  useEffect(() => {
-    const t = setTimeout(() => { setDebounced(search); setPage(1) }, 350)
-    return () => clearTimeout(t)
-  }, [search])
 
   useEffect(() => {
     let alive = true
     setLoading(true)
     axiosInstance
-      .get(cfg.endpoint, { params: { page, per_page: 20, search: debounced || undefined, status: status || undefined } })
+      .get(cfg.endpoint, { params: { page: 1, per_page: 1000, status: status || undefined } })
       .then((r) => {
         if (!alive) return
         setRows(r.data[cfg.listKey] || [])
-        setPages(r.data.pages || 1)
         setSummary(r.data.summary || null)
       })
       .catch(() => { if (alive) { setRows([]); showError('Data gagal dimuat.') } })
       .finally(() => { if (alive) setLoading(false) })
     return () => { alive = false }
-  }, [cfg.endpoint, cfg.listKey, page, debounced, status])
+  }, [cfg.endpoint, cfg.listKey, status])
 
-  const exportCsv = () => {
-    if (!rows.length) return
-    const head = ['Nomor faktur', cfg.partyLabel, 'Tanggal faktur', 'Jatuh tempo', 'Total', 'Terbayar', 'Sisa', 'Lewat (hari)']
-    const lines = rows.map((r) => [r.invoice_number, r[cfg.partyKey], r.invoice_date, r.due_date || '', r.total_amount, r.paid_amount, r.balance_due, r.days_overdue])
-    const csv = [head, ...lines].map((l) => l.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n')
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' }))
-    a.download = `${cfg.kind === 'receivable' ? 'piutang' : 'utang'}-${new Date().toISOString().slice(0, 10)}.csv`
-    a.click()
-    URL.revokeObjectURL(a.href)
-  }
+  const columns = useMemo<ListColumn<Row>[]>(() => [
+    { key: 'invoice_number', label: 'Nomor faktur', value: (r) => r.invoice_number },
+    { key: 'party', label: cfg.partyLabel, value: (r) => r[cfg.partyKey] },
+    { key: 'invoice_date', label: 'Tanggal faktur', value: (r) => r.invoice_date, type: 'date' },
+    { key: 'due_date', label: 'Jatuh tempo', value: (r) => r.due_date, type: 'date' },
+    { key: 'total_amount', label: 'Total (Rp)', value: (r) => r.total_amount, type: 'number' },
+    { key: 'paid_amount', label: 'Terbayar (Rp)', value: (r) => r.paid_amount, type: 'number' },
+    { key: 'balance_due', label: 'Sisa (Rp)', value: (r) => r.balance_due, type: 'number' },
+    { key: 'days_overdue', label: 'Lewat (hari)', value: (r) => r.days_overdue, type: 'number' },
+  ], [cfg.partyLabel, cfg.partyKey])
+  const tools = useListTools<Row>(rows, columns, { filename: cfg.kind === 'receivable' ? 'Piutang_Usaha' : 'Utang_Usaha', initialSort: { key: 'due_date', dir: 'asc' } })
 
   return (
     <div className="space-y-4 p-6">
@@ -104,10 +95,7 @@ const OpenInvoicesPage = ({ cfg }: { cfg: OpenInvoicesConfig }) => {
         subtitle={cfg.subtitle}
         actions={
           <>
-            <button onClick={exportCsv} className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
-              <Download className="h-4 w-4" /> Ekspor CSV
-            </button>
-            <Link to={cfg.newInvoicePath} className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">{cfg.newInvoiceLabel}</Link>
+            <Link to={cfg.newInvoicePath} className="btn-primary">{cfg.newInvoiceLabel}</Link>
           </>
         }
       />
@@ -121,19 +109,13 @@ const OpenInvoicesPage = ({ cfg }: { cfg: OpenInvoicesConfig }) => {
         ]}
       />
 
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={`Cari nomor faktur atau ${cfg.partyLabel.toLowerCase()}`}
-            className="w-full rounded-md border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-          />
-        </div>
+      <ListToolbar
+        tools={tools}
+        placeholder={`Cari nomor faktur atau ${cfg.partyLabel.toLowerCase()}`}
+        extra={(
         <select
           value={status}
-          onChange={(e) => { setStatus(e.target.value); setPage(1) }}
+          onChange={(e) => setStatus(e.target.value)}
           className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
         >
           <option value="">Semua status</option>
@@ -141,19 +123,20 @@ const OpenInvoicesPage = ({ cfg }: { cfg: OpenInvoicesConfig }) => {
           <option value="partial">Dibayar sebagian</option>
           <option value="overdue">Lewat jatuh tempo</option>
         </select>
-      </div>
+        )}
+      />
 
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th className={th}>Nomor faktur</th>
-              <th className={th}>{cfg.partyLabel}</th>
-              <th className={th}>Tanggal</th>
-              <th className={th}>Jatuh tempo</th>
-              <th className={`${th} text-right`}>Total</th>
-              <th className={`${th} text-right`}>Sisa</th>
-              <th className={th}>Status</th>
+              <SortTh tools={tools} col="invoice_number" className={th}>Nomor faktur</SortTh>
+              <SortTh tools={tools} col="party" className={th}>{cfg.partyLabel}</SortTh>
+              <SortTh tools={tools} col="invoice_date" className={th}>Tanggal</SortTh>
+              <SortTh tools={tools} col="due_date" className={th}>Jatuh tempo</SortTh>
+              <SortTh tools={tools} col="total_amount" align="right" className={`${th} text-right`}>Total</SortTh>
+              <SortTh tools={tools} col="balance_due" align="right" className={`${th} text-right`}>Sisa</SortTh>
+              <SortTh tools={tools} col="days_overdue" className={th}>Status</SortTh>
               <th className={`${th} text-right`}>Aksi</th>
             </tr>
           </thead>
@@ -161,13 +144,13 @@ const OpenInvoicesPage = ({ cfg }: { cfg: OpenInvoicesConfig }) => {
             {loading && rows.length === 0 && (
               <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>
             )}
-            {!loading && rows.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{search || status ? 'Tidak ada faktur yang cocok.' : 'Tidak ada faktur yang belum lunas.'}</td></tr>
+            {!loading && tools.rows.length === 0 && (
+              <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{tools.query || status ? 'Tidak ada faktur yang cocok.' : 'Tidak ada faktur yang belum lunas.'}</td></tr>
             )}
-            {rows.map((r) => (
+            {tools.rows.map((r) => (
               <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
                 <td className="whitespace-nowrap px-4 py-2.5 text-sm font-medium">
-                  <Link to={cfg.invoicePath(r.id)} className="text-emerald-700 hover:underline dark:text-emerald-400">{r.invoice_number}</Link>
+                  <Link to={cfg.invoicePath(r.id)} className="text-primary-700 hover:underline dark:text-primary-300">{r.invoice_number}</Link>
                 </td>
                 <td className="px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200">{r[cfg.partyKey]}</td>
                 <td className="whitespace-nowrap px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300">{fmtDate(r.invoice_date)}</td>
@@ -176,7 +159,7 @@ const OpenInvoicesPage = ({ cfg }: { cfg: OpenInvoicesConfig }) => {
                 <td className="whitespace-nowrap px-4 py-2.5 text-right text-sm font-medium tabular-nums text-gray-900 dark:text-white">{formatRupiah(r.balance_due)}</td>
                 <td className="whitespace-nowrap px-4 py-2.5"><Badge row={r} /></td>
                 <td className="whitespace-nowrap px-4 py-2.5 text-right text-sm">
-                  <Link to={`${cfg.payPath}?invoice_id=${r.id}`} className="font-medium text-emerald-700 hover:underline dark:text-emerald-400">{cfg.payLabel}</Link>
+                  <Link to={`${cfg.payPath}?invoice_id=${r.id}`} className="font-medium text-primary-700 hover:underline dark:text-primary-300">{cfg.payLabel}</Link>
                 </td>
               </tr>
             ))}
@@ -184,15 +167,6 @@ const OpenInvoicesPage = ({ cfg }: { cfg: OpenInvoicesConfig }) => {
         </table>
       </div>
 
-      {pages > 1 && (
-        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
-          <span>Halaman {page} dari {pages}</span>
-          <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="rounded-md border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-600">Sebelumnya</button>
-            <button disabled={page >= pages} onClick={() => setPage(page + 1)} className="rounded-md border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-600">Berikutnya</button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

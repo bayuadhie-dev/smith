@@ -734,7 +734,7 @@ def get_work_orders():
         from models.production import ShiftProduction
         
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
+        per_page = min(request.args.get('per_page', 50, type=int), 1000)
         status = request.args.get('status')
         
         # Try cache for first page without filters (most common case)
@@ -5107,7 +5107,7 @@ def list_batch_records():
         from models.batch_scheduling import ProductionBatch
 
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
+        per_page = min(request.args.get('per_page', 50, type=int), 1000)
         search = request.args.get('search', '').strip()
         admin_closed = request.args.get('admin_closed')
 

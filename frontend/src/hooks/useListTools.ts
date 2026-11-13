@@ -54,11 +54,11 @@ function isoToLocal(v: string) {
 export function useListTools<T>(
   data: T[] | undefined | null,
   columns: ListColumn<T>[],
-  opts: { filename: string; initialSort?: { key: string; dir?: 'asc' | 'desc' } },
+  opts: { filename: string; initialSort?: { key: string; dir?: 'asc' | 'desc' }; paramPrefix?: string },
 ): ListTools<T> {
-  const [query, setQueryRaw] = useUrlState<string>('q', '')
+  const [query, setQueryRaw] = useUrlState<string>(`${opts.paramPrefix || ''}q`, '')
   const initial = opts.initialSort ? `${opts.initialSort.key}:${opts.initialSort.dir || 'asc'}` : ''
-  const [sort, setSort] = useUrlState<string>('sort', initial)
+  const [sort, setSort] = useUrlState<string>(`${opts.paramPrefix || ''}sort`, initial)
   const [sortKey, sortDirRaw] = sort.split(':')
   const sortDir: 'asc' | 'desc' = sortDirRaw === 'desc' ? 'desc' : 'asc'
 

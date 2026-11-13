@@ -1,39 +1,50 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
-import { ArrowPathIcon, MagnifyingGlassIcon, DocumentTextIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
-import { useDebounce } from '../../hooks/useDebounce';
+import { ArrowPathIcon, DocumentTextIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:        { label: 'Draft',        color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
-  approved:     { label: 'Disetujui',    color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+  approved:     { label: 'Disetujui',    color: 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300' },
   in_progress:  { label: 'Berjalan',     color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
   completed:    { label: 'Selesai',      color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
   cancelled:    { label: 'Dibatalkan',   color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
   unplaceable:  { label: 'Belum Terjadwal', color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
 };
 
+const COLUMNS: ListColumn<any>[] = [
+  { key: 'batch_number', label: 'No. Batch', value: (b) => b.batch_number },
+  { key: 'wo_number', label: 'No. SPK', value: (b) => b.wo_number },
+  { key: 'product_name', label: 'Produk', value: (b) => b.product_name },
+  { key: 'scheduled_date', label: 'Tanggal', value: (b) => b.scheduled_date, type: 'date' },
+  { key: 'planned_qty', label: 'Rencana', value: (b) => b.planned_qty, type: 'number' },
+  { key: 'realized_qty', label: 'Realisasi', value: (b) => b.realized_qty, type: 'number' },
+  { key: 'status', label: 'Status', value: (b) => b.status, exportValue: (b) => STATUS_CONFIG[b.status]?.label || b.status },
+  { key: 'admin_closed', label: 'Penutupan', value: (b) => (b.admin_closed ? 1 : 0), exportValue: (b) => (b.admin_closed ? 'Sudah ditutup' : 'Belum ditutup') },
+];
+
 export default function BatchRecordList() {
-  const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 400);
-  const [page, setPage] = useState(1);
   const [data, setData] = useState<any>({ items: [], total: 0, pages: 1 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
     axiosInstance.get('/api/production/batches/records', {
-      params: { page, per_page: 50, search: debouncedSearch || undefined },
+      params: { page: 1, per_page: 1000 },
     })
       .then(r => setData(r.data))
       .finally(() => setLoading(false));
-  }, [page, debouncedSearch]);
+  }, []);
+
+  const tools = useListTools<any>(data.items, COLUMNS, { filename: 'Batch_Record', initialSort: { key: 'scheduled_date', dir: 'desc' } });
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Batch Report</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Laporan Batch</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Catatan Pengolahan Bets (GMP) per batch produksi</p>
         </div>
         <Link
@@ -44,39 +55,30 @@ export default function BatchRecordList() {
         </Link>
       </div>
 
-      <div className="relative max-w-sm">
-        <MagnifyingGlassIcon className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input
-          type="text"
-          value={search}
-          onChange={e => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Cari nomor batch, SPK, atau produk..."
-          className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 dark:text-white"
-        />
-      </div>
+      <ListToolbar tools={tools} placeholder="Cari nomor batch, SPK, atau produk" />
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40">
-                <th className="px-4 py-3">No. Batch</th>
-                <th className="px-4 py-3">No. SPK</th>
-                <th className="px-4 py-3">Produk</th>
-                <th className="px-4 py-3">Tanggal</th>
-                <th className="px-4 py-3 text-right">Rencana</th>
-                <th className="px-4 py-3 text-right">Realisasi</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Penutupan</th>
-                <th className="px-4 py-3"></th>
+                <SortTh tools={tools} col="batch_number" className="px-4 py-3">No. Batch</SortTh>
+                <SortTh tools={tools} col="wo_number" className="px-4 py-3">No. SPK</SortTh>
+                <SortTh tools={tools} col="product_name" className="px-4 py-3">Produk</SortTh>
+                <SortTh tools={tools} col="scheduled_date" className="px-4 py-3">Tanggal</SortTh>
+                <SortTh tools={tools} col="planned_qty" align="right" className="px-4 py-3 text-right">Rencana</SortTh>
+                <SortTh tools={tools} col="realized_qty" align="right" className="px-4 py-3 text-right">Realisasi</SortTh>
+                <SortTh tools={tools} col="status" className="px-4 py-3">Status</SortTh>
+                <SortTh tools={tools} col="admin_closed" className="px-4 py-3">Penutupan</SortTh>
+                <th className="px-4 py-3">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {loading ? (
                 <tr><td colSpan={9} className="text-center py-8 text-gray-400"><ArrowPathIcon className="h-5 w-5 animate-spin inline mr-2" />Memuat...</td></tr>
-              ) : data.items.length === 0 ? (
-                <tr><td colSpan={9} className="text-center py-8 text-gray-500 dark:text-gray-400">Tidak ada batch ditemukan.</td></tr>
-              ) : data.items.map((b: any) => {
+              ) : tools.rows.length === 0 ? (
+                <tr><td colSpan={9} className="text-center py-8 text-gray-500 dark:text-gray-400">{tools.total === 0 ? 'Belum ada batch.' : 'Tidak ada batch yang cocok.'}</td></tr>
+              ) : tools.rows.map((b: any) => {
                 const cfg = STATUS_CONFIG[b.status] || { label: b.status, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' };
                 return (
                   <tr key={b.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
@@ -109,28 +111,6 @@ export default function BatchRecordList() {
           </table>
         </div>
 
-        {data.pages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-700 text-sm">
-            <p className="text-gray-500 dark:text-gray-400">Total {data.total} batch</p>
-            <div className="flex items-center gap-2">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage(p => p - 1)}
-                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded disabled:opacity-40"
-              >
-                Sebelumnya
-              </button>
-              <span className="text-gray-500 dark:text-gray-400">Halaman {page} / {data.pages}</span>
-              <button
-                disabled={page >= data.pages}
-                onClick={() => setPage(p => p + 1)}
-                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded disabled:opacity-40"
-              >
-                Berikutnya
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

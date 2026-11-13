@@ -19,6 +19,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 interface FinishGoodItem {
   id: number;
@@ -41,13 +43,28 @@ interface FinishGoodItem {
   inspected_date?: string;
 }
 
+const QC_LABEL: Record<string, string> = { pending: 'Menunggu QC', inspecting: 'Sedang inspeksi', passed: 'Lulus QC', failed: 'Ditolak', conditional: 'Bersyarat' };
+const COLUMNS: ListColumn<FinishGoodItem>[] = [
+  { key: 'wo_number', label: 'No. SPK', value: (w) => w.wo_number },
+  { key: 'batch_number', label: 'Batch', value: (w) => w.batch_number },
+  { key: 'product_code', label: 'Kode Produk', value: (w) => w.product_code },
+  { key: 'product_name', label: 'Nama Produk', value: (w) => w.product_name },
+  { key: 'quantity_produced', label: 'Qty Produksi', value: (w) => w.quantity_produced, type: 'number' },
+  { key: 'quantity_good', label: 'Qty Baik', value: (w) => w.quantity_good, type: 'number' },
+  { key: 'quantity_scrap', label: 'Qty Scrap', value: (w) => w.quantity_scrap, type: 'number' },
+  { key: 'uom', label: 'Satuan', value: (w) => w.uom },
+  { key: 'machine_name', label: 'Mesin', value: (w) => w.machine_name },
+  { key: 'completed_date', label: 'Tanggal Selesai', value: (w) => w.completed_date, type: 'date' },
+  { key: 'qc_status', label: 'Status', value: (w) => w.qc_status, exportValue: (w) => QC_LABEL[w.qc_status] || w.qc_status },
+  { key: 'inspector_name', label: 'Inspektur', value: (w) => w.inspector_name },
+];
+
 export default function FinishGoodQC() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [workOrders, setWorkOrders] = useState<FinishGoodItem[]>([]);
   const [completedQC, setCompletedQC] = useState<FinishGoodItem[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useUrlState<'pending' | 'completed'>('tab', 'pending', ['pending', 'completed']);
   useBreadcrumbTrail(activeTab === 'pending' ? [] : [{ label: ({ completed: 'Sudah QC' } as Record<string, string>)[activeTab] }]);
 
@@ -152,11 +169,8 @@ export default function FinishGoodQC() {
   };
 
   const currentList = activeTab === 'pending' ? workOrders : completedQC;
-  const filteredList = currentList.filter(wo => 
-    wo.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    wo.wo_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    wo.product_code.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const tools = useListTools<FinishGoodItem>(currentList, COLUMNS, { filename: activeTab === 'pending' ? 'QC_Barang_Jadi_Menunggu' : 'QC_Barang_Jadi_Selesai', initialSort: { key: 'completed_date', dir: 'desc' } });
+  const filteredList = tools.rows;
 
   return (
     <div className="space-y-6">
@@ -262,16 +276,9 @@ export default function FinishGoodQC() {
               Sudah QC ({completedQC.length})
             </button>
           </div>
-          <div className="relative">
-            <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Cari WO Number, Produk..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 w-64"
-            />
-          </div>
+        </div>
+        <div className="mt-4">
+          <ListToolbar tools={tools} placeholder="Cari nomor SPK, produk, mesin, atau batch" />
         </div>
       </div>
 
@@ -281,7 +288,7 @@ export default function FinishGoodQC() {
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
           </div>
-        ) : filteredList.length === 0 ? (
+        ) : tools.total === 0 ? (
           <div className="text-center py-12">
             <CubeIcon className="w-12 h-12 mx-auto text-gray-400 mb-4" />
             <p className="text-gray-500 dark:text-gray-400">
@@ -294,12 +301,12 @@ export default function FinishGoodQC() {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SPK</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty Produksi</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Selesai</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <SortTh tools={tools} col="wo_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">SPK</SortTh>
+                <SortTh tools={tools} col="product_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Produk</SortTh>
+                <SortTh tools={tools} col="quantity_produced" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Qty Produksi</SortTh>
+                <SortTh tools={tools} col="machine_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Mesin</SortTh>
+                <SortTh tools={tools} col="completed_date" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Selesai</SortTh>
+                <SortTh tools={tools} col="qc_status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Status</SortTh>
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
               </tr>
             </thead>
@@ -324,7 +331,7 @@ export default function FinishGoodQC() {
                         {wo.quantity_produced.toLocaleString()} {wo.uom}
                       </p>
                       <div className="flex gap-2 text-xs mt-1">
-                        <span className="text-green-600 dark:text-green-400">Good: {wo.quantity_good.toLocaleString()}</span>
+                        <span className="text-green-600 dark:text-green-400">Baik: {wo.quantity_good.toLocaleString()}</span>
                         {wo.quantity_scrap > 0 && (
                           <span className="text-red-600 dark:text-red-400">Scrap: {wo.quantity_scrap}</span>
                         )}

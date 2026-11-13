@@ -203,7 +203,7 @@ def get_attendance_records():
     """Get attendance records with filtering"""
     try:
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
+        per_page = min(request.args.get('per_page', 50, type=int), 1000)
         employee_id = request.args.get('employee_id', type=int)
         department_id = request.args.get('department_id', type=int)
         start_date = request.args.get('start_date')

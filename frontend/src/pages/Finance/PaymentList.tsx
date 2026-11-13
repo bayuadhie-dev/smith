@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
-import { BanknotesIcon, PlusIcon, ArrowUpTrayIcon, ChevronUpIcon, ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { BanknotesIcon, PlusIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 interface PaymentRow {
   id: number;
@@ -37,19 +39,6 @@ function today(): string {
   return localISO(new Date());
 }
 
-type SortKey = 'payment_number' | 'payment_date' | 'bank' | 'party_name' | 'description' | 'amount' | 'status';
-const SORT_TEXT = new Intl.Collator('id', { numeric: true, sensitivity: 'base' });
-
-const sortValue = (r: PaymentRow, key: SortKey): string | number => {
-  switch (key) {
-    case 'bank': return r.bank_account ? `${r.bank_account.code} ${r.bank_account.name}` : '';
-    case 'description': return [r.invoice_numbers?.join(', '), r.notes || r.reference_number].filter(Boolean).join(' ');
-    case 'amount': return r.amount;
-    case 'party_name': return r.party_name || '';
-    default: return String(r[key] ?? '');
-  }
-};
-
 const statusLabel: Record<string, string> = {
   pending: 'Belum Direkonsiliasi',
   cleared: 'Sudah Direkonsiliasi',
@@ -64,16 +53,11 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bankId, setBankId] = useState('');
-  const [search, setSearch] = useState('');
   const [banks, setBanks] = useState<{ id: number; code: string; name: string }[]>([]);
-  const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' } | null>(null);
 
   useEffect(() => {
     axiosInstance.get('/api/finance/reports/cash-accounts').then((r) => setBanks(r.data.accounts || [])).catch(() => setBanks([]));
   }, []);
-
-  const toggleSort = (key: SortKey) =>
-    setSort((s) => (!s || s.key !== key ? { key, dir: 'asc' } : s.dir === 'asc' ? { key, dir: 'desc' } : null));
 
   const isReceipt = type === 'receipt';
   const title = source === 'kas'
@@ -103,29 +87,22 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
     fetchRows();
   }, [fetchRows]);
 
-  const filteredRows = React.useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return rows;
-    const digits = q.replace(/[.\s]/g, '').replace(',', '.');
-    return rows.filter((r) => {
-      const hay = [r.payment_number, r.payment_date, r.party_name, r.notes, r.reference_number, (r as any).paid_to,
-        r.invoice_numbers?.join(' '), r.bank_account ? `${r.bank_account.code} ${r.bank_account.name}` : '',
-        statusLabel[r.status] || r.status].filter(Boolean).join(' ').toLowerCase();
-      return hay.includes(q) || (digits !== '' && /^[0-9.]+$/.test(digits) && String(Math.abs(r.amount)).includes(digits));
-    });
-  }, [rows, search]);
+  const columns = React.useMemo<ListColumn<PaymentRow>[]>(() => [
+    { key: 'payment_number', label: 'No. Transaksi', value: (r) => r.payment_number },
+    { key: 'payment_date', label: 'Tanggal', value: (r) => r.payment_date, type: 'date' },
+    { key: 'bank', label: 'Kas/Bank', value: (r) => (r.bank_account ? `${r.bank_account.code} ${r.bank_account.name}` : '') },
+    { key: 'party_name', label: partyLabel, value: (r) => r.party_name },
+    { key: 'description', label: 'Keterangan', value: (r) => [r.invoice_numbers?.length ? `Pelunasan: ${r.invoice_numbers.join(', ')}` : '', r.notes || r.reference_number].filter(Boolean).join(' ') },
+    { key: 'reference_number', label: 'No. Referensi', value: (r) => r.reference_number },
+    { key: 'amount', label: 'Nilai', value: (r) => r.amount, type: 'number' },
+    { key: 'status', label: 'Status', value: (r) => r.status, exportValue: (r) => statusLabel[r.status] || r.status },
+  ], [partyLabel]);
+  const tools = useListTools<PaymentRow>(rows, columns, {
+    filename: source === 'kas' ? (isReceipt ? 'Penerimaan_Kas_Bank' : 'Pembayaran_Kas_Bank') : (isReceipt ? 'Penerimaan_Penjualan' : 'Pembayaran_Pembelian'),
+    initialSort: { key: 'payment_date', dir: 'desc' },
+  });
 
-  const sortedRows = React.useMemo(() => {
-    if (!sort) return filteredRows;
-    const sign = sort.dir === 'asc' ? 1 : -1;
-    return [...filteredRows].sort((a, b) => {
-      const x = sortValue(a, sort.key);
-      const y = sortValue(b, sort.key);
-      return (typeof x === 'number' && typeof y === 'number' ? x - y : SORT_TEXT.compare(String(x), String(y))) * sign;
-    });
-  }, [filteredRows, sort]);
-
-  const total = filteredRows
+  const total = tools.rows
     .filter((r) => r.status !== 'cancelled')
     .reduce((sum, r) => sum + r.amount, 0);
 
@@ -133,7 +110,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BanknotesIcon className="w-6 h-6 text-green-700 dark:text-green-300" />
+          <BanknotesIcon className="w-6 h-6 text-primary-700 dark:text-primary-300" />
           <h1 className="text-2xl font-bold">{title}</h1>
         </div>
         <div className="flex items-center gap-2">
@@ -143,18 +120,18 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
           title="Buka Pusat Impor & Ekspor Data"
         >
           <ArrowUpTrayIcon className="w-4 h-4" />
-          Import
+          Impor
         </Link>
         <Link
           to={`/app/imports?kind=${type}_${source}&mode=export`}
           className="flex items-center gap-1 border border-gray-300 px-4 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600"
-          title="Ekspor ke Excel (pilih rentang tanggal)"
+          title="Buka Pusat Ekspor (pilih rentang tanggal dan format)"
         >
-          Ekspor
+          Pusat Ekspor
         </Link>
         <Link
           to={newHref}
-          className="flex items-center gap-1 bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800"
+          className="btn-primary"
         >
           <PlusIcon className="w-4 h-4" />
           Catat {isReceipt ? 'Penerimaan' : 'Pembayaran'}
@@ -188,23 +165,12 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
             {banks.map((b) => <option key={b.id} value={b.id}>{b.code} - {b.name}</option>)}
           </select>
         </div>
-        <div className="flex-1 min-w-[16rem]">
-          <label className="block text-sm text-gray-600 mb-1 dark:text-gray-300">Cari</label>
-          <div className="relative">
-            <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="No. bukti, pihak, kas/bank, faktur, keterangan, nominal..."
-              className="border rounded pl-9 pr-3 py-2 w-full"
-            />
-          </div>
-        </div>
         <button onClick={fetchRows} className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">
           Tampilkan
         </button>
       </div>
+
+      <ListToolbar tools={tools} placeholder="No. bukti, pihak, kas/bank, faktur, keterangan, nominal" />
 
       {loading && <LoadingSpinner />}
       {error && <div className="bg-red-50 text-red-700 p-3 rounded dark:bg-red-900/20 dark:text-red-300">{error}</div>}
@@ -214,84 +180,28 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-2 text-left" aria-sort={sort?.key === 'payment_number' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
-                  <button type="button" onClick={() => toggleSort('payment_number')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
-                    No. Transaksi
-                    <span className="flex flex-col leading-none">
-                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'payment_number' && sort.dir === 'asc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
-                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'payment_number' && sort.dir === 'desc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
-                    </span>
-                  </button>
-                </th>
-                <th className="px-4 py-2 text-left" aria-sort={sort?.key === 'payment_date' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
-                  <button type="button" onClick={() => toggleSort('payment_date')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
-                    Tanggal
-                    <span className="flex flex-col leading-none">
-                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'payment_date' && sort.dir === 'asc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
-                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'payment_date' && sort.dir === 'desc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
-                    </span>
-                  </button>
-                </th>
-                <th className="px-4 py-2 text-left" aria-sort={sort?.key === 'bank' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
-                  <button type="button" onClick={() => toggleSort('bank')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
-                    Kas/Bank
-                    <span className="flex flex-col leading-none">
-                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'bank' && sort.dir === 'asc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
-                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'bank' && sort.dir === 'desc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
-                    </span>
-                  </button>
-                </th>
-                <th className="px-4 py-2 text-left" aria-sort={sort?.key === 'party_name' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
-                  <button type="button" onClick={() => toggleSort('party_name')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
-                    {partyLabel}
-                    <span className="flex flex-col leading-none">
-                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'party_name' && sort.dir === 'asc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
-                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'party_name' && sort.dir === 'desc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
-                    </span>
-                  </button>
-                </th>
-                <th className="px-4 py-2 text-left" aria-sort={sort?.key === 'description' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
-                  <button type="button" onClick={() => toggleSort('description')} className="inline-flex w-full items-center gap-1 justify-start font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
-                    Keterangan
-                    <span className="flex flex-col leading-none">
-                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'description' && sort.dir === 'asc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
-                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'description' && sort.dir === 'desc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
-                    </span>
-                  </button>
-                </th>
-                <th className="px-4 py-2 text-left font-semibold">No. Referensi</th>
-                <th className="px-4 py-2 text-right" aria-sort={sort?.key === 'amount' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
-                  <button type="button" onClick={() => toggleSort('amount')} className="inline-flex w-full items-center gap-1 justify-end font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
-                    Nilai
-                    <span className="flex flex-col leading-none">
-                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'amount' && sort.dir === 'asc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
-                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'amount' && sort.dir === 'desc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
-                    </span>
-                  </button>
-                </th>
-                <th className="px-4 py-2 text-center" aria-sort={sort?.key === 'status' ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
-                  <button type="button" onClick={() => toggleSort('status')} className="inline-flex w-full items-center gap-1 justify-center font-semibold hover:text-green-700" title="Klik untuk urutkan A-Z / Z-A">
-                    Status
-                    <span className="flex flex-col leading-none">
-                      <ChevronUpIcon className={`h-3 w-3 ${sort?.key === 'status' && sort.dir === 'asc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
-                      <ChevronDownIcon className={`h-3 w-3 -mt-1 ${sort?.key === 'status' && sort.dir === 'desc' ? 'text-green-700 dark:text-green-300' : 'text-gray-300'} dark:text-green-300`} />
-                    </span>
-                  </button>
-                </th>
+                <SortTh tools={tools} col="payment_number" className="px-4 py-2 text-left">No. Transaksi</SortTh>
+                <SortTh tools={tools} col="payment_date" className="px-4 py-2 text-left">Tanggal</SortTh>
+                <SortTh tools={tools} col="bank" className="px-4 py-2 text-left">Kas/Bank</SortTh>
+                <SortTh tools={tools} col="party_name" className="px-4 py-2 text-left">{partyLabel}</SortTh>
+                <SortTh tools={tools} col="description" className="px-4 py-2 text-left">Keterangan</SortTh>
+                <SortTh tools={tools} col="reference_number" className="px-4 py-2 text-left">No. Referensi</SortTh>
+                <SortTh tools={tools} col="amount" align="right" className="px-4 py-2 text-right">Nilai</SortTh>
+                <SortTh tools={tools} col="status" align="center" className="px-4 py-2 text-center">Status</SortTh>
               </tr>
             </thead>
             <tbody>
-              {sortedRows.length === 0 && (
+              {tools.rows.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-4 py-6 text-center text-gray-400">
-                    Tidak ada {isReceipt ? 'penerimaan' : 'pembayaran'} {search.trim() ? 'yang cocok dengan pencarian' : 'pada periode ini'}.
+                    Tidak ada {isReceipt ? 'penerimaan' : 'pembayaran'} {tools.query.trim() ? 'yang cocok dengan pencarian' : 'pada periode ini'}.
                   </td>
                 </tr>
               )}
-              {sortedRows.map((r) => (
+              {tools.rows.map((r) => (
                 <tr key={r.id} className={`border-t ${r.status === 'cancelled' ? 'opacity-50' : ''}`}>
                   <td className="px-4 py-2">
-                    <Link to={`/app/finance/payments/${r.id}`} className="text-blue-600 hover:underline dark:text-blue-400">
+                    <Link to={`/app/finance/payments/${r.id}`} className="text-primary-700 hover:underline dark:text-primary-300">
                       {r.payment_number}
                     </Link>
                   </td>

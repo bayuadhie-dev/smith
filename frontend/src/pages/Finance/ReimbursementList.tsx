@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus,
-  Search,
   Eye,
   CheckCircle,
   DollarSign,
@@ -11,6 +10,8 @@ import toast from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosConfig';
 import { usePermissions } from '../../contexts/PermissionContext';
 import { confirmDialog } from '../../components/ui';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 interface Reimbursement {
   id: number;
@@ -30,35 +31,44 @@ interface Reimbursement {
   created_at: string;
 }
 
+const COLUMNS: ListColumn<Reimbursement>[] = [
+  { key: 'reimbursement_number', label: 'No. Pembayaran Klaim', value: (r) => r.reimbursement_number },
+  { key: 'employee_name', label: 'Karyawan', value: (r) => r.employee_name },
+  { key: 'total_amount', label: 'Total (Rp)', value: (r) => r.total_amount, type: 'number' },
+  { key: 'expense_count', label: 'Jumlah Klaim', value: (r) => r.expense_count, type: 'number' },
+  { key: 'payment_method', label: 'Metode Pembayaran', value: (r) => r.payment_method },
+  { key: 'status', label: 'Status', value: (r) => r.status_display || r.status },
+  { key: 'submitted_at', label: 'Tanggal Diajukan', value: (r) => r.submitted_at, type: 'date' },
+  { key: 'approved_at', label: 'Tanggal Disetujui', value: (r) => r.approved_at, type: 'date' },
+  { key: 'paid_at', label: 'Tanggal Dibayar', value: (r) => r.paid_at, type: 'date' },
+];
+
 const ReimbursementList: React.FC = () => {
   const navigate = useNavigate();
   const { hasPermission } = usePermissions();
 
   const [reimbursements, setReimbursements] = useState<Reimbursement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     fetchReimbursements();
-  }, [page, statusFilter, searchTerm]);
+  }, [statusFilter]);
+
+  const tools = useListTools<Reimbursement>(reimbursements, COLUMNS, { filename: 'Pembayaran_Klaim', initialSort: { key: 'reimbursement_number', dir: 'desc' } });
 
   const fetchReimbursements = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
-        page: page.toString(),
-        per_page: '20',
+        page: '1',
+        per_page: '1000',
       });
 
       if (statusFilter) params.append('status', statusFilter);
-      if (searchTerm) params.append('search', searchTerm);
 
       const { data } = await axiosInstance.get(`/api/expenses/reimbursements?${params}`);
       setReimbursements(data.reimbursements || []);
-      setTotalPages(data.pagination?.pages || 1);
     } catch (error) {
       toast.error('Gagal memuat data reimbursement');
     } finally {
@@ -118,7 +128,7 @@ const ReimbursementList: React.FC = () => {
       case 'approved':
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       case 'processing':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+        return 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300';
       case 'paid':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
       case 'cancelled':
@@ -132,7 +142,7 @@ const ReimbursementList: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <p className="text-gray-600 dark:text-gray-300">Access Denied</p>
+          <p className="text-gray-600 dark:text-gray-300">Akses ditolak</p>
         </div>
       </div>
     );
@@ -143,16 +153,16 @@ const ReimbursementList: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Reimbursement</h1>
-          <p className="text-gray-600 dark:text-gray-300">Manage employee reimbursement batches</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pembayaran Klaim</h1>
+          <p className="text-gray-600 dark:text-gray-300">Persetujuan dan pembayaran klaim karyawan</p>
         </div>
         {hasPermission('expense.create') && (
           <button
             onClick={() => navigate('/app/finance/reimbursements/new')}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="btn-primary"
           >
-            <Plus className="w-4 h-4" />
-            New Reimbursement
+            <Plus className="mr-1.5 h-4 w-4" />
+            Buat Pembayaran Klaim
           </button>
         )}
       </div>
@@ -160,31 +170,23 @@ const ReimbursementList: React.FC = () => {
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4 mb-6 dark:bg-gray-800">
         <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-[200px]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Search reimbursements..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
-              />
-            </div>
-          </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-600"
           >
-            <option value="">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="processing">Processing</option>
-            <option value="paid">Paid</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="">Semua status</option>
+            <option value="pending">Menunggu</option>
+            <option value="approved">Disetujui</option>
+            <option value="processing">Diproses</option>
+            <option value="paid">Dibayar</option>
+            <option value="cancelled">Batal</option>
           </select>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <ListToolbar tools={tools} placeholder="Cari nomor, karyawan, metode, status" />
       </div>
 
       {/* Table */}
@@ -193,44 +195,30 @@ const ReimbursementList: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  Reimbursement No
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  Employee
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  Total Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  Expense Count
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  Payment Method
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  Actions
-                </th>
+                <SortTh tools={tools} col="reimbursement_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">No. Pembayaran Klaim</SortTh>
+                <SortTh tools={tools} col="employee_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Karyawan</SortTh>
+                <SortTh tools={tools} col="total_amount" align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Total</SortTh>
+                <SortTh tools={tools} col="expense_count" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Jumlah Klaim</SortTh>
+                <SortTh tools={tools} col="payment_method" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Metode Pembayaran</SortTh>
+                <SortTh tools={tools} col="status" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Status</SortTh>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
               {loading ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                    Loading...
+                    Memuat...
                   </td>
                 </tr>
-              ) : reimbursements.length === 0 ? (
+              ) : tools.rows.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                    No reimbursements found
+                    {tools.total === 0 ? 'Belum ada pembayaran klaim' : 'Tidak ada data yang cocok'}
                   </td>
                 </tr>
               ) : (
-                reimbursements.map((reimb) => (
+                tools.rows.map((reimb) => (
                   <tr key={reimb.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-white">
                       {reimb.reimbursement_number}
@@ -239,10 +227,10 @@ const ReimbursementList: React.FC = () => {
                       {reimb.employee_name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 font-medium dark:text-white">
-                      Rp {reimb.total_amount.toLocaleString()}
+                      Rp {reimb.total_amount.toLocaleString('id-ID')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">
-                      {reimb.expense_count} expenses
+                      {reimb.expense_count} klaim
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">
                       {reimb.payment_method || '—'}
@@ -258,7 +246,7 @@ const ReimbursementList: React.FC = () => {
                           <button
                             onClick={() => handleApprove(reimb.id)}
                             className="p-1 text-green-600 hover:text-green-800 dark:text-green-400"
-                            title="Approve"
+                            title="Setujui"
                           >
                             <CheckCircle className="w-4 h-4" />
                           </button>
@@ -266,7 +254,7 @@ const ReimbursementList: React.FC = () => {
                         {reimb.status === 'approved' && (hasPermission('expense.payment') || reimb.has_steps) && (
                           <button
                             onClick={() => handlePay(reimb)}
-                            className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                            className="p-1 text-primary-700 hover:text-primary-800 dark:text-primary-300"
                             title="Bayar"
                           >
                             <DollarSign className="w-4 h-4" />
@@ -275,7 +263,7 @@ const ReimbursementList: React.FC = () => {
                         <button
                           onClick={() => navigate(`/app/finance/reimbursements/${reimb.id}`)}
                           className="p-1 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white"
-                          title="View Details"
+                          title="Lihat detail"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
@@ -288,28 +276,6 @@ const ReimbursementList: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center dark:border-gray-700">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600"
-            >
-              Previous
-            </button>
-            <span className="text-gray-600 dark:text-gray-300">
-              Page {page} of {totalPages}
-            </span>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600"
-            >
-              Next
-            </button>
-          </div>
-        )}
       </div>
       {payFor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setPayFor(null)}>

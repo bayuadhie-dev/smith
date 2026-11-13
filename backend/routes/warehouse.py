@@ -961,8 +961,20 @@ def get_movements():
         if date_to:
             query = query.filter(InventoryTransaction.transaction_date <= f'{date_to} 23:59:59')
 
-        query = query.order_by(InventoryTransaction.created_at.desc())
-        movements = query.paginate(page=page, per_page=per_page, error_out=False)
+        sort_cols = {
+            'movement_number': InventoryTransaction.transaction_number,
+            'movement_type': InventoryTransaction.transaction_type,
+            'quantity': InventoryTransaction.quantity,
+            'movement_date': InventoryTransaction.transaction_date,
+            'status': InventoryTransaction.status,
+        }
+        sort_key, _, sort_dir = (request.args.get('sort', '') or '').partition(':')
+        sort_col = sort_cols.get(sort_key)
+        if sort_col is not None:
+            query = query.order_by(sort_col.desc() if sort_dir == 'desc' else sort_col.asc(), InventoryTransaction.id.desc())
+        else:
+            query = query.order_by(InventoryTransaction.created_at.desc())
+        movements = query.paginate(page=page, per_page=min(per_page, 1000), error_out=False)
 
         result = []
         for m in movements.items:

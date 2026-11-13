@@ -163,7 +163,7 @@ def list_fg_conversions():
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
         page = int(request.args.get('page', 1))
-        per_page = int(request.args.get('per_page', 50))
+        per_page = min(int(request.args.get('per_page', 50)), 1000)
         
         # Build query
         query = FGConversion.query

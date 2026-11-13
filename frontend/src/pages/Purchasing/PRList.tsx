@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
-import {
-  PlusIcon, MagnifyingGlassIcon, FunnelIcon,
-  DocumentTextIcon, ClockIcon, CheckCircleIcon,
-  XCircleIcon, ArrowPathIcon,
-} from '@heroicons/react/24/outline';
+import { PlusIcon, DocumentTextIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
@@ -22,26 +20,31 @@ const PRIORITY_CONFIG: Record<string, { label: string; color: string }> = {
   urgent: { label: 'Urgent',  color: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' },
 };
 
+const COLUMNS: ListColumn<any>[] = [
+  { key: 'pr_number', label: 'No. PR', value: (p) => p.pr_number },
+  { key: 'requester_name', label: 'Pemohon', value: (p) => p.requester_name },
+  { key: 'department', label: 'Departemen', value: (p) => p.department },
+  { key: 'required_date', label: 'Tgl Dibutuhkan', value: (p) => p.required_date, type: 'date' },
+  { key: 'priority', label: 'Prioritas', value: (p) => p.priority, exportValue: (p) => PRIORITY_CONFIG[p.priority]?.label || p.priority },
+  { key: 'status', label: 'Status', value: (p) => p.status, exportValue: (p) => STATUS_CONFIG[p.status]?.label || p.status },
+  { key: 'total_estimated', label: 'Est. Total (Rp)', value: (p) => p.total_estimated, type: 'number' },
+];
+
 export default function PRList() {
   const navigate = useNavigate();
   const [prs, setPrs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
 
   const fetchPRs = async () => {
     setLoading(true);
     try {
-      const params: any = { page, per_page: 20 };
-      if (search) params.search = search;
+      const params: any = { page: 1, per_page: 1000 };
       if (statusFilter) params.status = statusFilter;
       if (priorityFilter) params.priority = priorityFilter;
       const res = await axiosInstance.get('/api/purchasing/purchase-requisitions', { params });
       setPrs(res.data.requisitions || []);
-      setTotal(res.data.total || 0);
     } catch (err) {
       console.error('Failed to fetch PRs:', err);
     } finally {
@@ -49,11 +52,9 @@ export default function PRList() {
     }
   };
 
-  useEffect(() => { fetchPRs(); }, [page, statusFilter, priorityFilter]);
-  useEffect(() => {
-    const t = setTimeout(fetchPRs, 400);
-    return () => clearTimeout(t);
-  }, [search]);
+  useEffect(() => { fetchPRs(); }, [statusFilter, priorityFilter]);
+
+  const tools = useListTools<any>(prs, COLUMNS, { filename: 'Permintaan_Pembelian', initialSort: { key: 'pr_number', dir: 'desc' } });
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
@@ -62,7 +63,7 @@ export default function PRList() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Permintaan Pembelian (PR)</h1>
           <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-400">
-            Permintaan pembelian dari departemen — {total} total
+            Permintaan pembelian dari departemen, {tools.total} total
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -78,21 +79,13 @@ export default function PRList() {
         </div>
       </div>
 
+      <ListToolbar tools={tools} placeholder="Cari nomor PR, pemohon, departemen" />
+
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-48">
-          <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Cari nomor PR..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white"
-          />
-        </div>
         <select
           value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+          onChange={(e) => setStatusFilter(e.target.value)}
           className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white"
         >
           <option value="">Semua Status</option>
@@ -102,7 +95,7 @@ export default function PRList() {
         </select>
         <select
           value={priorityFilter}
-          onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
+          onChange={(e) => setPriorityFilter(e.target.value)}
           className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm dark:bg-gray-800 dark:text-white"
         >
           <option value="">Semua Prioritas</option>
@@ -119,30 +112,32 @@ export default function PRList() {
             <ArrowPathIcon className="h-6 w-6 animate-spin mr-2" />
             Memuat data...
           </div>
-        ) : prs.length === 0 ? (
+        ) : tools.rows.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <DocumentTextIcon className="h-12 w-12 mx-auto mb-3 opacity-40" />
-            <p>Belum ada Purchase Requisition</p>
-            <Link to="/app/purchasing/requisitions/new" className="mt-2 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400">
-              Buat PR pertama
-            </Link>
+            <p>{tools.total === 0 ? 'Belum ada permintaan pembelian' : 'Tidak ada PR yang cocok'}</p>
+            {tools.total === 0 && (
+              <Link to="/app/purchasing/requisitions/new" className="mt-2 inline-block text-sm text-primary-700 hover:underline dark:text-primary-300">
+                Buat PR pertama
+              </Link>
+            )}
           </div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. PR</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Pemohon</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Departemen</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tgl Dibutuhkan</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Prioritas</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Status</th>
-                <th className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Est. Total</th>
+                <SortTh tools={tools} col="pr_number" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. PR</SortTh>
+                <SortTh tools={tools} col="requester_name" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Pemohon</SortTh>
+                <SortTh tools={tools} col="department" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Departemen</SortTh>
+                <SortTh tools={tools} col="required_date" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tgl Dibutuhkan</SortTh>
+                <SortTh tools={tools} col="priority" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Prioritas</SortTh>
+                <SortTh tools={tools} col="status" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Status</SortTh>
+                <SortTh tools={tools} col="total_estimated" align="right" className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Est. Total</SortTh>
                 <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {prs.map((pr) => {
+              {tools.rows.map((pr) => {
                 const status = STATUS_CONFIG[pr.status] || { label: pr.status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
                 const priority = PRIORITY_CONFIG[pr.priority] || { label: pr.priority, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
                 return (
@@ -151,7 +146,7 @@ export default function PRList() {
                     className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                     onClick={() => navigate(`/app/purchasing/requisitions/${pr.id}`)}
                   >
-                    <td className="px-4 py-3 font-medium text-blue-600 dark:text-blue-400">{pr.pr_number}</td>
+                    <td className="px-4 py-3 font-medium text-primary-700 dark:text-primary-300">{pr.pr_number}</td>
                     <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{pr.requester_name || '—'}</td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{pr.department || '—'}</td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
@@ -188,26 +183,6 @@ export default function PRList() {
         )}
       </div>
 
-      {/* Pagination */}
-      {total > 20 && (
-        <div className="flex justify-center gap-2">
-          <button
-            disabled={page === 1}
-            onClick={() => setPage(p => p - 1)}
-            className="px-3 py-1 border rounded text-sm disabled:opacity-40"
-          >
-            ← Prev
-          </button>
-          <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-300">Hal {page}</span>
-          <button
-            disabled={prs.length < 20}
-            onClick={() => setPage(p => p + 1)}
-            className="px-3 py-1 border rounded text-sm disabled:opacity-40"
-          >
-            Next →
-          </button>
-        </div>
-      )}
     </div>
   );
 }

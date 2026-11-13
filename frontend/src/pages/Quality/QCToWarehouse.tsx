@@ -12,6 +12,8 @@ import {
   ArrowLeftIcon,
   FunnelIcon
 } from '@heroicons/react/24/outline'
+import { useListTools, type ListColumn } from '../../hooks/useListTools'
+import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
 interface PendingTransfer {
   id: number
@@ -46,6 +48,21 @@ interface InventorySummary {
   quarantine: number
   reject: number
 }
+
+const DISP_LABEL: Record<string, string> = { released: 'Dilepas', quarantine: 'Karantina', reject: 'Ditolak' }
+const COLUMNS: ListColumn<PendingTransfer>[] = [
+  { key: 'inspection_number', label: 'No. Inspeksi', value: (i) => i.inspection_number },
+  { key: 'product_name', label: 'Produk', value: (i) => i.product_name },
+  { key: 'product_code', label: 'Kode Produk', value: (i) => i.product_code },
+  { key: 'work_order_number', label: 'SPK', value: (i) => i.work_order_number },
+  { key: 'batch_number', label: 'Batch', value: (i) => i.batch_number },
+  { key: 'quantity_passed', label: 'Qty Lulus', value: (i) => i.quantity_passed, type: 'number' },
+  { key: 'checklist', label: 'Checklist Lulus', value: (i) => i.passed_checklist_items, type: 'number' },
+  { key: 'total_checklist_items', label: 'Total Checklist', value: (i) => i.total_checklist_items, type: 'number' },
+  { key: 'failed_checklist_items', label: 'Checklist Gagal', value: (i) => i.failed_checklist_items, type: 'number' },
+  { key: 'disposition', label: 'Disposisi', value: (i) => i.disposition, exportValue: (i) => DISP_LABEL[i.disposition] || i.disposition },
+  { key: 'disposition_date', label: 'Tanggal', value: (i) => i.disposition_date, type: 'date' },
+]
 
 export default function QCToWarehouse() {
   const navigate = useNavigate()
@@ -107,7 +124,7 @@ export default function QCToWarehouse() {
   }
 
   const handleSelectAll = () => {
-    const filteredItems = getFilteredItems()
+    const filteredItems = tools.rows
     if (selectedItems.length === filteredItems.length) {
       setSelectedItems([])
     } else {
@@ -239,7 +256,8 @@ export default function QCToWarehouse() {
     })
   }
 
-  const filteredItems = getFilteredItems()
+  const tools = useListTools<PendingTransfer>(getFilteredItems(), COLUMNS, { filename: 'QC_Menunggu_Transfer_Gudang', initialSort: { key: 'disposition_date', dir: 'desc' } })
+  const filteredItems = tools.rows
 
   return (
     <div className="space-y-6">
@@ -374,14 +392,15 @@ export default function QCToWarehouse() {
       {/* Pending Transfers Table */}
       <div className="card">
         <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">Pending Transfer ke Warehouse</h2>
+          <h2 className="mb-3 text-lg font-semibold">Menunggu Transfer ke Gudang</h2>
+          <ListToolbar tools={tools} placeholder="Cari inspeksi, produk, SPK, atau batch" />
         </div>
 
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
-        ) : filteredItems.length === 0 ? (
+        ) : tools.total === 0 ? (
           <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             <CubeIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
             <p className="font-medium">Tidak ada item pending</p>
@@ -400,14 +419,14 @@ export default function QCToWarehouse() {
                       className="rounded border-gray-300 dark:border-gray-600"
                     />
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Inspeksi</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SPK</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Batch</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty Passed</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Checklist</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Disposition</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
+                  <SortTh tools={tools} col="inspection_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">No. Inspeksi</SortTh>
+                  <SortTh tools={tools} col="product_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Produk</SortTh>
+                  <SortTh tools={tools} col="work_order_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">SPK</SortTh>
+                  <SortTh tools={tools} col="batch_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Batch</SortTh>
+                  <SortTh tools={tools} col="quantity_passed" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Qty Lulus</SortTh>
+                  <SortTh tools={tools} col="checklist" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Checklist</SortTh>
+                  <SortTh tools={tools} col="disposition" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Disposisi</SortTh>
+                  <SortTh tools={tools} col="disposition_date" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</SortTh>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
               </thead>
@@ -446,7 +465,7 @@ export default function QCToWarehouse() {
                         <span className="text-gray-400">/</span>
                         <span className="text-gray-600 dark:text-gray-300">{item.total_checklist_items}</span>
                         {item.failed_checklist_items > 0 && (
-                          <span className="text-red-500 text-xs ml-1">({item.failed_checklist_items} fail)</span>
+                          <span className="text-red-500 text-xs ml-1">({item.failed_checklist_items} gagal)</span>
                         )}
                       </div>
                     </td>
