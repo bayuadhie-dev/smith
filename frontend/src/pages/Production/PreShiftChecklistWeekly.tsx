@@ -52,7 +52,7 @@ const PreShiftChecklistWeekly = () => {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary-600 border-t-transparent mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-300 font-medium">Memuat data mingguan...</p>
         </div>
       </div>
@@ -60,7 +60,7 @@ const PreShiftChecklistWeekly = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-primary-50 p-4">
       <div className="max-w-full mx-auto space-y-4">
         
         {/* Header */}
@@ -172,7 +172,7 @@ const SubmissionItem: React.FC<SubmissionItemProps> = ({ submission, isExpanded,
   })
 
   const shiftColors: Record<number, string> = {
-    1: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    1: 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300',
     2: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
     3: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
   }

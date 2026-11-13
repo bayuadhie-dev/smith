@@ -43,7 +43,7 @@ interface AnswerState {
 }
 
 const SHIFT_CONFIG: { [key: string]: { name: string; time: string; color: string; bg: string; border: string } } = {
-  '1': { name: 'Shift 1', time: '07:00 - 15:00', color: 'text-blue-700 dark:text-blue-300', bg: 'bg-blue-100 dark:bg-blue-900/30', border: 'border-blue-300' },
+  '1': { name: 'Shift 1', time: '07:00 - 15:00', color: 'text-primary-700 dark:text-primary-300', bg: 'bg-primary-100 dark:bg-primary-900/30', border: 'border-primary-300' },
   '2': { name: 'Shift 2', time: '15:00 - 23:00', color: 'text-purple-700 dark:text-purple-300', bg: 'bg-purple-100 dark:bg-purple-900/30', border: 'border-purple-300' },
   '3': { name: 'Shift 3', time: '23:00 - 07:00', color: 'text-indigo-700 dark:text-indigo-300', bg: 'bg-indigo-100 dark:bg-indigo-900/30', border: 'border-indigo-300' },
 }
@@ -158,7 +158,7 @@ const PreShiftChecklistForm = () => {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary-600 border-t-transparent mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-300 font-medium">Memuat data checklist...</p>
         </div>
       </div>
@@ -166,12 +166,12 @@ const PreShiftChecklistForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-primary-50 p-6">
       <div className="max-w-5xl mx-auto space-y-6">
         
         {/* Header Card */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden dark:border-gray-800">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5">
+          <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <button 
@@ -185,7 +185,7 @@ const PreShiftChecklistForm = () => {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-white">Form Pre-Shift Checklist</h1>
-                  <p className="text-blue-100 text-sm mt-1">Isi checklist sebelum memulai produksi</p>
+                  <p className="text-primary-100 text-sm mt-1">Isi checklist sebelum memulai produksi</p>
                 </div>
               </div>
               
@@ -203,8 +203,8 @@ const PreShiftChecklistForm = () => {
               {/* Machine */}
               <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
-                    <CogIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <div className="p-2 bg-primary-100 rounded-lg dark:bg-primary-900/30">
+                    <CogIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Mesin</p>
@@ -259,7 +259,7 @@ const PreShiftChecklistForm = () => {
                       value={operatorName}
                       onChange={(e) => setOperatorName(e.target.value)}
                       placeholder="Masukkan nama"
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     />
                   </div>
                 </div>
@@ -294,14 +294,14 @@ const PreShiftChecklistForm = () => {
               onClick={() => setActiveTab('KONDISI_MESIN')}
               className={`flex-1 flex items-center justify-center space-x-2 py-4 px-6 font-medium transition-colors ${
                 activeTab === 'KONDISI_MESIN'
-                  ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600 dark:bg-blue-900/20 dark:text-blue-300'
+                  ? 'bg-primary-50 text-primary-700 border-b-2 border-primary-600 dark:bg-primary-900/20 dark:text-primary-300'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               <CogIcon className="w-5 h-5" />
               <span>Kondisi Mesin</span>
               <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                activeTab === 'KONDISI_MESIN' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                activeTab === 'KONDISI_MESIN' ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
               }`}>
                 {kondisiMesinItems.length}
               </span>
@@ -339,7 +339,7 @@ const PreShiftChecklistForm = () => {
                     {/* Number */}
                     <div className={`w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center font-bold text-sm ${
                       activeTab === 'KONDISI_MESIN' 
-                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' 
+                        ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300' 
                         : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
                     }`}>
                       {index + 1}
@@ -403,7 +403,7 @@ const PreShiftChecklistForm = () => {
                             className={`w-full pl-10 pr-4 py-2 rounded-lg text-sm border transition-colors ${
                               isNG 
                                 ? 'border-red-300 bg-red-50 focus:ring-red-500 focus:border-red-500 dark:bg-red-900/20' 
-                                : 'border-gray-200 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-700'
+                                : 'border-gray-200 focus:ring-primary-500 focus:border-primary-500 dark:border-gray-700'
                             }`}
                           />
                         </div>
@@ -428,7 +428,7 @@ const PreShiftChecklistForm = () => {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Catatan tambahan untuk checklist ini... (opsional)"
               rows={3}
-              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
             />
           </div>
           
@@ -462,7 +462,7 @@ const PreShiftChecklistForm = () => {
                 <button
                   onClick={handleSubmit}
                   disabled={isSubmitting || !operatorName.trim()}
-                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-medium hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 shadow-lg shadow-blue-500/30 transition-all"
+                  className="px-6 py-2.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl font-medium hover:from-primary-700 hover:to-primary-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 shadow-lg shadow-primary-500/30 transition-all"
                 >
                   {isSubmitting ? (
                     <>

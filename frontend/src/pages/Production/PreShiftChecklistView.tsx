@@ -22,7 +22,7 @@ import { useGetPreShiftChecklistSubmissionQuery, useAddSupervisorNoteMutation } 
 import { showError } from '../../components/ui'
 
 const SHIFT_CONFIG: { [key: number]: { name: string; time: string; color: string; bg: string; border: string; gradient: string } } = {
-  1: { name: 'Shift 1', time: '07:00 - 15:00', color: 'text-blue-700 dark:text-blue-300', bg: 'bg-blue-100 dark:bg-blue-900/30', border: 'border-blue-300', gradient: 'from-blue-600 to-blue-700' },
+  1: { name: 'Shift 1', time: '07:00 - 15:00', color: 'text-primary-700 dark:text-primary-300', bg: 'bg-primary-100 dark:bg-primary-900/30', border: 'border-primary-300', gradient: 'from-primary-600 to-primary-700' },
   2: { name: 'Shift 2', time: '15:00 - 23:00', color: 'text-purple-700 dark:text-purple-300', bg: 'bg-purple-100 dark:bg-purple-900/30', border: 'border-purple-300', gradient: 'from-purple-600 to-purple-700' },
   3: { name: 'Shift 3', time: '23:00 - 07:00', color: 'text-indigo-700 dark:text-indigo-300', bg: 'bg-indigo-100 dark:bg-indigo-900/30', border: 'border-indigo-300', gradient: 'from-indigo-600 to-indigo-700' },
 }
@@ -30,7 +30,7 @@ const SHIFT_CONFIG: { [key: number]: { name: string; time: string; color: string
 const PRIORITY_OPTIONS = [
   { value: 'urgent', label: 'Urgent', color: 'bg-red-600 text-white' },
   { value: 'high', label: 'Tinggi', color: 'bg-orange-500 text-white' },
-  { value: 'normal', label: 'Normal', color: 'bg-blue-500 text-white' },
+  { value: 'normal', label: 'Normal', color: 'bg-primary-500 text-white' },
   { value: 'low', label: 'Rendah', color: 'bg-gray-400 text-white' },
 ]
 
@@ -119,7 +119,7 @@ const PreShiftChecklistView = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-600 border-t-transparent"></div>
       </div>
     )
   }
@@ -150,7 +150,7 @@ const PreShiftChecklistView = () => {
           >
             <ArrowLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
-          <ClipboardDocumentCheckIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          <ClipboardDocumentCheckIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
           <h1 className="text-lg font-bold text-gray-900 dark:text-white">Pre-Shift Checklist</h1>
         </div>
         <div className="flex items-center space-x-2 print:hidden">
@@ -159,7 +159,7 @@ const PreShiftChecklistView = () => {
           </button>
           <button
             onClick={() => navigate(`/app/production/pre-shift-checklist/form?machine=${submission.machine_id}&date=${submission.tanggal}&shift=${submission.shift}`)}
-            className="flex items-center space-x-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+            className="flex items-center space-x-1 px-3 py-1.5 bg-primary-600 text-white rounded-lg text-sm hover:bg-primary-700"
           >
             <PencilSquareIcon className="w-4 h-4" />
             <span>Edit</span>
@@ -216,8 +216,8 @@ const PreShiftChecklistView = () => {
         </div>
         <div className="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
         <div className="flex items-center space-x-2">
-          <DocumentCheckIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          <span className="text-xl font-bold text-blue-600 dark:text-blue-400">{stats.total}</span>
+          <DocumentCheckIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+          <span className="text-xl font-bold text-primary-600 dark:text-primary-400">{stats.total}</span>
           <span className="text-sm text-gray-500 dark:text-gray-400">Total</span>
         </div>
       </div>
@@ -261,7 +261,7 @@ const PreShiftChecklistView = () => {
                         <div className="flex items-center space-x-2">
                           <span className={`text-xs px-2 py-0.5 rounded-full whitespace-nowrap ${
                             ca?.repair_status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
-                            ca?.repair_status === 'in_progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+                            ca?.repair_status === 'in_progress' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300' :
                             ca?.repair_status === 'cannot_repair' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
                             'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
                           }`}>
@@ -321,7 +321,7 @@ const PreShiftChecklistView = () => {
                                 value={supervisorNote}
                                 onChange={(e) => setSupervisorNote(e.target.value)}
                                 placeholder="Contoh: Harus segera diperbaiki sebelum shift berikutnya..."
-                                className="w-full mt-1 px-2 py-1.5 text-sm border rounded focus:ring-1 focus:ring-blue-500"
+                                className="w-full mt-1 px-2 py-1.5 text-sm border rounded focus:ring-1 focus:ring-primary-500"
                                 rows={2}
                               />
                             </div>
@@ -335,7 +335,7 @@ const PreShiftChecklistView = () => {
                               <button
                                 onClick={() => handleSaveSupervisorNote(item.id)}
                                 disabled={isSaving}
-                                className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                                className="text-xs px-3 py-1.5 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
                               >
                                 {isSaving ? 'Menyimpan...' : 'Simpan'}
                               </button>
@@ -371,7 +371,7 @@ const PreShiftChecklistView = () => {
       {Object.entries(groupedAnswers).map(([category, answers]) => (
         <div key={category} className="mb-3 print:mb-2">
           <div className="flex items-center space-x-2 mb-1">
-            {category === 'KONDISI_MESIN' && <CogIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+            {category === 'KONDISI_MESIN' && <CogIcon className="w-4 h-4 text-primary-600 dark:text-primary-400" />}
             {category === 'MANPOWER' && <UserGroupIcon className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
             <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100">{getCategoryLabel(category)}</h3>
             <span className="text-xs text-gray-500 dark:text-gray-400">({answers.length} item)</span>
