@@ -4,6 +4,7 @@ import { HomeIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 interface BreadcrumbItem {
   label: string;
   href?: string;
+  current?: boolean;
 }
 
 // Route to label mapping
@@ -97,7 +98,21 @@ const routeLabels: Record<string, string> = {
   'edit': 'Edit',
   'details': 'Details',
   'list': 'List',
+  'executive': 'Eksekutif',
+  'production-monitoring': 'Production Monitoring',
+  'pre-shift-checklist': 'Pre-Shift Checklist',
+  'live-monitoring': 'Patroli Mesin',
 };
+
+// Jalur induk yang tidak punya halaman sendiri: tampil sebagai teks, bukan tautan
+const NO_PAGE = new Set([
+  '/app/chat/server', '/app/debug', '/app/executive', '/app/finance/payments', '/app/finance/recurring-payment-transactions',
+  '/app/finance/reports/ledger', '/app/finance/reports/statement', '/app/hr/appraisal/cycles', '/app/hr/leaves/request',
+  '/app/hr/payroll/periods', '/app/integration', '/app/manual/category', '/app/oee/machines', '/app/production/batches',
+  '/app/production/live-monitoring/view', '/app/production/planning/edit', '/app/production/pre-shift-checklist/view',
+  '/app/production/quality-checks', '/app/production/schedules', '/app/production/weekly-plans', '/app/quality-enhanced',
+  '/app/quality/objective', '/app/reports/generate', '/app/warehouse/gudang', '/app/warehouse/item-stock',
+]);
 
 const Breadcrumb = () => {
   const location = useLocation();
@@ -111,7 +126,7 @@ const Breadcrumb = () => {
     const isId = /^\d+$/.test(segment);
     
     // Get label from mapping or format the segment
-    let label = routeLabels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
+    let label = routeLabels[segment] || segment.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     
     if (isId) {
       label = `#${segment}`;
@@ -119,7 +134,8 @@ const Breadcrumb = () => {
 
     return {
       label,
-      href: index < pathnames.length - 1 ? href : undefined, // Last item has no link
+      href: index < pathnames.length - 1 && !NO_PAGE.has(href) ? href : undefined,
+      current: index === pathnames.length - 1,
     };
   });
 
@@ -136,7 +152,7 @@ const Breadcrumb = () => {
           <li>
             <Link
               to="/app"
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-slate-700 transition-all"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-slate-500 hover:text-primary-600 hover:bg-primary-50 dark:text-slate-400 dark:hover:text-primary-400 dark:hover:bg-slate-700 transition-all"
             >
               <HomeIcon className="w-4 h-4" />
               <span className="hidden sm:inline">Home</span>
@@ -149,12 +165,17 @@ const Breadcrumb = () => {
               {item.href ? (
                 <Link
                   to={item.href}
-                  className="px-2 py-1 rounded-md text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-slate-700 transition-all font-medium"
+                  className="px-2 py-1 rounded-md text-slate-600 hover:text-primary-600 hover:bg-primary-50 dark:text-slate-400 dark:hover:text-primary-400 dark:hover:bg-slate-700 transition-all font-medium"
                 >
                   {item.label}
                 </Link>
               ) : (
-                <span className="px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-semibold">
+                <span
+                  aria-current={item.current ? 'page' : undefined}
+                  className={item.current
+                    ? 'px-2 py-1 rounded-md bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 font-semibold'
+                    : 'px-2 py-1 rounded-md text-slate-500 dark:text-slate-400 font-medium'}
+                >
                   {item.label}
                 </span>
               )}

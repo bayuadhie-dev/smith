@@ -289,7 +289,7 @@ const DailyControllerSwiper: React.FC<DailyControllerSwiperProps> = ({
       {/* Info Footer */}
       <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
         <p className="text-sm text-blue-700 dark:text-blue-300">
-          💡 <strong>Tip:</strong> Gunakan tombol Auto Play untuk mode monitoring otomatis. 
+          <strong>Tip:</strong> Gunakan tombol Auto Play untuk mode monitoring otomatis. 
           Swipe atau gunakan arrow untuk navigasi manual.
         </p>
       </div>

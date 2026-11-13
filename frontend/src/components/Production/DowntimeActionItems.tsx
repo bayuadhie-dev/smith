@@ -398,14 +398,14 @@ const DowntimeActionItems: React.FC<DowntimeActionItemsProps> = ({
                 className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/15 hover:bg-white/25 text-white rounded-lg text-xs font-semibold border border-white/20 transition-all cursor-pointer"
                 title="Ekspor ke Excel (.xlsx)"
               >
-                📥 Excel
+                Excel
               </button>
               <button
                 onClick={handleExportPDF}
                 className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/15 hover:bg-white/25 text-white rounded-lg text-xs font-semibold border border-white/20 transition-all cursor-pointer"
                 title="Ekspor ke PDF"
               >
-                📄 PDF
+                PDF
               </button>
             </div>
             <div className="text-right border-l border-white/20 pl-4">
@@ -572,7 +572,7 @@ const DowntimeActionItems: React.FC<DowntimeActionItemsProps> = ({
       {/* Footer Info */}
       <div className="bg-slate-50 dark:bg-gray-900 px-6 py-3 border-t border-slate-200 dark:border-gray-700">
         <p className="text-xs text-slate-500 dark:text-gray-400">
-          💡 <strong>Catatan:</strong> {viewMode === 'monthly' ? (
+          <strong>Catatan:</strong> {viewMode === 'monthly' ? (
             <>Data ini merupakan akumulasi bulanan unplanned downtime (top 3 per produk). Pengisian root cause dan solusi hanya dapat dilakukan di mode <strong>Mingguan (Weekly)</strong>.</>
           ) : (
             <>Data ini dihasilkan dari top 3 unplanned downtime (mesin, operator, material) per produk. Isi root cause dan follow up untuk tracking di rapat Senin.</>

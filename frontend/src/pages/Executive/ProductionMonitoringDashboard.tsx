@@ -6,6 +6,7 @@ import {
   BoltIcon, BeakerIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon,
   DocumentTextIcon, ArrowDownTrayIcon, ArchiveBoxIcon, MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
+import { Package, CheckCircle2, Factory, AlertTriangle, TrendingDown } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
@@ -1148,7 +1149,7 @@ const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border overflow-hidden">
         <div className="p-4 border-b bg-gray-50 dark:bg-gray-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">📋 Data Mesin Harian — Hasil per Shift</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Data Mesin Harian — Hasil per Shift</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Klik tanggal untuk melihat rincian output setiap mesin per shift</p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -1438,7 +1439,7 @@ const OverviewTab: React.FC<{
             <span className="text-[11px] font-bold text-gray-400 w-10 text-right shrink-0">{timePct}%</span>
           </div>
           <p className={`text-[10px] font-medium text-right ${achievePct >= timePct ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
-            {achievePct >= timePct ? `✅ +${achievePct - timePct}% di atas progress waktu` : `⚠️ ${timePct - achievePct}% tertinggal dari progress waktu`}
+            {achievePct >= timePct ? `+${achievePct - timePct}% di atas progress waktu` : `${timePct - achievePct}% tertinggal dari progress waktu`}
           </p>
         </div>
       </div>
@@ -1711,7 +1712,7 @@ const DailyTab: React.FC<{
                           <tr className="bg-gradient-to-r from-slate-100 to-slate-200">
                             <td colSpan={14} className="px-6 py-2 border-b">
                               <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1 dark:text-slate-200">
-                                📋 Laporan Downtime (Dikelompokkan per Mesin, Produk, & Shift)
+                                Laporan Downtime (Dikelompokkan per Mesin, Produk, & Shift)
                               </span>
                             </td>
                           </tr>
@@ -1737,7 +1738,7 @@ const DailyTab: React.FC<{
                                   <td colSpan={14} className="px-4 py-1.5">
                                     <div className="flex items-center gap-2">
                                       <span className="text-xs font-bold text-violet-900 dark:text-violet-200">
-                                        🖥️ Mesin: <span className="font-extrabold">{machineName}</span>
+                                        Mesin: <span className="font-extrabold">{machineName}</span>
                                       </span>
                                       <span className="text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400 px-1.5 py-0.5 rounded">
                                         Total Downtime: {machTotalMin}m
@@ -1765,7 +1766,7 @@ const DailyTab: React.FC<{
                                         <td className="px-3 py-1"></td>
                                         <td colSpan={13} className="px-3 py-1">
                                           <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                                            <span>📦 Produk: <span className="text-gray-900 dark:text-gray-100 font-bold">{productName}</span></span>
+                                            <span>Produk: <span className="text-gray-900 dark:text-gray-100 font-bold">{productName}</span></span>
                                             <span className="text-[10px] bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded">
                                               Subtotal: {prodTotalMin}m
                                             </span>
@@ -1939,7 +1940,7 @@ const DailyTab: React.FC<{
                               <div className="space-y-2">
                                 <h4 className="font-bold text-xs text-violet-900 dark:text-violet-300 flex items-center gap-1.5 uppercase tracking-wider">
                                   <DocumentTextIcon className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                                  📋 Rincian Hasil Produksi Converting - {dateLabel}
+                                  Rincian Hasil Produksi Converting - {dateLabel}
                                 </h4>
                                 {r.production_records && r.production_records.length > 0 ? (
                                   <div className="overflow-x-auto rounded-lg border border-violet-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
@@ -2005,7 +2006,7 @@ const DailyTab: React.FC<{
                               <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700/60">
                                 <h4 className="font-bold text-xs text-rose-900 dark:text-rose-300 flex items-center gap-1.5 uppercase tracking-wider">
                                   <ClockIcon className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-                                  ⚠️ Rincian Waktu Henti (Downtime) Converting - {dateLabel}
+                                  Rincian Waktu Henti (Downtime) Converting - {dateLabel}
                                 </h4>
                                 {r.downtime_records && r.downtime_records.length > 0 ? (
                                   <div className="overflow-x-auto rounded-lg border border-rose-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
@@ -2120,7 +2121,7 @@ const ProductsTab: React.FC<{ data: any; viewMode: 'monthly' | 'weekly' }> = ({ 
             <div className="flex items-center justify-between mb-2">
               <span className="text-slate-700 dark:text-gray-300 font-medium">Status:</span>
               <span className={`font-bold flex items-center gap-1 ${isTargetAchieved ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                {isTargetAchieved ? '✅ Tercapai' : '❌ Tidak Tercapai'}
+                {isTargetAchieved ? 'Tercapai' : 'Tidak Tercapai'}
               </span>
             </div>
             
@@ -2658,7 +2659,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
 
       {/* OEE Comparison Chart */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">📊 Perbandingan OEE per Mesin</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Perbandingan OEE per Mesin</h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={machineChartData}>
@@ -2678,7 +2679,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
 
       {/* Time Utilization Comparison */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">⏱️ Utilisasi Waktu per Mesin (Jam)</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Utilisasi Waktu per Mesin (Jam)</h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={machineChartData} layout="vertical">
@@ -2697,7 +2698,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
 
       {/* Production & Quality Comparison */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">📦 Produksi & Kualitas per Mesin</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Produksi & Kualitas per Mesin</h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={machineChartData}>
@@ -2716,7 +2717,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
 
       {/* Detailed Table */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">📋 Detail Lengkap per Mesin</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Detail Lengkap per Mesin</h3>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 mb-3">Klik baris mesin untuk melihat rincian downtime dan detail kerja mesin tersebut</p>
         <div className="overflow-x-auto">
           <table className="w-full text-xs border-collapse">
@@ -2768,7 +2769,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
                       <td colSpan={12} className="px-4 py-3">
                         <div className="space-y-2 border-l-2 border-red-500 pl-3 py-1">
                           <h4 className="text-[11.5px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">
-                            ⚠️ Rincian Downtime & Detail Kerja: {m.machine_name}
+                            Rincian Downtime & Detail Kerja: {m.machine_name}
                           </h4>
                           {machineDowntimes[m.machine_name] && machineDowntimes[m.machine_name].length > 0 ? (
                             <div className="overflow-x-auto max-h-60 border border-gray-200 dark:border-gray-700 rounded-lg">
@@ -3151,7 +3152,7 @@ const DowntimeTab: React.FC<{
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div>
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-              📋 Daftar Seluruh Kejadian Downtime (Sepanjang Waktu - {sortedAllTimeDowntime.length} record)
+              Daftar Seluruh Kejadian Downtime (Sepanjang Waktu - {sortedAllTimeDowntime.length} record)
             </h3>
             <p className="text-[10px] text-gray-400 mt-0.5">Urut berdasarkan frekuensi kejadian terbanyak. Klik baris untuk melihat riwayat per kejadian.</p>
           </div>
@@ -3277,7 +3278,7 @@ const DowntimeTab: React.FC<{
                           <td colSpan={9} className="px-6 py-3 bg-slate-50/50 dark:bg-slate-900/60 border-t border-b border-slate-100 dark:border-slate-800">
                             <div className="space-y-2">
                               <h4 className="font-semibold text-slate-700 dark:text-slate-300 text-xs flex items-center gap-1.5">
-                                🔍 Riwayat Detail Kejadian untuk "{item.reason}"
+                                Riwayat Detail Kejadian untuk "{item.reason}"
                               </h4>
                               {item.occurrences && item.occurrences.length > 0 ? (
                                 <div className="overflow-x-auto rounded-lg border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 max-h-60 overflow-y-auto">
@@ -3530,7 +3531,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       {/* Waterfall Chart - Gap Analysis */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-          📊 Waterfall Chart - Gap Analysis (Target vs Aktual)
+          Waterfall Chart - Gap Analysis (Target vs Aktual)
         </h3>
         {waterfallData.length > 0 ? (
           <>
@@ -3567,7 +3568,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       {/* Pareto Chart - 80/20 Downtime Analysis */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-          📈 Pareto Chart - 80/20 Downtime Analysis
+          Pareto Chart - 80/20 Downtime Analysis
         </h3>
         {paretoData.length > 0 ? (
           <>
@@ -3604,7 +3605,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       {/* NEW: Trend Line Chart - Daily Production */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-          📉 Trend Produksi Harian (Target vs Aktual vs Kumulatif)
+          Trend Produksi Harian (Target vs Aktual vs Kumulatif)
         </h3>
         {trendData.length > 0 ? (
           <>
@@ -3626,7 +3627,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
               <p className="text-xs text-purple-900 dark:text-purple-200">
                 <strong>Trend:</strong> Produksi kumulatif saat ini: <span className="font-bold text-purple-700 dark:text-purple-300">{fmtNum(trendData[trendData.length - 1]?.cumulative || 0)} ctn</span>. 
                 {trendData[trendData.length - 1]?.cumulative >= data.summary.target_ctn ? 
-                  ' ✅ Target tercapai!' : 
+                  ' Target tercapai!' : 
                   ` Perlu ${fmtNum(data.summary.target_ctn - trendData[trendData.length - 1]?.cumulative)} ctn lagi.`
                 }
               </p>
@@ -3642,7 +3643,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       {/* NEW: Stacked Area Chart - Grade Distribution */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-          📊 Distribusi Grade A/B/C Over Time
+          Distribusi Grade A/B/C Over Time
         </h3>
         {gradeAreaData.length > 0 ? (
           <>
@@ -3676,7 +3677,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       {/* NEW: Quality Trend Line */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-          ✨ Trend Kualitas (% Grade A)
+          Trend Kualitas (% Grade A)
         </h3>
         {qualityTrendData.length > 0 ? (
           <>
@@ -3712,7 +3713,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       {/* NEW: Machine Efficiency Comparison */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-          ⚙️ Perbandingan Efisiensi Mesin (OEE & Produksi)
+          Perbandingan Efisiensi Mesin (OEE & Produksi)
         </h3>
         {machineComparisonData.length > 0 ? (
           <>
@@ -3747,7 +3748,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       {/* Gantt Chart - WO Timeline */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-          📅 Gantt Chart - Timeline Produksi per Produk
+          Gantt Chart - Timeline Produksi per Produk
         </h3>
         {ganttData.length > 0 ? (
           <>
@@ -3845,7 +3846,7 @@ const ShiftTab: React.FC<{ data: any }> = ({ data }) => {
             style={{ background: `linear-gradient(135deg, ${SHIFT_COLORS[i]}, ${SHIFT_COLORS[i]}CC)` }}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-lg font-bold">{s.shift_label}</span>
-              {s.shift_label === best.shift_label && <span className="text-xs bg-yellow-300 text-yellow-900 px-2 py-0.5 rounded-full font-semibold dark:text-yellow-200">🏆 Terbaik</span>}
+              {s.shift_label === best.shift_label && <span className="text-xs bg-yellow-300 text-yellow-900 px-2 py-0.5 rounded-full font-semibold dark:text-yellow-200">Terbaik</span>}
             </div>
             <p className="text-2xl font-bold">{fmtNum(s.total_pcs)}<span className="text-sm font-normal text-white/70"> pcs</span></p>
             <div className="grid grid-cols-3 gap-2 mt-3 text-center text-xs">
@@ -3927,7 +3928,7 @@ const ShiftTab: React.FC<{ data: any }> = ({ data }) => {
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {shifts.map((s: any, i: number) => (
                 <tr key={i} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${s.shift_label === best.shift_label ? 'bg-yellow-50 dark:bg-yellow-900/10' : ''}`}>
-                  <td className="px-4 py-3 font-bold" style={{ color: SHIFT_COLORS[i] }}>{s.shift_label} {s.shift_label === best.shift_label ? '🏆' : ''}</td>
+                  <td className="px-4 py-3 font-bold" style={{ color: SHIFT_COLORS[i] }}>{s.shift_label} {s.shift_label === best.shift_label ? '' : ''}</td>
                   <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">{fmtNum(s.total_pcs)}</td>
                   <td className="px-4 py-3 text-right text-green-600 dark:text-green-400">{fmtNum(s.grade_a)}</td>
                   <td className="px-4 py-3 text-right text-yellow-500">{fmtNum(s.grade_b)}</td>
@@ -4109,7 +4110,7 @@ const FGConversionTab: React.FC<{
             <p className="text-sm text-emerald-100 mt-1">{MONTH_NAMES[month]} {year} · Konversi WIP menjadi produk jadi siap kirim</p>
           </div>
           <button onClick={onFetch} className="self-start sm:self-auto px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition">
-            🔄 Refresh
+            Refresh
           </button>
         </div>
       </div>
@@ -4117,15 +4118,15 @@ const FGConversionTab: React.FC<{
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Konversi', value: summary.total_conversions, sub: `${summary.completed} selesai`, color: 'from-primary-600 to-primary-700', icon: '📦' },
-          { label: 'Total FG Output', value: fmtNum(summary.total_fg_qty), sub: 'pcs diproduksi', color: 'from-primary-500 to-primary-600', icon: '✅' },
-          { label: 'Total WIP Input', value: fmtNum(summary.total_wip_qty), sub: 'pcs WIP dipakai', color: 'from-violet-500 to-violet-600', icon: '🏭' },
+          { label: 'Total Konversi', value: summary.total_conversions, sub: `${summary.completed} selesai`, color: 'from-primary-600 to-primary-700', icon: <Package className="w-6 h-6" /> },
+          { label: 'Total FG Output', value: fmtNum(summary.total_fg_qty), sub: 'pcs diproduksi', color: 'from-primary-500 to-primary-600', icon: <CheckCircle2 className="w-6 h-6" /> },
+          { label: 'Total WIP Input', value: fmtNum(summary.total_wip_qty), sub: 'pcs WIP dipakai', color: 'from-violet-500 to-violet-600', icon: <Factory className="w-6 h-6" /> },
           {
             label: 'Loss Rate',
             value: `${summary.loss_pct}%`,
             sub: `${fmtNum(summary.total_loss_qty)} pcs loss`,
             color: summary.loss_pct > 5 ? 'from-red-500 to-rose-600' : 'from-amber-400 to-orange-500',
-            icon: summary.loss_pct > 5 ? '⚠️' : '📉'
+            icon: summary.loss_pct > 5 ? <AlertTriangle className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />
           },
         ].map((card, i) => (
           <div key={i} className={`bg-gradient-to-br ${card.color} rounded-2xl p-4 text-white shadow-md hover:shadow-lg transition-shadow duration-200`}>
@@ -4665,7 +4666,7 @@ const ConvertingTab: React.FC = () => {
                           return (
                             <div className="mt-4 pt-4 border-t border-slate-100 dark:border-gray-700">
                               <h4 className="text-xs font-bold text-slate-700 dark:text-gray-300 mb-2 uppercase tracking-wider flex items-center gap-1">
-                                ⚠️ Rincian Downtime Mesin Hari Ini
+                                Rincian Downtime Mesin Hari Ini
                               </h4>
                               <div className="overflow-x-auto rounded border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                                 <table className="min-w-full text-xs text-left">
@@ -4898,7 +4899,7 @@ const PackingListTab: React.FC = () => {
                               {/* Batch Breakdown Table */}
                               <div className="bg-white dark:bg-gray-800 p-3.5 rounded-lg shadow-sm border border-slate-200 dark:border-gray-700 space-y-2">
                                 <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 border-b pb-2">
-                                  <span>🏷️ Breakdown Batch Mixing ({pl.batch_summary?.length || 0} Batch)</span>
+                                  <span>Breakdown Batch Mixing ({pl.batch_summary?.length || 0} Batch)</span>
                                 </h4>
                                 {(!pl.batch_summary || pl.batch_summary.length === 0) ? (
                                   <p className="text-slate-400 italic">Belum ada data batch</p>
@@ -4929,7 +4930,7 @@ const PackingListTab: React.FC = () => {
                                 {isOctenic && (
                                   <div className="bg-pink-50 dark:bg-pink-950/30 p-3.5 rounded-lg border border-pink-200 dark:border-pink-900 space-y-1.5">
                                     <h4 className="font-bold text-pink-900 dark:text-pink-300 flex items-center gap-1">
-                                      <span>⚖️ Stats Berat Karton (Octenic)</span>
+                                      <span>Stats Berat Karton (Octenic)</span>
                                     </h4>
                                     <div className="grid grid-cols-2 gap-2 text-slate-700 dark:text-slate-300 pt-1">
                                       <div>Rata-rata: <strong className="text-pink-700 dark:text-pink-400">{pl.weight_stats?.avg_weight || '-'} kg</strong></div>
