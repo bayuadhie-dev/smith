@@ -608,9 +608,9 @@ const ProductionMonitoringDashboard: React.FC = () => {
             </div>
             <div className="flex items-end gap-1.5">
               <span className="text-3xl font-black text-green-600 dark:text-green-400 leading-none">{fmtNum(displaySummary.total_grade_a)}</span>
-              <span className="text-lg font-bold text-gray-300 dark:text-gray-600 pb-0.5">/</span>
+              <span className="text-lg font-bold text-gray-400 dark:text-gray-500 pb-0.5">/</span>
               <span className="text-xl font-black text-amber-500 pb-0.5">{fmtNum(displaySummary.total_grade_b)}</span>
-              <span className="text-lg font-bold text-gray-300 dark:text-gray-600 pb-0.5">/</span>
+              <span className="text-lg font-bold text-gray-400 dark:text-gray-500 pb-0.5">/</span>
               <span className="text-xl font-black text-red-500 pb-0.5">{fmtNum(displaySummary.total_grade_c)}</span>
             </div>
             <p className="text-xs text-gray-400 mt-0.5 font-medium">Grade A / B / C</p>
@@ -1399,7 +1399,7 @@ const OverviewTab: React.FC<{
             <span className={`text-2xl font-extrabold ${accentText}`}>{projectedPct}%</span>
             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${accentBadge}`}>{paceLabel}</span>
           </div>
-          <span className="text-gray-200 dark:text-gray-600 hidden sm:block">|</span>
+          <span className="text-gray-400 dark:text-gray-500 hidden sm:block">|</span>
           <p className="text-xs text-gray-500 shrink-0 dark:text-gray-400">
             Proyeksi <strong className="text-gray-800 dark:text-white">{fmtNum(projectedCtn)}</strong>
             <span className="text-gray-400 mx-1">dari</span>

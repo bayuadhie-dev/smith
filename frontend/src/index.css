@@ -418,3 +418,5 @@ html:where(:not(.dark)) .text-slate-400:where(:not(.sidebar-themed *)) {
 html:where(:not(.dark)) .text-gray-300:where(:not(.sidebar-themed *)) {
   color: #9ca3af;
 }
+
+html:where(:not(.dark)) .recharts-legend-item-text { color: #374151 !important; }
