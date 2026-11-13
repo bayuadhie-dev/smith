@@ -105,6 +105,8 @@ const routeLabels: Record<string, string> = {
   'pre-shift-checklist': 'Pre-Shift Checklist',
   'live-monitoring': 'Patroli Mesin',
   'petty-cash': 'Kas Kecil',
+  'inventory-mutation': 'Nilai Persediaan',
+  'inventory-by-warehouse': 'Kuantitas Barang per Gudang',
 };
 
 // Jalur induk yang tidak punya halaman sendiri: tampil sebagai teks, bukan tautan

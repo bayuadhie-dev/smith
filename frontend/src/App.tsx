@@ -207,6 +207,8 @@ import AgingReport from './pages/Finance/AgingReport'
 import ReportsHub from './pages/Finance/Reports/ReportsHub'
 import FinanceSearch from './pages/Finance/FinanceSearch'
 import TrialBalance from './pages/Finance/Reports/TrialBalance'
+import InventoryMutation from './pages/Finance/Reports/InventoryMutation'
+import InventoryByWarehouse from './pages/Finance/Reports/InventoryByWarehouse'
 import AccountLedger from './pages/Finance/Reports/AccountLedger'
 import CashDaily from './pages/Finance/Reports/CashDaily'
 import CashDailyDetail from './pages/Finance/Reports/CashDailyDetail'
@@ -795,6 +797,8 @@ function AppChildRoutes() {
                 <Route path="finance/search" element={<FinanceSearch />} />
                 <Route path="finance/reports" element={<ReportsHub />} />
                 <Route path="finance/reports/trial-balance" element={<TrialBalance />} />
+                <Route path="finance/reports/inventory-mutation" element={<InventoryMutation />} />
+                <Route path="finance/reports/inventory-by-warehouse" element={<InventoryByWarehouse />} />
                 <Route path="finance/reports/bank-mutation" element={<AccountLedger mode="bank" />} />
                 <Route path="finance/reports/ledger/:accountId" element={<AccountLedger mode="ledger" />} />
                 <Route path="finance/reports/cash-daily" element={<CashDaily />} />

@@ -845,3 +845,266 @@ def generate_pdf_from_rows():
     kinds = _col_kinds(headers, rows)
     safe = re.sub(r'[^A-Za-z0-9_.-]+', '_', str(body.get('type') or 'laporan'))[:60]
     return _pdf_file(title, headers, rows, f'{safe}.pdf', subtitle, kinds)
+
+
+# ------------------------------------------------------------------ inventory reports (mutation per item, qty per warehouse)
+# Source: the unified stock ledger (inventory_transactions). Value = total_cost (FIFO cost recorded when the stock moved),
+# or quantity x unit_cost; movements that carry no cost count as 0 and are reported in `unvalued_rows`.
+# Neutral rows are left out of Masuk/Keluar: status changes (qc_disposition pairs) and, in the all-warehouse view, internal transfers.
+_NEUTRAL_QC = ('qc_disposition', 'qc_disposition_out')
+_TRANSFER_PAIR = ('transfer_in', 'transfer_out')
+
+
+def _inv_models():
+    from models.product import Material, Product
+    from models.warehouse import Inventory, WarehouseLocation, WarehouseZone
+    from models.wms_advanced import InventoryTransaction
+    return InventoryTransaction, Product, Material, WarehouseZone, WarehouseLocation, Inventory
+
+
+def _inv_value_exprs(T):
+    absval = func.coalesce(T.total_cost, T.quantity * func.coalesce(T.unit_cost, 0))
+    sign_q = case((T.direction == 'in', T.quantity), else_=-T.quantity)
+    sign_v = case((T.direction == 'in', absval), else_=-absval)
+    return absval, sign_q, sign_v
+
+
+def _inv_loc_expr(T):
+    return case((T.direction == 'in', func.coalesce(T.to_location_id, T.from_location_id)),
+                else_=func.coalesce(T.from_location_id, T.to_location_id))
+
+
+def _inv_valid(T, date_to):
+    end = datetime.combine(date_to + timedelta(days=1), datetime.min.time())
+    return [T.transaction_date < end, db.or_(T.status.is_(None), T.status.notin_(['cancelled', 'void', 'failed'])),
+            T.transaction_type.notin_(_NEUTRAL_QC)]
+
+
+def _inv_items(keys, group=None, q=None):
+    _, Product, Material, *_ = _inv_models()
+    pids = {k[0] for k in keys if k[0]}
+    mids = {k[1] for k in keys if k[1]}
+    prods = {p.id: p for p in Product.query.filter(Product.id.in_(pids)).all()} if pids else {}
+    mats = {m.id: m for m in Material.query.filter(Material.id.in_(mids)).all()} if mids else {}
+    out = {}
+    needle = (q or '').strip().lower()
+    for k in keys:
+        it = prods.get(k[0]) if k[0] else mats.get(k[1])
+        if not it:
+            continue
+        if group and group != 'all' and (it.material_type or '') != group:
+            continue
+        if needle and needle not in f'{it.code} {it.name}'.lower():
+            continue
+        out[k] = {'code': it.code, 'name': it.name, 'uom': it.primary_uom, 'group': it.material_type or '', 'kind': 'product' if k[0] else 'material'}
+    return out
+
+
+def _legacy_transfers(date_to):
+    """Old single-row 'transfer' movements: +qty at the destination, -qty at the source."""
+    T = _inv_models()[0]
+    absval = _inv_value_exprs(T)[0]
+    rows = db.session.query(T.product_id, T.material_id, T.from_location_id, T.to_location_id, T.quantity, absval, T.transaction_date).filter(
+        T.transaction_type == 'transfer', *_inv_valid(T, date_to)[:2]).all()
+    return rows
+
+
+def _inv_group_choices():
+    _, Product, Material, *_ = _inv_models()
+    return sorted({g for (g,) in db.session.query(Product.material_type).distinct() if g} | {g for (g,) in db.session.query(Material.material_type).distinct() if g})
+
+
+def _inv_args():
+    date_from, date_to = _period()
+    zone_id = request.args.get('zone_id', type=int)
+    group = request.args.get('group') or 'all'
+    q = request.args.get('q') or ''
+    hide_zero = request.args.get('hide_zero', 'true').lower() != 'false'
+    return date_from, date_to, zone_id, group, q, hide_zero
+
+
+@finance_reports_bp.route('/inventory-mutation', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view', 'warehouse.view')
+def inventory_mutation():
+    """Nilai Persediaan: saldo awal, masuk, keluar, saldo akhir per barang (kuantitas dan nilai)."""
+    try:
+        date_from, date_to, zone_id, group, q, hide_zero = _inv_args()
+    except ValueError as e:
+        return _err(e)
+    T, _, _, Zone, Loc, Inventory = _inv_models()
+    absval, sign_q, sign_v = _inv_value_exprs(T)
+    start = datetime.combine(date_from, datetime.min.time())
+    in_period = T.transaction_date >= start
+    zone_scoped = bool(zone_id)
+    if zone_id and not db.session.get(Zone, zone_id):
+        return _err('Gudang tidak ditemukan', 404)
+    loc_ids = {l.id for l in Loc.query.filter_by(zone_id=zone_id).all()} if zone_id else None
+
+    cols = [T.product_id, T.material_id,
+            func.coalesce(func.sum(case((~in_period, sign_q), else_=0)), 0), func.coalesce(func.sum(case((~in_period, sign_v), else_=0)), 0),
+            func.coalesce(func.sum(case((db.and_(in_period, T.direction == 'in'), T.quantity), else_=0)), 0),
+            func.coalesce(func.sum(case((db.and_(in_period, T.direction == 'in'), absval), else_=0)), 0),
+            func.coalesce(func.sum(case((db.and_(in_period, T.direction == 'out'), T.quantity), else_=0)), 0),
+            func.coalesce(func.sum(case((db.and_(in_period, T.direction == 'out'), absval), else_=0)), 0)]
+    query = db.session.query(*cols).filter(*_inv_valid(T, date_to))
+    if zone_scoped:
+        query = query.filter(T.transaction_type != 'transfer', _inv_loc_expr(T).in_(loc_ids or [-1]))
+    else:
+        query = query.filter(T.transaction_type.notin_(('transfer',) + _TRANSFER_PAIR))
+    agg = {}
+    for pid, mid, ob_q, ob_v, in_q, in_v, out_q, out_v in query.group_by(T.product_id, T.material_id).all():
+        agg[(pid, mid)] = [_f(ob_q), _f(ob_v), _f(in_q), _f(in_v), _f(out_q), _f(out_v)]
+    if zone_scoped:
+        for pid, mid, from_loc, to_loc, qty, val, when in _legacy_transfers(date_to):
+            cell = agg.setdefault((pid, mid), [0.0] * 6)
+            for loc, sign in ((to_loc, 1), (from_loc, -1)):
+                if loc in loc_ids:
+                    if when < start:
+                        cell[0] += sign * _f(qty)
+                        cell[1] += sign * _f(val)
+                    elif sign > 0:
+                        cell[2] += _f(qty)
+                        cell[3] += _f(val)
+                    else:
+                        cell[4] += _f(qty)
+                        cell[5] += _f(val)
+
+    items = _inv_items(list(agg.keys()), group, q)
+    system = {}
+    check_system = date_to >= get_local_today()
+    if check_system:
+        sq = db.session.query(Inventory.product_id, Inventory.material_id, func.coalesce(func.sum(Inventory.quantity_on_hand), 0))
+        if zone_scoped:
+            sq = sq.filter(Inventory.location_id.in_(loc_ids or [-1]))
+        system = {(p, m): _f(v) for p, m, v in sq.group_by(Inventory.product_id, Inventory.material_id).all()}
+    rows = []
+    for key, meta in items.items():
+        ob_q, ob_v, in_q, in_v, out_q, out_v = agg[key]
+        cq, cv = ob_q + in_q - out_q, ob_v + in_v - out_v
+        if hide_zero and all(abs(x) < 0.0005 for x in (ob_q, ob_v, in_q, in_v, out_q, out_v, cq, cv)):
+            continue
+        row = {**meta, 'opening_qty': round(ob_q, 3), 'opening_value': round(ob_v, 2), 'in_qty': round(in_q, 3), 'in_value': round(in_v, 2),
+               'out_qty': round(out_q, 3), 'out_value': round(out_v, 2), 'closing_qty': round(cq, 3), 'closing_value': round(cv, 2)}
+        if check_system:
+            sysq = system.get(key, 0.0)
+            row['system_qty'] = round(sysq, 3)
+            row['qty_mismatch'] = abs(sysq - cq) > 0.005
+        rows.append(row)
+    rows.sort(key=lambda r: (r['name'] or '').lower())
+    keys = ('opening_qty', 'opening_value', 'in_qty', 'in_value', 'out_qty', 'out_value', 'closing_qty', 'closing_value')
+    totals = {k: round(sum(r[k] for r in rows), 3 if k.endswith('qty') else 2) for k in keys}
+    unvalued = db.session.query(func.count(T.id)).filter(*_inv_valid(T, date_to), T.total_cost.is_(None), T.unit_cost.is_(None)).scalar() or 0
+    zone = db.session.get(Zone, zone_id) if zone_id else None
+    if _wants_xlsx():
+        headers = ['Nama Barang', 'Kode Barang', 'Satuan', 'Saldo Awal Kuantitas', 'Saldo Awal Nilai', 'Masuk Kuantitas', 'Masuk Nilai',
+                   'Keluar Kuantitas', 'Keluar Nilai', 'Saldo Akhir Kuantitas', 'Saldo Akhir Nilai']
+        data = [[r['name'], r['code'], r['uom'], r['opening_qty'], r['opening_value'], r['in_qty'], r['in_value'], r['out_qty'], r['out_value'], r['closing_qty'], r['closing_value']] for r in rows]
+        data.append(['TOTAL', '', ''] + [totals[k] for k in keys])
+        sub = f'Dari {date_from} s/d {date_to} · Gudang: {zone.name if zone else "Semua Gudang"}'
+        return _xlsx('Nilai Persediaan', headers, data, f'nilai_persediaan_{date_from}_{date_to}.xlsx', sub)
+    return jsonify({
+        'period': {'date_from': date_from.isoformat(), 'date_to': date_to.isoformat()}, 'zone': {'id': zone.id, 'name': zone.name} if zone else None,
+        'groups': _inv_group_choices(), 'zones': [{'id': z.id, 'name': z.name} for z in Zone.query.filter(Zone.is_active.is_(True)).order_by(Zone.code).all()],
+        'rows': rows, 'totals': totals, 'unvalued_rows': int(unvalued),
+        'mismatch_count': sum(1 for r in rows if r.get('qty_mismatch')), 'checked_against_stock': check_system,
+    })
+
+
+@finance_reports_bp.route('/inventory-by-warehouse', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view', 'warehouse.view')
+def inventory_by_warehouse():
+    """Kuantitas Barang per Gudang: kuantitas dan total biaya tiap barang di tiap gudang per tanggal."""
+    try:
+        _, date_to, _, group, q, hide_zero = _inv_args()
+    except ValueError as e:
+        return _err(e)
+    if not request.args.get('date_to'):
+        date_to = get_local_today()
+    T, _, _, Zone, Loc, _ = _inv_models()
+    absval, sign_q, sign_v = _inv_value_exprs(T)
+    loc_expr = _inv_loc_expr(T)
+    zone_of = {l.id: l.zone_id for l in Loc.query.all()}
+    zones = Zone.query.filter(Zone.is_active.is_(True)).order_by(Zone.code).all()
+    source = 'ledger'
+    if (request.args.get('source') or '').lower() == 'stock':
+        if date_to < get_local_today():
+            return _err('Sumber "Stok saat ini" hanya untuk hari ini; pilih tanggal hari ini atau gunakan sumber mutasi')
+        source = 'stock'
+    agg = {}
+    rows_q = db.session.query(T.product_id, T.material_id, loc_expr, func.coalesce(func.sum(sign_q), 0), func.coalesce(func.sum(sign_v), 0)).filter(
+        *_inv_valid(T, date_to), T.transaction_type != 'transfer').group_by(T.product_id, T.material_id, loc_expr).all()
+    for pid, mid, loc, sq_, sv_ in rows_q:
+        zid = zone_of.get(loc)
+        cell = agg.setdefault((pid, mid), {}).setdefault(zid, [0.0, 0.0])
+        cell[0] += _f(sq_)
+        cell[1] += _f(sv_)
+    for pid, mid, from_loc, to_loc, qty, val, _when in _legacy_transfers(date_to):
+        cells = agg.setdefault((pid, mid), {})
+        for loc, sign in ((to_loc, 1), (from_loc, -1)):
+            cell = cells.setdefault(zone_of.get(loc), [0.0, 0.0])
+            cell[0] += sign * _f(qty)
+            cell[1] += sign * _f(val)
+    if source == 'stock':
+        # Stok fisik per lokasi (tabel stok). Biaya per satuan = rata-rata tertimbang penerimaan di buku stok, atau biaya master.
+        Inventory = _inv_models()[5]
+        _, Product, Material = _inv_models()[:3]
+        agg = {}
+        for pid, mid, loc, qty_ in db.session.query(Inventory.product_id, Inventory.material_id, Inventory.location_id,
+                                                    func.coalesce(func.sum(Inventory.quantity_on_hand), 0)).filter(Inventory.is_active.is_(True)).group_by(
+                Inventory.product_id, Inventory.material_id, Inventory.location_id).all():
+            agg.setdefault((pid, mid), {}).setdefault(zone_of.get(loc), [0.0, 0.0])[0] += _f(qty_)
+        recv = {(p_, m_): (_f(v_), _f(q_)) for p_, m_, v_, q_ in db.session.query(
+            T.product_id, T.material_id, func.coalesce(func.sum(absval), 0), func.coalesce(func.sum(T.quantity), 0)).filter(
+            T.direction == 'in', T.transaction_type.notin_(_NEUTRAL_QC + _TRANSFER_PAIR + ('transfer',)), T.total_cost.isnot(None)).group_by(T.product_id, T.material_id).all()}
+        masters = {}
+        for pr in Product.query.filter(Product.id.in_({k[0] for k in agg if k[0]})).all() if any(k[0] for k in agg) else []:
+            masters[(pr.id, None)] = _f(pr.cost)
+        for ma in Material.query.filter(Material.id.in_({k[1] for k in agg if k[1]})).all() if any(k[1] for k in agg) else []:
+            masters[(None, ma.id)] = _f(ma.cost_per_unit)
+        for key, cells in agg.items():
+            tv, tq = recv.get(key, (0.0, 0.0))
+            unit = (tv / tq) if tq > 0 else masters.get(key, 0.0)
+            for cell in cells.values():
+                cell[1] = cell[0] * unit
+    items = _inv_items(list(agg.keys()), group, q)
+    zone_ids = [z.id for z in zones]
+    rows = []
+    for key, meta in items.items():
+        by_zone = {}
+        total_q = total_v = 0.0
+        for zid in zone_ids:
+            cq, cv = agg[key].get(zid, [0.0, 0.0])
+            by_zone[str(zid)] = {'qty': round(cq, 3), 'value': round(cv, 2)}
+            total_q += cq
+            total_v += cv
+        # stock sitting on locations without a warehouse is still part of the total
+        for zid, (cq, cv) in agg[key].items():
+            if zid not in zone_ids:
+                total_q += cq
+                total_v += cv
+        if hide_zero and abs(total_q) < 0.0005 and abs(total_v) < 0.005 and all(abs(z['qty']) < 0.0005 for z in by_zone.values()):
+            continue
+        rows.append({**meta, 'by_zone': by_zone, 'total_qty': round(total_q, 3), 'total_value': round(total_v, 2)})
+    rows.sort(key=lambda r: (r['name'] or '').lower())
+    zone_totals = {str(zid): {'qty': round(sum(r['by_zone'][str(zid)]['qty'] for r in rows), 3), 'value': round(sum(r['by_zone'][str(zid)]['value'] for r in rows), 2)} for zid in zone_ids}
+    totals = {'qty': round(sum(r['total_qty'] for r in rows), 3), 'value': round(sum(r['total_value'] for r in rows), 2)}
+    if _wants_xlsx():
+        headers = ['Nama Barang', 'Kode Barang', 'Satuan']
+        for z in zones:
+            headers += [f'{z.name} Kuantitas', f'{z.name} Total Biaya']
+        headers += ['TOTAL Kuantitas', 'TOTAL Biaya']
+        data = []
+        for r in rows:
+            line = [r['name'], r['code'], r['uom']]
+            for z in zones:
+                line += [r['by_zone'][str(z.id)]['qty'], r['by_zone'][str(z.id)]['value']]
+            data.append(line + [r['total_qty'], r['total_value']])
+        foot = ['TOTAL', '', '']
+        for z in zones:
+            foot += [zone_totals[str(z.id)]['qty'], zone_totals[str(z.id)]['value']]
+        data.append(foot + [totals['qty'], totals['value']])
+        return _xlsx('Kuantitas Barang per Gudang', headers, data, f'kuantitas_barang_per_gudang_{date_to}.xlsx', f'Per tanggal {date_to}')
+    return jsonify({'as_of': date_to.isoformat(), 'source': source, 'zones': [{'id': z.id, 'code': z.code, 'name': z.name} for z in zones], 'groups': _inv_group_choices(),
+                    'rows': rows, 'zone_totals': zone_totals, 'totals': totals})

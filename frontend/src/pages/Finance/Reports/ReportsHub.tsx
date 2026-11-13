@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowsRightLeftIcon, BanknotesIcon, BookOpenIcon, BuildingLibraryIcon, CalendarDaysIcon, ChartBarSquareIcon, ChartPieIcon, ClockIcon,
-  DocumentChartBarIcon, DocumentTextIcon, ReceiptPercentIcon, ScaleIcon, ShoppingBagIcon, TruckIcon, UsersIcon, PresentationChartLineIcon,
+  BuildingStorefrontIcon, CubeIcon, DocumentChartBarIcon, DocumentTextIcon, ReceiptPercentIcon, ScaleIcon, ShoppingBagIcon, TruckIcon, UsersIcon, PresentationChartLineIcon,
 } from '@heroicons/react/24/outline'
 import { ReportShell, SearchBox } from './reportKit'
 
@@ -33,6 +33,10 @@ const GROUPS: { title: string; hint: string; items: Item[] }[] = [
     { title: 'Kartu Hutang per Supplier', desc: 'Faktur, pembayaran, dan saldo berjalan tiap supplier', to: '/app/finance/reports/supplier-statements', icon: TruckIcon, isNew: true },
     { title: 'Laporan Pembelian', desc: 'Faktur pembelian per faktur dan per supplier', to: '/app/finance/reports/purchase', icon: ShoppingBagIcon, isNew: true },
     { title: 'Daftar Pembayaran Pembelian', desc: 'Pembayaran hutang ke supplier', to: '/app/finance/pembayaran-pembelian', icon: BanknotesIcon },
+  ] },
+  { title: 'Persediaan', hint: 'Nilai dan stok barang', items: [
+    { title: 'Nilai Persediaan', desc: 'Mutasi per barang: saldo awal, masuk, keluar, saldo akhir (kuantitas dan nilai)', to: '/app/finance/reports/inventory-mutation', icon: CubeIcon, isNew: true },
+    { title: 'Kuantitas Barang per Gudang', desc: 'Kuantitas dan total biaya tiap barang di tiap gudang per tanggal', to: '/app/finance/reports/inventory-by-warehouse', icon: BuildingStorefrontIcon, isNew: true },
   ] },
   { title: 'Buku Besar & Pajak', hint: 'Jurnal dan perpajakan', items: [
     { title: 'Buku Besar', desc: 'Semua jurnal, filter per akun (akun induk didukung)', to: '/app/accounting/general-ledger', icon: BookOpenIcon },

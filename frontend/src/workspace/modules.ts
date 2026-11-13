@@ -36,7 +36,7 @@ export function splitPath(path: string): { pathname: string; search: string } {
   return q >= 0 && q < end ? { pathname: path.slice(0, q), search: path.slice(q, end) } : { pathname: path.slice(0, end), search: '' }
 }
 
-const SEGMENT_WORDS: Record<string, string> = { new: 'Baru', edit: 'Ubah', create: 'Baru', 'petty-cash': 'Kas Kecil' }
+const SEGMENT_WORDS: Record<string, string> = { new: 'Baru', edit: 'Ubah', create: 'Baru', 'petty-cash': 'Kas Kecil', 'inventory-mutation': 'Nilai Persediaan', 'inventory-by-warehouse': 'Kuantitas per Gudang' }
 
 // Fallback tab title when nothing was clicked (e.g. a deep link): "penerimaan-penjualan" -> "Penerimaan Penjualan".
 export function pathLabel(path: string): string {

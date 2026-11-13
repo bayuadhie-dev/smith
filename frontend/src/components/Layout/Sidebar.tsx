@@ -268,6 +268,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
               name: 'Laporan', icon: DocumentChartBarIcon, isSubMenu: true, subChildren: [
                 { name: 'Barang per Gudang', href: '/app/warehouse/stock-summary' },
                 { name: 'Mutasi Stok', href: '/app/warehouse/movements' },
+                { name: 'Nilai Persediaan', href: '/app/finance/reports/inventory-mutation' },
+                { name: 'Kuantitas Barang per Gudang', href: '/app/finance/reports/inventory-by-warehouse' },
                 { name: 'Stok Minimum', href: '/app/warehouse/alerts' },
                 { name: 'Analytics', href: '/app/warehouse/analytics' },
               ]
