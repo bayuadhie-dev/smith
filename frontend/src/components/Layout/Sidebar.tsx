@@ -887,10 +887,9 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
       <div className={clsx('mt-auto pt-4 border-t border-gray-200 dark:border-gray-800 space-y-3', collapsed && 'flex flex-col items-center')}>
         {/* Theme Toggle */}
         {collapsed ? (
-          <ThemeToggle />
+          <ThemeToggle collapsed />
         ) : (
-          <div className="px-2 flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Theme</span>
+          <div className="px-2">
             <ThemeToggle />
           </div>
         )}
