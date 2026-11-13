@@ -3,6 +3,8 @@ import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { ChartBarIcon } from '@heroicons/react/24/outline';
+import { useUrlState } from '../../hooks/useUrlState'
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 
 interface SalesReportRow {
   invoice_id: number;
@@ -54,7 +56,8 @@ function today(): string {
 const SalesReport: React.FC = () => {
   const [dateFrom, setDateFrom] = useState(firstDayOfMonth());
   const [dateTo, setDateTo] = useState(today());
-  const [view, setView] = useState<'invoice' | 'product'>('invoice');
+  const [view, setView] = useUrlState<'invoice' | 'product'>('view', 'invoice', ['invoice', 'product']);
+  useBreadcrumbTrail(view === 'invoice' ? [] : [{ label: 'Per Produk' }]);
   const [data, setData] = useState<SalesReportData | null>(null);
   const [productData, setProductData] = useState<ProductReportData | null>(null);
   const [loading, setLoading] = useState(false);

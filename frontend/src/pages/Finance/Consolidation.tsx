@@ -12,6 +12,8 @@ import {
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
 import { showInfo, showSuccess } from '../../components/ui'
+import { useUrlState } from '../../hooks/useUrlState'
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 interface ConsolidatedData {
   entity_name: string
   revenue: number
@@ -39,7 +41,8 @@ const [consolidatedData, setConsolidatedData] = useState<ConsolidatedData[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPeriod, setSelectedPeriod] = useState(`${new Date().getFullYear()}-Q${Math.ceil((new Date().getMonth() + 1) / 3)}`)
   const [showAddEntityModal, setShowAddEntityModal] = useState(false)
-  const [viewMode, setViewMode] = useState<'financial' | 'performance'>('financial')
+  const [viewMode, setViewMode] = useUrlState<'financial' | 'performance'>('view', 'financial', ['financial', 'performance'])
+  useBreadcrumbTrail(viewMode === 'financial' ? [] : [{ label: 'Performa' }])
 
   useEffect(() => {
     loadConsolidationData()

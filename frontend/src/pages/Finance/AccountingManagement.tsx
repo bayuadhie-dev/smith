@@ -18,6 +18,8 @@ import { Link } from 'react-router-dom';
 import ChartOfAccounts from './ChartOfAccounts';
 import { confirmDialog, showSuccess, showError, showWarning } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlState } from '../../hooks/useUrlState'
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 
 interface Account {
   id: number;
@@ -59,7 +61,8 @@ interface AccountingManagementProps {
 const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab = 'accounts', title = 'Accounting' }) => {
   const { t } = useLanguage();
 
-  const [activeTab, setActiveTab] = useState<'accounts' | 'journal'>(initialTab);
+  const [activeTab, setActiveTab] = useUrlState<'accounts' | 'journal'>('tab', initialTab, ['accounts', 'journal']);
+  useBreadcrumbTrail(activeTab === initialTab ? [] : [{ label: activeTab === 'accounts' ? 'Akun' : 'Jurnal' }]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [showVoided, setShowVoided] = useState(false);

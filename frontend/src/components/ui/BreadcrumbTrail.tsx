@@ -45,9 +45,12 @@ export function useTrail(): TrailState | null {
 /**
  * Halaman mendaftarkan rantai drill-down (setelah crumb rute), mis.
  * [{ label: 'Downtime', search: '?tab=downtime' }, { label: 'Mesin 3' }].
+
+ * Beri null untuk tidak menyentuh breadcrumb (mis. halaman yang sedang ditanam di halaman lain).
  * Crumb dengan search bisa diklik untuk kembali ke tingkat itu; Back browser ikut menelusurinya.
  */
-export function useBreadcrumbTrail(crumbs: TrailCrumb[]) {
+export function useBreadcrumbTrail(input: TrailCrumb[] | null) {
+  const crumbs = input ?? []
   const api = useContext(Ctx)
   const tabCtx = useContext(TabActiveContext)
   const navigate = useNavigate()
@@ -58,7 +61,7 @@ export function useBreadcrumbTrail(crumbs: TrailCrumb[]) {
   const key = crumbs.map((c) => `${c.label}|${c.search ?? ''}`).join('>')
 
   useEffect(() => {
-    if (!api || !active) return
+    if (!api || !active || input === null) return
     const items: TrailItem[] = crumbs.map((c, i) => ({
       label: c.label,
       go: i < crumbs.length - 1 && c.search !== undefined ? () => navigate({ pathname, search: c.search }) : undefined,
@@ -66,5 +69,5 @@ export function useBreadcrumbTrail(crumbs: TrailCrumb[]) {
     api.set({ owner, root: () => navigate({ pathname, search: '' }), items })
     return () => api.clear(owner)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, active, owner, pathname])
+  }, [key, active, owner, pathname, input === null])
 }

@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog, showError, showSuccess } from '../../components/ui';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 
 interface FormulaItem {
   id: number;
@@ -106,7 +108,8 @@ const RNDProjectDetail: React.FC = () => {
   const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'formulas' | 'experiments'>('overview');
+  const [activeTab, setActiveTab] = useUrlState<'overview' | 'formulas' | 'experiments'>('tab', 'overview', ['overview', 'formulas', 'experiments'] as const);
+  useBreadcrumbTrail(activeTab === 'overview' ? [] : [{ label: activeTab === 'formulas' ? 'Formula' : 'Eksperimen' }]);
   const [selectedFormula, setSelectedFormula] = useState<Formula | null>(null);
   const [showFormulaModal, setShowFormulaModal] = useState(false);
   const [showExperimentModal, setShowExperimentModal] = useState(false);

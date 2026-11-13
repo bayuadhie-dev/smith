@@ -13,6 +13,8 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 
 interface PendingQCWorkOrder {
   id: number;
@@ -40,7 +42,8 @@ export default function PendingQC() {
   const [completedList, setCompletedList] = useState<PendingQCWorkOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'pending' | 'completed'>('pending');
+  const [activeTab, setActiveTab] = useUrlState<'pending' | 'completed'>('tab', 'pending', ['pending', 'completed']);
+  useBreadcrumbTrail(activeTab === 'pending' ? [] : [{ label: ({ completed: 'Sudah QC' } as Record<string, string>)[activeTab] }]);
 
   const fetchPendingQC = async () => {
     setLoading(true);

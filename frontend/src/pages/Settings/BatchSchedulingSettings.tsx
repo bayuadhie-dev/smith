@@ -4,6 +4,8 @@ import SearchableSelect from '../../components/SearchableSelect';
 import { confirmDialog } from '../../components/ui';
 import { Plus, Trash2, Save, Settings2, Pencil } from 'lucide-react';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 
 // Moved out of Production/BatchSchedulingMasterData.tsx (2026-08-24): these 3 tabs are
 // setup-once master data (recipe, baseline calendar, holiday exceptions), rarely touched
@@ -60,7 +62,8 @@ interface ExceptionDay {
 const DAY_NAMES = ['Senin', 'Selasa', 'Rabu', 'Kamis', "Jum'at", 'Sabtu', 'Minggu'];
 
 const BatchSchedulingSettings: React.FC = () => {
-  const [tab, setTab] = useState<TabKey>('recipes');
+  const [tab, setTab] = useUrlState<'recipes' | 'global' | 'exceptions'>('tab', 'recipes', ['recipes', 'global', 'exceptions']);
+  useBreadcrumbTrail(tab === 'recipes' ? [] : [{ label: ({ global: 'Kalender Global', exceptions: 'Exception (Libur)' } as Record<string, string>)[tab] }]);
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">

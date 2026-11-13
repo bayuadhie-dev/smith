@@ -18,6 +18,8 @@ import UserManagementHeader from '../../components/Settings/UserManagementHeader
 import UserTable from '../../components/Settings/UserTable';
 import RoleTable from '../../components/Settings/RoleTable';
 import UserModal from '../../components/Settings/UserModal';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 
 // Components
 const UserRoleManagementNew: React.FC = () => {
@@ -33,7 +35,8 @@ const UserRoleManagementNew: React.FC = () => {
   const [deleteRole] = useDeleteRoleMutation();
   
   // Local state
-  const [activeTab, setActiveTab] = useState<'pending' | 'users' | 'roles' | 'permissions'>('users');
+  const [activeTab, setActiveTab] = useUrlState<'pending' | 'users' | 'roles' | 'permissions'>('tab', 'users', ['pending', 'users', 'roles', 'permissions']);
+  useBreadcrumbTrail(activeTab === 'users' ? [] : [{ label: ({ pending: 'Pending Approval', roles: 'Roles', permissions: 'Permissions' } as Record<string, string>)[activeTab] }]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
   

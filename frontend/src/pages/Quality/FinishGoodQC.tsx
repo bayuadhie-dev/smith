@@ -17,6 +17,8 @@ import {
   DocumentCheckIcon,
   PrinterIcon,
 } from '@heroicons/react/24/outline';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 
 interface FinishGoodItem {
   id: number;
@@ -46,7 +48,8 @@ export default function FinishGoodQC() {
   const [workOrders, setWorkOrders] = useState<FinishGoodItem[]>([]);
   const [completedQC, setCompletedQC] = useState<FinishGoodItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'pending' | 'completed'>('pending');
+  const [activeTab, setActiveTab] = useUrlState<'pending' | 'completed'>('tab', 'pending', ['pending', 'completed']);
+  useBreadcrumbTrail(activeTab === 'pending' ? [] : [{ label: ({ completed: 'Sudah QC' } as Record<string, string>)[activeTab] }]);
 
   useEffect(() => {
     fetchData();

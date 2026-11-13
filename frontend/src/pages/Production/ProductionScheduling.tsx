@@ -4,6 +4,8 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
 import { showInfo } from '../../components/ui'
+import { useUrlState } from '../../hooks/useUrlState'
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import {
   CalendarDaysIcon,
   CheckCircleIcon
@@ -49,7 +51,8 @@ const ProductionScheduling = () => {
   const [machines, setMachines] = useState<Machine[]>([])
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [viewMode, setViewMode] = useState<'week' | 'month'>('week')
+  const [viewMode, setViewMode] = useUrlState<'week' | 'month'>('view', 'week', ['week', 'month'])
+  useBreadcrumbTrail(viewMode === 'week' ? [] : [{ label: 'Bulanan' }])
   const [showNewScheduleModal, setShowNewScheduleModal] = useState(false)
 
   useEffect(() => {

@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { useUrlState } from '../../hooks/useUrlState'
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetAppraisalCyclesQuery, useGetEmployeeAppraisalsQuery } from '../../services/api'
@@ -13,7 +15,8 @@ export default function AppraisalList() {
     const { t } = useLanguage();
 
 const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState('cycles')
+  const [activeTab, setActiveTab] = useUrlState<'cycles' | 'appraisals'>('tab', 'cycles', ['cycles', 'appraisals'])
+  useBreadcrumbTrail(activeTab === 'cycles' ? [] : [{ label: ({ appraisals: 'Employee Appraisals' } as Record<string, string>)[activeTab] }])
   const [selectedCycle, setSelectedCycle] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('')
   

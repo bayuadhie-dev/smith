@@ -12,6 +12,8 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
@@ -88,7 +90,8 @@ const WeeklyController: React.FC = () => {
   const [top10Downtime, setTop10Downtime] = useState<DowntimeData[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [pieChartData, setPieChartData] = useState<PieChartData[]>([]);
-  const [activeTab, setActiveTab] = useState<'machines' | 'products' | 'downtime' | 'charts'>('machines');
+  const [activeTab, setActiveTab] = useUrlState<'machines' | 'products' | 'downtime' | 'charts'>('tab', 'machines', ['machines', 'products', 'downtime', 'charts']);
+  useBreadcrumbTrail(activeTab === 'machines' ? [] : [{ label: { products: 'Per Produk', downtime: 'Downtime', charts: 'Grafik' }[activeTab] }]);
 
   const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280', '#0ea5e9'];
 

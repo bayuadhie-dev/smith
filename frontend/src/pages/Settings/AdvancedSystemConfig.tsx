@@ -11,6 +11,8 @@ import {
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog, showError, showSuccess } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 
 interface SystemConfig {
   id: string;
@@ -36,7 +38,8 @@ const AdvancedSystemConfig: React.FC = () => {
   const [configs, setConfigs] = useState<SystemConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('general');
+  const [selectedCategory, setSelectedCategory] = useUrlState<string>('kategori', 'general', ['general', 'database', 'security', 'performance', 'logging']);
+  useBreadcrumbTrail(selectedCategory === 'general' ? [] : [{ label: selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1) }]);
   const [pendingChanges, setPendingChanges] = useState<Record<string, string>>({});
 
   const categories: ConfigCategory[] = [

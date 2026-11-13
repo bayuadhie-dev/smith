@@ -67,9 +67,12 @@ import {
 } from '@heroicons/react/24/outline'
 import { confirmDialog, showSuccess, showError, showWarning } from '../../components/ui'
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlState } from '../../hooks/useUrlState'
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 
 export default function AccurateIntegration() {
-  const [activeTab, setActiveTab] = useState<'config' | 'mapping' | 'dryrun' | 'approval' | 'modules' | 'ejo' | 'warehouse' | 'transfer'>('config')
+  const [activeTab, setActiveTab] = useUrlState<'config' | 'mapping' | 'dryrun' | 'approval' | 'modules' | 'ejo' | 'warehouse' | 'transfer'>('tab', 'config', ['config', 'mapping', 'dryrun', 'approval', 'modules', 'ejo', 'warehouse', 'transfer'])
+  useBreadcrumbTrail(activeTab === 'config' ? [] : [{ label: { mapping: 'Pemetaan Barang & BOM', dryrun: 'Simulasi Dry-Run', approval: 'Antrean Approval Sync', modules: 'Data Modul (Live)', ejo: 'Cek EJO', warehouse: 'Gudang EPD/FG', transfer: 'Histori Transfer' }[activeTab] }])
   const [ejoNumber, setEjoNumber] = useState('')
   const [ejoResult, setEjoResult] = useState<any>(null)
   const [ejoModalAccurateId, setEjoModalAccurateId] = useState<number | null>(null)

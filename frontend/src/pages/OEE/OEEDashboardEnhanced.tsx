@@ -14,6 +14,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { useGetOEEDashboardQuery, useGetOEEAlertsQuery, useAcknowledgeAlertMutation, useResolveAlertMutation } from '../../services/api'
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlState } from '../../hooks/useUrlState'
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 
 // Downtime categories with RCA templates
 const DOWNTIME_CATEGORIES: Record<string, any> = {
@@ -107,7 +109,8 @@ export default function OEEDashboardEnhanced() {
   const [selectedMachine, setSelectedMachine] = useState<number | null>(null)
   const [dateRange, setDateRange] = useState(30)
   const [alertFilter, setAlertFilter] = useState('active')
-  const [activeTab, setActiveTab] = useState<'overview' | 'rca' | 'machines' | 'alerts' | 'downtime'>('overview')
+  const [activeTab, setActiveTab] = useUrlState<'overview' | 'rca' | 'machines' | 'alerts' | 'downtime'>('tab', 'overview', ['overview', 'rca', 'machines', 'alerts', 'downtime'] as const)
+  useBreadcrumbTrail(activeTab === 'overview' ? [] : [{ label: { rca: 'RCA Analysis', machines: 'Machines', alerts: 'Alerts', downtime: 'Downtime Detail' }[activeTab] }])
   const [selectedRCACategory, setSelectedRCACategory] = useState<string | null>(null)
   const [downtimeDetails, setDowntimeDetails] = useState<any[]>([])
   const [loadingDowntime, setLoadingDowntime] = useState(false)

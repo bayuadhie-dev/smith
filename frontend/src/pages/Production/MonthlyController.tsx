@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import {
   CalendarIcon,
   ChevronLeftIcon,
@@ -97,7 +99,8 @@ const MonthlyController: React.FC = () => {
   const [top10Downtime, setTop10Downtime] = useState<DowntimeData[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [pieChartData, setPieChartData] = useState<PieChartData[]>([]);
-  const [activeTab, setActiveTab] = useState<'machines' | 'products' | 'products_machine' | 'downtime' | 'charts'>('machines');
+  const [activeTab, setActiveTab] = useUrlState<'machines' | 'products' | 'products_machine' | 'downtime' | 'charts'>('tab', 'machines', ['machines', 'products', 'products_machine', 'downtime', 'charts']);
+  useBreadcrumbTrail(activeTab === 'machines' ? [] : [{ label: { products: 'Produk', products_machine: 'Produk per Mesin', downtime: 'Downtime', charts: 'Grafik' }[activeTab] }]);
 
   const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280', '#0ea5e9'];
 

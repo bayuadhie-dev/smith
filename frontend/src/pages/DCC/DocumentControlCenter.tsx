@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { FileText, AlertTriangle, Mail, Trash2, BarChart3, Plus, Search, Eye, Upload, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight, RefreshCw, Filter, Download, Edit, MessageSquare, Send, ClipboardList, BookOpen, Archive } from 'lucide-react';
 import { confirmDialog, showError, showSuccess, showWarning } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 
 // ============================================================
 // TypeScript Interfaces
@@ -2189,6 +2190,11 @@ const DocumentReviewTab = () => {
 type TabKey = 'dashboard' | 'documents' | 'quality_records' | 'capa' | 'memos' | 'change_notice' | 'review' | 'destruction';
 const VALID_TABS: TabKey[] = ['dashboard', 'documents', 'quality_records', 'capa', 'memos', 'change_notice', 'review', 'destruction'];
 
+const DCC_TAB_LABELS: Record<TabKey, string> = {
+  dashboard: 'Dashboard', documents: 'Daftar Induk Dokumen', change_notice: 'Change Notice', review: 'Kaji Ulang',
+  quality_records: 'Rekaman Mutu', capa: 'CAPA', memos: 'Komunikasi Internal', destruction: 'Pemusnahan Dokumen',
+};
+
 const DocumentControlCenter = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab') as TabKey | null;
@@ -2197,6 +2203,7 @@ const DocumentControlCenter = () => {
   const setActiveTab = (tab: TabKey) => {
     setSearchParams({ tab });
   };
+  useBreadcrumbTrail(activeTab === 'dashboard' ? [] : [{ label: DCC_TAB_LABELS[activeTab] }]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [expiringDocs, setExpiringDocs] = useState<ExpiringDoc[]>([]);
 

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 // import { useLanguage } from '../../contexts/LanguageContext';
 import {
   ArrowLeftIcon,
@@ -105,7 +107,8 @@ const MachineDetail: React.FC = () => {
   const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([]);
   const [downtimeRecords, setDowntimeRecords] = useState<DowntimeRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'controller' | 'spareparts'>('overview');
+  const [activeTab, setActiveTab] = useUrlState<'overview' | 'controller' | 'spareparts'>('tab', 'overview', ['overview', 'controller', 'spareparts']);
+  useBreadcrumbTrail(activeTab === 'overview' ? [] : [{ label: { controller: 'Controller', spareparts: 'Sparepart' }[activeTab] }]);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
 
   useEffect(() => {

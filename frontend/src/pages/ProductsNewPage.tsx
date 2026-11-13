@@ -10,6 +10,7 @@ import ProductListNew from '../components/ProductListNew';
 import ProductFormNew from '../components/ProductFormNew';
 import ProductDetailNew from '../components/ProductDetailNew';
 import ProductDashboardNew from '../components/ProductDashboardNew';
+import { useBreadcrumbTrail } from '../components/ui/BreadcrumbTrail';
 import axiosInstance from '../utils/axiosConfig';
 import { showError, showSuccess } from '../components/ui';
 interface ProductNew {
@@ -62,28 +63,43 @@ const ProductsNewPage: React.FC = () => {
   const { t } = useLanguage();
 
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [viewMode, setViewMode] = useState<ViewMode>('dashboard');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const viewParam = searchParams.get('view');
+  const codeParam = searchParams.get('code');
+  const viewMode: ViewMode = (['dashboard', 'list', 'add', 'edit', 'detail'] as const).find((v) => v === viewParam) || 'dashboard';
   const [selectedProduct, setSelectedProduct] = useState<ProductNew | null>(null);
+
+  const go = (v: ViewMode, code?: string | null, replace?: boolean) => {
+    setSearchParams((prev) => {
+      const n = new URLSearchParams(prev);
+      if (v === 'dashboard') n.delete('view'); else n.set('view', v);
+      if (code) n.set('code', code); else n.delete('code');
+      return n;
+    }, { replace });
+  };
+
+  const listCrumb = { label: 'Daftar Produk', search: '?view=list' };
+  useBreadcrumbTrail(
+    viewMode === 'dashboard' ? []
+      : viewMode === 'list' ? [{ label: 'Daftar Produk' }]
+      : viewMode === 'add' ? [listCrumb, { label: 'Tambah Produk' }]
+      : viewMode === 'edit' ? [listCrumb, { label: codeParam ? `Edit ${codeParam}` : 'Edit Produk' }]
+      : [listCrumb, { label: codeParam || 'Detail Produk' }]
+  );
 
   // Handle URL params for direct navigation to detail view
   useEffect(() => {
-    const view = searchParams.get('view');
-    const code = searchParams.get('code');
-    
-    if (view === 'detail' && code) {
-      // Fetch product by code and show detail view
-      axiosInstance.get(`/api/products-new/kode/${code}`)
+    if ((viewMode === 'detail' || viewMode === 'edit') && codeParam && selectedProduct?.kode_produk !== codeParam) {
+      axiosInstance.get(`/api/products-new/kode/${codeParam}`)
         .then(res => {
           setSelectedProduct(res.data.product);
-          setViewMode('detail');
         })
         .catch(err => {
           console.error('Error loading product:', err);
-          setViewMode('list');
+          go('list', null, true);
         });
     }
-  }, [searchParams]);
+  }, [viewMode, codeParam]);
 
   const handleSaveProduct = async (productData: ProductNew) => {
     try {
@@ -104,7 +120,7 @@ const ProductsNewPage: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         showSuccess(productData.id ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan!');
-        setViewMode('list');
+        go('list');
         setSelectedProduct(null);
       } else {
         const error = await response.json();
@@ -118,27 +134,27 @@ const ProductsNewPage: React.FC = () => {
 
   const handleEditProduct = (product: ProductNew) => {
     setSelectedProduct(product);
-    setViewMode('edit');
+    go('edit', product.kode_produk);
   };
 
   const handleViewProduct = (product: ProductNew) => {
     setSelectedProduct(product);
-    setViewMode('detail');
+    go('detail', product.kode_produk);
   };
 
   const handleAddProduct = () => {
     setSelectedProduct(null);
-    setViewMode('add');
+    go('add');
   };
 
   const handleCancel = () => {
     setSelectedProduct(null);
-    setViewMode('dashboard');
+    go('dashboard');
   };
 
   const handleBackToList = () => {
     setSelectedProduct(null);
-    setViewMode('list');
+    go('list');
   };
 
   return (
@@ -149,7 +165,7 @@ const ProductsNewPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
             <button
-              onClick={() => setViewMode('dashboard')}
+              onClick={() => go('dashboard')}
               className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                 viewMode === 'dashboard'
                   ? 'border-blue-500 text-blue-600 dark:text-blue-400'
@@ -160,7 +176,7 @@ const ProductsNewPage: React.FC = () => {
               <span>{t('navigation.dashboard')}</span>
             </button>
             <button
-              onClick={() => setViewMode('list')}
+              onClick={() => go('list')}
               className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                 viewMode === 'list'
                   ? 'border-blue-500 text-blue-600 dark:text-blue-400'

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { toast } from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
 import {
@@ -73,7 +75,8 @@ const ServerSettings: React.FC = () => {
   const [server, setServer] = useState<Server | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'channels' | 'roles' | 'members'>('overview');
+  const [activeTab, setActiveTab] = useUrlState<'overview' | 'channels' | 'roles' | 'members'>('tab', 'overview', ['overview', 'channels', 'roles', 'members']);
+  useBreadcrumbTrail(activeTab === 'overview' ? [] : [{ label: { channels: 'Channels', roles: 'Roles', members: 'Members' }[activeTab] }]);
   
   // Modal states
   const [showChannelModal, setShowChannelModal] = useState(false);

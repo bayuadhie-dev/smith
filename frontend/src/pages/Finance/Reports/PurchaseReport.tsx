@@ -1,12 +1,15 @@
 import React, { useMemo, useState } from 'react'
 import { ShoppingBagIcon } from '@heroicons/react/24/outline'
 import { DataTable, DocLink, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, SearchBox, StatCards, Td, Th, fmtDate, idr, periodLabel, useReport, usePeriod } from './reportKit'
+import { useUrlState } from '../../../hooks/useUrlState'
+import { useBreadcrumbTrail } from '../../../components/ui/BreadcrumbTrail'
 
 const STATUS: Record<string, string> = { paid: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300', partial: 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300', draft: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300', sent: 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300' }
 
 export default function PurchaseReport() {
   const p = usePeriod('Bulan ini')
-  const [view, setView] = useState<'invoice' | 'supplier'>('invoice')
+  const [view, setView] = useUrlState<'invoice' | 'supplier'>('view', 'invoice', ['invoice', 'supplier'])
+  useBreadcrumbTrail(view === 'invoice' ? [] : [{ label: 'Per Supplier' }])
   const [supplier, setSupplier] = useState<number | null>(null)
   const [q, setQ] = useState('')
   const params = { date_from: p.from, date_to: p.to }

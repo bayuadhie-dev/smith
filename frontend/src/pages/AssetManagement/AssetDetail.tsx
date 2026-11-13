@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { toast } from 'react-hot-toast';
 import {
   ArrowLeftIcon,
@@ -81,7 +83,8 @@ const AssetDetail: React.FC = () => {
   const [depreciationSchedule, setDepreciationSchedule] = useState<DepreciationSchedule[]>([]);
   const [scheduleBook, setScheduleBook] = useState<'commercial' | 'fiscal'>('commercial');
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'depreciation' | 'maintenance'>('overview');
+  const [activeTab, setActiveTab] = useUrlState<'overview' | 'depreciation' | 'maintenance'>('tab', 'overview', ['overview', 'depreciation', 'maintenance']);
+  useBreadcrumbTrail(activeTab === 'overview' ? [] : [{ label: { depreciation: 'Penyusutan', maintenance: 'Maintenance' }[activeTab] }]);
 
   useEffect(() => {
     fetchAssetDetail();

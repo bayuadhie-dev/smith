@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetMRPMaterialsQuery, useGetMRPBOMsQuery, useGetMRPRequirementsQuery, useGetMRPForecastsQuery } from '../../services/api';
 import {
@@ -18,7 +20,9 @@ const MRP: React.FC = () => {
   const [selectedMaterialType, setSelectedMaterialType] = useState<string>('');
   const [daysAhead, setDaysAhead] = useState<number>(30);
   const [includeForecast, setIncludeForecast] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<string>('requirements');
+  const [activeTab, setActiveTab] = useUrlState<string>('tab', 'requirements', ['requirements', 'simulation', 'forecasts', 'materials', 'boms']);
+  const mrpTabLabels: Record<string, string> = { simulation: 'What-If Simulation', forecasts: 'Sales Forecasts', materials: 'Materials', boms: t('products.bom.title') };
+  useBreadcrumbTrail(activeTab === 'requirements' ? [] : [{ label: mrpTabLabels[activeTab] }]);
 
   const { data: materialsData, isLoading: materialsLoading } = useGetMRPMaterialsQuery({
     material_type: selectedMaterialType || undefined

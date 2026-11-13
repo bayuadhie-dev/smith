@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';;
 import {
   BuildingOfficeIcon,
   ChartBarIcon,
@@ -19,8 +21,13 @@ import {
 import { PageHeader, KpiStrip, QuickLinks } from '../../components/ui/PageKit';
 import { formatRupiah } from '../../utils/currencyUtils';
 
+const PURCHASING_TAB_LABELS: Record<string, string> = {
+  suppliers: 'Supplier', 'purchase-orders': 'Pesanan Pembelian', quotes: 'Penawaran & RFQ', contracts: 'Kontrak', 'price-comparison': 'Analisis Harga',
+}
+
 export default function Purchasing() {
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useUrlState<string>('tab', 'overview', ['overview', 'suppliers', 'purchase-orders', 'quotes', 'contracts', 'price-comparison'])
+  useBreadcrumbTrail(activeTab === 'overview' ? [] : [{ label: PURCHASING_TAB_LABELS[activeTab] }])
   const [recentActivities, setRecentActivities] = useState<any[]>([])
   const [pendingApprovals, setPendingApprovals] = useState<any[]>([])
   

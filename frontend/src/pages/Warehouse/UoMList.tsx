@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog, showError } from '../../components/ui';
@@ -53,7 +55,8 @@ const UoMList: React.FC = () => {
   const [units, setUnits] = useState<UnitOfMeasure[]>([]);
   const [conversions, setConversions] = useState<UoMConversion[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'units' | 'conversions'>('units');
+  const [activeTab, setActiveTab] = useUrlState<'units' | 'conversions'>('tab', 'units', ['units', 'conversions']);
+  useBreadcrumbTrail(activeTab === 'units' ? [] : [{ label: 'Konversi' }]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
 

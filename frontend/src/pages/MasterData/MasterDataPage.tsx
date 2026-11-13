@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { CubeIcon, BanknotesIcon, BeakerIcon } from '@heroicons/react/24/outline';
 import MasterDataBarangTab from './MasterDataBarangTab';
 import MasterDataAccountsTab from './MasterDataAccountsTab';
@@ -7,7 +9,8 @@ import MasterDataRecipeTab from './MasterDataRecipeTab';
 type Tab = 'barang' | 'accounts' | 'recipes';
 
 export default function MasterDataPage() {
-  const [tab, setTab] = useState<Tab>('barang');
+  const [tab, setTab] = useUrlState<Tab>('tab', 'barang', ['barang', 'accounts', 'recipes'] as const);
+  useBreadcrumbTrail(tab === 'barang' ? [] : [{ label: tab === 'accounts' ? 'Chart of Accounts' : 'Resep Produksi' }]);
 
   const tabs: { key: Tab; label: string; icon: any }[] = [
     { key: 'barang', label: 'Barang (Product & Material)', icon: CubeIcon },

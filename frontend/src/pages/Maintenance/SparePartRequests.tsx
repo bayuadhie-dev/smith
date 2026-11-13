@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosConfig'
 import AccessibleModal from '../../components/ui/AccessibleModal'
 import { PageHeader, Panel } from '../../components/ui/PageKit'
+import { useUrlState } from '../../hooks/useUrlState'
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { confirmDialog, showError, showSuccess } from '../../components/ui'
 
 interface RequestRow {
@@ -54,7 +56,10 @@ const Badge = ({ status }: { status: string }) => {
 }
 
 const SparePartRequests = () => {
-  const [tab, setTab] = useState('pending')
+  const [tabUrl, setTabUrl] = useUrlState('tab', 'pending', ['pending', 'approved', 'rejected', 'semua'] as const)
+  const tab = tabUrl === 'semua' ? '' : tabUrl
+  const setTab = (id: string) => setTabUrl((id === '' ? 'semua' : id) as typeof tabUrl)
+  useBreadcrumbTrail(tabUrl === 'pending' ? [] : [{ label: TABS.find((t) => t.id === tab)?.label || 'Semua' }])
   const [rows, setRows] = useState<RequestRow[]>([])
   const [pendingCount, setPendingCount] = useState(0)
   const [loading, setLoading] = useState(true)

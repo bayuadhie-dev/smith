@@ -41,6 +41,8 @@ import {
 } from '../../services/api';
 import { useGetRolesQuery } from '../../services/userManagementApi';
 import UserModal from '../../components/Settings/UserModal';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 
 interface SettingsTab {
   id: string;
@@ -52,7 +54,8 @@ const Settings: React.FC = () => {
   const { t } = useLanguage();
 
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('company');
+  const [activeTab, setActiveTab] = useUrlState<string>('tab', 'company', ['company', 'system', 'users', 'security', 'backup', 'notifications', 'email', 'import', 'advanced', 'integration', 'account-preferences']);
+  useBreadcrumbTrail(activeTab === 'company' ? [] : [{ label: ({ 'company': 'Profil Perusahaan', 'system': 'Sistem', 'users': 'Manajemen Pengguna', 'security': 'Keamanan', 'backup': 'Backup & Restore', 'notifications': 'Notifikasi', 'email': 'Email Settings', 'import': 'Import Data', 'advanced': 'Advanced Settings', 'integration': 'Integration', 'account-preferences': 'Preferensi Akun' } as Record<string, string>)[activeTab] }]);
   const [sessionTimeout, setSessionTimeout] = useState(60);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);

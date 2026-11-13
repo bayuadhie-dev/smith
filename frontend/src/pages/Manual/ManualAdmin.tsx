@@ -17,6 +17,8 @@ import {
   ChartBarIcon
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlState } from '../../hooks/useUrlState'
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 
 interface Category {
   id: number;
@@ -67,7 +69,8 @@ type ModalType = 'category' | 'article' | 'faq' | null;
 
 const ManualAdmin: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabType>('articles');
+  const [activeTab, setActiveTab] = useUrlState<TabType>('tab', 'articles', ['articles', 'categories', 'faqs'] as const);
+  useBreadcrumbTrail(activeTab === 'articles' ? [] : [{ label: activeTab === 'categories' ? 'Kategori' : 'FAQ' }]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const [faqs, setFaqs] = useState<FAQ[]>([]);

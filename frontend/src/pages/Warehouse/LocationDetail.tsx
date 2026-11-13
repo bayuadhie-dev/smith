@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeftIcon,
@@ -71,7 +73,8 @@ const LocationDetail: React.FC = () => {
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [movements, setMovements] = useState<Movement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'inventory' | 'movements'>('inventory');
+  const [activeTab, setActiveTab] = useUrlState<'inventory' | 'movements'>('tab', 'inventory', ['inventory', 'movements']);
+  useBreadcrumbTrail(activeTab === 'inventory' ? [] : [{ label: 'Riwayat Pergerakan' }]);
 
   useEffect(() => {
     fetchLocationDetail();

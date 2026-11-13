@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import {
   CalendarIcon,
   ChevronLeftIcon,
@@ -123,7 +125,11 @@ const DailyController: React.FC<DailyControllerProps> = ({
   const [selectedDate, setSelectedDate] = useState(initialDate || new Date().toISOString().split('T')[0]);
   const [machines, setMachines] = useState<MachineData[]>([]);
   const [expandedMachine, setExpandedMachine] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<'ringkasan' | 'detail'>('ringkasan');
+  const [urlTab, setUrlTab] = useUrlState<'ringkasan' | 'detail'>('ctab', 'ringkasan', ['ringkasan', 'detail']);
+  const [localTab, setLocalTab] = useState<'ringkasan' | 'detail'>('ringkasan');
+  const activeTab = embedded ? localTab : urlTab;
+  const setActiveTab = embedded ? setLocalTab : setUrlTab;
+  useBreadcrumbTrail(embedded || activeTab === 'detail' ? null : []);
 
   // Update selectedDate when initialDate prop changes (for swiper)
   useEffect(() => {
@@ -307,7 +313,7 @@ const DailyController: React.FC<DailyControllerProps> = ({
 
       {/* Tab Content */}
       {activeTab === 'detail' ? (
-        <DailyControllerDetail selectedDate={selectedDate} summaryData={machines} />
+        <DailyControllerDetail selectedDate={selectedDate} summaryData={machines} embedded={embedded} />
       ) : (
         <>
           {/* Summary Cards - Hidden in embedded mode (shown in Swiper header instead) */}

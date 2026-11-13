@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../../lib/axios';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlNumber } from '../../hooks/useUrlState'
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 
 interface RecurringPaymentMaster {
   id: number;
@@ -37,7 +39,9 @@ const CATEGORY_LABELS: Record<string, string> = {
 const RecurringPayment: React.FC = () => {
   const [masters, setMasters] = useState<RecurringPaymentMaster[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMaster, setSelectedMaster] = useState<RecurringPaymentMaster | null>(null);
+  const [selectedMasterId, setSelectedMasterId] = useUrlNumber('master');
+  const selectedMaster = masters.find((m) => m.id === selectedMasterId) || null;
+  useBreadcrumbTrail(selectedMaster ? [{ label: selectedMaster.name }] : []);
   const [transactions, setTransactions] = useState<RecurringPaymentTx[]>([]);
   const [loadingTx, setLoadingTx] = useState(false);
 
@@ -76,10 +80,15 @@ const RecurringPayment: React.FC = () => {
   };
 
   const handleSelectMaster = (master: RecurringPaymentMaster) => {
-    setSelectedMaster(master);
-    setShowNewTxForm(false);
-    loadTransactions(master.id);
+    setSelectedMasterId(master.id);
   };
+
+  useEffect(() => {
+    setShowNewTxForm(false);
+    if (selectedMasterId) loadTransactions(selectedMasterId);
+    else setTransactions([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMasterId]);
 
   const handleCreateMaster = async () => {
     if (!newMaster.name || !newMaster.category) return;

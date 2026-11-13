@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import {
   ClockIcon,
   ExclamationTriangleIcon,
@@ -121,9 +123,10 @@ interface SummaryMachineData {
 interface DailyControllerDetailProps {
   selectedDate: string;
   summaryData?: SummaryMachineData[];
+  embedded?: boolean;
 }
 
-const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedDate, summaryData }) => {
+const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedDate, summaryData, embedded = false }) => {
   const [loading, setLoading] = useState(true);
   const [machines, setMachines] = useState<MachineDetailData[]>([]);
   const [workOrders, setWorkOrders] = useState<WorkOrderDetail[]>([]);
@@ -136,7 +139,13 @@ const DailyControllerDetail: React.FC<DailyControllerDetailProps> = ({ selectedD
     avg_efficiency: number;
   } | null>(null);
   const [expandedMachine, setExpandedMachine] = useState<number | null>(null);
-  const [activeSubTab, setActiveSubTab] = useState<'downtime' | 'timeline' | 'workorders'>('downtime');
+  const [urlSubTab, setUrlSubTab] = useUrlState<'downtime' | 'timeline' | 'workorders'>('csub', 'downtime', ['downtime', 'timeline', 'workorders']);
+  const [localSubTab, setLocalSubTab] = useState<'downtime' | 'timeline' | 'workorders'>('downtime');
+  const activeSubTab = embedded ? localSubTab : urlSubTab;
+  const setActiveSubTab = embedded ? setLocalSubTab : setUrlSubTab;
+  useBreadcrumbTrail(embedded ? null : activeSubTab === 'downtime'
+    ? [{ label: 'Detail Lengkap' }]
+    : [{ label: 'Detail Lengkap', search: '?ctab=detail' }, { label: { timeline: 'Timeline Produksi', workorders: 'Detail SPK' }[activeSubTab] }]);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
   useEffect(() => {

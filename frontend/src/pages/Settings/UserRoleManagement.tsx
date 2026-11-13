@@ -27,6 +27,8 @@ import RoleModal from '../../components/Settings/RoleModal';
 import PermissionModal from '../../components/Settings/PermissionModal';
 import PendingUserTable, { PendingUser } from '../../components/Settings/PendingUserTable';
 import axiosInstance from '../../utils/axiosConfig';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 
 // Components
 const UserRoleManagementNew: React.FC = () => {
@@ -43,7 +45,8 @@ const UserRoleManagementNew: React.FC = () => {
   const [createPermission] = useCreatePermissionMutation();
   
   // Local state
-  const [activeTab, setActiveTab] = useState<'pending' | 'users' | 'roles' | 'permissions'>('pending');
+  const [activeTab, setActiveTab] = useUrlState<'pending' | 'users' | 'roles' | 'permissions'>('tab', 'pending', ['pending', 'users', 'roles', 'permissions']);
+  useBreadcrumbTrail(activeTab === 'pending' ? [] : [{ label: ({ users: 'Users', roles: 'Roles', permissions: 'Permissions' } as Record<string, string>)[activeTab] }]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);

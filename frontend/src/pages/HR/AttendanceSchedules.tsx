@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useUrlState } from '../../hooks/useUrlState'
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { Search } from 'lucide-react'
 import axiosInstance from '../../utils/axiosConfig'
 import { PageHeader, Panel } from '../../components/ui/PageKit'
@@ -51,7 +53,8 @@ const AttendanceSchedules = () => {
   const { hasPermission, isSuperAdmin } = usePermissions()
   const canEdit = isSuperAdmin || hasPermission('hr.edit')
 
-  const [tab, setTab] = useState<'jadwal' | 'penetapan'>('jadwal')
+  const [tab, setTab] = useUrlState<'jadwal' | 'penetapan'>('tab', 'jadwal', ['jadwal', 'penetapan'])
+  useBreadcrumbTrail(tab === 'jadwal' ? [] : [{ label: ({ penetapan: 'Penetapan' } as Record<string, string>)[tab] }])
   const [schedules, setSchedules] = useState<Schedule[]>([])
   const [people, setPeople] = useState<Person[]>([])
   const [loading, setLoading] = useState(true)

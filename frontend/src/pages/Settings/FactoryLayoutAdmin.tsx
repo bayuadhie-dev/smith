@@ -3,6 +3,8 @@ import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { confirmDialog } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 
 interface MachineOption {
   id: number;
@@ -48,7 +50,8 @@ const TABS = ['Wings', 'Mesin & Icon', 'Alias'] as const;
 type Tab = typeof TABS[number];
 
 const FactoryLayoutAdmin: React.FC = () => {
-  const [tab, setTab] = useState<Tab>('Wings');
+  const [tab, setTab] = useUrlState<Tab>('tab', 'Wings', TABS);
+  useBreadcrumbTrail(tab === 'Wings' ? [] : [{ label: tab }]);
   const [wings, setWings] = useState<WingRow[]>([]);
   const [machines, setMachines] = useState<MachineOption[]>([]);
   const [loading, setLoading] = useState(true);

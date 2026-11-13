@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import {
   ClipboardCheck, CheckCircle, XCircle, Loader2, AlertTriangle, RefreshCw
 } from 'lucide-react';
@@ -33,7 +35,8 @@ const MISMATCH_LABEL: Record<string, string> = {
 };
 
 const AttendanceReconciliation: React.FC = () => {
-  const [tab, setTab] = useState<'correction' | 'reconciliation'>('correction');
+  const [tab, setTab] = useUrlState<'correction' | 'reconciliation'>('tab', 'correction', ['correction', 'reconciliation']);
+  useBreadcrumbTrail(tab === 'correction' ? [] : [{ label: ({ reconciliation: 'Rekonsiliasi vs Log Produksi' } as Record<string, string>)[tab] }]);
 
   // Correction requests
   const [corrections, setCorrections] = useState<CorrectionRequest[]>([]);

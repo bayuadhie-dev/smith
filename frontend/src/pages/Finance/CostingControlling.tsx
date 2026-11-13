@@ -10,6 +10,8 @@ import {
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { showInfo } from '../../components/ui';
+import { useUrlState } from '../../hooks/useUrlState'
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 
 interface CostAnalysis {
   cost_center: string
@@ -27,7 +29,8 @@ const CostingControlling = () => {
 const [costAnalysis, setCostAnalysis] = useState<CostAnalysis[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPeriod, setSelectedPeriod] = useState('current-month')
-  const [viewMode, setViewMode] = useState<'table' | 'chart'>('table')
+  const [viewMode, setViewMode] = useUrlState<'table' | 'chart'>('view', 'table', ['table', 'chart'])
+  useBreadcrumbTrail(viewMode === 'table' ? [] : [{ label: 'Grafik' }])
 
   useEffect(() => {
     loadCostAnalysis()

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from '../../lib/axios';
 import AccountSlotSelector from '../../components/Finance/AccountSlotSelector';
 import SingleRowSettingsTab from '../../components/Finance/SingleRowSettingsTab';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 
 interface SettingsTab {
   id: string;
@@ -35,7 +37,8 @@ const ITEM_SLOTS: { key: string; label: string }[] = [
 ];
 
 const AccountPreferences: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('barang_jasa');
+  const [activeTab, setActiveTab] = useUrlState<string>('tab', 'barang_jasa', ['barang_jasa', 'penjualan', 'pembelian', 'pajak', 'perusahaan', 'persediaan', 'penomoran', 'global']);
+  useBreadcrumbTrail(activeTab === 'barang_jasa' ? [] : [{ label: ({ penjualan: 'Penjualan', pembelian: 'Pembelian', pajak: 'Pajak', perusahaan: 'Perusahaan', persediaan: 'Persediaan', penomoran: 'Penomoran Dokumen', global: 'Default Akhir (Global)' } as Record<string, string>)[activeTab] }]);
 
   const tabs: SettingsTab[] = [
     { id: 'barang_jasa', name: 'Barang & Jasa' },

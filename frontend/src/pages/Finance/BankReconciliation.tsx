@@ -8,6 +8,8 @@ import {
   LinkIcon,
   DocumentTextIcon,
 } from '@heroicons/react/24/outline'
+import { useUrlNumber } from '../../hooks/useUrlState'
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 
 interface Statement {
   id: number
@@ -52,7 +54,8 @@ interface Account {
 export default function BankReconciliation() {
   const [statements, setStatements] = useState<Statement[]>([])
   const [accounts, setAccounts] = useState<Account[]>([])
-  const [selectedStatementId, setSelectedStatementId] = useState<number | null>(null)
+  const [selectedStatementId, setSelectedStatementId] = useUrlNumber('statement')
+  useBreadcrumbTrail(selectedStatementId ? [{ label: statements.find((s) => s.id === selectedStatementId)?.source_filename || 'Detail' }] : [])
   const [lines, setLines] = useState<StatementLine[]>([])
   const [onlyUnmatched, setOnlyUnmatched] = useState(false)
   const [uploadAccountId, setUploadAccountId] = useState('')

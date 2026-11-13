@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { 
   Calendar, Clock, Users, AlertTriangle, CheckCircle, 
   Search, Filter, ChevronLeft, ChevronRight, TrendingUp,
@@ -45,7 +47,8 @@ interface DashboardStats {
 }
 
 const AttendanceReport: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'daily' | 'monthly'>('daily');
+  const [activeTab, setActiveTab] = useUrlState<'daily' | 'monthly'>('tab', 'daily', ['daily', 'monthly']);
+  useBreadcrumbTrail(activeTab === 'daily' ? [] : [{ label: ({ monthly: 'Rekap Bulanan' } as Record<string, string>)[activeTab] }]);
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [monthlySummary, setMonthlySummary] = useState<MonthlySummary[]>([]);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
