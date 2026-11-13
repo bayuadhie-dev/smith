@@ -87,3 +87,18 @@ def test_kuantitas_per_gudang_sumber_stok_saat_ini(client, auth_headers, db_sess
     assert row['by_zone'][str(z1.id)]['qty'] == 40 and row['by_zone'][str(z2.id)]['qty'] == 0
     assert abs(row['total_value'] - 40 * 1600 / 150) < 0.01  # rata-rata tertimbang dua penerimaan (transfer tidak dihitung)
     assert client.get('/api/finance/reports/inventory-by-warehouse?date_to=2026-01-01&source=stock', headers=auth_headers).status_code == 400
+
+
+def test_baris_tanpa_biaya_dinilai_rata_rata_penerimaan(client, auth_headers, db_session):
+    z1, z2, p = _setup(db_session)
+    loc = WarehouseLocation.query.filter_by(zone_id=z1.id).first()
+    # penyesuaian +10 tanpa biaya: dinilai rata-rata penerimaan ((1000 + 600) / 150 = 10,67 per pcs)
+    t = record_inventory_transaction('adjustment', 'in', 10, product_id=p.id, to_location_id=loc.id)
+    t.transaction_date = datetime.fromisoformat('2026-11-05T09:00:00')
+    db_session.commit()
+    row = client.get('/api/finance/reports/inventory-mutation?date_from=2026-11-01&date_to=2026-11-30', headers=auth_headers).get_json()
+    d = row['rows'][0]
+    assert d['in_qty'] == 60 and abs(d['in_value'] - (600 + 10 * 1600 / 150)) < 0.02
+    assert row['unvalued_rows'] == 0
+    w = client.get('/api/finance/reports/inventory-by-warehouse?date_to=2026-11-30', headers=auth_headers).get_json()['rows'][0]
+    assert abs(w['total_value'] - (1300 + 10 * 1600 / 150)) < 0.02

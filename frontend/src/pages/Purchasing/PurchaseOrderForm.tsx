@@ -698,7 +698,7 @@ const navigate = useNavigate()
                     )}
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.total')}</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Total</label>
                       <div className="input-field bg-gray-50 dark:bg-gray-900">
                         {formatCurrencyAmount((watchedItems[index]?.quantity || 0) * (watchedItems[index]?.unit_price || 0), watchedCurrency)}
                       </div>

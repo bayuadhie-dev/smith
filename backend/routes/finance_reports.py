@@ -862,8 +862,22 @@ def _inv_models():
     return InventoryTransaction, Product, Material, WarehouseZone, WarehouseLocation, Inventory
 
 
-def _inv_value_exprs(T):
-    absval = func.coalesce(T.total_cost, T.quantity * func.coalesce(T.unit_cost, 0))
+def _inv_item_key(T):
+    return case((T.product_id.isnot(None), T.product_id), else_=-T.material_id)
+
+
+def _inv_avg_cost():
+    """Biaya rata-rata tertimbang penerimaan tiap barang (dari baris masuk yang punya biaya), dipakai untuk menilai baris tanpa biaya."""
+    T = _inv_models()[0]
+    key = _inv_item_key(T)
+    return db.session.query(key.label('k'), (func.sum(T.total_cost) / func.nullif(func.sum(T.quantity), 0)).label('avg')).filter(
+        T.direction == 'in', T.total_cost.isnot(None), T.quantity > 0,
+        T.transaction_type.notin_(_NEUTRAL_QC + _TRANSFER_PAIR + ('transfer',))).group_by(key).subquery()
+
+
+def _inv_value_exprs(T, avg=None):
+    unit = func.coalesce(func.nullif(T.unit_cost, 0), avg.c.avg if avg is not None else None, 0)
+    absval = func.coalesce(T.total_cost, T.quantity * unit)
     sign_q = case((T.direction == 'in', T.quantity), else_=-T.quantity)
     sign_v = case((T.direction == 'in', absval), else_=-absval)
     return absval, sign_q, sign_v
@@ -933,7 +947,8 @@ def inventory_mutation():
     except ValueError as e:
         return _err(e)
     T, _, _, Zone, Loc, Inventory = _inv_models()
-    absval, sign_q, sign_v = _inv_value_exprs(T)
+    avg = _inv_avg_cost()
+    absval, sign_q, sign_v = _inv_value_exprs(T, avg)
     start = datetime.combine(date_from, datetime.min.time())
     in_period = T.transaction_date >= start
     zone_scoped = bool(zone_id)
@@ -947,7 +962,7 @@ def inventory_mutation():
             func.coalesce(func.sum(case((db.and_(in_period, T.direction == 'in'), absval), else_=0)), 0),
             func.coalesce(func.sum(case((db.and_(in_period, T.direction == 'out'), T.quantity), else_=0)), 0),
             func.coalesce(func.sum(case((db.and_(in_period, T.direction == 'out'), absval), else_=0)), 0)]
-    query = db.session.query(*cols).filter(*_inv_valid(T, date_to))
+    query = db.session.query(*cols).select_from(T).outerjoin(avg, _inv_item_key(T) == avg.c.k).filter(*_inv_valid(T, date_to))
     if zone_scoped:
         query = query.filter(T.transaction_type != 'transfer', _inv_loc_expr(T).in_(loc_ids or [-1]))
     else:
@@ -994,7 +1009,8 @@ def inventory_mutation():
     rows.sort(key=lambda r: (r['name'] or '').lower())
     keys = ('opening_qty', 'opening_value', 'in_qty', 'in_value', 'out_qty', 'out_value', 'closing_qty', 'closing_value')
     totals = {k: round(sum(r[k] for r in rows), 3 if k.endswith('qty') else 2) for k in keys}
-    unvalued = db.session.query(func.count(T.id)).filter(*_inv_valid(T, date_to), T.total_cost.is_(None), T.unit_cost.is_(None)).scalar() or 0
+    unvalued = db.session.query(func.count(T.id)).select_from(T).outerjoin(avg, _inv_item_key(T) == avg.c.k).filter(
+        *_inv_valid(T, date_to), T.total_cost.is_(None), func.coalesce(T.unit_cost, 0) == 0, avg.c.avg.is_(None)).scalar() or 0
     zone = db.session.get(Zone, zone_id) if zone_id else None
     if _wants_xlsx():
         headers = ['Nama Barang', 'Kode Barang', 'Satuan', 'Saldo Awal Kuantitas', 'Saldo Awal Nilai', 'Masuk Kuantitas', 'Masuk Nilai',
@@ -1023,7 +1039,8 @@ def inventory_by_warehouse():
     if not request.args.get('date_to'):
         date_to = get_local_today()
     T, _, _, Zone, Loc, _ = _inv_models()
-    absval, sign_q, sign_v = _inv_value_exprs(T)
+    avg = _inv_avg_cost()
+    absval, sign_q, sign_v = _inv_value_exprs(T, avg)
     loc_expr = _inv_loc_expr(T)
     zone_of = {l.id: l.zone_id for l in Loc.query.all()}
     zones = Zone.query.filter(Zone.is_active.is_(True)).order_by(Zone.code).all()
@@ -1033,7 +1050,7 @@ def inventory_by_warehouse():
             return _err('Sumber "Stok saat ini" hanya untuk hari ini; pilih tanggal hari ini atau gunakan sumber mutasi')
         source = 'stock'
     agg = {}
-    rows_q = db.session.query(T.product_id, T.material_id, loc_expr, func.coalesce(func.sum(sign_q), 0), func.coalesce(func.sum(sign_v), 0)).filter(
+    rows_q = db.session.query(T.product_id, T.material_id, loc_expr, func.coalesce(func.sum(sign_q), 0), func.coalesce(func.sum(sign_v), 0)).select_from(T).outerjoin(avg, _inv_item_key(T) == avg.c.k).filter(
         *_inv_valid(T, date_to), T.transaction_type != 'transfer').group_by(T.product_id, T.material_id, loc_expr).all()
     for pid, mid, loc, sq_, sv_ in rows_q:
         zid = zone_of.get(loc)

@@ -51,7 +51,7 @@ export default function InventoryMutation() {
       )}
       {data && data.unvalued_rows > 0 && (
         <div className="print-hide rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200">
-          {num(data.unvalued_rows)} transaksi stok belum punya nilai biaya dan dihitung Rp 0. Kuantitas tetap benar, tetapi nilai persediaan bisa lebih rendah dari sebenarnya.
+          {num(data.unvalued_rows)} transaksi stok tidak punya biaya dan barangnya belum pernah diterima dengan biaya, jadi dihitung Rp 0. Kuantitas tetap benar, tetapi nilainya bisa lebih rendah dari sebenarnya.
         </div>
       )}
       {data && checked && data.mismatch_count > 0 && (
@@ -101,7 +101,7 @@ export default function InventoryMutation() {
           )}
         </DataTable>
         <p className="print-hide text-xs text-gray-500 dark:text-gray-400">
-          Angka dari buku stok (semua pergerakan barang). Pemindahan antar gudang dan perubahan status batch tidak dihitung sebagai masuk atau keluar pada tampilan semua gudang.
+          Angka dari buku stok (semua pergerakan barang). Pemindahan antar gudang dan perubahan status batch tidak dihitung sebagai masuk atau keluar pada tampilan semua gudang. Pergerakan tanpa biaya dinilai dengan biaya rata-rata penerimaan barang itu.
         </p>
       </LoadState>
     </ReportShell>
