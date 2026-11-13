@@ -23,6 +23,7 @@ import {
 import toast from 'react-hot-toast';
 import { useLanguage } from '../../contexts/LanguageContext';
 import NotificationPreferences from '../../components/NotificationPreferences';
+import InterfacePreferences from './InterfacePreferences'
 
 interface UserProfileData {
   id: number;
@@ -494,6 +495,7 @@ const UserProfile: React.FC = () => {
           </div>
 
           {isOwnProfile && <NotificationPreferences />}
+          {isOwnProfile && <InterfacePreferences />}
 
           {/* Activity Info */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">

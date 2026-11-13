@@ -8,8 +8,10 @@ import App from './App'
 import { store } from './store'
 import './index.css'
 import { initCompanyTheme } from './theme/company'
+import { syncMotionForUser } from './utils/motion'
 
 initCompanyTheme()
+syncMotionForUser()
 
 // Initialize error logger (catches unhandled errors and sends to backend)
 import './utils/errorLogger'

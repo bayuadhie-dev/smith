@@ -420,3 +420,88 @@ html:where(:not(.dark)) .text-gray-300:where(:not(.sidebar-themed *)) {
 }
 
 html:where(:not(.dark)) .recharts-legend-item-text { color: #374151 !important; }
+
+/* ---- Animasi antarmuka (dimatikan lewat html[data-motion='off'], diatur di Profil) ---- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) { z-index: 1; }
+::view-transition-new(root) { z-index: 2; }
+
+@keyframes ui-unfold {
+  0% { clip-path: inset(50% 50% 50% 50% round 12px); }
+  35% { clip-path: inset(50% 0 50% 0 round 12px); }
+  100% { clip-path: inset(0 0 0 0 round 12px); }
+}
+@keyframes ui-fade { from { opacity: 0; } to { opacity: 1; } }
+.ui-dialog-panel { animation: ui-unfold 340ms cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.ui-dialog-overlay { animation: ui-fade 200ms ease-out both; }
+
+/* Isian tanggal dan waktu ikut warna tema */
+input[type='date'],
+input[type='time'],
+input[type='datetime-local'],
+input[type='month'],
+input[type='week'] {
+  accent-color: rgb(var(--cta-600));
+  font-variant-numeric: tabular-nums;
+}
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='time']::-webkit-calendar-picker-indicator,
+input[type='datetime-local']::-webkit-calendar-picker-indicator,
+input[type='month']::-webkit-calendar-picker-indicator,
+input[type='week']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.65;
+  padding: 3px;
+  border-radius: 6px;
+  transition: opacity 150ms ease, background-color 150ms ease;
+}
+input[type='date']::-webkit-calendar-picker-indicator:hover,
+input[type='time']::-webkit-calendar-picker-indicator:hover,
+input[type='datetime-local']::-webkit-calendar-picker-indicator:hover,
+input[type='month']::-webkit-calendar-picker-indicator:hover,
+input[type='week']::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  background-color: rgb(var(--brand-100));
+}
+html.dark input[type='date']::-webkit-calendar-picker-indicator:hover,
+html.dark input[type='time']::-webkit-calendar-picker-indicator:hover,
+html.dark input[type='datetime-local']::-webkit-calendar-picker-indicator:hover,
+html.dark input[type='month']::-webkit-calendar-picker-indicator:hover,
+html.dark input[type='week']::-webkit-calendar-picker-indicator:hover {
+  background-color: rgb(var(--brand-700) / 0.45);
+}
+input[type='date']::-webkit-datetime-edit-day-field:focus,
+input[type='date']::-webkit-datetime-edit-month-field:focus,
+input[type='date']::-webkit-datetime-edit-year-field:focus,
+input[type='time']::-webkit-datetime-edit-hour-field:focus,
+input[type='time']::-webkit-datetime-edit-minute-field:focus {
+  background-color: rgb(var(--brand-100));
+  color: rgb(var(--brand-900));
+  border-radius: 3px;
+  outline: none;
+}
+html.dark input[type='date']::-webkit-datetime-edit-day-field:focus,
+html.dark input[type='date']::-webkit-datetime-edit-month-field:focus,
+html.dark input[type='date']::-webkit-datetime-edit-year-field:focus,
+html.dark input[type='time']::-webkit-datetime-edit-hour-field:focus,
+html.dark input[type='time']::-webkit-datetime-edit-minute-field:focus {
+  background-color: rgb(var(--brand-700) / 0.6);
+  color: #fff;
+}
+
+/* Animasi dimatikan: semua transisi dan keyframe selesai seketika (spinner tetap berputar) */
+html[data-motion='off'] *:not(.animate-spin):not(.animate-pulse),
+html[data-motion='off'] *:not(.animate-spin):not(.animate-pulse)::before,
+html[data-motion='off'] *:not(.animate-spin):not(.animate-pulse)::after {
+  animation-duration: 0.01ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0ms !important;
+  scroll-behavior: auto !important;
+}
+html[data-motion='off'] .ui-dialog-panel { clip-path: none; }

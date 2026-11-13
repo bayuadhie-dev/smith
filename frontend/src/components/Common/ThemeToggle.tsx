@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type MouseEvent } from 'react'
 import { SunIcon, MoonIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
+import { withThemeFlip } from '../../utils/motion'
 
 export default function ThemeToggle() {
   const [isDark, setIsDark] = useState(() => {
@@ -21,13 +22,17 @@ export default function ThemeToggle() {
     }
   }, [isDark])
 
-  const toggleTheme = () => {
-    setIsDark(!isDark)
+  const toggleTheme = (e?: MouseEvent) => {
+    const next = !isDark
+    withThemeFlip(() => {
+      document.documentElement.classList.toggle('dark', next)
+      setIsDark(next)
+    }, e ? { x: e.clientX, y: e.clientY } : undefined)
   }
 
   return (
     <button
-      onClick={toggleTheme}
+      onClick={(e) => toggleTheme(e)}
       className={clsx(
         'relative inline-flex h-10 w-20 items-center rounded-full transition-all duration-300',
         'focus:outline-none focus:ring-4 focus:ring-blue-500/20',

@@ -10,12 +10,16 @@ import KeyboardShortcutsModal from '../Common/KeyboardShortcutsModal'
 import { WorkspaceProvider } from '../../workspace/WorkspaceContext'
 import Workspace from '../../workspace/Workspace'
 import { moduleForPath, MAX_TABS_PER_MODULE } from '../../workspace/modules'
+import { syncMotionForUser } from '../../utils/motion'
+import { useAppSelector } from '../../hooks/redux'
 import { showWarning } from '../ui'
 import ForcePasswordChange from '../Auth/ForcePasswordChange'
 
 export default function Layout() {
   const [showShortcutsModal, setShowShortcutsModal] = useState(false)
   const location = useLocation()
+  const motionUserId = useAppSelector((state: any) => state.auth?.user?.id)
+  useEffect(() => { syncMotionForUser(motionUserId) }, [motionUserId])
   const inWorkspaceModule = moduleForPath(location.pathname) !== null
   
   // Enable keyboard shortcuts

@@ -979,23 +979,23 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
           <Dialog as="div" className="relative z-50 lg:hidden" onClose={handleMobileClose}>
             <Transition.Child
               as={Fragment}
-              enter="transition-opacity ease-linear duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="transition-opacity ease-linear duration-300"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
+              enter="transition-all ease-out duration-300"
+              enterFrom="opacity-0 backdrop-blur-none"
+              enterTo="opacity-100 backdrop-blur-[3px]"
+              leave="transition-all ease-in duration-200"
+              leaveFrom="opacity-100 backdrop-blur-[3px]"
+              leaveTo="opacity-0 backdrop-blur-none"
             >
-              <div className="fixed inset-0 bg-gray-900/80" />
+              <div className="fixed inset-0 bg-gray-900/40" />
             </Transition.Child>
 
             <div className="fixed inset-0 flex">
               <Transition.Child
                 as={Fragment}
-                enter="transition ease-in-out duration-300 transform"
+                enter="transition ease-[cubic-bezier(0.22,1,0.36,1)] duration-[380ms] transform"
                 enterFrom="-translate-x-full"
                 enterTo="translate-x-0"
-                leave="transition ease-in-out duration-300 transform"
+                leave="transition ease-[cubic-bezier(0.64,0,0.78,0)] duration-250 transform"
                 leaveFrom="translate-x-0"
                 leaveTo="-translate-x-full"
               >

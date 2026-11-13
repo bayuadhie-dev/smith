@@ -130,7 +130,7 @@ const AccessibleModal: React.FC<AccessibleModalProps> = ({
     >
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+        className="ui-dialog-overlay fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
         aria-hidden="true"
         onClick={handleOverlayClick}
       />
@@ -144,7 +144,7 @@ const AccessibleModal: React.FC<AccessibleModalProps> = ({
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
         className={`
-          relative w-full ${sizeStyles[size]}
+          ui-dialog-panel relative w-full ${sizeStyles[size]}
           bg-white dark:bg-slate-800
           rounded-xl shadow-2xl
           transform transition-all
