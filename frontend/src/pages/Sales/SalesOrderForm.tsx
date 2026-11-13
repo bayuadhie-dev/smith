@@ -101,6 +101,7 @@ const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [bomProducts, setBomProducts] = useState<BOMProduct[]>([])
   const [bomInfo, setBomInfo] = useState<BOMInfo>({})
+  const [sellable, setSellable] = useState<any[]>([])
   const [materialRequirements, setMaterialRequirements] = useState<MaterialRequirements[]>([])
   const [loadingMRP, setLoadingMRP] = useState(false)
   const [showMRPPanel, setShowMRPPanel] = useState(false)
@@ -165,6 +166,9 @@ const navigate = useNavigate()
   // Fetch BOM products for dropdown
   useEffect(() => {
     fetchBOMProducts()
+    axiosInstance.get('/api/products', { params: { all: true, is_active: true } })
+      .then((r) => setSellable((r.data?.products || []).filter((p: any) => p.is_sellable !== false)))
+      .catch(() => toast.error('Gagal memuat daftar produk'))
   }, [])
 
   const fetchBOMProducts = async () => {
@@ -439,7 +443,10 @@ const navigate = useNavigate()
 
   const getProductById = (productId: number | string) => {
     const id = parseInt(productId?.toString() || '0')
-    return bomProducts.find((p) => p.product_id === id)
+    const fromBom = bomProducts.find((p) => p.product_id === id)
+    if (fromBom) return fromBom
+    const p = sellable.find((x: any) => x.id === id)
+    return p ? ({ product_id: p.id, product_code: p.code, product_name: p.name } as any) : undefined
   }
 
   const getProductBOMInfo = (productId: number | string) => {
@@ -662,19 +669,19 @@ const navigate = useNavigate()
                         Product *
                       </label>
                       <SearchableSelect
-                        options={bomProducts.map((product) => ({
-                          id: product.product_id,
-                          code: product.product_code,
-                          name: product.product_name
+                        options={sellable.map((product: any) => ({
+                          id: product.id,
+                          code: product.code,
+                          name: product.name
                         }))}
                         value={watchedItems[index]?.product_id || null}
                         onChange={(value) => {
                           setValue(`items.${index}.product_id`, value as any, { shouldValidate: true })
                           if (value) {
-                            const bp: any = bomProducts.find((x: any) => x.product_id === value)
+                            const bp: any = sellable.find((x: any) => x.id === value)
                             const prevName = (getProductById(watchedItems[index]?.product_id)?.product_name || '').trim()
                             const curDesc = (watchedItems[index]?.description || '').trim()
-                            if (!curDesc || curDesc === prevName) setValue(`items.${index}.description`, bp?.product_name || '', { shouldDirty: true })
+                            if (!curDesc || curDesc === prevName) setValue(`items.${index}.description`, bp?.name || '', { shouldDirty: true })
                             if (bp?.primary_uom) setValue(`items.${index}.uom`, bp.primary_uom, { shouldDirty: true })
                             handleProductPricing(index, value as number)
                           }
