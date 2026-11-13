@@ -113,8 +113,8 @@ def create_shipping_order_core(data, user_id, commit=True):
     (savepoint dipegang pemanggil). Kesalahan input -> ShippingInputError."""
     if True:
         data = data or {}
-        if not data.get('sales_order_id'):
-            raise ShippingInputError('Sales Order wajib dipilih')
+        if not data.get('sales_order_id') and not data.get('customer_id'):
+            raise ShippingInputError('Pilih Sales Order, atau pilih pelanggan untuk surat jalan tanpa Sales Order')
         if not data.get('items'):
             raise ShippingInputError('Minimal satu barang harus dikirim')
 
@@ -129,9 +129,17 @@ def create_shipping_order_core(data, user_id, commit=True):
         # as the running total never exceeds what was actually ordered.
         from models.sales import SalesOrderItem
         for item_data in data.get('items', []):
+            if not item_data.get('product_id'):
+                if data.get('sales_order_id'):
+                    raise ShippingInputError('Baris tanpa produk hanya boleh pada surat jalan tanpa Sales Order')
+                if not (item_data.get('description') or '').strip():
+                    raise ShippingInputError('Baris jasa/lainnya harus punya keterangan')
+                if float(item_data.get('quantity') or 0) <= 0:
+                    raise ShippingInputError('Qty harus lebih dari 0')
+                continue
             so_item = SalesOrderItem.query.filter_by(
-                order_id=data['sales_order_id'], product_id=item_data['product_id']
-            ).first()
+                order_id=data.get('sales_order_id'), product_id=item_data['product_id']
+            ).first() if data.get('sales_order_id') else None
             if so_item:
                 already_shipped = float(so_item.quantity_shipped or 0)
                 ordered = float(so_item.quantity or 0)
@@ -144,7 +152,7 @@ def create_shipping_order_core(data, user_id, commit=True):
 
         order = ShippingOrder(
             shipping_number=shipping_number,
-            sales_order_id=data['sales_order_id'],
+            sales_order_id=data.get('sales_order_id') or None,
             customer_id=data['customer_id'],
             shipping_date=datetime.fromisoformat(data['shipping_date']),
             expected_delivery_date=datetime.fromisoformat(data['expected_delivery_date']) if data.get('expected_delivery_date') else None,
@@ -176,9 +184,16 @@ def create_shipping_order_core(data, user_id, commit=True):
             quantity = float(item_data['quantity'])
             batch_number = item_data.get('batch_number')
 
+            if not item_data.get('product_id'):
+                db.session.add(ShippingItem(
+                    shipping_id=order.id, product_id=None, description=item_data['description'].strip()[:500],
+                    quantity=quantity, uom=(item_data.get('uom') or 'LOT')[:20],
+                ))
+                continue
+
             so_item = SalesOrderItem.query.filter_by(
                 order_id=data['sales_order_id'], product_id=item_data['product_id']
-            ).first()
+            ).first() if data.get('sales_order_id') else None
             if so_item:
                 so_item.quantity_shipped = float(so_item.quantity_shipped or 0) + quantity
 
@@ -368,7 +383,7 @@ def get_tracking():
                 'recipient_phone': shipping_order.customer.phone if shipping_order.customer else 'Phone not available',
                 'items': [{
                     'id': item.id,
-                    'product_name': item.product.name if item.product else 'Unknown Product',
+                    'product_name': item.product.name if item.product else (item.description or 'Unknown Product'),
                     'quantity': float(item.quantity),
                     'weight': 1.0,  # Default weight
                     'length': 30,   # Default dimensions
@@ -529,6 +544,8 @@ def get_uninvoiced_shipping_orders():
     for o in rows:
         per_product = {}
         for it in o.items:
+            if not it.product_id:
+                continue
             g = per_product.setdefault(it.product_id, {'product_id': it.product_id, 'quantity': 0.0, 'uom': it.uom})
             g['quantity'] += float(it.quantity)
         out.append({'id': o.id, 'shipping_number': o.shipping_number,
@@ -573,7 +590,7 @@ def get_shipping_order(order_id):
                 'items': [{
                     'id': item.id,
                     'product_id': item.product_id,
-                    'product_name': item.product.name if item.product else None,
+                    'product_name': item.product.name if item.product else item.description,
                     'quantity': float(item.quantity),
                     'uom': item.uom,
                     'batch_number': item.batch_number,
@@ -952,7 +969,7 @@ def shipping_pod(order_id):
             ['Penerima', order.received_by or '-'], ['Sopir / Kendaraan', f'{order.driver_name or "-"} / {order.vehicle_number or "-"}'],
             ['Status', order.status]]
     items = [['No', 'Barang', 'Jumlah', 'Satuan', 'Batch']] + [
-        [str(i), (it.product.name if it.product else '-'), f'{float(it.quantity):g}', it.uom or '', it.batch_number or ''] for i, it in enumerate(order.items or [], 1)]
+        [str(i), (it.product.name if it.product else (it.description or '-')), f'{float(it.quantity):g}', it.uom or '', it.batch_number or ''] for i, it in enumerate(order.items or [], 1)]
     grid = [('GRID', (0, 0), (-1, -1), 0.3, colors.grey), ('FONTSIZE', (0, 0), (-1, -1), 9)]
     t_items = Table(items, repeatRows=1, colWidths=[24, 260, 60, 50, 110])
     t_items.setStyle(TableStyle(grid + [('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#E5E7EB'))]))

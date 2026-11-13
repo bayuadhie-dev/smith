@@ -559,7 +559,7 @@ function AppChildRoutes() {
                 <Route path="sales/orders/:id" element={<SalesOrderDetails />} />
                 <Route path="sales/forecasts" element={<SalesForecastList />} />
                 <Route path="sales/forecasts/:id" element={<SalesForecastGrid />} />
-                <Route path="sales/invoices" element={<Navigate to="/app/finance/invoices" replace />} />
+                <Route path="sales/invoices" element={<Navigate to="/app/finance/invoices?scope=sales" replace />} />
                 <Route path="sales/invoices/new" element={<SalesInvoiceFormNew />} />
                 <Route path="sales/invoices/:id/edit" element={<SalesInvoiceForm />} />
                 <Route path="sales/invoices/:id" element={<SalesInvoiceDetail />} />
