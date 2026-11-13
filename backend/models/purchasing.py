@@ -116,6 +116,7 @@ class PurchaseOrderItem(db.Model):
     discount_amount = db.Column(db.Numeric(15, 2), default=0)
     tax_percent = db.Column(db.Numeric(5, 2), default=0)
     tax_amount = db.Column(db.Numeric(15, 2), default=0)
+    ppn_code = db.Column(db.String(1), nullable=True)  # kosong = ikut PO; Y/A/B/L = jenis PPN baris; N = tanpa PPN
     total_price = db.Column(db.Numeric(15, 2), nullable=False)
     quantity_received = db.Column(db.Numeric(15, 2), default=0)
     quantity_invoiced = db.Column(db.Numeric(15, 2), default=0)

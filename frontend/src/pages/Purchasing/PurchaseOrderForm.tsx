@@ -46,10 +46,12 @@ interface PurchaseOrderFormData {
     uom: string
     description?: string
     notes?: string
+    ppn_code?: string
   }[]
 }
 
 const PPN_RATES: Record<string, number> = { Y: 11, A: 1.1, B: 1.2, L: 12 }
+const PPN_LABEL: Record<string, string> = { Y: 'Y - 11%', A: 'A - 1,1%', B: 'B - 1,2%', L: 'L - 12%' }
 
 export default function PurchaseOrderForm() {
     const { t } = useLanguage();
@@ -146,7 +148,8 @@ const navigate = useNavigate()
           unit_price: item.unit_price,
           uom: item.uom || 'PCS',
           description: item.description || '',
-          notes: item.notes || ''
+          notes: item.notes || '',
+          ppn_code: item.ppn_code || ''
         }))
       })
     }
@@ -212,13 +215,28 @@ const navigate = useNavigate()
     setValue('payment_terms', allowed.includes(code) ? code : '', { shouldDirty: true })
   }, [watchedSupplier, suppliers, isEdit])
 
+  const rateOfItem = (code?: string) => {
+    if (!watchedTaxable) return 0
+    const c = code || watchedPpn
+    return c === 'N' ? 0 : (PPN_RATES[c] ?? 0)
+  }
+
   const taxSummary = () => {
-    const gross = calculateTotal()
-    const rate = watchedTaxable ? (PPN_RATES[watchedPpn] ?? 0) : 0
-    const inclusive = watchedTaxable && watchedInclusive && rate > 0
-    const tax = !rate ? 0 : inclusive ? gross - gross / (1 + rate / 100) : (gross * rate) / 100
-    const dpp = inclusive ? gross - tax : gross
-    return { rate, tax, dpp, grand: dpp + tax, inclusive }
+    let dpp = 0
+    let tax = 0
+    const rates = new Set<number>()
+    watchedItems.forEach((item) => {
+      const base = (item.quantity || 0) * (item.unit_price || 0)
+      const rate = rateOfItem(item.ppn_code)
+      const inclusive = watchedTaxable && watchedInclusive && rate > 0
+      const t = !rate ? 0 : inclusive ? base - base / (1 + rate / 100) : (base * rate) / 100
+      dpp += inclusive ? base - t : base
+      tax += t
+      if (rate > 0) rates.add(rate)
+    })
+    const inclusive = watchedTaxable && watchedInclusive && rates.size > 0
+    const rate = rates.size === 1 ? Array.from(rates)[0] : rates.size > 1 ? -1 : 0
+    return { rate, tax, dpp, grand: dpp + tax, inclusive, mixed: rates.size > 1 || (rates.size > 0 && watchedItems.some((i) => watchedTaxable && rateOfItem(i.ppn_code) === 0)) }
   }
 
   const calculateTotal = () => {
@@ -252,6 +270,7 @@ const navigate = useNavigate()
           uom: item.uom,
           description: (item.description || '').trim() || undefined,
           notes: (item.notes || '').trim() || undefined,
+          ppn_code: watchedTaxable && item.ppn_code ? item.ppn_code : undefined,
           ...(item.id ? { id: item.id } : {}),
           ...(item.product_id ? { product_id: parseInt(item.product_id.toString()) } : {}),
           ...(item.material_id ? { material_id: parseInt(item.material_id.toString()) } : {})
@@ -283,7 +302,7 @@ const navigate = useNavigate()
   }
 
   const addItem = () => {
-    append({ product_id: null, material_id: null, quantity: 1, unit_price: 0, uom: 'PCS', description: '', notes: '' })
+    append({ product_id: null, material_id: null, quantity: 1, unit_price: 0, uom: 'PCS', description: '', notes: '', ppn_code: '' })
   }
 
   const getProductById = (productId: number) => {
@@ -662,6 +681,22 @@ const navigate = useNavigate()
                       />
                     </div>
 
+                    {watchedTaxable && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">PPN</label>
+                        <select
+                          {...register(`items.${index}.ppn_code` as const)}
+                          className="input-field"
+                          disabled={hasGrn}
+                          title="Jenis PPN untuk barang ini"
+                        >
+                          <option value="">Ikut PO ({PPN_LABEL[watchedPpn] || 'Y - 11%'})</option>
+                          {Object.entries(PPN_LABEL).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
+                          <option value="N">Tanpa PPN</option>
+                        </select>
+                      </div>
+                    )}
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{t('common.total')}</label>
                       <div className="input-field bg-gray-50 dark:bg-gray-900">
@@ -697,7 +732,7 @@ const navigate = useNavigate()
                       <span>{formatCurrencyAmount(taxSummary().dpp, watchedCurrency)}</span>
                     </div>
                     <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-300">
-                      <span>PPN {taxSummary().rate}%{taxSummary().inclusive ? ' (sudah termasuk)' : ''}:</span>
+                      <span>{taxSummary().rate > 0 && !taxSummary().mixed ? `PPN ${taxSummary().rate}%` : 'PPN (per barang)'}{taxSummary().inclusive ? ' (sudah termasuk)' : ''}:</span>
                       <span>{formatCurrencyAmount(taxSummary().tax, watchedCurrency)}</span>
                     </div>
                   </>

@@ -203,6 +203,7 @@ export default function PODetail() {
                 <th className="pb-2 pr-3 text-right">Diterima</th>
                 <th className="pb-2 pr-3 text-right">Sisa</th>
                 <th className="pb-2 pr-3 text-right">Harga Satuan ({ccy})</th>
+                {po.is_taxable && <th className="pb-2 pr-3 text-right">PPN</th>}
                 <th className="pb-2 text-right">Total ({ccy})</th>
               </tr>
             </thead>
@@ -231,6 +232,7 @@ export default function PODetail() {
                     <td className="py-2 pr-3 text-right tabular-nums">{(item.quantity_received || 0).toLocaleString('id-ID')}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">{Math.max(0, item.quantity - (item.quantity_received || 0)).toLocaleString('id-ID')}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">{formatCurrencyAmount(item.unit_price, ccy)}</td>
+                    {po.is_taxable && <td className="py-2 pr-3 text-right tabular-nums">{item.ppn_code === 'N' || !Number(item.tax_percent) ? 'Tanpa PPN' : `${String(item.tax_percent).replace('.', ',')}%`}</td>}
                     <td className="py-2 text-right tabular-nums font-medium">{formatCurrencyAmount(item.total_price, ccy)}</td>
                   </tr>
                 );

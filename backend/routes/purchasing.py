@@ -38,24 +38,33 @@ def _sync_po_received(po_id):
         it.quantity_received = float(total)
 
 
+def _norm_item_ppn(value):
+    """Jenis PPN per baris PO: Y/A/B/L, N = tanpa PPN, kosong = ikut PO."""
+    code = str(value or '').strip().upper()[:1]
+    return code if code in ('Y', 'A', 'B', 'L', 'N') else None
+
+
 def _apply_po_tax(po):
     """Hitung pajak PO dari dua centang: Kena Pajak (is_taxable) dan Total termasuk pajak (tax_inclusive).
     - tidak kena pajak: tanpa PPN
     - kena pajak: PPN sesuai kode (Y/A/B/L) ditambahkan di atas harga
     - kena pajak + termasuk pajak: harga sudah memuat PPN; PPN dipisahkan (DPP = harga - PPN), total tetap
+    Tiap baris boleh punya jenis PPN sendiri (ppn_code baris; N = tanpa PPN, kosong = ikut PO).
     Mengisi tax_percent/tax_amount tiap baris, po.subtotal (DPP), po.tax_amount dan po.total_amount."""
     from utils.tax_helpers import ppn_rate_for_code
     items = PurchaseOrderItem.query.filter_by(po_id=po.id).all()
-    rate = 0.0
+    header_code = None
     if po.is_taxable:
         if not po.ppn_code:
             sup = db.session.get(Supplier, po.supplier_id)
             po.ppn_code = (sup.ppn_code if sup and sup.ppn_code else 'Y')
-        rate = ppn_rate_for_code(po.ppn_code) or 0.0
-    inclusive = bool(po.is_taxable and po.tax_inclusive and rate)
+        header_code = po.ppn_code
     gross = tax_total = 0.0
     for it in items:
         base = float(it.total_price or 0)
+        code = (it.ppn_code or header_code) if po.is_taxable else None
+        rate = 0.0 if (not code or code == 'N') else (ppn_rate_for_code(code) or 0.0)
+        inclusive = bool(po.is_taxable and po.tax_inclusive and rate)
         if not rate:
             tax = 0.0
         elif inclusive:
@@ -64,10 +73,11 @@ def _apply_po_tax(po):
             tax = round(base * rate / 100, 2)
         it.tax_percent = rate
         it.tax_amount = tax
-        gross += base
+        # baris harga termasuk pajak: DPP = harga - PPN; selain itu DPP = harga
+        gross += (base - tax) if inclusive else base
         tax_total += tax
     po.tax_amount = round(tax_total, 2)
-    po.subtotal = round(gross - tax_total, 2) if inclusive else round(gross, 2)
+    po.subtotal = round(gross, 2)
     po.total_amount = _calculate_po_total(po, float(po.subtotal))
 
 
@@ -602,6 +612,7 @@ def create_purchase_order_core(data, user_id, po_number=None):
             description=(item_data.get('description') or None),
             notes=(item_data.get('notes') or None),
             unit_price=item_data['unit_price'],
+            ppn_code=_norm_item_ppn(item_data.get('ppn_code')),
             total_price=item_total
         )
         db.session.add(item)
@@ -713,6 +724,9 @@ def get_purchase_order(id):
                 'uom': i.uom,
                 'unit_price': float(i.unit_price),
                 'total_price': float(i.total_price),
+                'ppn_code': i.ppn_code,
+                'tax_percent': float(i.tax_percent or 0),
+                'tax_amount': float(i.tax_amount or 0),
                 'quantity_received': float(i.quantity_received or 0),
                 'quantity_invoiced': float(i.quantity_invoiced or 0),
                 'schedules': [sc.to_dict() for sc in i.schedules],
@@ -833,6 +847,7 @@ def update_purchase_order(id):
                         description=(item_data.get('description') or None),
                         notes=(item_data.get('notes') or None),
                         unit_price=item_data['unit_price'],
+                        ppn_code=_norm_item_ppn(item_data.get('ppn_code')),
                         total_price=item_total
                     )
                     db.session.add(item)

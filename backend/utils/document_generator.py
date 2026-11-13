@@ -607,6 +607,15 @@ def build_po_document_data(po):
         tax_note = f'PPN {code} - {rate_txt}% ditambahkan di atas harga'
         subtotal_label, tax_label = 'Subtotal', f'PPN {rate_txt}%'
 
+    # PPN per barang: bila ada baris dengan jenis PPN sendiri (atau tanpa PPN), ringkasan menyebut per barang
+    item_codes = {(getattr(i, 'ppn_code', None) or code) for i in (po.items or [])} if po.is_taxable else set()
+    if po.is_taxable and any(getattr(i, 'ppn_code', None) for i in (po.items or [])) and len(item_codes) > 1:
+        names = {c: ('tanpa PPN' if c == 'N' else f'{c} - {ppn_rate_for_code(c):g}%'.replace('.', ',')) for c in item_codes if c}
+        tax_note = 'PPN dihitung per barang (' + ', '.join(sorted(names.values())) + ')' + (': harga barang berPPN sudah termasuk pajak' if inclusive else '')
+        tax_label = 'PPN (per barang)'
+        if inclusive:
+            subtotal_label = 'DPP (tanpa PPN)'
+
     total = float(po.total_amount or 0)
     idr_text = ''
     if foreign and not (po.status == 'draft' and not po.manual_exchange_rate):

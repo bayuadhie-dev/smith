@@ -89,3 +89,29 @@ def test_manual_exchange_rate_saved_and_locked_on_submit(client, auth_headers, d
     assert d2['exchange_rate'] == 16250.5 and d2['exchange_rate_source'] == 'manual'
     idr = client.post('/api/purchasing/purchase-orders', json={**body, 'currency': 'IDR'}, headers=auth_headers).get_json()
     assert client.get(f"/api/purchasing/purchase-orders/{idr['po_id']}", headers=auth_headers).get_json()['manual_exchange_rate'] is None
+
+
+def test_ppn_per_baris_sebagian_tanpa_ppn(client, auth_headers, db_session, test_material):
+    sid, mid = _setup(db_session, test_material, 'Y')
+    body = {'supplier_id': sid, 'order_date': '2026-10-28', 'currency': 'IDR', 'is_taxable': True, 'items': [
+        {'material_id': mid, 'quantity': 10, 'unit_price': 1000, 'uom': 'KG'},                      # ikut PO (Y, 11%)
+        {'material_id': mid, 'quantity': 5, 'unit_price': 2000, 'uom': 'KG', 'ppn_code': 'N'},       # tanpa PPN
+        {'material_id': mid, 'quantity': 1, 'unit_price': 10000, 'uom': 'KG', 'ppn_code': 'L'}]}     # 12%
+    r = client.post('/api/purchasing/purchase-orders', json=body, headers=auth_headers)
+    assert r.status_code == 201, r.get_json()
+    d = client.get(f"/api/purchasing/purchase-orders/{r.get_json()['po_id']}", headers=auth_headers).get_json()
+    by_price = {i['unit_price']: i for i in d['items']}
+    assert (by_price[1000.0]['tax_percent'], by_price[1000.0]['tax_amount'], by_price[1000.0]['ppn_code']) == (11, 1100, None)
+    assert (by_price[2000.0]['tax_percent'], by_price[2000.0]['tax_amount'], by_price[2000.0]['ppn_code']) == (0, 0, 'N')
+    assert (by_price[10000.0]['tax_percent'], by_price[10000.0]['tax_amount']) == (12, 1200)
+    assert d['subtotal'] == 30000 and d['tax_amount'] == 2300 and d['total_amount'] == 32300
+    # ubah: baris tanpa PPN jadi ikut PO
+    items = [{'id': i['id'], 'material_id': mid, 'quantity': i['quantity'], 'unit_price': i['unit_price'], 'uom': 'KG', 'ppn_code': ('' if i['ppn_code'] == 'N' else i['ppn_code'] or '')} for i in d['items']]
+    assert client.put(f"/api/purchasing/purchase-orders/{d['id']}", json={'items': items}, headers=auth_headers).status_code == 200
+    d2 = client.get(f"/api/purchasing/purchase-orders/{d['id']}", headers=auth_headers).get_json()
+    assert d2['tax_amount'] == 1100 + 1100 + 1200 - 0 and d2['total_amount'] == 30000 + 3400
+    # PPN per baris tidak berlaku bila PO tidak kena pajak
+    body['is_taxable'] = False
+    r3 = client.post('/api/purchasing/purchase-orders', json=body, headers=auth_headers)
+    d3 = client.get(f"/api/purchasing/purchase-orders/{r3.get_json()['po_id']}", headers=auth_headers).get_json()
+    assert d3['tax_amount'] == 0 and d3['total_amount'] == 30000
