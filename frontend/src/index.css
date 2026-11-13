@@ -407,3 +407,14 @@ html:where(:not(.dark)) .text-gray-400:where(:not(.sidebar-themed *)) {
 html:where(:not(.dark)) .text-yellow-600:where(:not(.sidebar-themed *)) {
   color: #a16207;
 }
+
+html:where(:not(.dark)) .text-amber-500:where(:not(.sidebar-themed *)),
+html:where(:not(.dark)) .text-yellow-500:where(:not(.sidebar-themed *)) {
+  color: #b45309;
+}
+html:where(:not(.dark)) .text-slate-400:where(:not(.sidebar-themed *)) {
+  color: #64748b;
+}
+html:where(:not(.dark)) .text-gray-300:where(:not(.sidebar-themed *)) {
+  color: #9ca3af;
+}
