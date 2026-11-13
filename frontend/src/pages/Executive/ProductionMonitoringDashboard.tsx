@@ -2666,7 +2666,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} label={{ value: 'OEE %', angle: -90, position: 'insideLeft' }} />
               <Tooltip />
-              <Bar dataKey="OEE" fill="#3B82F6">
+              <Bar dataKey="OEE" fill="rgb(var(--brand-600))">
                 {machineChartData.map((entry: any, index: number) => (
                   <Cell key={`cell-${index}`} fill={entry.OEE >= 60 ? '#22C55E' : entry.OEE >= 40 ? '#F59E0B' : '#EF4444'} />
                 ))}
@@ -2707,7 +2707,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
               <YAxis yAxisId="right" orientation="right" domain={[0, 100]} tick={{ fontSize: 11 }} label={{ value: 'Quality %', angle: 90, position: 'insideRight' }} />
               <Tooltip />
               <Legend />
-              <Bar yAxisId="left" dataKey="Production" fill="#3B82F6" name="Produksi (ctn)" />
+              <Bar yAxisId="left" dataKey="Production" fill="rgb(var(--brand-600))" name="Produksi (ctn)" />
               <Bar yAxisId="right" dataKey="Quality" fill="#22C55E" name="Quality %" />
             </BarChart>
           </ResponsiveContainer>
@@ -3341,7 +3341,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
       name: 'Target Forecast',
       value: data.summary.target_ctn,
       cumulative: data.summary.target_ctn,
-      fill: '#3B82F6'
+      fill: 'rgb(var(--brand-600))'
     });
     
     cumulative = data.summary.target_ctn;
@@ -3541,7 +3541,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
                   <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                   <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip formatter={(v: number) => fmtNum(Math.abs(Math.round(v)))} />
-                  <Bar dataKey="value" fill="#3B82F6">
+                  <Bar dataKey="value" fill="rgb(var(--brand-600))">
                     {waterfallData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
@@ -3618,7 +3618,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
                   <Legend />
                   <Area type="monotone" dataKey="cumulative" stroke="#8B5CF6" fill="#8B5CF6" fillOpacity={0.2} name="Kumulatif" />
                   <Area type="monotone" dataKey="actual" stroke="#22C55E" fill="#22C55E" fillOpacity={0.4} name="Aktual" />
-                  <Area type="monotone" dataKey="target" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.3} name="Target Harian" />
+                  <Area type="monotone" dataKey="target" stroke="rgb(var(--brand-600))" fill="rgb(var(--brand-600))" fillOpacity={0.3} name="Target Harian" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -3725,7 +3725,7 @@ const GraphTab: React.FC<{ data: any }> = ({ data }) => {
                   <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} label={{ value: 'Karton', angle: 90, position: 'insideRight' }} />
                   <Tooltip />
                   <Legend />
-                  <Bar yAxisId="left" dataKey="oee" fill="#3B82F6" name="OEE %" />
+                  <Bar yAxisId="left" dataKey="oee" fill="rgb(var(--brand-600))" name="OEE %" />
                   <Bar yAxisId="right" dataKey="production" fill="#22C55E" name="Produksi (ctn)" />
                 </BarChart>
               </ResponsiveContainer>
@@ -3894,7 +3894,7 @@ const ShiftTab: React.FC<{ data: any }> = ({ data }) => {
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
                 <Tooltip formatter={(v: number) => `${v}%`} />
-                <Bar dataKey="OEE (%)" fill="#6366F1" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="OEE (%)" fill="rgb(var(--brand-500))" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="Quality (%)" fill="#10B981" radius={[4, 4, 0, 0]} />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
               </BarChart>
