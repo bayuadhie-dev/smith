@@ -534,23 +534,29 @@ def delete_provider(id):
 @jwt_required()
 @require_permission('shipping.view', 'invoices.view', 'finance.view')
 def get_uninvoiced_shipping_orders():
-    """Surat Jalan of one Sales Order that are not yet linked to an invoice (for the invoice form)."""
+    """Surat Jalan yang belum ditagih (untuk form faktur): per Sales Order, atau per pelanggan untuk
+    surat jalan tanpa Sales Order (waste, jasa, lainnya)."""
     so_id = request.args.get('sales_order_id', type=int)
-    if not so_id:
+    customer_id = request.args.get('customer_id', type=int)
+    if so_id:
+        q = ShippingOrder.query.filter(ShippingOrder.sales_order_id == so_id)
+    elif customer_id:
+        q = ShippingOrder.query.filter(ShippingOrder.customer_id == customer_id, ShippingOrder.sales_order_id.is_(None))
+    else:
         return jsonify({'orders': []}), 200
-    rows = ShippingOrder.query.filter(ShippingOrder.sales_order_id == so_id, ShippingOrder.invoice_id.is_(None),
-                                      ShippingOrder.status != 'cancelled').order_by(ShippingOrder.shipping_date).all()
+    rows = q.filter(ShippingOrder.invoice_id.is_(None), ShippingOrder.status != 'cancelled').order_by(ShippingOrder.shipping_date).all()
     out = []
     for o in rows:
-        per_product = {}
+        lines = {}
         for it in o.items:
-            if not it.product_id:
-                continue
-            g = per_product.setdefault(it.product_id, {'product_id': it.product_id, 'quantity': 0.0, 'uom': it.uom})
+            key = ('p', it.product_id) if it.product_id else ('d', (it.description or '').strip().lower(), (it.uom or '').lower())
+            g = lines.setdefault(key, {'product_id': it.product_id, 'product_code': it.product.code if it.product else None,
+                                       'description': it.product.name if it.product else (it.description or ''),
+                                       'quantity': 0.0, 'uom': it.uom})
             g['quantity'] += float(it.quantity)
         out.append({'id': o.id, 'shipping_number': o.shipping_number,
                     'shipping_date': o.shipping_date.isoformat() if o.shipping_date else None,
-                    'items': list(per_product.values())})
+                    'items': list(lines.values())})
     return jsonify({'orders': out}), 200
 
 

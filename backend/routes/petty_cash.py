@@ -39,9 +39,11 @@ def _me():
 
 
 def _fund():
-    f = PettyCashFund.query.filter_by(is_active=True).order_by(PettyCashFund.id).first()
+    q = PettyCashFund.query.filter_by(is_active=True)
+    fid = request.args.get('fund_id', type=int)
+    f = q.filter(PettyCashFund.id == fid).first() if fid else q.order_by(PettyCashFund.id).first()
     if not f:
-        raise PCError('Kas kecil belum disiapkan', 404)
+        raise PCError('Kas kecil belum disiapkan' if not fid else 'Kas kecil tidak ditemukan', 404)
     return f
 
 
@@ -113,6 +115,8 @@ def fund_dict(fund):
         'id': fund.id, 'code': fund.code, 'name': fund.name,
         'custodian_user_id': fund.custodian_user_id, 'custodian_name': fund.custodian.full_name if fund.custodian else None,
         'approver_user_id': fund.approver_user_id, 'approver_name': fund.approver.full_name if fund.approver else None,
+        'cash_account_id': fund.cash_account_id,
+        'cash_account_name': f'{fund.cash_account.account_code} {fund.cash_account.account_name}' if fund.cash_account else None,
         **summary(fund),
     }
 
@@ -190,6 +194,61 @@ def get_fund():
     return jsonify(d)
 
 
+def _set_cash_account(fund, value):
+    from models.finance import Account
+    if not value:
+        fund.cash_account_id = None
+        return
+    acc = db.session.get(Account, int(value))
+    if not acc or not acc.is_cash_bank:
+        raise PCError('Pilih akun kas/bank yang valid')
+    fund.cash_account_id = acc.id
+
+
+@petty_cash_bp.route('/funds', methods=['GET'])
+@jwt_required()
+@require_permission('petty_cash.view')
+def list_funds():
+    rows = PettyCashFund.query.filter_by(is_active=True).order_by(PettyCashFund.id).all()
+    return jsonify({'funds': [{'id': f.id, 'code': f.code, 'name': f.name, 'balance': summary(f)['balance']} for f in rows]})
+
+
+@petty_cash_bp.route('/funds', methods=['POST'])
+@jwt_required()
+@require_permission('petty_cash.manage')
+def create_fund():
+    data = request.get_json() or {}
+    code = (data.get('code') or '').strip().upper()
+    name = (data.get('name') or '').strip()
+    if not code or not name:
+        raise PCError('Kode dan nama kas kecil wajib diisi')
+    if PettyCashFund.query.filter(func.upper(PettyCashFund.code) == code).first():
+        raise PCError('Kode kas kecil sudah dipakai')
+    f = PettyCashFund(code=code[:30], name=name[:150], fixed_amount=Decimal(str(data.get('fixed_amount') or 1000000)),
+                      per_txn_limit=Decimal(str(data.get('per_txn_limit') or 500000)), min_balance=Decimal(str(data.get('min_balance') or 100000)))
+    if f.min_balance >= f.fixed_amount or f.per_txn_limit > f.fixed_amount:
+        raise PCError('Batas saldo minimum dan batas per transaksi harus lebih kecil dari dana tetap')
+    for k in ('custodian_user_id', 'approver_user_id'):
+        uid = data.get(k)
+        if uid:
+            if not db.session.get(User, int(uid)):
+                raise PCError('Pengguna tidak ditemukan')
+            setattr(f, k, int(uid))
+    _set_cash_account(f, data.get('cash_account_id'))
+    db.session.add(f)
+    db.session.commit()
+    return jsonify(fund_dict(f)), 201
+
+
+@petty_cash_bp.route('/accounts', methods=['GET'])
+@jwt_required()
+@require_permission('petty_cash.manage')
+def list_cash_accounts():
+    from models.finance import Account
+    rows = Account.query.filter(Account.is_cash_bank.is_(True)).order_by(Account.account_code).all()
+    return jsonify({'accounts': [{'id': a.id, 'code': a.account_code, 'name': a.account_name} for a in rows]})
+
+
 @petty_cash_bp.route('/fund', methods=['PUT'])
 @jwt_required()
 @require_permission('petty_cash.manage')
@@ -206,6 +265,8 @@ def update_fund():
         raise PCError('Batas saldo minimum harus lebih kecil dari dana tetap')
     if Decimal(f.per_txn_limit) > Decimal(f.fixed_amount):
         raise PCError('Batas per transaksi tidak boleh lebih besar dari dana tetap')
+    if 'cash_account_id' in data:
+        _set_cash_account(f, data['cash_account_id'])
     for k in ('custodian_user_id', 'approver_user_id'):
         if k in data:
             uid = data[k] or None

@@ -14,10 +14,12 @@ class PettyCashFund(db.Model):
     min_balance = db.Column(db.Numeric(15, 2), nullable=False, default=100000)
     custodian_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     approver_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    cash_account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
+    cash_account = db.relationship('Account', foreign_keys=[cash_account_id])
     custodian = db.relationship('User', foreign_keys=[custodian_user_id])
     approver = db.relationship('User', foreign_keys=[approver_user_id])
 

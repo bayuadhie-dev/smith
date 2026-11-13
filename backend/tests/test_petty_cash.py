@@ -116,3 +116,32 @@ def test_hanya_penyetuju_dan_pemegang_kas_yang_ditunjuk(client, auth_headers, db
     assert client.post(f"/api/petty-cash/transactions/{t['id']}/approve", headers=_login(client, 'plantmgr'), json={}).status_code == 200
     assert client.post(f"/api/petty-cash/transactions/{t['id']}/pay", headers=_login(client, 'stafflain')).status_code == 403
     assert client.post(f"/api/petty-cash/transactions/{t['id']}/pay", headers=_login(client, 'pemegangkas')).status_code == 200
+
+
+def test_banyak_kas_kecil_dan_akun_kas(client, auth_headers, db_session):
+    from models.finance import Account
+    _fund(db_session)
+    kas = Account(account_code='100001', account_name='Kas Operasional', account_type='asset', normal_balance='debit', is_cash_bank=True)
+    beban = Account(account_code='620001', account_name='Beban Umum', account_type='expense', normal_balance='debit', is_cash_bank=False)
+    db_session.add_all([kas, beban])
+    db_session.commit()
+    assert client.post('/api/petty-cash/funds', headers=auth_headers, json={'code': 'KK-HR', 'name': 'Dobel'}).status_code == 400
+    r = client.post('/api/petty-cash/funds', headers=auth_headers, json={'code': 'kk-pbg', 'name': 'Kas Kecil Purbalingga', 'fixed_amount': 2000000,
+                                                                          'per_txn_limit': 500000, 'min_balance': 200000, 'cash_account_id': kas.id})
+    assert r.status_code == 201, r.get_json()
+    pbg = r.get_json()
+    assert pbg['code'] == 'KK-PBG' and pbg['cash_account_name'] == '100001 Kas Operasional' and pbg['balance'] == 2000000
+    assert client.post('/api/petty-cash/funds', headers=auth_headers, json={'code': 'KK-X', 'name': 'X', 'cash_account_id': beban.id}).status_code == 400  # bukan akun kas/bank
+    assert [f['code'] for f in client.get('/api/petty-cash/funds', headers=auth_headers).get_json()['funds']] == ['KK-HR', 'KK-PBG']
+    # transaksi di Purbalingga tidak memengaruhi kas HR
+    t = client.post(f"/api/petty-cash/transactions?fund_id={pbg['id']}", headers=auth_headers, json=_body(receipt_number='P1', amount=300000)).get_json()
+    client.post(f"/api/petty-cash/transactions/{t['id']}/approve", headers=auth_headers, json={})
+    client.post(f"/api/petty-cash/transactions/{t['id']}/pay", headers=auth_headers)
+    assert client.get(f"/api/petty-cash/fund?fund_id={pbg['id']}", headers=auth_headers).get_json()['balance'] == 1700000
+    assert client.get('/api/petty-cash/fund', headers=auth_headers).get_json()['balance'] == 1000000
+    assert client.get(f"/api/petty-cash/transactions?fund_id={pbg['id']}", headers=auth_headers).get_json()['total'] == 1
+    assert client.get('/api/petty-cash/transactions', headers=auth_headers).get_json()['total'] == 0
+    # nota yang sama boleh dipakai di kas kecil lain, tapi tidak di kas kecil yang sama
+    assert client.post('/api/petty-cash/transactions', headers=auth_headers, json=_body(receipt_number='P1')).status_code == 201
+    assert client.post(f"/api/petty-cash/transactions?fund_id={pbg['id']}", headers=auth_headers, json=_body(receipt_number='P1')).status_code == 400
+    assert client.get('/api/petty-cash/accounts', headers=auth_headers).get_json()['accounts'][0]['code'] == '100001'

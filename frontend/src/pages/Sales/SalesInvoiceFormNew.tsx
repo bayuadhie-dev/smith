@@ -81,9 +81,27 @@ export default function SalesInvoiceFormNew() {
     axiosInstance.get(`/api/shipping/orders/uninvoiced?sales_order_id=${soId}`).then((r) => setShipments(r.data?.orders || [])).catch(() => setShipments([]))
   }, [soId])
 
+  useEffect(() => {
+    if (soId) return
+    setPicked([])
+    if (!customerId) { setShipments([]); return }
+    axiosInstance.get(`/api/shipping/orders/uninvoiced?customer_id=${customerId}`).then((r) => setShipments(r.data?.orders || [])).catch(() => setShipments([]))
+  }, [customerId, soId])
+
   const togglePick = (sid: number) => {
     const next = picked.includes(sid) ? picked.filter((x) => x !== sid) : [...picked, sid]
     setPicked(next)
+    if (!soId) {
+      const agg = new Map<string, Line>()
+      shipments.filter((s) => next.includes(s.id)).forEach((s) => s.items.forEach((it: any) => {
+        const key = it.product_id ? `p${it.product_id}` : `d${String(it.description || '').trim().toLowerCase()}|${String(it.uom || '').toLowerCase()}`
+        const cur = agg.get(key)
+        if (cur) cur.quantity = String(Number(cur.quantity) + Number(it.quantity))
+        else agg.set(key, { product_id: it.product_id || null, code: it.product_code || '', description: it.description || '', uom: it.uom || 'PCS', quantity: String(it.quantity), unit_price: '', tiers: '' })
+      }))
+      setLines(agg.size ? Array.from(agg.values()) : [blank()])
+      return
+    }
     if (next.length === 0) return
     const qty: Record<number, number> = {}
     shipments.filter((s) => next.includes(s.id)).forEach((s) => s.items.forEach((it: any) => { qty[it.product_id] = (qty[it.product_id] || 0) + Number(it.quantity) }))
@@ -118,6 +136,7 @@ export default function SalesInvoiceFormNew() {
     if (!customerId) { toast.error('Pilih pelanggan'); return }
     const items = lines.filter((l) => l.description.trim() && Number(l.quantity) > 0 && Number(l.unit_price) >= 0)
     if (items.length === 0) { toast.error('Isi minimal satu barang'); return }
+    if (picked.length > 0 && !soId && lines.some((l) => l.description.trim() && String(l.unit_price).trim() === '')) { toast.error('Harga tiap barang dari surat jalan harus diisi'); return }
     setSaving(true)
     try {
       const created = await axiosInstance.post('/api/finance/invoices', {
@@ -198,7 +217,7 @@ export default function SalesInvoiceFormNew() {
                   </label>
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">Memilih surat jalan mengisi qty dari barang yang benar-benar dikirim dan menghubungkannya ke faktur ini.</p>
+              <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">Memilih surat jalan memuat barang, jumlah, dan satuannya ke faktur ini. Untuk surat jalan tanpa Sales Order, harga diisi di faktur.</p>
             </div>
           )}
         </div>

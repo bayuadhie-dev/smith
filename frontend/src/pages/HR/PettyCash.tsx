@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import * as XLSX from 'xlsx'
 import axiosInstance from '../../utils/axiosConfig'
 import { PageHeader, Panel, KpiStrip } from '../../components/ui/PageKit'
@@ -11,6 +11,19 @@ import { useDebounce } from '../../hooks/useDebounce'
 import { usePermissions } from '../../contexts/PermissionContext'
 
 const API = '/api/petty-cash'
+const FundContext = createContext<number | null>(null)
+
+function usePc() {
+  const fundId = useContext(FundContext)
+  return useMemo(() => {
+    const withFund = (cfg: any = {}) => ({ ...cfg, params: { ...(fundId ? { fund_id: fundId } : {}), ...(cfg.params || {}) } })
+    return {
+      get: (url: string, cfg?: any) => axiosInstance.get(url, withFund(cfg)),
+      post: (url: string, body?: any, cfg?: any) => axiosInstance.post(url, body, withFund(cfg)),
+      put: (url: string, body?: any, cfg?: any) => axiosInstance.put(url, body, withFund(cfg)),
+    }
+  }, [fundId])
+}
 type TabId = 'ringkasan' | 'transaksi' | 'pengisian' | 'laporan' | 'pengaturan'
 const TAB_LABEL: Record<TabId, string> = {
   ringkasan: 'Ringkasan', transaksi: 'Transaksi', pengisian: 'Pengisian Kembali', laporan: 'Laporan', pengaturan: 'Pengaturan',
@@ -91,6 +104,7 @@ interface TxFormProps {
 }
 
 function TxForm({ fund, categories, editing, onClose, onSaved }: TxFormProps) {
+  const pc = usePc()
   const [f, setF] = useState({
     requester_employee_id: editing?.requester_employee_id || null as number | null,
     requester_name: editing?.requester_name || '',
@@ -110,7 +124,7 @@ function TxForm({ fund, categories, editing, onClose, onSaved }: TxFormProps) {
 
   useEffect(() => {
     if (picked || debounced.trim().length < 2) { setSuggest([]); return }
-    axiosInstance.get(`${API}/employees`, { params: { q: debounced.trim() } })
+    pc.get(`${API}/employees`, { params: { q: debounced.trim() } })
       .then((r) => setSuggest(r.data?.employees || []))
       .catch(() => setSuggest([]))
   }, [debounced, picked])
@@ -132,8 +146,8 @@ function TxForm({ fund, categories, editing, onClose, onSaved }: TxFormProps) {
     setBusy(true)
     try {
       const body = { ...f, amount: Number(f.amount), requester_employee_id: f.requester_employee_id || undefined }
-      if (editing) await axiosInstance.put(`${API}/transactions/${editing.id}`, body)
-      else await axiosInstance.post(`${API}/transactions`, body)
+      if (editing) await pc.put(`${API}/transactions/${editing.id}`, body)
+      else await pc.post(`${API}/transactions`, body)
       showSuccess(editing ? 'Permintaan diperbarui' : 'Permintaan dibuat, menunggu Plant Manager')
       onSaved()
     } catch (e: any) {
@@ -228,63 +242,102 @@ export default function PettyCash() {
   const [tab, setTab] = useUrlState<TabId>('tab', 'ringkasan', allowed)
   useBreadcrumbTrail(tab === 'ringkasan' ? [] : [{ label: TAB_LABEL[tab] }])
 
+  const [fundParam, setFundParam] = useUrlState<string>('fund', '')
+  const [funds, setFunds] = useState<any[]>([])
   const [fund, setFund] = useState<any>(null)
   const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
 
-  const loadFund = useCallback(async () => {
+  const selectedId = useMemo(() => {
+    const n = Number(fundParam)
+    return funds.find((x) => x.id === n)?.id ?? funds[0]?.id ?? null
+  }, [fundParam, funds])
+
+  const loadFunds = useCallback(async () => {
     try {
-      const r = await axiosInstance.get(`${API}/fund`)
+      const r = await axiosInstance.get(`${API}/funds`)
+      const list = r.data?.funds || []
+      setFunds(list)
+      if (list.length === 0) setLoading(false)
+    } catch (e: any) {
+      showError(errMsg(e, 'Gagal memuat daftar kas kecil'))
+      setLoading(false)
+    }
+  }, [])
+
+  const loadFund = useCallback(async () => {
+    if (!selectedId) return
+    try {
+      const r = await axiosInstance.get(`${API}/fund`, { params: { fund_id: selectedId } })
       setFund(r.data)
     } catch (e: any) {
       showError(errMsg(e, 'Gagal memuat kas kecil'))
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [selectedId])
 
   useEffect(() => {
-    loadFund()
+    loadFunds()
     axiosInstance.get(`${API}/meta`).then((r) => setCategories(r.data?.categories || [])).catch(() => undefined)
-  }, [loadFund])
+  }, [loadFunds])
+
+  useEffect(() => { loadFund() }, [loadFund])
 
   if (loading) return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Memuat...</div>
   if (!fund) return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Kas kecil belum disiapkan.</div>
 
   return (
-    <div className="space-y-5 p-6">
-      <PageHeader title="Kas Kecil" subtitle={`${fund.name}. Pemegang kas: ${fund.custodian_name || 'belum diatur'}. Penyetuju: ${fund.approver_name || 'belum diatur'}.`} />
-      <div className="flex flex-wrap gap-1 border-b border-gray-200 dark:border-gray-700">
-        {allowed.map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setTab(t)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === t
-              ? 'border-primary-600 text-primary-700 dark:border-primary-400 dark:text-primary-300'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
-          >
-            {TAB_LABEL[t]}
-          </button>
-        ))}
+    <FundContext.Provider value={fund.id}>
+      <div className="space-y-5 p-6">
+        <PageHeader title="Kas Kecil" subtitle={`${fund.name}. Pemegang kas: ${fund.custodian_name || 'belum diatur'}. Penyetuju: ${fund.approver_name || 'belum diatur'}.${fund.cash_account_name ? ` Akun kas: ${fund.cash_account_name}.` : ''}`} />
+        {funds.length > 1 && (
+          <div className="flex items-center gap-2 text-sm">
+            <label className="text-gray-500 dark:text-gray-400" htmlFor="pc-fund">Kas kecil</label>
+            <select id="pc-fund" className="input-field max-w-xs" value={fund.id} onChange={(e) => setFundParam(e.target.value)}>
+              {funds.map((x) => <option key={x.id} value={x.id}>{x.name} (saldo Rp {Number(x.balance).toLocaleString('id-ID')})</option>)}
+            </select>
+          </div>
+        )}
+        <div className="flex flex-wrap gap-1 border-b border-gray-200 dark:border-gray-700">
+          {allowed.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTab(t)}
+              className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${tab === t
+                ? 'border-primary-600 text-primary-700 dark:border-primary-400 dark:text-primary-300'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
+            >
+              {TAB_LABEL[t]}
+            </button>
+          ))}
+        </div>
+        {tab === 'ringkasan' && <Ringkasan fund={fund} reload={loadFund} />}
+        {tab === 'transaksi' && <Transaksi fund={fund} categories={categories} canCreate={canCreate} reload={loadFund} />}
+        {tab === 'pengisian' && <Pengisian fund={fund} canApprove={canReplenishApprove} reload={loadFund} />}
+        {tab === 'laporan' && <Laporan categories={categories} />}
+        {tab === 'pengaturan' && canManage && (
+          <Pengaturan
+            fund={fund}
+            reload={async () => { await Promise.all([loadFund(), loadFunds()]) }}
+            onCreated={async (id: number) => { await loadFunds(); setFundParam(String(id)) }}
+          />
+        )}
       </div>
-      {tab === 'ringkasan' && <Ringkasan fund={fund} reload={loadFund} />}
-      {tab === 'transaksi' && <Transaksi fund={fund} categories={categories} canCreate={canCreate} reload={loadFund} />}
-      {tab === 'pengisian' && <Pengisian fund={fund} canApprove={canReplenishApprove} reload={loadFund} />}
-      {tab === 'laporan' && <Laporan categories={categories} />}
-      {tab === 'pengaturan' && canManage && <Pengaturan fund={fund} reload={loadFund} />}
-    </div>
+    </FundContext.Provider>
   )
 }
 
 function Ringkasan({ fund, reload }: { fund: any; reload: () => Promise<void> }) {
+  const pc = usePc()
   const [busy, setBusy] = useState(false)
   const lowBalance = fund.balance <= fund.min_balance
   const request = async () => {
     if (!(await confirmDialog(`Ajukan pengisian kembali ${rp(fund.suggested_replenishment)} ke Finance?`, { title: 'Pengisian Kembali', confirmText: 'Ajukan', danger: false }))) return
     setBusy(true)
     try {
-      await axiosInstance.post(`${API}/replenishments`, {})
+      await pc.post(`${API}/replenishments`, {})
       showSuccess('Pengajuan pengisian kembali dikirim ke Finance')
       await reload()
     } catch (e: any) {
@@ -336,6 +389,7 @@ function Ringkasan({ fund, reload }: { fund: any; reload: () => Promise<void> })
 }
 
 function Transaksi({ fund, categories, canCreate, reload }: { fund: any; categories: string[]; canCreate: boolean; reload: () => Promise<void> }) {
+  const pc = usePc()
   const [rows, setRows] = useState<any[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -353,7 +407,7 @@ function Transaksi({ fund, categories, canCreate, reload }: { fund: any; categor
       if (flt.date_from) params.date_from = flt.date_from
       if (flt.date_to) params.date_to = flt.date_to
       if (q.trim()) params.q = q.trim()
-      const r = await axiosInstance.get(`${API}/transactions`, { params })
+      const r = await pc.get(`${API}/transactions`, { params })
       setRows(r.data?.transactions || [])
       setTotal(r.data?.total || 0)
     } catch (e: any) {
@@ -366,7 +420,7 @@ function Transaksi({ fund, categories, canCreate, reload }: { fund: any; categor
   const refresh = async () => { await Promise.all([load(), reload()]) }
   const act = async (t: any, path: string, okMsg: string, body: any = {}) => {
     try {
-      await axiosInstance.post(`${API}/transactions/${t.id}/${path}`, body)
+      await pc.post(`${API}/transactions/${t.id}/${path}`, body)
       showSuccess(okMsg)
       await refresh()
     } catch (e: any) {
@@ -465,10 +519,11 @@ function Transaksi({ fund, categories, canCreate, reload }: { fund: any; categor
 }
 
 function Pengisian({ fund, canApprove, reload }: { fund: any; canApprove: boolean; reload: () => Promise<void> }) {
+  const pc = usePc()
   const [rows, setRows] = useState<any[]>([])
   const load = useCallback(async () => {
     try {
-      const r = await axiosInstance.get(`${API}/replenishments`)
+      const r = await pc.get(`${API}/replenishments`)
       setRows(r.data?.replenishments || [])
     } catch (e: any) {
       showError(errMsg(e, 'Gagal memuat pengisian kembali'))
@@ -478,7 +533,7 @@ function Pengisian({ fund, canApprove, reload }: { fund: any; canApprove: boolea
 
   const act = async (r: any, path: string, okMsg: string) => {
     try {
-      await axiosInstance.post(`${API}/replenishments/${r.id}/${path}`, {})
+      await pc.post(`${API}/replenishments/${r.id}/${path}`, {})
       showSuccess(okMsg)
       await Promise.all([load(), reload()])
     } catch (e: any) {
@@ -532,6 +587,7 @@ function Pengisian({ fund, canApprove, reload }: { fund: any; canApprove: boolea
 }
 
 function Laporan({ categories }: { categories: string[] }) {
+  const pc = usePc()
   const now = new Date()
   const [flt, setFlt] = useState({
     date_from: ymd(new Date(now.getFullYear(), now.getMonth(), 1)),
@@ -548,7 +604,7 @@ function Laporan({ categories }: { categories: string[] }) {
       const params: any = { date_from: flt.date_from, date_to: flt.date_to }
       if (flt.category) params.category = flt.category
       if (flt.status) params.status = flt.status
-      const r = await axiosInstance.get(`${API}/report`, { params })
+      const r = await pc.get(`${API}/report`, { params })
       setData(r.data)
     } catch (e: any) {
       showError(errMsg(e, 'Gagal memuat laporan'))
@@ -703,7 +759,8 @@ function Laporan({ categories }: { categories: string[] }) {
   )
 }
 
-function Pengaturan({ fund, reload }: { fund: any; reload: () => Promise<void> }) {
+function Pengaturan({ fund, reload, onCreated }: { fund: any; reload: () => Promise<void>; onCreated: (id: number) => Promise<void> }) {
+  const pc = usePc()
   const [users, setUsers] = useState<any[]>([])
   const [f, setF] = useState({
     fixed_amount: String(fund.fixed_amount),
@@ -711,22 +768,26 @@ function Pengaturan({ fund, reload }: { fund: any; reload: () => Promise<void> }
     min_balance: String(fund.min_balance),
     custodian_user_id: fund.custodian_user_id ? String(fund.custodian_user_id) : '',
     approver_user_id: fund.approver_user_id ? String(fund.approver_user_id) : '',
+    cash_account_id: fund.cash_account_id ? String(fund.cash_account_id) : '',
   })
+  const [accounts, setAccounts] = useState<any[]>([])
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    axiosInstance.get(`${API}/users`).then((r) => setUsers(r.data?.users || [])).catch(() => showError('Gagal memuat daftar pengguna'))
+    pc.get(`${API}/users`).then((r) => setUsers(r.data?.users || [])).catch(() => showError('Gagal memuat daftar pengguna'))
+    pc.get(`${API}/accounts`).then((r) => setAccounts(r.data?.accounts || [])).catch(() => showError('Gagal memuat daftar akun kas'))
   }, [])
 
   const save = async () => {
     setBusy(true)
     try {
-      await axiosInstance.put(`${API}/fund`, {
+      await pc.put(`${API}/fund`, {
         fixed_amount: Number(f.fixed_amount),
         per_txn_limit: Number(f.per_txn_limit),
         min_balance: Number(f.min_balance),
         custodian_user_id: f.custodian_user_id ? Number(f.custodian_user_id) : null,
         approver_user_id: f.approver_user_id ? Number(f.approver_user_id) : null,
+        cash_account_id: f.cash_account_id ? Number(f.cash_account_id) : null,
       })
       showSuccess('Pengaturan kas kecil disimpan')
       await reload()
@@ -745,6 +806,7 @@ function Pengaturan({ fund, reload }: { fund: any; reload: () => Promise<void> }
   )
 
   return (
+    <>
     <Panel title="Pengaturan kas kecil" action={<button type="button" className={btnPrimary} disabled={busy} onClick={save}>{busy ? 'Menyimpan...' : 'Simpan'}</button>}>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div>
@@ -769,7 +831,77 @@ function Pengaturan({ fund, reload }: { fund: any; reload: () => Promise<void> }
           {userSelect('approver_user_id')}
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Hanya pengguna ini yang bisa menyetujui atau menolak permintaan.</p>
         </div>
+        <div>
+          <label className={label}>Akun kas di akuntansi</label>
+          <select className="input-field" value={f.cash_account_id} onChange={(e) => setF((p) => ({ ...p, cash_account_id: e.target.value }))}>
+            <option value="">- Belum diatur -</option>
+            {accounts.map((a) => <option key={a.id} value={a.id}>{a.code} {a.name}</option>)}
+          </select>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Kas kecil dicatat di akun kas operasional.</p>
+        </div>
       </div>
+    </Panel>
+    <TambahKas users={users} accounts={accounts} onCreated={onCreated} />
+    </>
+  )
+}
+
+function TambahKas({ users, accounts, onCreated }: { users: any[]; accounts: any[]; onCreated: (id: number) => Promise<void> }) {
+  const empty = { code: '', name: '', fixed_amount: '1000000', per_txn_limit: '500000', min_balance: '100000', custodian_user_id: '', approver_user_id: '', cash_account_id: '' }
+  const [open, setOpen] = useState(false)
+  const [f, setF] = useState(empty)
+  const [busy, setBusy] = useState(false)
+  const set = (k: string, v: string) => setF((p) => ({ ...p, [k]: v }))
+  const create = async () => {
+    setBusy(true)
+    try {
+      const r = await axiosInstance.post(`${API}/funds`, {
+        code: f.code, name: f.name, fixed_amount: Number(f.fixed_amount), per_txn_limit: Number(f.per_txn_limit), min_balance: Number(f.min_balance),
+        custodian_user_id: f.custodian_user_id ? Number(f.custodian_user_id) : null,
+        approver_user_id: f.approver_user_id ? Number(f.approver_user_id) : null,
+        cash_account_id: f.cash_account_id ? Number(f.cash_account_id) : null,
+      })
+      showSuccess('Kas kecil baru dibuat')
+      setF(empty)
+      setOpen(false)
+      await onCreated(r.data.id)
+    } catch (e: any) {
+      showError(errMsg(e, 'Gagal membuat kas kecil'))
+    } finally {
+      setBusy(false)
+    }
+  }
+  const userSelect = (key: 'custodian_user_id' | 'approver_user_id') => (
+    <select className="input-field" value={f[key]} onChange={(e) => set(key, e.target.value)}>
+      <option value="">- Belum diatur -</option>
+      {users.map((u) => <option key={u.id} value={u.id}>{u.name}{u.username ? ` (${u.username})` : ''}</option>)}
+    </select>
+  )
+  return (
+    <Panel title="Kas kecil lain (misalnya per lokasi)" action={<button type="button" className={btnPrimary} onClick={() => setOpen((v) => !v)}>{open ? 'Tutup' : 'Tambah Kas Kecil'}</button>}>
+      {!open ? (
+        <p className="text-sm text-gray-500 dark:text-gray-400">Tiap kas kecil punya dana, batas, pemegang kas, penyetuju, saldo, dan laporan sendiri.</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div><label className={label}>Kode *</label><input className="input-field" value={f.code} onChange={(e) => set('code', e.target.value)} placeholder="KK-PBG" /></div>
+          <div className="md:col-span-2"><label className={label}>Nama *</label><input className="input-field" value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="Kas Kecil Purbalingga" /></div>
+          <div><label className={label}>Dana tetap (Rp)</label><NumberInput currency className="input-field text-right" value={f.fixed_amount} onChange={(e: any) => set('fixed_amount', e.target.value)} /></div>
+          <div><label className={label}>Batas per transaksi (Rp)</label><NumberInput currency className="input-field text-right" value={f.per_txn_limit} onChange={(e: any) => set('per_txn_limit', e.target.value)} /></div>
+          <div><label className={label}>Batas saldo minimum (Rp)</label><NumberInput currency className="input-field text-right" value={f.min_balance} onChange={(e: any) => set('min_balance', e.target.value)} /></div>
+          <div><label className={label}>Pemegang kas</label>{userSelect('custodian_user_id')}</div>
+          <div><label className={label}>Penyetuju (Plant Manager)</label>{userSelect('approver_user_id')}</div>
+          <div>
+            <label className={label}>Akun kas di akuntansi</label>
+            <select className="input-field" value={f.cash_account_id} onChange={(e) => set('cash_account_id', e.target.value)}>
+              <option value="">- Belum diatur -</option>
+              {accounts.map((a) => <option key={a.id} value={a.id}>{a.code} {a.name}</option>)}
+            </select>
+          </div>
+          <div className="md:col-span-3 flex justify-end">
+            <button type="button" className={btnPrimary} disabled={busy || !f.code.trim() || !f.name.trim()} onClick={create}>{busy ? 'Menyimpan...' : 'Buat Kas Kecil'}</button>
+          </div>
+        </div>
+      )}
     </Panel>
   )
 }
