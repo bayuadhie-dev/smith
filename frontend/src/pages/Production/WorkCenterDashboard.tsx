@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import { DetailSkeleton } from '../../components/ui/Skeleton'
 
 interface DowntimeBreakdown {
   mesin: number
@@ -252,7 +253,7 @@ export default function WorkCenterDashboard() {
         </div>
 
         {loading ? (
-          <div className="text-center py-12">{t('common.loading')}</div>
+          <DetailSkeleton />
         ) : (
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {machines.map((m) => {

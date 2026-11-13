@@ -11,6 +11,7 @@ import {
 import { showSuccess, showError, showInfo } from '../../components/ui';
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+import { TableSkeleton } from '../../components/ui/Skeleton'
 
 const STATUS_LABEL: Record<string, string> = { present: 'Hadir', absent: 'Tidak hadir', late: 'Terlambat', half_day: 'Setengah hari' }
 const clock = (v?: string | null) => (v ? new Date(v).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '')
@@ -218,7 +219,7 @@ const navigate = useNavigate()
 
       {/* Attendance Records Table */}
       {isLoading ? (
-        <div className="text-center py-12">{t('common.loading')}</div>
+        <TableSkeleton rows={8} cols={7} />
       ) : (
         <div className="card">
           <div className="table-container">

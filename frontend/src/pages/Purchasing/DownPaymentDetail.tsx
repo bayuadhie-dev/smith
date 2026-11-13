@@ -11,6 +11,7 @@ import { PageHeader, Panel, KpiStrip } from '../../components/ui/PageKit'
 import { confirmDialog, showError, showSuccess } from '../../components/ui'
 import { usePermissions } from '../../contexts/PermissionContext'
 
+import { DetailSkeleton } from '../../components/ui/Skeleton'
 const fmtDate = (d: string | null) => (d ? new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-')
 
 export default function DownPaymentDetail() {
@@ -44,7 +45,7 @@ export default function DownPaymentDetail() {
   const chosen = invoices.find((i) => i.id === invoiceId)
   const maxAmt = chosen ? Math.min(Number(chosen.balance_due), dp?.remaining || 0) : 0
 
-  if (!dp) return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Memuat...</div>
+  if (!dp) return <div className="p-6"><DetailSkeleton /></div>
   const th = 'px-4 py-2.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400'
   return (
     <div className="space-y-4 p-6">

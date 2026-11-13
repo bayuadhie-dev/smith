@@ -4,6 +4,7 @@ import { ArrowLeftIcon, ArrowUturnLeftIcon, CheckCircleIcon, ExclamationTriangle
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 import WorkOrderBomActualTree, { BomTreeItem } from '../../components/Production/WorkOrderBomActualTree';
+import { DetailSkeleton, Skeleton } from '../../components/ui/Skeleton'
 
 interface InventoryRow {
   id: number;
@@ -174,7 +175,7 @@ export default function BatchClose() {
   };
 
   if (loading) {
-    return <div className="text-center py-12">Memuat...</div>;
+    return <DetailSkeleton />;
   }
 
   if (!batch) {
@@ -286,7 +287,7 @@ export default function BatchClose() {
             </div>
 
             {loadingInventory ? (
-              <div className="text-gray-500 text-sm py-8 text-center dark:text-gray-400">Memuat...</div>
+              <div className="py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div></div>
             ) : inventoryRows.length === 0 ? (
               <div className="text-gray-500 text-sm py-8 text-center dark:text-gray-400">Belum ada stok untuk item ini.</div>
             ) : (

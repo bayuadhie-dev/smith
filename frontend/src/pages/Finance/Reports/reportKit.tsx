@@ -5,6 +5,7 @@ import {
 } from '@heroicons/react/24/outline'
 import axiosInstance from '../../../utils/axiosConfig'
 import { showError } from '../../../components/ui'
+import AnimatedValue from '../../../components/ui/AnimatedValue'
 
 // ---------------------------------------------------------------- formatting
 const nf0 = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
@@ -215,7 +216,7 @@ export function StatCards({ items }: { items: { label: string; value: string; hi
       {items.map((it) => (
         <div key={it.label} className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">{it.label}</p>
-          <p className={`mt-1 break-words text-lg font-bold tabular-nums ${TONES[it.tone || 'default']}`}>{it.value}</p>
+          <p className={`mt-1 break-words text-lg font-bold tabular-nums ${TONES[it.tone || 'default']}`}><AnimatedValue value={it.value} /></p>
           {it.hint && <p className="mt-0.5 text-xs text-gray-400">{it.hint}</p>}
         </div>
       ))}

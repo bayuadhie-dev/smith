@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../../lib/axios';
+import { DetailSkeleton } from '../../components/ui/Skeleton'
 
 /**
  * Canonical short-link target for a RecurringPaymentTransaction, reached
@@ -33,7 +34,7 @@ const RecurringPaymentTransactionRedirect: React.FC = () => {
     return <div className="p-6 text-red-600 dark:text-red-400">{error}</div>;
   }
 
-  return <div className="p-6 text-gray-500 dark:text-gray-400">Memuat...</div>;
+  return <div className="p-6"><DetailSkeleton /></div>;
 };
 
 export default RecurringPaymentTransactionRedirect;

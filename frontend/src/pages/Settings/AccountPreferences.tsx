@@ -4,6 +4,7 @@ import AccountSlotSelector from '../../components/Finance/AccountSlotSelector';
 import SingleRowSettingsTab from '../../components/Finance/SingleRowSettingsTab';
 import { useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
+import { TableSkeleton } from '../../components/ui/Skeleton'
 
 interface SettingsTab {
   id: string;
@@ -389,7 +390,7 @@ const NomorDokumenTab: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-gray-500 dark:text-gray-400">Memuat...</div>;
+    return <TableSkeleton rows={5} cols={4} />;
   }
 
   return (
@@ -586,7 +587,7 @@ const GlobalDefaultsTab: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-gray-500 dark:text-gray-400">Memuat...</div>;
+    return <TableSkeleton rows={5} cols={4} />;
   }
 
   const configuredRows = rows.filter((r) => r.account_id);

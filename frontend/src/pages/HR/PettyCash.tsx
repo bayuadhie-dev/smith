@@ -9,6 +9,7 @@ import { useUrlState } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { useDebounce } from '../../hooks/useDebounce'
 import { usePermissions } from '../../contexts/PermissionContext'
+import { DetailSkeleton } from '../../components/ui/Skeleton'
 
 const API = '/api/petty-cash'
 const FundContext = createContext<number | null>(null)
@@ -284,7 +285,7 @@ export default function PettyCash() {
 
   useEffect(() => { loadFund() }, [loadFund])
 
-  if (loading) return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Memuat...</div>
+  if (loading) return <div className="p-6"><DetailSkeleton /></div>
   if (!fund) return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Kas kecil belum disiapkan.</div>
 
   return (

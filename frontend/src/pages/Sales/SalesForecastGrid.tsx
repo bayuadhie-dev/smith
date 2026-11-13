@@ -9,6 +9,7 @@ import PeriodSelectModal from './PeriodSelectModal';
 import { periodLabel, shiftPeriod } from './forecastPeriod';
 import NumberInput from '../../components/ui/NumberInput'
 
+import { TableSkeleton } from '../../components/ui/Skeleton'
 interface ForecastLine {
   id: number;
   product_id: number;
@@ -565,7 +566,7 @@ export default function SalesForecastGrid() {
     setSearchParams({ window: newWindow, count: String(windowMonths.length) });
   };
 
-  if (loading) return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Memuat...</div>;
+  if (loading) return <TableSkeleton rows={10} cols={9} />;
   if (!header) return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Forecast tidak ditemukan</div>;
 
   const existingProductIds = new Set(header.lines.map((l) => l.product_id));

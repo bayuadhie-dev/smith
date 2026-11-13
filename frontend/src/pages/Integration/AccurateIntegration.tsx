@@ -69,6 +69,7 @@ import { confirmDialog, showSuccess, showError, showWarning } from '../../compon
 import NumberInput from '../../components/ui/NumberInput'
 import { useUrlState } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
+import { Skeleton } from '../../components/ui/Skeleton'
 
 export default function AccurateIntegration() {
   const [activeTab, setActiveTab] = useUrlState<'config' | 'mapping' | 'dryrun' | 'approval' | 'modules' | 'ejo' | 'warehouse' | 'transfer'>('tab', 'config', ['config', 'mapping', 'dryrun', 'approval', 'modules', 'ejo', 'warehouse', 'transfer'])
@@ -1852,7 +1853,7 @@ export default function AccurateIntegration() {
               className="w-full mb-2 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm"
             />
             {fetchingWoCache ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>
+              <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
             ) : filteredEjoList.length === 0 ? (
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Belum ada data. Klik "Segarkan Daftar" untuk mengambil dari Accurate.
@@ -2155,7 +2156,7 @@ export default function AccurateIntegration() {
                   Gudang {loc.toUpperCase()} ({(snapshotSummaryResp?.data?.[loc] || []).length})
                 </h4>
                 {fetchingSnapshotSummary ? (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>
+                  <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
                 ) : (snapshotSummaryResp?.data?.[loc] || []).length === 0 ? (
                   <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada data. Klik "Sinkronkan Penuh".</p>
                 ) : (
@@ -2199,7 +2200,7 @@ export default function AccurateIntegration() {
                 </div>
                 <div className="overflow-y-auto p-4">
                   {fetchingSnapshotDetail ? (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">Memuat...</p>
+                    <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
                   ) : !snapshotDetailResp?.data ? (
                     <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">Data tidak ditemukan.</p>
                   ) : (
@@ -2253,7 +2254,7 @@ export default function AccurateIntegration() {
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
               <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Gudang EPD</h4>
               {fetchingWarehouseStock ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>
+                <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
               ) : (warehouseStockResp?.data?.epd || []).length === 0 ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada data. Klik "Sinkronkan Stok".</p>
               ) : (
@@ -2275,7 +2276,7 @@ export default function AccurateIntegration() {
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
               <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Gudang FG</h4>
               {fetchingWarehouseStock ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>
+                <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
               ) : (warehouseStockResp?.data?.fg || []).length === 0 ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada data. Klik "Sinkronkan Stok".</p>
               ) : (
@@ -2446,7 +2447,7 @@ export default function AccurateIntegration() {
 
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
             {fetchingTransferList ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>
+              <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
             ) : (transferListResp?.data || []).length === 0 ? (
               <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada data. Klik "Sinkronkan Histori".</p>
             ) : (

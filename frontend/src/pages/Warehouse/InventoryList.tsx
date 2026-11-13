@@ -3,6 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetInventoryQuery, useGetWarehouseDashboardQuery } from '../../services/api';
 import { Package, Layers, Box } from 'lucide-react';
 
+import { TableSkeleton } from '../../components/ui/Skeleton';
 export default function InventoryList() {
     const { t } = useLanguage();
 
@@ -107,7 +108,7 @@ const { data: inventory, isLoading } = useGetInventoryQuery({})
       )}
 
       {isLoading ? (
-        <div className="text-center py-12">{t('common.loading')}</div>
+        <TableSkeleton rows={8} cols={8} />
       ) : (
         <div className="card">
           <div className="table-container">

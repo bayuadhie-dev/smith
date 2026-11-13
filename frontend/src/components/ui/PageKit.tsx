@@ -1,3 +1,4 @@
+import AnimatedValue from './AnimatedValue'
 import { Link } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -35,7 +36,7 @@ export const KpiStrip = ({ items }: { items: KpiItem[] }) => (
       const body = (
         <>
           <p className="truncate text-xs text-gray-500 dark:text-gray-400">{it.label}</p>
-          <p className={`mt-1 truncate text-2xl font-semibold tabular-nums ${toneClass(it.tone)}`}>{it.value}</p>
+          <p className={`mt-1 truncate text-2xl font-semibold tabular-nums ${toneClass(it.tone)}`}><AnimatedValue value={it.value} /></p>
           <p className="mt-1 truncate text-xs text-gray-400">{it.hint || ' '}</p>
         </>
       )

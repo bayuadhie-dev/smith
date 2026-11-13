@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from '../../lib/axios';
 import { confirmDialog } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
+import { DetailSkeleton, Skeleton } from '../../components/ui/Skeleton'
 
 interface PeriodCloseRecord {
   id: number;
@@ -273,7 +274,7 @@ const PeriodClose: React.FC = () => {
   );
 
   if (loading) {
-    return <div className="p-6 text-gray-500 dark:text-gray-400">Memuat...</div>;
+    return <div className="p-6"><DetailSkeleton /></div>;
   }
 
   return (
@@ -410,7 +411,7 @@ const PeriodClose: React.FC = () => {
         </p>
 
         {locksLoading ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>
+          <div className="space-y-2" role="status" aria-label="Memuat data"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-2/3" /></div>
         ) : (
           <>
             {locks.length > 0 && (
@@ -463,7 +464,7 @@ const PeriodClose: React.FC = () => {
         </p>
 
         {bucketLocksLoading ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>
+          <div className="space-y-2" role="status" aria-label="Memuat data"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-2/3" /></div>
         ) : (
           <>
             {bucketLocks.length > 0 && (

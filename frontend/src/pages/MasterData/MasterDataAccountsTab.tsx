@@ -7,6 +7,7 @@ import {
   useCreateAccountMutation,
   useUpdateAccountMutation,
 } from '../../services/api';
+import { TableSkeleton } from '../../components/ui/Skeleton'
 
 const ACCOUNT_TYPES = ['asset', 'liability', 'equity', 'revenue', 'expense'];
 
@@ -135,7 +136,7 @@ export default function MasterDataAccountsTab() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12">Memuat...</div>
+        <TableSkeleton rows={8} cols={5} />
       ) : (
         <div className="card">
           <div className="table-container">

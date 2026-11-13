@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from '../../lib/axios';
+import { DetailSkeleton } from '../../components/ui/Skeleton'
 
 interface JournalLine {
   id: number;
@@ -67,7 +68,7 @@ const RecurringPaymentTransactionDetail: React.FC = () => {
   }, [masterId, txId]);
 
   if (loading) {
-    return <div className="p-6 text-gray-500 dark:text-gray-400">Memuat...</div>;
+    return <div className="p-6"><DetailSkeleton /></div>;
   }
 
   if (error || !data) {

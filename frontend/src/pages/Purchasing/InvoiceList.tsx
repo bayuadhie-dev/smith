@@ -7,6 +7,7 @@ import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 import toast from 'react-hot-toast';
 import NumberInput from '../../components/ui/NumberInput'
 
+import { TableSkeleton } from '../../components/ui/Skeleton'
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
   sent:      { label: 'Posted',     color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
@@ -99,9 +100,7 @@ export default function InvoiceList() {
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-16 text-gray-400">
-            <ArrowPathIcon className="h-5 w-5 animate-spin mr-2" /> Memuat...
-          </div>
+          <TableSkeleton rows={8} cols={10} />
         ) : tools.rows.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <DocumentCurrencyDollarIcon className="h-12 w-12 mx-auto mb-3 opacity-40" />

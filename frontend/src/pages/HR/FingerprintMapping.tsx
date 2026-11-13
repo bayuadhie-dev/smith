@@ -6,6 +6,7 @@ import SearchableSelect from '../../components/SearchableSelect'
 import { confirmDialog, showSuccess, showError } from '../../components/ui'
 import { usePermissions } from '../../contexts/PermissionContext'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+import { Skeleton } from '../../components/ui/Skeleton'
 
 type Status = 'mapped' | 'exact' | 'similar' | 'none'
 type Conf = 'tinggi' | 'sedang' | 'rendah'
@@ -187,7 +188,7 @@ const FingerprintMapping = () => {
             <input value={empSearch} onChange={(e) => setEmpSearch(e.target.value)} placeholder="Cari nama atau nomor karyawan"
               className="w-full rounded-md border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
           </div>
-          {loading && freeEmps.length === 0 && <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>}
+          {loading && freeEmps.length === 0 && <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>}
           {!loading && shownEmps.length === 0 && <p className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">{empSearch ? 'Tidak ada karyawan yang cocok.' : 'Semua karyawan aktif sudah punya ID alat.'}</p>}
           <div className="grid gap-3 lg:grid-cols-2">
             {shownEmps.map((e) => (
@@ -251,7 +252,7 @@ const FingerprintMapping = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {loading && rows.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+            {loading && rows.length === 0 && <tr><td colSpan={7} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>}
             {!loading && rows.length === 0 && <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{debounced || filter ? 'Tidak ada data yang cocok.' : 'Belum ada pengguna alat. Daftar diisi dari hasil pembacaan mesin.'}</td></tr>}
             {visible.map((r) => (
               <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">

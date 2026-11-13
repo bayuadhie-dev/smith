@@ -4,6 +4,7 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
 import { showError } from '../../components/ui/Toast'
 import { fmtQty, unitFor } from './convertingUnits'
+import { DetailSkeleton } from '../../components/ui/Skeleton'
 
 const TYPE_LABEL: Record<string, string> = {
   perforating: 'Perforating', slitting: 'Slitting', laminasi: 'Laminasi Kain', bagmaker: 'Bagmaker', folding: 'Folding', cutting: 'Cutting',
@@ -71,7 +72,7 @@ export default function ConvertingDetail() {
       .finally(() => setLoading(false))
   }, [id])
 
-  if (loading) return <div className="p-8 text-slate-500 dark:text-slate-400">Memuat...</div>
+  if (loading) return <div className="p-8"><DetailSkeleton /></div>
   if (!p) return (
     <div className="p-8">
       <p className="text-slate-600 mb-3 dark:text-slate-300">Data produksi tidak ditemukan.</p>

@@ -9,9 +9,11 @@ import { store } from './store'
 import './index.css'
 import { initCompanyTheme } from './theme/company'
 import { syncMotionForUser } from './utils/motion'
+import { initFeedback } from './utils/feedback'
 
 initCompanyTheme()
 syncMotionForUser()
+initFeedback()
 
 // Initialize error logger (catches unhandled errors and sends to backend)
 import './utils/errorLogger'

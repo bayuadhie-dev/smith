@@ -10,7 +10,7 @@ export const Skeleton = ({ className, style }: SkeletonProps) => {
     <div
       style={style}
       className={cn(
-        'animate-pulse rounded-md bg-slate-200 dark:bg-slate-700',
+        'ui-shimmer rounded-md bg-slate-200 dark:bg-slate-700',
         className
       )}
     />
@@ -66,6 +66,39 @@ export const TableRowSkeleton = () => (
     <Skeleton className="h-5 w-20" />
   </div>
 );
+
+// Tabel: kerangka baris dan kolom dengan kilau, dipakai selagi data daftar dimuat
+export const TableSkeleton = ({ rows = 8, cols = 6 }: { rows?: number; cols?: number }) => {
+  const grid = { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }
+  return (
+    <div className="card overflow-hidden" role="status" aria-label="Memuat data">
+      <div className="grid gap-4 border-b border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60" style={grid}>
+        {Array.from({ length: cols }).map((_, c) => <Skeleton key={c} className="h-3 w-3/4" />)}
+      </div>
+      {Array.from({ length: rows }).map((_, r) => (
+        <div key={r} className="grid gap-4 border-b border-slate-100 p-3 last:border-0 dark:border-slate-700" style={grid}>
+          {Array.from({ length: cols }).map((_, c) => <Skeleton key={c} className={`h-4 ${c === 0 ? 'w-5/6' : (r + c) % 3 === 0 ? 'w-2/3' : 'w-full'}`} />)}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// Halaman detail: judul, ringkasan, dan tabel
+export const DetailSkeleton = () => (
+  <div className="space-y-5" role="status" aria-label="Memuat data">
+    <div className="space-y-2">
+      <Skeleton className="h-7 w-64" />
+      <Skeleton className="h-4 w-96 max-w-full" />
+    </div>
+    <div className="card grid grid-cols-2 gap-4 p-5 lg:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-6 w-28" /></div>
+      ))}
+    </div>
+    <TableSkeleton rows={5} cols={5} />
+  </div>
+)
 
 // List Skeleton
 export const ListSkeleton = ({ rows = 5 }: { rows?: number }) => (

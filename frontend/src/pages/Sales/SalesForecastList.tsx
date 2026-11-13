@@ -7,6 +7,7 @@ import { Plus, ChartBar, Trash2, Calendar, Package, ArrowRight } from 'lucide-re
 import PeriodSelectModal from './PeriodSelectModal';
 import { fmtMonth } from './forecastPeriod';
 
+import { TableSkeleton } from '../../components/ui/Skeleton';
 interface ForecastHeaderSummary {
   id: number;
   period_start: string;
@@ -104,7 +105,7 @@ export default function SalesForecastList() {
       </div>
 
       {loading ? (
-        <div className="text-center py-16 text-gray-400">Memuat...</div>
+        <TableSkeleton rows={6} cols={5} />
       ) : headers.length === 0 ? (
         <div className="text-center py-16 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
           <ChartBar className="w-10 h-10 text-gray-300 mx-auto mb-3" />

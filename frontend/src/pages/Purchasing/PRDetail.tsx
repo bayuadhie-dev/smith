@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { formatRupiah, formatCurrencyAmount } from '../../utils/currencyUtils';
 
+import { DetailSkeleton } from '../../components/ui/Skeleton';
 const STEP_STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
   pending:  { label: 'Menunggu', color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300', icon: ClockIcon },
   approved: { label: 'Disetujui', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300', icon: CheckCircleIcon },
@@ -99,9 +100,7 @@ export default function PRDetail() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-64 text-gray-400">
-        <ArrowPathIcon className="h-6 w-6 animate-spin mr-2" /> Memuat...
-      </div>
+      <DetailSkeleton />
     );
   }
 

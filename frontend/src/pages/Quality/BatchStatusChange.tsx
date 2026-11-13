@@ -4,6 +4,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import ActivityLogModal from '../../components/ActivityLogModal';
 import { ArrowPathIcon, ClockIcon } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { TableSkeleton } from '../../components/ui/Skeleton'
 
 interface Batch {
   id: number;
@@ -140,7 +141,7 @@ export default function BatchStatusChange() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12">Memuat...</div>
+        <TableSkeleton rows={8} cols={6} />
       ) : (
         <div className="card">
           <div className="table-container">

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosConfig'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+import { Skeleton } from '../../components/ui/Skeleton'
 
 interface Entry { payment_id: number; payment_number: string; date: string | null; amount: number; description?: string }
 interface Adv {
@@ -66,7 +67,7 @@ export default function AdvanceRecap() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {loading && <tr><td colSpan={7} className="p-4 text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+            {loading && <tr><td colSpan={7} className="space-y-2 p-4">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</td></tr>}
             {!loading && shown.length === 0 && <tr><td colSpan={7} className="p-4 text-gray-500 dark:text-gray-400">Tidak ada data.</td></tr>}
             {shown.map((r) => {
               const k = `${r.party_type}-${r.party_id}-${r.account_code}`

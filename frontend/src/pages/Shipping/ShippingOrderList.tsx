@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
+import { TableSkeleton } from '../../components/ui/Skeleton'
 const STATUS_LABEL: Record<string, string> = {
   preparing: 'Disiapkan', packed: 'Dikemas', shipped: 'Dikirim', in_transit: 'Dalam perjalanan', delivered: 'Terkirim', cancelled: 'Batal',
 }
@@ -44,7 +45,7 @@ export default function ShippingOrderList() {
       <ListToolbar tools={tools} placeholder="Cari nomor, pelanggan, sopir, kendaraan" />
 
       {isLoading ? (
-        <div className="py-12 text-center text-gray-500 dark:text-gray-400">Memuat...</div>
+        <TableSkeleton rows={8} cols={9} />
       ) : (
         <div className="card">
           <div className="table-container">

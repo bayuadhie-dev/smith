@@ -16,6 +16,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { confirmDialog, showError, showSuccess } from '../../components/ui';
 import SearchableSelect from '../../components/SearchableSelect';
 import NumberInput from '../../components/ui/NumberInput'
+import { TableSkeleton } from '../../components/ui/Skeleton'
 
 interface BOMItem {
   id: number;
@@ -348,10 +349,7 @@ const BOMManagement: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3">{t('common.loading')}</span>
-      </div>
+      <TableSkeleton rows={8} cols={6} />
     );
   }
 

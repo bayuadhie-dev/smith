@@ -7,6 +7,7 @@ import { TRANSFER_STATUS } from './StockTransferList'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
+import { Skeleton } from '../../components/ui/Skeleton'
 const GRN_STATUS: Record<string, { label: string; cls: string }> = {
   pending: { label: 'Menunggu QC', cls: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
   inspected: { label: 'Sudah diinspeksi', cls: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
@@ -63,7 +64,7 @@ export default function ReceiptsList() {
             <SortTh tools={tools} col="origin" className={th}>Asal</SortTh><SortTh tools={tools} col="number" className={th}>Nomor</SortTh><SortTh tools={tools} col="date" className={th}>Tanggal</SortTh><SortTh tools={tools} col="from_label" className={th}>Dari</SortTh><SortTh tools={tools} col="to_label" className={th}>Ke gudang</SortTh><SortTh tools={tools} col="source_number" className={th}>Referensi</SortTh><SortTh tools={tools} col="status" className={th}>Status</SortTh><th className={th}>Aksi</th>
           </tr></thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+            {loading && rows.length === 0 && Array.from({ length: 6 }).map((_, i) => <tr key={`sk${i}`}><td colSpan={8} className="px-4 py-3"><Skeleton className="h-4 w-full" /></td></tr>)}
             {!loading && tools.rows.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{tools.total === 0 ? 'Belum ada penerimaan.' : 'Tidak ada penerimaan yang cocok.'}</td></tr>}
             {tools.rows.map((r) => {
               const og = ORIGIN[r.origin]

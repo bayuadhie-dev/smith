@@ -8,6 +8,7 @@ import {
 } from '../../services/api'
 import { format, subDays } from 'date-fns'
 import NumberInput from '../../components/ui/NumberInput'
+import { DetailSkeleton, Skeleton } from '../../components/ui/Skeleton'
 
 export default function EWSDashboard() {
   const { t } = useLanguage()
@@ -144,7 +145,7 @@ export default function EWSDashboard() {
 
       {/* Predictions table */}
       {predictionsLoading ? (
-        <div className="text-center py-12">{t('common.loading')}</div>
+        <DetailSkeleton />
       ) : (
         <div className="card">
           <div className="table-container">
@@ -241,7 +242,7 @@ function EWSDetailModal({ shiftProductionId, onClose }: { shiftProductionId: num
         </div>
 
         {isLoading ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">Memuat...</div>
+          <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
         ) : !detail ? (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">Data tidak ditemukan</div>
         ) : (

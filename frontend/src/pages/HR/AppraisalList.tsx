@@ -11,6 +11,7 @@ import {
 ,
   PlusIcon
 } from '@heroicons/react/24/outline';
+import { TableSkeleton } from '../../components/ui/Skeleton'
 export default function AppraisalList() {
     const { t } = useLanguage();
 
@@ -107,7 +108,7 @@ const navigate = useNavigate()
       {activeTab === 'cycles' && (
         <div className="space-y-6">
           {cyclesLoading ? (
-            <div className="text-center py-12">{t('common.loading')}</div>
+            <TableSkeleton rows={8} cols={6} />
           ) : (
             <div className="card">
               <div className="table-container">
@@ -234,7 +235,7 @@ const navigate = useNavigate()
 
           {/* Appraisals Table */}
           {appraisalsLoading ? (
-            <div className="text-center py-12">{t('common.loading')}</div>
+            <TableSkeleton rows={8} cols={6} />
           ) : (
             <div className="card">
               <div className="table-container">

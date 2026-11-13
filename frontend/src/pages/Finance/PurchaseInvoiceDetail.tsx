@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
+import { DetailSkeleton } from '../../components/ui/Skeleton'
 
 interface PurchaseInvoiceItem {
   id: number;
@@ -87,7 +88,7 @@ const PurchaseInvoiceDetail: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="p-6 text-gray-500 dark:text-gray-400">Memuat...</div>;
+    return <div className="p-6"><DetailSkeleton /></div>;
   }
 
   if (error || !data) {

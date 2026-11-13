@@ -5,6 +5,7 @@ import { useUrlNumber } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+import { DetailSkeleton, Skeleton } from '../../components/ui/Skeleton'
 
 interface RecurringPaymentMaster {
   id: number;
@@ -140,7 +141,7 @@ const RecurringPayment: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="p-6 text-gray-500 dark:text-gray-400">Memuat...</div>;
+    return <div className="p-6"><DetailSkeleton /></div>;
   }
 
   return (
@@ -303,7 +304,7 @@ const RecurringPayment: React.FC = () => {
               )}
 
               {loadingTx ? (
-                <div className="p-4 text-gray-500 text-sm dark:text-gray-400">Memuat...</div>
+                <div className="space-y-2 p-4" role="status" aria-label="Memuat data"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-2/3" /></div>
               ) : transactions.length === 0 ? (
                 <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Belum ada riwayat pembayaran.</p>
               ) : (

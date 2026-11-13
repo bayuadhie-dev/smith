@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import AccessibleModal from '../../components/ui/AccessibleModal';
 import { ArrowLeftIcon, ArrowPathIcon, PrinterIcon, CubeIcon } from '@heroicons/react/24/outline';
+import { DetailSkeleton } from '../../components/ui/Skeleton'
 
 export default function BatchRecord() {
   const { id } = useParams<{ id: string }>();
@@ -34,9 +35,7 @@ export default function BatchRecord() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-64 text-gray-400">
-        <ArrowPathIcon className="h-6 w-6 animate-spin mr-2" /> Memuat...
-      </div>
+      <DetailSkeleton />
     );
   }
 

@@ -8,6 +8,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 import PackingListTab from '../../components/Production/PackingListTab';
 import ActivityLogModal from '../../components/ActivityLogModal';
+import { Skeleton } from '../../components/ui/Skeleton'
 
 interface ProductionRecord {
   id: number;
@@ -307,7 +308,7 @@ export default function WorkOrderDetail() {
               </button>
             </div>
             {loadingBatches ? (
-              <div className="text-gray-400 text-sm">Memuat...</div>
+              <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
             ) : relatedBatches.length === 0 ? (
               <div className="text-gray-400 text-sm">Belum ada batch untuk SPK ini.</div>
             ) : (
@@ -921,7 +922,7 @@ export default function WorkOrderDetail() {
           Histori Tahap Gudang (SPK)
         </h2>
         {loadingSpkHistory ? (
-          <div className="text-sm text-gray-400">Memuat...</div>
+          <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
         ) : spkWarehouseHistory.length === 0 ? (
           <div className="text-sm text-gray-400">Belum ada histori tahap gudang untuk SPK ini.</div>
         ) : (
@@ -948,7 +949,7 @@ export default function WorkOrderDetail() {
           Riwayat Penyelesaian (Completion Record)
         </h2>
         {loadingSpkCompletion ? (
-          <div className="text-sm text-gray-400">Memuat...</div>
+          <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
         ) : spkCompletionRecords.length === 0 ? (
           <div className="text-sm text-gray-400">Belum ada record penyelesaian untuk SPK ini.</div>
         ) : (
@@ -998,7 +999,7 @@ export default function WorkOrderDetail() {
           Ini rencana kebutuhan bahan dari BOM (total seluruh SPK). Pemakaian aktual diisi per batch di Tutup SPK.
         </p>
         {loadingSpkMaterial ? (
-          <div className="text-sm text-gray-400">Memuat...</div>
+          <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
         ) : spkMaterialTree.length === 0 ? (
           <div className="text-sm text-gray-400">Tidak ada BOM/bahan untuk SPK ini.</div>
         ) : (

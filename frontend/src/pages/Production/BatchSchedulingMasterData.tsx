@@ -4,6 +4,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import { Save, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { showSuccess, showError } from '../../components/ui/Toast';
 import NumberInput from '../../components/ui/NumberInput'
+import { TableSkeleton } from '../../components/ui/Skeleton'
 
 const DAY_NAMES = ['Senin', 'Selasa', 'Rabu', 'Kamis', "Jum'at", 'Sabtu', 'Minggu'];
 
@@ -162,7 +163,7 @@ const OverrideGridTab: React.FC = () => {
     0
   );
 
-  if (loading) return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Memuat...</div>;
+  if (loading) return <TableSkeleton rows={6} cols={5} />;
 
   return (
     <div>

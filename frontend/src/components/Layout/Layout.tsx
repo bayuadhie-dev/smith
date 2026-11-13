@@ -114,7 +114,7 @@ export default function Layout() {
             <Breadcrumb />
             <WorkspaceProvider onFull={(label) => showWarning(`Maksimal ${MAX_TABS_PER_MODULE} tab di modul ${label}. Tutup salah satu tab dulu.`)}>
               <Workspace visible={inWorkspaceModule} />
-              {!inWorkspaceModule && <Outlet />}
+              {!inWorkspaceModule && <div key={location.pathname} className="ui-page"><Outlet /></div>}
             </WorkspaceProvider>
             </BreadcrumbTrailProvider>
           </div>

@@ -12,6 +12,7 @@ import {
 import { showSuccess, showError } from '../../components/ui';
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+import { TableSkeleton } from '../../components/ui/Skeleton'
 
 const STATUS_LABEL: Record<string, string> = { pending: 'Menunggu', approved: 'Disetujui', rejected: 'Ditolak', cancelled: 'Dibatalkan' }
 const TYPE_LABEL: Record<string, string> = { annual: 'Cuti Tahunan', sick: 'Sakit', personal: 'Keperluan Pribadi', maternity: 'Melahirkan', unpaid: 'Tanpa Gaji' }
@@ -230,7 +231,7 @@ const navigate = useNavigate()
 
       {/* Leave Requests Table */}
       {isLoading ? (
-        <div className="text-center py-12">{t('common.loading')}</div>
+        <TableSkeleton rows={8} cols={7} />
       ) : (
         <div className="card">
           <div className="table-container">

@@ -7,6 +7,7 @@ import { ArrowLeftIcon, ArrowPathIcon, CheckCircleIcon, XCircleIcon } from '@her
 import toast from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
 
+import { DetailSkeleton } from '../../components/ui/Skeleton';
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
   submitted: { label: 'Diajukan',   color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
@@ -80,9 +81,7 @@ export default function PurchaseReturnDetail() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24 text-gray-400">
-        <ArrowPathIcon className="h-6 w-6 animate-spin mr-2" /> Memuat...
-      </div>
+      <DetailSkeleton />
     );
   }
 

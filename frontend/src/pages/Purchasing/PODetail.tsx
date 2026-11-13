@@ -14,6 +14,7 @@ import DocumentGenerateButton from '../../components/DocumentGenerateButton';
 import { scheduleStatuses } from '../../components/POScheduleEditor';
 import { usePermissions } from '../../contexts/PermissionContext';
 
+import { DetailSkeleton } from '../../components/ui/Skeleton';
 const SCHEDULE_BADGE: Record<string, { label: string; color: string }> = {
   done:    { label: 'Sudah datang', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
   partial: { label: 'Datang sebagian', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
@@ -83,9 +84,7 @@ export default function PODetail() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-64 text-gray-400">
-        <ArrowPathIcon className="h-6 w-6 animate-spin mr-2" /> Memuat...
-      </div>
+      <DetailSkeleton />
     );
   }
 

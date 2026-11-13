@@ -15,6 +15,7 @@ import {
 import { confirmDialog, showSuccess, showError } from '../../components/ui';
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+import { TableSkeleton } from '../../components/ui/Skeleton'
 
 const STATUS_LABEL: Record<string, string> = { draft: 'Draft', processing: 'Diproses', completed: 'Selesai', locked: 'Terkunci' }
 const fmtDate = (v?: string | null) => (v ? new Date(v).toLocaleDateString('id-ID') : '-')
@@ -145,7 +146,7 @@ const navigate = useNavigate()
 
       {/* Payroll Periods Table */}
       {isLoading ? (
-        <div className="text-center py-12">{t('common.loading')}</div>
+        <TableSkeleton rows={8} cols={7} />
       ) : (
         <div className="card">
           <div className="table-container">

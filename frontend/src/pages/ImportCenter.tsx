@@ -4,6 +4,7 @@ import { ArrowDownTrayIcon, ArrowUpTrayIcon, CheckCircleIcon, ExclamationTriangl
 import axiosInstance from '../utils/axiosConfig';
 import { formatRupiah } from '../utils/currencyUtils';
 import { showError, showSuccess } from '../components/ui/Toast';
+import { DetailSkeleton } from '../components/ui/Skeleton'
 
 interface Kind {
   key: string;
@@ -165,7 +166,7 @@ const ImportCenter: React.FC = () => {
 
   const okCount = result?.summary.ok ?? 0;
 
-  if (loading) return <div className="p-8 text-gray-500 dark:text-gray-400">Memuat...</div>;
+  if (loading) return <div className="p-8"><DetailSkeleton /></div>;
 
   return (
     <div className="mx-auto max-w-7xl space-y-4 p-4">

@@ -7,6 +7,7 @@ import SearchableSelect from '../../components/SearchableSelect'
 import { confirmDialog, showSuccess, showError } from '../../components/ui'
 import { usePermissions } from '../../contexts/PermissionContext'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+import { Skeleton } from '../../components/ui/Skeleton'
 
 interface SchedulePart { spare_part_id: number; part_number: string; part_name: string; uom: string; qty: number; current_stock: number }
 interface Schedule {
@@ -232,7 +233,7 @@ const MaintenanceSchedule = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {loading && rows.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+            {loading && rows.length === 0 && <tr><td colSpan={7} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>}
             {!loading && rows.length === 0 && (
               <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{machineFilter || onlyOverdue ? 'Tidak ada jadwal yang cocok.' : 'Belum ada jadwal perawatan.'}</td></tr>
             )}

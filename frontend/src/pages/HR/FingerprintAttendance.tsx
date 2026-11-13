@@ -8,6 +8,7 @@ import SearchableSelect from '../../components/SearchableSelect'
 import { showError, showSuccess, confirmDialog } from '../../components/ui'
 import { usePermissions } from '../../contexts/PermissionContext'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+import { Skeleton } from '../../components/ui/Skeleton'
 
 type DayStatus = 'hadir' | 'tidak_lengkap' | 'tidak_ada_cap' | 'libur' | 'belum' | 'izin'
 interface EmpRef { id: number; name: string; employee_number: string }
@@ -174,7 +175,7 @@ const DayModal = ({ deviceId, date, canEdit, onClose, onChanged }: {
           <button onClick={onClose} className="text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">Tutup</button>
         </div>
         <div className="space-y-5 p-5">
-          {loading && <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>}
+          {loading && <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>}
           {!loading && detail && (
             <>
               {row && (
@@ -386,7 +387,7 @@ const CalendarView = ({ options, tick, onOpenDay }: {
       {!sel && <p className="rounded-lg border border-gray-200 bg-white p-6 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">Pilih satu karyawan untuk melihat kalender kehadirannya.</p>}
       {sel && (
         <div className="rounded-lg border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800 sm:p-3">
-          {loading && <p className="p-2 text-xs text-gray-500 dark:text-gray-400">Memuat...</p>}
+          {loading && <Skeleton className="m-2 h-4 w-32" />}
           <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-gray-500 dark:text-gray-400 sm:text-xs">
             {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((x) => <div key={x} className="py-1">{x}</div>)}
           </div>
@@ -689,7 +690,7 @@ const FingerprintAttendance = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {loading && <tr><td colSpan={13} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+                {loading && <tr><td colSpan={13} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>}
                 {!loading && (data?.people.length ?? 0) === 0 && <tr><td colSpan={13} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data pada periode ini.</td></tr>}
                 {data?.people.map((p) => (
                   <tr key={p.device_user_id} onClick={() => goDaily(p)} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/40">
@@ -779,7 +780,7 @@ const FingerprintAttendance = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {loading && <tr><td colSpan={11} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+                {loading && <tr><td colSpan={11} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>}
                 {!loading && pageRows.length === 0 && <tr><td colSpan={11} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Tidak ada baris yang cocok.</td></tr>}
                 {pageRows.map((d) => (
                   <tr key={`${d.device_user_id}-${d.date}`} onClick={() => setDayModal({ deviceId: d.device_user_id, date: d.date })} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/40">

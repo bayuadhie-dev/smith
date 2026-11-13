@@ -1,3 +1,4 @@
+import { notifySaved } from '../../utils/feedback';
 import toast, { Toaster } from 'react-hot-toast';
 import {
   CheckCircleIcon,
@@ -45,6 +46,7 @@ const getRandomTitle = (titles: string[]) => titles[Math.floor(Math.random() * t
 
 // Success toast
 export const showSuccess = (message: string, options?: { duration?: number }) => {
+  notifySaved();
   const headerTitle = getRandomTitle(FUNNY_SUCCESS_TITLES);
   toast.custom(
     (t) => (

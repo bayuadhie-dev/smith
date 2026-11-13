@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
-import { ArrowPathIcon, DocumentTextIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
+import { DocumentTextIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
+import { Skeleton } from '../../components/ui/Skeleton'
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:        { label: 'Draft',        color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
@@ -75,7 +76,7 @@ export default function BatchRecordList() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {loading ? (
-                <tr><td colSpan={9} className="text-center py-8 text-gray-400"><ArrowPathIcon className="h-5 w-5 animate-spin inline mr-2" />Memuat...</td></tr>
+                <tr><td colSpan={9} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
               ) : tools.rows.length === 0 ? (
                 <tr><td colSpan={9} className="text-center py-8 text-gray-500 dark:text-gray-400">{tools.total === 0 ? 'Belum ada batch.' : 'Tidak ada batch yang cocok.'}</td></tr>
               ) : tools.rows.map((b: any) => {

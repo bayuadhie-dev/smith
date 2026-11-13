@@ -6,6 +6,7 @@ import { showError } from '../../components/ui'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
+import { Skeleton } from '../../components/ui/Skeleton'
 interface Row { id: number; transfer_number: string; source_type: string; source_number: string | null; from_label: string | null; to_label: string | null; status: string; created_at: string; line_count: number; receipt_count: number }
 
 export const TRANSFER_STATUS: Record<string, { label: string; cls: string }> = {
@@ -68,7 +69,7 @@ export default function StockTransferList({ receiveMode = false }: { receiveMode
             <SortTh tools={tools} col="transfer_number" className={th}>Nomor</SortTh><SortTh tools={tools} col="created_at" className={th}>Tanggal</SortTh><SortTh tools={tools} col="source" className={th}>Sumber</SortTh><SortTh tools={tools} col="from_label" className={th}>Dari</SortTh><SortTh tools={tools} col="to_label" className={th}>Ke</SortTh><SortTh tools={tools} col="line_count" className={`${th} text-right`} align="right">Barang</SortTh><SortTh tools={tools} col="status" className={th}>Status</SortTh>{receiveMode && <th className={th}>Aksi</th>}
           </tr></thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {loading && rows.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+            {loading && rows.length === 0 && Array.from({ length: 6 }).map((_, i) => <tr key={`sk${i}`}><td colSpan={8} className="px-4 py-3"><Skeleton className="h-4 w-full" /></td></tr>)}
             {!loading && tools.rows.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{tools.total > 0 ? 'Tidak ada pemindahan yang cocok.' : receiveMode ? 'Tidak ada pemindahan yang menunggu diterima.' : 'Belum ada pemindahan barang.'}</td></tr>}
             {tools.rows.map((r) => {
               const st = TRANSFER_STATUS[r.status] || { label: r.status, cls: '' }

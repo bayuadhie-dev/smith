@@ -5,6 +5,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 import PackingListTab from '../../components/Production/PackingListTab';
 import NumberInput from '../../components/ui/NumberInput'
+import { DetailSkeleton } from '../../components/ui/Skeleton'
 
 interface WasteRecord {
   id: number;
@@ -175,7 +176,7 @@ export default function CloseWorkOrder() {
   };
 
   if (loading) {
-    return <div className="text-center py-12">Memuat...</div>;
+    return <DetailSkeleton />;
   }
 
   if (!workOrder) {

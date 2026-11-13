@@ -12,6 +12,7 @@ import {
   UserGroupIcon
 } from '@heroicons/react/24/outline';
 import { showInfo } from '../../components/ui';
+import { TableSkeleton } from '../../components/ui/Skeleton'
 export default function TrainingManagement() {
     const { t } = useLanguage();
 
@@ -159,7 +160,7 @@ const navigate = useNavigate()
 
           {/* Sessions Table */}
           {sessionsLoading ? (
-            <div className="text-center py-12">{t('common.loading')}</div>
+            <TableSkeleton rows={6} cols={6} />
           ) : (
             <div className="card">
               <div className="table-container">
@@ -286,7 +287,7 @@ const navigate = useNavigate()
 
           {/* Programs Table */}
           {programsLoading ? (
-            <div className="text-center py-12">{t('common.loading')}</div>
+            <TableSkeleton rows={6} cols={6} />
           ) : (
             <div className="card">
               <div className="table-container">
@@ -384,7 +385,7 @@ const navigate = useNavigate()
 
           {/* Requests Table */}
           {requestsLoading ? (
-            <div className="text-center py-12">{t('common.loading')}</div>
+            <TableSkeleton rows={6} cols={6} />
           ) : (
             <div className="card">
               <div className="table-container">

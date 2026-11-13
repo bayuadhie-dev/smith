@@ -6,6 +6,7 @@ import { PageHeader, KpiStrip } from '../ui/PageKit'
 import { showError } from '../ui'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../ui/ListTools'
+import { Skeleton } from '../ui/Skeleton'
 
 export interface OpenInvoicesConfig {
   kind: 'receivable' | 'payable'
@@ -142,7 +143,7 @@ const OpenInvoicesPage = ({ cfg }: { cfg: OpenInvoicesConfig }) => {
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {loading && rows.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>
+              <tr><td colSpan={8} className="space-y-2 p-4">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</td></tr>
             )}
             {!loading && tools.rows.length === 0 && (
               <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{tools.query || status ? 'Tidak ada faktur yang cocok.' : 'Tidak ada faktur yang belum lunas.'}</td></tr>

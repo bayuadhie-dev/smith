@@ -10,6 +10,7 @@ import {
   ExclamationTriangleIcon, XCircleIcon,
 } from '@heroicons/react/24/outline';
 
+import { DetailSkeleton } from '../../components/ui/Skeleton';
 const OVERALL_CONFIG: Record<string, { label: string; icon: any; color: string; bg: string }> = {
   matched:     { label: '✅ 3-Way Match OK',        icon: CheckCircleIcon,       color: 'text-green-700 dark:text-green-300',  bg: 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' },
   discrepancy: { label: '⚠️ Ada Selisih',           icon: ExclamationTriangleIcon, color: 'text-yellow-700 dark:text-yellow-300', bg: 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800' },
@@ -50,9 +51,7 @@ export default function InvoiceMatching() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-64 text-gray-400">
-        <ArrowPathIcon className="h-6 w-6 animate-spin mr-2" /> Memuat...
-      </div>
+      <DetailSkeleton />
     );
   }
 

@@ -4,6 +4,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import { showSuccess, showError } from '../../components/ui/Toast';
 import { PencilSquareIcon, DocumentTextIcon, ArrowLeftIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 
+import { Skeleton } from '../../components/ui/Skeleton';
 interface Quotation {
   id: number;
   quote_number: string;
@@ -115,7 +116,7 @@ function FromQuotationFlow({ onBack }: { onBack: () => void }) {
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Pilih Quotation</h2>
       <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Hanya quotation berstatus "accepted" yang bisa di-convert.</p>
       {loading ? (
-        <div className="text-gray-400 text-sm">Memuat...</div>
+        <div className="space-y-2" role="status" aria-label="Memuat data"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
       ) : quotations.length === 0 ? (
         <div className="text-gray-400 text-sm">Tidak ada quotation accepted yang siap di-convert.</div>
       ) : (

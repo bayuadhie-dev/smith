@@ -8,6 +8,7 @@ import NumberInput from '../../components/ui/NumberInput'
 import { confirmDialog, showSuccess, showError } from '../../components/ui'
 import { usePermissions } from '../../contexts/PermissionContext'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+import { TableSkeleton } from '../../components/ui/Skeleton'
 
 type DayCfg = { start: string; end: string; break: number }
 interface Schedule {
@@ -211,7 +212,7 @@ const AttendanceSchedules = () => {
         ))}
       </div>
 
-      {loading && <p className="text-sm text-gray-500 dark:text-gray-400">Memuat...</p>}
+      {loading && <TableSkeleton rows={5} cols={5} />}
 
       {!loading && tab === 'jadwal' && (
         <div className="space-y-4">

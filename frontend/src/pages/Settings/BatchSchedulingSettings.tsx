@@ -6,6 +6,7 @@ import { Plus, Trash2, Save, Settings2, Pencil } from 'lucide-react';
 import NumberInput from '../../components/ui/NumberInput'
 import { useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
+import { TableSkeleton } from '../../components/ui/Skeleton'
 
 // Moved out of Production/BatchSchedulingMasterData.tsx (2026-08-24): these 3 tabs are
 // setup-once master data (recipe, baseline calendar, holiday exceptions), rarely touched
@@ -203,7 +204,7 @@ const RecipeTab: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Memuat...</div>;
+  if (loading) return <TableSkeleton rows={6} cols={5} />;
 
   return (
     <div>
@@ -375,7 +376,7 @@ const GlobalCalendarTab: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Memuat...</div>;
+  if (loading) return <TableSkeleton rows={6} cols={5} />;
 
   return (
     <div>
@@ -486,7 +487,7 @@ const ExceptionTab: React.FC = () => {
     load();
   };
 
-  if (loading) return <div className="text-center py-10 text-gray-500 dark:text-gray-400">Memuat...</div>;
+  if (loading) return <TableSkeleton rows={6} cols={5} />;
 
   return (
     <div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetOEERecordsQuery } from '../../services/api'
 import { format } from 'date-fns'
+import { DetailSkeleton } from '../../components/ui/Skeleton'
 
 export default function OEEDashboard() {
   const { t } = useLanguage();
@@ -54,7 +55,7 @@ const { data, isLoading } = useGetOEERecordsQuery({})
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12">{t('common.loading')}</div>
+        <DetailSkeleton />
       ) : (
         <div className="card">
           <div className="table-container">

@@ -1,5 +1,6 @@
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetWarehouseZonesQuery, useGetWarehouseLocationsQuery } from '../../services/api';
+import { TableSkeleton } from '../../components/ui/Skeleton';
 export default function WarehouseLocations() {
     const { t } = useLanguage();
 
@@ -24,7 +25,7 @@ const { data: zones } = useGetWarehouseZonesQuery({})
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12">{t('common.loading')}</div>
+        <TableSkeleton rows={8} cols={9} />
       ) : (
         <div className="card">
           <div className="table-container">

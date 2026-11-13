@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../../lib/axios';
 import AccountSlotSelector from './AccountSlotSelector';
+import { Skeleton } from '../ui/Skeleton'
 
 interface FieldDef {
   key: string;
@@ -61,7 +62,7 @@ const SingleRowSettingsTab: React.FC<SingleRowSettingsTabProps> = ({
   };
 
   if (loading) {
-    return <div className="text-gray-500 dark:text-gray-400">Memuat...</div>;
+    return <div className="space-y-3" role="status" aria-label="Memuat data"><Skeleton className="h-5 w-48" /><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>;
   }
 
   return (

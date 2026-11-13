@@ -9,6 +9,7 @@ import SearchableSelect from '../../components/SearchableSelect'
 import { showSuccess, showError } from '../../components/ui'
 import { usePermissions } from '../../contexts/PermissionContext'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+import { Skeleton } from '../../components/ui/Skeleton'
 
 interface Part {
   id: number
@@ -225,7 +226,7 @@ const SparePartStock = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {loading && parts.length === 0 && <tr><td colSpan={9} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</td></tr>}
+            {loading && parts.length === 0 && <tr><td colSpan={9} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>}
             {!loading && parts.length === 0 && (
               <tr><td colSpan={9} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{search || category || lowOnly ? 'Tidak ada sparepart yang cocok.' : 'Belum ada sparepart.'}</td></tr>
             )}

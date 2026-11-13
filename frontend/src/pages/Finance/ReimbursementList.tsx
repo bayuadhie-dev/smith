@@ -12,6 +12,7 @@ import { usePermissions } from '../../contexts/PermissionContext';
 import { confirmDialog } from '../../components/ui';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
+import { Skeleton } from '../../components/ui/Skeleton'
 
 interface Reimbursement {
   id: number;
@@ -207,9 +208,7 @@ const ReimbursementList: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                    Memuat...
-                  </td>
+                  <td colSpan={7} className="space-y-2 px-6 py-4">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</td>
                 </tr>
               ) : tools.rows.length === 0 ? (
                 <tr>

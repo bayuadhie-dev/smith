@@ -12,6 +12,7 @@ import {
 import { useGetMachinesQuery } from '../../services/api';
 import SearchableSelect from '../../components/SearchableSelect';
 import NumberInput from '../../components/ui/NumberInput'
+import { Skeleton } from '../../components/ui/Skeleton'
 
 const emptyForm = { product_id: '', machine_id: '', batch_size: '', rate_per_hour: '', is_default: false };
 
@@ -159,7 +160,7 @@ export default function MasterDataRecipeTab() {
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {isLoading ? (
-              <tr><td colSpan={7} className="text-center py-6 text-gray-400">Memuat...</td></tr>
+              <tr><td colSpan={7} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
             ) : filtered.length === 0 ? (
               <tr><td colSpan={7} className="text-center py-6 text-gray-400">Belum ada resep</td></tr>
             ) : (

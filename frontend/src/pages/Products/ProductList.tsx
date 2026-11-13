@@ -10,6 +10,7 @@ import {
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import { TableSkeleton } from '../../components/ui/Skeleton'
 
 export default function ProductList() {
   const { t } = useLanguage();
@@ -51,7 +52,7 @@ export default function ProductList() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12">{t('common.loading')}</div>
+        <TableSkeleton rows={8} cols={6} />
       ) : (
         <div className="card">
           <div className="table-container">

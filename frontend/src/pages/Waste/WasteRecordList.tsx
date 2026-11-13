@@ -12,6 +12,7 @@ import { useGetWasteRecordsQuery } from '../../services/api'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
+import { TableSkeleton } from '../../components/ui/Skeleton'
 const STATUS_LABEL: Record<string, string> = { recorded: 'Tercatat', collected: 'Dikumpulkan', disposed: 'Dimusnahkan' }
 const HAZARD_LABEL: Record<string, string> = { none: 'Tidak ada', low: 'Rendah', medium: 'Sedang', high: 'Tinggi' }
 const STATUS_BADGE: Record<string, string> = { recorded: 'badge-warning', collected: 'badge-info', disposed: 'badge-success' }
@@ -122,7 +123,7 @@ export default function WasteRecordList() {
       <ListToolbar tools={tools} placeholder="Cari nomor, kategori, sumber, produk, mesin" />
 
       {isLoading ? (
-        <div className="text-center py-12 text-gray-500 dark:text-gray-400">Memuat...</div>
+        <TableSkeleton rows={8} cols={10} />
       ) : (
         <div className="card">
           <div className="table-container">

@@ -4,6 +4,7 @@ import axiosInstance from '../../utils/axiosConfig'
 import { PageHeader, Panel } from '../../components/ui/PageKit'
 import { showError } from '../../components/ui'
 
+import { DetailSkeleton } from '../../components/ui/Skeleton'
 const TYPE: Record<string, string> = {
   goods_receipt: 'Penerimaan Barang', transfer_out: 'Pemindahan keluar', transfer_in: 'Terima Barang', transfer: 'Pemindahan', material_issue: 'Permintaan Barang',
   adjustment: 'Penyesuaian', stock_in: 'Stok masuk', stock_out: 'Stok keluar',
@@ -20,7 +21,7 @@ export default function ItemStockPage() {
     axiosInstance.get(kind === 'product' ? `/api/products/${id}` : `/api/warehouse/materials/${id}`).then((r) => setName(r.data?.name || r.data?.material?.name || r.data?.product?.name || '')).catch(() => undefined)
   }, [kind, id])
 
-  if (!data) return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Memuat...</div>
+  if (!data) return <div className="p-6"><DetailSkeleton /></div>
   const th = 'px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400'
   const n = (v: number) => v.toLocaleString('id-ID', { maximumFractionDigits: 4 })
   const perZone: Record<string, number> = {}

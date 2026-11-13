@@ -5,6 +5,7 @@ import { formatRupiah } from '../../utils/currencyUtils'
 import { PageHeader, KpiStrip, Panel } from '../../components/ui/PageKit'
 import { showError } from '../../components/ui'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+import { DetailSkeleton } from '../../components/ui/Skeleton'
 
 interface Movement {
   id: number
@@ -54,7 +55,7 @@ const SparePartDetail = () => {
       .finally(() => setLoading(false))
   }, [id])
 
-  if (loading) return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Memuat...</div>
+  if (loading) return <div className="p-6"><DetailSkeleton /></div>
   if (!part) return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Sparepart tidak ditemukan. <Link to="/app/maintenance/spare-parts" className="text-emerald-700 hover:underline dark:text-emerald-300">Kembali ke daftar</Link></div>
 
   return (

@@ -6,6 +6,7 @@ import { confirmDialog, showError, showSuccess } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
+import { TableSkeleton } from '../../components/ui/Skeleton'
 
 interface ProductionPlan {
   id: number;
@@ -172,9 +173,7 @@ const ProductionPlanningList: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500 dark:text-gray-400">Memuat...</div>
-      </div>
+      <TableSkeleton rows={8} cols={7} />
     );
   }
 

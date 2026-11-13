@@ -12,6 +12,7 @@ import {
 ,
   PlusIcon
 } from '@heroicons/react/24/outline';
+import { TableSkeleton } from '../../components/ui/Skeleton'
 const formatDateSafe = (value: string | null | undefined) => {
   if (!value) return '-'
   const d = new Date(value)
@@ -80,7 +81,7 @@ const [scope] = useUrlState<'all' | 'sales' | 'purchase'>('scope', 'all', ['all'
       <ListToolbar tools={tools} placeholder="Cari nomor faktur, pelanggan, atau pemasok" />
 
       {isLoading ? (
-        <div className="text-center py-12">{t('common.loading')}</div>
+        <TableSkeleton rows={8} cols={9} />
       ) : (
         <div className="card">
           <div className="table-container">

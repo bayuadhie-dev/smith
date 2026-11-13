@@ -29,6 +29,7 @@ import {
 } from '../../services/api';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { TableSkeleton } from '../../components/ui/Skeleton'
 
 type Source = 'product' | 'material';
 
@@ -271,7 +272,7 @@ export default function MasterDataBarangTab() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12">Memuat...</div>
+        <TableSkeleton rows={8} cols={7} />
       ) : (
         <div className="card">
           <div className="table-container">

@@ -4,6 +4,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import {
   RefreshCw, CheckCircle2, Printer, Pencil, X, AlertTriangle, Eye, Download, Filter,
 } from 'lucide-react';
+import { Skeleton } from '../../components/ui/Skeleton'
 
 interface Batch {
   id: number;
@@ -333,7 +334,7 @@ const BatchPlanning: React.FC = () => {
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {loading && (
-              <tr><td colSpan={9} className="px-3 py-6 text-center text-gray-400">Memuat...</td></tr>
+              <tr><td colSpan={9} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
             )}
             {!loading && batches.length === 0 && (
               <tr><td colSpan={9} className="px-3 py-6 text-center text-gray-400">Tidak ada batch</td></tr>

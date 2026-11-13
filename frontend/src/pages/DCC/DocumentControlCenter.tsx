@@ -4,6 +4,7 @@ import { FileText, AlertTriangle, Mail, Trash2, BarChart3, Plus, Search, Eye, Up
 import { confirmDialog, showError, showSuccess, showWarning } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
+import { Skeleton } from '../../components/ui/Skeleton'
 
 // ============================================================
 // TypeScript Interfaces
@@ -434,7 +435,7 @@ const DocumentListTab = () => {
           </thead>
           <tbody className="divide-y">
             {loading ? (
-              <tr><td colSpan={7} className="text-center py-8 text-gray-500 dark:text-gray-400">Memuat...</td></tr>
+              <tr><td colSpan={7} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
             ) : sortedDocs.length === 0 ? (
               <tr><td colSpan={7} className="text-center py-8 text-gray-400">Belum ada dokumen</td></tr>
             ) : sortedDocs.map(doc => (
@@ -1177,7 +1178,7 @@ const CapaTab = () => {
           </thead>
           <tbody className="divide-y">
             {loading ? (
-              <tr><td colSpan={6} className="text-center py-8 text-gray-500 dark:text-gray-400">Memuat...</td></tr>
+              <tr><td colSpan={6} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
             ) : capas.length === 0 ? (
               <tr><td colSpan={6} className="text-center py-8 text-gray-400">Belum ada CAPA</td></tr>
             ) : capas.map(c => (
@@ -1528,7 +1529,7 @@ const MemoTab = () => {
       )}
 
       <div className="space-y-3">
-        {loading ? <p className="text-center py-8 text-gray-500 dark:text-gray-400">Memuat...</p> :
+        {loading ? <div className="space-y-3 py-4" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-16 w-full" />)}</div> :
           memos.length === 0 ? <p className="text-center py-8 text-gray-400">Belum ada memo</p> :
             memos.map(m => (
               <div key={m.id} className="bg-white dark:bg-gray-800 rounded-xl border p-4 hover:shadow-sm transition-shadow">
@@ -1716,7 +1717,7 @@ const DestructionTab = () => {
           </thead>
           <tbody className="divide-y">
             {loading ? (
-              <tr><td colSpan={8} className="text-center py-8 text-gray-500 dark:text-gray-400">Memuat...</td></tr>
+              <tr><td colSpan={8} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
             ) : logs.length === 0 ? (
               <tr><td colSpan={8} className="text-center py-8 text-gray-400">Belum ada data</td></tr>
             ) : logs.map(l => (
@@ -1859,7 +1860,7 @@ const QualityRecordsTab = () => {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {loading ? <tr><td colSpan={7} className="text-center py-8 text-gray-500 dark:text-gray-400">Memuat...</td></tr> :
+            {loading ? <tr><td colSpan={7} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr> :
               records.length === 0 ? <tr><td colSpan={7} className="text-center py-8 text-gray-400">Belum ada rekaman mutu</td></tr> :
               records.map(r => (
                 <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">

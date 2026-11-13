@@ -5,6 +5,7 @@ import { PlusIcon, ArrowPathIcon, ArrowUturnLeftIcon } from '@heroicons/react/24
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
+import { TableSkeleton } from '../../components/ui/Skeleton';
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
   submitted: { label: 'Diajukan',   color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
@@ -90,9 +91,7 @@ export default function PurchaseReturnList() {
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-16 text-gray-400">
-            <ArrowPathIcon className="h-5 w-5 animate-spin mr-2" /> Memuat...
-          </div>
+          <TableSkeleton rows={8} cols={7} />
         ) : tools.rows.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <ArrowUturnLeftIcon className="h-12 w-12 mx-auto mb-3 opacity-40" />

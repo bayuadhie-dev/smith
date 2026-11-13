@@ -3,6 +3,7 @@ import { BellIcon } from '@heroicons/react/24/outline';
 import { CheckIcon } from '@heroicons/react/24/solid';
 import axiosInstance from '../utils/axiosConfig';
 import { useNavigate } from 'react-router-dom';
+import { Skeleton } from '../components/ui/Skeleton'
 
 interface Notification {
   id: number;
@@ -181,7 +182,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
 
             <div className="overflow-y-auto flex-1">
               {loading ? (
-                <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">Memuat...</div>
+                <div className="space-y-3 p-4" role="status" aria-label="Memuat notifikasi">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
               ) : notifications.length === 0 ? (
                 <div className="p-10 text-center text-gray-500 dark:text-gray-400">
                   <BellIcon className="h-10 w-10 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
