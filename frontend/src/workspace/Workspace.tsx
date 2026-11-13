@@ -2,7 +2,7 @@ import React, { Suspense, useContext, useEffect, useRef, useState } from 'react'
 import { ReactReduxContext } from 'react-redux'
 import { RefreshCw } from 'lucide-react'
 import { api } from '../store/api'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import ErrorBoundary from '../components/ui/ErrorBoundary'
 import LoadingSpinner from '../components/Common/LoadingSpinner'
 import { confirmDialog } from '../components/ui'
@@ -11,12 +11,15 @@ import { attachDomDraft, type DomDraftHandle } from './domDraft'
 import { TabContext, isTabDirty, useDirtyVersion } from './drafts'
 import { isFormPath, moduleById, moduleForPath, splitPath } from './modules'
 import TabBar from './TabBar'
-import TabRouter from './TabRouter'
+import { TabActiveContext } from '../components/ui/BreadcrumbTrail'
+import TabRouter, { tabNavs } from './TabRouter'
 import { useWorkspace, type TabState } from './WorkspaceContext'
 
 installClickTracker()
 
-function TabPane({ tab, active }: { tab: TabState; active: boolean }) {
+type NavMeta = { type: 'POP' | 'PUSH' | 'REPLACE'; idx: number }
+
+function TabPane({ tab, active, onNav }: { tab: TabState; active: boolean; onNav: (tabId: string, meta: NavMeta) => void }) {
   const ws = useWorkspace()
   const navigate = useNavigate()
   const ref = useRef<HTMLDivElement>(null)
@@ -51,6 +54,7 @@ function TabPane({ tab, active }: { tab: TabState; active: boolean }) {
   return (
     <div ref={ref} hidden={!active} data-tab-pane={tab.id}>
       <TabContext.Provider value={{ tabId: tab.id }}>
+       <TabActiveContext.Provider value={{ tabId: tab.id, active }}>
         {isList && (
           <div className="flex justify-end px-4 pt-2">
             <button type="button" onClick={refresh} title="Muat ulang data daftar ini"
@@ -62,15 +66,18 @@ function TabPane({ tab, active }: { tab: TabState; active: boolean }) {
         <ErrorBoundary>
           <Suspense fallback={<LoadingSpinner />}>
             <TabRouter key={nonce}
+              tabId={tab.id}
+              active={active}
               initialPath={tab.path}
               containerRef={ref}
               onOpenNew={(path, title) => {
                 if (ws.openPath(path, title) === 'not-module') navigate(path)
               }}
-              onPathChange={(path) => ws.setTabPath(tab.id, path)}
+              onPathChange={(path, meta) => { onNav(tab.id, meta); ws.setTabPath(tab.id, path) }}
             />
           </Suspense>
         </ErrorBoundary>
+       </TabActiveContext.Provider>
       </TabContext.Provider>
     </div>
   )
@@ -86,6 +93,8 @@ export default function Workspace({ visible }: { visible: boolean }) {
   // URL path whose tab is being opened/activated; the tabs->URL effect must not run against stale state meanwhile.
   const pendingUrl = useRef<string | null>(null)
   const recentClick = useRef<{ title: string; time: number } | null>(null)
+  const navType = useNavigationType()
+  const lastNav = useRef<{ tabId: string; type: NavMeta['type']; idx: number } | null>(null)
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -104,6 +113,27 @@ export default function Workspace({ visible }: { visible: boolean }) {
   useEffect(() => {
     if (ignoreUrl.current === urlPath) { ignoreUrl.current = null; return }
     if (!inModule) return
+    // Back/Forward browser: terjemahkan ke riwayat di dalam tab pemilik entri itu, jangan buka tab baru.
+    const stamp = (location.state as { wsTab?: string } | null)?.wsTab
+    if (navType === 'POP' && stamp) {
+      const ownerModule = Object.keys(state.modules).find((mid) => state.modules[mid].tabs.some((t) => t.id === stamp))
+      const handle = tabNavs.get(stamp)
+      if (ownerModule && handle) {
+        const m = state.modules[ownerModule]
+        if (state.activeModule !== ownerModule || m.activeTabId !== stamp) ws.activateTab(ownerModule, stamp)
+        const stack = handle.stack()
+        if (stack[handle.idx()] !== urlPath) {
+          let j = -1
+          for (let d = 1; d < stack.length && j < 0; d++) {
+            if (stack[handle.idx() - d] === urlPath) j = handle.idx() - d
+            else if (stack[handle.idx() + d] === urlPath) j = handle.idx() + d
+          }
+          if (j >= 0) handle.goIdx(j)
+          else handle.apply(urlPath, 'PUSH')
+        }
+        return
+      }
+    }
     if (ws.activeTabPath() === urlPath) return
     const click = recentClick.current
     const title = click && Date.now() - click.time < 1500 ? click.title : undefined
@@ -121,12 +151,24 @@ export default function Workspace({ visible }: { visible: boolean }) {
   // Tabs -> browser URL (tab clicked, tab navigated in place, tab closed)
   useEffect(() => {
     if (!inModule) return
+    const tid = activeModuleState?.activeTabId || undefined
+    const stampState = () => (tid ? { wsTab: tid, wsIdx: tabNavs.get(tid)?.idx() ?? 0 } : undefined)
     if (pendingUrl.current) {
-      if (activePath === pendingUrl.current) pendingUrl.current = null
+      if (activePath === pendingUrl.current) {
+        pendingUrl.current = null
+        if (tid) navigate(urlPath, { replace: true, state: stampState() })
+      }
       return
     }
     if (!activePath) { ignoreUrl.current = '/app'; navigate('/app', { replace: true }); return }
-    if (activePath !== urlPath) { ignoreUrl.current = activePath; navigate(activePath, { replace: true }) }
+    if (activePath !== urlPath) {
+      ignoreUrl.current = activePath
+      const nav = lastNav.current
+      lastNav.current = null
+      // Pindah halaman di dalam tab = entri baru di riwayat browser, supaya tombol Back mundur selangkah.
+      if (nav && nav.tabId === tid && nav.type === 'PUSH') navigate(activePath, { state: { wsTab: tid, wsIdx: nav.idx } })
+      else navigate(activePath, { replace: true, state: stampState() })
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePath, state.activeModule])
 
@@ -164,7 +206,7 @@ export default function Workspace({ visible }: { visible: boolean }) {
 
       {state.order.map((id) =>
         (state.modules[id]?.tabs || []).map((tab) => (
-          <TabPane key={tab.id} tab={tab} active={id === state.activeModule && tab.id === state.modules[id].activeTabId} />
+          <TabPane key={tab.id} tab={tab} active={id === state.activeModule && tab.id === state.modules[id].activeTabId} onNav={(tabId, meta) => { lastNav.current = { tabId, ...meta } }} />
         )),
       )}
     </div>

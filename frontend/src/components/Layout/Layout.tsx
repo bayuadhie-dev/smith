@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import Breadcrumb from '../ui/Breadcrumb'
+import { BreadcrumbTrailProvider } from '../ui/BreadcrumbTrail'
 import SkipLink from '../ui/SkipLink'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import KeyboardShortcutsModal from '../Common/KeyboardShortcutsModal'
@@ -105,11 +106,13 @@ export default function Layout() {
         <Header toggleSidebar={handleHeaderToggle} />
         <main id="main-content" className="py-6" role="main" aria-label="Konten utama">
           <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
+            <BreadcrumbTrailProvider>
             <Breadcrumb />
             <WorkspaceProvider onFull={(label) => showWarning(`Maksimal ${MAX_TABS_PER_MODULE} tab di modul ${label}. Tutup salah satu tab dulu.`)}>
               <Workspace visible={inWorkspaceModule} />
               {!inWorkspaceModule && <Outlet />}
             </WorkspaceProvider>
+            </BreadcrumbTrailProvider>
           </div>
         </main>
       </div>

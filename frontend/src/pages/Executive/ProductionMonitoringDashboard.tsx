@@ -8,6 +8,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { Package, CheckCircle2, Factory, AlertTriangle, TrendingDown } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import DowntimeActionItems from '../../components/Production/DowntimeActionItems';
@@ -17,6 +19,13 @@ import {
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
 
+const TAB_LABELS = {
+  overview: 'Overview', daily: 'Detail Harian', machineDaily: 'Mesin & Shift', packing_list: 'Packing List', dailySwiper: 'Controller',
+  converting: 'Converting', products: 'Per Produk', machines: 'Per Mesin', downtime: 'Downtime', graph: 'Grafik',
+  fg: 'FG Conversion', shift: 'Per Shift', analytics: 'Analytics',
+} as const;
+type TabId = keyof typeof TAB_LABELS;
+const TAB_IDS = Object.keys(TAB_LABELS) as TabId[];
 const GRADE_COLORS = { a: '#22C55E', b: '#F59E0B', c: '#EF4444' };
 const DOWNTIME_COLORS: Record<string, string> = {
   mesin: '#EF4444', operator: '#F59E0B', material: '#3B82F6', design: '#8B5CF6', idle: '#FCD34D', others: '#6B7280'
@@ -52,7 +61,8 @@ const ProductionMonitoringDashboard: React.FC = () => {
   const [viewMode, setViewMode] = useState<'monthly' | 'weekly'>('monthly');
   const [weekNumber, setWeekNumber] = useState(0);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<'overview' | 'daily' | 'machineDaily' | 'dailySwiper' | 'converting' | 'products' | 'machines' | 'downtime' | 'graph' | 'fg' | 'shift' | 'analytics' | 'packing_list'>('overview');
+  const [activeTab, setActiveTab] = useUrlState<TabId>('tab', 'overview', TAB_IDS);
+  useBreadcrumbTrail(activeTab === 'overview' ? [] : [{ label: TAB_LABELS[activeTab] }]);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(1); // 1 minute default
   const [fgData, setFgData] = useState<any>(null);

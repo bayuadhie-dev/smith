@@ -13,6 +13,8 @@ import {
   CubeIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { useUrlState } from '../../hooks/useUrlState';
+import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import toast from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
 
@@ -100,7 +102,8 @@ interface ScheduleGridApproval {
 }
 
 const ProductionApprovalList: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'production' | 'schedule' | 'monthly' | 'scheduleGrid'>('production');
+  const [activeTab, setActiveTab] = useUrlState<'production' | 'schedule' | 'monthly' | 'scheduleGrid'>('tab', 'production', ['production', 'schedule', 'monthly', 'scheduleGrid']);
+  useBreadcrumbTrail(activeTab === 'production' ? [] : [{ label: { schedule: 'Jadwal', monthly: 'Bulanan', scheduleGrid: 'Grid Jadwal' }[activeTab] }]);
   const [approvals, setApprovals] = useState<ProductionApproval[]>([]);
   const [scheduleApprovals, setScheduleApprovals] = useState<ScheduleApproval[]>([]);
   const [monthlyPlanApprovals, setMonthlyPlanApprovals] = useState<MonthlyPlanApproval[]>([]);

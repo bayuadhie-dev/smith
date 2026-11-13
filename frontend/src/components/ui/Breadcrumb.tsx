@@ -1,10 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 import { HomeIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { useTrail } from './BreadcrumbTrail';
 
 interface BreadcrumbItem {
   label: string;
   href?: string;
   current?: boolean;
+  go?: () => void;
 }
 
 // Route to label mapping
@@ -116,6 +118,7 @@ const NO_PAGE = new Set([
 
 const Breadcrumb = () => {
   const location = useLocation();
+  const trail = useTrail();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
   // Generate breadcrumb items
@@ -139,6 +142,15 @@ const Breadcrumb = () => {
     };
   });
 
+  // Rantai drill-down dari halaman: crumb rute terakhir menjadi tautan kembali ke tingkat awal halaman
+  const routeItems = breadcrumbItems.slice(1);
+  const shown: BreadcrumbItem[] = trail && trail.items.length
+    ? [
+        ...routeItems.map((it, i) => (i === routeItems.length - 1 ? { ...it, href: undefined, current: false, go: trail.root } : it)),
+        ...trail.items.map((t, i) => ({ label: t.label, go: t.go, current: i === trail.items.length - 1 })),
+      ]
+    : routeItems;
+
   // Don't show breadcrumb on home page
   if (pathnames.length <= 1) {
     return null;
@@ -159,10 +171,18 @@ const Breadcrumb = () => {
             </Link>
           </li>
 
-          {breadcrumbItems.slice(1).map((item, index) => (
+          {shown.map((item, index) => (
             <li key={index} className="flex items-center">
               <ChevronRightIcon className="w-4 h-4 text-slate-300 dark:text-slate-600 mx-0.5" />
-              {item.href ? (
+              {item.go ? (
+                <button
+                  type="button"
+                  onClick={item.go}
+                  className="px-2 py-1 rounded-md text-slate-600 hover:text-primary-600 hover:bg-primary-50 dark:text-slate-400 dark:hover:text-primary-400 dark:hover:bg-slate-700 transition-all font-medium"
+                >
+                  {item.label}
+                </button>
+              ) : item.href ? (
                 <Link
                   to={item.href}
                   className="px-2 py-1 rounded-md text-slate-600 hover:text-primary-600 hover:bg-primary-50 dark:text-slate-400 dark:hover:text-primary-400 dark:hover:bg-slate-700 transition-all font-medium"

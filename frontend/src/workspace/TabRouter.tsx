@@ -4,13 +4,25 @@ import type { Location, NavigationType, To } from 'react-router-dom'
 import { currentClick } from './clickTracker'
 import { getAppRoutes } from './routeRegistry'
 
+export interface TabNavHandle {
+  idx: () => number
+  stack: () => string[]
+  /** Pindah di dalam tab ini tanpa menyentuh riwayat browser (dipakai saat Back/Forward browser). */
+  apply: (path: string, type: 'POP' | 'PUSH' | 'REPLACE') => void
+  goIdx: (j: number) => void
+}
+/** Daftar tab yang sedang hidup, supaya Workspace bisa menerjemahkan Back/Forward browser ke riwayat tab. */
+export const tabNavs = new Map<string, TabNavHandle>()
+
 interface Props {
-  initialPath: string
+  tabId: string
+  active: boolean
+  initialPath
   containerRef: React.RefObject<HTMLElement>
   /** A click inside this tab navigated to another page: open it as a new tab. */
   onOpenNew: (path: string, title?: string) => void
   /** This tab's own location changed in place. */
-  onPathChange: (path: string) => void
+  onPathChange: (path: string, meta: { type: 'POP' | 'PUSH' | 'REPLACE'; idx: number }) => void
 }
 
 function makeLocation(path: string, state: unknown = null): Location {
@@ -24,7 +36,9 @@ const toPath = (to: To): string => (typeof to === 'string' ? to : createPath(to)
  * A tab is a tiny router of its own (so every page keeps working unchanged) with a navigator that decides
  * whether a navigation stays inside the tab or opens a new one.
  */
-export default function TabRouter({ initialPath, containerRef, onOpenNew, onPathChange }: Props) {
+export default function TabRouter({ tabId, active, initialPath, containerRef, onOpenNew, onPathChange }: Props) {
+  const tabIdRef = useRef(tabId)
+  tabIdRef.current = tabId
   const [loc, setLoc] = useState<Location>(() => makeLocation(initialPath))
   const [navType, setNavType] = useState<'POP' | 'PUSH' | 'REPLACE'>('POP')
   const locRef = useRef(loc)
@@ -32,6 +46,8 @@ export default function TabRouter({ initialPath, containerRef, onOpenNew, onPath
   const hist = useRef({ stack: [initialPath], idx: 0 })
   const cb = useRef({ onOpenNew, onPathChange })
   cb.current = { onOpenNew, onPathChange }
+  const activeRef = useRef(active)
+  activeRef.current = active
 
   const navigator = useMemo(() => {
     const show = (path: string, type: 'POP' | 'PUSH' | 'REPLACE', state: unknown = null) => {
@@ -39,7 +55,7 @@ export default function TabRouter({ initialPath, containerRef, onOpenNew, onPath
       locRef.current = next
       setNavType(type)
       setLoc(next)
-      cb.current.onPathChange(path)
+      cb.current.onPathChange(path, { type, idx: hist.current.idx })
     }
     const go = (to: To, state: unknown, replace: boolean) => {
       const target = typeof to === 'string' ? parsePath(to) : to
@@ -69,6 +85,12 @@ export default function TabRouter({ initialPath, containerRef, onOpenNew, onPath
         const h = hist.current
         const next = Math.max(0, Math.min(h.stack.length - 1, h.idx + delta))
         if (next === h.idx) return
+        // Tab aktif dengan entri browser yang sepadan: mundur lewat browser agar riwayat browser ikut sinkron.
+        const st = (window.history.state as any)?.usr
+        if (activeRef.current && st?.wsTab === tabIdRef.current && st?.wsIdx === h.idx) {
+          window.history.go(next - h.idx)
+          return
+        }
         h.idx = next
         show(h.stack[next], 'POP')
       },
@@ -76,6 +98,34 @@ export default function TabRouter({ initialPath, containerRef, onOpenNew, onPath
       replace: (to: To, state?: unknown) => go(to, state, true),
     }
   }, [containerRef])
+
+  useEffect(() => {
+    const h = hist.current
+    const handle: TabNavHandle = {
+      idx: () => h.idx,
+      stack: () => h.stack,
+      apply: (path, type) => {
+        if (type === 'PUSH') { h.stack = h.stack.slice(0, h.idx + 1).concat(path); h.idx = h.stack.length - 1 }
+        else if (type === 'REPLACE') h.stack[h.idx] = path
+        const next = makeLocation(path)
+        locRef.current = next
+        setNavType(type)
+        setLoc(next)
+        cb.current.onPathChange(path, { type, idx: h.idx })
+      },
+      goIdx: (j) => {
+        if (j < 0 || j >= h.stack.length || j === h.idx) return
+        h.idx = j
+        const next = makeLocation(h.stack[j])
+        locRef.current = next
+        setNavType('POP')
+        setLoc(next)
+        cb.current.onPathChange(h.stack[j], { type: 'POP', idx: j })
+      },
+    }
+    tabNavs.set(tabId, handle)
+    return () => { if (tabNavs.get(tabId) === handle) tabNavs.delete(tabId) }
+  }, [tabId])
 
   // Legacy pages use plain <a href="/app/..."> (full page load). Catch those clicks after React has had its
   // chance (react-router <Link> already calls preventDefault) and route them through this tab instead.
