@@ -97,6 +97,7 @@ from .wms_advanced import (
     StockTransferOrder, StockTransferItem, CycleCountSchedule
 )
 from .expense import Expense, Reimbursement, ReimbursementApproval
+from .petty_cash import PettyCashFund, PettyCashTransaction, PettyCashReplenishment
 from .spc import SPCParameter, SPCProductSpec, SPCSample, SPCMeasurement, SPCControlLimitHistory
 from .accurate import AccurateConfig, AccurateItemMapping, AccurateSyncLog
 from .spk import SPKWarehouseStageLog
@@ -210,6 +211,7 @@ __all__ = [
     'StockTransferOrder', 'StockTransferItem', 'CycleCountSchedule',
     # Expense models
     'Expense', 'Reimbursement', 'ReimbursementApproval',
+    'PettyCashFund', 'PettyCashTransaction', 'PettyCashReplenishment',
     'StockTransfer', 'StockTransferLine', 'StockTransferReceipt', 'StockTransferReceiptLine',
     # Accurate models
     'AccurateConfig', 'AccurateItemMapping', 'AccurateSyncLog',

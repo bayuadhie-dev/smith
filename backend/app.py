@@ -896,6 +896,8 @@ def create_app(config_class=Config):
     # ========================================
     from routes.expense import expense_bp
     app.register_blueprint(expense_bp, url_prefix='/api/expenses')
+    from routes.petty_cash import petty_cash_bp
+    app.register_blueprint(petty_cash_bp, url_prefix='/api/petty-cash')
     
 
     # Serve uploaded files

@@ -459,6 +459,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Cuti', href: '/app/hr/staff-leave', icon: CalendarDaysIcon, permission: 'leave' },
             { name: 'Jadwal Kerja (Roster)', href: '/app/hr/roster', icon: CalendarDaysIcon, permission: 'roster' },
             { name: 'Payroll', href: '/app/hr/payroll', icon: CurrencyDollarIcon, permission: 'payroll' },
+            { name: 'Kas Kecil', href: '/app/hr/petty-cash', icon: BanknotesIcon, permission: 'petty_cash' },
             { name: 'Penilaian Kinerja', href: '/app/hr/appraisal', icon: ChartBarIcon, permission: 'appraisal' },
             { name: 'Pelatihan', href: '/app/hr/training', icon: AcademicCapIcon, permission: 'training' },
             { name: 'Laporan HR', href: '/app/hr/reports', icon: DocumentChartBarIcon, permission: 'hr' },
