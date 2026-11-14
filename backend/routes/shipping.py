@@ -200,7 +200,7 @@ def create_shipping_order_core(data, user_id, commit=True):
             if so_item:
                 so_item.quantity_shipped = float(so_item.quantity_shipped or 0) + quantity
 
-            if batch_number:
+            if batch_number and data.get('sales_order_id'):
                 # Caller explicitly pinned one batch - keep the old
                 # single-batch path (manual override, e.g. staff picked a
                 # specific lot on purpose).
@@ -285,6 +285,8 @@ def create_shipping_order_core(data, user_id, commit=True):
                 reference_id=order.id,
                 notes=f"Shipped via {shipping_number}",
                 user_id=user_id,
+                zone_id=item_data.get('zone_id') or None,
+                batch_number=batch_number or None,
             )
             if not result['success']:
                 raise ShippingInputError(result['error'])
@@ -532,6 +534,28 @@ def delete_provider(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+@shipping_bp.route('/stock-options', methods=['GET'])
+@jwt_required()
+@require_permission('shipping.create', 'shipping.view')
+def stock_options():
+    """Gudang dan batch yang punya stok tersedia untuk satu produk (pilihan di surat jalan tanpa SO)."""
+    from models import Inventory
+    from models.warehouse import WarehouseLocation, WarehouseZone
+    pid = request.args.get('product_id', type=int)
+    if not pid:
+        return jsonify({'zones': []}), 200
+    rows = db.session.query(WarehouseZone.id, WarehouseZone.name, Inventory.batch_number, db.func.sum(Inventory.quantity_on_hand)).join(
+        WarehouseLocation, WarehouseLocation.zone_id == WarehouseZone.id).join(Inventory, Inventory.location_id == WarehouseLocation.id).filter(
+        Inventory.product_id == pid, Inventory.is_active.is_(True), Inventory.quantity_on_hand > 0,
+        Inventory.stock_status.notin_(['quarantine', 'reject'])).group_by(WarehouseZone.id, WarehouseZone.name, Inventory.batch_number).all()
+    zones = {}
+    for zid, zname, batch, qty in rows:
+        z = zones.setdefault(zid, {'id': zid, 'name': zname, 'qty': 0.0, 'batches': []})
+        z['qty'] += float(qty)
+        z['batches'].append({'batch_number': batch or '', 'qty': float(qty)})
+    return jsonify({'zones': sorted(zones.values(), key=lambda z: z['name'])}), 200
+
 
 @shipping_bp.route('/service-items', methods=['GET'])
 @jwt_required()

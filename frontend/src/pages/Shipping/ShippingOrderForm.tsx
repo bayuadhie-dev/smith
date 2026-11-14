@@ -25,6 +25,8 @@ interface ManualLine {
   description: string
   qty: string
   uom: string
+  zone_id: string
+  batch: string
 }
 
 const SHIPPABLE_EXCLUDED = ['draft', 'cancelled', 'shipped', 'completed', 'closed']
@@ -47,6 +49,8 @@ export default function ShippingOrderForm() {
   const [services, setServices] = useState<any[]>([])
   const [customerId, setCustomerId] = useState<number | string | null>(null)
   const [manual, setManual] = useState<ManualLine[]>([])
+  const [uoms, setUoms] = useState<string[]>([])
+  const [stockOpts, setStockOpts] = useState<Record<string, any[]>>({})
   const [f, setF] = useState({
     shipping_date: new Date().toISOString().split('T')[0],
     shipping_address: '',
@@ -68,6 +72,7 @@ export default function ShippingOrderForm() {
   useEffect(() => {
     if (mode !== 'manual' || customers.length) return
     axiosInstance.get('/api/sales/customers?per_page=1000').then((r) => setCustomers(r.data?.customers || [])).catch(() => toast.error('Gagal memuat pelanggan'))
+    axiosInstance.get('/api/uom/units', { params: { per_page: 500 } }).then((r) => setUoms((r.data?.uoms || r.data?.units || []).map((u: any) => u.code).filter(Boolean))).catch(() => undefined)
     axiosInstance.get('/api/shipping/service-items').then((r) => setServices(r.data?.items || [])).catch(() => toast.error('Gagal memuat master non persediaan'))
     axiosInstance.get('/api/products?status=active&per_page=2000').then((r) => setProducts(r.data?.products || r.data?.items || [])).catch(() => toast.error('Gagal memuat barang'))
   }, [mode, customers.length])
@@ -99,11 +104,16 @@ export default function ShippingOrderForm() {
     () => (mode === 'so' ? lines.reduce((s, l) => s + (Number(l.ship) || 0), 0) : manual.reduce((s, l) => s + (Number(l.qty) || 0), 0)),
     [lines, manual, mode],
   )
-  const addManual = (kind: ManualLine['kind']) => setManual((m) => [...m, { key: Date.now() + m.length, kind, product_id: null, description: '', qty: '', uom: kind === 'service' ? 'LOT' : '' }])
+  const addManual = (kind: ManualLine['kind']) => setManual((m) => [...m, { key: Date.now() + m.length, kind, product_id: null, description: '', qty: '', uom: kind === 'service' ? 'LOT' : '', zone_id: '', batch: '' }])
   const patchManual = (key: number, patch: Partial<ManualLine>) => setManual((m) => m.map((l) => (l.key === key ? { ...l, ...patch } : l)))
   const pickProduct = (key: number, pid: number | string | null) => {
     const prod = products.find((x: any) => x.id === pid)
-    patchManual(key, { product_id: pid, uom: prod?.primary_uom || '', description: prod?.name || '' })
+    patchManual(key, { product_id: pid, uom: prod?.primary_uom || '', description: prod?.name || '', zone_id: '', batch: '' })
+    if (pid) {
+      axiosInstance.get('/api/shipping/stock-options', { params: { product_id: pid } })
+        .then((r) => setStockOpts((o) => ({ ...o, [String(key)]: r.data?.zones || [] })))
+        .catch(() => setStockOpts((o) => ({ ...o, [String(key)]: [] })))
+    }
   }
   const set = (k: string, v: string) => setF((p) => ({ ...p, [k]: v }))
   const setShip = (idx: number, v: string) => setLines((ls) => ls.map((l, i) => (i === idx ? { ...l, ship: v } : l)))
@@ -137,7 +147,7 @@ export default function ShippingOrderForm() {
         if (l.kind === 'service' && !l.description.trim()) { toast.error('Isi keterangan pada baris jasa/lainnya'); return }
       }
       items = manual.map((l) => (l.kind === 'product'
-        ? { product_id: l.product_id, quantity: Number(l.qty), uom: l.uom }
+        ? { product_id: l.product_id, quantity: Number(l.qty), uom: l.uom, zone_id: l.zone_id ? Number(l.zone_id) : undefined, batch_number: l.batch || undefined }
         : { description: l.description.trim(), quantity: Number(l.qty), uom: l.uom || 'LOT' }))
     }
     setSaving(true)
@@ -281,7 +291,24 @@ export default function ShippingOrderForm() {
                     )}
                   </div>
                   <div className="md:col-span-3"><NumberInput className="input-field text-right" value={l.qty} onChange={(e: any) => patchManual(l.key, { qty: e.target.value })} placeholder="Qty" /></div>
-                  <div className="md:col-span-2"><input className="input-field" value={l.uom} onChange={(e) => patchManual(l.key, { uom: e.target.value })} placeholder="Satuan" /></div>
+                  <div className="md:col-span-2">
+                    <select className="input-field" value={l.uom} onChange={(e) => patchManual(l.key, { uom: e.target.value })}>
+                      {Array.from(new Set([l.uom, ...uoms].filter(Boolean))).map((u) => <option key={u} value={u}>{u}</option>)}
+                    </select>
+                  </div>
+                  {l.kind === 'product' && l.product_id && (
+                    <div className="md:col-span-12 grid grid-cols-1 gap-2 md:grid-cols-2">
+                      <select className="input-field" value={l.zone_id} onChange={(e) => patchManual(l.key, { zone_id: e.target.value, batch: '' })}>
+                        <option value="">Gudang: otomatis (FIFO semua gudang)</option>
+                        {(stockOpts[String(l.key)] || []).map((z: any) => <option key={z.id} value={z.id}>{z.name} (stok {fmt(z.qty)})</option>)}
+                      </select>
+                      <select className="input-field" value={l.batch} onChange={(e) => patchManual(l.key, { batch: e.target.value })}>
+                        <option value="">No. batch produksi: otomatis (FIFO)</option>
+                        {(stockOpts[String(l.key)] || []).filter((z: any) => !l.zone_id || String(z.id) === l.zone_id).flatMap((z: any) => z.batches.map((b: any) => ({ ...b, zone: z.name }))).filter((b: any) => b.batch_number).map((b: any) => <option key={`${b.zone}-${b.batch_number}`} value={b.batch_number}>{b.batch_number} ({b.zone}, {fmt(b.qty)})</option>)}
+                      </select>
+                      {l.zone_id && <p className="text-xs text-gray-500 md:col-span-2 dark:text-gray-400">Stok hanya dipotong dari gudang yang dipilih.</p>}
+                    </div>
+                  )}
                   <div className="md:col-span-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                     <span>{l.kind === 'product' ? 'Barang / waste' : 'Jasa / lainnya'} #{i + 1}</span>
                     <button type="button" className="text-red-600 hover:underline dark:text-red-400" onClick={() => setManual((m) => m.filter((x) => x.key !== l.key))}>Hapus</button>

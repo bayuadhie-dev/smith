@@ -188,7 +188,7 @@ def fifo_release_reservation(material_id=None, product_id=None, quantity_to_rele
 
 def fifo_deduct_stock(material_id=None, product_id=None, quantity_needed=0,
                       reference_number=None, reference_type=None, reference_id=None,
-                      notes=None, user_id=None, from_reserved=False):
+                      notes=None, user_id=None, from_reserved=False, zone_id=None, batch_number=None):
     """
     Deduct stock using FIFO method (oldest batch first) with row-level locking.
     If one batch is not enough, automatically takes from the next batch.
@@ -223,6 +223,11 @@ def fifo_deduct_stock(material_id=None, product_id=None, quantity_needed=0,
         filters.append(Inventory.product_id == product_id)
     else:
         return _fail('Either material_id or product_id is required')
+    if batch_number:
+        filters.append(Inventory.batch_number == batch_number)
+    if zone_id:
+        from models.warehouse import WarehouseLocation
+        filters.append(Inventory.location_id.in_(db.session.query(WarehouseLocation.id).filter(WarehouseLocation.zone_id == zone_id)))
     
     # SELECT FOR UPDATE — prevents race condition
     inventory_batches = Inventory.query.filter(
