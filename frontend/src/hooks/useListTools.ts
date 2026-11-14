@@ -27,7 +27,13 @@ export interface ListTools<T> {
   toggleSort: (key: string) => void
   columns: ListColumn<T>[]
   exportExcel: () => void
+  /** Periode tanggal (ISO). Kosong = semua. null bila daftar tidak punya kolom tanggal. */
+  period: { from: string; to: string; all: boolean; label: string } | null
+  setPeriod: (from: string, to: string) => void
+  setPeriodAll: () => void
 }
+
+const isoDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
 const collator = new Intl.Collator('id', { numeric: true, sensitivity: 'base' })
 
@@ -54,9 +60,20 @@ function isoToLocal(v: string) {
 export function useListTools<T>(
   data: T[] | undefined | null,
   columns: ListColumn<T>[],
-  opts: { filename: string; initialSort?: { key: string; dir?: 'asc' | 'desc' }; paramPrefix?: string },
+  opts: { filename: string; initialSort?: { key: string; dir?: 'asc' | 'desc' }; paramPrefix?: string; dateColumn?: string; defaultAll?: boolean },
 ): ListTools<T> {
   const [query, setQueryRaw] = useUrlState<string>(`${opts.paramPrefix || ''}q`, '')
+  const pp = opts.paramPrefix || ''
+  const dateCol = columns.find((c) => c.key === opts.dateColumn) || columns.find((c) => c.type === 'date')
+  const [pFrom, setPFrom] = useUrlState<string>(`${pp}from`, '')
+  const [pTo, setPTo] = useUrlState<string>(`${pp}to`, '')
+  const [pAll, setPAll] = useUrlState<string>(`${pp}period`, opts.defaultAll ? 'all' : '')
+  const today = new Date()
+  const defFrom = isoDay(new Date(today.getFullYear(), today.getMonth(), 1))
+  const defTo = isoDay(today)
+  const allPeriod = pAll === 'all'
+  const periodFrom = pFrom || defFrom
+  const periodTo = pTo || defTo
   const initial = opts.initialSort ? `${opts.initialSort.key}:${opts.initialSort.dir || 'asc'}` : ''
   const [sort, setSort] = useUrlState<string>(`${opts.paramPrefix || ''}sort`, initial)
   const [sortKey, sortDirRaw] = sort.split(':')
@@ -73,6 +90,14 @@ export function useListTools<T>(
 
   const rows = useMemo(() => {
     let list = (data || []).slice()
+    if (dateCol && !allPeriod) {
+      list = list.filter((r) => {
+        const v = dateCol.value(r)
+        if (v === null || v === undefined || v === '') return true
+        const d = String(v).slice(0, 10)
+        return d >= periodFrom && d <= periodTo
+      })
+    }
     const q = query.trim().toLowerCase()
     if (q) {
       const searchable = columns.filter((c) => c.exportable !== false)
@@ -87,7 +112,7 @@ export function useListTools<T>(
       list.sort((a, b) => f * cmp(col.value(a), col.value(b), col.type))
     }
     return list
-  }, [data, columns, query, sortKey, sortDir])
+  }, [data, columns, query, sortKey, sortDir, dateCol, allPeriod, periodFrom, periodTo])
 
   const exportExcel = useCallback(() => {
     const cols = columns.filter((c) => c.exportable !== false)
@@ -108,5 +133,9 @@ export function useListTools<T>(
     XLSX.writeFile(wb, `${opts.filename}_${stamp}.xlsx`)
   }, [columns, rows, opts.filename])
 
-  return { rows, total: (data || []).length, query, setQuery, sortKey: sortKey || '', sortDir, toggleSort, columns, exportExcel }
+  const setPeriod = useCallback((from: string, to: string) => { setPAll(''); setPFrom(from); setPTo(to) }, [setPAll, setPFrom, setPTo])
+  const setPeriodAll = useCallback(() => { setPAll('all'); setPFrom(''); setPTo('') }, [setPAll, setPFrom, setPTo])
+  const period = dateCol ? { from: periodFrom, to: periodTo, all: allPeriod, label: dateCol.label } : null
+
+  return { period, setPeriod, setPeriodAll, rows, total: (data || []).length, query, setQuery, sortKey: sortKey || '', sortDir, toggleSort, columns, exportExcel }
 }

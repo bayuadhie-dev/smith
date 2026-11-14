@@ -23,6 +23,14 @@ export function SortTh<T>({ tools, col, children, className = '', align }: { too
 }
 
 /** Pencarian, jumlah baris, dan tombol Ekspor Excel di atas tabel daftar. */
+const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const PRESETS: { label: string; range: () => [string, string] | null }[] = [
+  { label: 'Bulan ini', range: () => { const t = new Date(); return [iso(new Date(t.getFullYear(), t.getMonth(), 1)), iso(t)] } },
+  { label: 'Bulan lalu', range: () => { const t = new Date(); return [iso(new Date(t.getFullYear(), t.getMonth() - 1, 1)), iso(new Date(t.getFullYear(), t.getMonth(), 0))] } },
+  { label: 'Tahun ini', range: () => { const t = new Date(); return [iso(new Date(t.getFullYear(), 0, 1)), iso(t)] } },
+  { label: 'Semua', range: () => null },
+]
+
 export function ListToolbar<T>({ tools, placeholder = 'Cari di semua kolom', extra }: { tools: ListTools<T>; placeholder?: string; extra?: ReactNode }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -37,8 +45,22 @@ export function ListToolbar<T>({ tools, placeholder = 'Cari di semua kolom', ext
           className="input-field pl-9"
         />
       </div>
+      {tools.period && (
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label={`Periode ${tools.period.label}`}>
+          <input type="date" aria-label="Dari tanggal" className="input-field w-40" value={tools.period.all ? '' : tools.period.from} onChange={(e) => e.target.value && tools.setPeriod(e.target.value, tools.period!.to)} />
+          <span className="text-sm text-gray-400">s/d</span>
+          <input type="date" aria-label="Sampai tanggal" className="input-field w-40" value={tools.period.all ? '' : tools.period.to} onChange={(e) => e.target.value && tools.setPeriod(tools.period!.from, e.target.value)} />
+          <div className="flex gap-1">
+            {PRESETS.map((p) => (
+              <button key={p.label} type="button" onClick={() => { const r = p.range(); if (r) tools.setPeriod(r[0], r[1]); else tools.setPeriodAll() }}
+                className="rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-600 hover:border-primary-500 hover:text-primary-700 dark:border-gray-600 dark:text-gray-300">{p.label}</button>
+            ))}
+          </div>
+          <span className="text-xs text-gray-400">berdasarkan {tools.period.label.toLowerCase()}</span>
+        </div>
+      )}
       <span className="text-sm text-gray-500 dark:text-gray-400">
-        {tools.query ? `${tools.rows.length} dari ${tools.total} baris` : `${tools.total} baris`}
+        {tools.rows.length !== tools.total ? `${tools.rows.length} dari ${tools.total} baris` : `${tools.total} baris`}
       </span>
       <div className="ml-auto flex items-center gap-2">
         {extra}
