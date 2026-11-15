@@ -7,7 +7,7 @@ import { logout } from '../../store/slices/authSlice'
 import ThemeToggle from '../Common/ThemeToggle'
 import SidebarSearch from './SidebarSearch'
 import SidebarSearchResults from './SidebarSearchResults'
-import { flattenMenu, searchMenu, setMenuEntries } from '../../utils/menuIndex'
+import { flattenMenu, getMenuEntries, searchMenu, setMenuEntries } from '../../utils/menuIndex'
 import { useDataSearch } from '../../hooks/useDataSearch'
 import {
   AdjustmentsHorizontalIcon,
@@ -112,14 +112,6 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Check if a href (with query params) matches current location
-  const isActiveHref = (href: string) => {
-    const [path, query] = href.split('?')
-    if (path !== location.pathname) return false
-    if (!query) return !location.search
-    return location.search === `?${query}`
-  }
-
   const handleLogout = () => {
     clearWorkspaceStorage()
     dispatch(logout())
@@ -165,9 +157,9 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
       groupName: 'MAIN',
       items: [
         { name: 'Dashboard', href: '/app', icon: HomeIcon, permission: 'dashboard' },
-        { name: 'Production Monitoring', href: '/app/executive/production-monitoring', icon: ChartBarIcon, permission: 'dashboard' },
+        { name: 'Monitoring Produksi', href: '/app/executive/production-monitoring', icon: ChartBarIcon, permission: 'dashboard' },
         { name: 'Patroli Mesin', description: 'Patrol mesin berkala setiap 2 jam', href: '/app/production/live-monitoring', icon: SignalIcon, permission: 'dashboard' },
-        { name: 'Pre-Shift Checklist', href: '/app/production/pre-shift-checklist', icon: ClipboardDocumentCheckIcon, permission: 'production' },
+        { name: 'Checklist Awal Shift', href: '/app/production/pre-shift-checklist', icon: ClipboardDocumentCheckIcon, permission: 'production' },
       ]
     },
     {
@@ -181,14 +173,14 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           permission: 'sales',
           children: [
             { name: 'Dashboard', href: '/app/sales/dashboard', icon: PresentationChartLineIcon },
-            { name: 'Customers', href: '/app/sales/customers', icon: UserGroupIcon, permission: 'customers' },
-            { name: 'Leads', href: '/app/sales/leads', icon: UserGroupIcon, permission: 'leads' },
-            { name: 'Opportunities', href: '/app/sales/opportunities', icon: ChartBarIcon },
-            { name: 'Quotations', href: '/app/sales/quotations', icon: DocumentTextIcon, permission: 'quotations' },
-            { name: 'Sales Orders', href: '/app/sales/orders', icon: ClipboardDocumentListIcon, permission: 'sales_orders' },
+            { name: 'Pelanggan', href: '/app/sales/customers', icon: UserGroupIcon, permission: 'customers' },
+            { name: 'Calon Pelanggan (Lead)', href: '/app/sales/leads', icon: UserGroupIcon, permission: 'leads' },
+            { name: 'Peluang Penjualan', href: '/app/sales/opportunities', icon: ChartBarIcon },
+            { name: 'Penawaran Harga', href: '/app/sales/quotations', icon: DocumentTextIcon, permission: 'quotations' },
+            { name: 'Pesanan Penjualan (SO)', href: '/app/sales/orders', icon: ClipboardDocumentListIcon, permission: 'sales_orders' },
             { name: 'Surat Jalan', href: '/app/shipping/orders', icon: TruckIcon, permission: 'shipping' },
             { name: 'Faktur Penjualan', href: '/app/finance/invoices?scope=sales', icon: ReceiptPercentIcon, permission: 'invoices' },
-            { name: 'Forecasts', href: '/app/sales/forecasts', icon: ChartPieIcon },
+            { name: 'Forecast Penjualan', href: '/app/sales/forecasts', icon: ChartPieIcon },
           ]
         },
         {
@@ -198,16 +190,16 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           permission: 'purchasing',
           children: [
             { name: 'Dashboard', href: '/app/purchasing', icon: PresentationChartLineIcon },
-            { name: 'Suppliers', href: '/app/purchasing/suppliers', icon: UserGroupIcon, permission: 'suppliers' },
-            { name: 'Requisition (PR)', href: '/app/purchasing/requisitions', icon: ClipboardDocumentListIcon },
-            { name: 'RFQ (Permintaan Penawaran)', href: '/app/purchasing/rfq', icon: EnvelopeIcon },
-            { name: 'Purchase Orders', href: '/app/purchasing/orders', icon: ArchiveBoxIcon, permission: 'purchase_orders' },
-            { name: 'Goods Receipt (GRN)', href: '/app/purchasing/grn', icon: DocumentCheckIcon },
-            { name: 'Invoice & 3-Way Match', href: '/app/purchasing/invoices', icon: ScaleIcon },
+            { name: 'Pemasok', href: '/app/purchasing/suppliers', icon: UserGroupIcon, permission: 'suppliers' },
+            { name: 'Permintaan Pembelian (PR)', href: '/app/purchasing/requisitions', icon: ClipboardDocumentListIcon },
+            { name: 'Permintaan Penawaran (RFQ)', href: '/app/purchasing/rfq', icon: EnvelopeIcon },
+            { name: 'Pesanan Pembelian (PO)', href: '/app/purchasing/orders', icon: ArchiveBoxIcon, permission: 'purchase_orders' },
+            { name: 'Penerimaan Barang (GRN)', href: '/app/purchasing/grn', icon: DocumentCheckIcon },
+            { name: 'Faktur Pembelian & Pencocokan', href: '/app/purchasing/invoices', icon: ScaleIcon },
             { name: 'Uang Muka Pembelian', href: '/app/purchasing/down-payments', icon: BanknotesIcon },
             { name: 'Retur Pembelian', href: '/app/purchasing/returns', icon: ArrowUturnLeftIcon },
-            { name: 'Contracts', href: '/app/purchasing/contracts', icon: BookOpenIcon },
-            { name: 'Price Comparison', href: '/app/purchasing/price-comparison', icon: ChartBarIcon },
+            { name: 'Kontrak Pemasok', href: '/app/purchasing/contracts', icon: BookOpenIcon },
+            { name: 'Perbandingan Harga', href: '/app/purchasing/price-comparison', icon: ChartBarIcon },
           ]
         },
         { name: 'Retur Penjualan', href: '/app/returns', icon: ArrowPathIcon, permission: 'returns' },
@@ -229,12 +221,12 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           icon: CubeIcon,
           permission: 'products',
           children: [
-            { name: 'All Products', href: '/app/products', icon: CubeIcon },
+            { name: 'Daftar Produk', href: '/app/products', icon: CubeIcon },
             { name: 'Dashboard', href: '/app/products/dashboard', icon: PresentationChartLineIcon },
-            { name: 'Analytics', href: '/app/products/analytics', icon: ChartPieIcon },
-            { name: 'Categories', href: '/app/products/categories', icon: ArchiveBoxIcon },
-            { name: 'Bill of Materials', href: '/app/products/bom', icon: ClipboardDocumentListIcon, permission: 'bom' },
-            { name: 'Lifecycle', href: '/app/products/lifecycle', icon: ArrowPathIcon },
+            { name: 'Analisa Produk', href: '/app/products/analytics', icon: ChartPieIcon },
+            { name: 'Kategori Produk', href: '/app/products/categories', icon: ArchiveBoxIcon },
+            { name: 'BOM (Bill of Materials)', href: '/app/products/bom', icon: ClipboardDocumentListIcon, permission: 'bom' },
+            { name: 'Siklus Hidup Produk', href: '/app/products/lifecycle', icon: ArrowPathIcon },
           ]
         },
         {
@@ -251,19 +243,19 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
               ]
             },
             {
-              name: 'Penyesuaian Stok', icon: AdjustmentsHorizontalIcon, isSubMenu: true, subChildren: [
+              name: 'Opname & Penyesuaian', icon: AdjustmentsHorizontalIcon, isSubMenu: true, subChildren: [
                 { name: 'Penyesuaian Stok', href: '/app/warehouse/adjustments' },
                 { name: 'Input Stok Manual', href: '/app/warehouse/stock-input' },
                 { name: 'Penambahan Bahan Baku', href: '/app/warehouse/inventory' },
                 { name: 'Perintah Opname', href: '/app/warehouse/stock-opname' },
                 { name: 'Hasil Opname', href: '/app/warehouse/stock-opname/results' },
-                { name: 'Cycle Count', href: '/app/wms/cycle-counts' },
+                { name: 'Hitung Siklus (Cycle Count)', href: '/app/wms/cycle-counts' },
               ]
             },
             {
               name: 'Barang & Gudang', icon: CubeIcon, isSubMenu: true, subChildren: [
-                { name: 'Barang & Material', href: '/app/warehouse/materials' },
-                { name: 'Daftar Material', href: '/app/warehouse/materials/list' },
+                { name: 'Dashboard Material', href: '/app/warehouse/materials' },
+                { name: 'Daftar Barang & Material', href: '/app/warehouse/materials/list' },
                 { name: 'Master Gudang', href: '/app/warehouse/zones' },
                 { name: 'Lokasi Gudang', href: '/app/warehouse/locations' },
                 { name: 'Satuan Barang', href: '/app/warehouse/uom' },
@@ -271,12 +263,12 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             },
             {
               name: 'Laporan', icon: DocumentChartBarIcon, isSubMenu: true, subChildren: [
-                { name: 'Barang per Gudang', href: '/app/warehouse/stock-summary' },
+                { name: 'Ringkasan Stok per Gudang', href: '/app/warehouse/stock-summary' },
                 { name: 'Mutasi Stok', href: '/app/warehouse/movements' },
                 { name: 'Nilai Persediaan', href: '/app/finance/reports/inventory-mutation' },
                 { name: 'Kuantitas Barang per Gudang', href: '/app/finance/reports/inventory-by-warehouse' },
                 { name: 'Stok Minimum', href: '/app/warehouse/alerts' },
-                { name: 'Analytics', href: '/app/warehouse/analytics' },
+                { name: 'Analisa Gudang', href: '/app/warehouse/analytics' },
               ]
             },
           ]
@@ -289,16 +281,18 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           children: [
             { name: 'Dashboard', href: '/app/production', icon: PresentationChartLineIcon },
             { name: 'SPK', description: 'Surat Perintah Kerja (Work Order)', href: '/app/production/work-orders', icon: ClipboardDocumentListIcon, permission: 'work_orders' },
+            { name: 'Stok WIP', href: '/app/production/wip-stock', icon: ArchiveBoxIcon },
+            { name: 'Persetujuan Produksi', href: '/app/production/approvals', icon: ClipboardDocumentCheckIcon },
             {
               name: 'Monitoring SPK', icon: ChartBarIcon, isSubMenu: true, subChildren: [
                 { name: 'Status Pengerjaan', href: '/app/production/work-order-status' },
-                { name: 'Monitoring Real-time SPK', href: '/app/production/work-orders-monitoring' },
+                { name: 'Monitoring SPK Real-time', href: '/app/production/work-orders-monitoring' },
               ]
             },
             {
-              name: 'Sumber Daya', icon: CogIcon, isSubMenu: true, subChildren: [
-                { name: 'Data Mesin', href: '/app/production/machines' },
-                { name: 'Work Center', href: '/app/production/work-center' },
+              name: 'Jadwal', icon: CalendarDaysIcon, isSubMenu: true, subChildren: [
+                { name: 'Jadwal Mingguan', href: '/app/production/scheduling' },
+                { name: 'Jadwal Bulanan', href: '/app/production/monthly-schedule' },
               ]
             },
             {
@@ -309,50 +303,48 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
               ]
             },
             {
-              name: 'Jadwal', icon: CalendarDaysIcon, isSubMenu: true, subChildren: [
-                { name: 'Mingguan', href: '/app/production/scheduling' },
-                { name: 'Bulanan', href: '/app/production/monthly-schedule' },
-              ]
-            },
-            {
               name: 'Proses Produksi', icon: ArrowsRightLeftIcon, isSubMenu: true, subChildren: [
                 { name: 'Converting', href: '/app/production/converting' },
                 { name: 'Konversi Barang Jadi', href: '/app/production/fg-conversion' },
-                { name: 'Changeover', href: '/app/production/changeovers' },
+                { name: 'Changeover Mesin', href: '/app/production/changeovers' },
               ]
             },
-            { name: 'WIP Stock', href: '/app/production/wip-stock', icon: ArchiveBoxIcon },
+            {
+              name: 'Batch', icon: CalendarDaysIcon, isSubMenu: true, subChildren: [
+                { name: 'Penjadwalan Batch', href: '/app/production/batch-scheduling' },
+                { name: 'Laporan Batch', href: '/app/production/batch-records' },
+                { name: 'Perencanaan Batch', href: '/app/production/batch-planning' },
+              ]
+            },
+            {
+              name: 'MRP', icon: CalculatorIcon, isSubMenu: true, permission: 'mrp', subChildren: [
+                { name: 'MRP Run', href: '/app/production/mrp-run' },
+                { name: 'Perencanaan Kebutuhan', href: '/app/production/demand-planning' },
+                { name: 'Kapasitas Produksi', href: '/app/production/capacity-planning' },
+              ]
+            },
             {
               name: 'WMS (Gudang Produksi)', icon: SparklesIcon, isSubMenu: true, subChildren: [
                 { name: 'Dashboard WMS', href: '/app/wms' },
                 { name: 'Stok per SPK', href: '/app/wms/stock-by-wo' },
                 { name: 'Konsumsi Material', href: '/app/wms/material-consumption' },
-                { name: 'Pick List', href: '/app/wms/pick-lists' },
+                { name: 'Daftar Ambil (Pick List)', href: '/app/wms/pick-lists' },
                 { name: 'Transfer Stok', href: '/app/wms/transfers' },
-                { name: 'Batch Traceability', href: '/app/wms/batch-traceability' },
+                { name: 'Telusur Batch', href: '/app/wms/batch-traceability' },
               ]
             },
             {
-              name: 'Batch', icon: CalendarDaysIcon, isSubMenu: true, subChildren: [
-                { name: 'Batch Scheduling', href: '/app/production/batch-scheduling' },
-                { name: 'Batch Report', href: '/app/production/batch-records' },
-                { name: 'Batch Planning', href: '/app/production/batch-planning' },
+              name: 'Sumber Daya', icon: CogIcon, isSubMenu: true, subChildren: [
+                { name: 'Data Mesin', href: '/app/production/machines' },
+                { name: 'Pusat Kerja (Work Center)', href: '/app/production/work-center' },
               ]
             },
-            {
-              name: 'MRP', icon: CalculatorIcon, isSubMenu: true, permission: 'mrp', subChildren: [
-                { name: 'MRP Run (Time-Phased)', href: '/app/production/mrp-run' },
-                { name: 'Demand Planning', href: '/app/production/demand-planning' },
-                { name: 'Capacity', href: '/app/production/capacity-planning' },
-              ]
-            },
-            { name: 'Approval', href: '/app/production/approvals', icon: ClipboardDocumentCheckIcon },
             {
               name: 'Laporan & Analisa', icon: DocumentChartBarIcon, isSubMenu: true, subChildren: [
                 { name: 'Sisa Order', href: '/app/production/remaining-stock' },
-                { name: 'Quality Objective', href: '/app/quality/objective/production' },
-                { name: 'Efficiency', href: '/app/production/efficiency' },
-                { name: 'Traceability', href: '/app/production/traceability' },
+                { name: 'Sasaran Mutu', href: '/app/quality/objective/production' },
+                { name: 'Efisiensi Produksi', href: '/app/production/efficiency' },
+                { name: 'Telusur Produksi', href: '/app/production/traceability' },
                 { name: 'Laporan Customer MBF', href: '/app/production/mbf-report' },
               ]
             },
@@ -369,8 +361,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'QC Dalam Proses', href: '/app/quality/in-process', icon: CogIcon },
             { name: 'QC Barang Jadi', href: '/app/quality/finish-good', icon: ClipboardDocumentCheckIcon },
             { name: 'Ubah Status Batch', href: '/app/quality/batch-status', icon: ArrowPathIcon },
-            { name: 'Analytics', href: '/app/quality/analytics', icon: ChartPieIcon },
-            { name: 'SPC', description: 'Statistical Process Control', href: '/app/quality/spc', icon: ChartBarIcon },
+            { name: 'Analisa Mutu', href: '/app/quality/analytics', icon: ChartPieIcon },
+            { name: 'SPC (Kendali Proses)', description: 'Statistical Process Control', href: '/app/quality/spc', icon: ChartBarIcon },
           ]
         },
       ]
@@ -387,21 +379,21 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           children: [
             { name: 'Dashboard', href: '/app/finance', icon: PresentationChartLineIcon },
             { name: 'Pencarian Transaksi', href: '/app/finance/search', icon: MagnifyingGlassIcon },
-            { name: 'Pusat Laporan', href: '/app/finance/reports', icon: DocumentChartBarIcon },
+            { name: 'Pusat Laporan Keuangan', href: '/app/finance/reports', icon: DocumentChartBarIcon },
             { name: 'Faktur Penjualan & Pembelian', href: '/app/finance/invoices', icon: DocumentTextIcon },
             { name: 'Laporan Penjualan', href: '/app/finance/sales-report', icon: DocumentTextIcon },
             { name: 'Umur Piutang & Hutang', href: '/app/finance/aging', icon: DocumentTextIcon },
-            { name: 'Nota Kredit Customer', href: '/app/finance/credit-memos', icon: DocumentTextIcon },
+            { name: 'Nota Kredit Pelanggan', href: '/app/finance/credit-memos', icon: DocumentTextIcon },
             { name: 'Penerimaan Penjualan', href: '/app/finance/penerimaan-penjualan', icon: BanknotesIcon },
             { name: 'Pembayaran Pembelian', href: '/app/finance/pembayaran-pembelian', icon: BanknotesIcon },
             { name: 'Penerimaan Kas/Bank', href: '/app/finance/penerimaan', icon: BanknotesIcon },
             { name: 'Pembayaran Kas/Bank', href: '/app/finance/pembayaran', icon: BanknotesIcon },
             { name: 'Rekap Uang Muka Lainnya', href: '/app/finance/rekap-uang-muka', icon: BanknotesIcon },
-            { name: 'Budget', href: '/app/finance/budget', icon: CurrencyDollarIcon },
-            { name: 'Cash Flow', href: '/app/finance/cash-flow', icon: ArrowsRightLeftIcon },
+            { name: 'Anggaran', href: '/app/finance/budget', icon: CurrencyDollarIcon },
+            { name: 'Arus Kas', href: '/app/finance/cash-flow', icon: ArrowsRightLeftIcon },
             { name: 'Klaim Biaya Karyawan', href: '/app/finance/expenses', icon: DocumentTextIcon, permission: 'expense' },
             { name: 'Tagihan Rutin', href: '/app/finance/recurring-payments', icon: CurrencyDollarIcon, permission: 'expense' },
-            { name: 'Approvals', href: '/app/approval', icon: DocumentCheckIcon, permission: 'approval' },
+            { name: 'Persetujuan Dokumen', href: '/app/approval', icon: DocumentCheckIcon, permission: 'approval' },
           ]
         },
         {
@@ -412,8 +404,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           children: [
             {
               name: 'Buku Besar', icon: DocumentTextIcon, isSubMenu: true, subChildren: [
-                { name: 'Chart of Accounts', href: '/app/accounting/chart-of-accounts' },
-                { name: 'General Ledger', href: '/app/accounting/general-ledger' },
+                { name: 'Daftar Akun (COA)', href: '/app/accounting/chart-of-accounts' },
+                { name: 'Buku Besar', href: '/app/accounting/general-ledger' },
                 { name: 'Jurnal Umum', href: '/app/accounting/journal' },
               ]
             },
@@ -423,11 +415,11 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                 { name: 'Utang Usaha', href: '/app/accounting/payable' },
               ]
             },
-            { name: 'Bank Reconciliation', href: '/app/accounting/bank-reconciliation', icon: ArrowsRightLeftIcon },
+            { name: 'Rekonsiliasi Bank', href: '/app/accounting/bank-reconciliation', icon: ArrowsRightLeftIcon },
             { name: 'Proses Akhir Bulan', href: '/app/accounting/period-close', icon: CalculatorIcon },
-            { name: 'Tax Management', href: '/app/accounting/tax', icon: ReceiptPercentIcon },
-            { name: 'WIP Ledger', href: '/app/finance/wip-ledger', icon: CubeIcon },
-            { name: 'Financial Reports', href: '/app/accounting/reports', icon: DocumentChartBarIcon },
+            { name: 'Pajak & e-Faktur', href: '/app/accounting/tax', icon: ReceiptPercentIcon },
+            { name: 'Buku Besar WIP', href: '/app/finance/wip-ledger', icon: CubeIcon },
+            { name: 'Laporan Keuangan', href: '/app/accounting/reports', icon: DocumentChartBarIcon },
           ]
         },
         {
@@ -437,8 +429,18 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           permission: 'hr',
           children: [
             { name: 'Dashboard', href: '/app/hr/dashboard', icon: PresentationChartLineIcon },
-            { name: 'Log Absensi Fingerprint', href: '/app/hr/fingerprint-attendance', icon: ClockIcon },
-            { name: 'Jadwal Kerja Absensi', href: '/app/hr/attendance-schedules', icon: ClockIcon },
+            // 2026-09-27: konsolidasi 2 sistem leave paralel (Leave vs
+            // StaffLeaveRequest) jadi satu - StaffLeaveRequest yang menang
+            // (office-location geofence + calendar + public submit sudah
+            // lebih matang), sekarang ditambah manager routing + ESS
+            // self-submit yang tadinya hanya ada di Leave. /hr/leaves
+            // (LeaveManagement) dipensiunkan, jangan dipakai lagi.
+            { name: 'Cuti', href: '/app/hr/staff-leave', icon: CalendarDaysIcon, permission: 'leave' },
+            { name: 'Roster Shift Produksi', href: '/app/hr/roster', icon: CalendarDaysIcon, permission: 'roster' },
+            { name: 'Penggajian (Payroll)', href: '/app/hr/payroll', icon: CurrencyDollarIcon, permission: 'payroll' },
+            { name: 'Kas Kecil', href: '/app/hr/petty-cash', icon: BanknotesIcon, permission: 'petty_cash' },
+            { name: 'Penilaian Kinerja', href: '/app/hr/appraisal', icon: ChartBarIcon, permission: 'appraisal' },
+            { name: 'Pelatihan', href: '/app/hr/training', icon: AcademicCapIcon, permission: 'training' },
             {
               name: 'Master Data Karyawan', icon: UserGroupIcon, isSubMenu: true, permission: 'employees', subChildren: [
                 { name: 'Karyawan', href: '/app/hr/employees' },
@@ -449,26 +451,16 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             {
               name: 'Absensi', icon: ClockIcon, isSubMenu: true, permission: 'attendance', subChildren: [
                 { name: 'Absensi (Foto)', href: '/app/hr/absensi' },
+                { name: 'Log Absensi Fingerprint', href: '/app/hr/fingerprint-attendance' },
+                { name: 'Pola Jadwal Absensi', href: '/app/hr/attendance-schedules' },
                 { name: 'Laporan Absensi', href: '/app/hr/attendance-report' },
                 { name: 'Belum Clock Out', href: '/app/hr/attendance-not-clocked-out' },
                 { name: 'Kelola Absensi', href: '/app/hr/attendance-admin' },
                 { name: 'Koreksi & Rekonsiliasi', href: '/app/hr/attendance-reconciliation' },
-                { name: 'Jadwal Kerja Staff Kantor', href: '/app/hr/work-schedules' },
+                { name: 'Jadwal Kerja Staf Kantor', href: '/app/hr/work-schedules' },
                 { name: 'Kelola Data Wajah', href: '/app/hr/face-admin' },
               ]
             },
-            // 2026-09-27: konsolidasi 2 sistem leave paralel (Leave vs
-            // StaffLeaveRequest) jadi satu - StaffLeaveRequest yang menang
-            // (office-location geofence + calendar + public submit sudah
-            // lebih matang), sekarang ditambah manager routing + ESS
-            // self-submit yang tadinya hanya ada di Leave. /hr/leaves
-            // (LeaveManagement) dipensiunkan, jangan dipakai lagi.
-            { name: 'Cuti', href: '/app/hr/staff-leave', icon: CalendarDaysIcon, permission: 'leave' },
-            { name: 'Jadwal Kerja (Roster)', href: '/app/hr/roster', icon: CalendarDaysIcon, permission: 'roster' },
-            { name: 'Payroll', href: '/app/hr/payroll', icon: CurrencyDollarIcon, permission: 'payroll' },
-            { name: 'Kas Kecil', href: '/app/hr/petty-cash', icon: BanknotesIcon, permission: 'petty_cash' },
-            { name: 'Penilaian Kinerja', href: '/app/hr/appraisal', icon: ChartBarIcon, permission: 'appraisal' },
-            { name: 'Pelatihan', href: '/app/hr/training', icon: AcademicCapIcon, permission: 'training' },
             { name: 'Laporan HR', href: '/app/hr/reports', icon: DocumentChartBarIcon, permission: 'hr' },
           ]
         },
@@ -487,10 +479,10 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           permission: 'shipping',
           children: [
             { name: 'Dashboard', href: '/app/shipping', icon: PresentationChartLineIcon },
-            { name: 'Orders', href: '/app/shipping/orders', icon: ClipboardDocumentListIcon },
-            { name: 'Tracking', href: '/app/shipping/tracking', icon: MapPinIcon },
-            { name: 'Cost Calculator', href: '/app/shipping/calculator', icon: CalculatorIcon },
-            { name: 'Providers', href: '/app/shipping/providers', icon: TruckIcon },
+            { name: 'Surat Jalan', href: '/app/shipping/orders', icon: ClipboardDocumentListIcon },
+            { name: 'Pelacakan Kiriman', href: '/app/shipping/tracking', icon: MapPinIcon },
+            { name: 'Kalkulator Ongkos Kirim', href: '/app/shipping/calculator', icon: CalculatorIcon },
+            { name: 'Ekspedisi', href: '/app/shipping/providers', icon: TruckIcon },
           ]
         },
       ]
@@ -507,10 +499,10 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           children: [
             { name: 'Dashboard', href: '/app/assets', icon: PresentationChartLineIcon },
             { name: 'Daftar Aset', href: '/app/assets/list', icon: ClipboardDocumentListIcon },
-            { name: 'Spare Parts', href: '/app/assets/spare-parts', icon: WrenchScrewdriverIcon },
-            { name: 'Penyusutan', href: '/app/assets/depreciation', icon: CurrencyDollarIcon },
+            { name: 'Sparepart Aset', href: '/app/assets/spare-parts', icon: WrenchScrewdriverIcon },
+            { name: 'Penyusutan Aset', href: '/app/assets/depreciation', icon: CurrencyDollarIcon },
             { name: 'Tambah Aset', href: '/app/assets/new', icon: ClipboardDocumentCheckIcon },
-            { name: 'Functional Location', description: 'Hierarki lokasi Plant > Building > Line untuk penempatan aset/mesin', href: '/app/assets/functional-locations', icon: WrenchScrewdriverIcon },
+            { name: 'Lokasi Fungsional', description: 'Hierarki lokasi Plant > Building > Line untuk penempatan aset/mesin', href: '/app/assets/functional-locations', icon: WrenchScrewdriverIcon },
           ]
         },
         {
@@ -520,14 +512,18 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           permission: 'maintenance',
           children: [
             { name: 'Dashboard', href: '/app/maintenance', icon: PresentationChartLineIcon },
-            { name: 'SPK', description: 'Surat Perintah Kerja (Work Order) Maintenance', href: '/app/maintenance/records', icon: ClipboardDocumentListIcon },
-            { name: 'Jadwal', href: '/app/maintenance/schedules', icon: CalendarDaysIcon },
-            { name: 'Gudang Sparepart', href: '/app/maintenance/spare-parts', icon: CubeIcon },
+            { name: 'SPK Perawatan', description: 'Surat Perintah Kerja (Work Order) Maintenance', href: '/app/maintenance/records', icon: ClipboardDocumentListIcon },
+            { name: 'Jadwal Perawatan', href: '/app/maintenance/schedules', icon: CalendarDaysIcon },
             { name: 'Checklist Barang Reject (NG)', href: '/app/maintenance/checklist-ng', icon: ExclamationTriangleIcon },
-            { name: 'New Request', href: '/app/maintenance/request/new', icon: ClipboardDocumentCheckIcon },
-            { name: 'Sparepart per Mesin', href: '/app/maintenance/machine-parts', icon: CogIcon },
-            { name: 'Permintaan Sparepart', href: '/app/maintenance/spare-part-requests', icon: ClipboardDocumentListIcon },
-            { name: 'Analytics', href: '/app/maintenance/analytics', icon: ChartPieIcon },
+            { name: 'Buat Permintaan Perawatan', href: '/app/maintenance/request/new', icon: ClipboardDocumentCheckIcon },
+            {
+              name: 'Sparepart', icon: CubeIcon, isSubMenu: true, subChildren: [
+                { name: 'Gudang Sparepart', href: '/app/maintenance/spare-parts' },
+                { name: 'Sparepart per Mesin', href: '/app/maintenance/machine-parts' },
+                { name: 'Permintaan Sparepart', href: '/app/maintenance/spare-part-requests' },
+              ]
+            },
+            { name: 'Analisa Perawatan', href: '/app/maintenance/analytics', icon: ChartPieIcon },
           ]
         },
         {
@@ -538,12 +534,12 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           children: [
             { name: 'Dashboard', href: '/app/rnd', icon: PresentationChartLineIcon },
             { name: 'Proyek', href: '/app/rnd/projects', icon: ClipboardDocumentListIcon },
-            { name: 'Approvals', href: '/app/rnd/approvals', icon: CheckCircleIcon },
+            { name: 'Persetujuan R&D', href: '/app/rnd/approvals', icon: CheckCircleIcon },
           ]
         },
-        { name: 'Waste Management', href: '/app/waste', icon: TrashIcon, permission: 'waste' },
-        { name: 'OEE Monitoring', description: 'Overall Equipment Effectiveness', href: '/app/oee', icon: ChartBarIcon, permission: 'oee' },
-        { name: 'Early Warning System', href: '/app/ews', icon: ExclamationTriangleIcon, permission: 'oee' },
+        { name: 'Manajemen Waste', href: '/app/waste', icon: TrashIcon, permission: 'waste' },
+        { name: 'Monitoring OEE', description: 'Overall Equipment Effectiveness', href: '/app/oee', icon: ChartBarIcon, permission: 'oee' },
+        { name: 'Peringatan Dini (EWS)', href: '/app/ews', icon: ExclamationTriangleIcon, permission: 'oee' },
       ]
     },
     {
@@ -586,13 +582,13 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           icon: DocumentTextIcon,
           permission: 'documents',
           subItems: [
-            { name: 'All Documents', href: '/app/documents' },
-            { name: 'Generate', href: '/app/documents/generate' },
-            { name: 'Templates', href: '/app/documents/templates', permission: 'templates' }
+            { name: 'Daftar Dokumen', href: '/app/documents' },
+            { name: 'Buat Dokumen', href: '/app/documents/generate' },
+            { name: 'Template Dokumen', href: '/app/documents/templates', permission: 'templates' }
           ]
         },
         { name: 'TV Display', href: '/app/tv-display', icon: TvIcon, permission: 'tv_display' },
-        { name: 'Group Chat', href: '/app/chat', icon: ChatBubbleLeftRightIcon },
+        { name: 'Obrolan Grup', href: '/app/chat', icon: ChatBubbleLeftRightIcon },
         {
           name: 'User Manual',
           href: '/app/manual',
@@ -621,6 +617,27 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
   const searching = menuQuery.length > 0
   const menuHits = searching ? searchMenu(menuQuery) : []
   setMenuEntries(flattenMenu(allMenuGroups as any[], itemAllowed))
+
+  // Penanda menu aktif: hanya menu dengan jalur TERPANJANG yang cocok yang disorot, supaya
+  // "Dashboard" (/app/finance) tidak ikut menyala saat membuka /app/finance/pembayaran-pembelian.
+  const normalizePath = (href: string) => (href.split('?')[0].replace(/\/+$/, '') || '/')
+  const currentPath = normalizePath(location.pathname)
+  const currentQuery = location.search.replace(/^\?/, '')
+  const menuPaths = getMenuEntries().map((e) => ({ base: normalizePath(e.href), query: e.href.split('?')[1] || '' }))
+  const activeBase = menuPaths.reduce((best, m) => (
+    (currentPath === m.base || currentPath.startsWith(m.base === '/' ? '/' : `${m.base}/`)) && m.base.length > best.length ? m.base : best
+  ), '')
+  const isActivePath = (href?: string) => {
+    if (!href) return false
+    const base = normalizePath(href)
+    if (base !== activeBase) return false
+    const query = href.split('?')[1] || ''
+    if (query) return currentQuery === query
+    // Menu tanpa query tidak aktif bila ada menu lain dengan query yang persis cocok (mis. Faktur Penjualan ?scope=sales).
+    return !menuPaths.some((m) => m.base === base && m.query && m.query === currentQuery)
+  }
+  const hasActiveChild = (node: any): boolean =>
+    [...(node.children || []), ...(node.subChildren || [])].some((c: any) => isActivePath(c.href) || hasActiveChild(c))
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems(prev =>
@@ -722,31 +739,33 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                               }}
                               title={collapsed ? item.name : undefined}
                               className={clsx(
-                                isExpanded(item.name.toLowerCase()) && !collapsed
-                                  ? 'bg-primary-600 text-white shadow-sm'
-                                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
+                                hasActiveChild(item)
+                                  ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-200'
+                                  : isExpanded(item.name.toLowerCase()) && !collapsed
+                                    ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
+                                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                 'group flex w-full items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150',
                                 collapsed && 'justify-center px-0'
                               )}
                             >
                               <item.icon className={clsx(
                                 'h-5 w-5 shrink-0 transition-colors duration-150',
-                                isExpanded(item.name.toLowerCase()) && !collapsed
-                                  ? 'text-white'
+                                isExpanded(item.name.toLowerCase()) && !collapsed || hasActiveChild(item)
+                                  ? 'text-current'
                                   : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-200'
                               )} aria-hidden="true" strokeWidth={isExpanded(item.name.toLowerCase()) ? 2 : 1.5} />
                               {!collapsed && (
                                 <>
                                   <span className={clsx(
                                     'flex-1 text-left',
-                                    isExpanded(item.name.toLowerCase())
-                                      ? 'text-white'
+                                    isExpanded(item.name.toLowerCase()) || hasActiveChild(item)
+                                      ? 'text-current'
                                       : 'text-gray-600 dark:text-gray-300'
                                   )}>{item.name}</span>
                                   <ChevronDownIcon className={clsx(
                                     'h-4 w-4 shrink-0 transition-transform duration-200',
                                     isExpanded(item.name.toLowerCase())
-                                      ? 'rotate-180 text-white'
+                                      ? 'rotate-180 text-current'
                                       : 'text-gray-300 dark:text-gray-600 group-hover:text-gray-600 dark:group-hover:text-gray-300'
                                   )} />
                                 </>
@@ -756,7 +775,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                             {/* Submenu */}
                             <div className={clsx(
                               'overflow-hidden transition-all duration-200',
-                              !collapsed && isExpanded(item.name.toLowerCase()) ? 'max-h-[800px] opacity-100 mt-1' : 'max-h-0 opacity-0'
+                              !collapsed && (isExpanded(item.name.toLowerCase()) || hasActiveChild(item)) ? 'max-h-[800px] opacity-100 mt-1' : 'max-h-0 opacity-0'
                             )}>
                               <ul className="ml-4 border-l border-gray-200 dark:border-gray-700 pl-3 space-y-0.5">
                                 {item.children
@@ -769,51 +788,49 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                           <button
                                             onClick={() => toggleExpanded(`${item.name}-${child.name}`.toLowerCase())}
                                             className={clsx(
-                                              isExpanded(`${item.name}-${child.name}`.toLowerCase())
-                                                ? 'bg-primary-600 text-white shadow-sm'
-                                                : 'text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
+                                              hasActiveChild(child)
+                                                ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-200'
+                                                : isExpanded(`${item.name}-${child.name}`.toLowerCase())
+                                                  ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
+                                                  : 'text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                               'group flex w-full items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm font-medium transition-colors duration-150'
                                             )}
                                           >
                                             {child.icon && (
                                               <child.icon className={clsx(
                                                 'h-4 w-4 shrink-0',
-                                                isExpanded(`${item.name}-${child.name}`.toLowerCase()) ? 'text-white' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'
+                                                isExpanded(`${item.name}-${child.name}`.toLowerCase()) || hasActiveChild(child) ? 'text-current' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'
                                               )} />
                                             )}
                                             <span className="flex-1 text-left">{child.name}</span>
                                             <ChevronDownIcon className={clsx(
                                               'h-3.5 w-3.5 shrink-0 transition-transform duration-200',
-                                              isExpanded(`${item.name}-${child.name}`.toLowerCase()) ? 'rotate-180 text-white' : 'text-gray-300 dark:text-gray-600 group-hover:text-gray-500'
+                                              isExpanded(`${item.name}-${child.name}`.toLowerCase()) ? 'rotate-180 text-current' : 'text-gray-300 dark:text-gray-600 group-hover:text-gray-500'
                                             )} />
                                           </button>
                                           <div className={clsx(
                                             'overflow-hidden transition-all duration-200',
-                                            isExpanded(`${item.name}-${child.name}`.toLowerCase()) ? 'max-h-64 opacity-100 mt-0.5' : 'max-h-0 opacity-0'
+                                            isExpanded(`${item.name}-${child.name}`.toLowerCase()) || hasActiveChild(child) ? 'max-h-64 opacity-100 mt-0.5' : 'max-h-0 opacity-0'
                                           )}>
                                             <ul className="ml-4 border-l border-gray-200 dark:border-gray-700 pl-3 space-y-0.5">
                                               {child.subChildren?.map((subChild: any) => (
                                                 <li key={subChild.name}>
                                                   <NavLink
                                                     to={subChild.href}
-                                                    className={({ isActive }) =>
+                                                    className={
                                                       clsx(
-                                                        isActive
+                                                        isActivePath(subChild.href)
                                                           ? 'bg-primary-600 text-white shadow-sm'
                                                           : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800',
                                                         'group flex items-center gap-x-2 rounded-lg py-1.5 px-2.5 text-[13px] transition-colors duration-150'
                                                       )
                                                     }
                                                   >
-                                                    {({ isActive }) => (
-                                                      <>
-                                                        <span className={clsx(
-                                                          'h-1 w-1 rounded-full shrink-0 transition-colors duration-150',
-                                                          isActive ? 'bg-white dark:bg-gray-800' : 'bg-gray-300 dark:bg-gray-600 group-hover:bg-primary-600'
-                                                        )} />
-                                                        <span className="truncate">{subChild.name}</span>
-                                                      </>
-                                                    )}
+                                                    <span className={clsx(
+                                                      'h-1 w-1 rounded-full shrink-0 transition-colors duration-150',
+                                                      isActivePath(subChild.href) ? 'bg-white dark:bg-gray-800' : 'bg-gray-300 dark:bg-gray-600 group-hover:bg-primary-600'
+                                                    )} />
+                                                    <span className="truncate">{subChild.name}</span>
                                                   </NavLink>
                                                 </li>
                                               ))}
@@ -826,7 +843,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                           <button
                                             onClick={() => navigate(child.href)}
                                             className={clsx(
-                                              isActiveHref(child.href)
+                                              isActivePath(child.href)
                                                 ? 'bg-primary-600 text-white shadow-sm'
                                                 : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                               'group flex items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm transition-colors duration-150 w-full text-left'
@@ -839,9 +856,9 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                           <NavLink
                                             to={child.href}
                                             title={child.description}
-                                            className={({ isActive }) =>
+                                            className={
                                               clsx(
-                                                isActive
+                                                isActivePath(child.href)
                                                   ? 'bg-primary-600 text-white shadow-sm'
                                                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                                 'group flex items-center gap-x-2.5 rounded-lg py-2 px-2.5 text-sm transition-colors duration-150'
@@ -864,9 +881,9 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                             to={item.href}
                             end
                             title={item.description || (collapsed ? item.name : undefined)}
-                            className={({ isActive }) =>
+                            className={
                               clsx(
-                                isActive
+                                isActivePath(item.href)
                                   ? 'bg-primary-600 text-white shadow-sm'
                                   : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
                                 'group flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150',
@@ -874,12 +891,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                               )
                             }
                           >
-                            {({ isActive }) => (
-                              <>
-                                <item.icon className="h-5 w-5 shrink-0 transition-colors duration-150" strokeWidth={isActive ? 2 : 1.5} aria-hidden="true" />
-                                {!collapsed && item.name}
-                              </>
-                            )}
+                            <item.icon className="h-5 w-5 shrink-0 transition-colors duration-150" strokeWidth={isActivePath(item.href) ? 2 : 1.5} aria-hidden="true" />
+                            {!collapsed && item.name}
                           </NavLink>
                         )}
                       </li>
