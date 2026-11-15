@@ -5,7 +5,10 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux'
 import { logout } from '../../store/slices/authSlice'
 import ThemeToggle from '../Common/ThemeToggle'
-import { flattenMenu, setMenuEntries } from '../../utils/menuIndex'
+import SidebarSearch from './SidebarSearch'
+import SidebarSearchResults from './SidebarSearchResults'
+import { flattenMenu, searchMenu, setMenuEntries } from '../../utils/menuIndex'
+import { useDataSearch } from '../../hooks/useDataSearch'
 import {
   AdjustmentsHorizontalIcon,
   ArrowPathIcon,
@@ -77,6 +80,7 @@ interface SidebarProps {
 function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: boolean; onToggleCollapse?: () => void }) {
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const [menuSearch, setMenuSearch] = useState('')
+  const { hits: dataHits, loading: dataLoading } = useDataSearch(menuSearch)
   // Kalau sidebar dilebarkan otomatis gara-gara user klik menu-bersubmenu waktu lagi
   // collapsed, begitu user pilih 1 item di dalamnya (navigasi pindah halaman), otomatis
   // ciut lagi balik - user tidak perlu klik panah manual tiap kali (masukan 2026-08-25).
@@ -607,12 +611,16 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
   ]
 
   const menuGroups = allMenuGroups
-  setMenuEntries(flattenMenu(allMenuGroups as any[], (item: any) => {
+  const itemAllowed = (item: any) => {
     if (item.superAdminOnly && !isSuperAdmin) return false
     if (item.adminOnly && !isAdmin && !isSuperAdmin) return false
     if (item.permission && !canView(item.permission)) return false
     return true
-  }))
+  }
+  const menuQuery = menuSearch.trim()
+  const searching = menuQuery.length > 0
+  const menuHits = searching ? searchMenu(menuQuery) : []
+  setMenuEntries(flattenMenu(allMenuGroups as any[], itemAllowed))
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems(prev =>
@@ -663,35 +671,26 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
         </button>
       )}
 
-      {/* Search menu */}
-      {!collapsed && (
-        <div className="relative shrink-0">
-          <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
-          <input
-            type="text"
-            value={menuSearch}
-            onChange={(e) => { const v = e.target.value; setMenuSearch(''); window.dispatchEvent(new CustomEvent('erp-open-palette', { detail: { q: v } })) }}
-            placeholder="Cari menu... (Ctrl+K)"
-            className="w-full pl-8 pr-2 py-2 text-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-primary-600/50 focus:bg-gray-50 dark:focus:bg-gray-700"
-          />
-        </div>
-      )}
+      {/* Pencarian: menu disaring di sidebar, hasil data tampil sebagai dropdown */}
+      {!collapsed && <SidebarSearch value={menuSearch} onChange={setMenuSearch} loading={dataLoading} />}
 
       <nav className="flex flex-1 flex-col" role="navigation" aria-label="Menu utama">
+        {searching ? (
+          <SidebarSearchResults
+            query={menuQuery}
+            menuHits={menuHits}
+            dataHits={dataHits}
+            loading={dataLoading}
+            onPick={() => setMenuSearch('')}
+          />
+        ) : (
         <div className="space-y-5">
           {menuGroups
             .filter((group: any) => group.show === undefined || group.show)
             .map((group: any) => {
               // Filter items based on permission and admin status
               const q = menuSearch.trim().toLowerCase()
-              const visibleItems = group.items.filter((item: any) => {
-                // If item requires super admin, check isSuperAdmin
-                if (item.superAdminOnly && !isSuperAdmin) return false
-                if (item.adminOnly && !isAdmin && !isSuperAdmin) return false
-                // Check permission
-                if (item.permission && !canView(item.permission)) return false
-                return !q || itemMatchesSearch(item, q)
-              })
+              const visibleItems = group.items.filter((item: any) => itemAllowed(item) && (!q || itemMatchesSearch(item, q)))
 
               if (visibleItems.length === 0) return null
 
@@ -890,6 +889,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
               )
             })}
         </div>
+        )}
       </nav>
 
       {/* Footer with Theme Toggle, Profile & Logout */}

@@ -5,7 +5,6 @@ import Header from './Header'
 import Breadcrumb from '../ui/Breadcrumb'
 import { BreadcrumbTrailProvider } from '../ui/BreadcrumbTrail'
 import SkipLink from '../ui/SkipLink'
-import CommandPalette from './CommandPalette'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import KeyboardShortcutsModal from '../Common/KeyboardShortcutsModal'
 import { WorkspaceProvider } from '../../workspace/WorkspaceContext'
@@ -103,7 +102,6 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <ForcePasswordChange />
-      <CommandPalette />
       {/* Skip Link for keyboard navigation */}
       <SkipLink href="#main-content" />
 

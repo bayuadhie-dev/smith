@@ -18,7 +18,10 @@ export function useKeyboardShortcuts() {
       {
         key: 'k',
         ctrlKey: true,
-        action: () => { window.dispatchEvent(new Event('erp-open-palette')) },
+        action: () => {
+          const input = document.querySelector('input[aria-label="Cari menu atau data"]') as HTMLInputElement | null
+          if (input) { input.focus(); input.select() } else { navigate('/app/search') }
+        },
         description: 'Pencarian cepat (menu dan data)'
       },
       {
