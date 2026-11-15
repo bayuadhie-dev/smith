@@ -45,10 +45,11 @@ export default function CommandPalette() {
     if (!open || term.length < 2) { setData([]); setLoading(false); return }
     let cancelled = false
     setLoading(true)
-    axiosInstance.get('/api/search/global', { params: { q: term, limit: 8 } })
+    axiosInstance.get('/api/search/global', { params: { q: term, limit: 60 } })
       .then((r) => {
         if (cancelled) return
-        setData((r.data?.data?.results || []).map((x: any) => ({
+        const perType: Record<string, number> = {}
+        setData((r.data?.data?.results || []).filter((x: any) => { perType[x.type] = (perType[x.type] || 0) + 1; return perType[x.type] <= 4 }).slice(0, 24).map((x: any) => ({
           key: `d-${x.type}-${x.id}`, kind: 'data' as const, title: x.title, subtitle: x.subtitle, module: x.module, href: x.url, type: x.type,
         })))
       })
