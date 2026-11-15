@@ -5,6 +5,7 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux'
 import { logout } from '../../store/slices/authSlice'
 import ThemeToggle from '../Common/ThemeToggle'
+import { flattenMenu, setMenuEntries } from '../../utils/menuIndex'
 import {
   AdjustmentsHorizontalIcon,
   ArrowPathIcon,
@@ -606,6 +607,12 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
   ]
 
   const menuGroups = allMenuGroups
+  setMenuEntries(flattenMenu(allMenuGroups as any[], (item: any) => {
+    if (item.superAdminOnly && !isSuperAdmin) return false
+    if (item.adminOnly && !isAdmin && !isSuperAdmin) return false
+    if (item.permission && !canView(item.permission)) return false
+    return true
+  }))
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems(prev =>
@@ -664,7 +671,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             type="text"
             value={menuSearch}
             onChange={(e) => setMenuSearch(e.target.value)}
-            placeholder="Cari menu..."
+            placeholder="Cari menu... (Ctrl+K)"
             className="w-full pl-8 pr-2 py-2 text-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-primary-600/50 focus:bg-gray-50 dark:focus:bg-gray-700"
           />
         </div>

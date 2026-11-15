@@ -192,7 +192,7 @@ def global_search():
                         'title': po.po_number,
                         'subtitle': f'Status: {po.status}',
                         'description': po.notes or '',
-                        'url': f'/app/purchasing/orders/{po.id}',
+                        'url': f'/app/purchasing/purchase-orders/{po.id}',
                         'icon': 'shopping-bag',
                         'color': 'orange',
                         'metadata': {
@@ -292,6 +292,35 @@ def global_search():
             except Exception as e:
                 print(f"Error searching documents: {e}")
         
+        # Dokumen transaksi lain: faktur, surat jalan, penerimaan barang
+        like = f'%{query}%'
+        if module_filter in ['all', 'finance'] and _can_view('invoices', perms, bypass):
+            try:
+                from models.finance import Invoice
+                for inv in Invoice.query.filter(or_(Invoice.invoice_number.ilike(like))).order_by(Invoice.id.desc()).limit(limit).all():
+                    sales = inv.invoice_type == 'sales'
+                    results.append({'id': inv.id, 'type': 'Faktur Penjualan' if sales else 'Faktur Pembelian', 'module': 'finance',
+                                    'title': inv.invoice_number, 'subtitle': f'Status: {inv.status}',
+                                    'url': f'/app/sales/invoices/{inv.id}' if sales else f'/app/purchasing/invoices/{inv.id}'})
+            except Exception as e:
+                print(f"Error searching invoices: {e}")
+        if module_filter in ['all', 'shipping'] and _can_view('shipping', perms, bypass):
+            try:
+                from models.shipping import ShippingOrder
+                for so in ShippingOrder.query.filter(or_(ShippingOrder.shipping_number.ilike(like), ShippingOrder.tracking_number.ilike(like))).order_by(ShippingOrder.id.desc()).limit(limit).all():
+                    results.append({'id': so.id, 'type': 'Surat Jalan', 'module': 'shipping', 'title': so.shipping_number,
+                                    'subtitle': f'Status: {so.status}', 'url': f'/app/shipping/orders/{so.id}'})
+            except Exception as e:
+                print(f"Error searching shipping: {e}")
+        if module_filter in ['all', 'purchasing'] and _can_view('purchase_orders', perms, bypass):
+            try:
+                from models.purchasing import GoodsReceivedNote
+                for g in GoodsReceivedNote.query.filter(or_(GoodsReceivedNote.grn_number.ilike(like))).order_by(GoodsReceivedNote.id.desc()).limit(limit).all():
+                    results.append({'id': g.id, 'type': 'Penerimaan Barang', 'module': 'purchasing', 'title': g.grn_number,
+                                    'subtitle': f'Status: {g.status}', 'url': f'/app/purchasing/grn/{g.id}'})
+            except Exception as e:
+                print(f"Error searching GRN: {e}")
+
         # Sort results by relevance (exact matches first)
         def relevance_score(result):
             title_lower = result['title'].lower()

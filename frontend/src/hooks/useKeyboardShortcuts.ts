@@ -18,16 +18,8 @@ export function useKeyboardShortcuts() {
       {
         key: 'k',
         ctrlKey: true,
-        action: () => {
-          // Focus search input or navigate to search
-          const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement
-          if (searchInput) {
-            searchInput.focus()
-          } else {
-            navigate('/app/search')
-          }
-        },
-        description: 'Quick search'
+        action: () => { window.dispatchEvent(new Event('erp-open-palette')) },
+        description: 'Pencarian cepat (menu dan data)'
       },
       {
         key: 'h',
