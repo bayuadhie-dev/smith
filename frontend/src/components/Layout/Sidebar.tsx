@@ -670,7 +670,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           <input
             type="text"
             value={menuSearch}
-            onChange={(e) => setMenuSearch(e.target.value)}
+            onChange={(e) => { const v = e.target.value; setMenuSearch(''); window.dispatchEvent(new CustomEvent('erp-open-palette', { detail: { q: v } })) }}
             placeholder="Cari menu... (Ctrl+K)"
             className="w-full pl-8 pr-2 py-2 text-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-primary-600/50 focus:bg-gray-50 dark:focus:bg-gray-700"
           />

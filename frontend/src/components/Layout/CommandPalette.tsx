@@ -29,7 +29,7 @@ export default function CommandPalette() {
   const listRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const onOpen = () => { setOpen(true); setQ(''); setData([]); setActive(0) }
+    const onOpen = (e: Event) => { setOpen(true); setQ((e as CustomEvent)?.detail?.q || ''); setData([]); setActive(0) }
     window.addEventListener(OPEN_PALETTE_EVENT, onOpen)
     return () => window.removeEventListener(OPEN_PALETTE_EVENT, onOpen)
   }, [])
