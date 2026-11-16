@@ -36,7 +36,6 @@ from .fingerprint import FingerprintUser, FingerprintLog, AttendanceSchedule, At
 from .record_attachment import RecordAttachment
 from .purchase_down_payment import PurchaseDownPayment, PurchaseDownPaymentAllocation
 from .spare_part_ext import MachineSparePart, SparePartRequest, SparePartRequestItem, MaintenanceSchedulePart
-from .rd import ResearchProject, Experiment, ProductDevelopment, RDMaterial, ResearchReport, Prototype, ProductTestResult
 from .rnd import (
     RNDProject, RNDFormula, RNDFormulaItem, RNDExperiment, 
     RNDApprovalLog, RNDConversionRecord,
@@ -151,7 +150,6 @@ __all__ = [
     # Asset Management models
     'Asset', 'DepreciationSchedule', 'AssetTransfer', 'AssetValuation', 'SparePart', 'SparePartMovement', 'FingerprintUser', 'FingerprintLog', 'AttendanceSchedule', 'AttendanceAdjustment', 'PurchaseDownPayment', 'RecordAttachment', 'NotificationPreference', 'PurchaseDownPaymentAllocation', 'MachineSparePart', 'SparePartRequest', 'SparePartRequestItem', 'MaintenanceSchedulePart',
     # R&D models (legacy)
-    'ResearchProject', 'Experiment', 'ProductDevelopment', 'RDMaterial', 'ResearchReport', 'Prototype', 'ProductTestResult',
     # RND models (new)
     'RNDProject', 'RNDFormula', 'RNDFormulaItem', 'RNDExperiment', 'RNDApprovalLog', 'RNDConversionRecord',
     'RNDProjectStage', 'RNDApprovalStatus', 'RNDExperimentStatus',

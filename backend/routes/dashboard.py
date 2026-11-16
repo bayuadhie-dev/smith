@@ -10,7 +10,7 @@ from models.finance import Invoice, Payment
 from models.hr import Employee, EmployeeRoster
 from models.returns import CustomerReturn
 from models.waste import WasteRecord
-from models.rd import ResearchProject
+from models.rnd import RNDProject, RNDProjectStage
 from sqlalchemy import func, desc, and_
 from datetime import datetime, timedelta, date
 import json
@@ -326,8 +326,8 @@ def get_executive_dashboard():
         
         # R&D
         try:
-            active_projects = ResearchProject.query.filter(
-                ResearchProject.status.in_(['planning', 'in_progress', 'testing'])
+            active_projects = RNDProject.query.filter(
+                RNDProject.stage.in_(RNDProjectStage.active_stages())
             ).count()
         except:
             active_projects = 0

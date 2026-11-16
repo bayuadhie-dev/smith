@@ -17,7 +17,6 @@ def register_routes(app):
     from .finance import finance_bp
     from .hr import hr_bp
     from .maintenance import maintenance_bp
-    from .rd import rd_bp
     from .waste import waste_bp
     from .oee import oee_bp
     from .ews import ews_bp
@@ -63,7 +62,6 @@ def register_routes(app):
     app.register_blueprint(finance_bp, url_prefix='/api/finance')
     app.register_blueprint(hr_bp, url_prefix='/api/hr')
     app.register_blueprint(maintenance_bp, url_prefix='/api/maintenance')
-    app.register_blueprint(rd_bp, url_prefix='/api/rd')
     app.register_blueprint(waste_bp, url_prefix='/api/waste')
     app.register_blueprint(oee_bp, url_prefix='/api/oee')
     app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
