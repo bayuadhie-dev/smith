@@ -2,16 +2,7 @@ import { NavLink } from 'react-router-dom'
 import clsx from 'clsx'
 import type { DataHit } from '../../hooks/useDataSearch'
 import type { MenuEntry } from '../../utils/menuIndex'
-
-/** Nama jenis data dari API pencarian, dalam Bahasa Indonesia. */
-const TYPE_LABEL: Record<string, string> = {
-  'Work Order': 'SPK',
-  Product: 'Produk',
-  Customer: 'Pelanggan',
-  Supplier: 'Pemasok',
-  Employee: 'Karyawan',
-  Document: 'Dokumen',
-}
+import { typeLabel } from '../../utils/searchTypes'
 
 const Header = ({ children }: { children: React.ReactNode }) => (
   <div className="mb-1 mt-1 flex items-center gap-2 px-3">
@@ -80,7 +71,7 @@ export default function SidebarSearchResults({ query, menuHits, dataHits, loadin
           <ul className="space-y-0.5">
             {groups.map((g) => (
               <li key={g.type}>
-                <p className="px-3 pb-0.5 pt-1.5 text-[11px] font-semibold text-gray-400 dark:text-gray-500">{TYPE_LABEL[g.type] || g.type}</p>
+                <p className="px-3 pb-0.5 pt-1.5 text-[11px] font-semibold text-gray-400 dark:text-gray-500">{typeLabel(g.type)}</p>
                 <ul className="space-y-0.5">
                   {g.items.map((h) => (
                     <li key={`${h.type}-${h.id}`}>

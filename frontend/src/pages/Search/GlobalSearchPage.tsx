@@ -5,6 +5,8 @@ import {
   MagnifyingGlassIcon,
   FunnelIcon,
   XMarkIcon,
+  ArrowLeftIcon,
+  ChevronRightIcon,
   ClockIcon,
   CubeIcon,
   ClipboardDocumentListIcon,
@@ -13,9 +15,13 @@ import {
   ShoppingBagIcon,
   BuildingStorefrontIcon,
   DocumentTextIcon,
-  UsersIcon
+  TruckIcon,
+  ReceiptPercentIcon,
+  InboxArrowDownIcon,
+  UsersIcon,
 } from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
+import { typeLabel, typeRank, TYPE_HINTS } from '../../utils/searchTypes'
 
 interface SearchResult {
   id: string | number
@@ -30,346 +36,302 @@ interface SearchResult {
   metadata: Record<string, any>
 }
 
-const iconMap: Record<string, any> = {
-  'cube': CubeIcon,
+/** Ikon per jenis hasil; dokumen transaksi tidak mengirim field icon dari server. */
+const TYPE_ICON: Record<string, any> = {
+  'Surat Jalan': TruckIcon,
+  'Faktur Penjualan': ReceiptPercentIcon,
+  'Faktur Pembelian': ReceiptPercentIcon,
+  'Penerimaan Barang': InboxArrowDownIcon,
+}
+
+const ICON_MAP: Record<string, any> = {
+  cube: CubeIcon,
   'clipboard-document-list': ClipboardDocumentListIcon,
   'shopping-cart': ShoppingCartIcon,
-  'user': UserIcon,
+  user: UserIcon,
   'shopping-bag': ShoppingBagIcon,
   'building-storefront': BuildingStorefrontIcon,
   'document-text': DocumentTextIcon,
-  'users': UsersIcon,
+  users: UsersIcon,
 }
 
-const colorMap: Record<string, string> = {
-  'blue': 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-  'green': 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
-  'purple': 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
-  'orange': 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
-  'red': 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
-  'indigo': 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
-  'teal': 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400',
-}
-
-const modules = [
-  { value: 'all', label: 'All Modules' },
-  { value: 'products', label: 'Products' },
-  { value: 'production', label: 'Production' },
+const MODULES = [
+  { value: 'all', label: 'Semua modul' },
   { value: 'sales', label: 'Sales' },
   { value: 'purchasing', label: 'Purchasing' },
-  { value: 'hr', label: 'Human Resources' },
-  { value: 'dcc', label: 'Documents' },
+  { value: 'finance', label: 'Finance' },
+  { value: 'shipping', label: 'Shipping' },
+  { value: 'production', label: 'Production' },
+  { value: 'products', label: 'Produk' },
+  { value: 'hr', label: 'HR' },
+  { value: 'dcc', label: 'Dokumen' },
 ]
+
+/** Nama field metadata dari server, supaya tidak tampil sebagai kata Inggris. */
+const META_LABEL: Record<string, string> = {
+  status: 'Status', category: 'Kategori', date: 'Tanggal', total: 'Total',
+  priority: 'Prioritas', department: 'Departemen', type: 'Jenis',
+}
 
 export default function GlobalSearchPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  
+
   const [query, setQuery] = useState(searchParams.get('q') || '')
   const [moduleFilter, setModuleFilter] = useState('all')
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
-  const [recentSearches, setRecentSearches] = useState<string[]>([])
-  
-  const debouncedQuery = useDebounce(query, 300)
+  const [recent, setRecent] = useState<string[]>([])
 
-  // Load recent searches from localStorage
+  const debounced = useDebounce(query, 300)
+
   useEffect(() => {
     const saved = localStorage.getItem('recentSearches')
-    if (saved) {
-      setRecentSearches(JSON.parse(saved))
-    }
+    if (saved) { try { setRecent(JSON.parse(saved)) } catch { setRecent([]) } }
   }, [])
 
-  // Save to recent searches
-  const saveToRecent = (searchQuery: string) => {
-    if (!searchQuery.trim()) return
-    
-    const updated = [searchQuery, ...recentSearches.filter(s => s !== searchQuery)].slice(0, 10)
-    setRecentSearches(updated)
-    localStorage.setItem('recentSearches', JSON.stringify(updated))
+  const saveToRecent = (q: string) => {
+    if (!q.trim()) return
+    setRecent((prev) => {
+      const next = [q, ...prev.filter((s) => s !== q)].slice(0, 10)
+      localStorage.setItem('recentSearches', JSON.stringify(next))
+      return next
+    })
   }
 
-  // Perform search
-  const performSearch = useCallback(async (searchQuery: string, module: string) => {
-    if (!searchQuery.trim()) {
-      setResults([])
-      return
-    }
-
+  const performSearch = useCallback(async (q: string, module: string) => {
+    if (!q.trim()) { setResults([]); return }
     setLoading(true)
     try {
-      const response = await axiosInstance.get('/api/search/global', {
-        params: {
-          q: searchQuery,
-          module: module,
-          limit: 50
-        }
-      })
-
-      if (response.data.success) {
-        setResults(response.data.data.results)
-        saveToRecent(searchQuery)
+      const res = await axiosInstance.get('/api/search/global', { params: { q, module, limit: 50 } })
+      if (res.data?.success) {
+        const rows: SearchResult[] = res.data.data.results || []
+        setResults([...rows].sort((a, b) => typeRank(a.type) - typeRank(b.type)))
+        saveToRecent(q)
       }
-    } catch (error) {
-      console.error('Search error:', error)
+    } catch {
       setResults([])
     } finally {
       setLoading(false)
     }
-  }, [recentSearches])
-
-  // Search when debounced query changes
-  useEffect(() => {
-    if (debouncedQuery) {
-      performSearch(debouncedQuery, moduleFilter)
-      setSearchParams({ q: debouncedQuery })
-    }
-  }, [debouncedQuery, moduleFilter])
-
-  // Initial search from URL
-  useEffect(() => {
-    const urlQuery = searchParams.get('q')
-    if (urlQuery) {
-      setQuery(urlQuery)
-      performSearch(urlQuery, moduleFilter)
-    }
   }, [])
 
-  const handleResultClick = (result: SearchResult) => {
-    navigate(result.url)
-  }
+  useEffect(() => {
+    if (!debounced) { setResults([]); return }
+    performSearch(debounced, moduleFilter)
+    setSearchParams({ q: debounced }, { replace: true })
+  }, [debounced, moduleFilter])
 
-  const handleRecentSearchClick = (recentQuery: string) => {
-    setQuery(recentQuery)
-    performSearch(recentQuery, moduleFilter)
-  }
-
-  const clearRecentSearches = () => {
-    setRecentSearches([])
-    localStorage.removeItem('recentSearches')
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Escape to clear
-    if (e.key === 'Escape') {
-      setQuery('')
-      setResults([])
-    }
-  }
+  const clearQuery = () => { setQuery(''); setResults([]) }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-5xl mx-auto px-4">
-        {/* Header */}
-        <div className="mb-8">
+    <div className="min-h-screen bg-gray-50 py-6 dark:bg-gray-900 sm:py-8">
+      <div className="mx-auto w-full max-w-5xl px-4 sm:px-6">
+        <div className="mb-6 sm:mb-8">
           <button
             onClick={() => navigate('/app')}
-            className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 mb-4 flex items-center gap-2 dark:hover:text-white"
+            className="mb-3 flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Dashboard
+            <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
+            Kembali ke Dashboard
           </button>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Global Search</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Search across all modules and data</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">Pencarian</h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 sm:text-base">Cari dokumen dan data di seluruh modul.</p>
         </div>
 
-        {/* Search Bar */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6 border border-gray-200 dark:border-gray-700">
-          <div className="flex gap-4">
-            <div className="flex-1 relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <div className="card mb-6 p-4 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+            <div className="relative flex-1">
+              <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" aria-hidden="true" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Search for SPK, products, customers, documents..."
-                className="w-full pl-10 pr-10 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); clearQuery() } }}
+                placeholder="Nomor dokumen, nama barang, pelanggan, atau nama jenis dokumen..."
+                aria-label="Kata pencarian"
+                className="input-field py-3 pl-10 pr-10"
                 autoFocus
               />
               {query && (
                 <button
-                  onClick={() => {
-                    setQuery('')
-                    setResults([])
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white"
+                  type="button"
+                  onClick={clearQuery}
+                  aria-label="Hapus pencarian"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 dark:hover:text-white"
                 >
-                  <XMarkIcon className="w-5 h-5" />
+                  <XMarkIcon className="h-5 w-5" aria-hidden="true" />
                 </button>
               )}
             </div>
             <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 flex items-center gap-2"
+              type="button"
+              onClick={() => setShowFilters((v) => !v)}
+              aria-expanded={showFilters}
+              className={`inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition-colors ${
+                showFilters
+                  ? 'border-primary-600 bg-primary-50 text-primary-700 dark:border-primary-500 dark:bg-primary-900/30 dark:text-primary-200'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'
+              }`}
             >
-              <FunnelIcon className="w-5 h-5" />
-              Filters
+              <FunnelIcon className="h-5 w-5" aria-hidden="true" />
+              Saring
             </button>
           </div>
 
-          {/* Filters */}
           {showFilters && (
-            <div className="mt-4 pt-4 border-t">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Filter by Module
-              </label>
+            <div className="ui-pop mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+              <p className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Saring menurut modul</p>
               <div className="flex flex-wrap gap-2">
-                {modules.map((module) => (
+                {MODULES.map((m) => (
                   <button
-                    key={module.value}
-                    onClick={() => setModuleFilter(module.value)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      moduleFilter === module.value
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200'
+                    key={m.value}
+                    type="button"
+                    onClick={() => setModuleFilter(m.value)}
+                    className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      moduleFilter === m.value
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
                     }`}
                   >
-                    {module.label}
+                    {m.label}
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Keyboard Shortcuts Hint */}
-          <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-4">
-            <span>Press <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">ESC</kbd> to clear</span>
-            <span>Press <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">↵</kbd> to search</span>
-          </div>
+          <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+            Bisa juga diketik nama jenis dokumennya, misalnya {TYPE_HINTS.slice(0, 4).map((h, i) => (
+              <span key={h}>
+                {i > 0 && ', '}
+                <button type="button" onClick={() => setQuery(h)} className="font-medium text-primary-700 hover:underline dark:text-primary-300">{h}</button>
+              </span>
+            ))} — hasilnya 10 dokumen terbaru jenis itu.
+          </p>
         </div>
 
-        {/* Recent Searches */}
-        {!query && recentSearches.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                <ClockIcon className="w-5 h-5" />
-                Recent Searches
+        {!query && recent.length > 0 && (
+          <div className="card mb-6 p-4 sm:p-6">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-white sm:text-lg">
+                <ClockIcon className="h-5 w-5" aria-hidden="true" />
+                Pencarian terakhir
               </h2>
               <button
-                onClick={clearRecentSearches}
-                className="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
+                type="button"
+                onClick={() => { setRecent([]); localStorage.removeItem('recentSearches') }}
+                className="shrink-0 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"
               >
-                Clear All
+                Bersihkan
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {recentSearches.map((recentQuery, index) => (
+              {recent.map((r) => (
                 <button
-                  key={index}
-                  onClick={() => handleRecentSearchClick(recentQuery)}
-                  className="px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-200 transition-colors dark:hover:bg-gray-600"
+                  key={r}
+                  type="button"
+                  onClick={() => setQuery(r)}
+                  className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                 >
-                  {recentQuery}
+                  {r}
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Loading State */}
         {loading && (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-600 dark:text-gray-300 mt-4">Searching...</p>
+          <div className="card space-y-3 p-4 sm:p-6">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center gap-4">
+                <div className="ui-shimmer h-11 w-11 shrink-0 rounded-lg bg-gray-200 dark:bg-gray-700" />
+                <div className="flex-1 space-y-2">
+                  <div className="ui-shimmer h-4 w-1/3 rounded bg-gray-200 dark:bg-gray-700" />
+                  <div className="ui-shimmer h-3 w-1/4 rounded bg-gray-200 dark:bg-gray-700" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
-        {/* Results */}
         {!loading && query && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            {/* Results Header */}
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {results.length} {results.length === 1 ? 'Result' : 'Results'} for "{query}"
+          <div className="card overflow-hidden">
+            <div className="border-b border-gray-200 px-4 py-4 dark:border-gray-700 sm:px-6">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-white sm:text-lg">
+                {results.length} hasil untuk &quot;{query}&quot;
               </h2>
             </div>
 
-            {/* Results List */}
             {results.length > 0 ? (
-              <div className="divide-y">
-                {results.map((result, index) => {
-                  const Icon = iconMap[result.icon] || CubeIcon
-                  const colorClass = colorMap[result.color] || 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
-
+              <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                {results.map((r, i) => {
+                  const Icon = TYPE_ICON[r.type] || ICON_MAP[r.icon] || CubeIcon
+                  const meta = Object.entries(r.metadata || {}).filter(([, v]) => v !== null && v !== undefined && v !== '' && v !== 'N/A')
                   return (
-                    <button
-                      key={index}
-                      onClick={() => handleResultClick(result)}
-                      className="w-full px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors text-left"
-                    >
-                      <div className="flex items-start gap-4">
-                        {/* Icon */}
-                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${colorClass}`}>
-                          <Icon className="w-6 h-6" />
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold text-gray-900 dark:text-white">{result.title}</h3>
-                            <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs rounded-full">
-                              {result.type}
+                    <li key={`${r.type}-${r.id}-${i}`}>
+                      <button
+                        type="button"
+                        onClick={() => navigate(r.url)}
+                        className="flex w-full items-start gap-3 px-4 py-4 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 sm:gap-4 sm:px-6"
+                      >
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 sm:h-12 sm:w-12">
+                          <Icon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span className="break-all font-semibold text-gray-900 dark:text-white">{r.title}</span>
+                            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                              {typeLabel(r.type)}
                             </span>
-                          </div>
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{result.subtitle}</p>
-                          {result.description && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{result.description}</p>
-                          )}
-                          
-                          {/* Metadata */}
-                          {result.metadata && Object.keys(result.metadata).length > 0 && (
-                            <div className="flex flex-wrap gap-3 mt-2">
-                              {Object.entries(result.metadata).map(([key, value]) => (
-                                <span key={key} className="text-xs text-gray-500 dark:text-gray-400">
-                                  <span className="font-medium capitalize">{key}:</span> {value}
+                          </span>
+                          {r.subtitle && <span className="mt-0.5 block truncate text-sm text-gray-600 dark:text-gray-300">{r.subtitle}</span>}
+                          {r.description && <span className="mt-0.5 block line-clamp-2 text-sm text-gray-500 dark:text-gray-400">{r.description}</span>}
+                          {meta.length > 0 && (
+                            <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                              {meta.map(([k, v]) => (
+                                <span key={k} className="text-xs text-gray-500 dark:text-gray-400">
+                                  <span className="font-medium">{META_LABEL[k] || k}:</span> {String(v)}
                                 </span>
                               ))}
-                            </div>
+                            </span>
                           )}
-                        </div>
-
-                        {/* Arrow */}
-                        <div className="flex-shrink-0">
-                          <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </div>
-                      </div>
-                    </button>
+                        </span>
+                        <ChevronRightIcon className="mt-1 hidden h-5 w-5 shrink-0 text-gray-400 sm:block" aria-hidden="true" />
+                      </button>
+                    </li>
                   )
                 })}
-              </div>
+              </ul>
             ) : (
-              <div className="px-6 py-12 text-center">
-                <MagnifyingGlassIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-300">No results found for "{query}"</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Try different keywords or check your spelling</p>
+              <div className="px-4 py-12 text-center sm:px-6">
+                <MagnifyingGlassIcon className="mx-auto mb-4 h-12 w-12 text-gray-300 dark:text-gray-600" aria-hidden="true" />
+                <p className="text-gray-600 dark:text-gray-300">Tidak ada hasil untuk &quot;{query}&quot;.</p>
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Coba kata lain, atau ketik nama jenis dokumennya.</p>
               </div>
             )}
           </div>
         )}
 
-        {/* Empty State */}
-        {!loading && !query && recentSearches.length === 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center border border-gray-200 dark:border-gray-700">
-            <MagnifyingGlassIcon className="w-16 h-16 text-gray-300 dark:text-gray-600 dark:text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Start Searching</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Search across all modules to find SPK, products, customers, and more
+        {!loading && !query && recent.length === 0 && (
+          <div className="card p-8 text-center sm:p-12">
+            <MagnifyingGlassIcon className="mx-auto mb-4 h-14 w-14 text-gray-300 dark:text-gray-600" aria-hidden="true" />
+            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">Mulai mencari</h3>
+            <p className="mb-6 text-sm text-gray-600 dark:text-gray-300 sm:text-base">
+              Ketik nomor dokumen, nama barang atau pelanggan, atau langsung nama jenis dokumennya.
             </p>
             <div className="flex flex-wrap justify-center gap-2">
-              <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full text-sm">SPK</span>
-              <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full text-sm">Products</span>
-              <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full text-sm">Customers</span>
-              <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full text-sm">Suppliers</span>
-              <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full text-sm">Documents</span>
-              <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full text-sm">Employees</span>
+              {TYPE_HINTS.map((h) => (
+                <button
+                  key={h}
+                  type="button"
+                  onClick={() => setQuery(h)}
+                  className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                >
+                  {h}
+                </button>
+              ))}
             </div>
           </div>
         )}

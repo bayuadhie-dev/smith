@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import axiosInstance from '../utils/axiosConfig'
 import { useDebounce } from './useDebounce'
+import { typeRank } from '../utils/searchTypes'
 
 export interface DataHit {
   id: number | string
@@ -10,12 +11,6 @@ export interface DataHit {
   subtitle?: string
   url: string
 }
-
-/** Dokumen transaksi lebih dulu, baru data master. */
-const TYPE_ORDER = [
-  'Sales Order', 'Purchase Order', 'Faktur Penjualan', 'Faktur Pembelian', 'Surat Jalan',
-  'Penerimaan Barang', 'Work Order', 'Product', 'Customer', 'Supplier', 'Employee', 'Document',
-]
 
 /** Pencarian data lintas modul (hasil disaring izin pengguna di server). */
 export function useDataSearch(term: string, opts?: { perType?: number; total?: number; minChars?: number }) {
@@ -39,8 +34,7 @@ export function useDataSearch(term: string, opts?: { perType?: number; total?: n
           seen[h.type] = (seen[h.type] || 0) + 1
           return seen[h.type] <= perType
         })
-        const rank = (t: string) => { const i = TYPE_ORDER.indexOf(t); return i < 0 ? TYPE_ORDER.length : i }
-        capped.sort((a, b) => rank(a.type) - rank(b.type))
+        capped.sort((a, b) => typeRank(a.type) - typeRank(b.type))
         setHits(capped.slice(0, total))
       })
       .catch(() => { if (!cancelled) setHits([]) })

@@ -24,6 +24,65 @@ def _can_view(module, perms, bypass):
     return bypass or f'{module}.view' in perms
 
 
+# Nama jenis dokumen dalam Bahasa Indonesia (dan padanan Inggrisnya) supaya
+# mengetik "surat jalan" atau "penerimaan barang" memunculkan dokumen jenis
+# itu - sebelumnya kata yang diketik hanya dibandingkan dengan isi kolom,
+# jadi hanya ketemu kalau orang hafal awalan nomornya (SHP-, BPB-, INV-).
+_TYPE_ALIASES = {
+    'products': ['produk', 'barang', 'product', 'master barang'],
+    'production': ['spk', 'work order', 'wo', 'perintah kerja', 'surat perintah kerja'],
+    'sales_orders': ['sales order', 'so', 'pesanan penjualan', 'order penjualan', 'pesanan'],
+    'customers': ['pelanggan', 'customer', 'konsumen', 'klien'],
+    'purchase_orders': ['purchase order', 'po', 'pesanan pembelian', 'order pembelian', 'pembelian'],
+    'suppliers': ['pemasok', 'supplier', 'vendor'],
+    'employees': ['karyawan', 'pegawai', 'employee'],
+    'dcc': ['dokumen', 'document', 'dcc'],
+    'invoices_sales': ['faktur penjualan', 'invoice penjualan'],
+    'invoices_purchase': ['faktur pembelian', 'invoice pembelian'],
+    'invoices': ['faktur', 'invoice', 'tagihan'],
+    'shipping': ['surat jalan', 'sj', 'pengiriman', 'delivery order'],
+    'grn': ['penerimaan barang', 'penerimaan', 'bpb', 'grn', 'terima barang'],
+}
+
+# Label jenis yang dipakai di hasil, untuk menaikkan urutan saat jenisnya
+# yang diketik.
+_HINT_LABELS = {
+    'products': {'Product'}, 'production': {'Work Order'}, 'sales_orders': {'Sales Order'},
+    'customers': {'Customer'}, 'purchase_orders': {'Purchase Order'}, 'suppliers': {'Supplier'},
+    'employees': {'Employee'}, 'dcc': {'Document'}, 'shipping': {'Surat Jalan'},
+    'grn': {'Penerimaan Barang'}, 'invoices': {'Faktur Penjualan', 'Faktur Pembelian'},
+    'invoices_sales': {'Faktur Penjualan'}, 'invoices_purchase': {'Faktur Pembelian'},
+}
+
+# Berapa dokumen terbaru yang ditampilkan kalau yang diketik nama jenisnya.
+_HINT_LIMIT = 10
+
+
+def _type_hints(query):
+    """Bagian mana yang diminta lewat NAMA jenisnya, bukan lewat isi kolom.
+
+    Cocok persis (supaya singkatan pendek seperti 'so'/'po'/'sj' tidak ikut
+    tiap kali orang mengetik dua huruf) atau awalan minimal 4 huruf, supaya
+    "surat" sudah memunculkan Surat Jalan sebelum kata kedua diketik.
+    """
+    term = ' '.join(query.lower().split())
+    if not term:
+        return set()
+    hits = set()
+    for section, aliases in _TYPE_ALIASES.items():
+        if any(term == a or (len(term) >= 4 and a.startswith(term)) for a in aliases):
+            hits.add(section)
+    return hits
+
+
+def _search_rows(model, condition, hinted, limit, order_column=None):
+    """Baris untuk satu bagian: dokumen terbaru kalau jenisnya yang diketik,
+    selain itu pencarian biasa ke isi kolom."""
+    if hinted:
+        return model.query.order_by((order_column if order_column is not None else model.id).desc()).limit(min(limit, _HINT_LIMIT)).all()
+    return model.query.filter(condition).limit(limit).all()
+
+
 @search_bp.route('/global', methods=['GET'])
 @jwt_required()
 def global_search():
@@ -53,17 +112,17 @@ def global_search():
             })
 
         results = []
+        like = f'%{query}%'
+        hints = _type_hints(query)
 
         # Search Products
         if module_filter in ['all', 'products'] and _can_view('products', perms, bypass):
             try:
-                products = Product.query.filter(
-                    or_(
-                        Product.name.ilike(f'%{query}%'),
-                        Product.code.ilike(f'%{query}%'),
-                        Product.description.ilike(f'%{query}%')
-                    )
-                ).limit(limit).all()
+                products = _search_rows(Product, or_(
+                    Product.name.ilike(like),
+                    Product.code.ilike(like),
+                    Product.description.ilike(like),
+                ), 'products' in hints, limit)
                 
                 for product in products:
                     results.append({
@@ -87,12 +146,10 @@ def global_search():
         # Search Work Orders
         if module_filter in ['all', 'production'] and _can_view('production', perms, bypass):
             try:
-                work_orders = WorkOrder.query.filter(
-                    or_(
-                        WorkOrder.wo_number.ilike(f'%{query}%'),
-                        WorkOrder.notes.ilike(f'%{query}%')
-                    )
-                ).limit(limit).all()
+                work_orders = _search_rows(WorkOrder, or_(
+                    WorkOrder.wo_number.ilike(like),
+                    WorkOrder.notes.ilike(like),
+                ), 'production' in hints, limit)
                 
                 for wo in work_orders:
                     results.append({
@@ -117,12 +174,10 @@ def global_search():
         # Search Sales Orders
         if module_filter in ['all', 'sales'] and _can_view('sales_orders', perms, bypass):
             try:
-                sales_orders = SalesOrder.query.filter(
-                    or_(
-                        SalesOrder.order_number.ilike(f'%{query}%'),
-                        SalesOrder.notes.ilike(f'%{query}%')
-                    )
-                ).limit(limit).all()
+                sales_orders = _search_rows(SalesOrder, or_(
+                    SalesOrder.order_number.ilike(like),
+                    SalesOrder.notes.ilike(like),
+                ), 'sales_orders' in hints, limit)
                 
                 for so in sales_orders:
                     results.append({
@@ -147,13 +202,11 @@ def global_search():
         # Search Customers
         if module_filter in ['all', 'sales'] and _can_view('customers', perms, bypass):
             try:
-                customers = Customer.query.filter(
-                    or_(
-                        Customer.company_name.ilike(f'%{query}%'),
-                        Customer.email.ilike(f'%{query}%'),
-                        Customer.phone.ilike(f'%{query}%')
-                    )
-                ).limit(limit).all()
+                customers = _search_rows(Customer, or_(
+                    Customer.company_name.ilike(like),
+                    Customer.email.ilike(like),
+                    Customer.phone.ilike(like),
+                ), 'customers' in hints, limit)
                 
                 for customer in customers:
                     results.append({
@@ -177,12 +230,10 @@ def global_search():
         # Search Purchase Orders
         if module_filter in ['all', 'purchasing'] and _can_view('purchase_orders', perms, bypass):
             try:
-                purchase_orders = PurchaseOrder.query.filter(
-                    or_(
-                        PurchaseOrder.po_number.ilike(f'%{query}%'),
-                        PurchaseOrder.notes.ilike(f'%{query}%')
-                    )
-                ).limit(limit).all()
+                purchase_orders = _search_rows(PurchaseOrder, or_(
+                    PurchaseOrder.po_number.ilike(like),
+                    PurchaseOrder.notes.ilike(like),
+                ), 'purchase_orders' in hints, limit)
                 
                 for po in purchase_orders:
                     results.append({
@@ -207,13 +258,11 @@ def global_search():
         # Search Suppliers
         if module_filter in ['all', 'purchasing'] and _can_view('suppliers', perms, bypass):
             try:
-                suppliers = Supplier.query.filter(
-                    or_(
-                        Supplier.company_name.ilike(f'%{query}%'),
-                        Supplier.email.ilike(f'%{query}%'),
-                        Supplier.phone.ilike(f'%{query}%')
-                    )
-                ).limit(limit).all()
+                suppliers = _search_rows(Supplier, or_(
+                    Supplier.company_name.ilike(like),
+                    Supplier.email.ilike(like),
+                    Supplier.phone.ilike(like),
+                ), 'suppliers' in hints, limit)
                 
                 for supplier in suppliers:
                     results.append({
@@ -236,13 +285,11 @@ def global_search():
         # Search Employees
         if module_filter in ['all', 'hr'] and _can_view('employees', perms, bypass):
             try:
-                employees = Employee.query.filter(
-                    or_(
-                        Employee.full_name.ilike(f'%{query}%'),
-                        Employee.email.ilike(f'%{query}%'),
-                        Employee.employee_number.ilike(f'%{query}%')
-                    )
-                ).limit(limit).all()
+                employees = _search_rows(Employee, or_(
+                    Employee.full_name.ilike(like),
+                    Employee.email.ilike(like),
+                    Employee.employee_number.ilike(like),
+                ), 'employees' in hints, limit)
                 
                 for employee in employees:
                     results.append({
@@ -266,12 +313,10 @@ def global_search():
         # Search DCC Documents
         if module_filter in ['all', 'dcc'] and _can_view('dcc', perms, bypass):
             try:
-                documents = DccDocument.query.filter(
-                    or_(
-                        DccDocument.document_number.ilike(f'%{query}%'),
-                        DccDocument.title.ilike(f'%{query}%')
-                    )
-                ).limit(limit).all()
+                documents = _search_rows(DccDocument, or_(
+                    DccDocument.document_number.ilike(like),
+                    DccDocument.title.ilike(like),
+                ), 'dcc' in hints, limit)
                 
                 for doc in documents:
                     results.append({
@@ -293,11 +338,18 @@ def global_search():
                 print(f"Error searching documents: {e}")
         
         # Dokumen transaksi lain: faktur, surat jalan, penerimaan barang
-        like = f'%{query}%'
         if module_filter in ['all', 'finance'] and _can_view('invoices', perms, bypass):
             try:
                 from models.finance import Invoice
-                for inv in Invoice.query.filter(or_(Invoice.invoice_number.ilike(like))).order_by(Invoice.id.desc()).limit(limit).all():
+                inv_q = Invoice.query
+                inv_hinted = bool({'invoices', 'invoices_sales', 'invoices_purchase'} & hints)
+                if 'invoices_sales' in hints:
+                    inv_q = inv_q.filter(Invoice.invoice_type == 'sales')
+                elif 'invoices_purchase' in hints:
+                    inv_q = inv_q.filter(Invoice.invoice_type != 'sales')
+                elif not inv_hinted:
+                    inv_q = inv_q.filter(Invoice.invoice_number.ilike(like))
+                for inv in inv_q.order_by(Invoice.id.desc()).limit(min(limit, _HINT_LIMIT) if inv_hinted else limit).all():
                     sales = inv.invoice_type == 'sales'
                     results.append({'id': inv.id, 'type': 'Faktur Penjualan' if sales else 'Faktur Pembelian', 'module': 'finance',
                                     'title': inv.invoice_number, 'subtitle': f'Status: {inv.status}',
@@ -307,7 +359,7 @@ def global_search():
         if module_filter in ['all', 'shipping'] and _can_view('shipping', perms, bypass):
             try:
                 from models.shipping import ShippingOrder
-                for so in ShippingOrder.query.filter(or_(ShippingOrder.shipping_number.ilike(like), ShippingOrder.tracking_number.ilike(like))).order_by(ShippingOrder.id.desc()).limit(limit).all():
+                for so in _search_rows(ShippingOrder, or_(ShippingOrder.shipping_number.ilike(like), ShippingOrder.tracking_number.ilike(like)), 'shipping' in hints, limit):
                     results.append({'id': so.id, 'type': 'Surat Jalan', 'module': 'shipping', 'title': so.shipping_number,
                                     'subtitle': f'Status: {so.status}', 'url': f'/app/shipping/orders/{so.id}'})
             except Exception as e:
@@ -315,16 +367,24 @@ def global_search():
         if module_filter in ['all', 'purchasing'] and _can_view('purchase_orders', perms, bypass):
             try:
                 from models.purchasing import GoodsReceivedNote
-                for g in GoodsReceivedNote.query.filter(or_(GoodsReceivedNote.grn_number.ilike(like))).order_by(GoodsReceivedNote.id.desc()).limit(limit).all():
+                for g in _search_rows(GoodsReceivedNote, GoodsReceivedNote.grn_number.ilike(like), 'grn' in hints, limit):
                     results.append({'id': g.id, 'type': 'Penerimaan Barang', 'module': 'purchasing', 'title': g.grn_number,
                                     'subtitle': f'Status: {g.status}', 'url': f'/app/purchasing/grn/{g.id}'})
             except Exception as e:
                 print(f"Error searching GRN: {e}")
 
         # Sort results by relevance (exact matches first)
+        hinted_labels = set()
+        for section in hints:
+            hinted_labels |= _HINT_LABELS.get(section, set())
+
         def relevance_score(result):
             title_lower = result['title'].lower()
             query_lower = query.lower()
+            if result['type'] in hinted_labels and query_lower not in title_lower:
+                # Jenisnya yang diketik: taruh setelah cocok persis/awalan,
+                # tapi sebelum hasil yang cuma kebetulan mengandung kata itu.
+                return 2
             if title_lower == query_lower:
                 return 0
             elif title_lower.startswith(query_lower):
