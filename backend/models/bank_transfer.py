@@ -40,6 +40,11 @@ class BankTransfer(db.Model):
     status = db.Column(db.String(20), nullable=False, default='posted', index=True)   # posted, cancelled
     journal_number = db.Column(db.String(50), nullable=True)
 
+    # Transfer yang mengisi kas kecil: menautkan pengajuan pengisian kembali supaya
+    # HR tidak perlu menandai "dana diterima" sendiri.
+    petty_cash_fund_id = db.Column(db.Integer, db.ForeignKey('petty_cash_funds.id'), nullable=True)
+    petty_cash_replenishment_id = db.Column(db.Integer, db.ForeignKey('petty_cash_replenishments.id'), nullable=True)
+
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     cancelled_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     cancelled_at = db.Column(db.DateTime, nullable=True)
@@ -74,6 +79,8 @@ class BankTransfer(db.Model):
             'notes': self.notes,
             'status': self.status,
             'journal_number': self.journal_number,
+            'petty_cash_fund_id': self.petty_cash_fund_id,
+            'petty_cash_replenishment_id': self.petty_cash_replenishment_id,
             'created_by_name': self.creator.full_name if self.creator else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'cancel_reason': self.cancel_reason,

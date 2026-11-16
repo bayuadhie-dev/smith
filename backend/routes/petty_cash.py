@@ -75,9 +75,39 @@ def _sum(q):
     return Decimal(str(q.scalar() or 0))
 
 
+def transfers_in(fund):
+    """Uang masuk ke kas kecil = Transfer Kas/Bank yang mendarat di akun kas dana ini.
+    Dibuat Finance; HR hanya melihatnya."""
+    from models.bank_transfer import BankTransfer
+    if not fund.cash_account_id:
+        return []
+    return BankTransfer.query.filter(BankTransfer.to_account_id == fund.cash_account_id,
+                                     BankTransfer.status == 'posted').order_by(BankTransfer.transfer_date, BankTransfer.id).all()
+
+
+def _transfer_in_amount(t):
+    """Nilai yang benar-benar masuk; biaya transfer yang dibebankan ke penerima mengurangi."""
+    masuk = Decimal(str(t.amount_received if t.amount_received is not None else t.amount))
+    if t.fee_charged_to == 'to':
+        masuk -= Decimal(str(t.fee_amount or 0))
+    return masuk
+
+
 def summary(fund):
-    received = _sum(db.session.query(func.coalesce(func.sum(PettyCashReplenishment.amount_received), 0)).filter(
-        PettyCashReplenishment.fund_id == fund.id, PettyCashReplenishment.status == 'received'))
+    from models.bank_transfer import BankTransfer
+
+    # Uang masuk sekarang datang dari Transfer Kas/Bank yang mendarat di akun kas
+    # dana ini. Pengisian kembali lama yang ditandai "diterima" tanpa transfer
+    # tetap dihitung, supaya data sebelum penyambungan tidak hilang.
+    masuk_transfer = sum((_transfer_in_amount(t) for t in transfers_in(fund)), Decimal(0))
+    terpaut = [r for (r,) in db.session.query(BankTransfer.petty_cash_replenishment_id).filter(
+        BankTransfer.petty_cash_replenishment_id.isnot(None)).all()]
+    manual_q = db.session.query(func.coalesce(func.sum(PettyCashReplenishment.amount_received), 0)).filter(
+        PettyCashReplenishment.fund_id == fund.id, PettyCashReplenishment.status == 'received')
+    if terpaut:
+        manual_q = manual_q.filter(PettyCashReplenishment.id.notin_(terpaut))
+    received = _sum(manual_q)
+
     paid = _sum(db.session.query(func.coalesce(func.sum(PettyCashTransaction.amount), 0)).filter(
         PettyCashTransaction.fund_id == fund.id, PettyCashTransaction.status == 'paid'))
     waiting_pm = _sum(db.session.query(func.coalesce(func.sum(PettyCashTransaction.amount), 0)).filter(
@@ -91,7 +121,8 @@ def summary(fund):
     unreplenished = _sum(db.session.query(func.coalesce(func.sum(PettyCashTransaction.amount), 0)).filter(
         PettyCashTransaction.fund_id == fund.id, PettyCashTransaction.status == 'paid',
         PettyCashTransaction.replenishment_id.is_(None)))
-    balance = Decimal(fund.fixed_amount) + received - paid
+
+    balance = Decimal(str(fund.opening_balance or 0)) + masuk_transfer + received - paid
     today = date.today()
     month_end = today.day >= monthrange(today.year, today.month)[1] - 2
     reason = None
@@ -102,21 +133,35 @@ def summary(fund):
     suggested = max(Decimal(0), Decimal(fund.fixed_amount) - balance - open_req)
     return {
         'balance': _f(balance), 'fixed_amount': _f(fund.fixed_amount), 'per_txn_limit': _f(fund.per_txn_limit),
-        'min_balance': _f(fund.min_balance), 'total_paid': _f(paid), 'total_received': _f(received),
+        'min_balance': _f(fund.min_balance), 'opening_balance': _f(fund.opening_balance), 'total_paid': _f(paid),
+        'total_received': _f(masuk_transfer + received), 'total_transfer_in': _f(masuk_transfer),
         'waiting_approval': _f(waiting_pm), 'waiting_payment': _f(waiting_pay), 'open_replenishment_amount': _f(open_req),
         'open_replenishment_id': open_rep.id if open_rep else None,
         'unreplenished_paid': _f(unreplenished), 'suggested_replenishment': _f(suggested),
         'needs_replenishment': bool(reason and not open_rep and suggested > 0), 'replenishment_reason': reason,
+        # Saldo minus biasanya berarti transfer pengisiannya belum dicatat Finance,
+        # bukan uangnya yang kurang - ditandai supaya ketahuan, bukan menolak catatan.
+        'negative_balance': bool(balance < 0),
     }
 
 
+def _acc_label(acc):
+    return f'{acc.account_code} {acc.account_name}' if acc else None
+
+
 def fund_dict(fund):
+    mapped = {c.category: c.account_id for c in fund.category_accounts}
     return {
         'id': fund.id, 'code': fund.code, 'name': fund.name,
         'custodian_user_id': fund.custodian_user_id, 'custodian_name': fund.custodian.full_name if fund.custodian else None,
         'approver_user_id': fund.approver_user_id, 'approver_name': fund.approver.full_name if fund.approver else None,
-        'cash_account_id': fund.cash_account_id,
-        'cash_account_name': f'{fund.cash_account.account_code} {fund.cash_account.account_name}' if fund.cash_account else None,
+        'cash_account_id': fund.cash_account_id, 'cash_account_name': _acc_label(fund.cash_account),
+        'expense_account_id': fund.expense_account_id, 'expense_account_name': _acc_label(fund.expense_account),
+        'approval_mode': fund.approval_mode or 'paper',
+        'category_accounts': mapped,
+        # Jurnal baru bisa dibuat kalau akun kas sudah ada DAN tiap kategori punya
+        # akun beban (sendiri atau lewat akun bawaan).
+        'gl_ready': bool(fund.cash_account_id and (fund.expense_account_id or all(c in mapped for c in CATEGORIES))),
         **summary(fund),
     }
 
@@ -135,6 +180,8 @@ def tx_dict(t):
         'paid_by_name': _name(t.payer), 'paid_at': t.paid_at.isoformat() if t.paid_at else None,
         'rejected_by_name': _name(t.rejecter), 'rejected_at': t.rejected_at.isoformat() if t.rejected_at else None, 'rejection_reason': t.rejection_reason,
         'replenishment_id': t.replenishment_id, 'replenishment_number': t.replenishment.number if t.replenishment else None,
+        'over_limit': bool(t.over_limit), 'journal_number': t.journal_number,
+        'expense_account_name': _acc_label(t.expense_account),
         'created_at': t.created_at.isoformat() if t.created_at else None,
     }
 
@@ -267,6 +314,23 @@ def update_fund():
         raise PCError('Batas per transaksi tidak boleh lebih besar dari dana tetap')
     if 'cash_account_id' in data:
         _set_cash_account(f, data['cash_account_id'])
+    if 'expense_account_id' in data:
+        from models.finance import Account
+        val = data['expense_account_id']
+        if not val:
+            f.expense_account_id = None
+        else:
+            acc = db.session.get(Account, int(val))
+            if not acc or acc.account_type != 'expense' or acc.is_header:
+                raise PCError('Akun beban bawaan harus akun beban rinci')
+            f.expense_account_id = acc.id
+    if 'approval_mode' in data:
+        mode = (data['approval_mode'] or 'paper').lower()
+        if mode not in ('paper', 'app'):
+            raise PCError("Mode persetujuan hanya 'paper' (bon kertas) atau 'app' (lewat sistem)")
+        f.approval_mode = mode
+    if 'opening_balance' in data:
+        f.opening_balance = Decimal(str(data['opening_balance'] or 0))
     for k in ('custodian_user_id', 'approver_user_id'):
         if k in data:
             uid = data[k] or None
@@ -335,8 +399,7 @@ def _validate_tx(fund, data, exclude_id=None):
         raise PCError('Jumlah tidak valid')
     if amount <= 0:
         raise PCError('Jumlah harus lebih dari 0')
-    if amount > Decimal(fund.per_txn_limit):
-        raise PCError(f'Melebihi batas per transaksi Rp {int(fund.per_txn_limit):,}'.replace(',', '.'))
+    over_limit = amount > Decimal(fund.per_txn_limit)   # uangnya sudah terlanjur keluar, jadi tetap dicatat lalu ditandai
     dup = PettyCashTransaction.query.filter(PettyCashTransaction.fund_id == fund.id, func.lower(PettyCashTransaction.receipt_number) == receipt.lower(),
                                             PettyCashTransaction.status.notin_(['rejected', 'cancelled']))
     if exclude_id:
@@ -354,7 +417,44 @@ def _validate_tx(fund, data, exclude_id=None):
         d = getattr(emp, 'department', None)
         dept = getattr(d, 'name', None) if d else None
     return {'purpose': purpose, 'category': category, 'receipt_number': receipt, 'amount': amount, 'requester_name': name,
-            'requester_employee_id': emp.id if emp else None, 'department': dept}
+            'requester_employee_id': emp.id if emp else None, 'department': dept, 'over_limit': bool(over_limit)}
+
+
+def _expense_account(fund, category):
+    """Akun beban untuk satu kategori: pemetaan kategori dulu, lalu akun bawaan dana."""
+    from models.petty_cash import PettyCashCategoryAccount
+    row = PettyCashCategoryAccount.query.filter_by(fund_id=fund.id, category=category).first()
+    if row:
+        return row.account
+    return fund.expense_account
+
+
+def _post_expense_journal(t, user_id):
+    """Dr beban kategori / Cr akun kas kecil. Kalau akunnya belum disetel, nota tetap
+    tercatat tapi belum menyentuh buku besar (ditandai di halaman)."""
+    fund = t.fund
+    acc = _expense_account(fund, t.category)
+    if not acc or not fund.cash_account_id:
+        return None
+    from models.approval_workflow import PendingJournalEntry
+    from utils.finance_helpers import is_period_locked, post_pending_journal
+    if is_period_locked(t.request_date, transaction_type='journal_entry'):
+        raise PCError(f'Periode {t.request_date:%Y-%m} sudah ditutup, pengeluaran ini tidak bisa dijurnal', 409)
+    nilai = float(t.amount)
+    note = f'Kas kecil {t.number} - {t.category}: {t.purpose}'[:255]
+    pending = PendingJournalEntry(
+        workflow_id=None, entry_date=t.request_date, description=f'{fund.name} - {t.number}', reference=t.number,
+        lines=[{'account_id': acc.id, 'debit': nilai, 'credit': 0, 'description': note},
+               {'account_id': fund.cash_account_id, 'debit': 0, 'credit': nilai, 'description': note}],
+        total_debit=nilai, total_credit=nilai, created_by=user_id,
+    )
+    db.session.add(pending)
+    db.session.flush()
+    entries = post_pending_journal(pending.id, posted_by_user_id=user_id, reference_type='petty_cash', reference_id=t.id)
+    t.expense_account_id = acc.id
+    if entries:
+        t.journal_number = entries[0].entry_number.rsplit('-', 1)[0]
+    return entries
 
 
 @petty_cash_bp.route('/transactions', methods=['POST'])
@@ -365,11 +465,20 @@ def create_transaction():
     data = request.get_json() or {}
     v = _validate_tx(fund, data)
     req_date = _parse_date(data.get('request_date') or date.today().isoformat(), 'Tanggal')
+    u = _me()
+    paper = (fund.approval_mode or 'paper') == 'paper'
     t = PettyCashTransaction(number=generate_number('KK', PettyCashTransaction, 'number', style='slash'), fund_id=fund.id,
-                             request_date=req_date, created_by=_me().id, status='submitted', **v)
+                             request_date=req_date, created_by=u.id, status='paid' if paper else 'submitted', **v)
+    if paper:
+        # Persetujuan memakai bon kertas bertanda tangan; sistem hanya membukukan
+        # uang yang memang sudah keluar, jadi langsung tercatat.
+        t.paid_by, t.paid_at = u.id, datetime.utcnow()
     db.session.add(t)
+    db.session.flush()
+    if paper:
+        _post_expense_journal(t, u.id)
     db.session.commit()
-    if fund.approver_user_id:
+    if not paper and fund.approver_user_id:
         send_notification(fund.approver_user_id, 'Kas kecil menunggu persetujuan',
                           f'{t.number}: {t.requester_name}, Rp {int(t.amount):,} untuk {t.purpose}'.replace(',', '.'),
                           category='finance', action_url='/app/hr/petty-cash?tab=transaksi', reference_type='petty_cash', reference_id=t.id)
@@ -456,6 +565,7 @@ def pay_transaction(tid):
         raise PCError('Saldo kas kecil tidak cukup. Ajukan pengisian kembali dulu', 409)
     t.status = 'paid'
     t.paid_by, t.paid_at = u.id, datetime.utcnow()
+    _post_expense_journal(t, u.id)
     db.session.commit()
     return jsonify(tx_dict(t))
 
@@ -464,12 +574,22 @@ def pay_transaction(tid):
 @jwt_required()
 @require_permission('petty_cash.create')
 def cancel_transaction(tid):
+    """Batalkan nota. Yang sudah tercatat (dan sudah dijurnal) dibalik jurnalnya,
+    bukan dihapus, supaya riwayat salah-catat tetap terlihat."""
     t = _get_tx(tid)
     u = _me()
-    if t.status not in ('submitted', 'approved'):
+    if t.status not in ('submitted', 'approved', 'paid'):
         raise PCError('Permintaan ini tidak bisa dibatalkan', 409)
     if t.created_by != u.id and not _is_super(u) and t.fund.custodian_user_id != u.id:
         raise PCError('Hanya pembuat atau pemegang kas yang boleh membatalkan', 403)
+    if t.status == 'paid' and t.replenishment_id:
+        raise PCError('Nota ini sudah masuk pertanggungjawaban pengisian kembali, tidak bisa dibatalkan', 409)
+    if t.status == 'paid' and t.journal_number:
+        from utils.finance_helpers import is_period_locked, reverse_accounting_entries
+        today = date.today()
+        if is_period_locked(today, transaction_type='journal_entry'):
+            raise PCError('Periode berjalan sudah ditutup, pembatalan tidak bisa dijurnal', 409)
+        reverse_accounting_entries('petty_cash', t.id, today, u.id, description=f'Pembatalan kas kecil {t.number}')
     t.status = 'cancelled'
     db.session.commit()
     return jsonify(tx_dict(t))
@@ -581,3 +701,76 @@ def report():
         'by_requester': [{'name': k, 'amount': v} for k, v in sorted(by_req.items(), key=lambda x: -x[1])],
         'summary': summary(f),
     })
+
+
+@petty_cash_bp.route('/expense-accounts', methods=['GET'])
+@jwt_required()
+@require_permission('petty_cash.manage')
+def list_expense_accounts():
+    """Akun beban untuk dipetakan ke kategori kas kecil."""
+    from models.finance import Account
+    rows = Account.query.filter(Account.account_type == 'expense', Account.is_active.is_(True),
+                                Account.is_header.is_(False)).order_by(Account.account_code).all()
+    return jsonify({'accounts': [{'id': a.id, 'code': a.account_code, 'name': a.account_name} for a in rows]})
+
+
+@petty_cash_bp.route('/category-accounts', methods=['PUT'])
+@jwt_required()
+@require_permission('petty_cash.manage')
+def set_category_accounts():
+    """Pemetaan kategori -> akun beban. Kategori yang dikosongkan memakai akun bawaan dana."""
+    from models.finance import Account
+    from models.petty_cash import PettyCashCategoryAccount
+    fund = _fund()
+    data = (request.get_json() or {}).get('category_accounts') or {}
+    if not isinstance(data, dict):
+        raise PCError('Format pemetaan tidak dikenali')
+    for category, account_id in data.items():
+        if category not in CATEGORIES:
+            raise PCError(f'Kategori {category} tidak dikenal')
+        row = PettyCashCategoryAccount.query.filter_by(fund_id=fund.id, category=category).first()
+        if not account_id:
+            if row:
+                db.session.delete(row)
+            continue
+        acc = db.session.get(Account, int(account_id))
+        if not acc or acc.account_type != 'expense' or acc.is_header:
+            raise PCError(f'Akun untuk kategori {category} harus akun beban rinci')
+        if row:
+            row.account_id = acc.id
+        else:
+            db.session.add(PettyCashCategoryAccount(fund_id=fund.id, category=category, account_id=acc.id))
+    db.session.commit()
+    return jsonify(fund_dict(fund))
+
+
+@petty_cash_bp.route('/mutations', methods=['GET'])
+@jwt_required()
+@require_permission('petty_cash.view')
+def list_mutations():
+    """Buku kas: uang masuk (transfer dari Finance) dan uang keluar (nota tercatat),
+    beserta saldo berjalan. Hanya untuk dilihat."""
+    fund = _fund()
+    rows = []
+    if fund.opening_balance and float(fund.opening_balance) != 0:
+        rows.append({'date': None, 'kind': 'opening', 'number': '-', 'description': 'Saldo awal',
+                     'in_amount': _f(fund.opening_balance), 'out_amount': 0.0, 'url': None})
+    for t in transfers_in(fund):
+        rows.append({'date': t.transfer_date.isoformat(), 'kind': 'transfer', 'number': t.number,
+                     'description': f'Transfer dari {t.from_account.account_name}' if t.from_account else 'Transfer masuk',
+                     'in_amount': _f(_transfer_in_amount(t)), 'out_amount': 0.0,
+                     'url': '/app/finance/bank-transfers'})
+    for t in PettyCashTransaction.query.filter(PettyCashTransaction.fund_id == fund.id,
+                                               PettyCashTransaction.status == 'paid').all():
+        rows.append({'date': t.request_date.isoformat(), 'kind': 'expense', 'number': t.number,
+                     'description': f'{t.category}: {t.purpose} ({t.requester_name})',
+                     'in_amount': 0.0, 'out_amount': _f(t.amount), 'url': None})
+    # Di tanggal yang sama, uang masuk dulu baru uang keluar, supaya saldo
+    # berjalannya masuk akal (bukan minus sesaat padahal dananya sudah datang).
+    urut = {'opening': 0, 'transfer': 1, 'expense': 2}
+    rows.sort(key=lambda r: (r['date'] or '', urut.get(r['kind'], 9), r['number']))
+    saldo = 0.0
+    for r in rows:
+        saldo += r['in_amount'] - r['out_amount']
+        r['balance'] = round(saldo, 2)
+    return jsonify({'mutations': rows, 'summary': summary(fund)})

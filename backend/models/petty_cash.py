@@ -15,13 +15,38 @@ class PettyCashFund(db.Model):
     custodian_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     approver_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     cash_account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    # Akun beban bawaan, dipakai kalau kategorinya belum dipetakan ke akun sendiri.
+    expense_account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    # paper = persetujuan pakai bon kertas bertanda tangan, sistem hanya membukukan;
+    # app = persetujuan lewat sistem (diajukan -> disetujui -> dicairkan).
+    approval_mode = db.Column(db.String(10), nullable=False, default='paper')
+    opening_balance = db.Column(db.Numeric(18, 2), nullable=False, default=0)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     cash_account = db.relationship('Account', foreign_keys=[cash_account_id])
+    expense_account = db.relationship('Account', foreign_keys=[expense_account_id])
     custodian = db.relationship('User', foreign_keys=[custodian_user_id])
     approver = db.relationship('User', foreign_keys=[approver_user_id])
+
+
+class PettyCashCategoryAccount(db.Model):
+    """Akun beban untuk satu kategori kas kecil. Kategori yang tidak ada di sini
+    memakai akun beban bawaan dananya."""
+    __tablename__ = 'petty_cash_category_accounts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    fund_id = db.Column(db.Integer, db.ForeignKey('petty_cash_funds.id', ondelete='CASCADE'), nullable=False)
+    category = db.Column(db.String(100), nullable=False)
+    account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    __table_args__ = (db.UniqueConstraint('fund_id', 'category', name='uq_petty_cash_category_account'),)
+
+    fund = db.relationship('PettyCashFund', backref=db.backref('category_accounts', cascade='all, delete-orphan'))
+    account = db.relationship('Account')
 
 
 class PettyCashTransaction(db.Model):
@@ -49,6 +74,9 @@ class PettyCashTransaction(db.Model):
     rejected_at = db.Column(db.DateTime, nullable=True)
     rejection_reason = db.Column(db.Text, nullable=True)
     replenishment_id = db.Column(db.Integer, db.ForeignKey('petty_cash_replenishments.id'), nullable=True)
+    over_limit = db.Column(db.Boolean, nullable=False, default=False)      # melebihi batas per transaksi, dicatat tapi ditandai
+    journal_number = db.Column(db.String(50), nullable=True)
+    expense_account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
@@ -57,6 +85,7 @@ class PettyCashTransaction(db.Model):
     approver = db.relationship('User', foreign_keys=[approved_by])
     payer = db.relationship('User', foreign_keys=[paid_by])
     rejecter = db.relationship('User', foreign_keys=[rejected_by])
+    expense_account = db.relationship('Account', foreign_keys=[expense_account_id])
 
 
 class PettyCashReplenishment(db.Model):

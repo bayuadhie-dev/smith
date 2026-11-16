@@ -1,9 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import * as XLSX from 'xlsx'
 import axiosInstance from '../../utils/axiosConfig'
-import { PageHeader, Panel, KpiStrip } from '../../components/ui/PageKit'
+import { PageHeader, Panel, KpiStrip, type KpiItem } from '../../components/ui/PageKit'
 import AccessibleModal from '../../components/ui/AccessibleModal'
 import NumberInput from '../../components/ui/NumberInput'
+import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import { confirmDialog, showError, showSuccess } from '../../components/ui'
 import { useUrlState } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
@@ -25,12 +26,12 @@ function usePc() {
     }
   }, [fundId])
 }
-type TabId = 'ringkasan' | 'transaksi' | 'pengisian' | 'laporan' | 'pengaturan'
+type TabId = 'ringkasan' | 'transaksi' | 'mutasi' | 'pengisian' | 'laporan' | 'pengaturan'
 const TAB_LABEL: Record<TabId, string> = {
-  ringkasan: 'Ringkasan', transaksi: 'Transaksi', pengisian: 'Pengisian Kembali', laporan: 'Laporan', pengaturan: 'Pengaturan',
+  ringkasan: 'Ringkasan', transaksi: 'Transaksi', mutasi: 'Mutasi Kas', pengisian: 'Pengisian Kembali', laporan: 'Laporan', pengaturan: 'Pengaturan',
 }
 const STATUS_LABEL: Record<string, string> = {
-  submitted: 'Menunggu Plant Manager', approved: 'Menunggu Pencairan', paid: 'Dicairkan', rejected: 'Ditolak', cancelled: 'Batal',
+  submitted: 'Menunggu Plant Manager', approved: 'Menunggu Pencairan', paid: 'Tercatat', rejected: 'Ditolak', cancelled: 'Batal',
 }
 const STATUS_CLASS: Record<string, string> = {
   submitted: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
@@ -117,11 +118,13 @@ function TxForm({ fund, categories, editing, onClose, onSaved }: TxFormProps) {
     request_date: editing?.request_date || ymd(new Date()),
   })
   const [suggest, setSuggest] = useState<any[]>([])
+  const [attFiles, setAttFiles] = useState<File[]>([])
   const [picked, setPicked] = useState(!!editing?.requester_employee_id)
   const [busy, setBusy] = useState(false)
   const debounced = useDebounce(f.requester_name, 300)
   const limit = Number(fund?.per_txn_limit || 0)
   const over = Number(f.amount) > limit
+  const paper = (fund?.approval_mode || 'paper') === 'paper'
 
   useEffect(() => {
     if (picked || debounced.trim().length < 2) { setSuggest([]); return }
@@ -142,14 +145,16 @@ function TxForm({ fund, categories, editing, onClose, onSaved }: TxFormProps) {
     if (!f.purpose.trim()) return showError('Isi untuk apa pengeluaran ini')
     if (!f.category) return showError('Pilih kategori')
     if (!(Number(f.amount) > 0)) return showError('Isi jumlah')
-    if (over) return showError(`Melebihi batas per transaksi ${rp(limit)}`)
     if (!f.receipt_number.trim()) return showError('Nomor nota wajib diisi')
     setBusy(true)
     try {
       const body = { ...f, amount: Number(f.amount), requester_employee_id: f.requester_employee_id || undefined }
-      if (editing) await pc.put(`${API}/transactions/${editing.id}`, body)
-      else await pc.post(`${API}/transactions`, body)
-      showSuccess(editing ? 'Permintaan diperbarui' : 'Permintaan dibuat, menunggu Plant Manager')
+      const saved = editing
+        ? (await pc.put(`${API}/transactions/${editing.id}`, body)).data
+        : (await pc.post(`${API}/transactions`, body)).data
+      await uploadAttachments('petty_cash', saved?.id || editing?.id, attFiles)
+      showSuccess(editing ? 'Catatan diperbarui'
+        : paper ? 'Pengeluaran tercatat' : 'Permintaan dibuat, menunggu Plant Manager')
       onSaved()
     } catch (e: any) {
       showError(errMsg(e, 'Gagal menyimpan permintaan'))
@@ -162,7 +167,7 @@ function TxForm({ fund, categories, editing, onClose, onSaved }: TxFormProps) {
     <AccessibleModal
       isOpen
       onClose={onClose}
-      title={editing ? `Ubah ${editing.number}` : 'Buat Permintaan Kas Kecil'}
+      title={editing ? `Ubah ${editing.number}` : paper ? 'Catat Pengeluaran Kas Kecil' : 'Buat Permintaan Kas Kecil'}
       size="lg"
       footer={
         <div className="flex justify-end gap-2 flex-wrap">
@@ -214,14 +219,20 @@ function TxForm({ fund, categories, editing, onClose, onSaved }: TxFormProps) {
         <div>
           <label className={label}>Jumlah (Rp) *</label>
           <NumberInput currency className="input-field text-right" value={f.amount} onChange={(e: any) => set('amount', e.target.value)} />
-          <p className={`mt-1 text-xs ${over ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
-            Maksimal {rp(limit)} per transaksi{over ? ', jumlah ini melebihi batas' : ''}
+          <p className={`mt-1 text-xs ${over ? 'text-amber-700 dark:text-amber-300' : 'text-gray-500 dark:text-gray-400'}`}>
+            {over ? `Melebihi batas ${rp(limit)} per transaksi. Tetap bisa dicatat, tapi akan ditandai di laporan.` : `Batas ${rp(limit)} per transaksi`}
           </p>
         </div>
         <div>
           <label className={label}>Nomor nota *</label>
           <input className="input-field" value={f.receipt_number} onChange={(e) => set('receipt_number', e.target.value)} />
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Nomor yang tertera di nota atau kwitansi. Satu nomor nota hanya bisa dipakai sekali.</p>
+        </div>
+        <div className="md:col-span-2">
+          <PendingAttachments files={attFiles} onChange={setAttFiles} entityType="petty_cash" entityId={editing?.id} />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Unggah foto atau scan notanya. Bon kertas bertanda tangan tetap jadi dokumen sahnya.
+          </p>
         </div>
       </div>
     </AccessibleModal>
@@ -237,7 +248,7 @@ export default function PettyCash() {
   const canReport = can('petty_cash.report') || can('petty_cash.view')
 
   const allowed = useMemo(
-    () => (['ringkasan', 'transaksi', 'pengisian', ...(canReport ? ['laporan'] : []), ...(canManage ? ['pengaturan'] : [])] as TabId[]),
+    () => (['ringkasan', 'transaksi', 'mutasi', 'pengisian', ...(canReport ? ['laporan'] : []), ...(canManage ? ['pengaturan'] : [])] as TabId[]),
     [canReport, canManage],
   )
   const [tab, setTab] = useUrlState<TabId>('tab', 'ringkasan', allowed)
@@ -316,11 +327,13 @@ export default function PettyCash() {
         </div>
         {tab === 'ringkasan' && <Ringkasan fund={fund} reload={loadFund} />}
         {tab === 'transaksi' && <Transaksi fund={fund} categories={categories} canCreate={canCreate} reload={loadFund} />}
+        {tab === 'mutasi' && <Mutasi />}
         {tab === 'pengisian' && <Pengisian fund={fund} canApprove={canReplenishApprove} reload={loadFund} />}
         {tab === 'laporan' && <Laporan categories={categories} />}
         {tab === 'pengaturan' && canManage && (
           <Pengaturan
             fund={fund}
+            categories={categories}
             reload={async () => { await Promise.all([loadFund(), loadFunds()]) }}
             onCreated={async (id: number) => { await loadFunds(); setFundParam(String(id)) }}
           />
@@ -347,8 +360,30 @@ function Ringkasan({ fund, reload }: { fund: any; reload: () => Promise<void> })
       setBusy(false)
     }
   }
+  const paper = (fund.approval_mode || 'paper') === 'paper'
   return (
     <div className="space-y-5">
+      {fund.negative_balance && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+          <p className="font-semibold text-red-700 dark:text-red-300">Saldo kas kecil minus</p>
+          <p className="text-sm text-red-700/80 dark:text-red-300/80">
+            Biasanya karena transfer pengisian dari Finance belum dicatat, bukan karena uangnya kurang. Cek tab Mutasi Kas.
+          </p>
+        </div>
+      )}
+      {!fund.gl_ready && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+          <p className="font-semibold text-amber-800 dark:text-amber-200">Belum terhubung ke buku besar</p>
+          <p className="text-sm text-amber-800/80 dark:text-amber-200/80">
+            Pengeluaran tetap bisa dicatat, tapi belum menjadi jurnal sampai akun kas dan akun bebannya diisi di tab Pengaturan.
+          </p>
+        </div>
+      )}
+      {paper && (
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          Kas kecil ini memakai bon kertas bertanda tangan. Yang dicatat di sini adalah pengeluaran yang uangnya sudah keluar, lengkap dengan foto notanya.
+        </p>
+      )}
       {fund.needs_replenishment && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
           <div>
@@ -363,8 +398,11 @@ function Ringkasan({ fund, reload }: { fund: any; reload: () => Promise<void> })
           { label: 'Saldo sekarang', value: rp(fund.balance), tone: lowBalance ? 'bad' : null, hint: `Minimum ${rp(fund.min_balance)}` },
           { label: 'Dana tetap', value: rp(fund.fixed_amount) },
           { label: 'Batas per transaksi', value: rp(fund.per_txn_limit) },
-          { label: 'Menunggu Plant Manager', value: rp(fund.waiting_approval), tone: fund.waiting_approval > 0 ? 'warn' : null },
-          { label: 'Menunggu pencairan', value: rp(fund.waiting_payment), tone: fund.waiting_payment > 0 ? 'warn' : null },
+          ...(paper
+            ? ([{ label: 'Total masuk', value: rp(fund.total_received) },
+                { label: 'Total keluar', value: rp(fund.total_paid) }] as KpiItem[])
+            : ([{ label: 'Menunggu Plant Manager', value: rp(fund.waiting_approval), tone: fund.waiting_approval > 0 ? 'warn' : null },
+                { label: 'Menunggu pencairan', value: rp(fund.waiting_payment), tone: fund.waiting_payment > 0 ? 'warn' : null }] as KpiItem[])),
         ]}
       />
       <Panel title="Pengisian kembali berjalan">
@@ -390,6 +428,7 @@ function Ringkasan({ fund, reload }: { fund: any; reload: () => Promise<void> })
 }
 
 function Transaksi({ fund, categories, canCreate, reload }: { fund: any; categories: string[]; canCreate: boolean; reload: () => Promise<void> }) {
+  const paper = (fund?.approval_mode || 'paper') === 'paper'
   const pc = usePc()
   const [rows, setRows] = useState<any[]>([])
   const [total, setTotal] = useState(0)
@@ -435,7 +474,11 @@ function Transaksi({ fund, categories, canCreate, reload }: { fund: any; categor
     if (await confirmDialog(`Cairkan ${rp(t.amount)} untuk ${t.number}? Saldo kas kecil akan berkurang.`, { title: 'Cairkan', confirmText: 'Cairkan', danger: false })) await act(t, 'pay', 'Kas dicairkan')
   }
   const cancel = async (t: any) => {
-    if (await confirmDialog(`Batalkan ${t.number}?`, { title: 'Batalkan permintaan', confirmText: 'Batalkan' })) await act(t, 'cancel', 'Permintaan dibatalkan')
+    const tercatat = t.status === 'paid'
+    const pesan = tercatat
+      ? `Batalkan ${t.number} sebesar ${rp(t.amount)}? Jurnalnya akan dibalik, catatannya tetap tersimpan sebagai dibatalkan.`
+      : `Batalkan ${t.number}?`
+    if (await confirmDialog(pesan, { title: 'Batalkan catatan', confirmText: 'Batalkan' })) await act(t, 'cancel', 'Catatan dibatalkan')
   }
 
   const setF = (k: string, v: string) => { setPage(1); setFlt((p) => ({ ...p, [k]: v })) }
@@ -444,8 +487,8 @@ function Transaksi({ fund, categories, canCreate, reload }: { fund: any; categor
   return (
     <div className="space-y-4">
       <Panel
-        title="Daftar permintaan"
-        action={canCreate ? <button type="button" className={btnPrimary} onClick={() => setForm({ editing: null })}>Buat Permintaan</button> : undefined}
+        title={paper ? 'Daftar pengeluaran' : 'Daftar permintaan'}
+        action={canCreate ? <button type="button" className={btnPrimary} onClick={() => setForm({ editing: null })}>{paper ? 'Catat Pengeluaran' : 'Buat Permintaan'}</button> : undefined}
       >
         <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-5">
           <select className="input-field" value={flt.status} onChange={(e) => setF('status', e.target.value)}>
@@ -482,20 +525,26 @@ function Transaksi({ fund, categories, canCreate, reload }: { fund: any; categor
                   </td>
                   <td className={td}>{t.category}</td>
                   <td className={`${td} whitespace-nowrap`}>{t.receipt_number}</td>
-                  <td className={`${td} whitespace-nowrap text-right tabular-nums`}>{rp(t.amount)}</td>
-                  <td className={td}><Badge text={STATUS_LABEL[t.status] || t.status} cls={STATUS_CLASS[t.status] || STATUS_CLASS.cancelled} /></td>
+                  <td className={`${td} whitespace-nowrap text-right tabular-nums`}>
+                    {rp(t.amount)}
+                    {t.over_limit && <span className="ml-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">lewat batas</span>}
+                  </td>
+                  <td className={td}>
+                    <Badge text={STATUS_LABEL[t.status] || t.status} cls={STATUS_CLASS[t.status] || STATUS_CLASS.cancelled} />
+                    {t.journal_number && <p className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">{t.journal_number}</p>}
+                  </td>
                   <td className={td}>
                     <div className="flex flex-wrap gap-1">
                       {fund.can_approve && t.status === 'submitted' && <button type="button" className={btnPrimary} onClick={() => approve(t)}>Setujui</button>}
                       {fund.can_approve && (t.status === 'submitted' || t.status === 'approved') && <button type="button" className={btnDanger} onClick={() => setRejecting(t)}>Tolak</button>}
                       {fund.can_pay && t.status === 'approved' && <button type="button" className={btnPrimary} onClick={() => pay(t)}>Cairkan</button>}
                       {canCreate && t.status === 'submitted' && <button type="button" className={btnGhost} onClick={() => setForm({ editing: t })}>Ubah</button>}
-                      {canCreate && (t.status === 'submitted' || t.status === 'approved') && <button type="button" className={btnGhost} onClick={() => cancel(t)}>Batalkan</button>}
+                      {canCreate && ['submitted', 'approved', 'paid'].includes(t.status) && !t.replenishment_id && <button type="button" className={btnGhost} onClick={() => cancel(t)}>Batalkan</button>}
                     </div>
                   </td>
                 </tr>
               ))}
-              {rows.length === 0 && <tr><td colSpan={10} className="px-3 py-6 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada permintaan.</td></tr>}
+              {rows.length === 0 && <tr><td colSpan={10} className="px-3 py-6 text-center text-sm text-gray-500 dark:text-gray-400">{paper ? 'Belum ada pengeluaran yang dicatat.' : 'Belum ada permintaan.'}</td></tr>}
             </tbody>
           </table>
         </div>
@@ -764,7 +813,7 @@ function Laporan({ categories }: { categories: string[] }) {
   )
 }
 
-function Pengaturan({ fund, reload, onCreated }: { fund: any; reload: () => Promise<void>; onCreated: (id: number) => Promise<void> }) {
+function Pengaturan({ fund, categories, reload, onCreated }: { fund: any; categories: string[]; reload: () => Promise<void>; onCreated: (id: number) => Promise<void> }) {
   const pc = usePc()
   const [users, setUsers] = useState<any[]>([])
   const [f, setF] = useState({
@@ -774,13 +823,21 @@ function Pengaturan({ fund, reload, onCreated }: { fund: any; reload: () => Prom
     custodian_user_id: fund.custodian_user_id ? String(fund.custodian_user_id) : '',
     approver_user_id: fund.approver_user_id ? String(fund.approver_user_id) : '',
     cash_account_id: fund.cash_account_id ? String(fund.cash_account_id) : '',
+    expense_account_id: fund.expense_account_id ? String(fund.expense_account_id) : '',
+    approval_mode: fund.approval_mode || 'paper',
+    opening_balance: String(fund.opening_balance || 0),
   })
   const [accounts, setAccounts] = useState<any[]>([])
+  const [expenseAccounts, setExpenseAccounts] = useState<any[]>([])
+  const [catAcc, setCatAcc] = useState<Record<string, string>>(
+    Object.fromEntries(Object.entries(fund.category_accounts || {}).map(([k, v]) => [k, String(v)])),
+  )
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
     pc.get(`${API}/users`).then((r) => setUsers(r.data?.users || [])).catch(() => showError('Gagal memuat daftar pengguna'))
     pc.get(`${API}/accounts`).then((r) => setAccounts(r.data?.accounts || [])).catch(() => showError('Gagal memuat daftar akun kas'))
+    pc.get(`${API}/expense-accounts`).then((r) => setExpenseAccounts(r.data?.accounts || [])).catch(() => undefined)
   }, [])
 
   const save = async () => {
@@ -793,6 +850,12 @@ function Pengaturan({ fund, reload, onCreated }: { fund: any; reload: () => Prom
         custodian_user_id: f.custodian_user_id ? Number(f.custodian_user_id) : null,
         approver_user_id: f.approver_user_id ? Number(f.approver_user_id) : null,
         cash_account_id: f.cash_account_id ? Number(f.cash_account_id) : null,
+        expense_account_id: f.expense_account_id ? Number(f.expense_account_id) : null,
+        approval_mode: f.approval_mode,
+        opening_balance: Number(f.opening_balance || 0),
+      })
+      await pc.put(`${API}/category-accounts`, {
+        category_accounts: Object.fromEntries(categories.map((c) => [c, catAcc[c] ? Number(catAcc[c]) : null])),
       })
       showSuccess('Pengaturan kas kecil disimpan')
       await reload()
@@ -842,7 +905,45 @@ function Pengaturan({ fund, reload, onCreated }: { fund: any; reload: () => Prom
             <option value="">- Belum diatur -</option>
             {accounts.map((a) => <option key={a.id} value={a.id}>{a.code} {a.name}</option>)}
           </select>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Kas kecil dicatat di akun kas operasional.</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Saldo kas kecil hidup di akun ini. Uang masuk dicatat Finance lewat Transfer Kas/Bank.</p>
+        </div>
+        <div>
+          <label className={label}>Cara persetujuan</label>
+          <select className="input-field" value={f.approval_mode} onChange={(e) => setF((p) => ({ ...p, approval_mode: e.target.value }))}>
+            <option value="paper">Bon kertas bertanda tangan (sistem hanya membukukan)</option>
+            <option value="app">Lewat sistem (diajukan, disetujui, lalu dicairkan)</option>
+          </select>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Pada mode bon kertas, pengeluaran langsung tercatat dan dijurnal saat disimpan.</p>
+        </div>
+        <div>
+          <label className={label}>Saldo awal (Rp)</label>
+          <NumberInput currency className="input-field text-right" value={f.opening_balance} onChange={(e: any) => setF((p) => ({ ...p, opening_balance: e.target.value }))} />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Isi 0 kalau dana pertamanya akan ditransfer Finance, supaya tidak dihitung dua kali.</p>
+        </div>
+        <div>
+          <label className={label}>Akun beban bawaan</label>
+          <select className="input-field" value={f.expense_account_id} onChange={(e) => setF((p) => ({ ...p, expense_account_id: e.target.value }))}>
+            <option value="">- Belum diatur -</option>
+            {expenseAccounts.map((a) => <option key={a.id} value={a.id}>{a.code} {a.name}</option>)}
+          </select>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Dipakai untuk kategori yang belum punya akun sendiri di bawah.</p>
+        </div>
+      </div>
+      <div className="mt-6">
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Akun beban per kategori</h4>
+        <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+          Tiap pengeluaran dijurnal ke akun kategorinya. Yang dikosongkan ikut akun beban bawaan.
+        </p>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {categories.map((c) => (
+            <div key={c}>
+              <label className={label}>{c}</label>
+              <select className="input-field" value={catAcc[c] || ''} onChange={(e) => setCatAcc((p) => ({ ...p, [c]: e.target.value }))}>
+                <option value="">- Ikut akun bawaan -</option>
+                {expenseAccounts.map((a) => <option key={a.id} value={a.id}>{a.code} {a.name}</option>)}
+              </select>
+            </div>
+          ))}
         </div>
       </div>
     </Panel>
@@ -906,6 +1007,62 @@ function TambahKas({ users, accounts, onCreated }: { users: any[]; accounts: any
             <button type="button" className={btnPrimary} disabled={busy || !f.code.trim() || !f.name.trim()} onClick={create}>{busy ? 'Menyimpan...' : 'Buat Kas Kecil'}</button>
           </div>
         </div>
+      )}
+    </Panel>
+  )
+}
+
+
+function Mutasi() {
+  const pc = usePc()
+  const [rows, setRows] = useState<any[]>([])
+  const [sum, setSum] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    pc.get(`${API}/mutations`)
+      .then((r) => { setRows(r.data?.mutations || []); setSum(r.data?.summary || null) })
+      .catch((e: any) => showError(errMsg(e, 'Gagal memuat mutasi kas')))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const KIND: Record<string, string> = { opening: 'Saldo awal', transfer: 'Transfer masuk', expense: 'Pengeluaran' }
+
+  return (
+    <Panel title="Buku kas kecil">
+      <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">
+        Uang masuk dicatat Finance lewat Transfer Kas/Bank, uang keluar dari nota yang dicatat di sini. Halaman ini hanya untuk dilihat.
+      </p>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead>
+            <tr>
+              <th className={th}>Tanggal</th><th className={th}>Jenis</th><th className={th}>No.</th><th className={th}>Keterangan</th>
+              <th className={`${th} text-right`}>Masuk</th><th className={`${th} text-right`}>Keluar</th><th className={`${th} text-right`}>Saldo</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+            {rows.map((r, i) => (
+              <tr key={i}>
+                <td className={`${td} whitespace-nowrap`}>{r.date ? dmy(r.date) : '-'}</td>
+                <td className={td}>{KIND[r.kind] || r.kind}</td>
+                <td className={`${td} whitespace-nowrap font-medium`}>{r.number}</td>
+                <td className={td}>{r.description}</td>
+                <td className={`${td} whitespace-nowrap text-right tabular-nums text-primary-700 dark:text-primary-300`}>{r.in_amount ? rp(r.in_amount) : '-'}</td>
+                <td className={`${td} whitespace-nowrap text-right tabular-nums`}>{r.out_amount ? rp(r.out_amount) : '-'}</td>
+                <td className={`${td} whitespace-nowrap text-right tabular-nums font-medium`}>{rp(r.balance)}</td>
+              </tr>
+            ))}
+            {!loading && rows.length === 0 && (
+              <tr><td colSpan={7} className="px-3 py-6 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada mutasi. Saldo bertambah setelah Finance mentransfer dana ke akun kas kecil.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      {sum && (
+        <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+          Total masuk {rp(sum.total_received)} - total keluar {rp(sum.total_paid)} = saldo {rp(sum.balance)}.
+        </p>
       )}
     </Panel>
   )

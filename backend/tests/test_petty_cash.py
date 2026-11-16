@@ -1,10 +1,12 @@
 from models.petty_cash import PettyCashFund
 
 
-def _fund(db_session, custodian=None, approver=None):
+def _fund(db_session, custodian=None, approver=None, mode='app', opening=1000000):
+    """Dana uji. Mode bawaan modul sekarang 'paper' (bon kertas, langsung tercatat);
+    tes alur persetujuan memakai mode 'app' dengan saldo awal supaya hitungannya tetap."""
     PettyCashFund.query.delete()
     f = PettyCashFund(code='KK-HR', name='Kas Kecil HR', fixed_amount=1000000, per_txn_limit=500000, min_balance=100000,
-                      custodian_user_id=custodian, approver_user_id=approver)
+                      custodian_user_id=custodian, approver_user_id=approver, approval_mode=mode, opening_balance=opening)
     db_session.add(f)
     db_session.commit()
     return f
@@ -19,7 +21,8 @@ def _body(**kw):
 
 def test_validasi_aturan(client, auth_headers, db_session):
     _fund(db_session)
-    assert client.post('/api/petty-cash/transactions', headers=auth_headers, json=_body(amount=500001)).status_code == 400
+    lebih = client.post('/api/petty-cash/transactions', headers=auth_headers, json=_body(amount=500001, receipt_number='NOTA-LEBIH'))
+    assert lebih.status_code == 201 and lebih.get_json()['over_limit'] is True   # uang sudah keluar: dicatat, ditandai
     assert client.post('/api/petty-cash/transactions', headers=auth_headers, json=_body(receipt_number='')).status_code == 400
     assert client.post('/api/petty-cash/transactions', headers=auth_headers, json=_body(purpose=' ')).status_code == 400
     assert client.post('/api/petty-cash/transactions', headers=auth_headers, json=_body(requester_name='')).status_code == 400
@@ -130,14 +133,14 @@ def test_banyak_kas_kecil_dan_akun_kas(client, auth_headers, db_session):
                                                                           'per_txn_limit': 500000, 'min_balance': 200000, 'cash_account_id': kas.id})
     assert r.status_code == 201, r.get_json()
     pbg = r.get_json()
-    assert pbg['code'] == 'KK-PBG' and pbg['cash_account_name'] == '100001 Kas Operasional' and pbg['balance'] == 2000000
+    assert pbg['code'] == 'KK-PBG' and pbg['cash_account_name'] == '100001 Kas Operasional' and pbg['balance'] == 0
     assert client.post('/api/petty-cash/funds', headers=auth_headers, json={'code': 'KK-X', 'name': 'X', 'cash_account_id': beban.id}).status_code == 400  # bukan akun kas/bank
     assert [f['code'] for f in client.get('/api/petty-cash/funds', headers=auth_headers).get_json()['funds']] == ['KK-HR', 'KK-PBG']
     # transaksi di Purbalingga tidak memengaruhi kas HR
     t = client.post(f"/api/petty-cash/transactions?fund_id={pbg['id']}", headers=auth_headers, json=_body(receipt_number='P1', amount=300000)).get_json()
     client.post(f"/api/petty-cash/transactions/{t['id']}/approve", headers=auth_headers, json={})
     client.post(f"/api/petty-cash/transactions/{t['id']}/pay", headers=auth_headers)
-    assert client.get(f"/api/petty-cash/fund?fund_id={pbg['id']}", headers=auth_headers).get_json()['balance'] == 1700000
+    assert client.get(f"/api/petty-cash/fund?fund_id={pbg['id']}", headers=auth_headers).get_json()['balance'] == -300000
     assert client.get('/api/petty-cash/fund', headers=auth_headers).get_json()['balance'] == 1000000
     assert client.get(f"/api/petty-cash/transactions?fund_id={pbg['id']}", headers=auth_headers).get_json()['total'] == 1
     assert client.get('/api/petty-cash/transactions', headers=auth_headers).get_json()['total'] == 0
@@ -145,3 +148,117 @@ def test_banyak_kas_kecil_dan_akun_kas(client, auth_headers, db_session):
     assert client.post('/api/petty-cash/transactions', headers=auth_headers, json=_body(receipt_number='P1')).status_code == 201
     assert client.post(f"/api/petty-cash/transactions?fund_id={pbg['id']}", headers=auth_headers, json=_body(receipt_number='P1')).status_code == 400
     assert client.get('/api/petty-cash/accounts', headers=auth_headers).get_json()['accounts'][0]['code'] == '100001'
+
+
+# --- mode pembukuan (bon kertas) + jurnal + sambungan ke Transfer Kas/Bank ---
+
+def _akun(db_session):
+    from models.finance import Account
+    def mk(code, name, typ, cash=False):
+        a = Account.query.filter_by(account_code=code).first()
+        if not a:
+            a = Account(account_code=code, account_name=name, account_type=typ, normal_balance='debit',
+                        is_cash_bank=cash, is_active=True, is_header=False)
+            db_session.add(a)
+            db_session.commit()
+        return a
+    return {'kas': mk('100001', 'Kas Purbalingga', 'asset', True), 'bca': mk('100101', 'Bank BCA', 'asset', True),
+            'konsumsi': mk('620133', 'Biaya Konsumsi', 'expense'), 'umum': mk('620118', 'Biaya Umum', 'expense')}
+
+
+def _jurnal(tid, ref='petty_cash'):
+    from models.finance import AccountingEntry
+    return {(e.account_code, float(e.debit_amount or 0), float(e.credit_amount or 0))
+            for e in AccountingEntry.query.filter_by(reference_type=ref, reference_id=tid).all()}
+
+
+def test_bon_kertas_langsung_tercatat_dan_menjurnal(client, auth_headers, db_session):
+    a = _akun(db_session)
+    f = _fund(db_session, mode='paper', opening=1000000)
+    f.cash_account_id, f.expense_account_id = a['kas'].id, a['umum'].id
+    db_session.commit()
+    client.put('/api/petty-cash/category-accounts', headers=auth_headers,
+               json={'category_accounts': {'Konsumsi': a['konsumsi'].id}})
+
+    t = client.post('/api/petty-cash/transactions', headers=auth_headers, json=_body(receipt_number='K1', amount=150000)).get_json()
+    assert t['status'] == 'paid' and t['journal_number'] and t['expense_account_name'] == '620133 Biaya Konsumsi'
+    assert _jurnal(t['id']) == {('620133', 150000.0, 0.0), ('100001', 0.0, 150000.0)}
+
+    # kategori yang belum dipetakan jatuh ke akun bawaan dana
+    t2 = client.post('/api/petty-cash/transactions', headers=auth_headers,
+                     json=_body(receipt_number='K2', amount=50000, category='Lainnya')).get_json()
+    assert _jurnal(t2['id']) == {('620118', 50000.0, 0.0), ('100001', 0.0, 50000.0)}
+    assert client.get('/api/petty-cash/fund', headers=auth_headers).get_json()['balance'] == 800000
+
+
+def test_nota_tercatat_dibatalkan_lewat_jurnal_pembalik(client, auth_headers, db_session):
+    a = _akun(db_session)
+    f = _fund(db_session, mode='paper', opening=500000)
+    f.cash_account_id, f.expense_account_id = a['kas'].id, a['umum'].id
+    db_session.commit()
+    t = client.post('/api/petty-cash/transactions', headers=auth_headers, json=_body(receipt_number='B9', amount=100000)).get_json()
+    r = client.post(f"/api/petty-cash/transactions/{t['id']}/cancel", headers=auth_headers, json={})
+    assert r.status_code == 200 and r.get_json()['status'] == 'cancelled'
+    assert _jurnal(t['id'], 'void_petty_cash') == {('620118', 0.0, 100000.0), ('100001', 100000.0, 0.0)}
+    assert client.get('/api/petty-cash/fund', headers=auth_headers).get_json()['balance'] == 500000
+
+
+def test_tanpa_akun_tetap_boleh_mencatat_tapi_belum_masuk_buku_besar(client, auth_headers, db_session):
+    _fund(db_session, mode='paper', opening=0)
+    t = client.post('/api/petty-cash/transactions', headers=auth_headers, json=_body(receipt_number='X1', amount=75000)).get_json()
+    assert t['status'] == 'paid' and t['journal_number'] is None
+    f = client.get('/api/petty-cash/fund', headers=auth_headers).get_json()
+    assert f['gl_ready'] is False and f['balance'] == -75000 and f['negative_balance'] is True
+
+
+def test_transfer_bank_mengisi_kas_kecil_dan_menutup_pengajuan(client, auth_headers, db_session):
+    a = _akun(db_session)
+    f = _fund(db_session, mode='paper', opening=0)
+    f.cash_account_id, f.expense_account_id = a['kas'].id, a['umum'].id
+    db_session.commit()
+    fid = f.id
+
+    daftar = client.get('/api/finance/bank-transfers/petty-cash-funds', headers=auth_headers).get_json()['funds']
+    assert [x['code'] for x in daftar] == ['KK-HR'] and daftar[0]['open_request_id'] is None
+
+    client.post('/api/petty-cash/transactions', headers=auth_headers, json=_body(receipt_number='M1', amount=400000))
+    rep = client.post('/api/petty-cash/replenishments', headers=auth_headers, json={'amount': 400000}).get_json()
+
+    trf = client.post('/api/finance/bank-transfers', headers=auth_headers, json={
+        'transfer_date': '2026-11-13', 'from_account_id': a['bca'].id, 'to_account_id': a['kas'].id,
+        'amount': 400000, 'petty_cash_fund_id': fid})
+    assert trf.status_code == 201, trf.get_json()
+    assert trf.get_json()['petty_cash_replenishment_id'] == rep['id']
+
+    f2 = client.get('/api/petty-cash/fund', headers=auth_headers).get_json()
+    assert f2['balance'] == 0 and f2['total_transfer_in'] == 400000      # 400.000 masuk, 400.000 keluar
+    rep2 = client.get('/api/petty-cash/replenishments', headers=auth_headers).get_json()['replenishments'][0]
+    assert rep2['status'] == 'received' and rep2['amount_received'] == 400000
+
+    salah = client.post('/api/finance/bank-transfers', headers=auth_headers, json={
+        'transfer_date': '2026-11-13', 'from_account_id': a['bca'].id, 'to_account_id': a['bca'].id,
+        'amount': 100000, 'petty_cash_fund_id': fid})
+    assert salah.status_code == 400
+
+
+def test_mutasi_menampilkan_masuk_keluar_dan_saldo_berjalan(client, auth_headers, db_session):
+    a = _akun(db_session)
+    f = _fund(db_session, mode='paper', opening=0)
+    f.cash_account_id, f.expense_account_id = a['kas'].id, a['umum'].id
+    db_session.commit()
+    client.post('/api/finance/bank-transfers', headers=auth_headers, json={
+        'transfer_date': '2026-11-10', 'from_account_id': a['bca'].id, 'to_account_id': a['kas'].id,
+        'amount': 1000000, 'petty_cash_fund_id': f.id})
+    client.post('/api/petty-cash/transactions', headers=auth_headers, json=_body(receipt_number='MU1', amount=250000))
+
+    m = client.get('/api/petty-cash/mutations', headers=auth_headers).get_json()['mutations']
+    assert [(x['kind'], x['in_amount'], x['out_amount'], x['balance']) for x in m] == [
+        ('transfer', 1000000.0, 0.0, 1000000.0),
+        ('expense', 0.0, 250000.0, 750000.0),
+    ]
+    # di tanggal yang sama, uang masuk tetap didahulukan
+    client.post('/api/finance/bank-transfers', headers=auth_headers, json={
+        'transfer_date': '2026-11-13', 'from_account_id': a['bca'].id, 'to_account_id': a['kas'].id, 'amount': 500000})
+    m2 = client.get('/api/petty-cash/mutations', headers=auth_headers).get_json()['mutations']
+    assert [x['kind'] for x in m2] == ['transfer', 'transfer', 'expense']
+    assert m2[-1]['balance'] == 1250000.0

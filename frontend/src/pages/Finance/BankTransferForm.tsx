@@ -8,6 +8,7 @@ import NumberInput from '../../components/ui/NumberInput'
 
 interface CashAccount { id: number; code: string; name: string; currency: string; balance: number }
 interface ExpenseAccount { id: number; code: string; name: string }
+interface PettyFund { id: number; code: string; name: string; cash_account_id: number; open_request_id: number | null; open_request_amount: number | null; open_request_number: string | null }
 
 const today = () => {
   const d = new Date()
@@ -20,6 +21,7 @@ export default function BankTransferForm() {
   const navigate = useNavigate()
   const [accounts, setAccounts] = useState<CashAccount[]>([])
   const [expenses, setExpenses] = useState<ExpenseAccount[]>([])
+  const [pettyFunds, setPettyFunds] = useState<PettyFund[]>([])
   const [saving, setSaving] = useState(false)
   const [f, setF] = useState({
     transfer_date: today(),
@@ -34,6 +36,7 @@ export default function BankTransferForm() {
     fee_charged_to: 'from' as 'from' | 'to',
     reference_number: '',
     notes: '',
+    petty_cash_fund_id: '' as string,
   })
   const set = (k: keyof typeof f, v: any) => setF((p) => ({ ...p, [k]: v }))
 
@@ -43,6 +46,9 @@ export default function BankTransferForm() {
       .catch(() => toast.error('Gagal memuat akun kas/bank'))
     axiosInstance.get('/api/finance/bank-transfers/expense-accounts')
       .then((r) => setExpenses(r.data?.accounts || []))
+      .catch(() => undefined)
+    axiosInstance.get('/api/finance/bank-transfers/petty-cash-funds')
+      .then((r) => setPettyFunds(r.data?.funds || []))
       .catch(() => undefined)
   }, [])
 
@@ -82,6 +88,7 @@ export default function BankTransferForm() {
         fee_charged_to: f.fee_charged_to,
         reference_number: f.reference_number || undefined,
         notes: f.notes || undefined,
+        petty_cash_fund_id: f.petty_cash_fund_id ? Number(f.petty_cash_fund_id) : undefined,
       })
       toast.success(`Transfer ${res.data?.number} tersimpan, jurnalnya terbentuk otomatis`)
       navigate('/app/finance/bank-transfers')
@@ -150,6 +157,36 @@ export default function BankTransferForm() {
                 </div>
               )}
             </>
+          )}
+          {pettyFunds.length > 0 && (
+            <div className="md:col-span-2">
+              <label className="mb-2 block text-sm font-medium">Untuk pengisian kas kecil (opsional)</label>
+              <select
+                className="input-field"
+                value={f.petty_cash_fund_id}
+                onChange={(e) => {
+                  const val = e.target.value
+                  const pf = pettyFunds.find((x) => String(x.id) === val)
+                  setF((p) => ({
+                    ...p,
+                    petty_cash_fund_id: val,
+                    to_account_id: pf ? pf.cash_account_id : p.to_account_id,
+                    amount: pf?.open_request_amount ? String(pf.open_request_amount) : p.amount,
+                    notes: pf && !p.notes ? `Pengisian ${pf.name}` : p.notes,
+                  }))
+                }}
+              >
+                <option value="">Bukan pengisian kas kecil</option>
+                {pettyFunds.map((pf) => (
+                  <option key={pf.id} value={pf.id}>
+                    {pf.name}{pf.open_request_number ? ` - ada permintaan ${pf.open_request_number} ${money(pf.open_request_amount || 0)}` : ''}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Kalau dipilih, akun tujuan mengikuti akun kas kecilnya dan permintaan pengisian yang terbuka otomatis ditandai sudah diterima.
+              </p>
+            </div>
           )}
           <div className="md:col-span-2">
             <label className="mb-2 block text-sm font-medium">Keterangan</label>

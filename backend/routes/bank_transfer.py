@@ -96,6 +96,25 @@ def list_expense_accounts():
     return jsonify({'accounts': [{'id': a.id, 'code': a.account_code, 'name': a.account_name} for a in rows]})
 
 
+@bank_transfer_bp.route('/petty-cash-funds', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view', 'finance.create')
+def list_petty_cash_funds():
+    """Kas kecil yang sedang menunggu pengisian, untuk ditautkan ke transfer."""
+    from models.petty_cash import PettyCashFund, PettyCashReplenishment
+    out = []
+    for f in PettyCashFund.query.filter_by(is_active=True).order_by(PettyCashFund.id).all():
+        if not f.cash_account_id:
+            continue
+        rep = PettyCashReplenishment.query.filter(PettyCashReplenishment.fund_id == f.id,
+                                                  PettyCashReplenishment.status.in_(('requested', 'approved'))).first()
+        out.append({'id': f.id, 'code': f.code, 'name': f.name, 'cash_account_id': f.cash_account_id,
+                    'open_request_id': rep.id if rep else None,
+                    'open_request_amount': float(rep.amount_requested) if rep else None,
+                    'open_request_number': rep.number if rep else None})
+    return jsonify({'funds': out})
+
+
 @bank_transfer_bp.route('', methods=['GET'])
 @bank_transfer_bp.route('/', methods=['GET'])
 @jwt_required()
@@ -237,6 +256,15 @@ def create_transfer():
         raise TransferError(f'Akun asal bermata uang {_ccy(from_acc)} dan akun tujuan {_ccy(to_acc)}. '
                             'Isi juga nilai yang diterima di akun tujuan.')
 
+    fund = None
+    if data.get('petty_cash_fund_id'):
+        from models.petty_cash import PettyCashFund
+        fund = db.session.get(PettyCashFund, int(data['petty_cash_fund_id']))
+        if not fund or not fund.is_active:
+            raise TransferError('Kas kecil tidak ditemukan')
+        if fund.cash_account_id != to_acc.id:
+            raise TransferError(f'Akun tujuan harus akun kas {fund.name} supaya saldonya ikut bertambah')
+
     t = BankTransfer(
         number=generate_number_v2('bank_transfer', 'TRF', BankTransfer, 'number'),
         transfer_date=transfer_date,
@@ -251,6 +279,21 @@ def create_transfer():
         notes=(data.get('notes') or '').strip() or None,
         created_by=user_id,
     )
+    if fund:
+        # Transfer ini sekaligus menutup pengajuan pengisian kembali yang terbuka,
+        # jadi HR tidak perlu menandai "dana diterima" secara manual lagi.
+        from models.petty_cash import PettyCashReplenishment
+        t.petty_cash_fund_id = fund.id
+        rep = PettyCashReplenishment.query.filter(PettyCashReplenishment.fund_id == fund.id,
+                                                  PettyCashReplenishment.status.in_(('requested', 'approved'))).first()
+        if rep:
+            t.petty_cash_replenishment_id = rep.id
+            rep.status = 'received'
+            rep.received_at = datetime.utcnow()
+            rep.amount_received = Decimal(str(amount))
+            if not rep.approved_by:
+                rep.approved_by, rep.approved_at = user_id, datetime.utcnow()
+
     db.session.add(t)
     db.session.flush()
 
