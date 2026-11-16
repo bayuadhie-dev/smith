@@ -35,6 +35,7 @@ const ROUTE_TITLES: Record<string, string> = {
   '/app/hr/employees': 'Employees',
   '/app/hr/attendance': 'Attendance',
   '/app/hr/payroll': 'Payroll',
+  '/app/finance/bank-transfers': 'Transfer Kas/Bank',
   '/app/settings': 'Settings',
   '/app/users': 'User Management',
 }

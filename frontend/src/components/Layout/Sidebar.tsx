@@ -388,6 +388,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Pembayaran Pembelian', href: '/app/finance/pembayaran-pembelian', icon: BanknotesIcon },
             { name: 'Penerimaan Kas/Bank', href: '/app/finance/penerimaan', icon: BanknotesIcon },
             { name: 'Pembayaran Kas/Bank', href: '/app/finance/pembayaran', icon: BanknotesIcon },
+            { name: 'Transfer Kas/Bank', href: '/app/finance/bank-transfers', icon: ArrowsRightLeftIcon },
             { name: 'Rekap Uang Muka Lainnya', href: '/app/finance/rekap-uang-muka', icon: BanknotesIcon },
             { name: 'Anggaran', href: '/app/finance/budget', icon: CurrencyDollarIcon },
             { name: 'Arus Kas', href: '/app/finance/cash-flow', icon: ArrowsRightLeftIcon },

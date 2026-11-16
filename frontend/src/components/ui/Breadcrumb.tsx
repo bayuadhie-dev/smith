@@ -107,6 +107,7 @@ const routeLabels: Record<string, string> = {
   'petty-cash': 'Kas Kecil',
   'inventory-mutation': 'Nilai Persediaan',
   'inventory-by-warehouse': 'Kuantitas Barang per Gudang',
+  'bank-transfers': 'Transfer Kas/Bank',
 };
 
 // Jalur induk yang tidak punya halaman sendiri: tampil sebagai teks, bukan tautan
