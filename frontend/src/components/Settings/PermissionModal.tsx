@@ -105,7 +105,7 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
         ></div>
 
         {/* Modal */}
-        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+        <div className="w-full inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full max-h-[90vh] overflow-y-auto">
           {/* Header */}
           <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
             <div className="flex items-center justify-between">
@@ -125,7 +125,7 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
           <form onSubmit={handleSubmit} className="p-6">
             <div className="space-y-4">
               {/* Module & Action */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Module <span className="text-red-500">*</span>
@@ -236,7 +236,7 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end space-x-3 mt-6 pt-6 border-t">
+            <div className="flex justify-end space-x-3 mt-6 pt-6 border-t flex-wrap">
               <button
                 type="button"
                 onClick={onClose}

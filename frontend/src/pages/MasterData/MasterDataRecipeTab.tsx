@@ -101,7 +101,7 @@ export default function MasterDataRecipeTab() {
 
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
         <h3 className="font-semibold mb-3">{editingId ? 'Edit Resep' : 'Tambah Resep'}</h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
           <SearchableSelect
             options={products.map((p: any) => ({ id: p.id, code: p.code, name: p.name }))}
             value={form.product_id ? Number(form.product_id) : null}
@@ -122,7 +122,7 @@ export default function MasterDataRecipeTab() {
             className="input-field" value={form.rate_per_hour}
             onChange={(e) => setForm({ ...form, rate_per_hour: e.target.value })}
           />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <label className="flex items-center gap-1 text-sm">
               <input type="checkbox" checked={!!form.is_default} onChange={(e) => setForm({ ...form, is_default: e.target.checked })} />
               Default

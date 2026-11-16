@@ -233,7 +233,7 @@ const LeadListUpgraded: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl shadow-lg p-6 text-white">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-3">
               <UserGroupIcon className="h-8 w-8" />
@@ -241,7 +241,7 @@ const LeadListUpgraded: React.FC = () => {
             </h1>
             <p className="text-blue-100 mt-1">Track and convert your sales leads</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <button
               onClick={() => loadLeads(pagination.current_page)}
               className="p-2 bg-white/10 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 rounded-lg transition-colors"
@@ -352,7 +352,7 @@ const LeadListUpgraded: React.FC = () => {
 
         {/* Bulk Actions */}
         {selectedLeads.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center gap-4">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center gap-4 flex-wrap">
             <span className="text-sm text-gray-600 dark:text-gray-300">{selectedLeads.length} selected</span>
             <button
               onClick={() => handleBulkAction('delete')}
@@ -585,7 +585,7 @@ const LeadListUpgraded: React.FC = () => {
                       {lead.assigned_user_name || '-'}
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Link
                           to={`/app/sales/leads/${lead.id}`}
                           className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
@@ -641,7 +641,7 @@ const LeadListUpgraded: React.FC = () => {
             Showing page <span className="font-medium">{pagination.current_page}</span> of{' '}
             <span className="font-medium">{pagination.pages}</span> ({pagination.total} total)
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => loadLeads(pagination.current_page - 1)}
               disabled={pagination.current_page === 1}

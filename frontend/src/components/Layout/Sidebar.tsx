@@ -926,7 +926,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             <ArrowRightOnRectangleIcon className="w-4 h-4" />
           </button>
         ) : (
-          <div className="flex gap-2 px-2">
+          <div className="flex gap-2 px-2 flex-wrap">
             <button
               onClick={() => navigate('/app/profile')}
               className="flex-1 px-3 py-2 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
@@ -1010,7 +1010,7 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
               <div className="fixed inset-0 bg-gray-900/40" />
             </Transition.Child>
 
-            <div className="fixed inset-0 flex">
+            <div className="fixed inset-0 flex p-4">
               <Transition.Child
                 as={Fragment}
                 enter="transition ease-[cubic-bezier(0.22,1,0.36,1)] duration-[380ms] transform"
@@ -1020,7 +1020,7 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
                 leaveFrom="translate-x-0"
                 leaveTo="-translate-x-full"
               >
-                <Dialog.Panel className="relative mr-16 flex w-full max-w-xs flex-1">
+                <Dialog.Panel className="relative mr-16 flex w-full max-w-xs flex-1 max-h-[90vh] overflow-y-auto">
                   <Transition.Child
                     as={Fragment}
                     enter="ease-in-out duration-300"

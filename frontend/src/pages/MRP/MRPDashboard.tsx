@@ -436,47 +436,49 @@ const MRPDashboard: React.FC = () => {
                           <tr>
                             <td colSpan={6} className="bg-gray-50 dark:bg-gray-900 px-4 py-3">
                               <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Rincian kontributor - dari Sales Order (window 2 bulan) dan/atau dari Forecast (Safety Stock):</p>
-                              <table className="min-w-full text-xs">
-                                <thead>
-                                  <tr className="text-left text-gray-500 dark:text-gray-400">
-                                    <th className="py-1 pr-4">Sumber</th>
-                                    <th className="py-1 pr-4">Referensi</th>
-                                    <th className="py-1 pr-4">Produk</th>
-                                    <th className="py-1 pr-4">Bulan</th>
-                                    <th className="py-1 pr-4 text-right">Qty</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {m.contributors.map((c, i) => {
-                                    const isForecast = c.type === 'safety_stock_forecast';
-                                    return (
-                                      <tr key={i} className="border-t border-gray-200 dark:border-gray-700">
-                                        <td className="py-1 pr-4">
-                                          <span
-                                            className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                                              isForecast
-                                                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
-                                                : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                                            }`}
-                                          >
-                                            {isForecast ? 'Forecast (Safety Stock)' : 'SO'}
-                                          </span>
-                                        </td>
-                                        <td className="py-1 pr-4">
-                                          {isForecast ? (
-                                            <span>{c.forecast_number || '-'}</span>
-                                          ) : (
-                                            <Link to={`/app/sales/orders/${c.sales_order_id}/edit`} className="text-blue-600 hover:underline dark:text-blue-400">{c.order_number}</Link>
-                                          )}
-                                        </td>
-                                        <td className="py-1 pr-4">{c.product_name || '-'}</td>
-                                        <td className="py-1 pr-4">{c.month}</td>
-                                        <td className="py-1 pr-4 text-right">{c.quantity.toLocaleString()}</td>
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </table>
+                              <div className="overflow-x-auto">
+                                <table className="min-w-full text-xs">
+                                  <thead>
+                                    <tr className="text-left text-gray-500 dark:text-gray-400">
+                                      <th className="py-1 pr-4">Sumber</th>
+                                      <th className="py-1 pr-4">Referensi</th>
+                                      <th className="py-1 pr-4">Produk</th>
+                                      <th className="py-1 pr-4">Bulan</th>
+                                      <th className="py-1 pr-4 text-right">Qty</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {m.contributors.map((c, i) => {
+                                      const isForecast = c.type === 'safety_stock_forecast';
+                                      return (
+                                        <tr key={i} className="border-t border-gray-200 dark:border-gray-700">
+                                          <td className="py-1 pr-4">
+                                            <span
+                                              className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                                isForecast
+                                                  ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+                                                  : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                              }`}
+                                            >
+                                              {isForecast ? 'Forecast (Safety Stock)' : 'SO'}
+                                            </span>
+                                          </td>
+                                          <td className="py-1 pr-4">
+                                            {isForecast ? (
+                                              <span>{c.forecast_number || '-'}</span>
+                                            ) : (
+                                              <Link to={`/app/sales/orders/${c.sales_order_id}/edit`} className="text-blue-600 hover:underline dark:text-blue-400">{c.order_number}</Link>
+                                            )}
+                                          </td>
+                                          <td className="py-1 pr-4">{c.product_name || '-'}</td>
+                                          <td className="py-1 pr-4">{c.month}</td>
+                                          <td className="py-1 pr-4 text-right">{c.quantity.toLocaleString()}</td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
                             </td>
                           </tr>
                         )}
@@ -491,7 +493,7 @@ const MRPDashboard: React.FC = () => {
       )}
 
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">MRP</h1>
           <p className="text-gray-600 dark:text-gray-300">Integrated production planning and material requirements analysis</p>

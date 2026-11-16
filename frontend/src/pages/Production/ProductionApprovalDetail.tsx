@@ -286,7 +286,7 @@ const ProductionApprovalDetail: React.FC = () => {
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg">
             <ArrowLeftIcon className="h-5 w-5" />
@@ -365,7 +365,7 @@ const ProductionApprovalDetail: React.FC = () => {
 
         {editing ? (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Qty Good</label>
                 <NumberInput
@@ -384,7 +384,7 @@ const ProductionApprovalDetail: React.FC = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Material Cost</label>
                 <NumberInput currency
@@ -422,7 +422,7 @@ const ProductionApprovalDetail: React.FC = () => {
               />
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 flex-wrap">
               <button
                 onClick={() => setEditing(false)}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
@@ -732,30 +732,32 @@ const ProductionApprovalDetail: React.FC = () => {
       {approval.job_cost_entries && approval.job_cost_entries.length > 0 && (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
           <h2 className="text-lg font-medium mb-4">Detail Job Cost Entries</h2>
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Type</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Category</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Description</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Qty</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Unit Cost</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Total</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {approval.job_cost_entries.map((entry: any, idx: number) => (
-                <tr key={idx}>
-                  <td className="px-4 py-2 text-sm capitalize">{entry.cost_type}</td>
-                  <td className="px-4 py-2 text-sm">{entry.cost_category}</td>
-                  <td className="px-4 py-2 text-sm">{entry.description}</td>
-                  <td className="px-4 py-2 text-sm text-right">{entry.quantity.toFixed(2)}</td>
-                  <td className="px-4 py-2 text-sm text-right">{formatCurrency(entry.unit_cost)}</td>
-                  <td className="px-4 py-2 text-sm text-right font-medium">{formatCurrency(entry.total_cost)}</td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Type</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Category</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Description</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Qty</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Unit Cost</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Total</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {approval.job_cost_entries.map((entry: any, idx: number) => (
+                  <tr key={idx}>
+                    <td className="px-4 py-2 text-sm capitalize">{entry.cost_type}</td>
+                    <td className="px-4 py-2 text-sm">{entry.cost_category}</td>
+                    <td className="px-4 py-2 text-sm">{entry.description}</td>
+                    <td className="px-4 py-2 text-sm text-right">{entry.quantity.toFixed(2)}</td>
+                    <td className="px-4 py-2 text-sm text-right">{formatCurrency(entry.unit_cost)}</td>
+                    <td className="px-4 py-2 text-sm text-right font-medium">{formatCurrency(entry.total_cost)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -810,7 +812,7 @@ const ProductionApprovalDetail: React.FC = () => {
       )}
 
       {/* Action Buttons */}
-      <div className="flex justify-end gap-3">
+      <div className="flex justify-end gap-3 flex-wrap">
         {approval.status === 'pending' && (
           <>
             <button
@@ -856,8 +858,8 @@ const ProductionApprovalDetail: React.FC = () => {
 
       {/* Reject Modal */}
       {showRejectModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-medium mb-4">Tolak Approval</h3>
             <p className="text-gray-600 dark:text-gray-300 mb-4">Berikan alasan penolakan:</p>
             <textarea
@@ -867,7 +869,7 @@ const ProductionApprovalDetail: React.FC = () => {
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 mb-4"
               placeholder="Alasan penolakan..."
             />
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 flex-wrap">
               <button
                 onClick={() => setShowRejectModal(false)}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"

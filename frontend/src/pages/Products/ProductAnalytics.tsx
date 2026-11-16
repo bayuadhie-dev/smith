@@ -148,7 +148,7 @@ const ProductAnalytics: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div className="flex items-center space-x-4">
           <Link
             to="/app/products/dashboard"
@@ -204,7 +204,7 @@ const ProductAnalytics: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-center space-x-2 ml-auto">
+          <div className="flex items-center space-x-2 ml-auto flex-wrap">
             <span className="text-sm text-gray-600 dark:text-gray-300">View:</span>
             <div className="flex rounded-lg border border-gray-300 dark:border-gray-600">
               <button

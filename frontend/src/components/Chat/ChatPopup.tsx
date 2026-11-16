@@ -243,7 +243,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({ isOpen, onClose, onOpenFullPage }
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-wrap">
           {onOpenFullPage && (
             <button
               onClick={onOpenFullPage}

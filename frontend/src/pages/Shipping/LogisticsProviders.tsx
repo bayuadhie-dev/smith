@@ -121,9 +121,9 @@ export default function LogisticsProviders() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Kelola Provider Logistik</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
           <button
             onClick={() => navigate('/app/shipping')}
             className="btn-outline"
@@ -142,8 +142,8 @@ export default function LogisticsProviders() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
               {editingProvider ? 'Edit Provider' : 'Tambah Provider Baru'}
             </h2>
@@ -223,7 +223,7 @@ export default function LogisticsProviders() {
                 </label>
               </div>
 
-              <div className="flex justify-end gap-4 pt-4">
+              <div className="flex justify-end gap-4 pt-4 flex-wrap">
                 <button
                   type="button"
                   onClick={() => {
@@ -317,7 +317,7 @@ export default function LogisticsProviders() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <button
                         onClick={() => handleEdit(provider)}
                         className="text-blue-600 hover:text-blue-500 dark:text-blue-400"

@@ -212,7 +212,7 @@ export default function IncomingQC() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <ArrowDownTrayIcon className="w-7 h-7 text-blue-600 dark:text-blue-400" />
@@ -319,77 +319,79 @@ export default function IncomingQC() {
             <p className="text-gray-500 dark:text-gray-400">Tidak ada material yang perlu di-QC</p>
           </div>
         ) : (
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-700">
-              <tr>
-                <SortTh tools={tools} col="po_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">PO / Pemasok</SortTh>
-                <SortTh tools={tools} col="material_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Material</SortTh>
-                <SortTh tools={tools} col="batch_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Batch</SortTh>
-                <SortTh tools={tools} col="quantity" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Qty</SortTh>
-                <SortTh tools={tools} col="received_date" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Diterima</SortTh>
-                <SortTh tools={tools} col="qc_status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Status</SortTh>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredMaterials.map(material => (
-                <tr key={material.id} className="hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700/50">
-                  <td className="px-4 py-4">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{material.po_number}</p>
-                      {material.grn_id && <a href={`/app/purchasing/grn/${material.grn_id}`} className="text-xs text-emerald-700 hover:underline dark:text-emerald-300" target="_blank" rel="noreferrer">{material.gr_number} ({material.grn_status})</a>}
-                      <p className="text-sm text-gray-500 flex items-center gap-1 dark:text-gray-400">
-                        <TruckIcon className="w-4 h-4" />
-                        {material.supplier_name}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{material.material_code}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{material.material_name}</p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className="text-sm text-gray-900 dark:text-white">{material.batch_number}</span>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {material.quantity.toLocaleString()} {material.uom}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className="text-sm text-gray-500 flex items-center gap-1 dark:text-gray-400">
-                      <CalendarIcon className="w-4 h-4" />
-                      {new Date(material.received_date).toLocaleDateString('id-ID')}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4">
-                    {getStatusBadge(material.qc_status)}
-                  </td>
-                  <td className="px-4 py-4 text-center">
-                    {material.qc_status === 'pending' ? (
-                      <button
-                        onClick={() => handleInspect(material)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-                      >
-                        <BeakerIcon className="w-4 h-4" />
-                        Inspeksi
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => {/* View details */}}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors"
-                      >
-                        <EyeIcon className="w-4 h-4" />
-                        Detail
-                      </button>
-                    )}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-700">
+                <tr>
+                  <SortTh tools={tools} col="po_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">PO / Pemasok</SortTh>
+                  <SortTh tools={tools} col="material_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Material</SortTh>
+                  <SortTh tools={tools} col="batch_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Batch</SortTh>
+                  <SortTh tools={tools} col="quantity" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Qty</SortTh>
+                  <SortTh tools={tools} col="received_date" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Diterima</SortTh>
+                  <SortTh tools={tools} col="qc_status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Status</SortTh>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {filteredMaterials.map(material => (
+                  <tr key={material.id} className="hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700/50">
+                    <td className="px-4 py-4">
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{material.po_number}</p>
+                        {material.grn_id && <a href={`/app/purchasing/grn/${material.grn_id}`} className="text-xs text-emerald-700 hover:underline dark:text-emerald-300" target="_blank" rel="noreferrer">{material.gr_number} ({material.grn_status})</a>}
+                        <p className="text-sm text-gray-500 flex items-center gap-1 dark:text-gray-400">
+                          <TruckIcon className="w-4 h-4" />
+                          {material.supplier_name}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{material.material_code}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{material.material_name}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="text-sm text-gray-900 dark:text-white">{material.batch_number}</span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {material.quantity.toLocaleString()} {material.uom}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="text-sm text-gray-500 flex items-center gap-1 dark:text-gray-400">
+                        <CalendarIcon className="w-4 h-4" />
+                        {new Date(material.received_date).toLocaleDateString('id-ID')}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      {getStatusBadge(material.qc_status)}
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      {material.qc_status === 'pending' ? (
+                        <button
+                          onClick={() => handleInspect(material)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                        >
+                          <BeakerIcon className="w-4 h-4" />
+                          Inspeksi
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {/* View details */}}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors"
+                        >
+                          <EyeIcon className="w-4 h-4" />
+                          Detail
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
@@ -520,7 +522,7 @@ export default function IncomingQC() {
                 </div>
 
                 {/* Sampling */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Jumlah Sampel
@@ -593,7 +595,7 @@ export default function IncomingQC() {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 flex-wrap">
               <button
                 onClick={() => setShowInspectionModal(false)}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700"

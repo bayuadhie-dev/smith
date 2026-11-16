@@ -606,7 +606,7 @@ const LeadForm: React.FC = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end space-x-4">
+        <div className="flex justify-end space-x-4 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/sales/leads')}

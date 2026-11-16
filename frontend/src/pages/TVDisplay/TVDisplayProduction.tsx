@@ -55,7 +55,7 @@ export default function TVDisplayProduction() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white overflow-hidden">
       {/* Header */}
       <div className="bg-black/30 backdrop-blur-sm border-b border-white/10 px-8 py-4">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap justify-between items-center gap-3">
           <div className="flex items-center gap-4">
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
@@ -75,7 +75,7 @@ export default function TVDisplayProduction() {
 
       <div className="p-6 space-y-6">
         {/* Summary Cards */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-2xl shadow-xl border border-blue-400/30">
             <div className="flex items-center justify-between">
               <div>

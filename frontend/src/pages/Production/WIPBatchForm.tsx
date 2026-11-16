@@ -162,7 +162,7 @@ const WIPBatchForm: React.FC = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Stage Awal
@@ -213,7 +213,7 @@ const WIPBatchForm: React.FC = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 flex-wrap">
           <button
             type="button"
             onClick={() => navigate(-1)}

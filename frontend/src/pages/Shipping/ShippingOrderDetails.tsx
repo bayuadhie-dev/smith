@@ -392,7 +392,7 @@ const ShippingOrderDetails: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-4">
           <Link
             to="/app/shipping/orders"
@@ -410,13 +410,13 @@ const ShippingOrderDetails: React.FC = () => {
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
             {getStatusIcon(order.status)}
             {order.status.replace('_', ' ').toUpperCase()}
           </span>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <DocumentGenerateButton transactionType="shipping_order" transactionId={order.id} transactionNumber={order.shipping_number} label="Cetak Surat Jalan" />
             <button
               onClick={printShippingLabel}
@@ -608,7 +608,7 @@ const ShippingOrderDetails: React.FC = () => {
                                     )}
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2 flex-shrink-0">
+                                <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
                                   {confirmDeleteHuId === hu.id ? (
                                     <>
                                       <span className="text-xs text-gray-600 dark:text-gray-300">Hapus?</span>

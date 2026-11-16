@@ -230,12 +230,12 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">SPK</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Manage production SPK and schedules</p>
         </div>
-        <div className="flex gap-3 items-center">
+        <div className="flex gap-3 items-center flex-wrap">
           {/* View Mode Toggle */}
           <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button
@@ -438,7 +438,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                         </div>
                       )}
                       {/* Action buttons below WO number */}
-                      <div className="flex items-center gap-1 mt-1.5">
+                      <div className="flex items-center gap-1 mt-1.5 flex-wrap">
                         {/* Primary action */}
                         {canStart && (
                           <button

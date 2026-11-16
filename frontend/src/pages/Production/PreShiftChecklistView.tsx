@@ -153,7 +153,7 @@ const PreShiftChecklistView = () => {
           <ClipboardDocumentCheckIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
           <h1 className="text-lg font-bold text-gray-900 dark:text-white">Pre-Shift Checklist</h1>
         </div>
-        <div className="flex items-center space-x-2 print:hidden">
+        <div className="flex items-center space-x-2 print:hidden flex-wrap">
           <button onClick={() => window.print()} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg" title="Print">
             <PrinterIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
@@ -225,7 +225,7 @@ const PreShiftChecklistView = () => {
       {/* NG Items Alert - Only show if there are NG items */}
       {ngItems.length > 0 && (
         <div className="mb-4 print:mb-2 p-3 bg-red-50 border border-red-200 rounded-lg print:hidden dark:bg-red-900/20 dark:border-red-800">
-          <div className="flex items-start space-x-2">
+          <div className="flex items-start space-x-2 flex-wrap">
             <XCircleSolid className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0 dark:text-red-400" />
             <div className="flex-1">
               <p className="font-semibold text-red-700 text-sm mb-2 dark:text-red-300">Item NG - Perlu Tindakan (Klik untuk tambah keterangan):</p>
@@ -325,7 +325,7 @@ const PreShiftChecklistView = () => {
                                 rows={2}
                               />
                             </div>
-                            <div className="flex justify-end space-x-2">
+                            <div className="flex justify-end space-x-2 flex-wrap">
                               <button
                                 onClick={() => setEditingNgItem(null)}
                                 className="text-xs px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300"

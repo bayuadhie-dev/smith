@@ -467,7 +467,7 @@ const ServerSettings: React.FC = () => {
                 )}
                 
                 {isOwner && (
-                  <div className="flex gap-4 pt-4">
+                  <div className="flex gap-4 pt-4 flex-wrap">
                     <button
                       onClick={handleUpdateServer}
                       className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -489,10 +489,10 @@ const ServerSettings: React.FC = () => {
           {/* Channels Tab */}
           {activeTab === 'channels' && (
             <div>
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center flex-wrap justify-between mb-6 gap-3">
                 <h1 className="text-2xl font-bold">Channels</h1>
                 {isOwner && (
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <button
                       onClick={() => {
                         setCategoryForm({ name: '' });
@@ -547,7 +547,7 @@ const ServerSettings: React.FC = () => {
                       {category.name}
                     </h3>
                     {isOwner && (
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 flex-wrap">
                         <button
                           onClick={() => {
                             setEditingCategory(category);
@@ -586,7 +586,7 @@ const ServerSettings: React.FC = () => {
           {/* Roles Tab */}
           {activeTab === 'roles' && (
             <div>
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center flex-wrap justify-between mb-6 gap-3">
                 <h1 className="text-2xl font-bold">Roles</h1>
                 {isOwner && (
                   <button
@@ -609,7 +609,7 @@ const ServerSettings: React.FC = () => {
                     key={role.id}
                     className="flex items-center justify-between p-4 bg-gray-800 rounded-lg"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <div
                         className="w-4 h-4 rounded-full"
                         style={{ backgroundColor: role.color }}
@@ -623,7 +623,7 @@ const ServerSettings: React.FC = () => {
                       </span>
                     </div>
                     {isOwner && !role.is_default && (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <button
                           onClick={() => openEditRole(role)}
                           className="p-2 text-gray-400 hover:text-white"
@@ -679,8 +679,8 @@ const ServerSettings: React.FC = () => {
 
       {/* Channel Modal */}
       {showChannelModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-gray-800 rounded-lg w-full max-w-md p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="bg-gray-800 rounded-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold">
                 {editingChannel ? 'Edit Channel' : 'Buat Channel'}
@@ -749,7 +749,7 @@ const ServerSettings: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex justify-end gap-3 mt-6 flex-wrap">
               <button
                 onClick={() => setShowChannelModal(false)}
                 className="px-4 py-2 text-gray-300 hover:text-white"
@@ -769,8 +769,8 @@ const ServerSettings: React.FC = () => {
 
       {/* Category Modal */}
       {showCategoryModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-gray-800 rounded-lg w-full max-w-md p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="bg-gray-800 rounded-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold">
                 {editingCategory ? 'Edit Kategori' : 'Buat Kategori'}
@@ -791,7 +791,7 @@ const ServerSettings: React.FC = () => {
               />
             </div>
 
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex justify-end gap-3 mt-6 flex-wrap">
               <button
                 onClick={() => setShowCategoryModal(false)}
                 className="px-4 py-2 text-gray-300 hover:text-white"
@@ -811,8 +811,8 @@ const ServerSettings: React.FC = () => {
 
       {/* Role Modal */}
       {showRoleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 overflow-y-auto py-8">
-          <div className="bg-gray-800 rounded-lg w-full max-w-lg p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 overflow-y-auto py-8 p-4">
+          <div className="bg-gray-800 rounded-lg w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold">
                 {editingRole ? 'Edit Role' : 'Buat Role'}
@@ -875,7 +875,7 @@ const ServerSettings: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex justify-end gap-3 mt-6 flex-wrap">
               <button
                 onClick={() => setShowRoleModal(false)}
                 className="px-4 py-2 text-gray-300 hover:text-white"
@@ -916,7 +916,7 @@ const ChannelRow: React.FC<{
       )}
     </div>
     {isOwner && (
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         <button onClick={onEdit} className="p-2 text-gray-400 hover:text-white">
           <PencilIcon className="h-5 w-5" />
         </button>

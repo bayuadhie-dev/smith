@@ -367,7 +367,7 @@ const BackupRestore: React.FC = () => {
                         {getStatusBadge(backup.status)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-2 flex-wrap">
                           {backup.status === 'completed' && (
                             <>
                               <button

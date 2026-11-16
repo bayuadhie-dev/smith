@@ -77,7 +77,7 @@ function ReasonModal({ title, onClose, onSubmit }: { title: string; onClose: () 
       title={title}
       size="sm"
       footer={
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 flex-wrap">
           <button type="button" className={btnGhost} onClick={onClose}>Batal</button>
           <button
             type="button"
@@ -165,7 +165,7 @@ function TxForm({ fund, categories, editing, onClose, onSaved }: TxFormProps) {
       title={editing ? `Ubah ${editing.number}` : 'Buat Permintaan Kas Kecil'}
       size="lg"
       footer={
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 flex-wrap">
           <button type="button" className={btnGhost} onClick={onClose}>Batal</button>
           <button type="button" className={btnPrimary} disabled={busy} onClick={save}>{busy ? 'Menyimpan...' : 'Simpan'}</button>
         </div>
@@ -500,7 +500,7 @@ function Transaksi({ fund, categories, canCreate, reload }: { fund: any; categor
           </table>
         </div>
         {pages > 1 && (
-          <div className="mt-3 flex items-center justify-end gap-2 text-sm text-gray-600 dark:text-gray-300">
+          <div className="mt-3 flex items-center justify-end gap-2 text-sm text-gray-600 dark:text-gray-300 flex-wrap">
             <button type="button" className={btnGhost} disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Sebelumnya</button>
             <span>Halaman {page} dari {pages}</span>
             <button type="button" className={btnGhost} disabled={page >= pages} onClick={() => setPage((p) => p + 1)}>Berikutnya</button>
@@ -693,24 +693,28 @@ function Laporan({ categories }: { categories: string[] }) {
           />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Panel title="Per kategori">
-              <table className="min-w-full text-sm">
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {(data.by_category as any[]).map((c) => (
-                    <tr key={c.name}><td className={td}>{c.name}</td><td className={`${td} text-right tabular-nums`}>{rp(c.amount)}</td></tr>
-                  ))}
-                  {data.by_category.length === 0 && <tr><td className={td}>Tidak ada data.</td></tr>}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                    {(data.by_category as any[]).map((c) => (
+                      <tr key={c.name}><td className={td}>{c.name}</td><td className={`${td} text-right tabular-nums`}>{rp(c.amount)}</td></tr>
+                    ))}
+                    {data.by_category.length === 0 && <tr><td className={td}>Tidak ada data.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
             </Panel>
             <Panel title="Per pemohon">
-              <table className="min-w-full text-sm">
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {(data.by_requester as any[]).map((c) => (
-                    <tr key={c.name}><td className={td}>{c.name}</td><td className={`${td} text-right tabular-nums`}>{rp(c.amount)}</td></tr>
-                  ))}
-                  {data.by_requester.length === 0 && <tr><td className={td}>Tidak ada data.</td></tr>}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                    {(data.by_requester as any[]).map((c) => (
+                      <tr key={c.name}><td className={td}>{c.name}</td><td className={`${td} text-right tabular-nums`}>{rp(c.amount)}</td></tr>
+                    ))}
+                    {data.by_requester.length === 0 && <tr><td className={td}>Tidak ada data.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
             </Panel>
           </div>
           <Panel title="Rincian transaksi">

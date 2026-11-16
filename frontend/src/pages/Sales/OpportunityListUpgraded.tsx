@@ -242,7 +242,7 @@ const OpportunityListUpgraded: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-xl shadow-lg p-6 text-white">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-3">
               <FunnelIcon className="h-8 w-8" />
@@ -250,7 +250,7 @@ const OpportunityListUpgraded: React.FC = () => {
             </h1>
             <p className="text-purple-100 mt-1">Manage and track your sales opportunities</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <button
               onClick={() => loadOpportunities()}
               className="p-2 bg-white/10 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 rounded-lg transition-colors"
@@ -586,7 +586,7 @@ const OpportunityListUpgraded: React.FC = () => {
                       {opp.assigned_user_name || '-'}
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Link
                           to={`/app/sales/opportunities/${opp.id}`}
                           className="text-purple-600 hover:text-purple-800 dark:text-purple-400"

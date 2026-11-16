@@ -467,7 +467,7 @@ const navigate = useNavigate()
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/production/work-orders')}
@@ -609,7 +609,7 @@ const navigate = useNavigate()
                       </button>
                     </div>
                     
-                    <div className="grid grid-cols-4 gap-4 text-sm mb-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm mb-3">
                       <div>
                         <span className="text-green-600 dark:text-green-400">Batch Size:</span>
                         <p className="font-medium">{bom.batch_size} {bom.batch_uom}</p>
@@ -635,43 +635,45 @@ const navigate = useNavigate()
                           Material Requirements {selectedQuantity > 0 && `(for ${selectedQuantity} ${selectedProduct.batch_uom})`}
                         </h5>
                         <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
-                          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead className="bg-gray-50 dark:bg-gray-900">
-                              <tr>
-                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Material</th>
-                                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Per Batch</th>
-                                {selectedQuantity > 0 && (
-                                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Required</th>
-                                )}
-                                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Scrap %</th>
-                                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Cost</th>
-                              </tr>
-                            </thead>
-                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                              {bom.items.map((item) => (
-                                <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                                  <td className="px-3 py-2 text-sm">
-                                    <div className="font-medium text-gray-900 dark:text-white">{item.item_name}</div>
-                                    <div className="text-gray-500 dark:text-gray-400 text-xs">{item.item_code}</div>
-                                  </td>
-                                  <td className="px-3 py-2 text-sm text-right">
-                                    {formatNumber(item.quantity)} {item.uom}
-                                  </td>
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                              <thead className="bg-gray-50 dark:bg-gray-900">
+                                <tr>
+                                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Material</th>
+                                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Per Batch</th>
                                   {selectedQuantity > 0 && (
-                                    <td className="px-3 py-2 text-sm text-right font-medium text-green-700 dark:text-green-300">
-                                      {formatNumber(calculateMaterialRequirement(item.quantity))} {item.uom}
-                                    </td>
+                                    <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Required</th>
                                   )}
-                                  <td className="px-3 py-2 text-sm text-right">
-                                    {item.scrap_percent}%
-                                  </td>
-                                  <td className="px-3 py-2 text-sm text-right">
-                                    {formatRupiah(item.total_cost)}
-                                  </td>
+                                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Scrap %</th>
+                                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Cost</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                {bom.items.map((item) => (
+                                  <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                                    <td className="px-3 py-2 text-sm">
+                                      <div className="font-medium text-gray-900 dark:text-white">{item.item_name}</div>
+                                      <div className="text-gray-500 dark:text-gray-400 text-xs">{item.item_code}</div>
+                                    </td>
+                                    <td className="px-3 py-2 text-sm text-right">
+                                      {formatNumber(item.quantity)} {item.uom}
+                                    </td>
+                                    {selectedQuantity > 0 && (
+                                      <td className="px-3 py-2 text-sm text-right font-medium text-green-700 dark:text-green-300">
+                                        {formatNumber(calculateMaterialRequirement(item.quantity))} {item.uom}
+                                      </td>
+                                    )}
+                                    <td className="px-3 py-2 text-sm text-right">
+                                      {item.scrap_percent}%
+                                    </td>
+                                    <td className="px-3 py-2 text-sm text-right">
+                                      {formatRupiah(item.total_cost)}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
                         {selectedQuantity > 0 && totalCartonsNeeded > 0 && (
                           <div className="mt-3 p-3 bg-green-100 rounded-lg dark:bg-green-900/30">
@@ -834,7 +836,7 @@ const navigate = useNavigate()
                     </svg>
                     Kalkulator Target Produksi
                   </h4>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 mb-3">
                     <div>
                       <label className="block text-xs font-medium text-green-700 mb-1 dark:text-green-300">
                         Speed Mesin (pack/menit)
@@ -1120,7 +1122,7 @@ const navigate = useNavigate()
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-4 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/production/work-orders')}

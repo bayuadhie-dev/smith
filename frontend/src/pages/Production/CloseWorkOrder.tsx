@@ -329,7 +329,7 @@ export default function CloseWorkOrder() {
       {/* Section 3: Waste */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">3. Waste / Reject</h2>
-        <div className="grid grid-cols-5 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
           <select
             className="input-field"
             value={wasteForm.category_id}
@@ -433,7 +433,7 @@ export default function CloseWorkOrder() {
 
       {showQcConfirm && (
         <div className="fixed inset-0 bg-black/40 flex items-start justify-center z-50 p-4 overflow-y-auto">
-          <div className="card w-full max-w-lg p-6 space-y-4 my-16 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+          <div className="card w-full max-w-lg p-6 space-y-4 my-16 bg-white dark:bg-gray-800 rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400 font-bold text-lg">
               <ExclamationTriangleIcon className="h-6 w-6" />
               Konfirmasi: ada masalah QC bahan baku
@@ -442,7 +442,7 @@ export default function CloseWorkOrder() {
               SPK ini memakai {qcWarnings.length} batch bahan baku yang bermasalah di QC incoming (lihat daftar di atas).
               Barang jadi dari SPK ini <strong>tetap bisa diselesaikan</strong>, tapi pastikan sudah benar-benar dicek sebelum lanjut - terutama sebelum barang ini dikirim ke customer.
             </p>
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-3 flex-wrap">
               <button className="btn-secondary" onClick={() => setShowQcConfirm(false)}>
                 Batal, cek dulu
               </button>

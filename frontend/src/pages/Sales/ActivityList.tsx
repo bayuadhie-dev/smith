@@ -146,12 +146,12 @@ const ActivityList = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('sales.activity_list')}</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Track all sales activities and follow-ups</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <button
             onClick={handleExport}
             className="btn-secondary inline-flex items-center gap-2"

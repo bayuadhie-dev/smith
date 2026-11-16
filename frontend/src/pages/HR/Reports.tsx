@@ -218,7 +218,7 @@ export default function Reports() {
             </select>
           </div>
         </div>
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex gap-2 flex-wrap">
           <button
             onClick={generateReport}
             disabled={loading || !selectedReport}

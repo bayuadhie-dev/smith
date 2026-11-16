@@ -208,7 +208,7 @@ const ProductCategories: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div className="flex items-center space-x-4">
           <Link
             to="/app/products/dashboard"
@@ -302,7 +302,7 @@ const ProductCategories: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 flex-wrap">
               <button
                 onClick={() => openModal(category)}
                 className="flex-1 flex items-center justify-center px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600"
@@ -356,7 +356,7 @@ const ProductCategories: React.FC = () => {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white dark:bg-gray-800">
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 {editingCategory ? 'Edit Category' : 'Add New Category'}
@@ -414,7 +414,7 @@ const ProductCategories: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-3 pt-6 mt-6 border-t">
+              <div className="flex justify-end space-x-3 pt-6 mt-6 border-t flex-wrap">
                 <button
                   onClick={closeModal}
                   className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:bg-gray-600"

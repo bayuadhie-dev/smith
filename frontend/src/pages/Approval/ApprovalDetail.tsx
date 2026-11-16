@@ -173,7 +173,7 @@ export default function ApprovalDetail() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Approval Workflow Detail
@@ -366,7 +366,7 @@ export default function ApprovalDetail() {
                   />
                 </div>
 
-                <div className="flex space-x-4">
+                <div className="flex space-x-4 flex-wrap">
                   {canReview() && (
                     <button
                       onClick={handleReview}

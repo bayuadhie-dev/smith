@@ -267,7 +267,7 @@ const ProductionApprovalList: React.FC = () => {
   return (
     <div className="p-6 space-y-6 h-full overflow-auto">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Approval Produksi</h1>
           <p className="text-gray-600 dark:text-gray-300">Approval Manager Produksi sebelum forward ke Finance</p>
@@ -413,66 +413,68 @@ const ProductionApprovalList: React.FC = () => {
             <p className="text-gray-500 dark:text-gray-400">Tidak ada approval</p>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Approval</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SPK</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty Good</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Cost</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Cost/Unit</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Submitted</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {approvals.map((approval) => (
-                <tr key={approval.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Link 
-                      to={`/app/production/approvals/${approval.id}`}
-                      className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer dark:text-blue-400"
-                    >
-                      {approval.approval_number}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {approval.wo_number}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {approval.product_name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
-                    {approval.quantity_good.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
-                    {formatCurrency(approval.total_cost)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600 dark:text-gray-300">
-                    {formatCurrency(approval.cost_per_unit)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    {getStatusBadge(approval.status, approval.forwarded_to_finance)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    <div>{approval.submitter_name}</div>
-                    <div className="text-xs">{formatDate(approval.submitted_at)}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <Link
-                      to={`/app/production/approvals/${approval.id}`}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300"
-                    >
-                      <EyeIcon className="h-4 w-4" />
-                      Detail
-                    </Link>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Approval</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SPK</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty Good</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Cost</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Cost/Unit</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Submitted</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {approvals.map((approval) => (
+                  <tr key={approval.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Link 
+                        to={`/app/production/approvals/${approval.id}`}
+                        className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer dark:text-blue-400"
+                      >
+                        {approval.approval_number}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {approval.wo_number}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {approval.product_name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
+                      {approval.quantity_good.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
+                      {formatCurrency(approval.total_cost)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600 dark:text-gray-300">
+                      {formatCurrency(approval.cost_per_unit)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      {getStatusBadge(approval.status, approval.forwarded_to_finance)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <div>{approval.submitter_name}</div>
+                      <div className="text-xs">{formatDate(approval.submitted_at)}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <Link
+                        to={`/app/production/approvals/${approval.id}`}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300"
+                      >
+                        <EyeIcon className="h-4 w-4" />
+                        Detail
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
         </div>
       </div>
@@ -533,61 +535,63 @@ const ProductionApprovalList: React.FC = () => {
               <p className="text-gray-500 dark:text-gray-400">Tidak ada jadwal produksi yang perlu diapprove</p>
             </div>
           ) : (
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Plan</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Periode</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jumlah Item</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Qty</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dibuat Oleh</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {scheduleApprovals.map((plan) => (
-                  <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Link 
-                        to={`/app/production/weekly-plans/${plan.id}`}
-                        className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer dark:text-blue-400"
-                      >
-                        {plan.plan_number}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      <div>Minggu {plan.week_number}, {plan.year}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {plan.week_start && new Date(plan.week_start).toLocaleDateString('id-ID')} - {plan.week_end && new Date(plan.week_end).toLocaleDateString('id-ID')}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
-                      {plan.total_items} produk
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
-                      {plan.total_quantity?.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      {getScheduleStatusBadge(plan.status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      <div>{plan.creator_name}</div>
-                      <div className="text-xs">{plan.created_at && formatDate(plan.created_at)}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <Link
-                        to={`/app/production/weekly-plans/${plan.id}`}
-                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300"
-                      >
-                        <EyeIcon className="h-4 w-4" />
-                        Detail
-                      </Link>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Plan</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Periode</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jumlah Item</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Qty</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dibuat Oleh</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {scheduleApprovals.map((plan) => (
+                    <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Link 
+                          to={`/app/production/weekly-plans/${plan.id}`}
+                          className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer dark:text-blue-400"
+                        >
+                          {plan.plan_number}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <div>Minggu {plan.week_number}, {plan.year}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {plan.week_start && new Date(plan.week_start).toLocaleDateString('id-ID')} - {plan.week_end && new Date(plan.week_end).toLocaleDateString('id-ID')}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
+                        {plan.total_items} produk
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
+                        {plan.total_quantity?.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        {getScheduleStatusBadge(plan.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        <div>{plan.creator_name}</div>
+                        <div className="text-xs">{plan.created_at && formatDate(plan.created_at)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <Link
+                          to={`/app/production/weekly-plans/${plan.id}`}
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300"
+                        >
+                          <EyeIcon className="h-4 w-4" />
+                          Detail
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
           </div>
         </div>
@@ -644,11 +648,11 @@ const ProductionApprovalList: React.FC = () => {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <span className="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
                             Menunggu Approval
                           </span>
-                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
                             <button
                               onClick={() => handleApproveMonthlyPlan(plan.year, plan.month, 'approve')}
                               className="inline-flex items-center gap-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium shadow-sm"
@@ -672,51 +676,53 @@ const ProductionApprovalList: React.FC = () => {
                     {isExpanded && plan.items && (
                       <div className="px-4 pb-4">
                         <div className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead className="bg-blue-600">
-                              <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">No</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">Kode Produk</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">Nama Produk</th>
-                                <th className="px-4 py-3 text-center text-xs font-medium text-white uppercase">Mesin</th>
-                                <th className="px-4 py-3 text-right text-xs font-medium text-white uppercase">Target (CTN)</th>
-                                <th className="px-4 py-3 text-center text-xs font-medium text-white uppercase">Pck/Ctn</th>
-                                <th className="px-4 py-3 text-right text-xs font-medium text-white uppercase">Target (PCK)</th>
-                                <th className="px-4 py-3 text-center text-xs font-medium text-white uppercase">Priority</th>
-                              </tr>
-                            </thead>
-                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                              {plan.items.map((item, idx) => (
-                                <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{idx + 1}</td>
-                                  <td className="px-4 py-3 text-sm font-mono text-gray-600 dark:text-gray-300">{item.product_code}</td>
-                                  <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{item.product_name}</td>
-                                  <td className="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-300">{item.machine_name}</td>
-                                  <td className="px-4 py-3 text-sm text-right font-semibold text-gray-900 dark:text-white">{item.target_ctn?.toLocaleString()}</td>
-                                  <td className="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-300">{item.qty_per_ctn}</td>
-                                  <td className="px-4 py-3 text-sm text-right font-semibold text-blue-600 dark:text-blue-400">{item.target_pack?.toLocaleString()}</td>
-                                  <td className="px-4 py-3 text-center">
-                                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                      item.priority === 'urgent' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
-                                      item.priority === 'high' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
-                                      'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
-                                    }`}>
-                                      {item.priority?.toUpperCase()}
-                                    </span>
-                                  </td>
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                              <thead className="bg-blue-600">
+                                <tr>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">No</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">Kode Produk</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase">Nama Produk</th>
+                                  <th className="px-4 py-3 text-center text-xs font-medium text-white uppercase">Mesin</th>
+                                  <th className="px-4 py-3 text-right text-xs font-medium text-white uppercase">Target (CTN)</th>
+                                  <th className="px-4 py-3 text-center text-xs font-medium text-white uppercase">Pck/Ctn</th>
+                                  <th className="px-4 py-3 text-right text-xs font-medium text-white uppercase">Target (PCK)</th>
+                                  <th className="px-4 py-3 text-center text-xs font-medium text-white uppercase">Priority</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                            <tfoot className="bg-blue-50 dark:bg-blue-900/20">
-                              <tr>
-                                <td colSpan={4} className="px-4 py-3 text-sm font-bold text-right text-gray-900 dark:text-white">TOTAL</td>
-                                <td className="px-4 py-3 text-sm text-right font-bold text-gray-900 dark:text-white">{plan.total_quantity?.toLocaleString()}</td>
-                                <td className="px-4 py-3"></td>
-                                <td className="px-4 py-3 text-sm text-right font-bold text-blue-600 dark:text-blue-400">{plan.total_pack?.toLocaleString()}</td>
-                                <td className="px-4 py-3"></td>
-                              </tr>
-                            </tfoot>
-                          </table>
+                              </thead>
+                              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                {plan.items.map((item, idx) => (
+                                  <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{idx + 1}</td>
+                                    <td className="px-4 py-3 text-sm font-mono text-gray-600 dark:text-gray-300">{item.product_code}</td>
+                                    <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{item.product_name}</td>
+                                    <td className="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-300">{item.machine_name}</td>
+                                    <td className="px-4 py-3 text-sm text-right font-semibold text-gray-900 dark:text-white">{item.target_ctn?.toLocaleString()}</td>
+                                    <td className="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-300">{item.qty_per_ctn}</td>
+                                    <td className="px-4 py-3 text-sm text-right font-semibold text-blue-600 dark:text-blue-400">{item.target_pack?.toLocaleString()}</td>
+                                    <td className="px-4 py-3 text-center">
+                                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                        item.priority === 'urgent' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
+                                        item.priority === 'high' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
+                                        'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+                                      }`}>
+                                        {item.priority?.toUpperCase()}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                              <tfoot className="bg-blue-50 dark:bg-blue-900/20">
+                                <tr>
+                                  <td colSpan={4} className="px-4 py-3 text-sm font-bold text-right text-gray-900 dark:text-white">TOTAL</td>
+                                  <td className="px-4 py-3 text-sm text-right font-bold text-gray-900 dark:text-white">{plan.total_quantity?.toLocaleString()}</td>
+                                  <td className="px-4 py-3"></td>
+                                  <td className="px-4 py-3 text-sm text-right font-bold text-blue-600 dark:text-blue-400">{plan.total_pack?.toLocaleString()}</td>
+                                  <td className="px-4 py-3"></td>
+                                </tr>
+                              </tfoot>
+                            </table>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -755,56 +761,58 @@ const ProductionApprovalList: React.FC = () => {
               <p className="text-gray-500 dark:text-gray-400">Tidak ada jadwal mingguan yang perlu diapprove</p>
             </div>
           ) : (
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Periode</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jumlah Item</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Karton</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {scheduleGridApprovals.map((plan) => (
-                  <tr key={plan.week_start} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900 dark:text-white">Minggu {plan.week_number}, {plan.year}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">Mulai: {plan.week_start}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
-                      {plan.total_items} produk
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
-                      {plan.total_ctn?.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
-                        Menunggu Approval
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => handleApproveScheduleGrid(plan.week_start, 'approve')}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300"
-                        >
-                          <CheckCircleIcon className="h-4 w-4" />
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleApproveScheduleGrid(plan.week_start, 'reject')}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300"
-                        >
-                          <XCircleIcon className="h-4 w-4" />
-                          Reject
-                        </button>
-                      </div>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Periode</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jumlah Item</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Karton</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {scheduleGridApprovals.map((plan) => (
+                    <tr key={plan.week_start} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="font-medium text-gray-900 dark:text-white">Minggu {plan.week_number}, {plan.year}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Mulai: {plan.week_start}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
+                        {plan.total_items} produk
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
+                        {plan.total_ctn?.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                          Menunggu Approval
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="flex items-center justify-center gap-2 flex-wrap">
+                          <button
+                            onClick={() => handleApproveScheduleGrid(plan.week_start, 'approve')}
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300"
+                          >
+                            <CheckCircleIcon className="h-4 w-4" />
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleApproveScheduleGrid(plan.week_start, 'reject')}
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300"
+                          >
+                            <XCircleIcon className="h-4 w-4" />
+                            Reject
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
           </div>
         </div>

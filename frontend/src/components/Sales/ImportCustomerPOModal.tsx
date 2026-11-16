@@ -97,7 +97,7 @@ export default function ImportCustomerPOModal({ onClose }: { onClose: () => void
           <div className="mt-4 space-y-4">
             {dup && <p className="rounded-md bg-red-50 p-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">PO {po.po_number} sudah pernah dibuat sebagai {dup}. Tidak bisa diimpor ulang.</p>}
             {(po.warnings || []).map((w: string, i: number) => <p key={i} className="rounded-md bg-amber-50 p-2 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">{w}</p>)}
-            <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm md:grid-cols-4">
               <div><div className="text-xs text-gray-500 dark:text-gray-400">No. PO</div><b>{po.po_number || '-'}</b></div>
               <div><div className="text-xs text-gray-500 dark:text-gray-400">Tanggal PO</div>{po.po_date || '-'}</div>
               <div><div className="text-xs text-gray-500 dark:text-gray-400">Termin</div>{po.terms_days ? `Net ${po.terms_days}` : '-'}</div>
@@ -149,7 +149,7 @@ export default function ImportCustomerPOModal({ onClose }: { onClose: () => void
               })}
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Total PO (dengan PPN): {rp(rows.reduce((a, r) => a + r.total, 0))}. PPN di SO mengikuti pengaturan produk. Kode PLU disimpan sebagai kode barang pelanggan supaya PO berikutnya cocok otomatis.</p>
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 flex-wrap">
               <button type="button" className="btn-secondary" onClick={() => { setPo(null); setRows([]) }}>Ganti file</button>
               <button type="button" className="btn-primary disabled:opacity-50" disabled={!ready || busy} onClick={create}>{busy ? 'Membuat...' : 'Buat SO draf'}</button>
             </div>

@@ -120,7 +120,7 @@ const ReimbursementForm: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">New Reimbursement</h1>
           <p className="text-gray-600 dark:text-gray-300">
@@ -312,7 +312,7 @@ const ReimbursementForm: React.FC = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-4">
+        <div className="flex items-center justify-end gap-4 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/finance/reimbursements')}

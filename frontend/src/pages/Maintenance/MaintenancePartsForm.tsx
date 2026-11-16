@@ -85,29 +85,31 @@ const MaintenancePartsForm = () => {
         </Panel>
 
         <Panel title="Sparepart yang diminta">
-          <div className="space-y-3 p-4">
-            {lines.map((l, i) => {
-              const p = partOf(l.spare_part_id)
-              const short = p && Number(l.qty) > p.stock
-              return (
-                <div key={i} className="grid grid-cols-12 items-start gap-2">
-                  <div className="col-span-12 md:col-span-6">
-                    <SearchableSelect options={parts} value={l.spare_part_id} onChange={(v) => setLine(i, { spare_part_id: v ? Number(v) : null })} placeholder="Cari kode atau nama sparepart" />
-                    {p && <p className={`mt-1 text-xs ${short ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>Stok tersedia {p.stock.toLocaleString('id-ID')} {p.uom}{short ? '. Jumlah melebihi stok.' : ''}</p>}
+          <div className="overflow-x-auto">
+            <div className="space-y-3 p-4">
+              {lines.map((l, i) => {
+                const p = partOf(l.spare_part_id)
+                const short = p && Number(l.qty) > p.stock
+                return (
+                  <div key={i} className="grid min-w-[760px] grid-cols-12 items-start gap-2">
+                    <div className="col-span-12 md:col-span-6">
+                      <SearchableSelect options={parts} value={l.spare_part_id} onChange={(v) => setLine(i, { spare_part_id: v ? Number(v) : null })} placeholder="Cari kode atau nama sparepart" />
+                      {p && <p className={`mt-1 text-xs ${short ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>Stok tersedia {p.stock.toLocaleString('id-ID')} {p.uom}{short ? '. Jumlah melebihi stok.' : ''}</p>}
+                    </div>
+                    <div className="col-span-5 md:col-span-2">
+                      <NumberInput className={`${inputCls} text-right`} placeholder="Jumlah" value={l.qty} onChange={(e) => setLine(i, { qty: e.target.value })} />
+                    </div>
+                    <input type="text" className={`${inputCls} col-span-6 md:col-span-3`} placeholder="Keterangan (opsional)" value={l.notes} onChange={(e) => setLine(i, { notes: e.target.value })} />
+                    <button type="button" disabled={lines.length === 1} onClick={() => setLines((ls) => ls.filter((_, idx) => idx !== i))} className="col-span-1 pt-2 text-sm text-gray-400 hover:text-red-600 disabled:opacity-30" title="Hapus baris">Hapus</button>
                   </div>
-                  <div className="col-span-5 md:col-span-2">
-                    <NumberInput className={`${inputCls} text-right`} placeholder="Jumlah" value={l.qty} onChange={(e) => setLine(i, { qty: e.target.value })} />
-                  </div>
-                  <input type="text" className={`${inputCls} col-span-6 md:col-span-3`} placeholder="Keterangan (opsional)" value={l.notes} onChange={(e) => setLine(i, { notes: e.target.value })} />
-                  <button type="button" disabled={lines.length === 1} onClick={() => setLines((ls) => ls.filter((_, idx) => idx !== i))} className="col-span-1 pt-2 text-sm text-gray-400 hover:text-red-600 disabled:opacity-30" title="Hapus baris">Hapus</button>
-                </div>
-              )
-            })}
-            <button type="button" onClick={() => setLines((ls) => [...ls, { spare_part_id: null, qty: '', notes: '' }])} className="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">+ Tambah baris</button>
+                )
+              })}
+              <button type="button" onClick={() => setLines((ls) => [...ls, { spare_part_id: null, qty: '', notes: '' }])} className="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">+ Tambah baris</button>
+            </div>
           </div>
         </Panel>
 
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 flex-wrap">
           <button type="button" onClick={() => navigate('/app/maintenance/spare-part-requests')} className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 dark:border-gray-600 dark:text-gray-200">Batal</button>
           <button type="submit" disabled={saving} className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">{saving ? 'Mengirim...' : 'Kirim permintaan'}</button>
         </div>

@@ -326,7 +326,7 @@ export default function DashboardEnhanced() {
             })} • {currentTime.toLocaleTimeString('id-ID')}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => refetch()}
             className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-white"
@@ -683,7 +683,7 @@ export default function DashboardEnhanced() {
             const avgOee = oee.length ? oee.reduce((sum, d) => sum + (d.value || 0), 0) / oee.length : 0
             const bestPeriod = prod.reduce((best: any, d: any) => (!best || (d.value || 0) > (best.value || 0) ? d : best), null)
             return (
-              <div className="grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-700 border-t border-gray-100 dark:border-gray-700 mt-5 pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-x divide-gray-100 dark:divide-gray-700 border-t border-gray-100 dark:border-gray-700 mt-5 pt-4">
                 <div className="pr-4">
                   <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Total Output</p>
                   <p className="text-lg font-bold text-gray-900 dark:text-white">{totalOutput.toLocaleString()}</p>
@@ -742,7 +742,7 @@ export default function DashboardEnhanced() {
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <div className="grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-700 border-t border-gray-100 dark:border-gray-700 mt-5 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-x divide-gray-100 dark:divide-gray-700 border-t border-gray-100 dark:border-gray-700 mt-5 pt-4">
             <div className="pr-4">
               <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Total 7 Hari</p>
               <p className="text-lg font-bold text-gray-900 dark:text-white">
@@ -841,7 +841,7 @@ export default function DashboardEnhanced() {
               </Link>
             </div>
             {auditSummary && (
-              <div className="grid grid-cols-3 gap-px bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
                 <div className="bg-white dark:bg-gray-800 px-4 py-2 text-center">
                   <p className="text-lg font-bold text-gray-900 dark:text-white">{auditSummary.today_count}</p>
                   <p className="text-[11px] text-gray-400">Hari Ini</p>

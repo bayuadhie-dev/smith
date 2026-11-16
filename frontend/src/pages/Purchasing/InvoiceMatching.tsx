@@ -115,7 +115,7 @@ export default function InvoiceMatching() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-5">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <Link to="/app/purchasing/invoices" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
@@ -157,7 +157,7 @@ export default function InvoiceMatching() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {[
           { label: 'Total PO', value: `Rp ${data.po_total.toLocaleString('id-ID')}`, color: 'text-blue-700 dark:text-blue-300' },
           { label: 'GRN Terkait', value: `${data.grn_count} dokumen`, color: 'text-purple-700 dark:text-purple-300' },

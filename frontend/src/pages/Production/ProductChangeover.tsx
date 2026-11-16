@@ -209,7 +209,7 @@ const ProductChangeover: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             Alasan Changeover <span className="text-red-500">*</span>
           </label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {CHANGEOVER_REASONS.map((reason) => (
               <button
                 key={reason.value}
@@ -314,7 +314,7 @@ const ProductChangeover: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-3 justify-end">
+        <div className="flex gap-3 justify-end flex-wrap">
           <button
             type="button"
             onClick={() => navigate(-1)}

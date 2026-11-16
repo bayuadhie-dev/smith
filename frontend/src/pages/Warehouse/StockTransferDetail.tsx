@@ -39,7 +39,7 @@ export default function StockTransferDetail() {
     <div className="space-y-4 p-6">
       <PageHeader title={t.transfer_number} subtitle={`${t.from_label} ke ${t.to_label}${t.source_number ? ` · dari ${t.source_number}` : ''}`}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${st.cls}`}>{st.label}</span>
             {t.status === 'draft' && <>
               <button disabled={busy} onClick={async () => { if (await confirmDialog('Kirim barang? Stok langsung keluar dari gudang asal dan menunggu diterima di tujuan.')) act('ship', {}, 'Dikirim') }} className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">Kirim barang</button>

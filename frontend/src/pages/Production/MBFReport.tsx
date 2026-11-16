@@ -508,7 +508,7 @@ const MBFReportPage: React.FC = () => {
            </div>
            
            <div className="p-8 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                  <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 ml-1">
                       <CalendarIcon className="h-3 w-3" />
@@ -539,7 +539,7 @@ const MBFReportPage: React.FC = () => {
                  )} />
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-50">
                  <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest ml-1 dark:text-blue-400">Target Octn (Ctn)</label>
                     <Controller name="target_octenic" control={control} render={({ field }) => (
@@ -602,7 +602,7 @@ const MBFReportPage: React.FC = () => {
                 </h1>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-wrap">
               <button disabled={saving} onClick={handleSubmit(isNew ? createReport : updateReport)} className="flex items-center px-4 py-1 bg-blue-600 text-white rounded-lg text-[11px] font-bold hover:bg-blue-700 transition-all shadow-sm">
                 <DocumentArrowDownIcon className="h-3.5 w-3.5 mr-1" />
                 {saving ? 'Saving...' : 'Save'}
@@ -630,7 +630,7 @@ const MBFReportPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
               {/* Basic Info Group */}
               <div className="lg:col-span-8 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100/50">
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2">
                   <div className="flex flex-col space-y-0.5">
                     <label className="text-[8px] font-bold text-gray-400 uppercase ml-1">Period Start</label>
                     <Controller
@@ -683,7 +683,7 @@ const MBFReportPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700/50">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700/50">
                   <div className="flex flex-col">
                     <span className="text-[8px] font-black text-blue-600 uppercase tracking-tighter leading-none dark:text-blue-400">Total Target</span>
                     <span className="text-sm font-black text-blue-900 leading-tight dark:text-blue-200">{computedTotalTargetKarton.toLocaleString()} <span className="text-[8px] font-bold opacity-60 uppercase">Ctn</span></span>
@@ -945,7 +945,7 @@ const MBFReportPage: React.FC = () => {
                                   </div>
                                 </div>
                                 
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
                                   <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-blue-100/50">
                                     <span className="text-[6px] font-black text-blue-400 uppercase block mb-1">CLOTH METERS</span>
                                     <span className="text-[10px] font-black text-blue-900 dark:text-blue-200">{detail.actual_cloth_octenic?.toFixed(1) || 0} <span className="text-[6px] text-gray-400">m</span></span>
@@ -972,7 +972,7 @@ const MBFReportPage: React.FC = () => {
                                        <span className="text-red-600 dark:text-red-400">STICKER WASTE: {detail.octn_waste_sticker?.toFixed(2) || 0}</span>
                                     </div>
                                   </div>
-                                  <div className="grid grid-cols-5 gap-1">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-1">
                                     <div className="bg-white dark:bg-gray-800/80 p-1 rounded border border-yellow-100 flex flex-col items-center">
                                       <span className="text-[5px] font-bold text-gray-400 uppercase">Waste METERS/GRAMS</span>
                                       <span className="text-[8px] font-black text-yellow-800 dark:text-yellow-300">{detail.octn_waste_cloth_chem || '0M / 0G'}</span>
@@ -1007,7 +1007,7 @@ const MBFReportPage: React.FC = () => {
                                   </div>
                                 </div>
                                 
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
                                   <div className="bg-white dark:bg-gray-800/60 p-1.5 rounded-lg border border-purple-100/50">
                                     <span className="text-[6px] font-black text-purple-400 uppercase block mb-1">CLOTH METERS</span>
                                     <span className="text-[10px] font-black text-purple-900 dark:text-purple-200">{detail.actual_cloth_gloveclean?.toFixed(1) || 0} <span className="text-[6px] text-gray-400">m</span></span>
@@ -1025,7 +1025,7 @@ const MBFReportPage: React.FC = () => {
                                        <span className="text-red-600 dark:text-red-400">PACKAGING WASTE: {detail.glvcn_waste_packaging?.toFixed(2) || 0}</span>
                                     </div>
                                   </div>
-                                  <div className="grid grid-cols-4 gap-1">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1">
                                     <div className="bg-white dark:bg-gray-800/80 p-1 rounded border border-emerald-100 flex flex-col items-center">
                                       <span className="text-[5px] font-bold text-gray-400 uppercase">Waste METERS/GRAMS</span>
                                       <span className="text-[8px] font-black text-emerald-800 dark:text-emerald-300">{detail.glvcn_waste_cloth_chem || '0M / 0ML'}</span>
@@ -1099,7 +1099,7 @@ const MBFReportPage: React.FC = () => {
                   )}
                </div>
                {!item.date && (
-                 <div className="flex gap-1">
+                 <div className="flex gap-1 flex-wrap">
                    {item.role === 'supervisor' && canApproveSupervisor && (
                       <button onClick={() => approveReport('supervisor')} className="p-1 px-2 bg-blue-600 text-white text-[9px] font-black rounded-lg">APPROVE</button>
                    )}

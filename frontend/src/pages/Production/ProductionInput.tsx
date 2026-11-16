@@ -416,7 +416,7 @@ const ProductionInput: React.FC = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
             <Factory className="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -641,7 +641,7 @@ const ProductionInput: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label htmlFor="reject_quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Reject</label>
                   <NumberInput
@@ -699,7 +699,7 @@ const ProductionInput: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label htmlFor="downtime_minutes" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Total Downtime (menit)</label>
                   <NumberInput
@@ -733,7 +733,7 @@ const ProductionInput: React.FC = () => {
                   <AlertTriangle className="h-4 w-4 text-orange-500" />
                   Downtime per Kategori (menit)
                 </h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {/* Mesin - max 15% */}
                   <div>
                     <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
@@ -815,7 +815,7 @@ const ProductionInput: React.FC = () => {
                 
                 {/* Downtime Summary */}
                 <div className="mt-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                  <div className="grid grid-cols-5 gap-2 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 text-xs">
                     <div className="text-center">
                       <div className="font-medium text-red-600 dark:text-red-400">Mesin</div>
                       <div className="text-gray-700 dark:text-gray-200">

@@ -338,7 +338,7 @@ export default function AddProductToInventory() {
         </div>
 
         {/* Submit */}
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 flex-wrap">
           <Link to="/app/warehouse/inventory" className="btn-secondary">
             Batal
           </Link>

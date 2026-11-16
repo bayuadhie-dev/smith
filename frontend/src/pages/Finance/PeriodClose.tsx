@@ -344,7 +344,7 @@ const PeriodClose: React.FC = () => {
 
         {showAddTask && (
           <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-md space-y-2">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <input placeholder="code (mis. tax_review)" value={newTask.code}
                 onChange={(e) => setNewTask({ ...newTask, code: e.target.value })}
                 className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm" />
@@ -531,7 +531,7 @@ const PeriodClose: React.FC = () => {
               transaksi baru dengan tanggal di bulan ini tidak bisa dibuat sampai periode dibuka kembali
               secara manual.
             </p>
-            <div className="flex space-x-3">
+            <div className="flex space-x-3 flex-wrap">
               <button
                 onClick={() => handleClose(false)}
                 disabled={closing}
@@ -591,7 +591,7 @@ const PeriodClose: React.FC = () => {
                   {r.notes && <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 italic">{r.notes}</div>}
                 </div>
                 {reopeningId === r.id ? (
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-2 flex-wrap">
                     <button
                       onClick={() => handleReopen(r.id)}
                       className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"

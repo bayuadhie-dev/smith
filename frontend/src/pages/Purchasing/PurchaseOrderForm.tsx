@@ -339,7 +339,7 @@ const navigate = useNavigate()
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{isEdit ? 'Edit Purchase Order' : 'Create Purchase Order'}</h1>
           <p className="text-gray-600 dark:text-gray-300">
@@ -348,7 +348,7 @@ const navigate = useNavigate()
               : 'Request materials and products from suppliers'}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {isEdit && (
             <button
               onClick={() => navigate(`/app/purchasing/grn/new?po_id=${id}`)}
@@ -753,7 +753,7 @@ const navigate = useNavigate()
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-4 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/purchasing/purchase-orders')}

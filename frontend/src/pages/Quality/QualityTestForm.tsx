@@ -184,7 +184,7 @@ const navigate = useNavigate()
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Quality Test</h1>
           <p className="text-gray-600 dark:text-gray-300">Perform quality control testing and record results</p>
@@ -400,7 +400,7 @@ const navigate = useNavigate()
         <div className="card p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Test Parameters</h3>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 type="button"
                 onClick={() => addCommonParameters('nonwoven')}
@@ -560,7 +560,7 @@ const navigate = useNavigate()
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-4 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/quality/tests')}

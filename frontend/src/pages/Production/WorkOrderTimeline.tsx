@@ -250,7 +250,7 @@ export default function WorkOrderTimeline() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center space-x-4">
           <Link
             to={`/app/production/work-orders/${id}`}
@@ -349,7 +349,7 @@ export default function WorkOrderTimeline() {
                       {event.type === 'production' && event.data && (
                         <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-4">
                           {/* Time Stats Grid */}
-                          <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-2">
                             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 text-center">
                               <p className="text-xs text-gray-500 dark:text-gray-400">Average Time</p>
                               <p className="text-lg font-bold text-gray-700 dark:text-gray-200">{event.data.average_time}m</p>

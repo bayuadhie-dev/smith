@@ -232,7 +232,7 @@ export default function CompleteProfile() {
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Email terverifikasi dari Google</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Phone */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -360,7 +360,7 @@ export default function CompleteProfile() {
             </div>
 
             {/* Buttons */}
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3 pt-2 flex-wrap">
               <button
                 type="button"
                 onClick={handleSkipClick}
@@ -395,7 +395,7 @@ export default function CompleteProfile() {
       {/* Skip Warning Modal */}
       {showSkipWarning && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
             <div className="text-center">
               <div className="mx-auto w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center mb-4 dark:bg-yellow-900/30">
                 <ExclamationTriangleIcon className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
@@ -424,7 +424,7 @@ export default function CompleteProfile() {
                 </ul>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 <button
                   onClick={() => setShowSkipWarning(false)}
                   className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-medium"

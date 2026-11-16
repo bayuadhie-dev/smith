@@ -210,7 +210,7 @@ export default function WIPLedger() {
 
       {/* Filter Tabs */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 flex-wrap">
           <button
             onClick={() => setFilter('all')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${

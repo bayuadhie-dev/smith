@@ -85,7 +85,7 @@ const DocumentPreviewModal: React.FC<{ documentId: number; onClose: () => void }
       <div className="bg-white dark:bg-gray-900 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="font-medium">{doc?.document_number || 'Memuat...'}</div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button onClick={handleDownload} className="p-2 text-gray-500 hover:text-blue-600 dark:text-gray-400" title="Unduh PDF">
               <Download className="w-4 h-4" />
             </button>
@@ -260,7 +260,7 @@ const BatchPlanning: React.FC = () => {
           <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Batch Planning</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Usulan jadwal batch produksi — hasil Generate/Re-plan, review lalu Approve.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={handleReplan}
             disabled={replanning}
@@ -348,7 +348,7 @@ const BatchPlanning: React.FC = () => {
                 </td>
                 <td className="px-3 py-2 align-top">
                   {editingNumberId === b.id ? (
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 flex-wrap">
                       <input
                         value={numberDraft}
                         onChange={(e) => setNumberDraft(e.target.value)}
@@ -425,7 +425,7 @@ const BatchPlanning: React.FC = () => {
                 </td>
                 <td className="px-3 py-2 align-top">
                   {b.spk_document_id ? (
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 flex-wrap">
                       <button onClick={() => setPreviewDocId(b.spk_document_id)} className="text-blue-600 hover:underline text-xs flex items-center gap-1 dark:text-blue-400">
                         <Eye className="w-3 h-3" /> Lihat
                       </button>

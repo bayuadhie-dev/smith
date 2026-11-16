@@ -235,7 +235,7 @@ export default function WorkOrderBOMEdit() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center space-x-4">
           <Link
             to={`/app/production/work-orders/${workOrderId}`}
@@ -249,7 +249,7 @@ export default function WorkOrderBOMEdit() {
           </div>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {bomSource === 'work_order' && (
             <button
               onClick={handleResetBOM}
@@ -446,7 +446,7 @@ export default function WorkOrderBOMEdit() {
                     </td>
                     {bomSource === 'work_order' && (
                       <td className="px-4 py-3 text-center">
-                        <div className="flex justify-center gap-1">
+                        <div className="flex justify-center gap-1 flex-wrap">
                           <button
                             onClick={() => setEditingItem(editingItem === item.id ? null : item.id)}
                             className="p-1 text-blue-600 hover:bg-blue-50 rounded dark:text-blue-400"
@@ -474,8 +474,8 @@ export default function WorkOrderBOMEdit() {
 
       {/* Add Item Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b">
               <h3 className="text-lg font-medium">Tambah Item BOM</h3>
             </div>
@@ -496,7 +496,7 @@ export default function WorkOrderBOMEdit() {
                 </select>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Nama Item *</label>
                   <input
@@ -517,7 +517,7 @@ export default function WorkOrderBOMEdit() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Qty per Unit *</label>
                   <NumberInput
@@ -570,7 +570,7 @@ export default function WorkOrderBOMEdit() {
                 />
               </div>
             </div>
-            <div className="px-6 py-4 border-t flex justify-end gap-3">
+            <div className="px-6 py-4 border-t flex justify-end gap-3 flex-wrap">
               <button
                 onClick={() => setShowAddModal(false)}
                 className="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"

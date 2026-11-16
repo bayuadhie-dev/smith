@@ -746,7 +746,7 @@ export default function OEEDashboardEnhanced() {
                         </div>
                       </div>
                       {alert.status === 'active' && (
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                           <button onClick={() => handleAcknowledgeAlert(alert.id)} className="px-3 py-1.5 text-xs text-blue-600 hover:bg-blue-50 rounded-lg dark:text-blue-400">Acknowledge</button>
                           <button onClick={() => handleResolveAlert(alert.id, 'Resolved')} className="px-3 py-1.5 text-xs text-green-600 hover:bg-green-50 rounded-lg dark:text-green-400">Resolve</button>
                         </div>
@@ -856,7 +856,7 @@ export default function OEEDashboardEnhanced() {
               </div>
             </div>
 
-            <div className="p-6 border-t bg-gray-50 dark:bg-gray-900 flex justify-end gap-3">
+            <div className="p-6 border-t bg-gray-50 dark:bg-gray-900 flex justify-end gap-3 flex-wrap">
               <button
                 onClick={() => setEditingRecord(null)}
                 className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700 rounded-lg dark:hover:bg-gray-600"

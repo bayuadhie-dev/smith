@@ -270,7 +270,7 @@ const RecurringPayment: React.FC = () => {
 
               {showNewTxForm && (
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700 space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <input
                       type="date"
                       value={newTx.payment_date}
@@ -310,26 +310,28 @@ const RecurringPayment: React.FC = () => {
               ) : (
                 <>
                   <div className="p-3"><ListToolbar tools={txTools} placeholder="Cari periode atau catatan" /></div>
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                        <SortTh tools={txTools} col="payment_date" className="p-3">Tanggal</SortTh>
-                        <SortTh tools={txTools} col="period_label" className="p-3">Periode</SortTh>
-                        <SortTh tools={txTools} col="amount" align="right" className="p-3 text-right">Jumlah</SortTh>
-                        <SortTh tools={txTools} col="notes" className="p-3">Catatan</SortTh>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {txTools.rows.map((t) => (
-                        <tr key={t.id} className="border-b border-gray-100 dark:border-gray-800">
-                          <td className="p-3">{new Date(t.payment_date).toLocaleDateString('id-ID')}</td>
-                          <td className="p-3">{t.period_label}</td>
-                          <td className="p-3 text-right">Rp{t.amount.toLocaleString('id-ID')}</td>
-                          <td className="p-3 text-gray-500 dark:text-gray-400">{t.notes}</td>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                          <SortTh tools={txTools} col="payment_date" className="p-3">Tanggal</SortTh>
+                          <SortTh tools={txTools} col="period_label" className="p-3">Periode</SortTh>
+                          <SortTh tools={txTools} col="amount" align="right" className="p-3 text-right">Jumlah</SortTh>
+                          <SortTh tools={txTools} col="notes" className="p-3">Catatan</SortTh>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {txTools.rows.map((t) => (
+                          <tr key={t.id} className="border-b border-gray-100 dark:border-gray-800">
+                            <td className="p-3">{new Date(t.payment_date).toLocaleDateString('id-ID')}</td>
+                            <td className="p-3">{t.period_label}</td>
+                            <td className="p-3 text-right">Rp{t.amount.toLocaleString('id-ID')}</td>
+                            <td className="p-3 text-gray-500 dark:text-gray-400">{t.notes}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </>
               )}
             </div>

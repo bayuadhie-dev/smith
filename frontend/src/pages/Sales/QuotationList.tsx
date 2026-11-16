@@ -101,7 +101,7 @@ const QuotationList = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Penawaran Penjualan</h1>
           <p className="mt-1 text-gray-600 dark:text-gray-300">Kelola penawaran dan proposal untuk pelanggan</p>
@@ -185,7 +185,7 @@ const QuotationList = () => {
                       <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(quotation.status)}`}>{STATUS_LABEL[quotation.status] || quotation.status}</span>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
                         <button type="button" onClick={() => setSelectedQuotationId(quotation.id)} className="text-primary-700 hover:text-primary-900 dark:text-primary-300" title="Lihat detail" aria-label="Lihat detail">
                           <EyeIcon className="h-4 w-4" />
                         </button>

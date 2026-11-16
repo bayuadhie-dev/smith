@@ -65,7 +65,7 @@ const [search, setSearch] = useState('')
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pemasok</h1>
           <p className="text-gray-600 dark:text-gray-300">Manage your supplier database and relationships</p>
@@ -242,7 +242,7 @@ const [search, setSearch] = useState('')
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
+                      <div className="flex items-center justify-end space-x-2 flex-wrap">
                         <Link
                           to={`/app/purchasing/suppliers/${supplier.id}`}
                           className="text-blue-600 hover:text-blue-900 p-1 dark:text-blue-400"
@@ -278,7 +278,7 @@ const [search, setSearch] = useState('')
               <div className="text-sm text-gray-700 dark:text-gray-200">
                 Menampilkan {(data.current_page - 1) * perPage + 1}-{Math.min(data.current_page * perPage, data.total)} dari {data.total} pemasok
               </div>
-              <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200">
+              <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200 flex-wrap">
                 <label className="flex items-center gap-1.5">
                   Per halaman
                   <select

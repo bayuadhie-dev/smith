@@ -111,8 +111,8 @@ export default function PRDetail() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center flex-wrap justify-between gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <Link to="/app/purchasing/requisitions" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
@@ -131,7 +131,7 @@ export default function PRDetail() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
         <DocumentGenerateButton transactionType="purchase_requisition" transactionId={pr.id} transactionNumber={pr.pr_number} label="Cetak Bon" />
         {pr.status === 'draft' && (
           <button type="button" onClick={submitPr} disabled={submitting} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium disabled:opacity-50">
@@ -242,7 +242,7 @@ export default function PRDetail() {
                             className="w-full text-sm border border-gray-200 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-800"
                             rows={2}
                           />
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 flex-wrap">
                             <button
                               onClick={() => actOnStep(step.approval_level, 'reject', rejectReason)}
                               disabled={actingLevel === step.approval_level}
@@ -259,7 +259,7 @@ export default function PRDetail() {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                           <button
                             onClick={() => actOnStep(step.approval_level, 'approve')}
                             disabled={actingLevel === step.approval_level}
@@ -360,26 +360,28 @@ export default function PRDetail() {
         ) : materialModal.data.locations?.length === 0 ? (
           <p className="text-sm text-gray-500 text-center py-6 dark:text-gray-400">Belum ada stok untuk bahan ini di gudang.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
-                <th className="pb-2 pr-3">Lokasi</th>
-                <th className="pb-2 pr-3">No. Batch</th>
-                <th className="pb-2 pr-3 text-right">Qty Tersedia</th>
-                <th className="pb-2 text-right">Qty Reserved</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {materialModal.data.locations.map((loc: any) => (
-                <tr key={loc.inventory_id}>
-                  <td className="py-2 pr-3">{loc.location_code || '-'}</td>
-                  <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{loc.batch_number || '-'}</td>
-                  <td className="py-2 pr-3 text-right tabular-nums">{loc.quantity_available.toLocaleString('id-ID')}</td>
-                  <td className="py-2 text-right tabular-nums">{loc.quantity_reserved.toLocaleString('id-ID')}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
+                  <th className="pb-2 pr-3">Lokasi</th>
+                  <th className="pb-2 pr-3">No. Batch</th>
+                  <th className="pb-2 pr-3 text-right">Qty Tersedia</th>
+                  <th className="pb-2 text-right">Qty Reserved</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {materialModal.data.locations.map((loc: any) => (
+                  <tr key={loc.inventory_id}>
+                    <td className="py-2 pr-3">{loc.location_code || '-'}</td>
+                    <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{loc.batch_number || '-'}</td>
+                    <td className="py-2 pr-3 text-right tabular-nums">{loc.quantity_available.toLocaleString('id-ID')}</td>
+                    <td className="py-2 text-right tabular-nums">{loc.quantity_reserved.toLocaleString('id-ID')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </AccessibleModal>
 

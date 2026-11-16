@@ -151,7 +151,7 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center space-x-4">
           <button
             onClick={onBack}
@@ -371,7 +371,7 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Jenis Spunlace</p>
                 <p className="text-sm text-gray-900 dark:text-white">{product.spunlace || '-'}</p>
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Rayon (%)</p>
                   <p className="text-sm text-gray-900 dark:text-white">{formatNumber(product.rayon)}</p>
@@ -435,7 +435,7 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
                   <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.kg_kain, 3)}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Kebutuhan Rayon (kg)</p>
                   <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.kebutuhan_rayon_kg, 3)}</p>
@@ -489,7 +489,7 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
               Proses Mixing
             </h3>
             <div className="space-y-3">
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Kapasitas Mixing (kg)</p>
                   <p className="text-sm text-gray-900 dark:text-white">{formatFloat(product.kapasitas_mixing_kg)}</p>

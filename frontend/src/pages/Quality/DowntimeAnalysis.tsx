@@ -367,7 +367,7 @@ const DowntimeAnalysis: React.FC = () => {
                     )}
                   </td>
                   <td className="px-3 py-2 text-center">
-                    <div className="flex items-center justify-center gap-1">
+                    <div className="flex items-center justify-center gap-1 flex-wrap">
                       <button
                         onClick={() => openEditRootCause(rc)}
                         className="p-1 text-blue-600 hover:bg-blue-50 rounded dark:text-blue-400"
@@ -398,7 +398,7 @@ const DowntimeAnalysis: React.FC = () => {
 
       {/* Root Cause Modal */}
       {showRootCauseModal && editingRecord && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
             <div className="p-4 border-b border-slate-200 flex items-center justify-between dark:border-slate-700">
               <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
@@ -408,7 +408,7 @@ const DowntimeAnalysis: React.FC = () => {
             </div>
             
             <div className="p-4 overflow-y-auto max-h-[70vh] space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-200">Problem</label>
                   <input
@@ -436,7 +436,7 @@ const DowntimeAnalysis: React.FC = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-200">Frekuensi</label>
                   <NumberInput
@@ -511,7 +511,7 @@ const DowntimeAnalysis: React.FC = () => {
               </div>
             </div>
             
-            <div className="p-4 border-t border-slate-200 flex justify-end gap-3 dark:border-slate-700">
+            <div className="p-4 border-t border-slate-200 flex justify-end gap-3 dark:border-slate-700 flex-wrap">
               <button onClick={() => setShowRootCauseModal(false)} className="px-4 py-2 text-slate-600 dark:text-slate-300">
                 Batal
               </button>

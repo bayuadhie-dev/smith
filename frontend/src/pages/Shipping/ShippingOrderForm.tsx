@@ -315,7 +315,7 @@ export default function ShippingOrderForm() {
                   </div>
                 </div>
               ))}
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <button type="button" className="btn-secondary" onClick={() => addManual('product')}>+ Barang / Waste</button>
                 <button type="button" className="btn-secondary" onClick={() => addManual('service')}>+ Jasa / Lainnya</button>
               </div>
@@ -360,7 +360,7 @@ export default function ShippingOrderForm() {
           <textarea className="input-field" rows={3} value={f.notes} onChange={(e) => set('notes', e.target.value)} />
         </div>
 
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 flex-wrap">
           <button type="button" className="btn-secondary" onClick={() => navigate('/app/shipping/orders')}>Batal</button>
           <button type="submit" className="btn-primary disabled:opacity-50" disabled={saving || (mode === 'so' ? !so : !customerId)}>{saving ? 'Menyimpan...' : 'Simpan Surat Jalan'}</button>
         </div>

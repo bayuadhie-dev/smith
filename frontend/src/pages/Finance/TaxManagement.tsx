@@ -269,12 +269,12 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manajemen Pajak</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Monitor VAT, income tax, and withholding tax obligations</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <button
             onClick={handleExportTaxReport}
             disabled={taxReportExporting}
@@ -495,7 +495,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                     {getStatusBadge(transaction.status)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-2 flex-wrap">
                       <button 
                         onClick={() => handleEditTransaction(transaction)}
                         className="text-indigo-600 hover:text-indigo-900 inline-flex items-center dark:text-indigo-400"
@@ -534,8 +534,8 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
 
       {/* Add Tax Transaction Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">🧾 Record Tax Transaction</h3>
               <button 
@@ -572,7 +572,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                 <input type="text" className="input w-full" placeholder="e.g., Purchase from Supplier A" />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Base Amount
@@ -587,7 +587,7 @@ const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
                 </div>
               </div>
 
-              <div className="flex justify-end gap-4 pt-4 border-t">
+              <div className="flex justify-end gap-4 pt-4 border-t flex-wrap">
                 <button 
                   type="button"
                   onClick={() => setShowAddModal(false)}

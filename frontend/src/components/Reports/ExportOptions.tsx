@@ -195,7 +195,7 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
   return (
     <>
       {/* Quick Export Buttons */}
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 flex-wrap">
         <button
           onClick={() => quickExport('pdf')}
           disabled={exporting}
@@ -237,7 +237,7 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
       {/* Advanced Export Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Advanced Export Options</h3>
               
@@ -371,7 +371,7 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
               </div>
 
               {/* Modal Actions */}
-              <div className="flex justify-end space-x-3 pt-6 mt-6 border-t">
+              <div className="flex justify-end space-x-3 pt-6 mt-6 border-t flex-wrap">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}

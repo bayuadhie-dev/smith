@@ -346,7 +346,7 @@ const [alertFilter, setAlertFilter] = useState('active')
                       <p className="text-xs mt-1">Product: {alert.product_name}</p>
                     )}
                   </div>
-                  <div className="flex space-x-1 ml-2">
+                  <div className="flex space-x-1 ml-2 flex-wrap">
                     {alert.status === 'active' && (
                       <>
                         <button

@@ -141,30 +141,32 @@ const RecurringPaymentTransactionDetail: React.FC = () => {
       {journal_lines.length === 0 ? (
         <p className="text-sm text-gray-500 dark:text-gray-400">Tidak ada baris jurnal ditemukan untuk transaksi ini.</p>
       ) : (
-        <table className="w-full text-sm bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-          <thead>
-            <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-              <th className="p-3">Akun</th>
-              <th className="p-3 text-right">Debit</th>
-              <th className="p-3 text-right">Kredit</th>
-            </tr>
-          </thead>
-          <tbody>
-            {journal_lines.map((line) => (
-              <tr key={line.id} className="border-b border-gray-100 dark:border-gray-800">
-                <td className="p-3">
-                  {line.account_code} - {line.account_name}
-                </td>
-                <td className="p-3 text-right">
-                  {line.debit_amount > 0 ? `Rp${line.debit_amount.toLocaleString('id-ID')}` : '-'}
-                </td>
-                <td className="p-3 text-right">
-                  {line.credit_amount > 0 ? `Rp${line.credit_amount.toLocaleString('id-ID')}` : '-'}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+            <thead>
+              <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                <th className="p-3">Akun</th>
+                <th className="p-3 text-right">Debit</th>
+                <th className="p-3 text-right">Kredit</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {journal_lines.map((line) => (
+                <tr key={line.id} className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-3">
+                    {line.account_code} - {line.account_name}
+                  </td>
+                  <td className="p-3 text-right">
+                    {line.debit_amount > 0 ? `Rp${line.debit_amount.toLocaleString('id-ID')}` : '-'}
+                  </td>
+                  <td className="p-3 text-right">
+                    {line.credit_amount > 0 ? `Rp${line.credit_amount.toLocaleString('id-ID')}` : '-'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

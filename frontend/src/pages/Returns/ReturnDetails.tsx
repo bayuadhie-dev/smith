@@ -137,7 +137,7 @@ const { id } = useParams<{ id: string }>()
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center space-x-4">
           <Link
             to="/app/returns"
@@ -171,7 +171,7 @@ const { id } = useParams<{ id: string }>()
           {/* Return Details Card */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Return Information</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Return Date</label>
                 <p className="text-gray-900 dark:text-white">{new Date(returnData.return_date).toLocaleDateString()}</p>
@@ -272,7 +272,7 @@ const { id } = useParams<{ id: string }>()
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           {returnData.qc_required && !item.qc_status && (
                             <button
                               onClick={() => {
@@ -438,7 +438,7 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Quantity Approved</label>
                 <NumberInput
@@ -486,7 +486,7 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
               </select>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
+            <div className="flex justify-end gap-2 pt-4 flex-wrap">
               <button
                 type="button"
                 onClick={onClose}
@@ -597,7 +597,7 @@ function DispositionModal({ item, onSubmit, onClose }: any) {
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
+            <div className="flex justify-end gap-2 pt-4 flex-wrap">
               <button
                 type="button"
                 onClick={onClose}

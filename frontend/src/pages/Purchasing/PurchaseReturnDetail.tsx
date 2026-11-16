@@ -113,7 +113,7 @@ export default function PurchaseReturnDetail() {
       </div>
 
       {canAct && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 flex items-center gap-3">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 flex items-center gap-3 flex-wrap">
           <button
             onClick={handleApprove}
             disabled={acting}
@@ -177,36 +177,38 @@ export default function PurchaseReturnDetail() {
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Item</th>
-              <th className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Qty</th>
-              <th className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Harga Satuan</th>
-              <th className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Total</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Alasan</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {(ret.items || []).map((item: any) => (
-              <tr key={item.id}>
-                <td className="px-4 py-3 text-gray-800 dark:text-gray-200">
-                  {item.product_name || item.material_name || item.description || '—'}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-400">
-                  {item.quantity} {item.uom}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-400">
-                  {formatCurrency(item.unit_price)}
-                </td>
-                <td className="px-4 py-3 text-right font-medium text-gray-800 dark:text-gray-200">
-                  {formatCurrency(item.total_price)}
-                </td>
-                <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{item.reason || '—'}</td>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Item</th>
+                <th className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Qty</th>
+                <th className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Harga Satuan</th>
+                <th className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Total</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Alasan</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              {(ret.items || []).map((item: any) => (
+                <tr key={item.id}>
+                  <td className="px-4 py-3 text-gray-800 dark:text-gray-200">
+                    {item.product_name || item.material_name || item.description || '—'}
+                  </td>
+                  <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-400">
+                    {item.quantity} {item.uom}
+                  </td>
+                  <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-400">
+                    {formatCurrency(item.unit_price)}
+                  </td>
+                  <td className="px-4 py-3 text-right font-medium text-gray-800 dark:text-gray-200">
+                    {formatCurrency(item.total_price)}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{item.reason || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
       <AttachmentsPanel entityType="purchase_return" entityId={id} />
       <RiwayatPanel table="purchase_returns" id={id} />

@@ -160,7 +160,7 @@ export default function GRNDetail() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link to="/app/purchasing/grn" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
             <ArrowLeftIcon className="h-5 w-5" />
@@ -181,7 +181,7 @@ export default function GRNDetail() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {isEditable && (
             <button
               onClick={handleAcceptAll}
@@ -271,92 +271,94 @@ export default function GRNDetail() {
         </h2>
 
         {/* Header */}
-        <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 uppercase px-1 dark:text-gray-400">
-          <div className="col-span-3">Item</div>
-          <div className="col-span-1 text-right">Dipesan</div>
-          <div className="col-span-1 text-right">Diterima</div>
-          <div className="col-span-2">Qty Diterima</div>
-          <div className="col-span-2">Qty Ditolak</div>
-          <div className="col-span-3">Alasan Penolakan</div>
-        </div>
-
-        <div className="space-y-2">
-          {inspectItems.map((item, idx) => {
-            const accepted = parseFloat(item.quantity_accepted) || 0;
-            const rejected = parseFloat(item.quantity_rejected) || 0;
-            const isPartial = rejected > 0 && accepted > 0;
-            const isAllRejected = accepted === 0 && rejected > 0;
-            const rowColor = isAllRejected
-              ? 'bg-red-50 dark:bg-red-900/20'
-              : isPartial
-              ? 'bg-yellow-50 dark:bg-yellow-900/20'
-              : 'bg-gray-50 dark:bg-gray-700';
-
-            return (
-              <div key={item.id} className={`grid grid-cols-12 gap-2 items-start p-2 rounded-lg ${rowColor}`}>
-                <div className="col-span-3">
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{item.item_name}</p>
-                  {item.master_name && item.master_name !== item.item_name && <p className="text-xs text-gray-400">{item.master_name}</p>}
-                  {item.notes && <p className="text-xs text-gray-500 italic dark:text-gray-400">Ket: {item.notes}</p>}
-                  {item.batch_number && (
-                    <p className="text-xs text-gray-400">Batch: {item.batch_number}</p>
-                  )}
-                  {item.expiry_date && (
-                    <p className="text-xs text-gray-400">Exp: {item.expiry_date}</p>
-                  )}
+        <div className="overflow-x-auto">
+          <div className="grid min-w-[760px] grid-cols-12 gap-2 text-xs font-medium text-gray-500 uppercase px-1 dark:text-gray-400">
+            <div className="col-span-3">Item</div>
+            <div className="col-span-1 text-right">Dipesan</div>
+            <div className="col-span-1 text-right">Diterima</div>
+            <div className="col-span-2">Qty Diterima</div>
+            <div className="col-span-2">Qty Ditolak</div>
+            <div className="col-span-3">Alasan Penolakan</div>
+          </div>
+  
+          <div className="space-y-2">
+            {inspectItems.map((item, idx) => {
+              const accepted = parseFloat(item.quantity_accepted) || 0;
+              const rejected = parseFloat(item.quantity_rejected) || 0;
+              const isPartial = rejected > 0 && accepted > 0;
+              const isAllRejected = accepted === 0 && rejected > 0;
+              const rowColor = isAllRejected
+                ? 'bg-red-50 dark:bg-red-900/20'
+                : isPartial
+                ? 'bg-yellow-50 dark:bg-yellow-900/20'
+                : 'bg-gray-50 dark:bg-gray-700';
+  
+              return (
+                <div key={item.id} className={`grid min-w-[760px] grid-cols-12 gap-2 items-start p-2 rounded-lg ${rowColor}`}>
+                  <div className="col-span-3">
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{item.item_name}</p>
+                    {item.master_name && item.master_name !== item.item_name && <p className="text-xs text-gray-400">{item.master_name}</p>}
+                    {item.notes && <p className="text-xs text-gray-500 italic dark:text-gray-400">Ket: {item.notes}</p>}
+                    {item.batch_number && (
+                      <p className="text-xs text-gray-400">Batch: {item.batch_number}</p>
+                    )}
+                    {item.expiry_date && (
+                      <p className="text-xs text-gray-400">Exp: {item.expiry_date}</p>
+                    )}
+                  </div>
+                  <div className="col-span-1 text-right text-sm text-gray-500 dark:text-gray-400">
+                    {item.quantity_ordered.toLocaleString('id-ID')}
+                    <span className="text-xs ml-1 text-gray-400">{item.uom}</span>
+                  </div>
+                  <div className="col-span-1 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {item.display_uom && item.display_uom !== item.uom
+                      ? <>{Number(item.display_qty).toLocaleString('id-ID')}<span className="text-xs ml-1 text-gray-400">{item.display_uom}</span>
+                          <div className="text-xs font-normal text-gray-400">= {item.quantity_received.toLocaleString('id-ID')} {item.uom}</div></>
+                      : <>{item.quantity_received.toLocaleString('id-ID')}<span className="text-xs ml-1 text-gray-400">{item.uom}</span></>}
+                  </div>
+                  <div className="col-span-2">
+                    <NumberInput
+                      value={item.quantity_accepted}
+                      onChange={(e) => updateItem(idx, 'quantity_accepted', e.target.value)}
+                      disabled={!isEditable}
+                      min={0}
+                      max={item.quantity_received}
+                      step="any"
+                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-800 dark:text-white disabled:bg-gray-100 disabled:text-gray-500 focus:ring-1 focus:ring-green-500"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <NumberInput
+                      value={item.quantity_rejected}
+                      onChange={(e) => updateItem(idx, 'quantity_rejected', e.target.value)}
+                      disabled={!isEditable}
+                      min={0}
+                      max={item.quantity_received}
+                      step="any"
+                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-800 dark:text-white disabled:bg-gray-100 disabled:text-gray-500 focus:ring-1 focus:ring-red-500"
+                    />
+                  </div>
+                  <div className="col-span-3">
+                    {isEditable && Math.abs(item.quantity_received - accepted - rejected) > 0.001 && (
+                      <p className="mb-1 text-xs text-amber-600 dark:text-amber-400">
+                        {item.quantity_received - accepted - rejected > 0
+                          ? `Belum dialokasikan: ${(item.quantity_received - accepted - rejected).toLocaleString('id-ID')} ${item.uom} (isi Qty Ditolak bila memang ditolak)`
+                          : `Melebihi jumlah diterima ${(accepted + rejected - item.quantity_received).toLocaleString('id-ID')} ${item.uom}; jumlah diterima ikut disesuaikan`}
+                      </p>
+                    )}
+                    <input
+                      type="text"
+                      value={item.rejection_reason}
+                      onChange={(e) => updateItem(idx, 'rejection_reason', e.target.value)}
+                      disabled={!isEditable || rejected === 0}
+                      placeholder={rejected > 0 ? 'Alasan...' : '—'}
+                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-800 dark:text-white disabled:bg-transparent disabled:border-transparent"
+                    />
+                  </div>
                 </div>
-                <div className="col-span-1 text-right text-sm text-gray-500 dark:text-gray-400">
-                  {item.quantity_ordered.toLocaleString('id-ID')}
-                  <span className="text-xs ml-1 text-gray-400">{item.uom}</span>
-                </div>
-                <div className="col-span-1 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {item.display_uom && item.display_uom !== item.uom
-                    ? <>{Number(item.display_qty).toLocaleString('id-ID')}<span className="text-xs ml-1 text-gray-400">{item.display_uom}</span>
-                        <div className="text-xs font-normal text-gray-400">= {item.quantity_received.toLocaleString('id-ID')} {item.uom}</div></>
-                    : <>{item.quantity_received.toLocaleString('id-ID')}<span className="text-xs ml-1 text-gray-400">{item.uom}</span></>}
-                </div>
-                <div className="col-span-2">
-                  <NumberInput
-                    value={item.quantity_accepted}
-                    onChange={(e) => updateItem(idx, 'quantity_accepted', e.target.value)}
-                    disabled={!isEditable}
-                    min={0}
-                    max={item.quantity_received}
-                    step="any"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-800 dark:text-white disabled:bg-gray-100 disabled:text-gray-500 focus:ring-1 focus:ring-green-500"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <NumberInput
-                    value={item.quantity_rejected}
-                    onChange={(e) => updateItem(idx, 'quantity_rejected', e.target.value)}
-                    disabled={!isEditable}
-                    min={0}
-                    max={item.quantity_received}
-                    step="any"
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-800 dark:text-white disabled:bg-gray-100 disabled:text-gray-500 focus:ring-1 focus:ring-red-500"
-                  />
-                </div>
-                <div className="col-span-3">
-                  {isEditable && Math.abs(item.quantity_received - accepted - rejected) > 0.001 && (
-                    <p className="mb-1 text-xs text-amber-600 dark:text-amber-400">
-                      {item.quantity_received - accepted - rejected > 0
-                        ? `Belum dialokasikan: ${(item.quantity_received - accepted - rejected).toLocaleString('id-ID')} ${item.uom} (isi Qty Ditolak bila memang ditolak)`
-                        : `Melebihi jumlah diterima ${(accepted + rejected - item.quantity_received).toLocaleString('id-ID')} ${item.uom}; jumlah diterima ikut disesuaikan`}
-                    </p>
-                  )}
-                  <input
-                    type="text"
-                    value={item.rejection_reason}
-                    onChange={(e) => updateItem(idx, 'rejection_reason', e.target.value)}
-                    disabled={!isEditable || rejected === 0}
-                    placeholder={rejected > 0 ? 'Alasan...' : '—'}
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-800 dark:text-white disabled:bg-transparent disabled:border-transparent"
-                  />
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {isEditable && (

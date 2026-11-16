@@ -166,7 +166,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">General Ledger</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Pengecekan saldo: semua jurnal terposting per akun (hanya baca). Input dan koreksi dilakukan lewat Journal Entry atau transaksi sumbernya.</p>
@@ -259,7 +259,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
             placeholder="End Date"
           />
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={clearFilters}
               className="btn-secondary flex-1"

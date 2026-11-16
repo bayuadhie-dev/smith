@@ -121,30 +121,32 @@ function FromQuotationFlow({ onBack }: { onBack: () => void }) {
         <div className="text-gray-400 text-sm">Tidak ada quotation accepted yang siap di-convert.</div>
       ) : (
         <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">No. Quotation</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Customer</th>
-                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Total</th>
-                <th className="px-3 py-2"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {quotations.map((q) => (
-                <tr key={q.id}>
-                  <td className="px-3 py-2">{q.quote_number}</td>
-                  <td className="px-3 py-2">{q.customer_name}</td>
-                  <td className="px-3 py-2 text-right tabular-nums">{q.total_amount.toLocaleString('id-ID')}</td>
-                  <td className="px-3 py-2 text-right">
-                    <button onClick={() => handleConvert(q)} disabled={converting === q.id} className="btn-primary text-xs px-3 py-1.5 disabled:opacity-50">
-                      {converting === q.id ? 'Memproses...' : 'Convert ke SO'}
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">No. Quotation</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Customer</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Total</th>
+                  <th className="px-3 py-2"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {quotations.map((q) => (
+                  <tr key={q.id}>
+                    <td className="px-3 py-2">{q.quote_number}</td>
+                    <td className="px-3 py-2">{q.customer_name}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{q.total_amount.toLocaleString('id-ID')}</td>
+                    <td className="px-3 py-2 text-right">
+                      <button onClick={() => handleConvert(q)} disabled={converting === q.id} className="btn-primary text-xs px-3 py-1.5 disabled:opacity-50">
+                        {converting === q.id ? 'Memproses...' : 'Convert ke SO'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

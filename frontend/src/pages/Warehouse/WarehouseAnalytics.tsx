@@ -45,7 +45,7 @@ const [period, setPeriod] = useState('monthly')
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics Gudang</h1>
           <p className="text-gray-600 dark:text-gray-300">Advanced inventory analytics and performance metrics</p>

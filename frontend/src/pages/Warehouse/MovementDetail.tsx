@@ -150,7 +150,7 @@ const MovementDetail: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate('/app/warehouse/movements')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg">
             <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />

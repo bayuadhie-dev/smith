@@ -147,12 +147,12 @@ const MaterialIssueList: React.FC = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="flex justify-between items-start mb-6">
+      <div className="flex flex-wrap justify-between items-start mb-6 gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Permintaan Barang</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Kelola pengeluaran material untuk produksi</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Link
             to="/app/production/material-issues/shortages"
             className="btn btn-secondary flex items-center gap-2"
@@ -261,58 +261,60 @@ const MaterialIssueList: React.FC = () => {
             <p className="mt-2 text-gray-500 dark:text-gray-400">{tools.total === 0 ? 'Belum ada permintaan barang' : 'Tidak ada permintaan yang cocok'}</p>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <SortTh tools={tools} col="issue_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Permintaan</SortTh>
-                <SortTh tools={tools} col="wo_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SPK</SortTh>
-                <SortTh tools={tools} col="product_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</SortTh>
-                <SortTh tools={tools} col="issue_date" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</SortTh>
-                <SortTh tools={tools} col="total_items" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</SortTh>
-                <SortTh tools={tools} col="priority" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Prioritas</SortTh>
-                <SortTh tools={tools} col="status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {tools.rows.map((issue) => (
-                <tr key={issue.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className="font-medium text-primary-600 dark:text-primary-400">{issue.issue_number}</span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <Link to={`/app/production/work-orders/${issue.work_order_id}`} className="text-primary-600 hover:underline dark:text-primary-400">
-                      {issue.wo_number}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                    {issue.product_name || '-'}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                    {issue.issue_date ? new Date(issue.issue_date).toLocaleDateString('id-ID') : '-'}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                    {issue.total_items} item
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {getPriorityBadge(issue.priority)}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {getStatusBadge(issue.status)}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <Link
-                      to={`/app/production/material-issues/${issue.id}`}
-                      className="text-primary-600 hover:text-primary-800 dark:text-primary-400"
-                    >
-                      <EyeIcon className="h-5 w-5" aria-hidden="true" />
-                      <span className="sr-only">Lihat</span>
-                    </Link>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <SortTh tools={tools} col="issue_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Permintaan</SortTh>
+                  <SortTh tools={tools} col="wo_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SPK</SortTh>
+                  <SortTh tools={tools} col="product_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</SortTh>
+                  <SortTh tools={tools} col="issue_date" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</SortTh>
+                  <SortTh tools={tools} col="total_items" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</SortTh>
+                  <SortTh tools={tools} col="priority" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Prioritas</SortTh>
+                  <SortTh tools={tools} col="status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {tools.rows.map((issue) => (
+                  <tr key={issue.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="font-medium text-primary-600 dark:text-primary-400">{issue.issue_number}</span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Link to={`/app/production/work-orders/${issue.work_order_id}`} className="text-primary-600 hover:underline dark:text-primary-400">
+                        {issue.wo_number}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                      {issue.product_name || '-'}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                      {issue.issue_date ? new Date(issue.issue_date).toLocaleDateString('id-ID') : '-'}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                      {issue.total_items} item
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {getPriorityBadge(issue.priority)}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {getStatusBadge(issue.status)}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Link
+                        to={`/app/production/material-issues/${issue.id}`}
+                        className="text-primary-600 hover:text-primary-800 dark:text-primary-400"
+                      >
+                        <EyeIcon className="h-5 w-5" aria-hidden="true" />
+                        <span className="sr-only">Lihat</span>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
       </div>

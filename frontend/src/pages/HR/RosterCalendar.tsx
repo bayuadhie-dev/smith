@@ -28,12 +28,12 @@ export default function RosterCalendar() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Employee Roster</h1>
           <p className="text-gray-600 dark:text-gray-300">View and manage employee shift schedules</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Link 
             to="/app/hr/roster/manage"
             className="btn-primary inline-flex items-center gap-2"

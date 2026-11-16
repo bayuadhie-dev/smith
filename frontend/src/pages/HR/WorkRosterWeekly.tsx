@@ -1083,12 +1083,12 @@ export default function WorkRosterWeekly() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Roster Kerja Mingguan</h1>
           <p className="text-gray-600 dark:text-gray-300">Pengaturan jadwal kerja produksi per minggu</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={exportToExcel}
             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold flex items-center gap-1.5 shadow-sm transition-all"
@@ -1126,7 +1126,7 @@ export default function WorkRosterWeekly() {
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
         <div className="flex flex-wrap items-center gap-4">
           {/* Week Navigation */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => navigateWeek(-1)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded"
@@ -1746,7 +1746,7 @@ export default function WorkRosterWeekly() {
 
       {/* Employee Selection Modal */}
       {showEmployeeModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden">
             <div className="p-4 border-b flex items-center justify-between">
               <h3 className="text-lg font-semibold">
@@ -1780,33 +1780,35 @@ export default function WorkRosterWeekly() {
                   Tidak ada karyawan ditemukan
                 </div>
               ) : (
-                <table className="w-full">
-                  <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
-                    <tr>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">NIK</th>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Nama</th>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Departemen</th>
-                      <th className="px-4 py-2"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {employees.map(emp => (
-                      <tr key={emp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                        <td className="px-4 py-2 text-sm">{emp.employee_number}</td>
-                        <td className="px-4 py-2 text-sm font-medium">{emp.full_name}</td>
-                        <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">{emp.department || '-'}</td>
-                        <td className="px-4 py-2">
-                          <button
-                            onClick={() => addEmployee(emp)}
-                            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                          >
-                            Pilih
-                          </button>
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">NIK</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Nama</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Departemen</th>
+                        <th className="px-4 py-2"></th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {employees.map(emp => (
+                        <tr key={emp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                          <td className="px-4 py-2 text-sm">{emp.employee_number}</td>
+                          <td className="px-4 py-2 text-sm font-medium">{emp.full_name}</td>
+                          <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">{emp.department || '-'}</td>
+                          <td className="px-4 py-2">
+                            <button
+                              onClick={() => addEmployee(emp)}
+                              className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                            >
+                              Pilih
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>

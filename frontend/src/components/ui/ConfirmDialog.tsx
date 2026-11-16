@@ -72,7 +72,7 @@ export const ConfirmDialogProvider: React.FC = () => {
       size="sm"
       closeOnOverlayClick={false}
       footer={
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 flex-wrap">
           <button
             type="button"
             onClick={() => settle(false)}

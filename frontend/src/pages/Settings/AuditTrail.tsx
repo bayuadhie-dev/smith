@@ -171,7 +171,7 @@ const AuditTrail: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               Audit Trail
@@ -181,7 +181,7 @@ const AuditTrail: React.FC = () => {
             </p>
           </div>
           
-          <div className="flex space-x-3">
+          <div className="flex space-x-3 flex-wrap">
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
@@ -274,7 +274,7 @@ const AuditTrail: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex justify-end space-x-3 mt-4">
+          <div className="flex justify-end space-x-3 mt-4 flex-wrap">
             <button
               onClick={clearFilters}
               className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:bg-gray-600"
@@ -465,12 +465,12 @@ const AuditTrail: React.FC = () => {
       {/* Details Modal */}
       {showDetails && selectedLog && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Detail Audit Log</h3>
 
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Waktu</label>
                     <div className="text-sm text-gray-900 dark:text-white">{formatTimestamp(selectedLog.timestamp)}</div>
@@ -509,28 +509,30 @@ const AuditTrail: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Perubahan Field</label>
                     <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                      <table className="w-full text-sm">
-                        <thead className="bg-gray-50 dark:bg-gray-900">
-                          <tr>
-                            <th className="text-left px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">Field</th>
-                            <th className="text-left px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">Sebelum</th>
-                            <th className="text-left px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">Sesudah</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                          {Object.keys(selectedLog.new_values).map((field) => (
-                            <tr key={field}>
-                              <td className="px-3 py-1.5 font-medium text-gray-700 dark:text-gray-200">{field}</td>
-                              <td className="px-3 py-1.5 text-red-600 dark:text-red-400">
-                                {selectedLog.old_values?.[field] !== undefined ? String(selectedLog.old_values[field] ?? '-') : '-'}
-                              </td>
-                              <td className="px-3 py-1.5 text-green-600 dark:text-green-400">
-                                {String(selectedLog.new_values[field] ?? '-')}
-                              </td>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="bg-gray-50 dark:bg-gray-900">
+                            <tr>
+                              <th className="text-left px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">Field</th>
+                              <th className="text-left px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">Sebelum</th>
+                              <th className="text-left px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400">Sesudah</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                            {Object.keys(selectedLog.new_values).map((field) => (
+                              <tr key={field}>
+                                <td className="px-3 py-1.5 font-medium text-gray-700 dark:text-gray-200">{field}</td>
+                                <td className="px-3 py-1.5 text-red-600 dark:text-red-400">
+                                  {selectedLog.old_values?.[field] !== undefined ? String(selectedLog.old_values[field] ?? '-') : '-'}
+                                </td>
+                                <td className="px-3 py-1.5 text-green-600 dark:text-green-400">
+                                  {String(selectedLog.new_values[field] ?? '-')}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 )}

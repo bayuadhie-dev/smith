@@ -92,7 +92,7 @@ const [statusFilter, setStatusFilter] = useState('');
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Quality Audits</h1>
           <p className="text-gray-600 dark:text-gray-300">Plan, conduct, and track quality audits</p>
@@ -301,7 +301,7 @@ const [statusFilter, setStatusFilter] = useState('');
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <button className="text-blue-600 hover:text-blue-900 dark:text-blue-400">
                         <EyeIcon className="h-4 w-4" />
                       </button>
@@ -356,7 +356,7 @@ const [statusFilter, setStatusFilter] = useState('');
                     <option>Mike Wilson</option>
                   </select>
                 </div>
-                <div className="flex justify-end gap-3 mt-6">
+                <div className="flex justify-end gap-3 mt-6 flex-wrap">
                   <button
                     type="button"
                     onClick={() => setShowNewAuditForm(false)}

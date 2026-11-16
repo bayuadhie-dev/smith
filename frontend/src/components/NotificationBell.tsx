@@ -167,7 +167,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-[26rem] max-w-[92vw] bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-[600px] overflow-hidden flex flex-col">
+          <div className="w-full absolute right-0 mt-2 w-[26rem] max-w-[92vw] bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-[600px] overflow-hidden flex flex-col">
             <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <div>
                 <h3 className="text-base font-semibold text-gray-900 dark:text-white">Notifikasi</h3>

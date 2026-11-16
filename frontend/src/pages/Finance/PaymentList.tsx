@@ -108,12 +108,12 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-2">
           <BanknotesIcon className="w-6 h-6 text-primary-700 dark:text-primary-300" />
           <h1 className="text-2xl font-bold">{title}</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
         <Link
           to={`/app/imports?kind=${type}_${source}`}
           className="flex items-center gap-1 border border-gray-300 px-4 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600"

@@ -54,9 +54,11 @@ export default function ApprovalEmail() {
       <p className="text-sm text-gray-500 dark:text-gray-400">{review ? 'Peninjauan' : 'Persetujuan'} untuk {data.approver}</p>
       <h1 className="text-xl font-semibold mb-1">{d.title} {d.number}</h1>
       <p className="mb-4">Total: <strong>{d.amount}</strong></p>
-      <table className="w-full text-sm mb-4"><tbody>
-        {d.info.map(([k, v]) => (<tr key={k} className="border-b border-gray-100 dark:border-gray-700"><th className="text-left py-1.5 pr-3 w-44 font-medium text-gray-600 dark:text-gray-400">{k}</th><td className="py-1.5">{v}</td></tr>))}
-      </tbody></table>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm mb-4"><tbody>
+          {d.info.map(([k, v]) => (<tr key={k} className="border-b border-gray-100 dark:border-gray-700"><th className="text-left py-1.5 pr-3 w-44 font-medium text-gray-600 dark:text-gray-400">{k}</th><td className="py-1.5">{v}</td></tr>))}
+        </tbody></table>
+      </div>
       {d.items.length > 0 && (
         <div className="overflow-x-auto mb-3">
           <table className="w-full text-sm">
@@ -76,7 +78,7 @@ export default function ApprovalEmail() {
       <div className="text-right text-sm mb-4">{d.totals.map(([k, v]) => (<div key={k} className={k === 'Total' ? 'font-semibold' : ''}>{k}: {v}</div>))}</div>
       {d.notes && <div className="bg-gray-50 dark:bg-gray-700 rounded p-3 text-sm mb-4"><strong>Catatan:</strong> {d.notes}</div>}
 
-      <div className="flex gap-2 mb-3">
+      <div className="flex gap-2 mb-3 flex-wrap">
         <button type="button" onClick={() => setChoice('approve')} className={`flex-1 py-2 rounded-md border text-sm font-medium ${choice === 'approve' ? 'bg-[#1f4e5a] text-white border-[#1f4e5a]' : 'border-gray-300 dark:border-gray-600'}`}>{review ? 'Teruskan ke persetujuan' : 'Setujui'}</button>
         <button type="button" onClick={() => setChoice('reject')} className={`flex-1 py-2 rounded-md border text-sm font-medium ${choice === 'reject' ? 'bg-red-700 text-white border-red-700' : 'border-gray-300 dark:border-gray-600'}`}>Tolak</button>
       </div>

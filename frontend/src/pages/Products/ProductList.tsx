@@ -33,7 +33,7 @@ export default function ProductList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('products.title')}</h1>
         <Link to="/products/new" className="btn-primary inline-flex items-center gap-2">
           <PlusIcon className="h-5 w-5" />
@@ -86,7 +86,7 @@ export default function ProductList() {
                       </span>
                     </td>
                     <td>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <Link
                           to={`/products/${product.id}/edit`}
                           className="text-primary-600 hover:text-primary-900 dark:text-primary-400"
@@ -110,7 +110,7 @@ export default function ProductList() {
       )}
 
       {data?.pages > 1 && (
-        <div className="flex justify-center gap-2">
+        <div className="flex justify-center gap-2 flex-wrap">
           <button
             onClick={() => setPage(page - 1)}
             disabled={page === 1}

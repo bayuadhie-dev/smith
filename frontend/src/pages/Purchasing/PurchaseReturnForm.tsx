@@ -255,58 +255,60 @@ export default function PurchaseReturnForm() {
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th className="px-3 py-3 w-8"></th>
-                  <th className="px-3 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Item</th>
-                  <th className="px-3 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Sisa Bisa Retur</th>
-                  <th className="px-3 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Qty Retur</th>
-                  <th className="px-3 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Harga Satuan</th>
-                  <th className="px-3 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {lines.map((line, idx) => (
-                  <tr key={line.invoice_item_id}>
-                    <td className="px-3 py-3">
-                      <input
-                        type="checkbox"
-                        checked={line.selected}
-                        onChange={(e) => updateLine(idx, 'selected', e.target.checked)}
-                        disabled={line.max_quantity <= 0}
-                      />
-                    </td>
-                    <td className="px-3 py-3 text-gray-800 dark:text-gray-200">{line.description}</td>
-                    <td className="px-3 py-3 text-right text-gray-600 dark:text-gray-400">
-                      {line.max_quantity} {line.uom}
-                    </td>
-                    <td className="px-3 py-3 text-right">
-                      <NumberInput
-                        min={0}
-                        max={line.max_quantity}
-                        value={line.quantity}
-                        onChange={(e) => updateLine(idx, 'quantity', e.target.value)}
-                        disabled={!line.selected}
-                        className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-right dark:bg-gray-900 dark:text-white disabled:opacity-50"
-                      />
-                    </td>
-                    <td className="px-3 py-3 text-right text-gray-600 dark:text-gray-400">
-                      {formatCurrency(line.unit_price)}
-                    </td>
-                    <td className="px-3 py-3 text-right font-medium text-gray-800 dark:text-gray-200">
-                      {formatCurrency((parseFloat(line.quantity) || 0) * line.unit_price)}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-3 py-3 w-8"></th>
+                    <th className="px-3 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Item</th>
+                    <th className="px-3 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Sisa Bisa Retur</th>
+                    <th className="px-3 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Qty Retur</th>
+                    <th className="px-3 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Harga Satuan</th>
+                    <th className="px-3 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Total</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {lines.map((line, idx) => (
+                    <tr key={line.invoice_item_id}>
+                      <td className="px-3 py-3">
+                        <input
+                          type="checkbox"
+                          checked={line.selected}
+                          onChange={(e) => updateLine(idx, 'selected', e.target.checked)}
+                          disabled={line.max_quantity <= 0}
+                        />
+                      </td>
+                      <td className="px-3 py-3 text-gray-800 dark:text-gray-200">{line.description}</td>
+                      <td className="px-3 py-3 text-right text-gray-600 dark:text-gray-400">
+                        {line.max_quantity} {line.uom}
+                      </td>
+                      <td className="px-3 py-3 text-right">
+                        <NumberInput
+                          min={0}
+                          max={line.max_quantity}
+                          value={line.quantity}
+                          onChange={(e) => updateLine(idx, 'quantity', e.target.value)}
+                          disabled={!line.selected}
+                          className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm text-right dark:bg-gray-900 dark:text-white disabled:opacity-50"
+                        />
+                      </td>
+                      <td className="px-3 py-3 text-right text-gray-600 dark:text-gray-400">
+                        {formatCurrency(line.unit_price)}
+                      </td>
+                      <td className="px-3 py-3 text-right font-medium text-gray-800 dark:text-gray-200">
+                        {formatCurrency((parseFloat(line.quantity) || 0) * line.unit_price)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 flex items-center justify-end gap-2 text-sm font-semibold">
               Total Retur: {formatCurrency(totalAmount)}
             </div>
           </div>
 
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-3 flex-wrap">
             <button
               onClick={() => navigate('/app/purchasing/returns')}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium"

@@ -296,12 +296,12 @@ export default function SessionTimeoutModal({ onExtendSession }: SessionTimeoutM
   if (!showWarning && !showExpired) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       
       {/* Modal */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className={`px-6 py-4 ${showExpired ? 'bg-red-500' : 'bg-orange-500'}`}>
           <div className="flex items-center gap-3">
@@ -372,7 +372,7 @@ export default function SessionTimeoutModal({ onExtendSession }: SessionTimeoutM
                 />
               </div>
               
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 <button
                   onClick={handleLogout}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-200 dark:bg-gray-700 transition-colors font-medium dark:hover:bg-gray-600"

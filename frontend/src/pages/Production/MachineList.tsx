@@ -103,12 +103,12 @@ const [machines, setMachines] = useState<Machine[]>([])
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Data Mesin</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Monitor and manage production machines</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => setShowActivityLog(true)}
             className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 flex items-center gap-2 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-600"
@@ -241,7 +241,7 @@ const [machines, setMachines] = useState<Machine[]>([])
               )}
 
               {/* Action Buttons */}
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Link
                   to={`/app/production/machines/${machine.id}`}
                   className="btn-secondary flex-1 text-center flex items-center justify-center gap-1"

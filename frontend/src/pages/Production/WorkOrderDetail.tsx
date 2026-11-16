@@ -270,7 +270,7 @@ export default function WorkOrderDetail() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center space-x-4">
           <Link
             to="/app/production/work-orders"
@@ -298,7 +298,7 @@ export default function WorkOrderDetail() {
       </div>
 
       {showBatchPanel && (
-        <div className="fixed inset-0 z-50 flex justify-end">
+        <div className="fixed inset-0 z-50 flex justify-end p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowBatchPanel(false)} />
           <div className="relative w-full max-w-md h-full bg-white dark:bg-gray-800 shadow-xl p-6 overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
@@ -823,7 +823,7 @@ export default function WorkOrderDetail() {
                       {karton} Karton ALFAMART
                     </span>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 mb-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2">
                     {remaining.map(v => (
                       <div key={v.variant} className={`p-2 rounded text-xs ${v.variant === bottleneck.variant ? 'bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800' : 'bg-gray-50 dark:bg-gray-900'}`}>
                         <div className="font-medium text-gray-700 dark:text-gray-200">{v.variant}</div>
@@ -1127,7 +1127,7 @@ export default function WorkOrderDetail() {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-red-100 rounded-full dark:bg-red-900/30">
@@ -1157,7 +1157,7 @@ export default function WorkOrderDetail() {
                 </div>
               )}
 
-              <div className="flex justify-end gap-3">
+              <div className="flex justify-end gap-3 flex-wrap">
                 <button
                   onClick={() => {
                     setShowDeleteModal(false);
@@ -1196,7 +1196,7 @@ export default function WorkOrderDetail() {
       {/* Batalkan SPK (revert completed -> released) Modal */}
       {showRevertModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-orange-100 rounded-full dark:bg-orange-900/30">
@@ -1215,7 +1215,7 @@ export default function WorkOrderDetail() {
                 </p>
               </div>
 
-              <div className="flex justify-end gap-3">
+              <div className="flex justify-end gap-3 flex-wrap">
                 <button
                   onClick={() => setShowRevertModal(false)}
                   disabled={reverting}
@@ -1239,7 +1239,7 @@ export default function WorkOrderDetail() {
       {/* Complete SPK Modal */}
       {showCompleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-emerald-100 rounded-full dark:bg-emerald-900/30">
@@ -1274,7 +1274,7 @@ export default function WorkOrderDetail() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3">
+              <div className="flex justify-end gap-3 flex-wrap">
                 <button
                   onClick={() => setShowCompleteModal(false)}
                   className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"

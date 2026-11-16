@@ -439,7 +439,7 @@ const OpportunityForm = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-4 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/sales/opportunities')}

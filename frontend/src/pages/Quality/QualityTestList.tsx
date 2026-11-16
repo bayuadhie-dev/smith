@@ -122,12 +122,12 @@ export default function QualityTestList() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Quality Management Dashboard</h1>
           <p className="text-gray-600 dark:text-gray-300">Enhanced quality analytics and monitoring</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
           <div className="text-sm text-gray-500 dark:text-gray-400">
             Last updated: {dashboardData ? new Date(dashboardData.last_updated).toLocaleTimeString() : ''}
           </div>

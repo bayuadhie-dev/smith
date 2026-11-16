@@ -172,7 +172,7 @@ const RNDApprovals: React.FC = () => {
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 ml-4">
+                <div className="flex items-center gap-2 ml-4 flex-wrap">
                   <button
                     onClick={() => handleApprove(approval.id)}
                     disabled={processingId === approval.id}
@@ -198,8 +198,8 @@ const RNDApprovals: React.FC = () => {
 
       {/* Reject Modal */}
       {showRejectModal && selectedApproval && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Tolak Permintaan</h3>
             <p className="text-gray-600 dark:text-gray-300 mb-4">
               Berikan alasan penolakan untuk permintaan ini.
@@ -212,7 +212,7 @@ const RNDApprovals: React.FC = () => {
               rows={4}
               required
             />
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 flex-wrap">
               <button
                 onClick={() => {
                   setShowRejectModal(false);

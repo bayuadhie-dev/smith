@@ -411,68 +411,70 @@ const NomorDokumenTab: React.FC = () => {
         </div>
       )}
 
-      <table className="w-full text-sm mb-6">
-        <thead>
-          <tr className="text-left text-gray-500 dark:text-gray-400 border-b">
-            <th className="pb-2">Kunci</th>
-            <th className="pb-2">Prefix</th>
-            <th className="pb-2">Keterangan</th>
-            <th className="pb-2"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {sequences.map((s) => (
-            <tr key={s.sequence_key} className="border-b border-gray-100 dark:border-gray-800">
-              <td className="py-2 font-mono">{s.sequence_key}</td>
-              <td className="py-2">
-                {editingKey === s.sequence_key ? (
-                  <input
-                    type="text"
-                    value={editForm.prefix}
-                    onChange={(e) => setEditForm((prev) => ({ ...prev, prefix: e.target.value }))}
-                    className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded"
-                  />
-                ) : (
-                  s.prefix
-                )}
-              </td>
-              <td className="py-2 text-gray-500 dark:text-gray-400">
-                {editingKey === s.sequence_key ? (
-                  <input
-                    type="text"
-                    value={editForm.description}
-                    onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
-                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded"
-                  />
-                ) : (
-                  s.description
-                )}
-              </td>
-              <td className="py-2 text-right">
-                {editingKey === s.sequence_key ? (
-                  <button
-                    onClick={() => handleSave(s.sequence_key, editForm.prefix, editForm.description)}
-                    disabled={saving}
-                    className="text-primary-600 hover:underline dark:text-primary-400"
-                  >
-                    Simpan
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setEditingKey(s.sequence_key);
-                      setEditForm({ prefix: s.prefix, description: s.description || '' });
-                    }}
-                    className="text-gray-500 hover:underline dark:text-gray-400"
-                  >
-                    Edit
-                  </button>
-                )}
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm mb-6">
+          <thead>
+            <tr className="text-left text-gray-500 dark:text-gray-400 border-b">
+              <th className="pb-2">Kunci</th>
+              <th className="pb-2">Prefix</th>
+              <th className="pb-2">Keterangan</th>
+              <th className="pb-2"></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {sequences.map((s) => (
+              <tr key={s.sequence_key} className="border-b border-gray-100 dark:border-gray-800">
+                <td className="py-2 font-mono">{s.sequence_key}</td>
+                <td className="py-2">
+                  {editingKey === s.sequence_key ? (
+                    <input
+                      type="text"
+                      value={editForm.prefix}
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, prefix: e.target.value }))}
+                      className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded"
+                    />
+                  ) : (
+                    s.prefix
+                  )}
+                </td>
+                <td className="py-2 text-gray-500 dark:text-gray-400">
+                  {editingKey === s.sequence_key ? (
+                    <input
+                      type="text"
+                      value={editForm.description}
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
+                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded"
+                    />
+                  ) : (
+                    s.description
+                  )}
+                </td>
+                <td className="py-2 text-right">
+                  {editingKey === s.sequence_key ? (
+                    <button
+                      onClick={() => handleSave(s.sequence_key, editForm.prefix, editForm.description)}
+                      disabled={saving}
+                      className="text-primary-600 hover:underline dark:text-primary-400"
+                    >
+                      Simpan
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setEditingKey(s.sequence_key);
+                        setEditForm({ prefix: s.prefix, description: s.description || '' });
+                      }}
+                      className="text-gray-500 hover:underline dark:text-gray-400"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <div className="border-t pt-4">
         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Tambah Kunci Baru</h3>
@@ -634,7 +636,7 @@ const GlobalDefaultsTab: React.FC = () => {
         </td>
         <td className="py-2 align-top text-right whitespace-nowrap">
           {isEditing ? (
-            <div className="flex gap-2 justify-end">
+            <div className="flex gap-2 justify-end flex-wrap">
               <button
                 onClick={() => handleSave(row.transaction_key, editForm.account_id, editForm.description)}
                 disabled={saving}

@@ -251,7 +251,7 @@ const SparePartStock = () => {
                   )}
                 </td>
                 <td className="whitespace-nowrap px-4 py-2.5 text-right text-sm">
-                  <div className="flex justify-end gap-3">
+                  <div className="flex justify-end gap-3 flex-wrap">
                     {canEdit && <button onClick={() => openMove(p)} className="font-medium text-emerald-700 hover:underline dark:text-emerald-400">Mutasi</button>}
                     {canEdit && <button onClick={() => openEdit(p)} className="text-gray-600 hover:underline dark:text-gray-300">Ubah</button>}
                   </div>
@@ -265,7 +265,7 @@ const SparePartStock = () => {
       {pages > 1 && (
         <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
           <span>Halaman {page} dari {pages}</span>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="rounded-md border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-600">Sebelumnya</button>
             <button disabled={page >= pages} onClick={() => setPage(page + 1)} className="rounded-md border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-600">Berikutnya</button>
           </div>
@@ -293,7 +293,7 @@ const SparePartStock = () => {
               </div>
             </div>
             {editing !== 'new' && <p className="text-xs text-gray-500 dark:text-gray-400">Stok tidak diubah dari sini. Gunakan tombol Mutasi.</p>}
-            <div className="flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
+            <div className="flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700 flex-wrap">
               <button type="button" onClick={() => setEditing(null)} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 dark:border-gray-600 dark:text-gray-200">Batal</button>
               <button type="submit" disabled={saving} className="rounded-md bg-emerald-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">{saving ? 'Menyimpan...' : 'Simpan'}</button>
             </div>
@@ -321,7 +321,7 @@ const SparePartStock = () => {
               )}
               <div className="md:col-span-2"><label className={labelCls}>Catatan</label><input className={inputCls} value={mv.notes} onChange={(e) => setMv((m) => ({ ...m, notes: e.target.value }))} placeholder="mis. nomor faktur pembelian atau alasan penyesuaian" /></div>
             </div>
-            <div className="flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
+            <div className="flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700 flex-wrap">
               <button type="button" onClick={() => setMoving(null)} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 dark:border-gray-600 dark:text-gray-200">Batal</button>
               <button type="submit" disabled={saving} className="rounded-md bg-emerald-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">{saving ? 'Menyimpan...' : 'Catat mutasi'}</button>
             </div>

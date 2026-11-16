@@ -152,7 +152,7 @@ const ReimbursementList: React.FC = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pembayaran Klaim</h1>
           <p className="text-gray-600 dark:text-gray-300">Persetujuan dan pembayaran klaim karyawan</p>
@@ -240,7 +240,7 @@ const ReimbursementList: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="flex justify-center gap-2">
+                      <div className="flex justify-center gap-2 flex-wrap">
                         {reimb.status === 'pending' && !reimb.has_steps && hasPermission('expense.approve') && (
                           <button
                             onClick={() => handleApprove(reimb.id)}
@@ -278,7 +278,7 @@ const ReimbursementList: React.FC = () => {
       </div>
       {payFor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setPayFor(null)}>
-          <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl dark:bg-gray-800" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl dark:bg-gray-800 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-base font-semibold text-gray-900 dark:text-white">Bayar reimbursement</h3>
             <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">{payFor.reimbursement_number} · {payFor.employee_name} · Rp {Number(payFor.total_amount).toLocaleString('id-ID')}</p>
             <label className="mb-1 block text-sm font-medium">Dibayar dari akun Kas/Bank *</label>
@@ -291,7 +291,7 @@ const ReimbursementList: React.FC = () => {
             <label className="mb-1 block text-sm font-medium">No. referensi transfer (opsional)</label>
             <input className="input-field mb-4" value={payRef} onChange={(e) => setPayRef(e.target.value)} placeholder="No. transfer atau bukti kas" />
             <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">Jurnal: Hutang Karyawan didebit, akun Kas/Bank yang dipilih dikredit. Uang keluar tercatat di buku bank.</p>
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 flex-wrap">
               <button type="button" className="btn-secondary" onClick={() => setPayFor(null)}>Batal</button>
               <button type="button" className="btn-primary disabled:opacity-50" disabled={paying} onClick={confirmPay}>{paying ? 'Memproses...' : 'Bayar'}</button>
             </div>

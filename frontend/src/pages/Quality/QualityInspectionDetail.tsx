@@ -110,7 +110,7 @@ export default function QualityInspectionDetail() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{inspection.inspection_number}</h1>
           <p className="text-gray-600 dark:text-gray-300 capitalize">

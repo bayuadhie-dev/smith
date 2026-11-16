@@ -59,7 +59,7 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
           </div>
         </div>
         
-        <div className="mt-4 grid grid-cols-3 gap-4">
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600 dark:text-gray-300">Total Permissions</span>

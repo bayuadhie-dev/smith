@@ -255,7 +255,7 @@ const ImportCenter: React.FC = () => {
                   <ArrowUpTrayIcon className="h-4 w-4" /> {file ? 'Ganti file' : 'Pilih file'}
                 </button>
                 {file && <span className="text-sm text-gray-700 dark:text-gray-200">{file.name}</span>}
-                <div className="ml-auto flex gap-2">
+                <div className="ml-auto flex gap-2 flex-wrap">
                   <button type="button" disabled={!file || busy} onClick={() => send(false)} className="rounded border border-gray-400 px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-50 dark:hover:bg-gray-700">
                     {busy && !result ? 'Memeriksa...' : 'Periksa'}
                   </button>

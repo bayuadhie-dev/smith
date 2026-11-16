@@ -72,7 +72,7 @@ export default function PositionManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Master Data Jabatan</h1>
           <p className="text-gray-600 dark:text-gray-300">Kelola daftar jabatan resmi perusahaan - dipakai sebagai pilihan &quot;Jabatan (Terstruktur)&quot; di form karyawan.</p>
@@ -101,7 +101,7 @@ export default function PositionManagement() {
                     <p className="text-sm text-gray-500 dark:text-gray-400">{p.department_name || 'Semua departemen'}{p.grade ? ` — ${p.grade}` : ''}</p>
                   </div>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-1 flex-wrap">
                   <button onClick={() => openEdit(p)} className="p-1 text-gray-500 hover:text-blue-600 dark:text-gray-400"><PencilIcon className="h-4 w-4" /></button>
                   <button onClick={() => handleDelete(p)} className="p-1 text-gray-500 hover:text-red-600 dark:text-gray-400"><TrashIcon className="h-4 w-4" /></button>
                 </div>
@@ -118,8 +118,8 @@ export default function PositionManagement() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">{editing ? 'Edit Jabatan' : 'Tambah Jabatan'}</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -137,7 +137,7 @@ export default function PositionManagement() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Grade/Level</label>
                 <input type="text" value={form.grade} onChange={(e) => setForm({ ...form, grade: e.target.value })} className="w-full border rounded-lg px-3 py-2" placeholder="Contoh: Staff, Supervisor, Manager" />
               </div>
-              <div className="flex justify-end gap-2 pt-4">
+              <div className="flex justify-end gap-2 pt-4 flex-wrap">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Batal</button>
                 <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Simpan</button>
               </div>
@@ -147,7 +147,7 @@ export default function PositionManagement() {
       )}
 
       {drillDown && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg p-6 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-lg font-semibold">{drillDown.title}</h3>

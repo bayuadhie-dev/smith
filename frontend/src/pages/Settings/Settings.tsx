@@ -1256,7 +1256,7 @@ const Settings: React.FC = () => {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">User Management</h3>
-              <div className="flex space-x-3">
+              <div className="flex space-x-3 flex-wrap">
                 <button
                   onClick={() => navigate('/app/settings/user-roles')}
                   className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center"
@@ -1284,87 +1284,89 @@ const Settings: React.FC = () => {
               </p>
             </div>
             <div className="bg-white border rounded-lg overflow-hidden dark:bg-gray-800">
-              <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-900">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">{t('common.name')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Role</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">{t('common.status')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">{t('common.actions')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {usersData?.users?.length > 0 ? (
-                    usersData.users.map((user: any) => (
-                      <tr key={user.id} className="hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700">
-                        <td className="px-6 py-4">
-                          <div>
-                            <div className="font-medium">{user.full_name}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">@{user.username}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm">{user.email}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            user.is_admin 
-                              ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' 
-                              : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-                          }`}>
-                            {user.is_admin ? 'Admin' : 'User'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            user.is_active 
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
-                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                          }`}>
-                            {user.is_active ? 'Active' : 'Inactive'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm">
-                          <div className="flex items-center gap-2">
-                            <button 
-                              onClick={() => openEditUserModal(user)}
-                              className="text-blue-600 hover:text-blue-800 font-medium dark:text-blue-400"
-                              title="Edit user"
-                            >
-                              Edit
-                            </button>
-                            <span className="text-gray-300">|</span>
-                            {user.is_active ? (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">{t('common.name')}</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Email</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Role</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">{t('common.status')}</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">{t('common.actions')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {usersData?.users?.length > 0 ? (
+                      usersData.users.map((user: any) => (
+                        <tr key={user.id} className="hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700">
+                          <td className="px-6 py-4">
+                            <div>
+                              <div className="font-medium">{user.full_name}</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">@{user.username}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm">{user.email}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              user.is_admin 
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' 
+                                : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                            }`}>
+                              {user.is_admin ? 'Admin' : 'User'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              user.is_active 
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                            }`}>
+                              {user.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <button 
-                                onClick={() => handleDeactivateUser(user.id, user.username)}
-                                className="text-yellow-600 hover:text-yellow-800 font-medium dark:text-yellow-400"
-                                title="Nonaktifkan user (data tetap tersimpan)"
+                                onClick={() => openEditUserModal(user)}
+                                className="text-blue-600 hover:text-blue-800 font-medium dark:text-blue-400"
+                                title="Edit user"
                               >
-                                Nonaktifkan
+                                Edit
                               </button>
-                            ) : (
-                              <span className="text-gray-400 text-xs">Nonaktif</span>
-                            )}
-                            <span className="text-gray-300">|</span>
-                            <button 
-                              onClick={() => handlePermanentDeleteUser(user.id, user.username)}
-                              className="text-red-600 hover:text-red-800 font-medium dark:text-red-400"
-                              title="Hapus permanen (tidak dapat dikembalikan)"
-                            >
-                              Hapus
-                            </button>
-                          </div>
+                              <span className="text-gray-300">|</span>
+                              {user.is_active ? (
+                                <button 
+                                  onClick={() => handleDeactivateUser(user.id, user.username)}
+                                  className="text-yellow-600 hover:text-yellow-800 font-medium dark:text-yellow-400"
+                                  title="Nonaktifkan user (data tetap tersimpan)"
+                                >
+                                  Nonaktifkan
+                                </button>
+                              ) : (
+                                <span className="text-gray-400 text-xs">Nonaktif</span>
+                              )}
+                              <span className="text-gray-300">|</span>
+                              <button 
+                                onClick={() => handlePermanentDeleteUser(user.id, user.username)}
+                                className="text-red-600 hover:text-red-800 font-medium dark:text-red-400"
+                                title="Hapus permanen (tidak dapat dikembalikan)"
+                              >
+                                Hapus
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                          No users found
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                        No users found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         );
@@ -1613,7 +1615,7 @@ const Settings: React.FC = () => {
 
       {/* Loading Overlay */}
       {isLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 text-center dark:bg-gray-800">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
             <p className="text-lg">Processing...</p>
@@ -1650,7 +1652,7 @@ const Settings: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-800">
             {renderTabContent()}
             
-            <div className="mt-8 pt-6 border-t flex justify-end space-x-4">
+            <div className="mt-8 pt-6 border-t flex justify-end space-x-4 flex-wrap">
               <button 
                 className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                 disabled={isLoading}

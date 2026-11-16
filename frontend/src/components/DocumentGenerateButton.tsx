@@ -135,7 +135,7 @@ export default function DocumentGenerateButton({
   const { type } = getDocumentType();
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center space-x-2 flex-wrap">
       {!generatedDocId ? (
         <button
           onClick={handleGenerate}
@@ -188,7 +188,7 @@ export default function DocumentGenerateButton({
 
       {previewHtml && (
         <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-4 overflow-y-auto" onClick={() => setPreviewHtml(null)}>
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl my-8 dark:bg-gray-800" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl my-8 dark:bg-gray-800 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
               <h3 className="font-semibold text-gray-900 dark:text-white">Preview Dokumen</h3>
               <button

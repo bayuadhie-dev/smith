@@ -204,12 +204,12 @@ const MovementList: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pemindahan Barang</h1>
           <p className="text-gray-600 dark:text-gray-300">Riwayat semua pergerakan dan transaksi persediaan</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <button
             onClick={exportMovements}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
@@ -418,7 +418,7 @@ const MovementList: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-2 flex-wrap">
                           <Link
                             to={`/app/warehouse/movements/${movement.id}`}
                             className="text-blue-600 hover:text-blue-900 dark:text-blue-400" title="Detail"

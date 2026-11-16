@@ -84,7 +84,7 @@ const PreShiftChecklistWeekly = () => {
               </div>
               
               {/* Week Navigation */}
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 flex-wrap">
                 <button
                   onClick={() => handleWeekChange(-1)}
                   className="p-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg transition-colors"
@@ -253,38 +253,40 @@ const SubmissionItem: React.FC<SubmissionItemProps> = ({ submission, isExpanded,
             </div>
           ) : detail?.answers ? (
             <div className="bg-white dark:bg-gray-800 rounded border overflow-hidden">
-              <table className="w-full text-xs">
-                <thead className="bg-gray-100 dark:bg-gray-800">
-                  <tr>
-                    <th className="px-2 py-1.5 text-left font-medium text-gray-600 dark:text-gray-300 w-8">#</th>
-                    <th className="px-2 py-1.5 text-left font-medium text-gray-600 dark:text-gray-300">Item</th>
-                    <th className="px-2 py-1.5 text-left font-medium text-gray-600 dark:text-gray-300 w-20">Kategori</th>
-                    <th className="px-2 py-1.5 text-center font-medium text-gray-600 dark:text-gray-300 w-12">Status</th>
-                    <th className="px-2 py-1.5 text-left font-medium text-gray-600 dark:text-gray-300">Catatan</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                  {detail.answers.map((answer: any, idx: number) => (
-                    <tr key={answer.id} className={answer.status === 'NG' ? 'bg-red-50 dark:bg-red-900/20' : ''}>
-                      <td className="px-2 py-1 text-gray-400">{idx + 1}</td>
-                      <td className="px-2 py-1 text-gray-700 dark:text-gray-200">{answer.item?.item_name}</td>
-                      <td className="px-2 py-1">
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400">{getCategoryLabel(answer.item?.category)}</span>
-                      </td>
-                      <td className="px-2 py-1 text-center">
-                        {answer.status === 'OK' ? (
-                          <CheckCircleSolid className="w-4 h-4 text-green-500 inline" />
-                        ) : answer.status === 'NG' ? (
-                          <XCircleSolid className="w-4 h-4 text-red-500 inline" />
-                        ) : (
-                          <MinusCircleIcon className="w-4 h-4 text-gray-400 inline" />
-                        )}
-                      </td>
-                      <td className="px-2 py-1 text-gray-500 dark:text-gray-400 italic">{answer.catatan || '-'}</td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-gray-100 dark:bg-gray-800">
+                    <tr>
+                      <th className="px-2 py-1.5 text-left font-medium text-gray-600 dark:text-gray-300 w-8">#</th>
+                      <th className="px-2 py-1.5 text-left font-medium text-gray-600 dark:text-gray-300">Item</th>
+                      <th className="px-2 py-1.5 text-left font-medium text-gray-600 dark:text-gray-300 w-20">Kategori</th>
+                      <th className="px-2 py-1.5 text-center font-medium text-gray-600 dark:text-gray-300 w-12">Status</th>
+                      <th className="px-2 py-1.5 text-left font-medium text-gray-600 dark:text-gray-300">Catatan</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {detail.answers.map((answer: any, idx: number) => (
+                      <tr key={answer.id} className={answer.status === 'NG' ? 'bg-red-50 dark:bg-red-900/20' : ''}>
+                        <td className="px-2 py-1 text-gray-400">{idx + 1}</td>
+                        <td className="px-2 py-1 text-gray-700 dark:text-gray-200">{answer.item?.item_name}</td>
+                        <td className="px-2 py-1">
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400">{getCategoryLabel(answer.item?.category)}</span>
+                        </td>
+                        <td className="px-2 py-1 text-center">
+                          {answer.status === 'OK' ? (
+                            <CheckCircleSolid className="w-4 h-4 text-green-500 inline" />
+                          ) : answer.status === 'NG' ? (
+                            <XCircleSolid className="w-4 h-4 text-red-500 inline" />
+                          ) : (
+                            <MinusCircleIcon className="w-4 h-4 text-gray-400 inline" />
+                          )}
+                        </td>
+                        <td className="px-2 py-1 text-gray-500 dark:text-gray-400 italic">{answer.catatan || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               {/* Summary Stats */}
               <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-900 border-t flex items-center justify-between text-[10px]">
                 <div className="flex items-center space-x-3">

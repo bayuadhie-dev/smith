@@ -65,7 +65,7 @@ const StartProductionDialog: React.FC<Props> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
@@ -162,7 +162,7 @@ const StartProductionDialog: React.FC<Props> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 bg-slate-50 dark:bg-slate-900 dark:border-slate-700">
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 bg-slate-50 dark:bg-slate-900 dark:border-slate-700 flex-wrap">
           <button
             onClick={onClose}
             className="px-4 py-2 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors dark:hover:bg-slate-600 dark:text-slate-200"

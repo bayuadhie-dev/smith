@@ -87,7 +87,7 @@ export default function SalesForecastList() {
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <ChartBar className="w-6 h-6" /> Sales Forecast
@@ -180,7 +180,7 @@ export default function SalesForecastList() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Forecast Baru</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Berlaku 12 bulan berturut-turut dari bulan yang dipilih.</p>
             {error && <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-2 rounded dark:text-red-400">{error}</div>}
@@ -205,7 +205,7 @@ export default function SalesForecastList() {
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-5">
+            <div className="flex justify-end gap-2 mt-5 flex-wrap">
               <button className="btn-outline" onClick={() => setShowModal(false)} disabled={saving}>Batal</button>
               <button className="btn-primary" onClick={handleCreate} disabled={saving}>
                 {saving ? 'Membuat...' : 'Buat & Buka Grid'}

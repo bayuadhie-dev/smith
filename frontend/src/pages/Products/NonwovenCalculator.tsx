@@ -260,7 +260,7 @@ const NonwovenCalculator: React.FC = () => {
                     placeholder="Enter value to convert"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
                     <label className="block text-sm font-medium mb-1">From UOM</label>
                     <select

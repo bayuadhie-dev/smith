@@ -205,7 +205,7 @@ const navigate = useNavigate();
     <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center flex-wrap justify-between gap-3">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => navigate('/app/products/categories')}
@@ -367,7 +367,7 @@ const navigate = useNavigate();
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end space-x-4">
+        <div className="flex justify-end space-x-4 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/products/categories')}

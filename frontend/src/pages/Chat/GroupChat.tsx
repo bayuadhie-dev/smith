@@ -834,7 +834,7 @@ const GroupChat: React.FC = () => {
 
         {/* Hover actions */}
         {hoveredMessage === msg.id && !msg.is_deleted && (
-          <div className="absolute right-4 top-0 -translate-y-1 flex items-center gap-0.5 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-10">
+          <div className="absolute right-4 top-0 -translate-y-1 flex items-center gap-0.5 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-10 flex-wrap">
             {/* Emoji quick pick */}
             <div className="relative">
               <button onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)}
@@ -1005,7 +1005,7 @@ const GroupChat: React.FC = () => {
       {/* ═══ CENTER: Message Area ═══ */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Channel header */}
-        <div className="h-12 px-4 flex items-center gap-3 border-b border-black/30 shadow-sm bg-[#313338] flex-shrink-0">
+        <div className="h-12 px-4 flex items-center gap-3 border-b border-black/30 shadow-sm bg-[#313338] flex-shrink-0 flex-wrap">
           {dmMode && selectedDm ? (
             <>
               <Avatar name={selectedDm.other_user?.full_name || '?'} size={24} />
@@ -1020,7 +1020,7 @@ const GroupChat: React.FC = () => {
             </>
           ) : <span className="text-gray-400 text-sm">Pilih channel</span>}
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-3 flex-wrap">
             <button onClick={() => setShowSearch(s => !s)} className="text-gray-400 hover:text-white" title="Cari">
               <MagnifyingGlassIcon className="h-5 w-5" />
             </button>

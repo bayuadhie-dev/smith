@@ -268,8 +268,8 @@ const MaterialIssueDetail: React.FC = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center flex-wrap justify-between mb-6 gap-3">
+        <div className="flex items-center gap-4 flex-wrap">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg">
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
@@ -334,7 +334,7 @@ const MaterialIssueDetail: React.FC = () => {
                 {issue.status === 'partial' && 'Lanjutkan mengeluarkan sisa material'}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {issue.status === 'pending' && (
                 <>
                   <button
@@ -473,70 +473,72 @@ const MaterialIssueDetail: React.FC = () => {
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold">Daftar Material ({issue.items.length} item)</h3>
         </div>
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-900">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">#</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Material</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Lokasi</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dibutuhkan</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dikeluarkan</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Sisa</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Reservasi</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Diterima</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {issue.items.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  {item.line_number}
-                </td>
-                <td className="px-4 py-3">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{item.material_name}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{item.material_code}</p>
-                    {item.batch_number && (
-                      <p className="text-xs text-gray-400">Batch: {item.batch_number}</p>
-                    )}
-                  </div>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  {item.location_code ? (
-                    <span className="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
-                      <MapPinIcon className="h-4 w-4" />
-                      {item.location_code}
-                    </span>
-                  ) : (
-                    <span className="text-gray-400">-</span>
-                  )}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-right font-medium">
-                  {item.required_quantity.toLocaleString()} {item.uom}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-right text-green-600 font-medium dark:text-green-400">
-                  {item.issued_quantity.toLocaleString()} {item.uom}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-right text-orange-600 font-medium dark:text-orange-400">
-                  {item.pending_quantity.toLocaleString()} {item.uom}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  {reservationStatusBadge(item.reservation_status)}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-right text-gray-700 dark:text-gray-300">
-                  {item.received_quantity !== null ? `${item.received_quantity.toLocaleString()} ${item.uom}` : '-'}
-                  {item.receive_note && (
-                    <p className="text-xs text-gray-400">{item.receive_note}</p>
-                  )}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  {getItemStatusBadge(item.status)}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">#</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Material</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Lokasi</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dibutuhkan</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dikeluarkan</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Sisa</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Reservasi</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Diterima</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {issue.items.map((item) => (
+                <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    {item.line_number}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">{item.material_name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{item.material_code}</p>
+                      {item.batch_number && (
+                        <p className="text-xs text-gray-400">Batch: {item.batch_number}</p>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {item.location_code ? (
+                      <span className="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
+                        <MapPinIcon className="h-4 w-4" />
+                        {item.location_code}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-right font-medium">
+                    {item.required_quantity.toLocaleString()} {item.uom}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-right text-green-600 font-medium dark:text-green-400">
+                    {item.issued_quantity.toLocaleString()} {item.uom}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-right text-orange-600 font-medium dark:text-orange-400">
+                    {item.pending_quantity.toLocaleString()} {item.uom}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {reservationStatusBadge(item.reservation_status)}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-right text-gray-700 dark:text-gray-300">
+                    {item.received_quantity !== null ? `${item.received_quantity.toLocaleString()} ${item.uom}` : '-'}
+                    {item.receive_note && (
+                      <p className="text-xs text-gray-400">{item.receive_note}</p>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {getItemStatusBadge(item.status)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Receipt Confirmation Modal */}
@@ -554,7 +556,7 @@ const MaterialIssueDetail: React.FC = () => {
                     <span className="font-medium text-gray-900 dark:text-white">{item.material_name}</span>
                     <span className="text-sm text-gray-500 dark:text-gray-400">Dikeluarkan: {item.issued_quantity} {item.uom}</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Jumlah Diterima</label>
                       <NumberInput
@@ -578,7 +580,7 @@ const MaterialIssueDetail: React.FC = () => {
                 </div>
               ))}
             </div>
-            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 flex-wrap">
               <button onClick={() => setShowReceiptModal(false)} className="btn btn-secondary">Batal</button>
               <button onClick={handleConfirmReceipt} disabled={actionLoading} className="btn btn-primary">
                 {actionLoading ? 'Menyimpan...' : 'Simpan Konfirmasi'}

@@ -211,7 +211,7 @@ const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-4">
@@ -435,7 +435,7 @@ const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Halaman {page} dari {totalPages}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}

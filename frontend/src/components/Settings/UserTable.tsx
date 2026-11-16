@@ -102,7 +102,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onDelete, onView }
                   }
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex items-center justify-end space-x-2">
+                  <div className="flex items-center justify-end space-x-2 flex-wrap">
                     <button
                       onClick={() => onView(user)}
                       className="text-blue-600 hover:text-blue-900 p-1 rounded-md hover:bg-blue-50 dark:text-blue-400"

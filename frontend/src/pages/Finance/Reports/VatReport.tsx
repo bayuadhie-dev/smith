@@ -14,7 +14,7 @@ export default function VatReport() {
   return (
     <ReportShell title="Rekap PPN" subtitle={`PPN Keluaran (penjualan) dan PPN Masukan (pembelian) per bulan · ${year}`}
       icon={<ReceiptPercentIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />} actions={<ExportButtons report={['vat-summary', params]} />}>
-      <div className="print-hide flex items-center gap-2">
+      <div className="print-hide flex items-center gap-2 flex-wrap">
         <button type="button" className="rounded-lg border px-3 py-1.5 text-sm" onClick={() => setYear(year - 1)}>‹</button>
         <span className="min-w-[4rem] text-center font-semibold">{year}</span>
         <button type="button" className="rounded-lg border px-3 py-1.5 text-sm" onClick={() => setYear(year + 1)}>›</button>

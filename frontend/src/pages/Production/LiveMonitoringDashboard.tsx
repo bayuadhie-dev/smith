@@ -271,7 +271,7 @@ const LiveMonitoringDashboard: React.FC = () => {
                                 {isStopped && d.stop_from && d.stop_to && (
                                   <div className="text-[9px] mt-0.5 font-semibold">{d.stop_from}→{d.stop_to} ({d.stop_duration_minutes}m)</div>
                                 )}
-                                <div className="flex items-center justify-center gap-1 mt-1">
+                                <div className="flex items-center justify-center gap-1 mt-1 flex-wrap">
                                   <button onClick={() => navigate(`/app/production/live-monitoring/view/${d.id}`)}
                                     className="px-1.5 py-0.5 bg-blue-500 hover:bg-blue-600 text-white rounded text-[9px]">View</button>
                                   <button onClick={() => setEditingSlot({ machineId: m.machine_id, slot: slot.slot, machine: m })}
@@ -547,7 +547,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
               {/* Stopped fields */}
               {status === 'stopped' && (
                 <div className="p-3 rounded-lg bg-red-50 border border-red-200 space-y-3 dark:bg-red-900/20 dark:border-red-800">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-red-800 mb-1 dark:text-red-300">Berhenti dari jam</label>
                       <input type="time" value={stopFrom} onChange={e => setStopFrom(e.target.value)} required
@@ -635,7 +635,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
                             }`}>
                               <div className="flex items-center justify-between">
                                 <span className="text-xs text-gray-700 dark:text-gray-200 flex-1">{item.item_name}</span>
-                                <div className="flex items-center space-x-1">
+                                <div className="flex items-center space-x-1 flex-wrap">
                                   <button type="button" onClick={() => handleAnswerChange(item.id, 'OK')}
                                     className={`p-1.5 rounded ${answer?.status === 'OK' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-green-100 dark:bg-gray-700 dark:text-gray-400'}`}>
                                     <CheckIcon className="h-3.5 w-3.5" />
@@ -683,7 +683,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
                             }`}>
                               <div className="flex items-center justify-between">
                                 <span className="text-xs text-gray-700 dark:text-gray-200 flex-1">{item.item_name}</span>
-                                <div className="flex items-center space-x-1">
+                                <div className="flex items-center space-x-1 flex-wrap">
                                   <button type="button" onClick={() => handleAnswerChange(item.id, 'OK')}
                                     className={`p-1.5 rounded ${answer?.status === 'OK' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500 hover:bg-green-100 dark:bg-gray-700 dark:text-gray-400'}`}>
                                     <CheckIcon className="h-3.5 w-3.5" />
@@ -727,7 +727,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
             </>
           )}
 
-          <div className="flex gap-2 pt-2 border-t mt-4">
+          <div className="flex gap-2 pt-2 border-t mt-4 flex-wrap">
             <button type="submit" disabled={saving}
               className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg font-medium text-sm transition disabled:opacity-50">
               {saving ? 'Menyimpan...' : existingData ? 'Update Check' : 'Simpan Check'}

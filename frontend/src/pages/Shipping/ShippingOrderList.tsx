@@ -31,9 +31,9 @@ export default function ShippingOrderList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Surat Jalan</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Link to="/app/imports?kind=shipping_order" className="btn-secondary">Impor</Link>
           <Link to="/app/shipping/orders/new" className="btn-primary">
             <PlusIcon className="mr-1.5 h-5 w-5" />

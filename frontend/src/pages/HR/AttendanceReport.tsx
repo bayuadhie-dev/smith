@@ -177,7 +177,7 @@ const AttendanceReport: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Laporan Absensi</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Rekap kehadiran karyawan</p>
@@ -415,7 +415,7 @@ const AttendanceReport: React.FC = () => {
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     Menampilkan {records.length} dari {totalRecords} data
                   </p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <button
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}

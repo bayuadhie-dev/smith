@@ -67,7 +67,7 @@ const BreakdownSummary: React.FC = () => {
   return (
     <div className="p-6 bg-slate-50 min-h-screen dark:bg-slate-900">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center flex-wrap justify-between mb-6 gap-3">
         <div>
           <div className="flex items-center gap-3 mb-2">
             <Link
@@ -83,7 +83,7 @@ const BreakdownSummary: React.FC = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-3 bg-red-100 rounded-lg dark:bg-red-900/30">

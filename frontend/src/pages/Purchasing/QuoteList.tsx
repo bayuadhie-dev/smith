@@ -37,7 +37,7 @@ export default function QuoteList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Penawaran Pemasok</h1>
           <p className="text-gray-600 dark:text-gray-300">Kelola penawaran dan harga dari pemasok</p>
@@ -94,7 +94,7 @@ export default function QuoteList() {
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.cls}`}>{badge.label}</span>
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                        <div className="flex items-center justify-end space-x-2">
+                        <div className="flex items-center justify-end space-x-2 flex-wrap">
                           <Link to={`/app/purchasing/quotes/${quote.id}`} className="p-1 text-primary-700 hover:text-primary-900 dark:text-primary-300" title="Lihat detail" aria-label="Lihat detail">
                             <EyeIcon className="h-4 w-4" />
                           </Link>

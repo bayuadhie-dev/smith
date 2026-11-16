@@ -181,7 +181,7 @@ export default function TabBar({ goModule, closeModule, closeTabs }: Props) {
   return (
     <div className="mb-3 space-y-2">
       {/* Level 1: modules */}
-      <div className="flex items-center gap-1 overflow-x-auto overflow-y-hidden rounded-xl bg-gray-100/80 p-1 dark:bg-gray-800/60" role="tablist" aria-label="Modul">
+      <div className="flex items-center gap-1 overflow-x-auto overflow-y-hidden rounded-xl bg-gray-100/80 p-1 dark:bg-gray-800/60 flex-wrap" role="tablist" aria-label="Modul">
         {state.order.map((id) => {
           const mod = moduleById(id)
           const active = id === activeModuleId
@@ -211,7 +211,7 @@ export default function TabBar({ goModule, closeModule, closeTabs }: Props) {
 
       {/* Level 2: pages inside the active module */}
       {activeModuleState && activeModuleId && (
-        <div className="relative flex items-end gap-1 border-b border-gray-200 dark:border-gray-700">
+        <div className="relative flex items-end gap-1 border-b border-gray-200 dark:border-gray-700 flex-wrap">
           <div className="flex min-w-0 flex-1 items-end gap-0.5 overflow-x-auto overflow-y-hidden pt-0.5 [scrollbar-width:thin]" role="tablist" aria-label="Halaman">
             {activeModuleState.tabs.map((tab, i) => {
               const active = tab.id === activeModuleState.activeTabId

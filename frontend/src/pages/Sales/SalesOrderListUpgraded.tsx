@@ -166,7 +166,7 @@ const SalesOrderListUpgraded: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-800 rounded-xl shadow-lg p-6 text-white">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-3">
               <ShoppingCartIcon className="h-8 w-8" />
@@ -174,7 +174,7 @@ const SalesOrderListUpgraded: React.FC = () => {
             </h1>
             <p className="text-primary-100 mt-1">Kelola pesanan pelanggan dan pemenuhannya</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <button
               onClick={() => refetch()}
               className="p-2 bg-white/10 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 rounded-lg transition-colors"
@@ -320,7 +320,7 @@ const SalesOrderListUpgraded: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex items-center gap-1 relative" ref={order.id === showActions ? actionsRef : undefined}>
+                      <div className="flex items-center gap-1 relative flex-wrap" ref={order.id === showActions ? actionsRef : undefined}>
                         {order.status === 'draft' && (
                           <button
                             onClick={() => setApprovingOrder(order)}

@@ -102,7 +102,7 @@ const ConfirmAndStartProductionModal: React.FC<Props> = ({ orderId, orderNumber,
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
         {!confirmResult ? (
           <>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -153,7 +153,7 @@ const ConfirmAndStartProductionModal: React.FC<Props> = ({ orderId, orderNumber,
                 </ul>
               </div>
             )}
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 flex-wrap">
               <button className="btn-outline" onClick={onClose} disabled={isConfirming}>
                 Batal
               </button>

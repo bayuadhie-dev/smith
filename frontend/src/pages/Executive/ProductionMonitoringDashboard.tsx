@@ -2523,7 +2523,7 @@ const MachineHealthWidget: React.FC = () => {
               <LoadingSpinner />
             ) : historyData ? (
               <>
-                <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
                   <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-center">
                     <p className="text-[10px] text-gray-500 dark:text-gray-400">Rata-rata Mingguan</p>
                     <p className="text-base font-bold text-gray-800 dark:text-white">{fmtMin(Math.round(historyData.baseline?.avg || 0))}</p>
@@ -2632,7 +2632,7 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
                   {m.avg_oee}%
                 </span>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-center mb-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-center mb-3">
                 <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-2">
                   <p className="text-[10px] text-green-600 font-medium dark:text-green-400">Grade A</p>
                   <p className="text-sm font-bold text-green-700 dark:text-green-400">{fmtNum(m.grade_a)}</p>
@@ -3850,7 +3850,7 @@ const ShiftTab: React.FC<{ data: any }> = ({ data }) => {
   return (
     <div className="space-y-5">
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {shifts.map((s: any, i: number) => (
           <div key={i} className={`rounded-xl p-4 shadow text-white ${s.shift_label === best.shift_label ? 'ring-4 ring-yellow-300' : ''}`}
             style={{ background: `linear-gradient(135deg, ${SHIFT_COLORS[i]}, ${SHIFT_COLORS[i]}CC)` }}>
@@ -3859,7 +3859,7 @@ const ShiftTab: React.FC<{ data: any }> = ({ data }) => {
               {s.shift_label === best.shift_label && <span className="text-xs bg-yellow-300 text-yellow-900 px-2 py-0.5 rounded-full font-semibold dark:text-yellow-200">Terbaik</span>}
             </div>
             <p className="text-2xl font-bold">{fmtNum(s.total_pcs)}<span className="text-sm font-normal text-white/70"> pcs</span></p>
-            <div className="grid grid-cols-3 gap-2 mt-3 text-center text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3 text-center text-xs">
               <div className="bg-white/15 rounded-lg py-1.5">
                 <p className="text-white/70">OEE</p>
                 <p className="font-bold">{s.avg_oee}%</p>
@@ -4914,24 +4914,26 @@ const PackingListTab: React.FC = () => {
                                 {(!pl.batch_summary || pl.batch_summary.length === 0) ? (
                                   <p className="text-slate-400 italic">Belum ada data batch</p>
                                 ) : (
-                                  <table className="w-full text-left">
-                                    <thead>
-                                      <tr className="text-slate-500 border-b dark:text-slate-400">
-                                        <th className="pb-1">Nama Batch</th>
-                                        <th className="pb-1 text-center">Rentang Karton</th>
-                                        <th className="pb-1 text-right">Jumlah Karton</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
-                                      {pl.batch_summary.map((b: any, idx: number) => (
-                                        <tr key={idx}>
-                                          <td className="py-1.5 font-bold text-slate-800 dark:text-slate-200">{b.batch_mixing}</td>
-                                          <td className="py-1.5 text-center text-primary-600 font-semibold dark:text-primary-400">#{b.start_carton} - #{b.end_carton}</td>
-                                          <td className="py-1.5 text-right font-bold">{b.total_carton} krt</td>
+                                  <div className="overflow-x-auto">
+                                    <table className="w-full text-left">
+                                      <thead>
+                                        <tr className="text-slate-500 border-b dark:text-slate-400">
+                                          <th className="pb-1">Nama Batch</th>
+                                          <th className="pb-1 text-center">Rentang Karton</th>
+                                          <th className="pb-1 text-right">Jumlah Karton</th>
                                         </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
+                                      </thead>
+                                      <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
+                                        {pl.batch_summary.map((b: any, idx: number) => (
+                                          <tr key={idx}>
+                                            <td className="py-1.5 font-bold text-slate-800 dark:text-slate-200">{b.batch_mixing}</td>
+                                            <td className="py-1.5 text-center text-primary-600 font-semibold dark:text-primary-400">#{b.start_carton} - #{b.end_carton}</td>
+                                            <td className="py-1.5 text-right font-bold">{b.total_carton} krt</td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
                                 )}
                               </div>
 

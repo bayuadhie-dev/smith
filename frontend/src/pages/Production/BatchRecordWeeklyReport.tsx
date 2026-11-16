@@ -79,12 +79,12 @@ export default function BatchRecordWeeklyReport() {
   return (
     <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6 print:bg-white print:p-0">
       {/* Header - hidden on print */}
-      <div className="flex items-center justify-between print:hidden">
+      <div className="flex items-center flex-wrap justify-between print:hidden gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Laporan Mingguan Batch Report</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Ringkasan Catatan Pengolahan Bets (GMP) per minggu</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Link
             to="/app/production/batch-records"
             className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -101,7 +101,7 @@ export default function BatchRecordWeeklyReport() {
       </div>
 
       {/* Week picker - hidden on print */}
-      <div className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-2xl shadow-md p-3 print:hidden">
+      <div className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-2xl shadow-md p-3 print:hidden flex-wrap">
         <button
           onClick={() => shiftWeek(-1)}
           className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -262,28 +262,30 @@ function BatchExpandDetail({ loading, detail, batchId }: { loading: boolean; det
         {detail.materials.length === 0 ? (
           <p className="text-xs text-gray-400">Belum ada data bahan aktual.</p>
         ) : (
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-left text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                <th className="pb-1 pr-3">Nama Bahan</th>
-                <th className="pb-1 pr-3 text-right">Rencana</th>
-                <th className="pb-1 pr-3 text-right">Aktual</th>
-                <th className="pb-1 pr-3 text-right">Varians</th>
-                <th className="pb-1">Satuan</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {detail.materials.map((m: any) => (
-                <tr key={m.id}>
-                  <td className="py-1 pr-3 text-gray-700 dark:text-gray-200">{m.item_name}</td>
-                  <td className="py-1 pr-3 text-right tabular-nums">{m.quantity_planned.toLocaleString('id-ID')}</td>
-                  <td className="py-1 pr-3 text-right tabular-nums">{m.quantity_actual != null ? m.quantity_actual.toLocaleString('id-ID') : '-'}</td>
-                  <td className={`py-1 pr-3 text-right tabular-nums ${m.variance != null && m.variance !== 0 ? 'text-amber-600 dark:text-amber-400' : ''}`}>{m.variance != null ? m.variance.toLocaleString('id-ID') : '-'}</td>
-                  <td className="py-1 text-gray-400">{m.uom}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-left text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                  <th className="pb-1 pr-3">Nama Bahan</th>
+                  <th className="pb-1 pr-3 text-right">Rencana</th>
+                  <th className="pb-1 pr-3 text-right">Aktual</th>
+                  <th className="pb-1 pr-3 text-right">Varians</th>
+                  <th className="pb-1">Satuan</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                {detail.materials.map((m: any) => (
+                  <tr key={m.id}>
+                    <td className="py-1 pr-3 text-gray-700 dark:text-gray-200">{m.item_name}</td>
+                    <td className="py-1 pr-3 text-right tabular-nums">{m.quantity_planned.toLocaleString('id-ID')}</td>
+                    <td className="py-1 pr-3 text-right tabular-nums">{m.quantity_actual != null ? m.quantity_actual.toLocaleString('id-ID') : '-'}</td>
+                    <td className={`py-1 pr-3 text-right tabular-nums ${m.variance != null && m.variance !== 0 ? 'text-amber-600 dark:text-amber-400' : ''}`}>{m.variance != null ? m.variance.toLocaleString('id-ID') : '-'}</td>
+                    <td className="py-1 text-gray-400">{m.uom}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
       <div>
@@ -291,30 +293,32 @@ function BatchExpandDetail({ loading, detail, batchId }: { loading: boolean; det
         {detail.shifts.length === 0 ? (
           <p className="text-xs text-gray-400">Belum ada input shift.</p>
         ) : (
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-left text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                <th className="pb-1 pr-3">Tanggal</th>
-                <th className="pb-1 pr-3">Shift</th>
-                <th className="pb-1 pr-3">Operator</th>
-                <th className="pb-1 pr-3 text-right">Target</th>
-                <th className="pb-1 pr-3 text-right">Aktual</th>
-                <th className="pb-1 text-right">Reject</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {detail.shifts.map((s: any) => (
-                <tr key={s.id}>
-                  <td className="py-1 pr-3">{s.production_date}</td>
-                  <td className="py-1 pr-3">{s.shift}{s.sub_shift ? `-${s.sub_shift}` : ''}</td>
-                  <td className="py-1 pr-3">{s.operator_name || '-'}</td>
-                  <td className="py-1 pr-3 text-right tabular-nums">{s.target_quantity.toLocaleString('id-ID')}</td>
-                  <td className="py-1 pr-3 text-right tabular-nums">{s.actual_quantity.toLocaleString('id-ID')}</td>
-                  <td className="py-1 text-right tabular-nums text-red-600 dark:text-red-400">{s.reject_quantity.toLocaleString('id-ID')}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-left text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                  <th className="pb-1 pr-3">Tanggal</th>
+                  <th className="pb-1 pr-3">Shift</th>
+                  <th className="pb-1 pr-3">Operator</th>
+                  <th className="pb-1 pr-3 text-right">Target</th>
+                  <th className="pb-1 pr-3 text-right">Aktual</th>
+                  <th className="pb-1 text-right">Reject</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                {detail.shifts.map((s: any) => (
+                  <tr key={s.id}>
+                    <td className="py-1 pr-3">{s.production_date}</td>
+                    <td className="py-1 pr-3">{s.shift}{s.sub_shift ? `-${s.sub_shift}` : ''}</td>
+                    <td className="py-1 pr-3">{s.operator_name || '-'}</td>
+                    <td className="py-1 pr-3 text-right tabular-nums">{s.target_quantity.toLocaleString('id-ID')}</td>
+                    <td className="py-1 pr-3 text-right tabular-nums">{s.actual_quantity.toLocaleString('id-ID')}</td>
+                    <td className="py-1 text-right tabular-nums text-red-600 dark:text-red-400">{s.reject_quantity.toLocaleString('id-ID')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
       <Link

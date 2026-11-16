@@ -385,7 +385,7 @@ const RNDProjectForm: React.FC = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-4 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/rnd/projects')}

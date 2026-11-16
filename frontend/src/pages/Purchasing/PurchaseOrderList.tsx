@@ -137,12 +137,12 @@ const [status, setStatus] = useState('')
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pesanan Pembelian</h1>
           <p className="text-gray-600 dark:text-gray-300">Kelola pesanan pembelian dan alur persetujuan</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex space-x-3 flex-wrap">
           <Link
             to="/app/purchasing/rfqs"
             className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-200 dark:bg-gray-700 transition-colors dark:hover:bg-gray-600"
@@ -251,7 +251,7 @@ const [status, setStatus] = useState('')
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end space-x-2">
+                        <div className="flex items-center justify-end space-x-2 flex-wrap">
                           <Link
                             to={`/app/purchasing/purchase-orders/${po.id}`}
                             className="text-blue-600 hover:text-blue-900 p-1 dark:text-blue-400"
@@ -351,7 +351,7 @@ const [status, setStatus] = useState('')
               Saya sudah mengecek kurs riil dan menyetujui kurs ini dikunci untuk PO {manualRateModal.poNumber}
             </span>
           </label>
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-2 flex-wrap">
             <button
               type="button"
               onClick={() => setManualRateModal(m => ({ ...m, open: false }))}

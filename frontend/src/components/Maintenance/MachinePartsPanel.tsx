@@ -182,7 +182,7 @@ const MachinePartsPanel = ({ machineId }: { machineId: number | string }) => {
         onClose={() => setOpen(false)}
         title={editing ? 'Ubah sparepart mesin' : 'Tambah sparepart ke mesin'}
         footer={
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 flex-wrap">
             <button type="button" onClick={() => setOpen(false)} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 dark:border-gray-600 dark:text-gray-200">Batal</button>
             <button type="button" onClick={save} disabled={saving} className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">
               {saving ? 'Menyimpan...' : 'Simpan'}

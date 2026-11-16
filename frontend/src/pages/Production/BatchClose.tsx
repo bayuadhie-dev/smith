@@ -184,7 +184,7 @@ export default function BatchClose() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <Link to={`/app/production/work-orders/${batch.work_order_id}/close`} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
@@ -247,7 +247,7 @@ export default function BatchClose() {
       </div>
 
       {!batch.admin_closed && (
-        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 flex items-center gap-3">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 flex items-center gap-3 flex-wrap">
           <button
             className="btn-primary inline-flex items-center gap-2"
             disabled={closing}
@@ -269,7 +269,7 @@ export default function BatchClose() {
       )}
 
       {inventoryModalItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <div>
@@ -291,52 +291,54 @@ export default function BatchClose() {
             ) : inventoryRows.length === 0 ? (
               <div className="text-gray-500 text-sm py-8 text-center dark:text-gray-400">Belum ada stok untuk item ini.</div>
             ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                    <th className="py-2 pr-3">Lokasi</th>
-                    <th className="py-2 pr-3">No. Batch</th>
-                    <th className="py-2 pr-3 text-right">Qty</th>
-                    <th className="py-2 pr-3 text-right">Tersedia</th>
-                    <th className="py-2 pr-3">Status</th>
-                    <th className="py-2"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {inventoryRows.map((row) => {
-                    const badge = stockStatusBadge(row.stock_status);
-                    const selectable = isSelectableStatus(row.stock_status);
-                    return (
-                      <tr key={row.id} className="border-b border-gray-100 dark:border-gray-800">
-                        <td className="py-2 pr-3">{row.location_code}{row.zone_name && row.zone_name !== 'N/A' ? ` (${row.zone_name})` : ''}</td>
-                        <td className="py-2 pr-3 font-mono text-xs">{row.batch_number || '-'}</td>
-                        <td className="py-2 pr-3 text-right">{row.quantity_on_hand.toLocaleString()} {row.uom}</td>
-                        <td className="py-2 pr-3 text-right">{row.quantity_available.toLocaleString()} {row.uom}</td>
-                        <td className="py-2 pr-3">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${badge.className}`}>
-                            {badge.label}
-                          </span>
-                        </td>
-                        <td className="py-2">
-                          {selectable ? (
-                            <button
-                              type="button"
-                              onClick={() => handleSelectBatch(row)}
-                              className="text-blue-600 hover:text-blue-800 text-xs font-medium dark:text-blue-400"
-                            >
-                              Pilih
-                            </button>
-                          ) : (
-                            <span className="text-gray-400 text-xs" title="Tidak bisa dipilih - hubungi QC untuk release dulu">
-                              Tidak bisa dipilih
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                      <th className="py-2 pr-3">Lokasi</th>
+                      <th className="py-2 pr-3">No. Batch</th>
+                      <th className="py-2 pr-3 text-right">Qty</th>
+                      <th className="py-2 pr-3 text-right">Tersedia</th>
+                      <th className="py-2 pr-3">Status</th>
+                      <th className="py-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inventoryRows.map((row) => {
+                      const badge = stockStatusBadge(row.stock_status);
+                      const selectable = isSelectableStatus(row.stock_status);
+                      return (
+                        <tr key={row.id} className="border-b border-gray-100 dark:border-gray-800">
+                          <td className="py-2 pr-3">{row.location_code}{row.zone_name && row.zone_name !== 'N/A' ? ` (${row.zone_name})` : ''}</td>
+                          <td className="py-2 pr-3 font-mono text-xs">{row.batch_number || '-'}</td>
+                          <td className="py-2 pr-3 text-right">{row.quantity_on_hand.toLocaleString()} {row.uom}</td>
+                          <td className="py-2 pr-3 text-right">{row.quantity_available.toLocaleString()} {row.uom}</td>
+                          <td className="py-2 pr-3">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${badge.className}`}>
+                              {badge.label}
                             </span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          </td>
+                          <td className="py-2">
+                            {selectable ? (
+                              <button
+                                type="button"
+                                onClick={() => handleSelectBatch(row)}
+                                className="text-blue-600 hover:text-blue-800 text-xs font-medium dark:text-blue-400"
+                              >
+                                Pilih
+                              </button>
+                            ) : (
+                              <span className="text-gray-400 text-xs" title="Tidak bisa dipilih - hubungi QC untuk release dulu">
+                                Tidak bisa dipilih
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
@@ -344,7 +346,7 @@ export default function BatchClose() {
 
       {showCancelConfirmationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-orange-100 rounded-full dark:bg-orange-900/30">
@@ -363,7 +365,7 @@ export default function BatchClose() {
                 </p>
               </div>
 
-              <div className="flex justify-end gap-3">
+              <div className="flex justify-end gap-3 flex-wrap">
                 <button
                   onClick={() => setShowCancelConfirmationModal(false)}
                   disabled={cancelingConfirmation}

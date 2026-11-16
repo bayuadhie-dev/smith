@@ -302,12 +302,12 @@ const MonthlyProductionPlan: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Jadwal Produksi Bulanan</h1>
           <p className="text-gray-500 dark:text-gray-400">Kelola target produksi per bulan sebagai sumber jadwal mingguan</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <button
             onClick={() => navigate('/app/production/scheduling')}
             className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 flex items-center gap-2 dark:bg-purple-900/30 dark:text-purple-300"
@@ -520,7 +520,7 @@ const MonthlyProductionPlan: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center gap-1">
+                        <div className="flex items-center justify-center gap-1 flex-wrap">
                           <button
                             onClick={() => handleEditItem(item)}
                             className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg"
@@ -564,8 +564,8 @@ const MonthlyProductionPlan: React.FC = () => {
 
       {/* Add/Edit Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
             <div className={`px-6 py-4 rounded-t-2xl ${editingItem ? 'bg-amber-500' : 'bg-blue-600'}`}>
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold text-white">
@@ -692,7 +692,7 @@ const MonthlyProductionPlan: React.FC = () => {
               </div>
             </div>
             
-            <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 rounded-b-2xl flex justify-end gap-3">
+            <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 rounded-b-2xl flex justify-end gap-3 flex-wrap">
               <button
                 onClick={() => { setShowAddModal(false); setEditingItem(null); }}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"
@@ -712,13 +712,13 @@ const MonthlyProductionPlan: React.FC = () => {
 
       {/* Calculator Modal */}
       {showCalculator && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-72 overflow-hidden">
             <div className="bg-gray-800 p-4">
               <div className="text-right text-gray-400 text-sm h-5">{calcExpression || ' '}</div>
               <div className="text-right text-white text-3xl font-mono">{calcDisplay}</div>
             </div>
-            <div className="grid grid-cols-4 gap-1 p-2 bg-gray-100 dark:bg-gray-800">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1 p-2 bg-gray-100 dark:bg-gray-800">
               {['C', '±', '%', '÷', '7', '8', '9', '×', '4', '5', '6', '-', '1', '2', '3', '+', '0', '00', '.', '='].map((btn) => (
                 <button
                   key={btn}
@@ -755,7 +755,7 @@ const MonthlyProductionPlan: React.FC = () => {
                 </button>
               ))}
             </div>
-            <div className="flex gap-2 p-3 bg-gray-50 dark:bg-gray-900 border-t">
+            <div className="flex gap-2 p-3 bg-gray-50 dark:bg-gray-900 border-t flex-wrap">
               <button
                 onClick={() => setShowCalculator(false)}
                 className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800"

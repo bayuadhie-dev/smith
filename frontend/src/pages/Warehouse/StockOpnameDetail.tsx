@@ -282,7 +282,7 @@ export default function StockOpnameDetail() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/warehouse/stock-opname')}
@@ -473,8 +473,8 @@ export default function StockOpnameDetail() {
 
       {/* Count Modal */}
       {countingItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Input Hasil Hitung</h3>
             
             <div className="space-y-4">
@@ -529,7 +529,7 @@ export default function StockOpnameDetail() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex justify-end gap-3 mt-6 flex-wrap">
               <button
                 onClick={() => setCountingItem(null)}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
@@ -550,7 +550,7 @@ export default function StockOpnameDetail() {
 
       {showApprovalModal && order && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
               {pendingWorkflowStep === 'review' ? 'Review' : 'Approval'} Stok Opname
             </h3>
@@ -569,7 +569,7 @@ export default function StockOpnameDetail() {
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm"
               placeholder="Catatan approval/alasan tolak (opsional untuk approve, disarankan untuk tolak)"
             />
-            <div className="flex justify-end gap-2 mt-5">
+            <div className="flex justify-end gap-2 mt-5 flex-wrap">
               <button
                 onClick={() => setShowApprovalModal(false)}
                 disabled={approvalSubmitting}

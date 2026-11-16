@@ -117,7 +117,7 @@ const MBFReportList: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Laporan MBF
@@ -167,78 +167,80 @@ const MBFReportList: React.FC = () => {
             {tools.total === 0 && <p className="text-sm">Klik "Buat Laporan Baru" untuk memulai</p>}
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <SortTh tools={tools} col="report_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Laporan</SortTh>
-                <SortTh tools={tools} col="delivery_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tgl Pengiriman</SortTh>
-                <SortTh tools={tools} col="period_start" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Periode</SortTh>
-                <SortTh tools={tools} col="total_target" align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Target</SortTh>
-                <SortTh tools={tools} col="total_actual" align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aktual</SortTh>
-                <SortTh tools={tools} col="achievement_percentage" align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pencapaian</SortTh>
-                <SortTh tools={tools} col="status" align="center" className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {tools.rows.map(report => (
-                <tr
-                  key={report.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 cursor-pointer transition-colors"
-                  onClick={() => navigate(`/app/production/mbf-report/${report.id}`)}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      {getStatusIcon(report.status)}
-                      <span className="ml-2 text-sm font-medium text-gray-900 dark:text-white">{report.report_number}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {format(new Date(report.delivery_date), 'dd MMM yyyy')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {format(new Date(report.period_start), 'dd MMM')} — {format(new Date(report.period_end), 'dd MMM yyyy')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white font-medium">
-                    {report.total_target.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white font-medium">
-                    {report.total_actual.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
-                    <span className={`font-bold ${
-                      report.achievement_percentage >= 100 ? 'text-green-600 dark:text-green-400' :
-                      report.achievement_percentage >= 80 ? 'text-yellow-600 dark:text-yellow-400' :
-                      'text-red-600 dark:text-red-400'
-                    }`}>
-                      {report.achievement_percentage.toFixed(1)}%
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    {getStatusBadge(report.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <div className="flex items-center justify-center space-x-2">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); navigate(`/app/production/mbf-report/${report.id}`); }}
-                        className="text-primary-600 hover:text-primary-800 text-sm font-medium dark:text-primary-400"
-                      >
-                        Lihat
-                      </button>
-                      {(report.status === 'draft' || report.status === 'rejected') && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); deleteReport(report.id, report.report_number); }}
-                          className="text-red-500 hover:text-red-700 text-sm font-medium"
-                        >
-                          Hapus
-                        </button>
-                      )}
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <SortTh tools={tools} col="report_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Laporan</SortTh>
+                  <SortTh tools={tools} col="delivery_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tgl Pengiriman</SortTh>
+                  <SortTh tools={tools} col="period_start" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Periode</SortTh>
+                  <SortTh tools={tools} col="total_target" align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Target</SortTh>
+                  <SortTh tools={tools} col="total_actual" align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aktual</SortTh>
+                  <SortTh tools={tools} col="achievement_percentage" align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pencapaian</SortTh>
+                  <SortTh tools={tools} col="status" align="center" className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {tools.rows.map(report => (
+                  <tr
+                    key={report.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 cursor-pointer transition-colors"
+                    onClick={() => navigate(`/app/production/mbf-report/${report.id}`)}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        {getStatusIcon(report.status)}
+                        <span className="ml-2 text-sm font-medium text-gray-900 dark:text-white">{report.report_number}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {format(new Date(report.delivery_date), 'dd MMM yyyy')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {format(new Date(report.period_start), 'dd MMM')} — {format(new Date(report.period_end), 'dd MMM yyyy')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white font-medium">
+                      {report.total_target.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white font-medium">
+                      {report.total_actual.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                      <span className={`font-bold ${
+                        report.achievement_percentage >= 100 ? 'text-green-600 dark:text-green-400' :
+                        report.achievement_percentage >= 80 ? 'text-yellow-600 dark:text-yellow-400' :
+                        'text-red-600 dark:text-red-400'
+                      }`}>
+                        {report.achievement_percentage.toFixed(1)}%
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      {getStatusBadge(report.status)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="flex items-center justify-center space-x-2 flex-wrap">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); navigate(`/app/production/mbf-report/${report.id}`); }}
+                          className="text-primary-600 hover:text-primary-800 text-sm font-medium dark:text-primary-400"
+                        >
+                          Lihat
+                        </button>
+                        {(report.status === 'draft' || report.status === 'rejected') && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); deleteReport(report.id, report.report_number); }}
+                            className="text-red-500 hover:text-red-700 text-sm font-medium"
+                          >
+                            Hapus
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
       </div>

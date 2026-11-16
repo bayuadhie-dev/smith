@@ -160,7 +160,7 @@ const LocationList: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gudang & Lokasi</h1>
           <p className="text-gray-600 dark:text-gray-300">Manage warehouse storage locations and zones</p>
@@ -314,7 +314,7 @@ const LocationList: React.FC = () => {
                 <span className="text-xs text-gray-500 dark:text-gray-400">
                   Created: {location.created_at ? new Date(location.created_at).toLocaleDateString() : '-'}
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Link
                     to={`/app/warehouse/locations/${location.id}`}
                     className="p-1 text-gray-400 hover:text-blue-600 transition-colors"

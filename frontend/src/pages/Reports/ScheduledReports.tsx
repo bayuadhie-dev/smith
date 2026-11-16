@@ -221,7 +221,7 @@ const ScheduledReports: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               Scheduled Reports
@@ -305,7 +305,7 @@ const ScheduledReports: React.FC = () => {
                     }
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-2 flex-wrap">
                       <button
                         onClick={() => runReportNow(report.id)}
                         className="text-green-600 hover:text-green-900 dark:text-green-400"
@@ -466,7 +466,7 @@ const ScheduledReports: React.FC = () => {
                   </select>
                 </div>
 
-                <div className="flex justify-end space-x-3 pt-4">
+                <div className="flex justify-end space-x-3 pt-4 flex-wrap">
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}

@@ -492,7 +492,7 @@ const navigate = useNavigate()
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{isEdit ? 'Edit Sales Order' : 'Create Sales Order'}</h1>
           <p className="text-gray-600 dark:text-gray-300">{isEdit ? 'Update an existing sales order' : 'Create a new sales order for customer'}</p>
@@ -629,7 +629,7 @@ const navigate = useNavigate()
         <div className="card p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Order Items</h3>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 type="button"
                 onClick={() => {
@@ -782,7 +782,7 @@ const navigate = useNavigate()
                   {selectedProduct && (
                     <div className="mt-3 space-y-2">
                       <div className="p-3 bg-green-50 border border-green-200 rounded-lg dark:bg-green-900/20 dark:border-green-800">
-                        <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                           <div>
                             <span className="text-green-600 dark:text-green-400">Category:</span>
                             <p className="font-medium">{selectedProduct.category || 'N/A'}</p>
@@ -809,7 +809,7 @@ const navigate = useNavigate()
                                 BOM Available - Production Ready
                               </span>
                             </div>
-                            <div className="grid grid-cols-3 gap-4 text-xs text-blue-700 dark:text-blue-300">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs text-blue-700 dark:text-blue-300">
                               <div>
                                 <span className="font-medium">BOM:</span> {bomData.bom_number} (v{bomData.version})
                               </div>
@@ -866,7 +866,7 @@ const navigate = useNavigate()
             ) : (
               <>
                 {/* Summary */}
-                <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                   <div className={`p-4 rounded-lg ${
                     materialRequirements.every(r => r.has_sufficient_stock) 
                       ? 'bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800' 
@@ -921,22 +921,24 @@ const navigate = useNavigate()
                     
                     {!req.has_sufficient_stock && req.shortage_items.length > 0 && (
                       <div className="p-4 bg-white dark:bg-gray-800">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="text-left text-gray-500 dark:text-gray-400 border-b">
-                              <th className="pb-2">Material</th>
-                              <th className="pb-2 text-right">Required</th>
-                              <th className="pb-2 text-right">Available</th>
-                              <th className="pb-2 text-right">Shortage</th>
-                              <th className="pb-2">Supplier</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {req.shortage_items.map((item, i) => (
-                              <ShortageRow key={i} item={item} depth={0} />
-                            ))}
-                          </tbody>
-                        </table>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="text-left text-gray-500 dark:text-gray-400 border-b">
+                                <th className="pb-2">Material</th>
+                                <th className="pb-2 text-right">Required</th>
+                                <th className="pb-2 text-right">Available</th>
+                                <th className="pb-2 text-right">Shortage</th>
+                                <th className="pb-2">Supplier</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {req.shortage_items.map((item, i) => (
+                                <ShortageRow key={i} item={item} depth={0} />
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1009,7 +1011,7 @@ const navigate = useNavigate()
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-4 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/sales/orders')}

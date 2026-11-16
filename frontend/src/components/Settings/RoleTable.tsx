@@ -44,7 +44,7 @@ const RoleTable: React.FC<RoleTableProps> = ({ roles, onEdit, onDelete }) => {
                   <p className="text-sm text-gray-500 dark:text-gray-400">{role.description || 'No description'}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 flex-wrap">
                 <button
                   onClick={() => onEdit(role)}
                   className="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-50 dark:text-indigo-400"

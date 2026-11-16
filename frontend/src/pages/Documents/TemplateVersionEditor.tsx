@@ -599,7 +599,7 @@ const TemplateVersionEditor: React.FC = () => {
             <div className="space-y-3">
               <div className="text-xs text-gray-500 dark:text-gray-400">Tipe: <span className="font-medium">{elementType}</span></div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <label className="text-[11px] text-gray-500 dark:text-gray-400">X (mm)
                   <NumberInput value={Math.round((selected.left || 0))} onChange={(e) => updateSelected({ left: parseFloat(e.target.value) || 0 })}
                     className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800" />
@@ -702,7 +702,7 @@ const TemplateVersionEditor: React.FC = () => {
 
       {showPublishModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowPublishModal(false)}>
-          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-md w-full p-5" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-md w-full p-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">Publish Versi {versionNumber}</h3>
             <p className="text-xs text-gray-500 mb-3 dark:text-gray-400">Versi ini akan jadi LIVE — dipakai untuk semua dokumen baru mulai sekarang. Versi yang sebelumnya live akan diarsipkan (tetap bisa di-rollback nanti, tidak dihapus).</p>
             <textarea
@@ -712,7 +712,7 @@ const TemplateVersionEditor: React.FC = () => {
               className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 mb-3"
               rows={3}
             />
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 flex-wrap">
               <button onClick={() => setShowPublishModal(false)} className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-300">Batal</button>
               <button onClick={handlePublish} disabled={publishing} className="px-3 py-1.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50">
                 {publishing ? 'Publishing...' : 'Publish'}
@@ -724,7 +724,7 @@ const TemplateVersionEditor: React.FC = () => {
 
       {showPreviewModal && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-6" onClick={closePreviewModal}>
-          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-4xl h-full flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-4xl h-full flex flex-col max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Preview PDF</h3>
               <div className="flex items-center gap-2">

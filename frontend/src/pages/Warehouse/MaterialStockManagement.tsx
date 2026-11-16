@@ -148,7 +148,7 @@ const MaterialStockManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Material Stock Management</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Manage material inventory and stock levels</p>
@@ -273,7 +273,7 @@ const MaterialStockManagement: React.FC = () => {
       {/* Add Stock Modal */}
       {showAddStockModal && selectedMaterial && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                 Add Stock - {selectedMaterial.code} ({selectedMaterial.name})
@@ -287,7 +287,7 @@ const MaterialStockManagement: React.FC = () => {
             </div>
 
             <form onSubmit={submitAddStock} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                     Location *
@@ -391,7 +391,7 @@ const MaterialStockManagement: React.FC = () => {
                 />
               </div>
 
-              <div className="flex justify-end space-x-3 pt-4">
+              <div className="flex justify-end space-x-3 pt-4 flex-wrap">
                 <button
                   type="button"
                   onClick={() => setShowAddStockModal(false)}

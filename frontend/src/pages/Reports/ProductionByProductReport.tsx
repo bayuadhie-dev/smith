@@ -139,7 +139,7 @@ export default function ProductionByProductReport() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
             <ChartBarIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -342,50 +342,52 @@ export default function ProductionByProductReport() {
                         <td colSpan={6} className="px-4 py-3 bg-gray-50 dark:bg-gray-900">
                           <div className="ml-6">
                             <h4 className="font-medium text-gray-700 dark:text-gray-200 mb-2">Detail per Produk:</h4>
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="text-gray-500 dark:text-gray-400">
-                                  <th className="text-left py-2">Kode</th>
-                                  <th className="text-left py-2">Nama Produk</th>
-                                  <th className="text-right py-2">Produksi</th>
-                                  <th className="text-right py-2">Baik</th>
-                                  <th className="text-right py-2">Reject</th>
-                                  <th className="text-right py-2">Waste</th>
-                                  <th className="text-right py-2">Reject Rate</th>
-                                  <th className="text-right py-2">WO Count</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {period.products.map((product) => (
-                                  <tr key={product.product_id} className="border-t border-gray-200 dark:border-gray-700">
-                                    <td className="py-2 font-mono text-xs">{product.product_code}</td>
-                                    <td className="py-2">{product.product_name}</td>
-                                    <td className="py-2 text-right">{formatNumber(product.total_produced)}</td>
-                                    <td className="py-2 text-right text-green-600 dark:text-green-400">
-                                      {formatNumber(product.total_good)}
-                                    </td>
-                                    <td className="py-2 text-right text-red-600 dark:text-red-400">
-                                      {formatNumber(product.total_reject)}
-                                    </td>
-                                    <td className="py-2 text-right text-orange-600 dark:text-orange-400">
-                                      {formatNumber(product.total_waste)}
-                                    </td>
-                                    <td className="py-2 text-right">
-                                      <span
-                                        className={`px-2 py-0.5 rounded text-xs ${
-                                          product.reject_rate > 5
-                                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                                            : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                                        }`}
-                                      >
-                                        {formatPercent(product.reject_rate)}
-                                      </span>
-                                    </td>
-                                    <td className="py-2 text-right">{product.work_order_count}</td>
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr className="text-gray-500 dark:text-gray-400">
+                                    <th className="text-left py-2">Kode</th>
+                                    <th className="text-left py-2">Nama Produk</th>
+                                    <th className="text-right py-2">Produksi</th>
+                                    <th className="text-right py-2">Baik</th>
+                                    <th className="text-right py-2">Reject</th>
+                                    <th className="text-right py-2">Waste</th>
+                                    <th className="text-right py-2">Reject Rate</th>
+                                    <th className="text-right py-2">WO Count</th>
                                   </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                                </thead>
+                                <tbody>
+                                  {period.products.map((product) => (
+                                    <tr key={product.product_id} className="border-t border-gray-200 dark:border-gray-700">
+                                      <td className="py-2 font-mono text-xs">{product.product_code}</td>
+                                      <td className="py-2">{product.product_name}</td>
+                                      <td className="py-2 text-right">{formatNumber(product.total_produced)}</td>
+                                      <td className="py-2 text-right text-green-600 dark:text-green-400">
+                                        {formatNumber(product.total_good)}
+                                      </td>
+                                      <td className="py-2 text-right text-red-600 dark:text-red-400">
+                                        {formatNumber(product.total_reject)}
+                                      </td>
+                                      <td className="py-2 text-right text-orange-600 dark:text-orange-400">
+                                        {formatNumber(product.total_waste)}
+                                      </td>
+                                      <td className="py-2 text-right">
+                                        <span
+                                          className={`px-2 py-0.5 rounded text-xs ${
+                                            product.reject_rate > 5
+                                              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                                              : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                          }`}
+                                        >
+                                          {formatPercent(product.reject_rate)}
+                                        </span>
+                                      </td>
+                                      <td className="py-2 text-right">{product.work_order_count}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         </td>
                       </tr>

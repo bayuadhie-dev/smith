@@ -85,7 +85,7 @@ export default function TVDisplayShipping() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header with Time */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-wrap justify-between items-center mb-8 gap-3">
           <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
             📦 Shipping 
           </h1>
@@ -101,7 +101,7 @@ export default function TVDisplayShipping() {
         </div>
         
         {/* Metrics Cards */}
-        <div className="grid grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between">
               <div>

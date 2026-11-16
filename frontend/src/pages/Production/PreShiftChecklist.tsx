@@ -101,7 +101,7 @@ const PreShiftChecklist = () => {
         {/* Header Card */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 overflow-hidden dark:border-gray-800">
           <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-5">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center flex-wrap justify-between gap-3">
               <div className="flex items-center space-x-4">
                 <div className="p-3 bg-white dark:bg-gray-800/20 rounded-xl backdrop-blur-sm">
                   <ClipboardDocumentCheckIcon className="w-8 h-8 text-white" />
@@ -113,7 +113,7 @@ const PreShiftChecklist = () => {
               </div>
               
               {/* Date Navigation */}
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 flex-wrap">
                 <button
                   onClick={() => handleDateChange(-1)}
                   className="p-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg transition-colors"

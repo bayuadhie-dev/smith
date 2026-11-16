@@ -60,7 +60,7 @@ export default function PurchaseReturnList() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Retur Pembelian</h1>
           <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-400">Retur barang ke pemasok dari faktur pembelian</p>
@@ -98,52 +98,54 @@ export default function PurchaseReturnList() {
             <p>{tools.total === 0 ? 'Belum ada retur pembelian' : 'Tidak ada retur yang cocok'}</p>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <SortTh tools={tools} col="return_number" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. Retur</SortTh>
-                <SortTh tools={tools} col="invoice_number" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. Faktur</SortTh>
-                <SortTh tools={tools} col="supplier_name" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Pemasok</SortTh>
-                <SortTh tools={tools} col="return_date" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tgl Retur</SortTh>
-                <SortTh tools={tools} col="total_amount" align="right" className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Total</SortTh>
-                <SortTh tools={tools} col="status" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Status</SortTh>
-                <SortTh tools={tools} col="approval_status" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Persetujuan</SortTh>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {tools.rows.map((ret) => {
-                const status = STATUS_CONFIG[ret.status] || { label: ret.status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
-                const approval = APPROVAL_CONFIG[ret.approval_status] || { label: ret.approval_status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
-                return (
-                  <tr
-                    key={ret.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                    onClick={() => navigate(`/app/purchasing/returns/${ret.id}`)}
-                  >
-                    <td className="px-4 py-3 font-medium text-primary-700 dark:text-primary-300">{ret.return_number}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{ret.invoice_number || '—'}</td>
-                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{ret.supplier_name || '—'}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
-                      {ret.return_date ? new Date(ret.return_date).toLocaleDateString('id-ID') : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300">
-                      {formatCurrency(ret.total_amount)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${status.color}`}>
-                        {status.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${approval.color}`}>
-                        {approval.label}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <SortTh tools={tools} col="return_number" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. Retur</SortTh>
+                  <SortTh tools={tools} col="invoice_number" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. Faktur</SortTh>
+                  <SortTh tools={tools} col="supplier_name" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Pemasok</SortTh>
+                  <SortTh tools={tools} col="return_date" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tgl Retur</SortTh>
+                  <SortTh tools={tools} col="total_amount" align="right" className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Total</SortTh>
+                  <SortTh tools={tools} col="status" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Status</SortTh>
+                  <SortTh tools={tools} col="approval_status" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Persetujuan</SortTh>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {tools.rows.map((ret) => {
+                  const status = STATUS_CONFIG[ret.status] || { label: ret.status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
+                  const approval = APPROVAL_CONFIG[ret.approval_status] || { label: ret.approval_status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
+                  return (
+                    <tr
+                      key={ret.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                      onClick={() => navigate(`/app/purchasing/returns/${ret.id}`)}
+                    >
+                      <td className="px-4 py-3 font-medium text-primary-700 dark:text-primary-300">{ret.return_number}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{ret.invoice_number || '—'}</td>
+                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{ret.supplier_name || '—'}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
+                        {ret.return_date ? new Date(ret.return_date).toLocaleDateString('id-ID') : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300">
+                        {formatCurrency(ret.total_amount)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${status.color}`}>
+                          {status.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${approval.color}`}>
+                          {approval.label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

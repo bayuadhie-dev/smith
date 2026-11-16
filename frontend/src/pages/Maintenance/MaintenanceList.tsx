@@ -257,7 +257,7 @@ const MaintenanceList: React.FC = () => {
                 </td>
                 <td className="whitespace-nowrap px-4 py-2.5 text-right text-sm tabular-nums text-gray-800 dark:text-gray-200">Rp {record.cost.toLocaleString('id-ID')}</td>
                 <td className="whitespace-nowrap px-4 py-2.5">
-                  <div className="flex items-center justify-end gap-1">
+                  <div className="flex items-center justify-end gap-1 flex-wrap">
                     <Link to={`/app/maintenance/${record.id}`} className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-white" title="Lihat detail"><Eye className="h-4 w-4" /></Link>
                     <Link to={`/app/maintenance/${record.id}/edit`} className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-white" title="Ubah"><Pencil className="h-4 w-4" /></Link>
                     {record.status === 'scheduled' && (
@@ -288,7 +288,7 @@ const MaintenanceList: React.FC = () => {
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
           <span>Menampilkan {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, filteredRecords.length)} dari {filteredRecords.length} catatan</span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="rounded-md border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-600">Sebelumnya</button>
             <span>Halaman {currentPage} dari {totalPages}</span>
             <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="rounded-md border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-600">Berikutnya</button>
@@ -298,7 +298,7 @@ const MaintenanceList: React.FC = () => {
 
       {completingRecord && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto">
             <Panel title={`Selesaikan ${completingRecord.record_number}`}>
               <div className="space-y-4 p-4">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -327,7 +327,7 @@ const MaintenanceList: React.FC = () => {
                     className={inputCls}
                   />
                 </div>
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end gap-2 flex-wrap">
                   <button onClick={() => setCompletingRecord(null)} className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Batal</button>
                   <button onClick={submitCompleteWithRootCause} disabled={submittingComplete} className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">
                     {submittingComplete ? 'Menyimpan...' : 'Tandai selesai'}

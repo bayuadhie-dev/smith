@@ -249,7 +249,7 @@ export default function TemplateList() {
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-xl shadow-lg p-6 text-white">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center flex-wrap justify-between gap-3">
           <div className="flex items-center gap-4">
             <button onClick={() => navigate('/app/documents')} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
               <ArrowLeftIcon className="h-5 w-5" />
@@ -344,7 +344,7 @@ export default function TemplateList() {
                     {template.is_default ? <StarSolidIcon className="h-5 w-5" /> : <StarIcon className="h-5 w-5" />}
                   </button>
 
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-wrap">
                     <button
                       onClick={() => handlePreview(template)}
                       disabled={!template.current_version_id}
@@ -391,7 +391,7 @@ export default function TemplateList() {
 
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowCreateModal(false)}>
-          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-md w-full p-5" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-md w-full p-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-medium text-gray-900 dark:text-gray-100">Template Baru</h3>
               <button onClick={() => setShowCreateModal(false)}><XMarkIcon className="w-5 h-5 text-gray-400" /></button>
@@ -445,7 +445,7 @@ export default function TemplateList() {
                 )}
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-5">
+            <div className="flex justify-end gap-2 mt-5 flex-wrap">
               <button onClick={() => setShowCreateModal(false)} className="px-3 py-2 text-sm text-gray-600 dark:text-gray-300">Batal</button>
               <button onClick={handleCreate} disabled={creating} className="px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50">
                 {creating ? 'Membuat...' : 'Buat & Buka Editor'}
@@ -457,7 +457,7 @@ export default function TemplateList() {
 
       {accessTemplate && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setAccessTemplate(null)}>
-          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-md w-full p-5" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-md w-full p-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-1">
               <h3 className="font-medium text-gray-900 dark:text-gray-100">Atur Akses — {accessTemplate.template_name}</h3>
               <button onClick={() => setAccessTemplate(null)}><XMarkIcon className="w-5 h-5 text-gray-400" /></button>
@@ -488,7 +488,7 @@ export default function TemplateList() {
                 </div>
               )}
             </div>
-            <div className="flex justify-end gap-2 mt-5">
+            <div className="flex justify-end gap-2 mt-5 flex-wrap">
               <button onClick={() => setAccessTemplate(null)} className="px-3 py-2 text-sm text-gray-600 dark:text-gray-300">Batal</button>
               <button onClick={handleSaveAccess} disabled={savingAccess} className="px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50">
                 {savingAccess ? 'Menyimpan...' : 'Simpan'}
@@ -500,7 +500,7 @@ export default function TemplateList() {
 
       {previewTemplate && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-6" onClick={closePreview}>
-          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-4xl h-full flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-4xl h-full flex flex-col max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
                 {previewTemplate.template_name} <span className="text-xs text-gray-400">v{previewTemplate.current_version_number} (live)</span>

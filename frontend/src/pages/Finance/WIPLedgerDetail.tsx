@@ -174,7 +174,7 @@ export default function WIPLedgerDetail() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => navigate('/app/finance/wip-ledger')}
@@ -390,8 +390,8 @@ export default function WIPLedgerDetail() {
       </div>
 
       {showTransferModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Transfer ke Finished Goods</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               Memindahkan biaya WIP {ledger.work_order_number} ke persediaan barang jadi (COGM) dan posting jurnal otomatis. Tindakan ini tidak bisa dibatalkan.
@@ -403,7 +403,7 @@ export default function WIPLedgerDetail() {
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 mb-4 bg-white dark:bg-gray-900"
               autoFocus
             />
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 flex-wrap">
               <button
                 onClick={() => setShowTransferModal(false)}
                 disabled={transferring}

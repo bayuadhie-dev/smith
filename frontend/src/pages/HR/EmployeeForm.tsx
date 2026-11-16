@@ -569,7 +569,7 @@ export default function EmployeeForm() {
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-4 pt-4">
+        <div className="flex justify-end gap-4 pt-4 flex-wrap">
           <Link to="/app/hr/employees" className="btn-secondary px-6 py-2.5">
             Batal
           </Link>

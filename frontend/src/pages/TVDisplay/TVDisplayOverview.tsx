@@ -120,7 +120,7 @@ export default function TVDisplayOverview() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center flex-wrap justify-between mb-8 gap-3">
         <div>
           <h1 className="text-4xl font-bold mb-2">Factory Overview Dashboard</h1>
           <p className="text-gray-300 text-lg">Real-time operational monitoring</p>

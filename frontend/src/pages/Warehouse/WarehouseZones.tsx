@@ -120,7 +120,7 @@ const [showModal, setShowModal] = useState(false)
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Master Gudang</h1>
           <p className="text-gray-600 dark:text-gray-300">Manage warehouse zones and storage areas</p>
@@ -171,7 +171,7 @@ const [showModal, setShowModal] = useState(false)
                     <p className="text-sm text-gray-500 dark:text-gray-400">{zone.code}</p>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <button
                     onClick={() => openEditModal(zone)}
                     className="text-gray-400 hover:text-blue-600"
@@ -243,14 +243,14 @@ const [showModal, setShowModal] = useState(false)
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">
               {editingZone ? 'Edit Zone' : 'Create New Zone'}
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Zone Code *</label>
                   <input
@@ -302,7 +302,7 @@ const [showModal, setShowModal] = useState(false)
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Capacity</label>
                   <NumberInput
@@ -327,7 +327,7 @@ const [showModal, setShowModal] = useState(false)
                 </div>
               </div>
 
-              <div className="flex justify-end gap-4 pt-4">
+              <div className="flex justify-end gap-4 pt-4 flex-wrap">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}

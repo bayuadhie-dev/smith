@@ -452,8 +452,8 @@ const WeeklyPlanDetail: React.FC = () => {
 
       {/* Add Item Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Tambah Produk ke Rencana</h3>
             
             <div className="space-y-4">
@@ -471,7 +471,7 @@ const WeeklyPlanDetail: React.FC = () => {
                 />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Quantity *</label>
                   <NumberInput
@@ -496,7 +496,7 @@ const WeeklyPlanDetail: React.FC = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Tanggal Produksi</label>
                   <input
@@ -532,7 +532,7 @@ const WeeklyPlanDetail: React.FC = () => {
               </div>
             </div>
             
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex justify-end gap-3 mt-6 flex-wrap">
               <button
                 onClick={() => setShowAddModal(false)}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
@@ -552,8 +552,8 @@ const WeeklyPlanDetail: React.FC = () => {
 
       {/* Shortage Modal */}
       {showShortageModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-red-600 dark:text-red-400">
               <ExclamationTriangleIcon className="h-5 w-5" />
               Material Shortage - {showShortageModal.product_name}
@@ -565,7 +565,7 @@ const WeeklyPlanDetail: React.FC = () => {
                   <div key={idx} className="p-3 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-800">
                     <p className="font-medium">{item.material_name}</p>
                     <p className="text-sm text-gray-600 dark:text-gray-300">{item.material_code}</p>
-                    <div className="grid grid-cols-3 gap-2 mt-2 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-2 text-sm">
                       <div>
                         <span className="text-gray-500 dark:text-gray-400">Dibutuhkan:</span>
                         <span className="font-medium ml-1">{item.required.toLocaleString()}</span>

@@ -148,7 +148,7 @@ const LiveMonitoringWeekly: React.FC = () => {
               </div>
               
               {/* Controls */}
-              <div className="flex items-center space-x-3 print:hidden">
+              <div className="flex items-center space-x-3 print:hidden flex-wrap">
                 <select 
                   value={shift} 
                   onChange={e => setShift(e.target.value)}

@@ -141,7 +141,7 @@ export default function WhatIfSimulation() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <BeakerIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />

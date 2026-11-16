@@ -73,7 +73,7 @@ export default function InvoiceList() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Faktur Pembelian</h1>
           <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-400">Tagihan pemasok dan pencocokan tiga arah, {tools.total} total</p>
@@ -107,85 +107,87 @@ export default function InvoiceList() {
             <p>{tools.total === 0 ? 'Belum ada faktur pembelian' : 'Tidak ada faktur yang cocok'}</p>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <SortTh tools={tools} col="invoice_number" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. Faktur</SortTh>
-                <SortTh tools={tools} col="po_number" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. PO</SortTh>
-                <SortTh tools={tools} col="supplier_name" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Pemasok</SortTh>
-                <SortTh tools={tools} col="invoice_date" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tgl Faktur</SortTh>
-                <SortTh tools={tools} col="due_date" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Jatuh Tempo</SortTh>
-                <SortTh tools={tools} col="total_amount" align="right" className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Total</SortTh>
-                <SortTh tools={tools} col="grn_count" align="center" className="px-4 py-3 text-center font-medium text-gray-600 dark:text-gray-300">GRN</SortTh>
-                <SortTh tools={tools} col="status" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Status</SortTh>
-                <SortTh tools={tools} col="payment_status" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Pembayaran</SortTh>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {tools.rows.map((inv) => {
-                const status = STATUS_CONFIG[inv.status] || { label: inv.status, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' };
-                const pay = PAY_CONFIG[inv.payment_status] || { label: inv.payment_status, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' };
-                const isOverdue = inv.due_date && new Date(inv.due_date) < new Date() && inv.payment_status !== 'paid';
-                return (
-                  <tr
-                    key={inv.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                    onClick={() => navigate(`/app/purchasing/invoices/${inv.id}/match`)}
-                  >
-                    <td className="px-4 py-3 font-medium text-primary-700 dark:text-primary-300">{inv.invoice_number}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{inv.po_number || '—'}</td>
-                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{inv.supplier_name}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
-                      {inv.invoice_date ? new Date(inv.invoice_date).toLocaleDateString('id-ID') : '—'}
-                    </td>
-                    <td className={`px-4 py-3 text-sm ${isOverdue ? 'text-red-600 font-medium dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`}>
-                      {inv.due_date ? new Date(inv.due_date).toLocaleDateString('id-ID') : '—'}
-                      {isOverdue && <span className="ml-1 text-xs font-medium">(terlambat)</span>}
-                    </td>
-                    <td className="px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-300">
-                      Rp {Number(inv.total_amount).toLocaleString('id-ID')}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`text-xs font-medium ${(inv.grn_count || 0) > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'}`}>
-                        {inv.grn_count || 0} GRN
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${status.color}`}>{status.label}</span>
-                      {inv.on_hold && (
-                        <span
-                          title={inv.hold_reason || ''}
-                          className="ml-1 px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                        >
-                          Ditahan
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <SortTh tools={tools} col="invoice_number" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. Faktur</SortTh>
+                  <SortTh tools={tools} col="po_number" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. PO</SortTh>
+                  <SortTh tools={tools} col="supplier_name" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Pemasok</SortTh>
+                  <SortTh tools={tools} col="invoice_date" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tgl Faktur</SortTh>
+                  <SortTh tools={tools} col="due_date" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Jatuh Tempo</SortTh>
+                  <SortTh tools={tools} col="total_amount" align="right" className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Total</SortTh>
+                  <SortTh tools={tools} col="grn_count" align="center" className="px-4 py-3 text-center font-medium text-gray-600 dark:text-gray-300">GRN</SortTh>
+                  <SortTh tools={tools} col="status" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Status</SortTh>
+                  <SortTh tools={tools} col="payment_status" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Pembayaran</SortTh>
+                  <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {tools.rows.map((inv) => {
+                  const status = STATUS_CONFIG[inv.status] || { label: inv.status, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' };
+                  const pay = PAY_CONFIG[inv.payment_status] || { label: inv.payment_status, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' };
+                  const isOverdue = inv.due_date && new Date(inv.due_date) < new Date() && inv.payment_status !== 'paid';
+                  return (
+                    <tr
+                      key={inv.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                      onClick={() => navigate(`/app/purchasing/invoices/${inv.id}/match`)}
+                    >
+                      <td className="px-4 py-3 font-medium text-primary-700 dark:text-primary-300">{inv.invoice_number}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{inv.po_number || '—'}</td>
+                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{inv.supplier_name}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
+                        {inv.invoice_date ? new Date(inv.invoice_date).toLocaleDateString('id-ID') : '—'}
+                      </td>
+                      <td className={`px-4 py-3 text-sm ${isOverdue ? 'text-red-600 font-medium dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`}>
+                        {inv.due_date ? new Date(inv.due_date).toLocaleDateString('id-ID') : '—'}
+                        {isOverdue && <span className="ml-1 text-xs font-medium">(terlambat)</span>}
+                      </td>
+                      <td className="px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-300">
+                        Rp {Number(inv.total_amount).toLocaleString('id-ID')}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`text-xs font-medium ${(inv.grn_count || 0) > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'}`}>
+                          {inv.grn_count || 0} GRN
                         </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${pay.color}`}>{pay.label}</span>
-                    </td>
-                    <td className="px-4 py-3 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                      <Link
-                        to={`/app/purchasing/invoices/${inv.id}/match`}
-                        className="text-xs text-blue-600 hover:underline dark:text-blue-400"
-                      >
-                        Cocokkan 3 arah
-                      </Link>
-                      {inv.payment_status !== 'paid' && (
-                        <button
-                          onClick={() => navigate(`/app/finance/pembayaran-pembelian/new?invoice_id=${inv.id}`)}
-                          className="flex items-center gap-1 text-xs text-green-600 hover:underline dark:text-green-400"
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${status.color}`}>{status.label}</span>
+                        {inv.on_hold && (
+                          <span
+                            title={inv.hold_reason || ''}
+                            className="ml-1 px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                          >
+                            Ditahan
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${pay.color}`}>{pay.label}</span>
+                      </td>
+                      <td className="px-4 py-3 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <Link
+                          to={`/app/purchasing/invoices/${inv.id}/match`}
+                          className="text-xs text-blue-600 hover:underline dark:text-blue-400"
                         >
-                          <BanknotesIcon className="h-3.5 w-3.5" /> Bayar
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          Cocokkan 3 arah
+                        </Link>
+                        {inv.payment_status !== 'paid' && (
+                          <button
+                            onClick={() => navigate(`/app/finance/pembayaran-pembelian/new?invoice_id=${inv.id}`)}
+                            className="flex items-center gap-1 text-xs text-green-600 hover:underline dark:text-green-400"
+                          >
+                            <BanknotesIcon className="h-3.5 w-3.5" /> Bayar
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

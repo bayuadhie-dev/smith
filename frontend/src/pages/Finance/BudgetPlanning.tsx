@@ -184,12 +184,12 @@ const BudgetPlanning: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Perencanaan Anggaran</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Budget planning and variance analysis</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex space-x-3 flex-wrap">
           <button 
             onClick={() => showInfo('Generate budget report functionality')}
             className="btn-secondary"
@@ -431,8 +431,8 @@ const BudgetPlanning: React.FC = () => {
 
       {/* Add Budget Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 my-8">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Create New Budget</h3>
               <button 
@@ -444,7 +444,7 @@ const BudgetPlanning: React.FC = () => {
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Budget Name *
@@ -473,7 +473,7 @@ const BudgetPlanning: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Budget Period *
@@ -514,7 +514,7 @@ const BudgetPlanning: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Start Date *
@@ -542,7 +542,7 @@ const BudgetPlanning: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Budget Category *
@@ -646,7 +646,7 @@ const BudgetPlanning: React.FC = () => {
                 />
               </div>
 
-              <div className="flex justify-end gap-4 pt-4 border-t">
+              <div className="flex justify-end gap-4 pt-4 border-t flex-wrap">
                 <button 
                   type="button"
                   onClick={handleCloseModal}

@@ -331,8 +331,8 @@ const DocumentListTab = () => {
 
       {/* Create Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Tambah Dokumen Baru</h3>
             <div className="space-y-3">
               <div>
@@ -345,7 +345,7 @@ const DocumentListTab = () => {
                 <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Control of Document" className="w-full border rounded-lg px-3 py-2 text-sm" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Level Dokumen</label>
                   <select value={formData.document_level} onChange={e => setFormData({ ...formData, document_level: e.target.value })}
@@ -361,7 +361,7 @@ const DocumentListTab = () => {
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Masa Retensi (tahun)</label>
                   <NumberInput value={formData.retention_period_years} onChange={e => setFormData({ ...formData, retention_period_years: Number(e.target.value) })}
@@ -378,7 +378,7 @@ const DocumentListTab = () => {
               </div>
               <div className="border-t pt-3 mt-2">
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">Pilih Checker & Approver</p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Checker 1 (Pemeriksa)</label>
                     <select value={formData.assigned_reviewer_id} onChange={e => setFormData({ ...formData, assigned_reviewer_id: e.target.value })}
@@ -408,7 +408,7 @@ const DocumentListTab = () => {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-6">
+            <div className="flex justify-end gap-2 mt-6 flex-wrap">
               <button onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
               <button onClick={handleCreate} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Simpan</button>
             </div>
@@ -421,43 +421,45 @@ const DocumentListTab = () => {
 
       {/* Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-900 border-b">
-            <tr>
-              <SortHeader col="document_number">No. Dokumen</SortHeader>
-              <SortHeader col="title">Judul</SortHeader>
-              <SortHeader col="level">Level</SortHeader>
-              <SortHeader col="dept">Dept</SortHeader>
-              <SortHeader col="revision">Revisi</SortHeader>
-              <SortHeader col="status">Status</SortHeader>
-              <th className="text-center px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {loading ? (
-              <tr><td colSpan={7} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
-            ) : sortedDocs.length === 0 ? (
-              <tr><td colSpan={7} className="text-center py-8 text-gray-400">Belum ada dokumen</td></tr>
-            ) : sortedDocs.map(doc => (
-              <tr key={doc.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 cursor-pointer" onClick={() => setSelectedDoc(doc.id)}>
-                <td className="px-4 py-3 font-mono font-medium text-blue-600 dark:text-blue-400">{doc.document_number}</td>
-                <td className="px-4 py-3">{doc.title}</td>
-                <td className="px-4 py-3"><span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">{doc.level_name}</span></td>
-                <td className="px-4 py-3">{doc.department_code}</td>
-                <td className="px-4 py-3">Rev {doc.current_revision?.revision_number?.toString().padStart(2, '0') ?? '00'}</td>
-                <td className="px-4 py-3"><StatusBadge status={doc.current_revision?.status || 'draft'} /></td>
-                <td className="px-4 py-3 text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <button className="text-blue-600 hover:text-blue-800 dark:text-blue-400" title="Lihat Detail"><Eye className="w-4 h-4" /></button>
-                    <button onClick={(e) => handleDelete(e, doc.id, doc.document_number)} className="text-red-400 hover:text-red-600" title="Hapus">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b">
+              <tr>
+                <SortHeader col="document_number">No. Dokumen</SortHeader>
+                <SortHeader col="title">Judul</SortHeader>
+                <SortHeader col="level">Level</SortHeader>
+                <SortHeader col="dept">Dept</SortHeader>
+                <SortHeader col="revision">Revisi</SortHeader>
+                <SortHeader col="status">Status</SortHeader>
+                <th className="text-center px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Aksi</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y">
+              {loading ? (
+                <tr><td colSpan={7} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
+              ) : sortedDocs.length === 0 ? (
+                <tr><td colSpan={7} className="text-center py-8 text-gray-400">Belum ada dokumen</td></tr>
+              ) : sortedDocs.map(doc => (
+                <tr key={doc.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 cursor-pointer" onClick={() => setSelectedDoc(doc.id)}>
+                  <td className="px-4 py-3 font-mono font-medium text-blue-600 dark:text-blue-400">{doc.document_number}</td>
+                  <td className="px-4 py-3">{doc.title}</td>
+                  <td className="px-4 py-3"><span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">{doc.level_name}</span></td>
+                  <td className="px-4 py-3">{doc.department_code}</td>
+                  <td className="px-4 py-3">Rev {doc.current_revision?.revision_number?.toString().padStart(2, '0') ?? '00'}</td>
+                  <td className="px-4 py-3"><StatusBadge status={doc.current_revision?.status || 'draft'} /></td>
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex items-center justify-center gap-2 flex-wrap">
+                      <button className="text-blue-600 hover:text-blue-800 dark:text-blue-400" title="Lihat Detail"><Eye className="w-4 h-4" /></button>
+                      <button onClick={(e) => handleDelete(e, doc.id, doc.document_number)} className="text-red-400 hover:text-red-600" title="Hapus">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -605,7 +607,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
     } catch (e: any) { showError('Error: ' + e.message); }
   };
 
-  if (loading) return <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><div className="bg-white dark:bg-gray-800 rounded-xl p-8">Memuat...</div></div>;
+  if (loading) return <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"><div className="bg-white dark:bg-gray-800 rounded-xl p-8">Memuat...</div></div>;
   if (!detail) return null;
 
   const { document: doc, revisions } = detail;
@@ -618,7 +620,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
             <h3 className="text-lg font-semibold">{doc.document_number}</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">{doc.title}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button onClick={openRevisionForm} disabled={!canCreateRevision}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm ${canCreateRevision ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700'}`}
               title={canCreateRevision ? `${availableDcns.length} DCN siap diproses` : 'Ajukan & setujui Change Notice (DCN) terlebih dahulu'}>
@@ -633,7 +635,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
 
         <div className="p-6 space-y-4">
           {/* Info */}
-          <div className="grid grid-cols-4 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
             <div><span className="text-gray-500 dark:text-gray-400">Level:</span> <span className="font-medium">{doc.level_name}</span></div>
             <div><span className="text-gray-500 dark:text-gray-400">Dept:</span> <span className="font-medium">{doc.department_code}</span></div>
             <div><span className="text-gray-500 dark:text-gray-400">Retensi:</span> <span className="font-medium">{doc.retention_period_years ? `${doc.retention_period_years} tahun` : '-'}</span></div>
@@ -715,7 +717,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
                     {/* 3-tier Approval Chain */}
                     <div className="mt-3">
                       <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Approval Chain (Sesuai QP-DCC-01)</p>
-                      <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
                         <div className={`p-3 rounded-lg ${rev.originator_signed_at ? 'bg-green-50 border-green-300 dark:bg-green-900/20' : 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'} border`}>
                           <div className="font-semibold text-gray-700 dark:text-gray-200">1. Pembuat</div>
                           <div className="mt-1">{rev.originator || '-'}</div>
@@ -739,7 +741,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
                             </div>
                             <div className="text-gray-500 dark:text-gray-400 mt-0.5" style={{fontSize:'9px'}}>{new Date(rev.reviewer_signed_at).toLocaleString('id-ID', {timeZone:'Asia/Jakarta', day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})} WIB</div></>
                           ) : rev.status === 'reviewing' ? (
-                            <div className="flex gap-1 mt-2">
+                            <div className="flex gap-1 mt-2 flex-wrap">
                               <button onClick={() => openSignDialog(rev.id, 'review_approve')} className="flex-1 py-1.5 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">✓ Setujui</button>
                               <button onClick={() => openSignDialog(rev.id, 'review_reject')} className="flex-1 py-1.5 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700">✗ Tolak</button>
                             </div>
@@ -758,7 +760,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
                               </div>
                               <div className="text-gray-500 dark:text-gray-400 mt-0.5" style={{fontSize:'9px'}}>{new Date(rev.reviewer2_signed_at).toLocaleString('id-ID', {timeZone:'Asia/Jakarta', day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})} WIB</div></>
                             ) : rev.status === 'reviewing' ? (
-                              <div className="flex gap-1 mt-2">
+                              <div className="flex gap-1 mt-2 flex-wrap">
                                 <button onClick={() => openSignDialog(rev.id, 'review2_approve')} className="flex-1 py-1.5 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">✓ Setujui</button>
                                 <button onClick={() => openSignDialog(rev.id, 'review2_reject')} className="flex-1 py-1.5 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700">✗ Tolak</button>
                               </div>
@@ -776,7 +778,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
                             </div>
                             <div className="text-gray-500 dark:text-gray-400 mt-0.5" style={{fontSize:'9px'}}>{new Date(rev.approver_signed_at).toLocaleString('id-ID', {timeZone:'Asia/Jakarta', day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})} WIB</div></>
                           ) : rev.status === 'pending_approval' ? (
-                            <div className="flex gap-1 mt-2">
+                            <div className="flex gap-1 mt-2 flex-wrap">
                               <button onClick={() => openSignDialog(rev.id, 'approve')} className="flex-1 py-1.5 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">✓ Sahkan</button>
                               <button onClick={() => openSignDialog(rev.id, 'reject')} className="flex-1 py-1.5 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700">✗ Tolak</button>
                             </div>
@@ -842,7 +844,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
 
         {/* Revision Form Modal */}
         {showRevisionForm && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]">
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4">
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[85vh] overflow-y-auto">
               <h3 className="text-lg font-semibold mb-1">Buat Revisi Baru</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Revisi baru berdasarkan Change Notice yang telah disetujui</p>
@@ -874,7 +876,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
                     rows={2} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Otomatis terisi dari DCN" />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Jenis Perubahan</label>
                     <select value={revFormData.change_type} onChange={e => setRevFormData({ ...revFormData, change_type: e.target.value })}
@@ -927,7 +929,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
                 </div>
               </div>
 
-              <div className="flex gap-2 mt-5">
+              <div className="flex gap-2 mt-5 flex-wrap">
                 <button onClick={() => setShowRevisionForm(false)} className="flex-1 px-4 py-2.5 border rounded-lg text-sm">Batal</button>
                 <button onClick={handleNewRevision} className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
                   Buat Revisi
@@ -939,8 +941,8 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
 
         {/* Password Signing Dialog */}
         {passwordDialog && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm shadow-xl">
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm shadow-xl max-h-[90vh] overflow-y-auto">
               <div className="text-center mb-4">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 dark:bg-blue-900/30">
                   <Edit className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -965,7 +967,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
                   className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" autoFocus />
                 {signError && <p className="text-red-600 text-xs mt-1.5 font-medium dark:text-red-400">{signError}</p>}
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <button onClick={() => { setPasswordDialog(null); setSignPassword(''); }} className="flex-1 px-4 py-2.5 border rounded-lg text-sm">Batal</button>
                 <button onClick={handleConfirmSign} className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
                   Tandatangani
@@ -977,8 +979,8 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
 
         {/* Distribution Form Modal */}
         {showDistForm && (
-          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[60]">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl">
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[60] p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
               <h3 className="text-lg font-semibold mb-3">Distribusi Dokumen ke Departemen</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Pilih departemen penerima salinan terkendali (Controlled Copy)</p>
               <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -999,7 +1001,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
               </div>
               <div className="flex justify-between items-center mt-4 pt-4 border-t">
                 <span className="text-sm text-gray-500 dark:text-gray-400">{selectedDepts.length} departemen dipilih</span>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <button onClick={() => { setShowDistForm(false); setSelectedDepts([]); }} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
                   <button onClick={handleDistribute} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
                     Distribusikan
@@ -1093,11 +1095,11 @@ const CapaTab = () => {
 
       {/* Create CAPA Form */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Buat CAPA Baru</h3>
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tipe</label>
                   <select value={formData.capa_type} onChange={e => setFormData({ ...formData, capa_type: e.target.value })}
@@ -1134,7 +1136,7 @@ const CapaTab = () => {
                 <input type="text" value={formData.product_affected} onChange={e => setFormData({ ...formData, product_affected: e.target.value })}
                   className="w-full border rounded-lg px-3 py-2 text-sm" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Departemen PIC</label>
                   <select value={formData.assigned_department} onChange={e => setFormData({ ...formData, assigned_department: e.target.value })}
@@ -1152,7 +1154,7 @@ const CapaTab = () => {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-6">
+            <div className="flex justify-end gap-2 mt-6 flex-wrap">
               <button onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
               <button onClick={handleCreate} className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700">Simpan</button>
             </div>
@@ -1165,41 +1167,43 @@ const CapaTab = () => {
 
       {/* List */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-900 border-b">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">No. CAPA</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Tipe</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Deskripsi</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">PIC</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Due Date</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {loading ? (
-              <tr><td colSpan={6} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
-            ) : capas.length === 0 ? (
-              <tr><td colSpan={6} className="text-center py-8 text-gray-400">Belum ada CAPA</td></tr>
-            ) : capas.map(c => (
-              <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 cursor-pointer" onClick={() => setSelectedCapa(c.id)}>
-                <td className="px-4 py-3 font-mono font-medium text-orange-600 dark:text-orange-400">{c.capa_number}</td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${c.capa_type === 'CPAR' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'}`}>
-                    {c.capa_type}
-                  </span>
-                </td>
-                <td className="px-4 py-3 max-w-[300px] truncate">{c.issue_description}</td>
-                <td className="px-4 py-3">{c.assigned_department || '-'}</td>
-                <td className="px-4 py-3">
-                  <span className={c.is_overdue ? 'text-red-600 font-medium dark:text-red-400' : ''}>{c.due_date || '-'}</span>
-                  {c.is_overdue && <span className="ml-1 text-xs text-red-500">OVERDUE</span>}
-                </td>
-                <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">No. CAPA</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Tipe</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Deskripsi</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">PIC</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Due Date</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y">
+              {loading ? (
+                <tr><td colSpan={6} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
+              ) : capas.length === 0 ? (
+                <tr><td colSpan={6} className="text-center py-8 text-gray-400">Belum ada CAPA</td></tr>
+              ) : capas.map(c => (
+                <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 cursor-pointer" onClick={() => setSelectedCapa(c.id)}>
+                  <td className="px-4 py-3 font-mono font-medium text-orange-600 dark:text-orange-400">{c.capa_number}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${c.capa_type === 'CPAR' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'}`}>
+                      {c.capa_type}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 max-w-[300px] truncate">{c.issue_description}</td>
+                  <td className="px-4 py-3">{c.assigned_department || '-'}</td>
+                  <td className="px-4 py-3">
+                    <span className={c.is_overdue ? 'text-red-600 font-medium dark:text-red-400' : ''}>{c.due_date || '-'}</span>
+                    {c.is_overdue && <span className="ml-1 text-xs text-red-500">OVERDUE</span>}
+                  </td>
+                  <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -1255,7 +1259,7 @@ const CapaDetailModal = ({ capaId, onClose }: { capaId: number; onClose: () => v
     } catch (e: any) { showError('Error: ' + e.message); }
   };
 
-  if (loading) return <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><div className="bg-white dark:bg-gray-800 rounded-xl p-8">Memuat...</div></div>;
+  if (loading) return <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"><div className="bg-white dark:bg-gray-800 rounded-xl p-8">Memuat...</div></div>;
   if (!detail) return null;
 
   const { capa, investigation, verification } = detail;
@@ -1271,7 +1275,7 @@ const CapaDetailModal = ({ capaId, onClose }: { capaId: number; onClose: () => v
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">{capa.capa_type} - {capa.capa_source || ''}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {capa.status !== 'closed' && capa.status !== 'cancelled' && (
               <button onClick={async () => {
                 const reason = prompt('Alasan pembatalan CAPA:');
@@ -1367,7 +1371,7 @@ const CapaDetailModal = ({ capaId, onClose }: { capaId: number; onClose: () => v
                   rows={2} className="w-full border rounded-lg px-3 py-2 text-sm" />
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">PIC</label>
                   <input type="text" value={invForm.pic_name} onChange={e => setInvForm({ ...invForm, pic_name: e.target.value })}
@@ -1498,8 +1502,8 @@ const MemoTab = () => {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Buat Memo Internal Baru</h3>
             <div className="space-y-3">
               <div>
@@ -1520,7 +1524,7 @@ const MemoTab = () => {
                   rows={5} className="w-full border rounded-lg px-3 py-2 text-sm" />
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-6">
+            <div className="flex justify-end gap-2 mt-6 flex-wrap">
               <button onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
               <button onClick={handleCreate} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">Simpan</button>
             </div>
@@ -1559,8 +1563,8 @@ const MemoTab = () => {
 
       {/* Publish Memo Dialog */}
       {publishMemoId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-2">Publish Memo</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Pilih departemen tujuan distribusi memo</p>
             <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -1577,7 +1581,7 @@ const MemoTab = () => {
             </div>
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
               <button onClick={() => setPublishDepts(deptList.map(d => d.code))} className="text-xs text-blue-600 underline dark:text-blue-400">Pilih Semua</button>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <button onClick={() => setPublishMemoId(null)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
                 <button onClick={async () => {
                   if (publishDepts.length === 0) { showWarning('Pilih minimal 1 departemen'); return; }
@@ -1640,11 +1644,11 @@ const DestructionTab = () => {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Berita Acara Pemusnahan Dokumen</h3>
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Jenis Dokumen</label>
                   <select value={formData.document_type} onChange={e => setFormData({ ...formData, document_type: e.target.value })}
@@ -1659,7 +1663,7 @@ const DestructionTab = () => {
                     className="w-full border rounded-lg px-3 py-2 text-sm" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Bentuk Dokumen</label>
                   <select value={formData.document_form} onChange={e => setFormData({ ...formData, document_form: e.target.value })}
@@ -1693,7 +1697,7 @@ const DestructionTab = () => {
                   rows={2} className="w-full border rounded-lg px-3 py-2 text-sm" />
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-6">
+            <div className="flex justify-end gap-2 mt-6 flex-wrap">
               <button onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
               <button onClick={handleCreate} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700">Simpan</button>
             </div>
@@ -1702,54 +1706,56 @@ const DestructionTab = () => {
       )}
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-900 border-b">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">No. BA</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Tanggal</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Bentuk</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Metode</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Alasan</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Pelaksana</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Saksi</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Verifikasi</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {loading ? (
-              <tr><td colSpan={8} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
-            ) : logs.length === 0 ? (
-              <tr><td colSpan={8} className="text-center py-8 text-gray-400">Belum ada data</td></tr>
-            ) : logs.map(l => (
-              <tr key={l.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                <td className="px-4 py-3 font-mono text-sm">{l.destruction_number}</td>
-                <td className="px-4 py-3">{l.destruction_date}</td>
-                <td className="px-4 py-3 capitalize">{l.document_form}</td>
-                <td className="px-4 py-3 capitalize">{l.method_physical || l.method_digital || '-'}</td>
-                <td className="px-4 py-3">{l.reason?.replace(/_/g, ' ')}</td>
-                <td className="px-4 py-3">{l.destroyed_by || '-'}</td>
-                <td className="px-4 py-3">
-                  {l.witness_confirmed ? <span className="text-green-600 dark:text-green-400">✓ {l.witnessed_by}</span> : (
-                    <button onClick={async () => {
-                      try { await fetchApi(`/destructions/${l.id}/witness`, { method: 'POST' }); loadLogs(); }
-                      catch (e: any) { showError('Error: ' + e.message); }
-                    }} className="px-2 py-1 bg-yellow-500 text-white rounded text-xs hover:bg-yellow-600">Witness</button>
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  {l.verified_at ? <span className="text-green-600 dark:text-green-400">✓ {l.verified_by}</span> : (
-                    l.witness_confirmed ? (
-                      <button onClick={async () => {
-                        try { await fetchApi(`/destructions/${l.id}/verify`, { method: 'POST' }); loadLogs(); }
-                        catch (e: any) { showError('Error: ' + e.message); }
-                      }} className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">Verify</button>
-                    ) : <span className="text-gray-400">Tunggu saksi</span>
-                  )}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">No. BA</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Tanggal</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Bentuk</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Metode</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Alasan</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Pelaksana</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Saksi</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Verifikasi</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y">
+              {loading ? (
+                <tr><td colSpan={8} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
+              ) : logs.length === 0 ? (
+                <tr><td colSpan={8} className="text-center py-8 text-gray-400">Belum ada data</td></tr>
+              ) : logs.map(l => (
+                <tr key={l.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                  <td className="px-4 py-3 font-mono text-sm">{l.destruction_number}</td>
+                  <td className="px-4 py-3">{l.destruction_date}</td>
+                  <td className="px-4 py-3 capitalize">{l.document_form}</td>
+                  <td className="px-4 py-3 capitalize">{l.method_physical || l.method_digital || '-'}</td>
+                  <td className="px-4 py-3">{l.reason?.replace(/_/g, ' ')}</td>
+                  <td className="px-4 py-3">{l.destroyed_by || '-'}</td>
+                  <td className="px-4 py-3">
+                    {l.witness_confirmed ? <span className="text-green-600 dark:text-green-400">✓ {l.witnessed_by}</span> : (
+                      <button onClick={async () => {
+                        try { await fetchApi(`/destructions/${l.id}/witness`, { method: 'POST' }); loadLogs(); }
+                        catch (e: any) { showError('Error: ' + e.message); }
+                      }} className="px-2 py-1 bg-yellow-500 text-white rounded text-xs hover:bg-yellow-600">Witness</button>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {l.verified_at ? <span className="text-green-600 dark:text-green-400">✓ {l.verified_by}</span> : (
+                      l.witness_confirmed ? (
+                        <button onClick={async () => {
+                          try { await fetchApi(`/destructions/${l.id}/verify`, { method: 'POST' }); loadLogs(); }
+                          catch (e: any) { showError('Error: ' + e.message); }
+                        }} className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">Verify</button>
+                      ) : <span className="text-gray-400">Tunggu saksi</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -1796,11 +1802,11 @@ const QualityRecordsTab = () => {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Tambah Rekaman Mutu</h3>
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Nomor Rekaman</label>
                   <input type="text" value={formData.record_number} onChange={e => setFormData({ ...formData, record_number: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" />
@@ -1817,7 +1823,7 @@ const QualityRecordsTab = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Judul</label>
                 <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Departemen</label>
                   <select value={formData.department} onChange={e => setFormData({ ...formData, department: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm">
@@ -1838,7 +1844,7 @@ const QualityRecordsTab = () => {
                 <span className="text-sm">Bersifat Rahasia</span>
               </label>
             </div>
-            <div className="flex justify-end gap-2 mt-6">
+            <div className="flex justify-end gap-2 mt-6 flex-wrap">
               <button onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
               <button onClick={handleCreate} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">Simpan</button>
             </div>
@@ -1847,34 +1853,36 @@ const QualityRecordsTab = () => {
       )}
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-900 border-b">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">No. Rekaman</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Judul</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Tipe</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Dept</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Lokasi</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Masa Simpan</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {loading ? <tr><td colSpan={7} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr> :
-              records.length === 0 ? <tr><td colSpan={7} className="text-center py-8 text-gray-400">Belum ada rekaman mutu</td></tr> :
-              records.map(r => (
-                <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                  <td className="px-4 py-3 font-mono font-medium">{r.record_number}</td>
-                  <td className="px-4 py-3">{r.title}</td>
-                  <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded ${r.record_type === 'smm' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'}`}>{r.record_type === 'smm' ? 'SMM' : 'Produk'}</span></td>
-                  <td className="px-4 py-3">{r.department}</td>
-                  <td className="px-4 py-3">{r.storage_location || '-'}</td>
-                  <td className="px-4 py-3">{r.retention_period || '-'}</td>
-                  <td className="px-4 py-3"><StatusBadge status={r.status} /></td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">No. Rekaman</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Judul</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Tipe</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Dept</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Lokasi</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Masa Simpan</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {loading ? <tr><td colSpan={7} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr> :
+                records.length === 0 ? <tr><td colSpan={7} className="text-center py-8 text-gray-400">Belum ada rekaman mutu</td></tr> :
+                records.map(r => (
+                  <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-4 py-3 font-mono font-medium">{r.record_number}</td>
+                    <td className="px-4 py-3">{r.title}</td>
+                    <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded ${r.record_type === 'smm' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'}`}>{r.record_type === 'smm' ? 'SMM' : 'Produk'}</span></td>
+                    <td className="px-4 py-3">{r.department}</td>
+                    <td className="px-4 py-3">{r.storage_location || '-'}</td>
+                    <td className="px-4 py-3">{r.retention_period || '-'}</td>
+                    <td className="px-4 py-3"><StatusBadge status={r.status} /></td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -1950,8 +1958,8 @@ const ChangeNoticeTab = () => {
 
       {/* Create Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Ajukan Perubahan Dokumen</h3>
             <div className="space-y-3">
               <div>
@@ -1982,7 +1990,7 @@ const ChangeNoticeTab = () => {
                   rows={2} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Mengapa perlu diubah..." />
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-6">
+            <div className="flex justify-end gap-2 mt-6 flex-wrap">
               <button onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
               <button onClick={handleCreate} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Ajukan</button>
             </div>
@@ -1993,41 +2001,43 @@ const ChangeNoticeTab = () => {
       {/* Notices list */}
       {selectedDocId && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-900 border-b">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">No. DCN</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Tipe</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Uraian Perubahan</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Diajukan</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Status</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {notices.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-8 text-gray-400">Belum ada change notice untuk dokumen ini</td></tr>
-              ) : notices.map((n: any) => (
-                <tr key={n.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                  <td className="px-4 py-3 font-mono text-sm">{n.request_number}</td>
-                  <td className="px-4 py-3 capitalize text-xs">{n.change_type?.replace('_', ' ')}</td>
-                  <td className="px-4 py-3 max-w-[250px] truncate">{n.change_description}</td>
-                  <td className="px-4 py-3 text-xs">{n.requested_by}<br />{n.requested_at?.split('T')[0]}</td>
-                  <td className="px-4 py-3"><StatusBadge status={n.status} /></td>
-                  <td className="px-4 py-3 text-center">
-                    {n.status === 'pending' && (
-                      <div className="flex gap-1 justify-center">
-                        <button onClick={() => handleApprove(n.id, 'approved')} className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700">Approve</button>
-                        <button onClick={() => handleApprove(n.id, 'rejected')} className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700">Reject</button>
-                      </div>
-                    )}
-                    {n.status === 'approved' && <span className="text-xs text-green-600 dark:text-green-400">✓ {n.approved_by}</span>}
-                    {n.status === 'rejected' && <span className="text-xs text-red-600 dark:text-red-400">✗ Ditolak</span>}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-900 border-b">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">No. DCN</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Tipe</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Uraian Perubahan</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Diajukan</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Status</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Aksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y">
+                {notices.length === 0 ? (
+                  <tr><td colSpan={6} className="text-center py-8 text-gray-400">Belum ada change notice untuk dokumen ini</td></tr>
+                ) : notices.map((n: any) => (
+                  <tr key={n.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-4 py-3 font-mono text-sm">{n.request_number}</td>
+                    <td className="px-4 py-3 capitalize text-xs">{n.change_type?.replace('_', ' ')}</td>
+                    <td className="px-4 py-3 max-w-[250px] truncate">{n.change_description}</td>
+                    <td className="px-4 py-3 text-xs">{n.requested_by}<br />{n.requested_at?.split('T')[0]}</td>
+                    <td className="px-4 py-3"><StatusBadge status={n.status} /></td>
+                    <td className="px-4 py-3 text-center">
+                      {n.status === 'pending' && (
+                        <div className="flex gap-1 justify-center flex-wrap">
+                          <button onClick={() => handleApprove(n.id, 'approved')} className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700">Approve</button>
+                          <button onClick={() => handleApprove(n.id, 'rejected')} className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700">Reject</button>
+                        </div>
+                      )}
+                      {n.status === 'approved' && <span className="text-xs text-green-600 dark:text-green-400">✓ {n.approved_by}</span>}
+                      {n.status === 'rejected' && <span className="text-xs text-red-600 dark:text-red-400">✗ Ditolak</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
@@ -2102,8 +2112,8 @@ const DocumentReviewTab = () => {
 
       {/* Create Review Form */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Form Kaji Ulang Dokumen</h3>
             <div className="space-y-3">
               <div>
@@ -2141,7 +2151,7 @@ const DocumentReviewTab = () => {
                   className="w-full border rounded-lg px-3 py-2 text-sm" />
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-6">
+            <div className="flex justify-end gap-2 mt-6 flex-wrap">
               <button onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
               <button onClick={handleSubmit} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Simpan</button>
             </div>
@@ -2152,33 +2162,35 @@ const DocumentReviewTab = () => {
       {/* Review history */}
       {selectedDocId && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-900 border-b">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Tanggal Review</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Hasil</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Catatan</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Reviewer</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Next Review</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {reviews.length === 0 ? (
-                <tr><td colSpan={5} className="text-center py-8 text-gray-400">Belum ada riwayat kaji ulang</td></tr>
-              ) : reviews.map((r: any) => {
-                const res = resultLabels[r.review_result] || { label: r.review_result, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' };
-                return (
-                  <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                    <td className="px-4 py-3">{r.review_date}</td>
-                    <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs font-medium ${res.color}`}>{res.label}</span></td>
-                    <td className="px-4 py-3 max-w-[250px]">{r.review_notes || '-'}</td>
-                    <td className="px-4 py-3">{r.reviewed_by || '-'}</td>
-                    <td className="px-4 py-3">{r.next_review_date || '-'}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-900 border-b">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Tanggal Review</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Hasil</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Catatan</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Reviewer</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Next Review</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {reviews.length === 0 ? (
+                  <tr><td colSpan={5} className="text-center py-8 text-gray-400">Belum ada riwayat kaji ulang</td></tr>
+                ) : reviews.map((r: any) => {
+                  const res = resultLabels[r.review_result] || { label: r.review_result, color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' };
+                  return (
+                    <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                      <td className="px-4 py-3">{r.review_date}</td>
+                      <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs font-medium ${res.color}`}>{res.label}</span></td>
+                      <td className="px-4 py-3 max-w-[250px]">{r.review_notes || '-'}</td>
+                      <td className="px-4 py-3">{r.reviewed_by || '-'}</td>
+                      <td className="px-4 py-3">{r.next_review_date || '-'}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

@@ -287,7 +287,7 @@ const DailyController: React.FC<DailyControllerProps> = ({
 
       {/* Tab Selector */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-2 mb-6">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setActiveTab('ringkasan')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${activeTab === 'ringkasan'
@@ -318,7 +318,7 @@ const DailyController: React.FC<DailyControllerProps> = ({
         <>
           {/* Summary Cards - Hidden in embedded mode (shown in Swiper header instead) */}
           {!embedded && (
-            <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
                 <div className="flex items-center gap-2 mb-2">
                   <CogIcon className="h-5 w-5 opacity-80" />
@@ -551,7 +551,7 @@ const DailyController: React.FC<DailyControllerProps> = ({
                                             📦 {shift.product_name}
                                           </p>
                                         )}
-                                        <div className="grid grid-cols-6 gap-2 text-xs">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2 text-xs">
                                           <div className="bg-green-50 dark:bg-green-900/20 rounded p-1.5 text-center">
                                             <p className="text-slate-400 dark:text-gray-500">Grade A</p>
                                             <p className="font-bold text-green-600 dark:text-green-400">{(shift.grade_a || 0).toLocaleString()}</p>
@@ -891,7 +891,7 @@ const DailyController: React.FC<DailyControllerProps> = ({
                               Ringkasan Output
                             </h4>
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                              <div className="grid grid-cols-4 gap-3">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                                 <div className="text-center">
                                   <p className="text-xs text-slate-400">Grade A</p>
                                   <p className="text-xl font-bold text-green-600 dark:text-green-400">{machine.total_grade_a?.toLocaleString() || 0}</p>

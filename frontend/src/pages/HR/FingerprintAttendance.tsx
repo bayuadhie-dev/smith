@@ -166,7 +166,7 @@ const DayModal = ({ deviceId, date, canEdit, onClose, onChanged }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4" onClick={onClose}>
-      <div className="my-6 w-full max-w-2xl rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800" onClick={(e) => e.stopPropagation()}>
+      <div className="my-6 w-full max-w-2xl rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-3 border-b border-gray-200 px-5 py-4 dark:border-gray-700">
           <div>
             <h2 className="text-base font-semibold text-gray-900 dark:text-white">{row ? personName(row.employee, row.device_name, row.device_user_id) : `ID ${deviceId}`}</h2>
@@ -191,19 +191,21 @@ const DayModal = ({ deviceId, date, canEdit, onClose, onChanged }: {
               <div>
                 <h3 className="mb-2 text-sm font-semibold text-gray-900 dark:text-white">Cap dari mesin</h3>
                 {detail.punches.length === 0 ? <p className="text-sm text-gray-500 dark:text-gray-400">Tidak ada cap pada hari ini.</p> : (
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 text-left text-xs font-medium text-gray-500 dark:bg-gray-900 dark:text-gray-400">
-                      <tr><th className="px-3 py-2">Jam</th><th className="px-3 py-2">Perlakuan</th></tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                      {detail.punches.map((p, i) => (
-                        <tr key={i}>
-                          <td className="px-3 py-1.5 tabular-nums">{p.time}</td>
-                          <td className="px-3 py-1.5 text-gray-600 dark:text-gray-300">{p.counted ? 'dihitung' : 'digabung (ketukan ganda)'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 text-left text-xs font-medium text-gray-500 dark:bg-gray-900 dark:text-gray-400">
+                        <tr><th className="px-3 py-2">Jam</th><th className="px-3 py-2">Perlakuan</th></tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                        {detail.punches.map((p, i) => (
+                          <tr key={i}>
+                            <td className="px-3 py-1.5 tabular-nums">{p.time}</td>
+                            <td className="px-3 py-1.5 text-gray-600 dark:text-gray-300">{p.counted ? 'dihitung' : 'digabung (ketukan ganda)'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </div>
 
@@ -298,7 +300,7 @@ const HolidayDialog = ({ defaultDate, onClose, onSaved }: { defaultDate: string;
   }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-5 shadow-xl dark:border-gray-700 dark:bg-gray-800" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-5 shadow-xl dark:border-gray-700 dark:bg-gray-800 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-base font-semibold text-gray-900 dark:text-white">Libur khusus</h2>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Berlaku untuk semua karyawan: tidak dihitung sebagai tidak masuk.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -312,7 +314,7 @@ const HolidayDialog = ({ defaultDate, onClose, onSaved }: { defaultDate: string;
             <input value={note} onChange={(e) => setNote(e.target.value)} className={`${inputCls} mt-1 w-full`} placeholder="mis. Cuti bersama" />
           </label>
         </div>
-        <div className="mt-4 flex justify-end gap-2">
+        <div className="mt-4 flex justify-end gap-2 flex-wrap">
           <button onClick={onClose} className={btnCls}>Batal</button>
           <button onClick={save} disabled={saving} className="rounded-md bg-emerald-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-60">{saving ? 'Menyimpan...' : 'Simpan'}</button>
         </div>
@@ -388,10 +390,10 @@ const CalendarView = ({ options, tick, onOpenDay }: {
       {sel && (
         <div className="rounded-lg border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800 sm:p-3">
           {loading && <Skeleton className="m-2 h-4 w-32" />}
-          <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-gray-500 dark:text-gray-400 sm:text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-1 text-center text-[11px] font-medium text-gray-500 dark:text-gray-400 sm:text-xs">
             {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((x) => <div key={x} className="py-1">{x}</div>)}
           </div>
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-1">
             {cells.map((n, i) => {
               if (!n) return <div key={i} />
               const dstr = iso(new Date(month.getFullYear(), month.getMonth(), n))
@@ -826,7 +828,7 @@ const FingerprintAttendance = () => {
           {pages > 1 && (
             <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
               <span>Halaman {page} dari {pages} ({days.length.toLocaleString('id-ID')} baris)</span>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="rounded-md border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-600">Sebelumnya</button>
                 <button disabled={page >= pages} onClick={() => setPage(page + 1)} className="rounded-md border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-600">Berikutnya</button>
               </div>

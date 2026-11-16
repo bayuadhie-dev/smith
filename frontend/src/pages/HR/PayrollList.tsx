@@ -95,9 +95,9 @@ const navigate = useNavigate()
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Payroll</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button 
             onClick={() => navigate('/app/hr/payroll/outsourcing-vendors')}
             className="btn-outline inline-flex items-center gap-2 text-sm"
@@ -182,7 +182,7 @@ const navigate = useNavigate()
                       {fmtDate(period.processed_at)}
                     </td>
                     <td>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <button
                           onClick={() => navigate(`/app/hr/payroll/periods/${period.id}/records`)}
                           className="btn-sm btn-outline inline-flex items-center gap-1"

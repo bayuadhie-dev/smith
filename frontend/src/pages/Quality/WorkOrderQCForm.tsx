@@ -364,7 +364,7 @@ export default function WorkOrderQCForm() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/quality/pending-qc')}
@@ -426,7 +426,7 @@ export default function WorkOrderQCForm() {
             </div>
           </div>
           
-          <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <div className="text-center">
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {workOrder.quantity_produced.toLocaleString()}
@@ -842,7 +842,7 @@ export default function WorkOrderQCForm() {
         </div>
 
         {/* Submit Buttons */}
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/quality/pending-qc')}

@@ -618,7 +618,7 @@ export default function SalesForecastGrid() {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2 mt-3">
+        <div className="flex items-center gap-2 mt-3 flex-wrap">
           {isEditMode ? (
             <button
               onClick={handleSaveAll}
@@ -988,36 +988,38 @@ export default function SalesForecastGrid() {
 
       {showBulkModal && bulkPeriod && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Kirim ke Monthly Planning</h3>
             <p className="text-sm text-gray-500 mb-4 dark:text-gray-400">{periodLabel(bulkPeriod)} - {bulkLines.length} produk (qty {'>'} 0) masuk sebagai rencana bulanan (draft) di halaman Monthly Production Plan, tinggal direview PPIC & dipecah ke Weekly Planning per minggu.</p>
             {bulkError && <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-2 rounded dark:text-red-400">{bulkError}</div>}
             <div className="max-h-72 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
-              <table className="min-w-full text-xs">
-                <thead className="bg-gray-50 dark:bg-gray-800">
-                  <tr>
-                    <th className="px-2 py-2 text-left">Produk</th>
-                    <th className="px-2 py-2 text-right w-28">Quantity</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {bulkLines.map((l) => (
-                    <tr key={l.id}>
-                      <td className="px-2 py-2">{l.product_code} - {l.product_name}</td>
-                      <td className="px-2 py-2">
-                        <NumberInput
-                          value={bulkRows[l.id]?.quantity ?? ''}
-                          onChange={(e) => setBulkRows({ ...bulkRows, [l.id]: { quantity: e.target.value } })}
-                          onFocus={(e) => e.target.select()}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-right"
-                        />
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                      <th className="px-2 py-2 text-left">Produk</th>
+                      <th className="px-2 py-2 text-right w-28">Quantity</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                    {bulkLines.map((l) => (
+                      <tr key={l.id}>
+                        <td className="px-2 py-2">{l.product_code} - {l.product_name}</td>
+                        <td className="px-2 py-2">
+                          <NumberInput
+                            value={bulkRows[l.id]?.quantity ?? ''}
+                            onChange={(e) => setBulkRows({ ...bulkRows, [l.id]: { quantity: e.target.value } })}
+                            onFocus={(e) => e.target.select()}
+                            className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-right"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div className="flex justify-end gap-2 mt-5">
+            <div className="flex justify-end gap-2 mt-5 flex-wrap">
               <button className="btn-outline" onClick={() => setShowBulkModal(false)} disabled={bulkSaving}>Batal</button>
               <button className="btn-primary" onClick={handleBulkConvert} disabled={bulkSaving}>
                 {bulkSaving ? 'Memproses...' : `Kirim ${bulkLines.length} Produk`}

@@ -62,7 +62,7 @@ const FaceAdmin: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
             <Camera className="w-6 h-6 text-blue-600 dark:text-blue-400" />

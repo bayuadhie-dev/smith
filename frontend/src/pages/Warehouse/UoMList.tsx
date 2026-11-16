@@ -203,7 +203,7 @@ const UoMList: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <ScaleIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
@@ -281,55 +281,57 @@ const UoMList: React.FC = () => {
 
           {/* Table */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900/50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Kode</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Nama</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Kategori</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Deskripsi</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredUnits.map((unit) => (
-                  <tr key={unit.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                    <td className="px-4 py-3 text-sm font-mono font-bold text-gray-900 dark:text-white">{unit.code}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{unit.name}</td>
-                    <td className="px-4 py-3 text-sm">
-                      <span className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                        {categoryLabels[unit.category] || unit.category}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{unit.description || '-'}</td>
-                    <td className="px-4 py-3 text-sm">
-                      {unit.is_active
-                        ? <span className="text-green-600 font-medium dark:text-green-400">Aktif</span>
-                        : <span className="text-red-500 font-medium">Nonaktif</span>
-                      }
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => openEditUnit(unit)} className="p-1.5 text-gray-400 hover:text-blue-600 transition">
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                        <button onClick={() => handleDeleteUnit(unit.id)} className="p-1.5 text-gray-400 hover:text-red-600 transition">
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {filteredUnits.length === 0 && (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900/50">
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                      Tidak ada satuan ditemukan
-                    </td>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Kode</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Nama</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Kategori</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Deskripsi</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {filteredUnits.map((unit) => (
+                    <tr key={unit.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                      <td className="px-4 py-3 text-sm font-mono font-bold text-gray-900 dark:text-white">{unit.code}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{unit.name}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                          {categoryLabels[unit.category] || unit.category}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{unit.description || '-'}</td>
+                      <td className="px-4 py-3 text-sm">
+                        {unit.is_active
+                          ? <span className="text-green-600 font-medium dark:text-green-400">Aktif</span>
+                          : <span className="text-red-500 font-medium">Nonaktif</span>
+                        }
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1 flex-wrap">
+                          <button onClick={() => openEditUnit(unit)} className="p-1.5 text-gray-400 hover:text-blue-600 transition">
+                            <PencilIcon className="h-4 w-4" />
+                          </button>
+                          <button onClick={() => handleDeleteUnit(unit.id)} className="p-1.5 text-gray-400 hover:text-red-600 transition">
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredUnits.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                        Tidak ada satuan ditemukan
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -348,64 +350,66 @@ const UoMList: React.FC = () => {
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900/50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Dari</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Faktor</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Ke</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Scope</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Item</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Catatan</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {conversions.map((conv) => (
-                  <tr key={conv.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                    <td className="px-4 py-3 text-sm font-mono font-bold text-gray-900 dark:text-white">
-                      1 {conv.from_uom_code}
-                    </td>
-                    <td className="px-4 py-3 text-center text-sm text-gray-700 dark:text-gray-300">
-                      <span className="font-mono">=</span>
-                    </td>
-                    <td className="px-4 py-3 text-sm font-mono font-bold text-blue-600 dark:text-blue-400">
-                      {conv.conversion_factor} {conv.to_uom_code}
-                    </td>
-                    <td className="px-4 py-3 text-sm">{scopeLabel(conv.scope)}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                      {conv.material_name || conv.product_name || '-'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{conv.notes || '-'}</td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => openEditConversion(conv)} className="p-1.5 text-gray-400 hover:text-blue-600 transition">
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                        <button onClick={() => handleDeleteConversion(conv.id)} className="p-1.5 text-gray-400 hover:text-red-600 transition">
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {conversions.length === 0 && (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900/50">
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                      Belum ada konversi. Klik "Tambah Konversi" untuk membuat.
-                    </td>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Dari</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Faktor</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Ke</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Scope</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Item</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Catatan</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {conversions.map((conv) => (
+                    <tr key={conv.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                      <td className="px-4 py-3 text-sm font-mono font-bold text-gray-900 dark:text-white">
+                        1 {conv.from_uom_code}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm text-gray-700 dark:text-gray-300">
+                        <span className="font-mono">=</span>
+                      </td>
+                      <td className="px-4 py-3 text-sm font-mono font-bold text-blue-600 dark:text-blue-400">
+                        {conv.conversion_factor} {conv.to_uom_code}
+                      </td>
+                      <td className="px-4 py-3 text-sm">{scopeLabel(conv.scope)}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                        {conv.material_name || conv.product_name || '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{conv.notes || '-'}</td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1 flex-wrap">
+                          <button onClick={() => openEditConversion(conv)} className="p-1.5 text-gray-400 hover:text-blue-600 transition">
+                            <PencilIcon className="h-4 w-4" />
+                          </button>
+                          <button onClick={() => handleDeleteConversion(conv.id)} className="p-1.5 text-gray-400 hover:text-red-600 transition">
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {conversions.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                        Belum ada konversi. Klik "Tambah Konversi" untuk membuat.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
 
       {/* Unit Modal */}
       {showUnitModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {editingUnit ? 'Edit Satuan' : 'Tambah Satuan'}
@@ -457,7 +461,7 @@ const UoMList: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex justify-end gap-3 mt-6 flex-wrap">
               <button onClick={() => setShowUnitModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 transition dark:hover:text-white">
                 Batal
               </button>
@@ -471,8 +475,8 @@ const UoMList: React.FC = () => {
 
       {/* Conversion Modal */}
       {showConversionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {editingConversion ? 'Edit Konversi' : 'Tambah Konversi'}
@@ -482,7 +486,7 @@ const UoMList: React.FC = () => {
               </button>
             </div>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Dari Satuan *</label>
                   <select
@@ -522,7 +526,7 @@ const UoMList: React.FC = () => {
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Material ID <span className="text-gray-400 font-normal">(opsional)</span></label>
                   <NumberInput
@@ -552,7 +556,7 @@ const UoMList: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex justify-end gap-3 mt-6 flex-wrap">
               <button onClick={() => setShowConversionModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-100 transition dark:hover:text-white">
                 Batal
               </button>

@@ -504,7 +504,7 @@ const BOMForm: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? 'Edit Bill of Materials' : 'New Bill of Materials'}
@@ -952,7 +952,7 @@ const BOMForm: React.FC = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 -mx-6 -mb-6 px-6 py-4 rounded-b-lg">
+          <div className="flex items-center justify-end gap-4 pt-6 border-t-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 -mx-6 -mb-6 px-6 py-4 rounded-b-lg flex-wrap">
             <button
               type="button"
               onClick={() => navigate('/app/products/boms')}

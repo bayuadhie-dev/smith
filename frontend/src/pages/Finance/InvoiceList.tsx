@@ -59,7 +59,7 @@ const [scope] = useUrlState<'all' | 'sales' | 'purchase'>('scope', 'all', ['all'
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{title}</h1>
         {type !== 'purchase' && (
           <Link to="/app/finance/invoices/new" className="btn-primary inline-flex items-center gap-2">

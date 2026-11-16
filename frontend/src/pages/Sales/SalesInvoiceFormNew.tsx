@@ -279,7 +279,7 @@ export default function SalesInvoiceFormNew() {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 flex-wrap">
           <Link to="/app/finance/invoices" className="btn-secondary">Batal</Link>
           <button type="submit" className="btn-primary disabled:opacity-50" disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan Faktur'}</button>
         </div>

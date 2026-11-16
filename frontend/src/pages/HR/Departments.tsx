@@ -122,7 +122,7 @@ export default function Departments() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Manajemen Departemen</h1>
           <p className="text-gray-600 dark:text-gray-300">Kelola data departemen perusahaan</p>
@@ -178,7 +178,7 @@ export default function Departments() {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-1 flex-wrap">
                   <button
                     onClick={() => openEditModal(dept)}
                     className="p-1 text-gray-500 dark:text-gray-400 hover:text-blue-600"
@@ -221,8 +221,8 @@ export default function Departments() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">
               {editingDept ? 'Edit Departemen' : 'Tambah Departemen'}
             </h3>
@@ -286,7 +286,7 @@ export default function Departments() {
                 </select>
                 <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">Dipakai sebagai approver pertama untuk cuti/reimbursement karyawan di departemen ini.</p>
               </div>
-              <div className="flex justify-end gap-2 pt-4">
+              <div className="flex justify-end gap-2 pt-4 flex-wrap">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
@@ -308,7 +308,7 @@ export default function Departments() {
 
       {/* Drill-down: employees + sub-departments in this department */}
       {drillDownDept && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg p-6 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-4">
               <div>

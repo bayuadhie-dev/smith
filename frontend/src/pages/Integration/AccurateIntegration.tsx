@@ -510,7 +510,7 @@ export default function AccurateIntegration() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 dark:border-gray-700 flex gap-6">
+      <div className="border-b border-gray-200 dark:border-gray-700 flex gap-6 flex-wrap">
         <button
           onClick={() => setActiveTab('config')}
           className={`pb-3 font-medium text-sm border-b-2 transition ${
@@ -995,7 +995,7 @@ export default function AccurateIntegration() {
                     </span>
                   </div>
                   {log.status === 'PENDING_APPROVAL' && (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       <button
                         onClick={() => handleReject(log.id)}
                         disabled={isRejecting}
@@ -1460,51 +1460,53 @@ export default function AccurateIntegration() {
                           {materials.length === 0 ? (
                             <div className="text-xs text-gray-500 dark:text-gray-400">Tidak ada komponen material.</div>
                           ) : (
-                            <table className="w-full text-xs">
-                              <thead>
-                                <tr className="text-left text-gray-500 dark:text-gray-400">
-                                  <th className="py-1.5 pr-4 font-medium">Item Komponen</th>
-                                  <th className="py-1.5 pr-4 font-medium">Satuan</th>
-                                  <th className="py-1.5 pr-4 font-medium">Quantity</th>
-                                  <th className="py-1.5 pr-4 font-medium text-right">Harga Satuan</th>
-                                  <th className="py-1.5 font-medium text-right">Total Harga</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {materials.map((m, i) => (
-                                  <tr
-                                    key={i}
-                                    className={`border-b border-gray-100 dark:border-gray-700 ${m.item?.no ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50' : ''}`}
-                                    onClick={() => m.item?.no && setBomItemDrillNo(m.item.no)}
-                                    title={m.item?.no ? 'Klik untuk lihat spesifikasi item (dimensi/berat/multi-unit)' : undefined}
-                                  >
-                                    <td className="py-1.5 pr-4">
-                                      {m.item?.no ? (
-                                        <span className="text-blue-600 dark:text-blue-400 hover:underline">
-                                          {m.item?.name || m.item?.no}
-                                        </span>
-                                      ) : (m.item?.name || '-')}
-                                    </td>
-                                    <td className="py-1.5 pr-4">{m.itemUnit?.name || '-'}</td>
-                                    <td className="py-1.5 pr-4 font-semibold">{m.quantity ?? '-'}</td>
-                                    <td className="py-1.5 pr-4 text-right tabular-nums">
-                                      {m.standardCost != null ? Number(m.standardCost).toLocaleString('id-ID') : '-'}
-                                    </td>
-                                    <td className="py-1.5 text-right font-semibold tabular-nums">
-                                      {m.totalStandardCost != null ? Number(m.totalStandardCost).toLocaleString('id-ID') : '-'}
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-xs">
+                                <thead>
+                                  <tr className="text-left text-gray-500 dark:text-gray-400">
+                                    <th className="py-1.5 pr-4 font-medium">Item Komponen</th>
+                                    <th className="py-1.5 pr-4 font-medium">Satuan</th>
+                                    <th className="py-1.5 pr-4 font-medium">Quantity</th>
+                                    <th className="py-1.5 pr-4 font-medium text-right">Harga Satuan</th>
+                                    <th className="py-1.5 font-medium text-right">Total Harga</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {materials.map((m, i) => (
+                                    <tr
+                                      key={i}
+                                      className={`border-b border-gray-100 dark:border-gray-700 ${m.item?.no ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50' : ''}`}
+                                      onClick={() => m.item?.no && setBomItemDrillNo(m.item.no)}
+                                      title={m.item?.no ? 'Klik untuk lihat spesifikasi item (dimensi/berat/multi-unit)' : undefined}
+                                    >
+                                      <td className="py-1.5 pr-4">
+                                        {m.item?.no ? (
+                                          <span className="text-blue-600 dark:text-blue-400 hover:underline">
+                                            {m.item?.name || m.item?.no}
+                                          </span>
+                                        ) : (m.item?.name || '-')}
+                                      </td>
+                                      <td className="py-1.5 pr-4">{m.itemUnit?.name || '-'}</td>
+                                      <td className="py-1.5 pr-4 font-semibold">{m.quantity ?? '-'}</td>
+                                      <td className="py-1.5 pr-4 text-right tabular-nums">
+                                        {m.standardCost != null ? Number(m.standardCost).toLocaleString('id-ID') : '-'}
+                                      </td>
+                                      <td className="py-1.5 text-right font-semibold tabular-nums">
+                                        {m.totalStandardCost != null ? Number(m.totalStandardCost).toLocaleString('id-ID') : '-'}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                                <tfoot>
+                                  <tr className="border-t-2 border-gray-200 dark:border-gray-700">
+                                    <td className="py-1.5 pr-4 font-semibold" colSpan={4}>HPP Total</td>
+                                    <td className="py-1.5 text-right font-bold tabular-nums text-gray-900 dark:text-white">
+                                      {totalHpp.toLocaleString('id-ID')}
                                     </td>
                                   </tr>
-                                ))}
-                              </tbody>
-                              <tfoot>
-                                <tr className="border-t-2 border-gray-200 dark:border-gray-700">
-                                  <td className="py-1.5 pr-4 font-semibold" colSpan={4}>HPP Total</td>
-                                  <td className="py-1.5 text-right font-bold tabular-nums text-gray-900 dark:text-white">
-                                    {totalHpp.toLocaleString('id-ID')}
-                                  </td>
-                                </tr>
-                              </tfoot>
-                            </table>
+                                </tfoot>
+                              </table>
+                            </div>
                           )}
                         </div>
                       )
@@ -1523,16 +1525,18 @@ export default function AccurateIntegration() {
                         ['Kategori', d.itemCategory?.name],
                       ]
                       return (
-                        <table className="w-full text-xs">
-                          <tbody>
-                            {rows.map(([k, v]) => (
-                              <tr key={k} className="border-b border-gray-100 dark:border-gray-700">
-                                <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{k}</td>
-                                <td className="py-1.5 text-gray-900 dark:text-gray-100">{v === null || v === undefined ? '-' : String(v)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <tbody>
+                              {rows.map(([k, v]) => (
+                                <tr key={k} className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{k}</td>
+                                  <td className="py-1.5 text-gray-900 dark:text-gray-100">{v === null || v === undefined ? '-' : String(v)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       )
                     }
 
@@ -1547,16 +1551,18 @@ export default function AccurateIntegration() {
                         ['NPWP', d.npwpNo],
                       ]
                       return (
-                        <table className="w-full text-xs">
-                          <tbody>
-                            {rows.map(([k, v]) => (
-                              <tr key={k} className="border-b border-gray-100 dark:border-gray-700">
-                                <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{k}</td>
-                                <td className="py-1.5 text-gray-900 dark:text-gray-100">{v === null || v === undefined ? '-' : String(v)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <tbody>
+                              {rows.map(([k, v]) => (
+                                <tr key={k} className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{k}</td>
+                                  <td className="py-1.5 text-gray-900 dark:text-gray-100">{v === null || v === undefined ? '-' : String(v)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       )
                     }
 
@@ -1569,16 +1575,18 @@ export default function AccurateIntegration() {
                         ['Saldo', d.balance],
                       ]
                       return (
-                        <table className="w-full text-xs">
-                          <tbody>
-                            {rows.map(([k, v]) => (
-                              <tr key={k} className="border-b border-gray-100 dark:border-gray-700">
-                                <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{k}</td>
-                                <td className="py-1.5 text-gray-900 dark:text-gray-100">{v === null || v === undefined ? '-' : String(v)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <tbody>
+                              {rows.map(([k, v]) => (
+                                <tr key={k} className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{k}</td>
+                                  <td className="py-1.5 text-gray-900 dark:text-gray-100">{v === null || v === undefined ? '-' : String(v)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       )
                     }
 
@@ -1588,32 +1596,34 @@ export default function AccurateIntegration() {
                       const detailItems: any[] = d.detailItem || d.detailInvoice || []
                       return (
                         <div className="space-y-3">
-                          <table className="w-full text-xs">
-                            <tbody>
-                              <tr className="border-b border-gray-100 dark:border-gray-700">
-                                <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">No Transaksi</td>
-                                <td className="py-1.5">{d.number || '-'}</td>
-                              </tr>
-                              <tr className="border-b border-gray-100 dark:border-gray-700">
-                                <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Tanggal</td>
-                                <td className="py-1.5">{d.transDate || '-'}</td>
-                              </tr>
-                              <tr className="border-b border-gray-100 dark:border-gray-700">
-                                <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Customer/Vendor</td>
-                                <td className="py-1.5">{partyName || '-'}</td>
-                              </tr>
-                              <tr className="border-b border-gray-100 dark:border-gray-700">
-                                <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Total</td>
-                                <td className="py-1.5 font-semibold tabular-nums">
-                                  {d.totalAmount != null ? Number(d.totalAmount).toLocaleString('id-ID') : '-'}
-                                </td>
-                              </tr>
-                              <tr className="border-b border-gray-100 dark:border-gray-700">
-                                <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Status</td>
-                                <td className="py-1.5">{d.statusName || '-'}</td>
-                              </tr>
-                            </tbody>
-                          </table>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-xs">
+                              <tbody>
+                                <tr className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">No Transaksi</td>
+                                  <td className="py-1.5">{d.number || '-'}</td>
+                                </tr>
+                                <tr className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Tanggal</td>
+                                  <td className="py-1.5">{d.transDate || '-'}</td>
+                                </tr>
+                                <tr className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Customer/Vendor</td>
+                                  <td className="py-1.5">{partyName || '-'}</td>
+                                </tr>
+                                <tr className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Total</td>
+                                  <td className="py-1.5 font-semibold tabular-nums">
+                                    {d.totalAmount != null ? Number(d.totalAmount).toLocaleString('id-ID') : '-'}
+                                  </td>
+                                </tr>
+                                <tr className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">Status</td>
+                                  <td className="py-1.5">{d.statusName || '-'}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
                           {detailItems.length > 0 && (() => {
                             // Field asli Accurate untuk baris item transaksi itu `unitPrice` &
                             // `totalPrice` - BUKAN `subTotal` (field itu tidak pernah ada di
@@ -1622,38 +1632,40 @@ export default function AccurateIntegration() {
                             // sales_order, purchase_invoice, purchase_order - sama semua.
                             const totalLines = detailItems.reduce((sum, it) => sum + (Number(it.totalPrice) || 0), 0)
                             return (
-                              <table className="w-full text-xs">
-                                <thead>
-                                  <tr className="text-left text-gray-500 dark:text-gray-400">
-                                    <th className="py-1.5 pr-4 font-medium">Item</th>
-                                    <th className="py-1.5 pr-4 font-medium">Qty</th>
-                                    <th className="py-1.5 pr-4 font-medium text-right">Harga Satuan</th>
-                                    <th className="py-1.5 font-medium text-right">Subtotal</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {detailItems.map((it: any, i: number) => (
-                                    <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
-                                      <td className="py-1.5 pr-4">{it.item?.name || it.detailName || '-'}</td>
-                                      <td className="py-1.5 pr-4">{it.quantity ?? '-'}</td>
-                                      <td className="py-1.5 pr-4 text-right tabular-nums">
-                                        {it.unitPrice != null ? Number(it.unitPrice).toLocaleString('id-ID') : '-'}
-                                      </td>
-                                      <td className="py-1.5 text-right font-semibold tabular-nums">
-                                        {it.totalPrice != null ? Number(it.totalPrice).toLocaleString('id-ID') : '-'}
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr className="text-left text-gray-500 dark:text-gray-400">
+                                      <th className="py-1.5 pr-4 font-medium">Item</th>
+                                      <th className="py-1.5 pr-4 font-medium">Qty</th>
+                                      <th className="py-1.5 pr-4 font-medium text-right">Harga Satuan</th>
+                                      <th className="py-1.5 font-medium text-right">Subtotal</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {detailItems.map((it: any, i: number) => (
+                                      <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
+                                        <td className="py-1.5 pr-4">{it.item?.name || it.detailName || '-'}</td>
+                                        <td className="py-1.5 pr-4">{it.quantity ?? '-'}</td>
+                                        <td className="py-1.5 pr-4 text-right tabular-nums">
+                                          {it.unitPrice != null ? Number(it.unitPrice).toLocaleString('id-ID') : '-'}
+                                        </td>
+                                        <td className="py-1.5 text-right font-semibold tabular-nums">
+                                          {it.totalPrice != null ? Number(it.totalPrice).toLocaleString('id-ID') : '-'}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                  <tfoot>
+                                    <tr className="border-t-2 border-gray-200 dark:border-gray-700">
+                                      <td className="py-1.5 pr-4 font-semibold" colSpan={3}>Total Baris</td>
+                                      <td className="py-1.5 text-right font-bold tabular-nums text-gray-900 dark:text-white">
+                                        {totalLines.toLocaleString('id-ID')}
                                       </td>
                                     </tr>
-                                  ))}
-                                </tbody>
-                                <tfoot>
-                                  <tr className="border-t-2 border-gray-200 dark:border-gray-700">
-                                    <td className="py-1.5 pr-4 font-semibold" colSpan={3}>Total Baris</td>
-                                    <td className="py-1.5 text-right font-bold tabular-nums text-gray-900 dark:text-white">
-                                      {totalLines.toLocaleString('id-ID')}
-                                    </td>
-                                  </tr>
-                                </tfoot>
-                              </table>
+                                  </tfoot>
+                                </table>
+                              </div>
                             )
                           })()}
                         </div>
@@ -1668,16 +1680,18 @@ export default function AccurateIntegration() {
                       ['Jumlah', d.amount || d.totalAmount],
                     ]
                     return (
-                      <table className="w-full text-xs">
-                        <tbody>
-                          {rows.map(([k, v]) => (
-                            <tr key={k} className="border-b border-gray-100 dark:border-gray-700">
-                              <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{k}</td>
-                              <td className="py-1.5 text-gray-900 dark:text-gray-100">{v === null || v === undefined ? '-' : String(v)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <tbody>
+                            {rows.map(([k, v]) => (
+                              <tr key={k} className="border-b border-gray-100 dark:border-gray-700">
+                                <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{k}</td>
+                                <td className="py-1.5 text-gray-900 dark:text-gray-100">{v === null || v === undefined ? '-' : String(v)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     )
                   })()}
                 </div>
@@ -1733,22 +1747,10 @@ export default function AccurateIntegration() {
                     })).filter((u) => u.name)
                     return (
                       <div className="space-y-4">
-                        <table className="w-full text-xs">
-                          <tbody>
-                            {generalRows.map(([k, v]) => (
-                              <tr key={k} className="border-b border-gray-100 dark:border-gray-700">
-                                <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{k}</td>
-                                <td className="py-1.5 text-gray-900 dark:text-gray-100">{v === null || v === undefined ? '-' : String(v)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-
-                        <div>
-                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Spesifikasi Packaging</div>
+                        <div className="overflow-x-auto">
                           <table className="w-full text-xs">
                             <tbody>
-                              {packagingRows.map(([k, v]) => (
+                              {generalRows.map(([k, v]) => (
                                 <tr key={k} className="border-b border-gray-100 dark:border-gray-700">
                                   <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{k}</td>
                                   <td className="py-1.5 text-gray-900 dark:text-gray-100">{v === null || v === undefined ? '-' : String(v)}</td>
@@ -1759,26 +1761,44 @@ export default function AccurateIntegration() {
                         </div>
 
                         <div>
-                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Konversi Satuan Kemasan</div>
-                          {unitLevels.length === 0 ? (
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Tidak ada konversi multi-unit untuk item ini.</div>
-                          ) : (
+                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Spesifikasi Packaging</div>
+                          <div className="overflow-x-auto">
                             <table className="w-full text-xs">
-                              <thead>
-                                <tr className="text-left text-gray-500 dark:text-gray-400">
-                                  <th className="py-1.5 pr-4 font-medium">Satuan</th>
-                                  <th className="py-1.5 font-medium">Rasio ke {di.unit1Name || 'Satuan Dasar'}</th>
-                                </tr>
-                              </thead>
                               <tbody>
-                                {unitLevels.map((u) => (
-                                  <tr key={u.name} className="border-b border-gray-100 dark:border-gray-700">
-                                    <td className="py-1.5 pr-4">{u.name}</td>
-                                    <td className="py-1.5">1 {u.name} = {u.ratio} {di.unit1Name || ''}</td>
+                                {packagingRows.map(([k, v]) => (
+                                  <tr key={k} className="border-b border-gray-100 dark:border-gray-700">
+                                    <td className="py-1.5 pr-4 font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{k}</td>
+                                    <td className="py-1.5 text-gray-900 dark:text-gray-100">{v === null || v === undefined ? '-' : String(v)}</td>
                                   </tr>
                                 ))}
                               </tbody>
                             </table>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Konversi Satuan Kemasan</div>
+                          {unitLevels.length === 0 ? (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Tidak ada konversi multi-unit untuk item ini.</div>
+                          ) : (
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-xs">
+                                <thead>
+                                  <tr className="text-left text-gray-500 dark:text-gray-400">
+                                    <th className="py-1.5 pr-4 font-medium">Satuan</th>
+                                    <th className="py-1.5 font-medium">Rasio ke {di.unit1Name || 'Satuan Dasar'}</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {unitLevels.map((u) => (
+                                    <tr key={u.name} className="border-b border-gray-100 dark:border-gray-700">
+                                      <td className="py-1.5 pr-4">{u.name}</td>
+                                      <td className="py-1.5">1 {u.name} = {u.ratio} {di.unit1Name || ''}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -1860,32 +1880,34 @@ export default function AccurateIntegration() {
               </p>
             ) : (
               <div className="max-h-80 overflow-y-auto">
-                <table className="w-full text-xs">
-                  <thead className="sticky top-0 bg-white dark:bg-gray-800">
-                    <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-gray-500 dark:text-gray-400">
-                      <th className="py-1.5 pr-2">Nomor EJO</th>
-                      <th className="py-1.5 pr-2">Item</th>
-                      <th className="py-1.5 pr-2">Qty</th>
-                      <th className="py-1.5 pr-2">Status</th>
-                      <th className="py-1.5 pr-2">Tanggal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredEjoList.slice(0, 200).map((w: any) => (
-                      <tr
-                        key={w.accurate_id}
-                        onClick={() => handleSelectEjoFromList(w.number, w.accurate_id)}
-                        className="border-b border-gray-100 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer"
-                      >
-                        <td className="py-1.5 pr-2 font-mono text-blue-600 dark:text-blue-400">{w.number}</td>
-                        <td className="py-1.5 pr-2 text-gray-700 dark:text-gray-300">{w.item_name}</td>
-                        <td className="py-1.5 pr-2 text-gray-500 dark:text-gray-400">{w.quantity_real} {w.unit}</td>
-                        <td className="py-1.5 pr-2 text-gray-500 dark:text-gray-400">{w.status}</td>
-                        <td className="py-1.5 pr-2 text-gray-400">{w.final_date}</td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="sticky top-0 bg-white dark:bg-gray-800">
+                      <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-gray-500 dark:text-gray-400">
+                        <th className="py-1.5 pr-2">Nomor EJO</th>
+                        <th className="py-1.5 pr-2">Item</th>
+                        <th className="py-1.5 pr-2">Qty</th>
+                        <th className="py-1.5 pr-2">Status</th>
+                        <th className="py-1.5 pr-2">Tanggal</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {filteredEjoList.slice(0, 200).map((w: any) => (
+                        <tr
+                          key={w.accurate_id}
+                          onClick={() => handleSelectEjoFromList(w.number, w.accurate_id)}
+                          className="border-b border-gray-100 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer"
+                        >
+                          <td className="py-1.5 pr-2 font-mono text-blue-600 dark:text-blue-400">{w.number}</td>
+                          <td className="py-1.5 pr-2 text-gray-700 dark:text-gray-300">{w.item_name}</td>
+                          <td className="py-1.5 pr-2 text-gray-500 dark:text-gray-400">{w.quantity_real} {w.unit}</td>
+                          <td className="py-1.5 pr-2 text-gray-500 dark:text-gray-400">{w.status}</td>
+                          <td className="py-1.5 pr-2 text-gray-400">{w.final_date}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>
@@ -2078,7 +2100,7 @@ export default function AccurateIntegration() {
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       Cocok dengan WO Internal ERP: <span className="font-mono">{ejoResult.smith_match.wo_number}</span>
                     </div>
-                    <div className="grid grid-cols-3 gap-3 text-sm p-3 rounded-lg bg-gray-50 dark:bg-gray-900">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm p-3 rounded-lg bg-gray-50 dark:bg-gray-900">
                       <SummaryField label="Qty Accurate" value={`${ejoResult.diff.output_quantity.accurate ?? '-'}`} />
                       <SummaryField label="Qty Internal ERP" value={`${ejoResult.diff.output_quantity.smith ?? '-'}`} />
                       <SummaryField
@@ -2452,52 +2474,54 @@ export default function AccurateIntegration() {
               <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada data. Klik "Sinkronkan Histori".</p>
             ) : (
               <div className="max-h-[32rem] overflow-y-auto">
-                <table className="w-full text-xs">
-                  <thead className="sticky top-0 bg-white dark:bg-gray-800">
-                    <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-gray-500 dark:text-gray-400">
-                      {([
-                        ['number', 'Nomor'],
-                        ['transfer_type', 'Tipe'],
-                        ['from_warehouse_name', 'Dari'],
-                        ['to_warehouse_name', 'Ke'],
-                        ['item_count', 'Item'],
-                        ['trans_date', 'Tanggal'],
-                      ] as const).map(([col, label]) => (
-                        <th
-                          key={col}
-                          onClick={() => handleTransferSort(col)}
-                          className="py-1.5 pr-2 cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200"
-                        >
-                          {label}{transferSortCol === col ? (transferSortAsc ? ' ▲' : ' ▼') : ''}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedTransferList.map((t: any) => (
-                      <tr
-                        key={t.id}
-                        onClick={() => setTransferDetailId(t.id)}
-                        className="border-b border-gray-100 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer"
-                      >
-                        <td className="py-1.5 pr-2 font-mono text-blue-600 dark:text-blue-400">{t.number}</td>
-                        <td className="py-1.5 pr-2">
-                          <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                            t.transfer_type === 'TRANSFER_IN'
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-                              : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-                          }`}>
-                            {t.transfer_type === 'TRANSFER_IN' ? 'MASUK' : 'KELUAR'}
-                          </span>
-                        </td>
-                        <td className="py-1.5 pr-2 text-gray-600 dark:text-gray-400">{t.from_warehouse_name}</td>
-                        <td className="py-1.5 pr-2 text-gray-600 dark:text-gray-400">{t.to_warehouse_name}</td>
-                        <td className="py-1.5 pr-2 text-gray-500 dark:text-gray-400">{t.item_count}</td>
-                        <td className="py-1.5 pr-2 text-gray-400">{t.trans_date}</td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="sticky top-0 bg-white dark:bg-gray-800">
+                      <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-gray-500 dark:text-gray-400">
+                        {([
+                          ['number', 'Nomor'],
+                          ['transfer_type', 'Tipe'],
+                          ['from_warehouse_name', 'Dari'],
+                          ['to_warehouse_name', 'Ke'],
+                          ['item_count', 'Item'],
+                          ['trans_date', 'Tanggal'],
+                        ] as const).map(([col, label]) => (
+                          <th
+                            key={col}
+                            onClick={() => handleTransferSort(col)}
+                            className="py-1.5 pr-2 cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200"
+                          >
+                            {label}{transferSortCol === col ? (transferSortAsc ? ' ▲' : ' ▼') : ''}
+                          </th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {sortedTransferList.map((t: any) => (
+                        <tr
+                          key={t.id}
+                          onClick={() => setTransferDetailId(t.id)}
+                          className="border-b border-gray-100 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer"
+                        >
+                          <td className="py-1.5 pr-2 font-mono text-blue-600 dark:text-blue-400">{t.number}</td>
+                          <td className="py-1.5 pr-2">
+                            <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                              t.transfer_type === 'TRANSFER_IN'
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                                : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                            }`}>
+                              {t.transfer_type === 'TRANSFER_IN' ? 'MASUK' : 'KELUAR'}
+                            </span>
+                          </td>
+                          <td className="py-1.5 pr-2 text-gray-600 dark:text-gray-400">{t.from_warehouse_name}</td>
+                          <td className="py-1.5 pr-2 text-gray-600 dark:text-gray-400">{t.to_warehouse_name}</td>
+                          <td className="py-1.5 pr-2 text-gray-500 dark:text-gray-400">{t.item_count}</td>
+                          <td className="py-1.5 pr-2 text-gray-400">{t.trans_date}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>

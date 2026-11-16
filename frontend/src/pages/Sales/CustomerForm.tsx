@@ -136,7 +136,7 @@ const CustomerForm = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/sales/customers')}
@@ -436,7 +436,7 @@ const CustomerForm = () => {
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-4 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/sales/customers')}

@@ -210,7 +210,7 @@ const [selectedCategory, setSelectedCategory] = useState('all')
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Reports</h1>
           <p className="text-gray-600 dark:text-gray-300">Generate insights and track performance across all operations</p>

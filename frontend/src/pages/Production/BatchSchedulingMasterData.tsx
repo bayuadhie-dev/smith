@@ -171,7 +171,7 @@ const OverrideGridTab: React.FC = () => {
         Grid ini otomatis diisi dari hasil Global+Exception sebagai starting point. Ubah sel yang perlu — hanya sel yang berubah yang tersimpan sebagai override.
       </p>
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => setWeekStart((d) => { const n = new Date(d); n.setDate(n.getDate() - 7); return n; })} className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg">
             <ChevronLeft className="w-4 h-4" />
           </button>

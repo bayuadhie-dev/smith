@@ -282,7 +282,7 @@ const EmployeeExpenseForm: React.FC = () => {
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 Expense Date *
@@ -347,7 +347,7 @@ const EmployeeExpenseForm: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 Amount *
@@ -403,7 +403,7 @@ const EmployeeExpenseForm: React.FC = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 Reference Number
@@ -430,7 +430,7 @@ const EmployeeExpenseForm: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 Cost Center
@@ -541,7 +541,7 @@ const EmployeeExpenseForm: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-6 flex justify-end gap-3 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/finance/expenses')}

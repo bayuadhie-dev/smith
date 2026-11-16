@@ -211,7 +211,7 @@ export default function WorkOrderBreakdown() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center space-x-4">
           <Link
             to={`/app/production/work-orders/${id}`}
@@ -313,36 +313,38 @@ export default function WorkOrderBreakdown() {
                   {/* Expanded Details */}
                   {isExpanded && cat.items.length > 0 && (
                     <div className="p-4 bg-white dark:bg-gray-800 border-t">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="text-left text-gray-500 dark:text-gray-400">
-                            <th className="pb-2">Alasan</th>
-                            <th className="pb-2 text-center">Tanggal</th>
-                            <th className="pb-2 text-center">Shift</th>
-                            <th className="pb-2 text-right">Durasi</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {cat.items.map((item, idx) => (
-                            <tr key={idx} className="border-t border-gray-100 dark:border-gray-800">
-                              <td className="py-2 text-gray-700 dark:text-gray-200">{item.reason}</td>
-                              <td className="py-2 text-center text-gray-600 dark:text-gray-300">
-                                {new Date(item.date).toLocaleDateString('id-ID')}
-                              </td>
-                              <td className="py-2 text-center text-gray-600 dark:text-gray-300">{item.shift}</td>
-                              <td className={`py-2 text-right font-medium ${cat.color}`}>
-                                {item.minutes} menit
-                              </td>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-left text-gray-500 dark:text-gray-400">
+                              <th className="pb-2">Alasan</th>
+                              <th className="pb-2 text-center">Tanggal</th>
+                              <th className="pb-2 text-center">Shift</th>
+                              <th className="pb-2 text-right">Durasi</th>
                             </tr>
-                          ))}
-                        </tbody>
-                        <tfoot>
-                          <tr className="border-t-2 border-gray-200 dark:border-gray-700 font-semibold">
-                            <td className="pt-2" colSpan={3}>Total {cat.label}</td>
-                            <td className={`pt-2 text-right ${cat.color}`}>{cat.totalMinutes} menit</td>
-                          </tr>
-                        </tfoot>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {cat.items.map((item, idx) => (
+                              <tr key={idx} className="border-t border-gray-100 dark:border-gray-800">
+                                <td className="py-2 text-gray-700 dark:text-gray-200">{item.reason}</td>
+                                <td className="py-2 text-center text-gray-600 dark:text-gray-300">
+                                  {new Date(item.date).toLocaleDateString('id-ID')}
+                                </td>
+                                <td className="py-2 text-center text-gray-600 dark:text-gray-300">{item.shift}</td>
+                                <td className={`py-2 text-right font-medium ${cat.color}`}>
+                                  {item.minutes} menit
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot>
+                            <tr className="border-t-2 border-gray-200 dark:border-gray-700 font-semibold">
+                              <td className="pt-2" colSpan={3}>Total {cat.label}</td>
+                              <td className={`pt-2 text-right ${cat.color}`}>{cat.totalMinutes} menit</td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
                     </div>
                   )}
                 </div>

@@ -511,7 +511,7 @@ export default function PurchaseInvoiceForm() {
           </div>
         )}
 
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 flex-wrap">
           <Link to="/app/purchasing/invoices" className="btn-secondary">Batal</Link>
           <button type="submit" disabled={saving || (!po && !grn)} className="btn-primary disabled:opacity-50">{saving ? 'Menyimpan...' : (editId ? 'Simpan Perubahan' : 'Simpan Faktur')}</button>
         </div>

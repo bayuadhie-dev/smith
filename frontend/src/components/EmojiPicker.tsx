@@ -189,7 +189,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
         {search ? (
           <div>
             <p className="text-[11px] text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1 px-1">Hasil Pencarian</p>
-            <div className="grid grid-cols-8 gap-0.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-8 gap-0.5">
               {EMOJI_CATEGORIES.flatMap(c => c.emojis)
                 .filter((_, i) => i < 80)
                 .map((emoji, i) => (
@@ -208,7 +208,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
             .map(cat => (
               <div key={cat.id}>
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-1 px-1">{cat.name}</p>
-                <div className="grid grid-cols-8 gap-0.5 mb-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-8 gap-0.5 mb-3">
                   {cat.emojis.map((emoji, i) => (
                     <button key={i} onClick={() => handleSelect(emoji)}
                       className="text-2xl p-1 rounded hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/10 transition-colors leading-none"

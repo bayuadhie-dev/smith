@@ -164,12 +164,12 @@ const WeeklyController: React.FC = () => {
   return (
     <div className="p-6 bg-slate-50 min-h-screen dark:bg-slate-900">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center flex-wrap justify-between mb-6 gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Controller Mingguan</h1>
           <p className="text-slate-500 dark:text-slate-400">Ringkasan efisiensi mingguan per mesin</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => navigate('/app/production/controller')}
             className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 dark:text-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600"
@@ -215,7 +215,7 @@ const WeeklyController: React.FC = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">Total Mesin Aktif</p>
           <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{totalMachines}</p>
@@ -243,7 +243,7 @@ const WeeklyController: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-6 flex-wrap">
         <button
           onClick={() => setActiveTab('machines')}
           className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'machines' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-gray-800 dark:hover:bg-slate-800 dark:text-slate-300'}`}
@@ -451,24 +451,26 @@ const WeeklyController: React.FC = () => {
               <p className="text-sm text-slate-500 dark:text-slate-400">Total {allDowntime.length} jenis, {allDowntime.reduce((sum, d) => sum + d.duration, 0).toLocaleString()} menit</p>
             </div>
             <div className="max-h-96 overflow-y-auto">
-              <table className="w-full">
-                <thead className="bg-slate-50 sticky top-0 dark:bg-slate-900">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Alasan</th>
-                    <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Durasi</th>
-                    <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Frekuensi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {allDowntime.map((dt) => (
-                    <tr key={dt.reason} className="hover:bg-slate-50 dark:hover:bg-slate-800">
-                      <td className="px-4 py-2 text-sm text-slate-800 dark:text-slate-100">{dt.reason}</td>
-                      <td className="px-4 py-2 text-right text-sm font-medium text-red-600 dark:text-red-400">{dt.duration} menit</td>
-                      <td className="px-4 py-2 text-right text-sm text-slate-500 dark:text-slate-400">{dt.frequency}x</td>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50 sticky top-0 dark:bg-slate-900">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Alasan</th>
+                      <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Durasi</th>
+                      <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Frekuensi</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {allDowntime.map((dt) => (
+                      <tr key={dt.reason} className="hover:bg-slate-50 dark:hover:bg-slate-800">
+                        <td className="px-4 py-2 text-sm text-slate-800 dark:text-slate-100">{dt.reason}</td>
+                        <td className="px-4 py-2 text-right text-sm font-medium text-red-600 dark:text-red-400">{dt.duration} menit</td>
+                        <td className="px-4 py-2 text-right text-sm text-slate-500 dark:text-slate-400">{dt.frequency}x</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>

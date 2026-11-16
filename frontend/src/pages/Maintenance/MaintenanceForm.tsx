@@ -345,16 +345,18 @@ const MaintenanceForm: React.FC = () => {
             {formData.tasks.length === 0 ? (
               <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Belum ada langkah. Pilih "Tambah langkah" untuk merinci pekerjaan.</p>
             ) : (
-              <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                {formData.tasks.map((task, index) => (
-                  <div key={index} className="grid grid-cols-12 items-center gap-2 p-3">
-                    <span className="col-span-12 text-xs font-medium text-gray-500 md:col-span-1 dark:text-gray-400">#{index + 1}</span>
-                    <input type="text" placeholder="Nama langkah" value={task.task_name} onChange={(e) => updateTask(index, 'task_name', e.target.value)} className={`${inputCls} col-span-12 md:col-span-4`} />
-                    <input type="text" placeholder="Keterangan" value={task.description} onChange={(e) => updateTask(index, 'description', e.target.value)} className={`${inputCls} col-span-8 md:col-span-4`} />
-                    <NumberInput placeholder="Jam" value={task.estimated_time_hours} onChange={(e) => updateTask(index, 'estimated_time_hours', parseFloat(e.target.value) || 0)} min="0" step="0.5" className={`${inputCls} col-span-3 text-right md:col-span-2`} />
-                    <button type="button" onClick={() => removeTask(index)} className="col-span-1 text-gray-400 hover:text-red-600" title="Hapus langkah"><Trash2 className="mx-auto h-4 w-4" /></button>
-                  </div>
-                ))}
+              <div className="overflow-x-auto">
+                <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {formData.tasks.map((task, index) => (
+                    <div key={index} className="grid min-w-[760px] grid-cols-12 items-center gap-2 p-3">
+                      <span className="col-span-12 text-xs font-medium text-gray-500 md:col-span-1 dark:text-gray-400">#{index + 1}</span>
+                      <input type="text" placeholder="Nama langkah" value={task.task_name} onChange={(e) => updateTask(index, 'task_name', e.target.value)} className={`${inputCls} col-span-12 md:col-span-4`} />
+                      <input type="text" placeholder="Keterangan" value={task.description} onChange={(e) => updateTask(index, 'description', e.target.value)} className={`${inputCls} col-span-8 md:col-span-4`} />
+                      <NumberInput placeholder="Jam" value={task.estimated_time_hours} onChange={(e) => updateTask(index, 'estimated_time_hours', parseFloat(e.target.value) || 0)} min="0" step="0.5" className={`${inputCls} col-span-3 text-right md:col-span-2`} />
+                      <button type="button" onClick={() => removeTask(index)} className="col-span-1 text-gray-400 hover:text-red-600" title="Hapus langkah"><Trash2 className="mx-auto h-4 w-4" /></button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </Panel>
@@ -366,34 +368,36 @@ const MaintenanceForm: React.FC = () => {
             {formData.required_parts.length === 0 ? (
               <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Belum ada sparepart. Pilih "Tambah sparepart" untuk mencatat kebutuhannya.</p>
             ) : (
-              <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                {formData.required_parts.map((part, index) => (
-                  <div key={index} className="grid grid-cols-12 items-center gap-2 p-3">
-                    <div className="col-span-12 md:col-span-5">
-                      <SearchableSelect
-                        options={spareParts.map((sp) => ({ id: sp.id, code: sp.part_number, name: sp.part_name }))}
-                        value={part.spare_part_id || null}
-                        onChange={(v) => {
-                          const sp = spareParts.find((x) => x.id === Number(v));
-                          setFormData(prev => ({
-                            ...prev,
-                            required_parts: prev.required_parts.map((p, i) => i === index
-                              ? { ...p, spare_part_id: sp ? sp.id : null, part_name: sp ? sp.part_name : '', unit_cost: sp?.unit_cost ?? p.unit_cost }
-                              : p)
-                          }));
-                        }}
-                        placeholder="Pilih sparepart dari gudang sparepart"
-                      />
-                      {part.spare_part_id ? (() => {
-                        const sp = spareParts.find((x) => x.id === part.spare_part_id);
-                        return sp ? <p className={`mt-1 text-xs ${sp.current_stock < part.quantity ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>Stok gudang: {sp.current_stock.toLocaleString('id-ID')} {sp.uom}{sp.current_stock < part.quantity ? ' (kurang)' : ''}</p> : null;
-                      })() : null}
+              <div className="overflow-x-auto">
+                <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {formData.required_parts.map((part, index) => (
+                    <div key={index} className="grid min-w-[760px] grid-cols-12 items-center gap-2 p-3">
+                      <div className="col-span-12 md:col-span-5">
+                        <SearchableSelect
+                          options={spareParts.map((sp) => ({ id: sp.id, code: sp.part_number, name: sp.part_name }))}
+                          value={part.spare_part_id || null}
+                          onChange={(v) => {
+                            const sp = spareParts.find((x) => x.id === Number(v));
+                            setFormData(prev => ({
+                              ...prev,
+                              required_parts: prev.required_parts.map((p, i) => i === index
+                                ? { ...p, spare_part_id: sp ? sp.id : null, part_name: sp ? sp.part_name : '', unit_cost: sp?.unit_cost ?? p.unit_cost }
+                                : p)
+                            }));
+                          }}
+                          placeholder="Pilih sparepart dari gudang sparepart"
+                        />
+                        {part.spare_part_id ? (() => {
+                          const sp = spareParts.find((x) => x.id === part.spare_part_id);
+                          return sp ? <p className={`mt-1 text-xs ${sp.current_stock < part.quantity ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>Stok gudang: {sp.current_stock.toLocaleString('id-ID')} {sp.uom}{sp.current_stock < part.quantity ? ' (kurang)' : ''}</p> : null;
+                        })() : null}
+                      </div>
+                      <NumberInput placeholder="Jumlah" value={part.quantity} onChange={(e) => updatePart(index, 'quantity', parseFloat(e.target.value) || 0)} min="1" className={`${inputCls} col-span-5 text-right md:col-span-2`} />
+                      <NumberInput currency placeholder="Harga satuan" value={part.unit_cost} onChange={(e) => updatePart(index, 'unit_cost', parseFloat(e.target.value) || 0)} min="0" className={`${inputCls} col-span-6 text-right md:col-span-4`} />
+                      <button type="button" onClick={() => removePart(index)} className="col-span-1 text-gray-400 hover:text-red-600" title="Hapus sparepart"><Trash2 className="mx-auto h-4 w-4" /></button>
                     </div>
-                    <NumberInput placeholder="Jumlah" value={part.quantity} onChange={(e) => updatePart(index, 'quantity', parseFloat(e.target.value) || 0)} min="1" className={`${inputCls} col-span-5 text-right md:col-span-2`} />
-                    <NumberInput currency placeholder="Harga satuan" value={part.unit_cost} onChange={(e) => updatePart(index, 'unit_cost', parseFloat(e.target.value) || 0)} min="0" className={`${inputCls} col-span-6 text-right md:col-span-4`} />
-                    <button type="button" onClick={() => removePart(index)} className="col-span-1 text-gray-400 hover:text-red-600" title="Hapus sparepart"><Trash2 className="mx-auto h-4 w-4" /></button>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </Panel>

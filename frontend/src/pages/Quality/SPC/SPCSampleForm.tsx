@@ -147,7 +147,7 @@ export default function SPCSampleForm({ onClose, onSuccess }: Props) {
   if (violations.length > 0) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
           <div className="flex items-center gap-3 mb-4">
             <ExclamationTriangleIcon className="h-8 w-8 text-red-500 flex-shrink-0" />
             <div>
@@ -195,7 +195,7 @@ export default function SPCSampleForm({ onClose, onSuccess }: Props) {
           {/* Pilih SPK */}
           <div>
             {/* Filter bar */}
-            <div className="grid grid-cols-3 gap-2 mb-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-3">
               <input
                 type="text"
                 placeholder="Cari produk..."
@@ -261,7 +261,7 @@ export default function SPCSampleForm({ onClose, onSuccess }: Props) {
           )}
 
           {/* Sample Info */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Sample</label>
               <input
@@ -413,7 +413,7 @@ export default function SPCSampleForm({ onClose, onSuccess }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700 flex-wrap">
           <button
             onClick={onClose}
             className="flex-1 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"

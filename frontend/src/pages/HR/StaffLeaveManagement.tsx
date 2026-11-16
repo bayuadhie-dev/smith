@@ -285,7 +285,7 @@ const StaffLeaveManagement: React.FC = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <FileText className="h-6 w-6" />
@@ -297,7 +297,7 @@ const StaffLeaveManagement: React.FC = () => {
             </p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => { setShowSubmitModal(true); fetchLeaveBalance(); }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg"
@@ -373,106 +373,108 @@ const StaffLeaveManagement: React.FC = () => {
             Tidak ada data pengajuan
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <SortTh tools={tools} col="request_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">No. Pengajuan</SortTh>
-                <SortTh tools={tools} col="staff_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Nama</SortTh>
-                <SortTh tools={tools} col="leave_type" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tipe</SortTh>
-                <SortTh tools={tools} col="start_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</SortTh>
-                <SortTh tools={tools} col="total_days" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Durasi</SortTh>
-                <SortTh tools={tools} col="manager" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Persetujuan Manager</SortTh>
-                <SortTh tools={tools} col="status" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Status</SortTh>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {tools.rows.map((req) => (
-                <tr key={req.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{req.request_number}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(req.created_at).toLocaleDateString('id-ID')}</p>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{req.staff_name}</p>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full ${getLeaveTypeBadge(req.leave_type)}`}>
-                      {req.leave_type_label}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(req.start_date).toLocaleDateString('id-ID')} - {new Date(req.end_date).toLocaleDateString('id-ID')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {req.total_days} hari
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {req.manager_status === 'skipped' ? (
-                      <span className="text-xs text-gray-400">-</span>
-                    ) : req.manager_status === 'pending' ? (
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
-                          Menunggu {req.required_manager_name || 'Manager'}
-                        </span>
-                        <button
-                          onClick={() => handleManagerApprove(req.id, 'approved')}
-                          className="p-1 text-green-600 hover:bg-green-50 rounded dark:text-green-400"
-                          title="Setujui (sebagai manager)"
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleManagerApprove(req.id, 'rejected')}
-                          className="p-1 text-red-600 hover:bg-red-50 rounded dark:text-red-400"
-                          title="Tolak (sebagai manager)"
-                        >
-                          <XCircle className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <span className={`px-2 py-1 text-xs rounded-full ${req.manager_status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'}`}>
-                        {req.manager_status === 'approved' ? 'Disetujui manager' : 'Ditolak manager'}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(req.status)}`}>
-                      {req.status_label}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {req.status === 'pending' ? (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleApprove(req.id)}
-                          disabled={req.manager_status === 'pending'}
-                          title={req.manager_status === 'pending' ? 'Menunggu approval manager terlebih dahulu' : 'Setujui'}
-                          className="p-1 text-green-600 hover:bg-green-50 rounded disabled:opacity-30 disabled:cursor-not-allowed dark:text-green-400"
-                        >
-                          <CheckCircle className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setRejectingId(req.id);
-                            setShowRejectModal(true);
-                          }}
-                          className="p-1 text-red-600 hover:bg-red-50 rounded dark:text-red-400"
-                          title="Tolak"
-                        >
-                          <XCircle className="h-5 w-5" />
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-gray-400">
-                        {req.approver_name && `Oleh: ${req.approver_name}`}
-                      </span>
-                    )}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <SortTh tools={tools} col="request_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">No. Pengajuan</SortTh>
+                  <SortTh tools={tools} col="staff_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Nama</SortTh>
+                  <SortTh tools={tools} col="leave_type" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tipe</SortTh>
+                  <SortTh tools={tools} col="start_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</SortTh>
+                  <SortTh tools={tools} col="total_days" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Durasi</SortTh>
+                  <SortTh tools={tools} col="manager" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Persetujuan Manager</SortTh>
+                  <SortTh tools={tools} col="status" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Status</SortTh>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {tools.rows.map((req) => (
+                  <tr key={req.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{req.request_number}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(req.created_at).toLocaleDateString('id-ID')}</p>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{req.staff_name}</p>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs rounded-full ${getLeaveTypeBadge(req.leave_type)}`}>
+                        {req.leave_type_label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {new Date(req.start_date).toLocaleDateString('id-ID')} - {new Date(req.end_date).toLocaleDateString('id-ID')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {req.total_days} hari
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {req.manager_status === 'skipped' ? (
+                        <span className="text-xs text-gray-400">-</span>
+                      ) : req.manager_status === 'pending' ? (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                            Menunggu {req.required_manager_name || 'Manager'}
+                          </span>
+                          <button
+                            onClick={() => handleManagerApprove(req.id, 'approved')}
+                            className="p-1 text-green-600 hover:bg-green-50 rounded dark:text-green-400"
+                            title="Setujui (sebagai manager)"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleManagerApprove(req.id, 'rejected')}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded dark:text-red-400"
+                            title="Tolak (sebagai manager)"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span className={`px-2 py-1 text-xs rounded-full ${req.manager_status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'}`}>
+                          {req.manager_status === 'approved' ? 'Disetujui manager' : 'Ditolak manager'}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(req.status)}`}>
+                        {req.status_label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {req.status === 'pending' ? (
+                        <div className="flex gap-2 flex-wrap">
+                          <button
+                            onClick={() => handleApprove(req.id)}
+                            disabled={req.manager_status === 'pending'}
+                            title={req.manager_status === 'pending' ? 'Menunggu approval manager terlebih dahulu' : 'Setujui'}
+                            className="p-1 text-green-600 hover:bg-green-50 rounded disabled:opacity-30 disabled:cursor-not-allowed dark:text-green-400"
+                          >
+                            <CheckCircle className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setRejectingId(req.id);
+                              setShowRejectModal(true);
+                            }}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded dark:text-red-400"
+                            title="Tolak"
+                          >
+                            <XCircle className="h-5 w-5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">
+                          {req.approver_name && `Oleh: ${req.approver_name}`}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {/* Pagination */}
@@ -481,7 +483,7 @@ const StaffLeaveManagement: React.FC = () => {
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Halaman {pagination.page} dari {pagination.pages} ({pagination.total} data)
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
                 disabled={pagination.page === 1}
@@ -504,7 +506,7 @@ const StaffLeaveManagement: React.FC = () => {
       {/* Reject Modal */}
       {showRejectModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Tolak Pengajuan</h3>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Alasan Penolakan</label>
@@ -516,7 +518,7 @@ const StaffLeaveManagement: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500"
               />
             </div>
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 flex-wrap">
               <button
                 onClick={() => {
                   setShowRejectModal(false);
@@ -541,7 +543,7 @@ const StaffLeaveManagement: React.FC = () => {
       {/* Ajukan Cuti Modal (ESS self-submit) */}
       {showSubmitModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Ajukan Cuti/Izin</h3>
             {submitError && (
               <div className="mb-3 px-3 py-2 bg-red-50 text-red-700 text-sm rounded-lg dark:bg-red-900/20 dark:text-red-300">{submitError}</div>
@@ -567,7 +569,7 @@ const StaffLeaveManagement: React.FC = () => {
                   </p>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tanggal Mulai</label>
                   <input
@@ -597,7 +599,7 @@ const StaffLeaveManagement: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-4">
+            <div className="flex justify-end gap-2 mt-4 flex-wrap">
               <button
                 onClick={() => { setShowSubmitModal(false); setSubmitError(''); }}
                 className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg dark:text-gray-300"
@@ -684,7 +686,7 @@ const StaffLeaveManagement: React.FC = () => {
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Latitude</label>
                       <input

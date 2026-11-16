@@ -196,10 +196,10 @@ export default function MasterDataAccountsTab() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="card w-full max-w-lg p-6 space-y-4">
+          <div className="card w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-bold">{editingCode ? 'Edit Akun' : 'Tambah Akun'}</h2>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm mb-1">Kode Akun</label>
                 <input
@@ -268,7 +268,7 @@ export default function MasterDataAccountsTab() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-2 pt-2 flex-wrap">
               <button className="btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
               <button className="btn-primary" onClick={handleSave}>Simpan</button>
             </div>

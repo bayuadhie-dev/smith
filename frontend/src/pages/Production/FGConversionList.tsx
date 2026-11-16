@@ -165,7 +165,7 @@ const FGConversionList: React.FC = () => {
   return (
     <div className="p-6 space-y-6 h-full overflow-auto">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Konversi Barang Jadi (FG)</h1>
           <p className="text-gray-600 dark:text-gray-300">Kelola proses konversi dari WIP menjadi Finish Good</p>
@@ -280,82 +280,84 @@ const FGConversionList: React.FC = () => {
               <p className="text-gray-500 dark:text-gray-400">{tools.total === 0 ? 'Belum ada data konversi' : 'Tidak ada konversi yang cocok'}</p>
             </div>
           ) : (
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
-                <tr>
-                  <SortTh tools={tools} col="conversion_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Konversi</SortTh>
-                  <SortTh tools={tools} col="wo_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SPK</SortTh>
-                  <SortTh tools={tools} col="batch_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Batch</SortTh>
-                  <SortTh tools={tools} col="qc_status" align="center" className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status QC</SortTh>
-                  <SortTh tools={tools} col="total_wip_qty" align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty WIP</SortTh>
-                  <SortTh tools={tools} col="total_fg_qty" align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty FG</SortTh>
-                  <SortTh tools={tools} col="total_loss_qty" align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Loss</SortTh>
-                  <SortTh tools={tools} col="status" align="center" className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
-                  <SortTh tools={tools} col="conversion_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</SortTh>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {tools.rows.map((conversion) => (
-                  <tr key={conversion.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Link
-                        to={`/app/production/fg-conversion/${conversion.id}`}
-                        className="font-medium text-primary-600 hover:text-primary-800 hover:underline dark:text-primary-400"
-                      >
-                        {conversion.conversion_number}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {conversion.wo_number}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      <div className="flex items-center gap-2">
-                        {conversion.batch_number}
-                        {!conversion.batch_validated && (
-                          <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500" title="Batch belum divalidasi" />
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      {getQCStatusBadge(conversion.qc_status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
-                      {conversion.total_wip_qty.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600 font-medium dark:text-green-400">
-                      {conversion.total_fg_qty.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-red-600 dark:text-red-400">
-                      {conversion.total_loss_qty.toLocaleString()}
-                      {conversion.total_wip_qty > 0 && (
-                        <span className="text-xs ml-1">
-                          ({((conversion.total_loss_qty / conversion.total_wip_qty) * 100).toFixed(1)}%)
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      {getStatusBadge(conversion.status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      <div>{formatDate(conversion.conversion_date)}</div>
-                      {conversion.completed_at && (
-                        <div className="text-xs">Selesai: {formatDate(conversion.completed_at)}</div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <Link
-                        to={`/app/production/fg-conversion/${conversion.id}`}
-                        className="inline-flex items-center gap-1 px-3 py-1 bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 dark:bg-primary-900/30 dark:text-primary-300"
-                      >
-                        <EyeIcon className="h-4 w-4" />
-                        Detail
-                      </Link>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
+                  <tr>
+                    <SortTh tools={tools} col="conversion_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Konversi</SortTh>
+                    <SortTh tools={tools} col="wo_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SPK</SortTh>
+                    <SortTh tools={tools} col="batch_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Batch</SortTh>
+                    <SortTh tools={tools} col="qc_status" align="center" className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status QC</SortTh>
+                    <SortTh tools={tools} col="total_wip_qty" align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty WIP</SortTh>
+                    <SortTh tools={tools} col="total_fg_qty" align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty FG</SortTh>
+                    <SortTh tools={tools} col="total_loss_qty" align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Loss</SortTh>
+                    <SortTh tools={tools} col="status" align="center" className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
+                    <SortTh tools={tools} col="conversion_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</SortTh>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {tools.rows.map((conversion) => (
+                    <tr key={conversion.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Link
+                          to={`/app/production/fg-conversion/${conversion.id}`}
+                          className="font-medium text-primary-600 hover:text-primary-800 hover:underline dark:text-primary-400"
+                        >
+                          {conversion.conversion_number}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {conversion.wo_number}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <div className="flex items-center gap-2">
+                          {conversion.batch_number}
+                          {!conversion.batch_validated && (
+                            <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500" title="Batch belum divalidasi" />
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        {getQCStatusBadge(conversion.qc_status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
+                        {conversion.total_wip_qty.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600 font-medium dark:text-green-400">
+                        {conversion.total_fg_qty.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-red-600 dark:text-red-400">
+                        {conversion.total_loss_qty.toLocaleString()}
+                        {conversion.total_wip_qty > 0 && (
+                          <span className="text-xs ml-1">
+                            ({((conversion.total_loss_qty / conversion.total_wip_qty) * 100).toFixed(1)}%)
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        {getStatusBadge(conversion.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        <div>{formatDate(conversion.conversion_date)}</div>
+                        {conversion.completed_at && (
+                          <div className="text-xs">Selesai: {formatDate(conversion.completed_at)}</div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <Link
+                          to={`/app/production/fg-conversion/${conversion.id}`}
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 dark:bg-primary-900/30 dark:text-primary-300"
+                        >
+                          <EyeIcon className="h-4 w-4" />
+                          Detail
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 

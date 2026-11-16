@@ -165,7 +165,7 @@ const AttendanceCalendar: React.FC = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <Calendar className="h-6 w-6" />
           Kalender Kehadiran
@@ -207,7 +207,7 @@ const AttendanceCalendar: React.FC = () => {
         ) : (
           <>
             {/* Day Names */}
-            <div className="grid grid-cols-7 border-b">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 border-b">
               {dayNames.map(day => (
                 <div
                   key={day}
@@ -219,7 +219,7 @@ const AttendanceCalendar: React.FC = () => {
             </div>
 
             {/* Calendar Grid */}
-            <div className="grid grid-cols-7">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7">
               {calendarDays.map((day, index) => (
                 <div
                   key={index}

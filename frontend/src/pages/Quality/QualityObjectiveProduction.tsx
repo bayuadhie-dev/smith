@@ -162,7 +162,7 @@ const QualityObjectiveProduction: React.FC = () => {
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2 dark:text-slate-100">
               <TrophyIcon className="h-7 w-7 text-amber-500" />
@@ -172,7 +172,7 @@ const QualityObjectiveProduction: React.FC = () => {
           </div>
           
           {/* Period Selector & Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700">
               <CalendarIcon className="h-5 w-5 text-slate-400" />
               <select
@@ -278,7 +278,7 @@ const QualityObjectiveProduction: React.FC = () => {
 
           {/* Total Summary */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 mb-6 text-white">
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="text-center">
                 <p className="text-blue-200 text-sm">Total Target Bulanan</p>
                 <p className="text-3xl font-bold mt-1">{formatNumber(data.summary.total_target)}</p>
@@ -406,7 +406,7 @@ const QualityObjectiveProduction: React.FC = () => {
 
       {/* Target Modal */}
       {showTargetModal && data && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
             <div className="p-4 border-b border-slate-200 flex items-center justify-between dark:border-slate-700">
               <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
@@ -430,37 +430,39 @@ const QualityObjectiveProduction: React.FC = () => {
                 </div>
               </div>
               
-              <table className="w-full">
-                <thead className="bg-slate-50 dark:bg-slate-900">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Mesin</th>
-                    <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Target (pcs)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {data.machines.map(machine => (
-                    <tr key={machine.machine_id}>
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-slate-700 dark:text-slate-200">{machine.machine_name}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <NumberInput
-                          value={editTargets[machine.machine_id] || 0}
-                          onChange={(e) => setEditTargets(prev => ({
-                            ...prev,
-                            [machine.machine_id]: parseInt(e.target.value) || 0
-                          }))}
-                          className="w-full text-right px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-slate-600"
-                          placeholder="0"
-                        />
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50 dark:bg-slate-900">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-slate-600 dark:text-slate-300">Mesin</th>
+                      <th className="px-4 py-2 text-right text-sm font-semibold text-slate-600 dark:text-slate-300">Target (pcs)</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {data.machines.map(machine => (
+                      <tr key={machine.machine_id}>
+                        <td className="px-4 py-3">
+                          <p className="font-medium text-slate-700 dark:text-slate-200">{machine.machine_name}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <NumberInput
+                            value={editTargets[machine.machine_id] || 0}
+                            onChange={(e) => setEditTargets(prev => ({
+                              ...prev,
+                              [machine.machine_id]: parseInt(e.target.value) || 0
+                            }))}
+                            className="w-full text-right px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-slate-600"
+                            placeholder="0"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
             
-            <div className="p-4 border-t border-slate-200 flex justify-end gap-3 dark:border-slate-700">
+            <div className="p-4 border-t border-slate-200 flex justify-end gap-3 dark:border-slate-700 flex-wrap">
               <button
                 onClick={() => setShowTargetModal(false)}
                 className="px-4 py-2 text-slate-600 hover:text-slate-800 dark:text-slate-300"

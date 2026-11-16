@@ -607,95 +607,99 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
 
           {!isStandalone && formData.party_id && (
             <Panel title="Informasi diskon / potongan (opsional)">
-              <div className="space-y-2 p-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Isi nilai potongan (positif) yang ikut melunasi faktur tanpa uang keluar dari kas/bank, misalnya diskon, pembulatan, atau uang muka. Kolom Dibayar di faktur adalah uang yang benar-benar keluar dari kas/bank; kolom Diskon adalah total potongan di sini.
-                </p>
-                {openAdv.length > 0 && (
-                  <div className="rounded-md bg-amber-50 p-3 text-sm dark:bg-amber-900/20">
-                    <p className="mb-1 font-medium text-amber-900 dark:text-amber-100">Uang muka lainnya yang masih menggantung untuk {partyWord.toLowerCase()} ini</p>
-                    {openAdv.map((a) => {
-                      const used = adj.filter((x) => Number(x.account_id) === a.account_id).reduce((s2, x) => s2 + (Number(x.amount) || 0), 0);
-                      const left = Math.max(0, a.outstanding - used);
-                      return (
-                        <div key={a.account_id} className="flex items-center justify-between gap-2 py-0.5">
-                          <span>{a.account_code} {a.account_name}: sisa <strong>{rp(a.outstanding)}</strong></span>
-                          <button type="button" disabled={left <= 0} className="rounded border border-amber-400 px-2 py-0.5 text-xs hover:bg-amber-100 disabled:opacity-40"
-                            onClick={() => useAdvance(a)}>
-                            Pakai sebagai potongan
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {adj.map((l, idx) => (
-                  <div key={idx} className="grid grid-cols-12 gap-2">
-                    <div className="col-span-12 md:col-span-5">
-                      <SearchableSelect
-                        options={[...contraAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name })), ...openAdv.filter((a) => !contraAccounts.some((c) => c.id === a.account_id)).map((a) => ({ id: a.account_id, code: a.account_code, name: a.account_name }))]}
-                        value={l.account_id ? Number(l.account_id) : null}
-                        onChange={(v) => updateAdj(idx, { account_id: v ? String(v) : '' })}
-                        placeholder="Pilih akun (mis. Biaya Lain-lain, Piutang Karyawan)"
-                      />
+              <div className="overflow-x-auto">
+                <div className="space-y-2 p-4">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Isi nilai potongan (positif) yang ikut melunasi faktur tanpa uang keluar dari kas/bank, misalnya diskon, pembulatan, atau uang muka. Kolom Dibayar di faktur adalah uang yang benar-benar keluar dari kas/bank; kolom Diskon adalah total potongan di sini.
+                  </p>
+                  {openAdv.length > 0 && (
+                    <div className="rounded-md bg-amber-50 p-3 text-sm dark:bg-amber-900/20">
+                      <p className="mb-1 font-medium text-amber-900 dark:text-amber-100">Uang muka lainnya yang masih menggantung untuk {partyWord.toLowerCase()} ini</p>
+                      {openAdv.map((a) => {
+                        const used = adj.filter((x) => Number(x.account_id) === a.account_id).reduce((s2, x) => s2 + (Number(x.amount) || 0), 0);
+                        const left = Math.max(0, a.outstanding - used);
+                        return (
+                          <div key={a.account_id} className="flex items-center justify-between gap-2 py-0.5">
+                            <span>{a.account_code} {a.account_name}: sisa <strong>{rp(a.outstanding)}</strong></span>
+                            <button type="button" disabled={left <= 0} className="rounded border border-amber-400 px-2 py-0.5 text-xs hover:bg-amber-100 disabled:opacity-40"
+                              onClick={() => useAdvance(a)}>
+                              Pakai sebagai potongan
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <input type="text" className={`${inputCls} col-span-7 md:col-span-4`} placeholder="Keterangan (opsional)" value={l.description} onChange={(e) => updateAdj(idx, { description: e.target.value })} />
-                    {openAdv.some((a) => a.account_id === Number(l.account_id)) && (
-                      <p className="col-span-12 -mt-1 text-xs text-emerald-700 dark:text-emerald-400">Pemakaian uang muka {partyWord.toLowerCase()}: sisa uang muka akan berkurang otomatis dan tercatat di Rekap Uang Muka Lainnya.</p>
-                    )}
-                    <NumberInput currency className={`${inputCls} col-span-4 text-right md:col-span-2`} placeholder="Nilai" value={l.amount} onChange={(e) => updateAdj(idx, { amount: e.target.value })} />
-                    <button type="button" className="col-span-1 text-gray-400 hover:text-red-600" onClick={() => setAdj((a) => a.filter((_, i) => i !== idx))} title="Hapus baris">
-                      <XMarkIcon className="mx-auto h-5 w-5" />
-                    </button>
-                  </div>
-                ))}
-                <button type="button" className="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400" onClick={() => setAdj((a) => [...a, { account_id: '', amount: '', description: '' }])}>
-                  + Tambah baris selisih
-                </button>
+                  )}
+                  {adj.map((l, idx) => (
+                    <div key={idx} className="grid min-w-[760px] grid-cols-12 gap-2">
+                      <div className="col-span-12 md:col-span-5">
+                        <SearchableSelect
+                          options={[...contraAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name })), ...openAdv.filter((a) => !contraAccounts.some((c) => c.id === a.account_id)).map((a) => ({ id: a.account_id, code: a.account_code, name: a.account_name }))]}
+                          value={l.account_id ? Number(l.account_id) : null}
+                          onChange={(v) => updateAdj(idx, { account_id: v ? String(v) : '' })}
+                          placeholder="Pilih akun (mis. Biaya Lain-lain, Piutang Karyawan)"
+                        />
+                      </div>
+                      <input type="text" className={`${inputCls} col-span-7 md:col-span-4`} placeholder="Keterangan (opsional)" value={l.description} onChange={(e) => updateAdj(idx, { description: e.target.value })} />
+                      {openAdv.some((a) => a.account_id === Number(l.account_id)) && (
+                        <p className="col-span-12 -mt-1 text-xs text-emerald-700 dark:text-emerald-400">Pemakaian uang muka {partyWord.toLowerCase()}: sisa uang muka akan berkurang otomatis dan tercatat di Rekap Uang Muka Lainnya.</p>
+                      )}
+                      <NumberInput currency className={`${inputCls} col-span-4 text-right md:col-span-2`} placeholder="Nilai" value={l.amount} onChange={(e) => updateAdj(idx, { amount: e.target.value })} />
+                      <button type="button" className="col-span-1 text-gray-400 hover:text-red-600" onClick={() => setAdj((a) => a.filter((_, i) => i !== idx))} title="Hapus baris">
+                        <XMarkIcon className="mx-auto h-5 w-5" />
+                      </button>
+                    </div>
+                  ))}
+                  <button type="button" className="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400" onClick={() => setAdj((a) => [...a, { account_id: '', amount: '', description: '' }])}>
+                    + Tambah baris selisih
+                  </button>
+                </div>
               </div>
             </Panel>
           )}
 
           {isStandalone && (
             <Panel title="Rincian akun">
-              <div className="space-y-2 p-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Satu nilai kas bisa dibagi ke beberapa akun. Nilai negatif dipakai sebagai pengurang.</p>
-                {lines.map((l, idx) => (
-                  <div key={idx} className="grid grid-cols-12 gap-2">
-                    <div className="col-span-12 md:col-span-5">
-                      <SearchableSelect
-                        options={contraAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name }))}
-                        value={l.account_id ? Number(l.account_id) : null}
-                        onChange={(v) => updateLine(idx, { account_id: v ? String(v) : '' })}
-                        placeholder="Pilih akun (mis. Beban Bunga)"
-                      />
-                    </div>
-                    <input type="text" className={`${inputCls} col-span-7 md:col-span-4`} placeholder="Keterangan baris (opsional)" value={l.description} onChange={(e) => updateLine(idx, { description: e.target.value })} />
-                    <NumberInput currency className={`${inputCls} col-span-4 text-right md:col-span-2`} placeholder="Nilai" value={l.amount} onChange={(e) => updateLine(idx, { amount: e.target.value })} />
-                    <button type="button" className="col-span-1 text-gray-400 hover:text-red-600 disabled:opacity-30" disabled={lines.length === 1} onClick={() => setLines((ls) => ls.filter((_, i) => i !== idx))} title="Hapus baris">
-                      <XMarkIcon className="mx-auto h-5 w-5" />
-                    </button>
-                    {l.account_id && isAdvanceAccount(l.account_id) && (
-                      <div className="col-span-12 grid grid-cols-12 gap-2 rounded-md bg-gray-50 p-2 dark:bg-gray-700/40">
-                        <select className={`${inputCls} col-span-4 md:col-span-3`} value={l.party_type || 'supplier'} onChange={(e) => updateLine(idx, { party_type: e.target.value, party_id: '' })}>
-                          <option value="supplier">Pemasok</option>
-                          <option value="customer">Pelanggan</option>
-                        </select>
-                        <div className="col-span-8 md:col-span-9">
-                          <SearchableSelect
-                            options={(l.party_type === 'customer' ? advCustomers : advSuppliers).map((p) => ({ id: p.id, name: p.name }))}
-                            value={l.party_id ? Number(l.party_id) : null}
-                            onChange={(v) => updateLine(idx, { party_id: v ? String(v) : '', party_type: l.party_type || 'supplier' })}
-                            placeholder={`Uang muka untuk ${l.party_type === 'customer' ? 'pelanggan' : 'pemasok'} siapa?`}
-                          />
-                        </div>
+              <div className="overflow-x-auto">
+                <div className="space-y-2 p-4">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Satu nilai kas bisa dibagi ke beberapa akun. Nilai negatif dipakai sebagai pengurang.</p>
+                  {lines.map((l, idx) => (
+                    <div key={idx} className="grid min-w-[760px] grid-cols-12 gap-2">
+                      <div className="col-span-12 md:col-span-5">
+                        <SearchableSelect
+                          options={contraAccounts.map((acc) => ({ id: acc.id, code: acc.code, name: acc.name }))}
+                          value={l.account_id ? Number(l.account_id) : null}
+                          onChange={(v) => updateLine(idx, { account_id: v ? String(v) : '' })}
+                          placeholder="Pilih akun (mis. Beban Bunga)"
+                        />
                       </div>
-                    )}
-                  </div>
-                ))}
-                <button type="button" className="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400" onClick={() => setLines((ls) => [...ls, { account_id: '', amount: '', description: '' }])}>
-                  + Tambah baris akun
-                </button>
+                      <input type="text" className={`${inputCls} col-span-7 md:col-span-4`} placeholder="Keterangan baris (opsional)" value={l.description} onChange={(e) => updateLine(idx, { description: e.target.value })} />
+                      <NumberInput currency className={`${inputCls} col-span-4 text-right md:col-span-2`} placeholder="Nilai" value={l.amount} onChange={(e) => updateLine(idx, { amount: e.target.value })} />
+                      <button type="button" className="col-span-1 text-gray-400 hover:text-red-600 disabled:opacity-30" disabled={lines.length === 1} onClick={() => setLines((ls) => ls.filter((_, i) => i !== idx))} title="Hapus baris">
+                        <XMarkIcon className="mx-auto h-5 w-5" />
+                      </button>
+                      {l.account_id && isAdvanceAccount(l.account_id) && (
+                        <div className="col-span-12 grid min-w-[760px] grid-cols-12 gap-2 rounded-md bg-gray-50 p-2 dark:bg-gray-700/40">
+                          <select className={`${inputCls} col-span-4 md:col-span-3`} value={l.party_type || 'supplier'} onChange={(e) => updateLine(idx, { party_type: e.target.value, party_id: '' })}>
+                            <option value="supplier">Pemasok</option>
+                            <option value="customer">Pelanggan</option>
+                          </select>
+                          <div className="col-span-8 md:col-span-9">
+                            <SearchableSelect
+                              options={(l.party_type === 'customer' ? advCustomers : advSuppliers).map((p) => ({ id: p.id, name: p.name }))}
+                              value={l.party_id ? Number(l.party_id) : null}
+                              onChange={(v) => updateLine(idx, { party_id: v ? String(v) : '', party_type: l.party_type || 'supplier' })}
+                              placeholder={`Uang muka untuk ${l.party_type === 'customer' ? 'pelanggan' : 'pemasok'} siapa?`}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <button type="button" className="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400" onClick={() => setLines((ls) => [...ls, { account_id: '', amount: '', description: '' }])}>
+                    + Tambah baris akun
+                  </button>
+                </div>
               </div>
             </Panel>
           )}
@@ -708,20 +712,22 @@ const PaymentForm = ({ kind }: { kind?: FormKind }) => {
 
           {journalPreview.length > 0 && (
             <Panel title="Pratinjau jurnal">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left text-xs font-medium text-gray-500 dark:bg-gray-900 dark:text-gray-400">
-                  <tr><th className="px-4 py-2">Akun</th><th className="px-4 py-2 text-right">Debit</th><th className="px-4 py-2 text-right">Kredit</th></tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {journalPreview.map((j, i) => (
-                    <tr key={i}>
-                      <td className="px-4 py-2">{j.account}</td>
-                      <td className="px-4 py-2 text-right tabular-nums">{j.debit ? rp(j.debit) : ''}</td>
-                      <td className="px-4 py-2 text-right tabular-nums">{j.credit ? rp(j.credit) : ''}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 text-left text-xs font-medium text-gray-500 dark:bg-gray-900 dark:text-gray-400">
+                    <tr><th className="px-4 py-2">Akun</th><th className="px-4 py-2 text-right">Debit</th><th className="px-4 py-2 text-right">Kredit</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                    {journalPreview.map((j, i) => (
+                      <tr key={i}>
+                        <td className="px-4 py-2">{j.account}</td>
+                        <td className="px-4 py-2 text-right tabular-nums">{j.debit ? rp(j.debit) : ''}</td>
+                        <td className="px-4 py-2 text-right tabular-nums">{j.credit ? rp(j.credit) : ''}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </Panel>
           )}
         </div>

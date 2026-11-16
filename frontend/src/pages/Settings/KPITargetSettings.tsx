@@ -124,7 +124,7 @@ const KPITargetSettings: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <ChartBarIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
@@ -241,7 +241,7 @@ const KPITargetSettings: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       {editingId === target.id ? (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <button
                             onClick={() => saveEdit(target.id)}
                             className="p-1 text-green-600 hover:bg-green-100 rounded dark:text-green-400"

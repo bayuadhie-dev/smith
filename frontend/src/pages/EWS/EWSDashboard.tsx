@@ -109,7 +109,7 @@ export default function EWSDashboard() {
       {summaryData?.per_machine && summaryData.per_machine.length > 0 && (
         <div className="card p-6">
           <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">Breakdown per Mesin ({periodDays} hari)</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {summaryData.per_machine.map((m: any) => (
               <div key={m.machine_id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                 <p className="text-xs text-gray-500 dark:text-gray-400">Mesin {m.machine_id}</p>
@@ -290,7 +290,7 @@ function EWSDetailModal({ shiftProductionId, onClose }: { shiftProductionId: num
 
             <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Breakdown Downtime (menit)</p>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Mesin</p>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{detail.downtime_mesin ?? '-'}</p>

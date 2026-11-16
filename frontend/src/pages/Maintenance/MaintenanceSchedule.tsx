@@ -266,7 +266,7 @@ const MaintenanceSchedule = () => {
                 </td>
                 {canSchedule && (
                   <td className="whitespace-nowrap px-4 py-2.5 text-right text-sm">
-                    <div className="flex justify-end gap-3">
+                    <div className="flex justify-end gap-3 flex-wrap">
                       <button onClick={() => generate(s)} className="font-medium text-emerald-700 hover:underline dark:text-emerald-400">Buat perintah kerja</button>
                       <button onClick={() => openEdit(s)} className="text-gray-700 hover:underline dark:text-gray-200">Ubah</button>
                       <button onClick={() => deactivate(s)} className="text-red-600 hover:underline dark:text-red-400">Nonaktifkan</button>
@@ -364,7 +364,7 @@ const MaintenanceSchedule = () => {
               <textarea className={inputCls} rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </div>
           </div>
-          <div className="flex justify-end gap-2 border-t border-gray-200 px-4 py-3 dark:border-gray-700">
+          <div className="flex justify-end gap-2 border-t border-gray-200 px-4 py-3 dark:border-gray-700 flex-wrap">
             <button type="button" onClick={() => setDialog(null)} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 dark:border-gray-600 dark:text-gray-200">Batal</button>
             <button type="button" disabled={saving} onClick={save} className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">
               {saving ? 'Menyimpan...' : dialog.editId ? 'Simpan perubahan' : form.machine_ids.length > 1 ? `Buat ${form.machine_ids.length} jadwal` : 'Buat jadwal'}

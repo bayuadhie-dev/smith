@@ -371,7 +371,7 @@ const AdvancedSystemConfig: React.FC = () => {
               </span>
             </div>
             
-            <div className="flex space-x-3">
+            <div className="flex space-x-3 flex-wrap">
               <button
                 onClick={() => setPendingChanges({})}
                 className="px-4 py-2 bg-gray-300 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:bg-gray-600"

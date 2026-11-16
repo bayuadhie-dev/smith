@@ -653,7 +653,7 @@ export default function EditProductionRecord() {
             Produk *
             <span className="text-xs text-gray-500 dark:text-gray-400 font-normal ml-2">(Default: produk WO, bisa diganti jika perlu)</span>
           </label>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <div className="flex-1 relative">
               <input
                 type="text"
@@ -821,7 +821,7 @@ export default function EditProductionRecord() {
         {/* Quantity Section */}
         <div className="border-t pt-6">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Hasil Produksi</h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Grade A <span className="text-green-600 dark:text-green-400">(Good)</span> *
@@ -886,7 +886,7 @@ export default function EditProductionRecord() {
           </div>
 
           {/* Auto-calculated */}
-          <div className="grid grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
             <div>
               <label className="block text-sm font-medium text-blue-700 mb-1 dark:text-blue-300">
                 Qty Produksi (Auto)
@@ -932,7 +932,7 @@ export default function EditProductionRecord() {
 
             {formData.early_stop && (
               <div className="space-y-4 pl-6 border-l-2 border-orange-300">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-orange-700 mb-1 dark:text-orange-300">
                       Waktu Berhenti
@@ -1176,7 +1176,7 @@ export default function EditProductionRecord() {
         </div>
 
         {/* Submit Buttons */}
-        <div className="flex justify-end gap-3 pt-6 border-t">
+        <div className="flex justify-end gap-3 pt-6 border-t flex-wrap">
           <Link
             to={`/app/production/work-orders/${workOrderId}`}
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"

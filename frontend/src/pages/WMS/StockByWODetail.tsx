@@ -167,28 +167,30 @@ const StockByWODetail: React.FC = () => {
         {fgItems.length === 0 ? (
           <p className="p-4 text-sm text-gray-400">Belum ada FG inventory</p>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Lokasi</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Quantity</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Batch</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Status</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Tgl Produksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {fgItems.map((item) => (
-                <tr key={item.id}>
-                  <td className="px-4 py-2 text-sm">{item.location || '-'}</td>
-                  <td className="px-4 py-2 text-sm text-right font-medium">{item.quantity.toLocaleString()}</td>
-                  <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300">{item.batch_number || '-'}</td>
-                  <td className="px-4 py-2 text-sm">{item.stock_status || '-'}</td>
-                  <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">{item.production_date || '-'}</td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Lokasi</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Quantity</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Batch</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Status</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Tgl Produksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {fgItems.map((item) => (
+                  <tr key={item.id}>
+                    <td className="px-4 py-2 text-sm">{item.location || '-'}</td>
+                    <td className="px-4 py-2 text-sm text-right font-medium">{item.quantity.toLocaleString()}</td>
+                    <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300">{item.batch_number || '-'}</td>
+                    <td className="px-4 py-2 text-sm">{item.stock_status || '-'}</td>
+                    <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">{item.production_date || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
@@ -201,43 +203,45 @@ const StockByWODetail: React.FC = () => {
         {consumptions.length === 0 ? (
           <p className="p-4 text-sm text-gray-400">Belum ada data konsumsi material</p>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Material</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Planned</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Actual</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Variance</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Status</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Batch</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {consumptions.map((mc) => (
-                <tr key={mc.id}>
-                  <td className="px-4 py-2 text-sm">
-                    <div className="font-medium">{mc.material_name}</div>
-                    <div className="text-xs text-gray-400">{mc.material_code}</div>
-                  </td>
-                  <td className="px-4 py-2 text-sm text-right">{mc.quantity_planned.toLocaleString()}</td>
-                  <td className="px-4 py-2 text-sm text-right font-medium">{mc.quantity_actual.toLocaleString()}</td>
-                  <td className="px-4 py-2 text-sm text-right">
-                    <span className={mc.variance > 0 ? 'text-red-600 dark:text-red-400' : mc.variance < 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}>
-                      {mc.variance > 0 ? '+' : ''}{mc.variance.toFixed(1)} ({mc.variance_percentage.toFixed(1)}%)
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-sm">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                      mc.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
-                      mc.status === 'partial' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
-                      'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
-                    } dark:bg-gray-700 dark:text-gray-300 dark:bg-green-900/30 dark:bg-yellow-900/30 dark:text-green-300 dark:text-yellow-300`}>{mc.status}</span>
-                  </td>
-                  <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">{mc.from_batch_number || '-'}</td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Material</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Planned</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Actual</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Variance</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Status</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Batch</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {consumptions.map((mc) => (
+                  <tr key={mc.id}>
+                    <td className="px-4 py-2 text-sm">
+                      <div className="font-medium">{mc.material_name}</div>
+                      <div className="text-xs text-gray-400">{mc.material_code}</div>
+                    </td>
+                    <td className="px-4 py-2 text-sm text-right">{mc.quantity_planned.toLocaleString()}</td>
+                    <td className="px-4 py-2 text-sm text-right font-medium">{mc.quantity_actual.toLocaleString()}</td>
+                    <td className="px-4 py-2 text-sm text-right">
+                      <span className={mc.variance > 0 ? 'text-red-600 dark:text-red-400' : mc.variance < 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}>
+                        {mc.variance > 0 ? '+' : ''}{mc.variance.toFixed(1)} ({mc.variance_percentage.toFixed(1)}%)
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 text-sm">
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        mc.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                        mc.status === 'partial' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                        'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                      } dark:bg-gray-700 dark:text-gray-300 dark:bg-green-900/30 dark:bg-yellow-900/30 dark:text-green-300 dark:text-yellow-300`}>{mc.status}</span>
+                    </td>
+                    <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">{mc.from_batch_number || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
@@ -250,28 +254,30 @@ const StockByWODetail: React.FC = () => {
         {records.length === 0 ? (
           <p className="p-4 text-sm text-gray-400">Belum ada production record</p>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Tanggal</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Shift</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Mesin</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Good</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Reject</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {records.map((r) => (
-                <tr key={r.id}>
-                  <td className="px-4 py-2 text-sm">{r.production_date ? new Date(r.production_date).toLocaleDateString('id-ID') : '-'}</td>
-                  <td className="px-4 py-2 text-sm">{r.shift || '-'}</td>
-                  <td className="px-4 py-2 text-sm">{r.machine || '-'}</td>
-                  <td className="px-4 py-2 text-sm text-right font-medium text-green-600 dark:text-green-400">{r.quantity_good.toLocaleString()}</td>
-                  <td className="px-4 py-2 text-sm text-right text-red-500">{r.quantity_reject.toLocaleString()}</td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Tanggal</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Shift</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Mesin</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Good</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Reject</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {records.map((r) => (
+                  <tr key={r.id}>
+                    <td className="px-4 py-2 text-sm">{r.production_date ? new Date(r.production_date).toLocaleDateString('id-ID') : '-'}</td>
+                    <td className="px-4 py-2 text-sm">{r.shift || '-'}</td>
+                    <td className="px-4 py-2 text-sm">{r.machine || '-'}</td>
+                    <td className="px-4 py-2 text-sm text-right font-medium text-green-600 dark:text-green-400">{r.quantity_good.toLocaleString()}</td>
+                    <td className="px-4 py-2 text-sm text-right text-red-500">{r.quantity_reject.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
@@ -284,36 +290,38 @@ const StockByWODetail: React.FC = () => {
         {transactions.length === 0 ? (
           <p className="p-4 text-sm text-gray-400">Belum ada transaksi</p>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">No. Transaksi</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Tipe</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Item</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Qty</th>
-                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Arah</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Tanggal</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {transactions.map((t) => (
-                <tr key={t.id}>
-                  <td className="px-4 py-2 text-sm font-mono text-xs">{t.transaction_number}</td>
-                  <td className="px-4 py-2 text-sm">{t.transaction_type?.replace('_', ' ')}</td>
-                  <td className="px-4 py-2 text-sm">{t.item_name || '-'}</td>
-                  <td className="px-4 py-2 text-sm text-right font-medium">{t.quantity.toLocaleString()}</td>
-                  <td className="px-4 py-2 text-center">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                      t.direction === 'in' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                    } dark:bg-green-900/30 dark:bg-red-900/30 dark:text-green-300 dark:text-red-300`}>{t.direction.toUpperCase()}</span>
-                  </td>
-                  <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                    {t.transaction_date ? new Date(t.transaction_date).toLocaleDateString('id-ID') : '-'}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">No. Transaksi</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Tipe</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Item</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Qty</th>
+                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Arah</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Tanggal</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {transactions.map((t) => (
+                  <tr key={t.id}>
+                    <td className="px-4 py-2 text-sm font-mono text-xs">{t.transaction_number}</td>
+                    <td className="px-4 py-2 text-sm">{t.transaction_type?.replace('_', ' ')}</td>
+                    <td className="px-4 py-2 text-sm">{t.item_name || '-'}</td>
+                    <td className="px-4 py-2 text-sm text-right font-medium">{t.quantity.toLocaleString()}</td>
+                    <td className="px-4 py-2 text-center">
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        t.direction === 'in' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                      } dark:bg-green-900/30 dark:bg-red-900/30 dark:text-green-300 dark:text-red-300`}>{t.direction.toUpperCase()}</span>
+                    </td>
+                    <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                      {t.transaction_date ? new Date(t.transaction_date).toLocaleDateString('id-ID') : '-'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

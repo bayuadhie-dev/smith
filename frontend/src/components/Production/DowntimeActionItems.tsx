@@ -391,8 +391,8 @@ const DowntimeActionItems: React.FC<DowntimeActionItemsProps> = ({
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="export-buttons-container flex items-center gap-2">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="export-buttons-container flex items-center gap-2 flex-wrap">
               <button
                 onClick={handleExportExcel}
                 className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/15 hover:bg-white/25 text-white rounded-lg text-xs font-semibold border border-white/20 transition-all cursor-pointer"
@@ -532,7 +532,7 @@ const DowntimeActionItems: React.FC<DowntimeActionItemsProps> = ({
                   </td>
                   {viewMode !== 'monthly' && (
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-2 flex-wrap">
                         {isEditing ? (
                           <>
                             <button

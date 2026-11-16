@@ -178,7 +178,7 @@ const ProductDashboard: React.FC = () => {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard Produk</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Comprehensive overview of your product portfolio</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Link
             to="/app/products/analytics"
             className="flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"

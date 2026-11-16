@@ -192,26 +192,28 @@ const PurchaseInvoiceDetail: React.FC = () => {
       {data.items.length === 0 ? (
         <p className="text-sm text-gray-500 dark:text-gray-400">Tidak ada item.</p>
       ) : (
-        <table className="w-full text-sm bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-          <thead>
-            <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-              <th className="p-3">Item</th>
-              <th className="p-3 text-right">Qty</th>
-              <th className="p-3 text-right">Harga Satuan</th>
-              <th className="p-3 text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.items.map((item) => (
-              <tr key={item.id} className="border-b border-gray-100 dark:border-gray-800">
-                <td className="p-3">{item.product_name || item.material_name || item.description || '-'}</td>
-                <td className="p-3 text-right">{item.quantity.toLocaleString('id-ID')} {item.uom || ''}</td>
-                <td className="p-3 text-right">{item.unit_price.toLocaleString('id-ID')}</td>
-                <td className="p-3 text-right">{item.total_price.toLocaleString('id-ID')}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+            <thead>
+              <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                <th className="p-3">Item</th>
+                <th className="p-3 text-right">Qty</th>
+                <th className="p-3 text-right">Harga Satuan</th>
+                <th className="p-3 text-right">Total</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {data.items.map((item) => (
+                <tr key={item.id} className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-3">{item.product_name || item.material_name || item.description || '-'}</td>
+                  <td className="p-3 text-right">{item.quantity.toLocaleString('id-ID')} {item.uom || ''}</td>
+                  <td className="p-3 text-right">{item.unit_price.toLocaleString('id-ID')}</td>
+                  <td className="p-3 text-right">{item.total_price.toLocaleString('id-ID')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       <AttachmentsPanel entityType="purchase_invoice" entityId={id} />
       <RiwayatPanel table="invoices" id={id} />

@@ -583,7 +583,7 @@ export default function GRNForm() {
           </div>
         )}
 
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 flex-wrap">
           <Link to="/app/purchasing/grn" className="btn-secondary">Batal</Link>
           <button type="submit" disabled={saving || (!isEdit && !supplierId)} className="btn-primary disabled:opacity-50">{saving ? 'Menyimpan...' : isEdit ? 'Simpan Koreksi' : 'Simpan Penerimaan'}</button>
         </div>
@@ -596,7 +596,7 @@ export default function GRNForm() {
         const setItem = (k: number, patch: Partial<{ batch: string; qty: string }>) => setBatchEdit({ ...batchEdit, list: batchEdit.list.map((b, idx) => (idx === k ? { ...b, ...patch } : b)) })
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setBatchEdit(null)}>
-            <div className="w-full max-w-lg rounded-lg bg-white p-5 shadow-xl dark:bg-gray-800" onClick={(e) => e.stopPropagation()}>
+            <div className="w-full max-w-lg rounded-lg bg-white p-5 shadow-xl dark:bg-gray-800 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <h3 className="text-base font-semibold text-gray-900 dark:text-white">Nomor batch</h3>
               <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">{r.name}. Satu baris per batch. Kalau lebih dari satu, isi jumlah tiap batch; totalnya harus {num(r.qty).toLocaleString('id-ID')} {r.uom}.</p>
               <div className="max-h-80 space-y-2 overflow-y-auto">
@@ -610,7 +610,7 @@ export default function GRNForm() {
               </div>
               <button type="button" className="mt-3 text-sm text-blue-600 hover:underline dark:text-blue-400" onClick={() => setBatchEdit({ ...batchEdit, list: [...batchEdit.list, { id: null, batch: '', qty: '0' }] })}>+ Tambah batch</button>
               {multi && <p className={`mt-2 text-xs ${Math.abs(sum - (editMode ? num(r.qty) / (r.dispFactor && r.dispFactor > 1 ? r.dispFactor : 1) : num(r.qty))) > 0.01 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>Total batch: {sum.toLocaleString('id-ID')} dari {(editMode ? num(r.qty) / (r.dispFactor && r.dispFactor > 1 ? r.dispFactor : 1) : num(r.qty)).toLocaleString('id-ID')}</p>}
-              <div className="mt-4 flex justify-end gap-2">
+              <div className="mt-4 flex justify-end gap-2 flex-wrap">
                 <button type="button" className="btn-secondary" onClick={() => setBatchEdit(null)}>Batal</button>
                 <button type="button" className="btn-primary" onClick={saveBatch}>Simpan batch</button>
               </div>

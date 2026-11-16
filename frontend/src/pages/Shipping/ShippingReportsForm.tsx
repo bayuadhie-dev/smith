@@ -215,14 +215,14 @@ const ShippingReportsForm: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Shipping Reports</h1>
           <p className="text-gray-600 dark:text-gray-300">Generate comprehensive shipping and delivery reports</p>
         </div>
         
         {reportData && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <button
               onClick={() => exportReport('excel')}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2"

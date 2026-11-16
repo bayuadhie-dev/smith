@@ -46,7 +46,7 @@ export default function BatchRecord() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6 print:max-w-none">
       {/* Header - hidden on print */}
-      <div className="flex items-center justify-between print:hidden">
+      <div className="flex items-center flex-wrap justify-between print:hidden gap-3">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg" title="Kembali">
             <ArrowLeftIcon className="h-5 w-5" />
@@ -85,42 +85,44 @@ export default function BatchRecord() {
           {record.materials.length === 0 ? (
             <p className="text-sm text-gray-500 py-2 dark:text-gray-400">Belum ada data bahan aktual untuk batch ini.</p>
           ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                  <th className="pb-2 pr-3">Nama Bahan</th>
-                  <th className="pb-2 pr-3">No. Batch Aktual</th>
-                  <th className="pb-2 pr-3 text-right">Rencana</th>
-                  <th className="pb-2 pr-3 text-right">Aktual</th>
-                  <th className="pb-2 pr-3 text-right">Varians</th>
-                  <th className="pb-2">Satuan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {record.materials.map((m: any) => (
-                  <tr
-                    key={m.id}
-                    onClick={() => openMaterialDrillDown(m)}
-                    className={m.material_id ? 'cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/10 print:hover:bg-transparent' : ''}
-                    title={m.material_id ? 'Klik untuk lihat stok bahan ini' : undefined}
-                  >
-                    <td className="py-2 pr-3 font-medium text-gray-900 dark:text-white">
-                      <span className="flex items-center gap-1.5">
-                        {m.material_id && <CubeIcon className="h-3.5 w-3.5 text-primary-600 flex-shrink-0 print:hidden dark:text-primary-400" />}
-                        {m.item_name}
-                      </span>
-                    </td>
-                    <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{m.actual_batch_number || '-'}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums">{m.quantity_planned.toLocaleString('id-ID')}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums">{m.quantity_actual != null ? m.quantity_actual.toLocaleString('id-ID') : '-'}</td>
-                    <td className={`py-2 pr-3 text-right tabular-nums ${m.variance != null && m.variance !== 0 ? 'text-amber-600 dark:text-amber-400' : ''}`}>
-                      {m.variance != null ? m.variance.toLocaleString('id-ID') : '-'}
-                    </td>
-                    <td className="py-2 text-gray-500 dark:text-gray-400">{m.uom}</td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                    <th className="pb-2 pr-3">Nama Bahan</th>
+                    <th className="pb-2 pr-3">No. Batch Aktual</th>
+                    <th className="pb-2 pr-3 text-right">Rencana</th>
+                    <th className="pb-2 pr-3 text-right">Aktual</th>
+                    <th className="pb-2 pr-3 text-right">Varians</th>
+                    <th className="pb-2">Satuan</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {record.materials.map((m: any) => (
+                    <tr
+                      key={m.id}
+                      onClick={() => openMaterialDrillDown(m)}
+                      className={m.material_id ? 'cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/10 print:hover:bg-transparent' : ''}
+                      title={m.material_id ? 'Klik untuk lihat stok bahan ini' : undefined}
+                    >
+                      <td className="py-2 pr-3 font-medium text-gray-900 dark:text-white">
+                        <span className="flex items-center gap-1.5">
+                          {m.material_id && <CubeIcon className="h-3.5 w-3.5 text-primary-600 flex-shrink-0 print:hidden dark:text-primary-400" />}
+                          {m.item_name}
+                        </span>
+                      </td>
+                      <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{m.actual_batch_number || '-'}</td>
+                      <td className="py-2 pr-3 text-right tabular-nums">{m.quantity_planned.toLocaleString('id-ID')}</td>
+                      <td className="py-2 pr-3 text-right tabular-nums">{m.quantity_actual != null ? m.quantity_actual.toLocaleString('id-ID') : '-'}</td>
+                      <td className={`py-2 pr-3 text-right tabular-nums ${m.variance != null && m.variance !== 0 ? 'text-amber-600 dark:text-amber-400' : ''}`}>
+                        {m.variance != null ? m.variance.toLocaleString('id-ID') : '-'}
+                      </td>
+                      <td className="py-2 text-gray-500 dark:text-gray-400">{m.uom}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </Section>
 
@@ -129,32 +131,34 @@ export default function BatchRecord() {
           {record.shifts.length === 0 ? (
             <p className="text-sm text-gray-500 py-2 dark:text-gray-400">Belum ada input shift untuk batch ini.</p>
           ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                  <th className="pb-2 pr-3">Tanggal</th>
-                  <th className="pb-2 pr-3">Shift</th>
-                  <th className="pb-2 pr-3">Operator</th>
-                  <th className="pb-2 pr-3">Supervisor</th>
-                  <th className="pb-2 pr-3 text-right">Target</th>
-                  <th className="pb-2 pr-3 text-right">Aktual</th>
-                  <th className="pb-2 text-right">Reject</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {record.shifts.map((s: any) => (
-                  <tr key={s.id}>
-                    <td className="py-2 pr-3">{s.production_date}</td>
-                    <td className="py-2 pr-3">{s.shift}{s.sub_shift ? `-${s.sub_shift}` : ''}</td>
-                    <td className="py-2 pr-3">{s.operator_name || '-'}</td>
-                    <td className="py-2 pr-3">{s.supervisor_name || '-'}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums">{s.target_quantity.toLocaleString('id-ID')}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums">{s.actual_quantity.toLocaleString('id-ID')}</td>
-                    <td className="py-2 text-right tabular-nums text-red-600 dark:text-red-400">{s.reject_quantity.toLocaleString('id-ID')}</td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                    <th className="pb-2 pr-3">Tanggal</th>
+                    <th className="pb-2 pr-3">Shift</th>
+                    <th className="pb-2 pr-3">Operator</th>
+                    <th className="pb-2 pr-3">Supervisor</th>
+                    <th className="pb-2 pr-3 text-right">Target</th>
+                    <th className="pb-2 pr-3 text-right">Aktual</th>
+                    <th className="pb-2 text-right">Reject</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {record.shifts.map((s: any) => (
+                    <tr key={s.id}>
+                      <td className="py-2 pr-3">{s.production_date}</td>
+                      <td className="py-2 pr-3">{s.shift}{s.sub_shift ? `-${s.sub_shift}` : ''}</td>
+                      <td className="py-2 pr-3">{s.operator_name || '-'}</td>
+                      <td className="py-2 pr-3">{s.supervisor_name || '-'}</td>
+                      <td className="py-2 pr-3 text-right tabular-nums">{s.target_quantity.toLocaleString('id-ID')}</td>
+                      <td className="py-2 pr-3 text-right tabular-nums">{s.actual_quantity.toLocaleString('id-ID')}</td>
+                      <td className="py-2 text-right tabular-nums text-red-600 dark:text-red-400">{s.reject_quantity.toLocaleString('id-ID')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
           <div className="flex justify-end gap-6 pt-3 mt-3 border-t border-gray-100 dark:border-gray-700 text-sm">
             <p><span className="text-gray-500 dark:text-gray-400">Total Reject:</span> <strong>{record.summary.total_reject.toLocaleString('id-ID')}</strong></p>
@@ -167,28 +171,30 @@ export default function BatchRecord() {
           {record.qc_status.length === 0 ? (
             <p className="text-sm text-gray-500 py-2 dark:text-gray-400">Belum ada data stok/QC untuk nomor batch ini.</p>
           ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                  <th className="pb-2 pr-3">Lokasi</th>
-                  <th className="pb-2 pr-3 text-right">Qty</th>
-                  <th className="pb-2 pr-3">Status</th>
-                  <th className="pb-2 pr-3">Tanggal QC</th>
-                  <th className="pb-2">Catatan QC</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {record.qc_status.map((q: any) => (
-                  <tr key={q.inventory_id}>
-                    <td className="py-2 pr-3">{q.location || '-'}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums">{q.quantity_on_hand.toLocaleString('id-ID')}</td>
-                    <td className="py-2 pr-3 capitalize">{q.stock_status}</td>
-                    <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{q.qc_date ? new Date(q.qc_date).toLocaleDateString('id-ID') : '-'}</td>
-                    <td className="py-2 text-gray-500 dark:text-gray-400">{q.qc_notes || '-'}</td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                    <th className="pb-2 pr-3">Lokasi</th>
+                    <th className="pb-2 pr-3 text-right">Qty</th>
+                    <th className="pb-2 pr-3">Status</th>
+                    <th className="pb-2 pr-3">Tanggal QC</th>
+                    <th className="pb-2">Catatan QC</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {record.qc_status.map((q: any) => (
+                    <tr key={q.inventory_id}>
+                      <td className="py-2 pr-3">{q.location || '-'}</td>
+                      <td className="py-2 pr-3 text-right tabular-nums">{q.quantity_on_hand.toLocaleString('id-ID')}</td>
+                      <td className="py-2 pr-3 capitalize">{q.stock_status}</td>
+                      <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{q.qc_date ? new Date(q.qc_date).toLocaleDateString('id-ID') : '-'}</td>
+                      <td className="py-2 text-gray-500 dark:text-gray-400">{q.qc_notes || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </Section>
 
@@ -218,26 +224,28 @@ export default function BatchRecord() {
         ) : materialModal.data.locations?.length === 0 ? (
           <p className="text-sm text-gray-500 text-center py-6 dark:text-gray-400">Belum ada stok untuk bahan ini di gudang.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
-                <th className="pb-2 pr-3">Lokasi</th>
-                <th className="pb-2 pr-3">No. Batch</th>
-                <th className="pb-2 pr-3 text-right">Qty Tersedia</th>
-                <th className="pb-2 text-right">Qty Reserved</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {materialModal.data.locations.map((loc: any) => (
-                <tr key={loc.inventory_id}>
-                  <td className="py-2 pr-3">{loc.location_code || '-'}</td>
-                  <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{loc.batch_number || '-'}</td>
-                  <td className="py-2 pr-3 text-right tabular-nums">{loc.quantity_available.toLocaleString('id-ID')}</td>
-                  <td className="py-2 text-right tabular-nums">{loc.quantity_reserved.toLocaleString('id-ID')}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
+                  <th className="pb-2 pr-3">Lokasi</th>
+                  <th className="pb-2 pr-3">No. Batch</th>
+                  <th className="pb-2 pr-3 text-right">Qty Tersedia</th>
+                  <th className="pb-2 text-right">Qty Reserved</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {materialModal.data.locations.map((loc: any) => (
+                  <tr key={loc.inventory_id}>
+                    <td className="py-2 pr-3">{loc.location_code || '-'}</td>
+                    <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{loc.batch_number || '-'}</td>
+                    <td className="py-2 pr-3 text-right tabular-nums">{loc.quantity_available.toLocaleString('id-ID')}</td>
+                    <td className="py-2 text-right tabular-nums">{loc.quantity_reserved.toLocaleString('id-ID')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </AccessibleModal>
     </div>

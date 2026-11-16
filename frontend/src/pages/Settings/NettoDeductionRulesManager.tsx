@@ -192,7 +192,7 @@ export default function NettoDeductionRulesManager() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <button
             onClick={fetchRules}
             disabled={loading}
@@ -282,7 +282,7 @@ export default function NettoDeductionRulesManager() {
                       {rule.deduction_kg.toFixed(3)} <span className="text-xs font-normal text-slate-500 dark:text-slate-400">kg</span>
                     </td>
                     <td className="px-4 py-3.5 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
+                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
                         <button
                           onClick={() => openEditModal(rule)}
                           className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition dark:text-blue-400"
@@ -310,7 +310,7 @@ export default function NettoDeductionRulesManager() {
       {/* Add / Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-slate-200 dark:border-gray-700 flex items-center justify-between bg-slate-50 dark:bg-gray-900">
               <h3 className="font-bold text-lg text-slate-900 dark:text-white">
                 {isEditing ? 'Edit Aturan Potongan Netto' : 'Tambah Aturan Potongan Netto Baru'}
@@ -415,7 +415,7 @@ export default function NettoDeductionRulesManager() {
                 </p>
               </div>
 
-              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-gray-700">
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-gray-700 flex-wrap">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
@@ -439,7 +439,7 @@ export default function NettoDeductionRulesManager() {
       {/* Delete Confirmation Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
               <ExclamationTriangleIcon className="h-7 w-7 flex-shrink-0" />
               <h3 className="font-bold text-lg text-slate-900 dark:text-white">
@@ -453,7 +453,7 @@ export default function NettoDeductionRulesManager() {
               </strong>{' '}
               ({deleteTarget.deduction_kg} kg)?
             </p>
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="flex items-center justify-end gap-3 pt-2 flex-wrap">
               <button
                 onClick={() => setDeleteTarget(null)}
                 className="px-4 py-2 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-700 dark:text-gray-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-gray-700"

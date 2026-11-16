@@ -203,7 +203,7 @@ export default function BatchStatusChange() {
 
       {selected && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="card w-full max-w-lg p-6 space-y-4">
+          <div className="card w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-bold">
               Disposisi Batch: {selected.item_code} - {selected.item_name}
             </h2>
@@ -254,7 +254,7 @@ export default function BatchStatusChange() {
               <label className="block text-sm mb-1">Alasan</label>
               <textarea className="input-field" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
             </div>
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-2 pt-2 flex-wrap">
               <button className="btn-secondary" onClick={() => setSelected(null)}>Batal</button>
               <button className="btn-primary" disabled={saving} onClick={handleSave}>
                 {saving ? 'Menyimpan...' : 'Simpan'}

@@ -388,7 +388,7 @@ export default function ConvertingInput() {
       {/* Common header */}
       <div className={sc}>
         <h3 className="font-semibold text-slate-800 mb-4 dark:text-slate-100">Informasi Umum</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <label className={lc}>Mesin <span className="text-red-500">*</span></label>
             <select value={machineId} onChange={e => setMachineId(e.target.value ? Number(e.target.value) : '')} className={ic}>
@@ -592,7 +592,7 @@ export default function ConvertingInput() {
         </div>
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4 dark:text-slate-100">Production Result</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div><label className={lc}>Grade A (kg)</label><NumberInput step="0.01" value={gradeA || ''} onChange={e => setGradeA(N(e.target.value))} className={ic} /></div>
             <div><label className={lc}>Grade B (kg)</label><NumberInput step="0.01" value={gradeB || ''} onChange={e => setGradeB(N(e.target.value))} className={ic} /></div>
             <div><label className={lc}>Loss (kg)</label><NumberInput step="0.01" value={lossKg || ''} onChange={e => setLossKg(N(e.target.value))} className={ic} /></div>
@@ -634,7 +634,7 @@ export default function ConvertingInput() {
         </div>
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4 dark:text-slate-100">Production Result (pcs)</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div><label className={lc}>Grade A (pcs)</label><NumberInput step="1" value={gradeA || ''} onChange={e => setGradeA(N(e.target.value))} className={ic} /></div>
             <div><label className={lc}>Grade B (pcs)</label><NumberInput step="1" value={gradeB || ''} onChange={e => setGradeB(N(e.target.value))} className={ic} /></div>
             <div><label className={lc}>Loss (kg)</label><NumberInput step="0.01" value={lossKg || ''} onChange={e => setLossKg(N(e.target.value))} className={ic} /></div>
@@ -680,7 +680,7 @@ export default function ConvertingInput() {
         </div>
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4 dark:text-slate-100">Production Result</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div><label className={lc}>Grade A (kg)</label><NumberInput step="0.01" value={gradeA || ''} onChange={e => setGradeA(N(e.target.value))} className={ic} /></div>
             <div><label className={lc}>Grade B (kg)</label><NumberInput step="0.01" value={gradeB || ''} onChange={e => setGradeB(N(e.target.value))} className={ic} /></div>
             <div><label className={lc}>Loss (kg)</label><NumberInput step="0.01" value={lossKg || ''} onChange={e => setLossKg(N(e.target.value))} className={ic} /></div>
@@ -691,7 +691,7 @@ export default function ConvertingInput() {
         {/* Speed Settings */}
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4 dark:text-slate-100">Target &amp; Actual Speed</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label className={lc}>Target Speed</label><NumberInput value={targetSpeed || ''} onChange={e => setTargetSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
             <div><label className={lc}>Actual Speed</label><NumberInput value={actualSpeed || ''} onChange={e => setActualSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
           </div>
@@ -699,7 +699,7 @@ export default function ConvertingInput() {
         {/* Film Axis Settings */}
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4 dark:text-slate-100">Film Axis</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
             <div><label className={lc}>Initial Torque (%)</label><NumberInput step="0.1" value={filmAxis.initial_torque || ''} onChange={e => setFilmAxis(a => ({ ...a, initial_torque: N(e.target.value) }))} className={ic} /></div>
             <div><label className={lc}>Setting Tension (kg)</label><NumberInput step="0.1" value={filmAxis.setting_tension || ''} onChange={e => setFilmAxis(a => ({ ...a, setting_tension: N(e.target.value) }))} className={ic} /></div>
             <div><label className={lc}>Actual Tension (kg)</label><NumberInput step="0.1" value={filmAxis.actual_tension || ''} onChange={e => setFilmAxis(a => ({ ...a, actual_tension: N(e.target.value) }))} className={ic} /></div>
@@ -712,7 +712,7 @@ export default function ConvertingInput() {
         {/* Non Woven Axis Settings */}
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4 dark:text-slate-100">Non Woven Axis</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
             <div><label className={lc}>Initial Torque (%)</label><NumberInput step="0.1" value={nwAxis.initial_torque || ''} onChange={e => setNwAxis(a => ({ ...a, initial_torque: N(e.target.value) }))} className={ic} /></div>
             <div><label className={lc}>Setting Tension (kg)</label><NumberInput step="0.1" value={nwAxis.setting_tension || ''} onChange={e => setNwAxis(a => ({ ...a, setting_tension: N(e.target.value) }))} className={ic} /></div>
             <div><label className={lc}>Actual Tension (kg)</label><NumberInput step="0.1" value={nwAxis.actual_tension || ''} onChange={e => setNwAxis(a => ({ ...a, actual_tension: N(e.target.value) }))} className={ic} /></div>
@@ -792,7 +792,7 @@ export default function ConvertingInput() {
         {/* Bagmaker Header */}
         <div className={sc}>
           <h3 className="font-semibold text-slate-800 mb-4 dark:text-slate-100">Info Bagmaker</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div><label className={lc}>Production Hour (menit)</label><NumberInput value={prodHourMin || ''} onChange={e => setProdHourMin(N(e.target.value))} className={ic} placeholder="0" /></div>
             <div><label className={lc}>Downtime (menit)</label><NumberInput value={downtimeMin || ''} onChange={e => setDowntimeMin(N(e.target.value))} className={ic} placeholder="0" /></div>
             <div><label className={lc}>Speed Mesin (Actual)</label><NumberInput value={machineSpeed || ''} onChange={e => setMachineSpeed(N(e.target.value))} className={ic} placeholder="0" /></div>
@@ -948,7 +948,7 @@ export default function ConvertingInput() {
 
       {/* Submit */}
       {machineId && (
-        <div className="flex justify-end gap-3 mt-4">
+        <div className="flex justify-end gap-3 mt-4 flex-wrap">
           <button onClick={() => navigate('/app/production/converting')} className="px-6 py-2.5 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-200 dark:border-slate-600">Batal</button>
           <button onClick={handleSubmit} disabled={submitting} className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
             {submitting ? 'Menyimpan...' : 'Simpan Data Produksi'}

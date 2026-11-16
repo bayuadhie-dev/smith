@@ -334,7 +334,7 @@ export default function MasterDataBarangTab() {
             <span>
               {filtered.length === 0 ? '0 item' : `${(safePage - 1) * pageSize + 1}-${Math.min(safePage * pageSize, filtered.length)} dari ${filtered.length} item`}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <select className="input-field w-auto" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
                 {[25, 50, 100, 200].map((n) => <option key={n} value={n}>{n} / halaman</option>)}
               </select>
@@ -348,12 +348,12 @@ export default function MasterDataBarangTab() {
 
       {showModal && editingRow && (
         <div className="fixed inset-0 bg-black/40 flex items-start justify-center z-50 p-4 overflow-y-auto">
-          <div className="card w-full max-w-2xl p-6 space-y-4 my-8 mt-16">
+          <div className="card w-full max-w-2xl p-6 space-y-4 my-8 mt-16 max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-bold">
               Edit {editingRow.source === 'product' ? 'Product' : 'Material'}: {editingRow.code} - {editingRow.name}
             </h2>
 
-            <div className="flex gap-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex gap-4 border-b border-gray-200 dark:border-gray-700 flex-wrap">
               <button
                 onClick={() => setModalTab('detail')}
                 className={`pb-2 px-1 border-b-2 text-sm font-medium ${
@@ -403,7 +403,7 @@ export default function MasterDataBarangTab() {
               <div className="py-8 text-center">Memuat detail...</div>
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm mb-1">Kelompok</label>
                     <input
@@ -481,7 +481,7 @@ export default function MasterDataBarangTab() {
 
                 <div className="border-t pt-4 dark:border-gray-700">
                   <h3 className="font-semibold mb-3">Parameter MRP</h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm mb-1">Minimum Order Qty (MOQ)</label>
                       <NumberInput
@@ -557,7 +557,7 @@ export default function MasterDataBarangTab() {
 
                 <div className="border-t pt-4 dark:border-gray-700">
                   <h3 className="font-semibold mb-3">Identitas &amp; Ukuran</h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div><label className="block text-sm mb-1">Barcode / UPC</label><input className="input-field" value={form.barcode || ''} onChange={(e) => setForm({ ...form, barcode: e.target.value })} /></div>
                     <div><label className="block text-sm mb-1">Merek</label><input className="input-field" value={form.brand || ''} onChange={(e) => setForm({ ...form, brand: e.target.value })} /></div>
                     {([['item_length_m', 'Panjang (m)'], ['item_width_m', 'Lebar (m)'], ['item_height_m', 'Tinggi (m)'], ['item_weight_kg', 'Berat (kg)']] as const).map(([k, label]) => (
@@ -599,7 +599,7 @@ export default function MasterDataBarangTab() {
                   </div>
                 )}
 
-                <div className="flex justify-end gap-2 pt-2">
+                <div className="flex justify-end gap-2 pt-2 flex-wrap">
                   <button className="btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
                   <button className="btn-primary" onClick={handleSave}>Simpan</button>
                 </div>
@@ -612,10 +612,10 @@ export default function MasterDataBarangTab() {
 
       {niOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <form onSubmit={saveNonInventory} className="w-full max-w-lg space-y-4 rounded-lg bg-white p-6 dark:bg-gray-800">
+          <form onSubmit={saveNonInventory} className="w-full max-w-lg space-y-4 rounded-lg bg-white p-6 dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold">Barang Non Persediaan</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">Jasa atau biaya yang dibeli (ongkos kirim, jasa makloon, sewa, dan sebagainya). Tidak punya stok dan tidak melalui penerimaan barang; langsung dibebankan ke akun beban saat faktur pembelian.</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div><label className="mb-1 block text-sm font-medium">Kode *</label><input className="input-field" value={ni.code} onChange={(e) => setNi({ ...ni, code: e.target.value })} /></div>
               <div><label className="mb-1 block text-sm font-medium">Satuan</label><input className="input-field" value={ni.primary_uom} onChange={(e) => setNi({ ...ni, primary_uom: e.target.value })} placeholder="TRIP, JAM, KG..." /></div>
             </div>
@@ -627,7 +627,7 @@ export default function MasterDataBarangTab() {
                 <option value="">Tanpa PPN</option><option value="Y">Y - 11%</option><option value="A">A - 1,1%</option><option value="B">B - 1,2%</option><option value="L">L - 12%</option>
               </select>
             </div>
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 flex-wrap">
               <button type="button" className="btn-secondary" onClick={() => setNiOpen(false)}>Batal</button>
               <button type="submit" className="btn-primary disabled:opacity-50" disabled={niSaving}>{niSaving ? 'Menyimpan...' : 'Simpan'}</button>
             </div>
@@ -849,7 +849,7 @@ function ApprovedVendorsManager({ materialId }: { materialId: number }) {
                 {a.supplier_name || a.supplier?.name || `Supplier #${a.supplier_id}`}
                 {a.is_preferred && <span className="ml-2 text-xs text-primary-600 font-medium dark:text-primary-400">Preferred</span>}
               </span>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <button
                   className="text-xs text-gray-500 hover:text-primary-600 dark:text-gray-400"
                   onClick={() => handleTogglePreferred(a)}

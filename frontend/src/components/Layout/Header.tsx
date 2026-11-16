@@ -164,14 +164,14 @@ export default function Header({ toggleSidebar }: HeaderProps) {
 
         <div className="h-6 w-px bg-gray-200 dark:bg-gray-700" aria-hidden="true" />
 
-        <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-          <div className="flex flex-1 items-center">
+        <div className="flex min-w-0 flex-1 gap-x-4 self-stretch lg:gap-x-6">
+          <div className="flex min-w-0 flex-1 items-center">
             <h1
               onClick={handleHeaderClick}
-              className={`text-lg font-bold cursor-pointer select-none transition-all duration-300 ${
+              className={`truncate text-sm font-bold cursor-pointer select-none transition-all duration-300 sm:text-base lg:text-lg ${
                 isGlowing
                   ? 'text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400 animate-pulse scale-105'
-                  : 'text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400'
+                  : 'text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400'
               }`}
               title="Klik 3x untuk Easter Egg Selebrasi & Live System Status! 🎉"
             >
@@ -187,7 +187,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
       {/* Real-time Easter Egg Modal */}
       {showEasterEggModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-          <div className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-slate-900 border border-slate-700/80 text-white shadow-2xl p-6 md:p-8">
+          <div className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-slate-900 border border-slate-700/80 text-white shadow-2xl p-6 md:p-8 max-h-[90vh] overflow-y-auto">
             {/* Background Glow */}
             <div className="absolute -top-20 -right-20 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl"></div>

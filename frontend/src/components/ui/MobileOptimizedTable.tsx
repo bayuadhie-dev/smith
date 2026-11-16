@@ -107,7 +107,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
                 ))}
                 {(onView || onEdit || onDelete) && (
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 flex-wrap">
                       {onView && (
                         <button
                           onClick={() => onView(row)}
@@ -178,7 +178,7 @@ const MobileOptimizedTable: React.FC<MobileOptimizedTableProps> = ({
 
                 {/* Expand Button & Actions */}
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 flex-wrap">
                     {(onView || onEdit || onDelete) && (
                       <>
                         {onView && (

@@ -197,7 +197,7 @@ const navigate = useNavigate();
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6">
       {/* Header */}
-      <div className="sm:flex sm:items-center sm:justify-between mb-6">
+      <div className="sm:flex sm:items-center sm:flex-wrap justify-between mb-6 gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Product Categories</h1>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
@@ -264,94 +264,96 @@ const navigate = useNavigate();
 
       {/* Categories Table */}
       <div className="bg-white dark:bg-gray-800 shadow-sm ring-1 ring-gray-900/5 rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
-          <thead className="bg-gray-50 dark:bg-gray-900">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.bom.category')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('navigation.products')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Sort Order
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {filteredCategories.map((category) => (
-              <tr key={category.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10">
-                      <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center dark:bg-blue-900/30">
-                        <TagIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        {category.name}
-                      </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {category.description}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  {category.parent_name || '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                    {category.product_count} products
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {getStatusBadge(category.is_active)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  {category.sort_order}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex items-center justify-end space-x-2">
-                    <button
-                      onClick={() => navigate(`/app/products/categories/${category.id}`)}
-                      className="text-blue-600 hover:text-blue-900 p-1 dark:text-blue-400"
-                      title="View Details"
-                    >
-                      <EyeIcon className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => navigate(`/app/products/categories/${category.id}/edit`)}
-                      className="text-indigo-600 hover:text-indigo-900 p-1 dark:text-indigo-400"
-                      title="Edit Category"
-                    >
-                      <PencilIcon className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => toggleStatus(category.id, category.is_active)}
-                      className={`p-1 ${category.is_active ? 'text-red-600 hover:text-red-900 dark:text-red-400' : 'text-green-600 hover:text-green-900 dark:text-green-400'}`}
-                      title={category.is_active ? 'Deactivate' : 'Activate'}
-                    >
-                      {category.is_active ? (
-                        <XCircleIcon className="h-4 w-4" />
-                      ) : (
-                        <CheckCircleIcon className="h-4 w-4" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(category.id, category.name)}
-                      className="text-red-600 hover:text-red-900 p-1 dark:text-red-400"
-                      title="Delete Category"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
+            <thead className="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.bom.category')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('navigation.products')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Sort Order
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {filteredCategories.map((category) => (
+                <tr key={category.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center dark:bg-blue-900/30">
+                          <TagIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {category.name}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {category.description}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    {category.parent_name || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                      {category.product_count} products
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {getStatusBadge(category.is_active)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    {category.sort_order}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex items-center justify-end space-x-2 flex-wrap">
+                      <button
+                        onClick={() => navigate(`/app/products/categories/${category.id}`)}
+                        className="text-blue-600 hover:text-blue-900 p-1 dark:text-blue-400"
+                        title="View Details"
+                      >
+                        <EyeIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => navigate(`/app/products/categories/${category.id}/edit`)}
+                        className="text-indigo-600 hover:text-indigo-900 p-1 dark:text-indigo-400"
+                        title="Edit Category"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => toggleStatus(category.id, category.is_active)}
+                        className={`p-1 ${category.is_active ? 'text-red-600 hover:text-red-900 dark:text-red-400' : 'text-green-600 hover:text-green-900 dark:text-green-400'}`}
+                        title={category.is_active ? 'Deactivate' : 'Activate'}
+                      >
+                        {category.is_active ? (
+                          <XCircleIcon className="h-4 w-4" />
+                        ) : (
+                          <CheckCircleIcon className="h-4 w-4" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(category.id, category.name)}
+                        className="text-red-600 hover:text-red-900 p-1 dark:text-red-400"
+                        title="Delete Category"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {filteredCategories.length === 0 && (
           <div className="text-center py-12">

@@ -366,7 +366,7 @@ const ConvertingDashboard: React.FC = () => {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Converting Dashboard</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Monitor produksi mesin converting</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => navigate('/app/production/converting/input')}
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
@@ -384,7 +384,7 @@ const ConvertingDashboard: React.FC = () => {
       </div>
 
       {/* Date Navigation */}
-      <div className="flex items-center justify-center gap-4 mb-6">
+      <div className="flex items-center justify-center gap-4 mb-6 flex-wrap">
         <button onClick={() => changeDate(-1)} className="p-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-slate-50 border dark:hover:bg-slate-800">
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
@@ -485,7 +485,7 @@ const ConvertingDashboard: React.FC = () => {
                               <p className="text-xs text-slate-400">Op: {shift.operator_name}</p>
                             )}
                           </div>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 flex-wrap">
                             <div className="text-right">
                               <p className="font-bold text-slate-800 dark:text-slate-100">{fmtQty(shift.good_quantity)} {unitFor(machine.machine_type)}</p>
                               <p className={`text-xs ${shift.efficiency_rate >= machine.target_efficiency ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
@@ -494,7 +494,7 @@ const ConvertingDashboard: React.FC = () => {
                             </div>
                             
                             {/* Hover Actions */}
-                            <div className="flex items-center gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                            <div className="flex items-center gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity flex-wrap">
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleEditClick(shift, machine); }}
                                 className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
@@ -777,7 +777,7 @@ const ConvertingDashboard: React.FC = () => {
               </div>
 
               {/* Modal Footer */}
-              <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
+              <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 flex-wrap">
                 <button
                   type="button"
                   onClick={() => {

@@ -1295,7 +1295,7 @@ export default function WorkOrderProductionInput() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center space-x-4">
           <Link
             to={`/app/production/work-orders/${id}`}
@@ -1449,7 +1449,7 @@ export default function WorkOrderProductionInput() {
             Produk
             <span className="text-xs text-gray-500 dark:text-gray-400 font-normal ml-2">(Default: produk WO, bisa diganti jika ganti order)</span>
           </label>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <div className="flex-1 relative">
               <input
                 type="text"
@@ -1735,7 +1735,7 @@ export default function WorkOrderProductionInput() {
         {/* Quantity Section */}
         <div className="border-t pt-6">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Hasil Produksi</h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
             <div className="relative">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Grade A <span className="text-green-600 dark:text-green-400">(Good)</span> *
@@ -1764,7 +1764,7 @@ export default function WorkOrderProductionInput() {
                   <div className="text-right bg-gray-100 dark:bg-gray-800 p-2 rounded mb-2 font-mono text-lg overflow-hidden">
                     {calcDisplay}
                   </div>
-                  <div className="grid grid-cols-4 gap-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1">
                     <button type="button" onClick={calcClear} className="col-span-2 p-2 bg-red-100 text-red-700 rounded hover:bg-red-200 font-medium dark:bg-red-900/30 dark:text-red-300">C</button>
                     <button type="button" onClick={() => calcPerformOperation('÷')} className="p-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 font-medium dark:bg-blue-900/30 dark:text-blue-300">÷</button>
                     <button type="button" onClick={() => calcPerformOperation('×')} className="p-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 font-medium dark:bg-blue-900/30 dark:text-blue-300">×</button>
@@ -1852,7 +1852,7 @@ export default function WorkOrderProductionInput() {
           </div>
 
           {/* Waste Material - Auto-calculated from waste pack */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200 dark:bg-orange-900/20 dark:border-orange-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200 dark:bg-orange-900/20 dark:border-orange-800">
             <div className="col-span-4 mb-2">
               <p className="text-sm font-medium text-orange-700 dark:text-orange-300">
                 Waste Material (Auto) - dari {formData.quantity_waste} pack waste
@@ -1909,7 +1909,7 @@ export default function WorkOrderProductionInput() {
           </div>
 
           {/* Auto-calculated: Qty Produksi & Waste */}
-          <div className="grid grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
             <div>
               <label className="block text-sm font-medium text-blue-700 mb-1 dark:text-blue-300">
                 Qty Produksi (Auto)
@@ -2379,86 +2379,88 @@ export default function WorkOrderProductionInput() {
             </div>
 
             {/* Header row */}
-            <div className="grid grid-cols-12 gap-2 px-2 mb-1 text-xs font-medium text-gray-500 uppercase tracking-wide dark:text-gray-400">
-              <div className="col-span-4">Material</div>
-              <div className="col-span-2 text-center">Tipe</div>
-              <div className="col-span-2 text-right">Rencana</div>
-              <div className="col-span-3">Aktual</div>
-              <div className="col-span-1 text-right">Selisih</div>
-            </div>
-
-            <div className="space-y-1.5">
-              {bomItems.map((item, idx) => {
-                const qtyGood = parseFloat(formData.quantity_good || '0') || 0;
-                const qtyPerCtn = bomSource === 'work_order'
-                  ? (item.quantity_per_unit || 0)
-                  : (item.quantity || 0);
-                const plannedQty = bomPackPerCarton > 0
-                  ? qtyPerCtn * (qtyGood / bomPackPerCarton)
-                  : 0;
-                const actualQty = parseFloat(item.actual_input || '') || 0;
-                const variance = actualQty > 0 ? actualQty - plannedQty : null;
-                const variancePct = variance !== null && plannedQty > 0
-                  ? (variance / plannedQty * 100)
-                  : null;
-
-                return (
-                  <div key={item.id} className="grid grid-cols-12 gap-2 items-center px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm">
-                    {/* Material name */}
-                    <div className="col-span-4">
-                      <span className="font-medium text-gray-800 dark:text-gray-200">
-                        {item.item_name || item.material_name || `Material #${item.material_id}`}
-                      </span>
-                      {item.item_code && (
-                        <span className="block text-xs text-gray-400">{item.item_code}</span>
-                      )}
-                    </div>
-                    {/* Item type badge */}
-                    <div className="col-span-2 text-center">
-                      {item.item_type && (
-                        <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-xs dark:bg-blue-900/30 dark:text-blue-300">
-                          {item.item_type}
+            <div className="overflow-x-auto">
+              <div className="grid min-w-[760px] grid-cols-12 gap-2 px-2 mb-1 text-xs font-medium text-gray-500 uppercase tracking-wide dark:text-gray-400">
+                <div className="col-span-4">Material</div>
+                <div className="col-span-2 text-center">Tipe</div>
+                <div className="col-span-2 text-right">Rencana</div>
+                <div className="col-span-3">Aktual</div>
+                <div className="col-span-1 text-right">Selisih</div>
+              </div>
+  
+              <div className="space-y-1.5">
+                {bomItems.map((item, idx) => {
+                  const qtyGood = parseFloat(formData.quantity_good || '0') || 0;
+                  const qtyPerCtn = bomSource === 'work_order'
+                    ? (item.quantity_per_unit || 0)
+                    : (item.quantity || 0);
+                  const plannedQty = bomPackPerCarton > 0
+                    ? qtyPerCtn * (qtyGood / bomPackPerCarton)
+                    : 0;
+                  const actualQty = parseFloat(item.actual_input || '') || 0;
+                  const variance = actualQty > 0 ? actualQty - plannedQty : null;
+                  const variancePct = variance !== null && plannedQty > 0
+                    ? (variance / plannedQty * 100)
+                    : null;
+  
+                  return (
+                    <div key={item.id} className="grid min-w-[760px] grid-cols-12 gap-2 items-center px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm">
+                      {/* Material name */}
+                      <div className="col-span-4">
+                        <span className="font-medium text-gray-800 dark:text-gray-200">
+                          {item.item_name || item.material_name || `Material #${item.material_id}`}
                         </span>
-                      )}
-                    </div>
-                    {/* Planned qty */}
-                    <div className="col-span-2 text-right text-gray-600 dark:text-gray-300">
-                      {qtyGood > 0
-                        ? <><span className="font-medium">{plannedQty.toLocaleString('id-ID', { maximumFractionDigits: 4 })}</span> <span className="text-xs text-gray-400">{item.uom}</span></>
-                        : <span className="text-gray-300">—</span>
-                      }
-                    </div>
-                    {/* Actual input */}
-                    <div className="col-span-3">
-                      <div className="flex items-center gap-1">
-                        <NumberInput
-                          placeholder="Aktual..."
-                          value={item.actual_input || ''}
-                          onChange={(e) => {
-                            setBomItems(prev => prev.map((bi, i) =>
-                              i === idx ? { ...bi, actual_input: e.target.value } : bi
-                            ));
-                          }}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
-                          step="any"
-                          min="0"
-                        />
-                        <span className="text-xs text-gray-400 whitespace-nowrap">{item.uom}</span>
+                        {item.item_code && (
+                          <span className="block text-xs text-gray-400">{item.item_code}</span>
+                        )}
+                      </div>
+                      {/* Item type badge */}
+                      <div className="col-span-2 text-center">
+                        {item.item_type && (
+                          <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-xs dark:bg-blue-900/30 dark:text-blue-300">
+                            {item.item_type}
+                          </span>
+                        )}
+                      </div>
+                      {/* Planned qty */}
+                      <div className="col-span-2 text-right text-gray-600 dark:text-gray-300">
+                        {qtyGood > 0
+                          ? <><span className="font-medium">{plannedQty.toLocaleString('id-ID', { maximumFractionDigits: 4 })}</span> <span className="text-xs text-gray-400">{item.uom}</span></>
+                          : <span className="text-gray-300">—</span>
+                        }
+                      </div>
+                      {/* Actual input */}
+                      <div className="col-span-3">
+                        <div className="flex items-center gap-1">
+                          <NumberInput
+                            placeholder="Aktual..."
+                            value={item.actual_input || ''}
+                            onChange={(e) => {
+                              setBomItems(prev => prev.map((bi, i) =>
+                                i === idx ? { ...bi, actual_input: e.target.value } : bi
+                              ));
+                            }}
+                            className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                            step="any"
+                            min="0"
+                          />
+                          <span className="text-xs text-gray-400 whitespace-nowrap">{item.uom}</span>
+                        </div>
+                      </div>
+                      {/* Variance */}
+                      <div className="col-span-1 text-right text-xs">
+                        {variance !== null && (
+                          <span className={`font-semibold ${
+                            variance > 0 ? 'text-red-600 dark:text-red-400' : variance < 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
+                          }`}>
+                            {variance > 0 ? '+' : ''}{variancePct !== null ? `${variancePct.toFixed(1)}%` : '0%'}
+                          </span>
+                        )}
                       </div>
                     </div>
-                    {/* Variance */}
-                    <div className="col-span-1 text-right text-xs">
-                      {variance !== null && (
-                        <span className={`font-semibold ${
-                          variance > 0 ? 'text-red-600 dark:text-red-400' : variance < 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
-                        }`}>
-                          {variance > 0 ? '+' : ''}{variancePct !== null ? `${variancePct.toFixed(1)}%` : '0%'}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
 
             <p className="text-xs text-gray-400 mt-2">
@@ -2535,7 +2537,7 @@ export default function WorkOrderProductionInput() {
 
           {formData.early_stop && (
             <div className="space-y-4 pl-6 border-l-2 border-orange-300">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-orange-700 mb-1 dark:text-orange-300">
                     Waktu Berhenti
@@ -2596,7 +2598,7 @@ export default function WorkOrderProductionInput() {
                 </div>
 
                 {formData.operator_reassigned && (
-                  <div className="grid grid-cols-2 gap-4 pl-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pl-6">
                     <div>
                       <label className="block text-sm font-medium text-orange-700 mb-1 dark:text-orange-300">
                         Dialihkan ke
@@ -2636,7 +2638,7 @@ export default function WorkOrderProductionInput() {
         </div>
 
         {/* Submit Buttons */}
-        <div className="border-t pt-6 flex justify-end gap-3">
+        <div className="border-t pt-6 flex justify-end gap-3 flex-wrap">
           <Link
             to={`/app/production/work-orders/${id}`}
             className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
@@ -2665,8 +2667,8 @@ export default function WorkOrderProductionInput() {
       
       {/* Sub-Shift Selection Dialog */}
       {showSubShiftDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
               🔄 Konfirmasi Sub-Shift (Ganti Order)
             </h3>
@@ -2705,7 +2707,7 @@ export default function WorkOrderProductionInput() {
               })}
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 type="button"
                 onClick={() => {

@@ -98,7 +98,7 @@ export default function PODetail() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link to="/app/purchasing/purchase-orders" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
             <ArrowLeftIcon className="h-5 w-5" />
@@ -311,26 +311,28 @@ export default function PODetail() {
         ) : materialModal.data.locations?.length === 0 ? (
           <p className="text-sm text-gray-500 text-center py-6 dark:text-gray-400">Belum ada stok untuk bahan ini di gudang.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
-                <th className="pb-2 pr-3">Lokasi</th>
-                <th className="pb-2 pr-3">No. Batch</th>
-                <th className="pb-2 pr-3 text-right">Qty Tersedia</th>
-                <th className="pb-2 text-right">Qty Reserved</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {materialModal.data.locations.map((loc: any) => (
-                <tr key={loc.inventory_id}>
-                  <td className="py-2 pr-3">{loc.location_code || '-'}</td>
-                  <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{loc.batch_number || '-'}</td>
-                  <td className="py-2 pr-3 text-right tabular-nums">{loc.quantity_available.toLocaleString('id-ID')}</td>
-                  <td className="py-2 text-right tabular-nums">{loc.quantity_reserved.toLocaleString('id-ID')}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
+                  <th className="pb-2 pr-3">Lokasi</th>
+                  <th className="pb-2 pr-3">No. Batch</th>
+                  <th className="pb-2 pr-3 text-right">Qty Tersedia</th>
+                  <th className="pb-2 text-right">Qty Reserved</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {materialModal.data.locations.map((loc: any) => (
+                  <tr key={loc.inventory_id}>
+                    <td className="py-2 pr-3">{loc.location_code || '-'}</td>
+                    <td className="py-2 pr-3 text-gray-500 dark:text-gray-400">{loc.batch_number || '-'}</td>
+                    <td className="py-2 pr-3 text-right tabular-nums">{loc.quantity_available.toLocaleString('id-ID')}</td>
+                    <td className="py-2 text-right tabular-nums">{loc.quantity_reserved.toLocaleString('id-ID')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </AccessibleModal>
 

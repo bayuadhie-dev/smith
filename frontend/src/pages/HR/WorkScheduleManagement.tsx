@@ -143,7 +143,7 @@ const WorkScheduleManagement: React.FC = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <Clock className="h-6 w-6" />
           Jadwal Kerja Staff Kantor
@@ -166,50 +166,52 @@ const WorkScheduleManagement: React.FC = () => {
         ) : schedules.length === 0 ? (
           <div className="text-center py-12 text-gray-500 dark:text-gray-400">Belum ada jadwal kerja. Karyawan tanpa jadwal memakai setting global.</div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Nama</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Hari Kerja</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Jam</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Toleransi Terlambat</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Karyawan</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {schedules.map(s => (
-                <tr key={s.id}>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                    {s.name} {!s.is_active && <span className="text-xs text-gray-400">(nonaktif)</span>}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    {s.days_of_week.map(d => DAY_LABELS[d]).join(', ')}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{s.start_time} - {s.end_time}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{s.late_tolerance_minutes} menit</td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    <button onClick={() => openAssign(s)} className="flex items-center gap-1 text-blue-600 hover:underline dark:text-blue-400">
-                      <Users className="h-4 w-4" /> {s.employee_count} karyawan
-                    </button>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button onClick={() => openEdit(s)} className="p-1 text-gray-500 hover:bg-gray-100 rounded dark:hover:bg-gray-700 dark:text-gray-400"><Pencil className="h-4 w-4" /></button>
-                      <button onClick={() => handleDelete(s)} className="p-1 text-red-500 hover:bg-red-50 rounded"><Trash2 className="h-4 w-4" /></button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Nama</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Hari Kerja</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Jam</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Toleransi Terlambat</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Karyawan</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Aksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {schedules.map(s => (
+                  <tr key={s.id}>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                      {s.name} {!s.is_active && <span className="text-xs text-gray-400">(nonaktif)</span>}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                      {s.days_of_week.map(d => DAY_LABELS[d]).join(', ')}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{s.start_time} - {s.end_time}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{s.late_tolerance_minutes} menit</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                      <button onClick={() => openAssign(s)} className="flex items-center gap-1 text-blue-600 hover:underline dark:text-blue-400">
+                        <Users className="h-4 w-4" /> {s.employee_count} karyawan
+                      </button>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2 flex-wrap">
+                        <button onClick={() => openEdit(s)} className="p-1 text-gray-500 hover:bg-gray-100 rounded dark:hover:bg-gray-700 dark:text-gray-400"><Pencil className="h-4 w-4" /></button>
+                        <button onClick={() => handleDelete(s)} className="p-1 text-red-500 hover:bg-red-50 rounded"><Trash2 className="h-4 w-4" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
       {/* Create/Edit Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">{editingId ? 'Edit' : 'Tambah'} Jadwal Kerja</h3>
             {formError && <div className="mb-3 px-3 py-2 bg-red-50 text-red-700 text-sm rounded-lg dark:bg-red-900/20 dark:text-red-300">{formError}</div>}
             <div className="space-y-4">
@@ -237,7 +239,7 @@ const WorkScheduleManagement: React.FC = () => {
                   ))}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Jam Mulai</label>
                   <input type="time" value={form.start_time} onChange={e => setForm(p => ({ ...p, start_time: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg" />
@@ -259,7 +261,7 @@ const WorkScheduleManagement: React.FC = () => {
                 <label htmlFor="is_active" className="text-sm text-gray-700 dark:text-gray-200">Aktif</label>
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-5">
+            <div className="flex justify-end gap-2 mt-5 flex-wrap">
               <button onClick={() => setShowForm(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg dark:text-gray-300">Batal</button>
               <button
                 onClick={handleSave}
@@ -296,7 +298,7 @@ const WorkScheduleManagement: React.FC = () => {
                 </label>
               ))}
             </div>
-            <div className="p-5 border-t flex justify-end gap-2">
+            <div className="p-5 border-t flex justify-end gap-2 flex-wrap">
               <button onClick={() => setAssigningSchedule(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg dark:text-gray-300">Batal</button>
               <button
                 onClick={handleAssign}

@@ -239,7 +239,7 @@ const DowntimeInput: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Input Downtime Mesin</h1>
           <p className="text-gray-600 dark:text-gray-300">Catat downtime mesin dengan kategorisasi dan analisis dampak</p>

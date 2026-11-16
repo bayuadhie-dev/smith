@@ -172,7 +172,7 @@ const WorkflowStatus: React.FC = () => {
         >
           <ArrowLeftIcon className="h-4 w-4" /> Kembali ke Sales Order
         </Link>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Riwayat Produksi &amp; Pengiriman: {workflowData.sales_order.order_number}

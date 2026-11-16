@@ -328,7 +328,7 @@ const { reportId } = useParams()
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-wrap justify-between items-start gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{config.title}</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">{config.description}</p>
@@ -487,7 +487,7 @@ const { reportId } = useParams()
               <h3 className="font-semibold text-gray-900 dark:text-white">Report Results</h3>
               
               {reportData.length > 0 && (
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <button
                     onClick={() => exportReport('csv')}
                     className="btn-secondary text-sm"

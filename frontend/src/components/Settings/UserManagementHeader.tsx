@@ -110,7 +110,7 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
     <div className="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">User & Role Management</h1>
             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">

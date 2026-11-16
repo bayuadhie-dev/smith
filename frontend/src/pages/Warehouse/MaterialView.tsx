@@ -151,7 +151,7 @@ const MaterialView: React.FC = () => {
             <p className="text-gray-600 dark:text-gray-300">Material Code: {material.code}</p>
           </div>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex space-x-3 flex-wrap">
           <button
             onClick={handleEdit}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"

@@ -109,7 +109,7 @@ const RNDProjectList: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Proyek R&D</h1>
           <p className="text-gray-500 dark:text-gray-400">Kelola proyek penelitian dan pengembangan</p>
@@ -216,7 +216,7 @@ const RNDProjectList: React.FC = () => {
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{project.target_product_name || '-'}</td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{project.formula_count}</td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <button
                           onClick={() => navigate(`/app/rnd/projects/${project.id}`)}
                           className="p-1 text-gray-500 dark:text-gray-400 hover:text-blue-600"
@@ -257,7 +257,7 @@ const RNDProjectList: React.FC = () => {
             <p className="text-sm text-gray-600 dark:text-gray-300">
               Menampilkan {projects.length} dari {total} proyek
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}

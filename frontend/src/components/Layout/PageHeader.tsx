@@ -22,19 +22,19 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
 
   return (
-    <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-      <div className="flex items-center">
-        {Icon && <Icon className="h-8 w-8 text-gray-600 dark:text-gray-400 mr-4" />}
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+      <div className="flex min-w-0 items-center">
+        {Icon && <Icon className="mr-3 h-7 w-7 shrink-0 text-gray-600 dark:text-gray-400 sm:mr-4 sm:h-8 sm:w-8" />}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{title}</h1>
-          {subtitle && <p className="text-gray-600 dark:text-gray-400 mt-1">{subtitle}</p>}
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">{title}</h1>
+          {subtitle && <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{subtitle}</p>}
         </div>
       </div>
       
       {action && (
         <Link
           to={action.href}
-          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="btn-primary shrink-0"
         >
           {action.icon ? (
             <action.icon className="-ml-1 mr-2 h-5 w-5" />

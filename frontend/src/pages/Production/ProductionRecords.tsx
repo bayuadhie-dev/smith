@@ -132,12 +132,12 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Production Records</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Track daily production output and quality metrics</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <button className="btn-secondary inline-flex items-center gap-2">
             <ArrowDownTrayIcon className="h-5 w-5" />{t('common.export')}</button>
           <Link to="/app/production/records/new" className="btn-primary inline-flex items-center gap-2">
@@ -395,7 +395,7 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
             <div className="text-sm text-gray-500 dark:text-gray-400">
               Page {currentPage} of {totalPages}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}

@@ -105,7 +105,7 @@ export default function FunctionalLocations() {
           <span className="text-xs text-gray-400">{loc.code}{loc.location_type ? ` — ${loc.location_type}` : ''}</span>
           <span className="text-xs text-blue-600 dark:text-blue-400">({assetsAtLocation(loc.id).length} aset) &rarr;</span>
         </button>
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-wrap">
           <button onClick={() => openAdd(loc.id)} className="p-1 text-gray-400 hover:text-green-600" title="Tambah sub-lokasi"><PlusIcon className="h-4 w-4" /></button>
           <button onClick={() => openEdit(loc)} className="p-1 text-gray-400 hover:text-blue-600"><PencilIcon className="h-4 w-4" /></button>
           <button onClick={() => handleDelete(loc)} className="p-1 text-gray-400 hover:text-red-600"><TrashIcon className="h-4 w-4" /></button>
@@ -117,7 +117,7 @@ export default function FunctionalLocations() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Functional Location</h1>
           <p className="text-gray-600 dark:text-gray-300">Hierarki Plant &rarr; Building &rarr; Line untuk penempatan aset/mesin.</p>
@@ -138,8 +138,8 @@ export default function FunctionalLocations() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">{editing ? 'Edit Lokasi' : 'Tambah Lokasi'}</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -163,7 +163,7 @@ export default function FunctionalLocations() {
                   ))}
                 </select>
               </div>
-              <div className="flex justify-end gap-2 pt-4">
+              <div className="flex justify-end gap-2 pt-4 flex-wrap">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Batal</button>
                 <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Simpan</button>
               </div>
@@ -173,7 +173,7 @@ export default function FunctionalLocations() {
       )}
 
       {drillDown && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg p-6 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-4">
               <div>

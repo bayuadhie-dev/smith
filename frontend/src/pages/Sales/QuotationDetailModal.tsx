@@ -135,31 +135,33 @@ const QuotationDetailModal: React.FC<QuotationDetailModalProps> = ({ quotationId
             </div>
 
             <div className="px-6">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-900">
-                  <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Harga</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Disc %</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {quotation.items.map((item) => (
-                    <tr key={item.id}>
-                      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
-                        {item.product_name || `Produk #${item.product_id}`}
-                        {item.description && <p className="text-xs text-gray-400">{item.description}</p>}
-                      </td>
-                      <td className="px-3 py-2 text-sm text-right text-gray-700 dark:text-gray-300">{item.quantity} {item.uom}</td>
-                      <td className="px-3 py-2 text-sm text-right text-gray-700 dark:text-gray-300">{formatCurrency(item.unit_price)}</td>
-                      <td className="px-3 py-2 text-sm text-right text-gray-700 dark:text-gray-300">{item.discount_percent}%</td>
-                      <td className="px-3 py-2 text-sm text-right font-medium text-gray-900 dark:text-white">{formatCurrency(item.total_amount)}</td>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                      <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty</th>
+                      <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Harga</th>
+                      <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Disc %</th>
+                      <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {quotation.items.map((item) => (
+                      <tr key={item.id}>
+                        <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                          {item.product_name || `Produk #${item.product_id}`}
+                          {item.description && <p className="text-xs text-gray-400">{item.description}</p>}
+                        </td>
+                        <td className="px-3 py-2 text-sm text-right text-gray-700 dark:text-gray-300">{item.quantity} {item.uom}</td>
+                        <td className="px-3 py-2 text-sm text-right text-gray-700 dark:text-gray-300">{formatCurrency(item.unit_price)}</td>
+                        <td className="px-3 py-2 text-sm text-right text-gray-700 dark:text-gray-300">{item.discount_percent}%</td>
+                        <td className="px-3 py-2 text-sm text-right font-medium text-gray-900 dark:text-white">{formatCurrency(item.total_amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div className="px-6 py-4 mt-2 border-t border-gray-200 dark:border-gray-700 flex justify-end">
@@ -210,7 +212,7 @@ const QuotationDetailModal: React.FC<QuotationDetailModalProps> = ({ quotationId
               </div>
             )}
 
-            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 flex-wrap">
               <button
                 onClick={() => navigate(`/app/sales/quotations/${quotation.id}/edit`)}
                 className="btn-secondary inline-flex items-center gap-2"

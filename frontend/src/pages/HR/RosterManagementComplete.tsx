@@ -641,7 +641,7 @@ const RosterManagementComplete: React.FC = () => {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   
                   {/* Week Navigation */}
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-4 flex-wrap">
                     <button
                       onClick={() => navigateWeek('prev')}
                       className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg transition-colors"
@@ -669,7 +669,7 @@ const RosterManagementComplete: React.FC = () => {
                   </div>
                   
                   {/* Shift Selector & Actions */}
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-3 flex-wrap">
                     <select
                       value={selectedShift}
                       onChange={(e) => setSelectedShift(parseInt(e.target.value))}
@@ -815,7 +815,7 @@ const RosterManagementComplete: React.FC = () => {
 
       {/* Loading Overlay */}
       {saving && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl">
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>

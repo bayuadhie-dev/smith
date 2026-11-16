@@ -285,7 +285,7 @@ const RecipeTab: React.FC = () => {
               Jadikan default untuk produk ini
             </label>
           </div>
-          <div className="flex justify-end gap-2 mt-4">
+          <div className="flex justify-end gap-2 mt-4 flex-wrap">
             <button onClick={() => { setShowForm(false); setEditingId(null); }} className="px-3 py-2 text-sm text-gray-600 dark:text-gray-300">Batal</button>
             <button
               onClick={handleSave}
@@ -321,7 +321,7 @@ const RecipeTab: React.FC = () => {
                 <td className="px-3 py-2 text-right">{r.duration_hours ? `${r.duration_hours} jam` : '-'}</td>
                 <td className="px-3 py-2 text-center">{r.is_default ? '✓' : ''}</td>
                 <td className="px-3 py-2 text-right">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-2 flex-wrap">
                     <button onClick={() => handleEdit(r)} className="text-blue-500 hover:text-blue-700" title="Edit">
                       <Pencil className="w-4 h-4" />
                     </button>
@@ -528,7 +528,7 @@ const ExceptionTab: React.FC = () => {
             <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Alasan</label>
             <input type="text" value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="Misal: Libur Nasional Kemerdekaan" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-sm" />
           </div>
-          <div className="flex justify-end gap-2 mt-4">
+          <div className="flex justify-end gap-2 mt-4 flex-wrap">
             <button onClick={() => setShowForm(false)} className="px-3 py-2 text-sm text-gray-600 dark:text-gray-300">Batal</button>
             <button onClick={handleSave} disabled={saving} className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50">
               <Save className="w-4 h-4" /> Simpan

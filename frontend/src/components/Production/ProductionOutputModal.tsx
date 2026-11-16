@@ -119,7 +119,7 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={onClose} />
 
-        <div className="inline-block w-full max-w-5xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 rounded-xl shadow-xl">
+        <div className="inline-block w-full max-w-5xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 rounded-xl shadow-xl max-h-[90vh] overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-primary-600 to-primary-700">
             <div className="flex items-center gap-3">
@@ -229,116 +229,122 @@ const ProductionOutputModal: React.FC<ProductionOutputModalProps> = ({
               <>
                 {/* Machine Tab */}
                 {activeTab === 'machine' && (
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-900">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pack</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Karton</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">% Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {data.by_machine.map((machine, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                          <td className="px-4 py-3">
-                            <div className="font-medium text-gray-900 dark:text-white">{machine.name}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">{machine.code}</div>
-                          </td>
-                          <td className="px-4 py-3 text-right font-medium">{formatNumber(machine.pack)}</td>
-                          <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(Math.round(machine.carton))}</td>
-                          <td className="px-4 py-3 text-right">
-                            <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded dark:bg-purple-900/30 dark:text-purple-300">
-                              {((machine.pack / data.summary.total_pack) * 100).toFixed(1)}%
-                            </span>
-                          </td>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-50 dark:bg-gray-900">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pack</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Karton</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">% Total</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        {data.by_machine.map((machine, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                            <td className="px-4 py-3">
+                              <div className="font-medium text-gray-900 dark:text-white">{machine.name}</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{machine.code}</div>
+                            </td>
+                            <td className="px-4 py-3 text-right font-medium">{formatNumber(machine.pack)}</td>
+                            <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(Math.round(machine.carton))}</td>
+                            <td className="px-4 py-3 text-right">
+                              <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded dark:bg-purple-900/30 dark:text-purple-300">
+                                {((machine.pack / data.summary.total_pack) * 100).toFixed(1)}%
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
 
                 {/* Product Tab */}
                 {activeTab === 'product' && (
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-900">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pack</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Karton</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pack/Ktn</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">% Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {data.by_product.map((product, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                          <td className="px-4 py-3">
-                            <div className="font-medium text-gray-900 dark:text-white">{product.name}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">{product.code}</div>
-                          </td>
-                          <td className="px-4 py-3 text-right font-medium">{formatNumber(product.pack)}</td>
-                          <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(Math.round(product.carton))}</td>
-                          <td className="px-4 py-3 text-right text-gray-500 dark:text-gray-400">{product.packs_per_karton}</td>
-                          <td className="px-4 py-3 text-right">
-                            <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded dark:bg-green-900/30 dark:text-green-300">
-                              {((product.pack / data.summary.total_pack) * 100).toFixed(1)}%
-                            </span>
-                          </td>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-50 dark:bg-gray-900">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pack</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Karton</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pack/Ktn</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">% Total</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        {data.by_product.map((product, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                            <td className="px-4 py-3">
+                              <div className="font-medium text-gray-900 dark:text-white">{product.name}</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{product.code}</div>
+                            </td>
+                            <td className="px-4 py-3 text-right font-medium">{formatNumber(product.pack)}</td>
+                            <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(Math.round(product.carton))}</td>
+                            <td className="px-4 py-3 text-right text-gray-500 dark:text-gray-400">{product.packs_per_karton}</td>
+                            <td className="px-4 py-3 text-right">
+                              <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded dark:bg-green-900/30 dark:text-green-300">
+                                {((product.pack / data.summary.total_pack) * 100).toFixed(1)}%
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
 
                 {/* Detail Tab */}
                 {activeTab === 'detail' && (
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-                    <thead className="bg-gray-50 dark:bg-gray-900">
-                      <tr>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Shift</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
-                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pack</th>
-                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Karton</th>
-                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">OEE</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {data.details.slice(0, 100).map((detail, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                          <td className="px-3 py-2 whitespace-nowrap">{detail.date}</td>
-                          <td className="px-3 py-2">
-                            <span className={`px-2 py-0.5 text-xs rounded ${
-                              detail.shift === 'shift_1' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
-                              detail.shift === 'shift_2' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
-                              'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
-                            }`}>
-                              {detail.shift.replace('shift_', 'S')}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2">{detail.machine_name}</td>
-                          <td className="px-3 py-2">
-                            <div className="truncate max-w-[150px]" title={detail.product_name}>
-                              {detail.product_name}
-                            </div>
-                          </td>
-                          <td className="px-3 py-2 text-right font-medium">{formatNumber(detail.pack_count)}</td>
-                          <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">{formatNumber(Math.round(detail.carton_count))}</td>
-                          <td className="px-3 py-2 text-right">
-                            <span className={`px-2 py-0.5 text-xs rounded ${
-                              detail.oee >= 85 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
-                              detail.oee >= 60 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
-                              'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                            }`}>
-                              {detail.oee}%
-                            </span>
-                          </td>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                      <thead className="bg-gray-50 dark:bg-gray-900">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Shift</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mesin</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</th>
+                          <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pack</th>
+                          <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Karton</th>
+                          <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">OEE</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        {data.details.slice(0, 100).map((detail, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                            <td className="px-3 py-2 whitespace-nowrap">{detail.date}</td>
+                            <td className="px-3 py-2">
+                              <span className={`px-2 py-0.5 text-xs rounded ${
+                                detail.shift === 'shift_1' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                                detail.shift === 'shift_2' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                                'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+                              }`}>
+                                {detail.shift.replace('shift_', 'S')}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2">{detail.machine_name}</td>
+                            <td className="px-3 py-2">
+                              <div className="truncate max-w-[150px]" title={detail.product_name}>
+                                {detail.product_name}
+                              </div>
+                            </td>
+                            <td className="px-3 py-2 text-right font-medium">{formatNumber(detail.pack_count)}</td>
+                            <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">{formatNumber(Math.round(detail.carton_count))}</td>
+                            <td className="px-3 py-2 text-right">
+                              <span className={`px-2 py-0.5 text-xs rounded ${
+                                detail.oee >= 85 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                                detail.oee >= 60 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                                'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                              }`}>
+                                {detail.oee}%
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </>
             ) : null}

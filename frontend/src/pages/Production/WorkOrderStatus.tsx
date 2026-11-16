@@ -186,7 +186,7 @@ export default function WorkOrderStatus() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <ClipboardDocumentListIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
@@ -379,7 +379,7 @@ export default function WorkOrderStatus() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-2 flex-wrap">
                         <Link
                           to={`/app/production/work-orders/${wo.id}/input`}
                           className="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg dark:text-blue-400"

@@ -159,7 +159,7 @@ const QuickStockInputModal: React.FC<QuickStockInputModalProps> = ({
         ></div>
 
         {/* Modal panel */}
-        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div className="w-full inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full max-h-[90vh] overflow-y-auto">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
             <div className="flex items-center justify-between">
@@ -335,7 +335,7 @@ const QuickStockInputModal: React.FC<QuickStockInputModalProps> = ({
             </div>
 
             {/* Footer */}
-            <div className="mt-6 flex items-center justify-end space-x-3">
+            <div className="mt-6 flex items-center justify-end space-x-3 flex-wrap">
               <button
                 type="button"
                 onClick={onClose}

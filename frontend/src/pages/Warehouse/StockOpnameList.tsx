@@ -154,7 +154,7 @@ export default function StockOpnameList({ mode = 'perintah' }: StockOpnameListPr
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <ClipboardDocumentCheckIcon className="h-8 w-8 text-primary-600 dark:text-primary-400" />
@@ -192,128 +192,130 @@ export default function StockOpnameList({ mode = 'perintah' }: StockOpnameListPr
 
       {/* Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-900">
-            <tr>
-              <SortTh tools={tools} col="opname_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Opname</SortTh>
-              <SortTh tools={tools} col="zone_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Zona</SortTh>
-              <SortTh tools={tools} col="opname_type" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipe</SortTh>
-              <SortTh tools={tools} col="scheduled_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jadwal</SortTh>
-              <SortTh tools={tools} col="counted_items" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Progress</SortTh>
-              <SortTh tools={tools} col="variance_items" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Selisih</SortTh>
-              <SortTh tools={tools} col="status" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                Aksi
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {tools.rows.length === 0 ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <td colSpan={8} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                  <ClipboardDocumentCheckIcon className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                  <p>{tools.total === 0 ? 'Belum ada data stok opname' : 'Tidak ada stok opname yang cocok'}</p>
-                  {tools.total === 0 && <Link
-                    to="/app/warehouse/stock-opname/new"
-                    className="text-primary-600 hover:underline mt-2 inline-block dark:text-primary-400"
-                  >
-                    Buat perintah opname baru
-                  </Link>}
-                </td>
+                <SortTh tools={tools} col="opname_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Opname</SortTh>
+                <SortTh tools={tools} col="zone_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Zona</SortTh>
+                <SortTh tools={tools} col="opname_type" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipe</SortTh>
+                <SortTh tools={tools} col="scheduled_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jadwal</SortTh>
+                <SortTh tools={tools} col="counted_items" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Progress</SortTh>
+                <SortTh tools={tools} col="variance_items" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Selisih</SortTh>
+                <SortTh tools={tools} col="status" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                  Aksi
+                </th>
               </tr>
-            ) : (
-              tools.rows.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                  <td className="px-6 py-4">
-                    <Link
-                      to={`/app/warehouse/stock-opname/${order.id}`}
-                      className="text-primary-600 hover:underline font-medium dark:text-primary-400"
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {tools.rows.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                    <ClipboardDocumentCheckIcon className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                    <p>{tools.total === 0 ? 'Belum ada data stok opname' : 'Tidak ada stok opname yang cocok'}</p>
+                    {tools.total === 0 && <Link
+                      to="/app/warehouse/stock-opname/new"
+                      className="text-primary-600 hover:underline mt-2 inline-block dark:text-primary-400"
                     >
-                      {order.opname_number}
-                    </Link>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      oleh {order.created_by_name}
-                    </p>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                    {order.zone_name}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
-                    {TYPE_LABELS[order.opname_type] || order.opname_type}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
-                    {formatDate(order.scheduled_date)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary-600 rounded-full"
-                          style={{
-                            width: `${order.total_items > 0 ? (order.counted_items / order.total_items) * 100 : 0}%`,
-                          }}
-                        />
-                      </div>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {order.counted_items}/{order.total_items}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {order.status === 'completed' ? (
-                      <div>
-                        <span className={`text-sm font-medium ${order.variance_items > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                          {order.variance_items} item
-                        </span>
-                        {order.total_variance_value !== 0 && (
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {formatCurrency(order.total_variance_value)}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-gray-400">-</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[order.status]}`}>
-                      {STATUS_LABELS[order.status]}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {order.status === 'draft' && (
-                        <button
-                          onClick={() => handleStart(order.id)}
-                          className="p-2 text-green-600 hover:bg-green-50 rounded dark:text-green-400"
-                          title="Mulai Opname"
-                        >
-                          <PlayIcon className="h-5 w-5" />
-                        </button>
-                      )}
-                      <Link
-                        to={`/app/warehouse/stock-opname/${order.id}`}
-                        className="p-2 text-primary-600 hover:bg-primary-50 rounded dark:text-primary-400"
-                        title="Lihat Detail"
-                      >
-                        <EyeIcon className="h-5 w-5" />
-                      </Link>
-                      {(order.status === 'draft' || order.status === 'cancelled') && (
-                        <button
-                          onClick={() => handleDelete(order.id, order.opname_number)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded dark:text-red-400"
-                          title="Hapus"
-                        >
-                          <TrashIcon className="h-5 w-5" />
-                        </button>
-                      )}
-                    </div>
+                      Buat perintah opname baru
+                    </Link>}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                tools.rows.map((order) => (
+                  <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-6 py-4">
+                      <Link
+                        to={`/app/warehouse/stock-opname/${order.id}`}
+                        className="text-primary-600 hover:underline font-medium dark:text-primary-400"
+                      >
+                        {order.opname_number}
+                      </Link>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        oleh {order.created_by_name}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                      {order.zone_name}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                      {TYPE_LABELS[order.opname_type] || order.opname_type}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                      {formatDate(order.scheduled_date)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary-600 rounded-full"
+                            style={{
+                              width: `${order.total_items > 0 ? (order.counted_items / order.total_items) * 100 : 0}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {order.counted_items}/{order.total_items}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {order.status === 'completed' ? (
+                        <div>
+                          <span className={`text-sm font-medium ${order.variance_items > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                            {order.variance_items} item
+                          </span>
+                          {order.total_variance_value !== 0 && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {formatCurrency(order.total_variance_value)}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[order.status]}`}>
+                        {STATUS_LABELS[order.status]}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2 flex-wrap">
+                        {order.status === 'draft' && (
+                          <button
+                            onClick={() => handleStart(order.id)}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded dark:text-green-400"
+                            title="Mulai Opname"
+                          >
+                            <PlayIcon className="h-5 w-5" />
+                          </button>
+                        )}
+                        <Link
+                          to={`/app/warehouse/stock-opname/${order.id}`}
+                          className="p-2 text-primary-600 hover:bg-primary-50 rounded dark:text-primary-400"
+                          title="Lihat Detail"
+                        >
+                          <EyeIcon className="h-5 w-5" />
+                        </Link>
+                        {(order.status === 'draft' || order.status === 'cancelled') && (
+                          <button
+                            onClick={() => handleDelete(order.id, order.opname_number)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded dark:text-red-400"
+                            title="Hapus"
+                          >
+                            <TrashIcon className="h-5 w-5" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
       </div>
     </div>

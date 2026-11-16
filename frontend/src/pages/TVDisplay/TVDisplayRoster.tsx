@@ -104,7 +104,7 @@ const TVDisplayRoster: React.FC = () => {
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-wrap justify-between items-center mb-8 gap-3">
           <div>
             <h1 className="text-4xl font-bold mb-2">Employee Roster - Production Floor</h1>
             <p className="text-xl text-gray-400">Employee Roster</p>

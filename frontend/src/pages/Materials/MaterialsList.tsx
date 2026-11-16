@@ -127,12 +127,12 @@ const MaterialsList: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Materials Management</h1>
           <p className="text-gray-600 dark:text-gray-300">Manage your materials inventory and information</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex space-x-3 flex-wrap">
           <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
             <ArrowDownTrayIcon className="h-4 w-4" />
             <span>{t('common.export')}</span>
@@ -243,7 +243,7 @@ const MaterialsList: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-2 flex-wrap">
                       <button className="text-blue-600 hover:text-blue-900 dark:text-blue-400">
                         <Eye className="h-4 w-4" />
                       </button>

@@ -271,7 +271,7 @@ export default function DocumentDashboardUpgraded() {
   return (
     <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
             <DocumentTextIcon className="h-7 w-7 text-primary-600 dark:text-primary-400" />
@@ -279,7 +279,7 @@ export default function DocumentDashboardUpgraded() {
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Generate, manage, and track all business documents</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <button
             onClick={loadData}
             className="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -447,7 +447,7 @@ export default function DocumentDashboardUpgraded() {
 
         {/* Bulk Actions */}
         {selectedDocs.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center gap-4">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center gap-4 flex-wrap">
             <span className="text-sm text-gray-600 dark:text-gray-300">{selectedDocs.length} selected</span>
             <button
               onClick={handleBulkDownload}
@@ -563,7 +563,7 @@ export default function DocumentDashboardUpgraded() {
                           </div>
                         </td>
                         <td className="px-4 py-4">
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1 flex-wrap">
                             <button
                               onClick={() => handlePreview(doc.id)}
                               className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:text-blue-400"
@@ -684,7 +684,7 @@ export default function DocumentDashboardUpgraded() {
                       <PrinterIcon className="h-3.5 w-3.5 mr-1" />
                       {doc.print_count} prints
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 flex-wrap">
                       <button
                         onClick={() => handlePreview(doc.id)}
                         className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg dark:text-blue-400"

@@ -295,7 +295,7 @@ export default function PRForm() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link to="/app/purchasing/requisitions" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
             <ArrowLeftIcon className="h-5 w-5" />
@@ -318,7 +318,7 @@ export default function PRForm() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {isEditable && (
             <button
               onClick={handleSave}
@@ -471,109 +471,111 @@ export default function PRForm() {
         </div>
 
         {/* Item header */}
-        <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 uppercase px-1 dark:text-gray-400">
-          <div className="col-span-3">Nama Item</div>
-          <div className="col-span-1">Kode</div>
-          <div className="col-span-1">Qty</div>
-          <div className="col-span-1">Satuan</div>
-          <div className="col-span-2">Harga Est.</div>
-          <div className="col-span-2">Saran Pemasok</div>
-          <div className="col-span-1 text-right">Total Est.</div>
-          {isEditable && <div className="col-span-1"></div>}
-        </div>
-
-        <datalist id="pr-materials">
-          {materials.map((m) => <option key={m.id} value={m.name}>{m.code}</option>)}
-        </datalist>
-        <div className="space-y-2">
-          {items.map((item, idx) => (
-            <div key={idx} className="grid grid-cols-12 gap-2 items-center">
-              <div className="col-span-3">
-                <input
-                  type="text"
-                  value={item.item_name}
-                  onChange={(e) => updateItem(idx, 'item_name', e.target.value)}
-                  disabled={!isEditable}
-                  placeholder="Nama material/barang"
-                  list="pr-materials"
-                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50"
-                />
-              </div>
-              <div className="col-span-1">
-                <input
-                  type="text"
-                  value={item.item_code}
-                  onChange={(e) => updateItem(idx, 'item_code', e.target.value)}
-                  disabled={!isEditable}
-                  placeholder="Kode"
-                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50"
-                />
-              </div>
-              <div className="col-span-1">
-                <NumberInput
-                  value={item.quantity}
-                  onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
-                  disabled={!isEditable}
-                  placeholder="0"
-                  min="0"
-                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50"
-                />
-              </div>
-              <div className="col-span-1">
-                {(() => {
-                  const m = materialOf(item);
-                  const opts = m ? (uomOpts[m.id] || []) : [];
-                  const cls = 'w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50';
-                  if (opts.length > 1 || (opts.length === 1 && opts[0] !== item.uom)) {
-                    const list = opts.includes(item.uom) || !item.uom ? opts : [item.uom, ...opts];
-                    return (
-                      <select value={item.uom} onChange={(e) => updateItem(idx, 'uom', e.target.value)} disabled={!isEditable} className={cls}>
-                        {list.map((c) => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                    );
-                  }
-                  return <input type="text" value={item.uom} onChange={(e) => updateItem(idx, 'uom', e.target.value)} disabled={!isEditable} placeholder="kg" className={cls} />;
-                })()}
-              </div>
-              <div className="col-span-2">
-                <NumberInput currency={formData.currency === 'IDR'}
-                  value={item.estimated_unit_price}
-                  onChange={(e) => updateItem(idx, 'estimated_unit_price', e.target.value)}
-                  disabled={!isEditable}
-                  placeholder="0"
-                  min="0"
-                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50"
-                />
-              </div>
-              <div className="col-span-2">
-                <input
-                  type="text"
-                  value={item.preferred_supplier_id ? (suppliers.find((x: any) => String(x.id) === item.preferred_supplier_id)?.company_name || '') : item.preferred_supplier_name}
-                  onChange={(e) => setItems(prev => prev.map((it, k) => (k === idx ? { ...it, preferred_supplier_id: '', preferred_supplier_name: e.target.value } : it)))}
-                  disabled={!isEditable}
-                  placeholder="Saran pemasok (opsional)"
-                  maxLength={200}
-                  className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50"
-                />
-              </div>
-              <div className="col-span-1 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
-                {item.estimated_total > 0
-                  ? `${formData.currency === 'IDR' ? 'Rp' : formData.currency} ${item.estimated_total.toLocaleString('id-ID', { maximumFractionDigits: 2 })}`
-                  : '—'}
-              </div>
-              {isEditable && (
-                <div className="col-span-1 flex justify-end">
-                  <button
-                    onClick={() => setItems(p => p.filter((_, i) => i !== idx))}
-                    disabled={items.length === 1}
-                    className="p-1 text-red-400 hover:text-red-600 disabled:opacity-30"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </button>
+        <div className="overflow-x-auto">
+          <div className="grid min-w-[760px] grid-cols-12 gap-2 text-xs font-medium text-gray-500 uppercase px-1 dark:text-gray-400">
+            <div className="col-span-3">Nama Item</div>
+            <div className="col-span-1">Kode</div>
+            <div className="col-span-1">Qty</div>
+            <div className="col-span-1">Satuan</div>
+            <div className="col-span-2">Harga Est.</div>
+            <div className="col-span-2">Saran Pemasok</div>
+            <div className="col-span-1 text-right">Total Est.</div>
+            {isEditable && <div className="col-span-1"></div>}
+          </div>
+  
+          <datalist id="pr-materials">
+            {materials.map((m) => <option key={m.id} value={m.name}>{m.code}</option>)}
+          </datalist>
+          <div className="space-y-2">
+            {items.map((item, idx) => (
+              <div key={idx} className="grid min-w-[760px] grid-cols-12 gap-2 items-center">
+                <div className="col-span-3">
+                  <input
+                    type="text"
+                    value={item.item_name}
+                    onChange={(e) => updateItem(idx, 'item_name', e.target.value)}
+                    disabled={!isEditable}
+                    placeholder="Nama material/barang"
+                    list="pr-materials"
+                    className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50"
+                  />
                 </div>
-              )}
-            </div>
-          ))}
+                <div className="col-span-1">
+                  <input
+                    type="text"
+                    value={item.item_code}
+                    onChange={(e) => updateItem(idx, 'item_code', e.target.value)}
+                    disabled={!isEditable}
+                    placeholder="Kode"
+                    className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50"
+                  />
+                </div>
+                <div className="col-span-1">
+                  <NumberInput
+                    value={item.quantity}
+                    onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
+                    disabled={!isEditable}
+                    placeholder="0"
+                    min="0"
+                    className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50"
+                  />
+                </div>
+                <div className="col-span-1">
+                  {(() => {
+                    const m = materialOf(item);
+                    const opts = m ? (uomOpts[m.id] || []) : [];
+                    const cls = 'w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50';
+                    if (opts.length > 1 || (opts.length === 1 && opts[0] !== item.uom)) {
+                      const list = opts.includes(item.uom) || !item.uom ? opts : [item.uom, ...opts];
+                      return (
+                        <select value={item.uom} onChange={(e) => updateItem(idx, 'uom', e.target.value)} disabled={!isEditable} className={cls}>
+                          {list.map((c) => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      );
+                    }
+                    return <input type="text" value={item.uom} onChange={(e) => updateItem(idx, 'uom', e.target.value)} disabled={!isEditable} placeholder="kg" className={cls} />;
+                  })()}
+                </div>
+                <div className="col-span-2">
+                  <NumberInput currency={formData.currency === 'IDR'}
+                    value={item.estimated_unit_price}
+                    onChange={(e) => updateItem(idx, 'estimated_unit_price', e.target.value)}
+                    disabled={!isEditable}
+                    placeholder="0"
+                    min="0"
+                    className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <input
+                    type="text"
+                    value={item.preferred_supplier_id ? (suppliers.find((x: any) => String(x.id) === item.preferred_supplier_id)?.company_name || '') : item.preferred_supplier_name}
+                    onChange={(e) => setItems(prev => prev.map((it, k) => (k === idx ? { ...it, preferred_supplier_id: '', preferred_supplier_name: e.target.value } : it)))}
+                    disabled={!isEditable}
+                    placeholder="Saran pemasok (opsional)"
+                    maxLength={200}
+                    className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white disabled:bg-gray-50"
+                  />
+                </div>
+                <div className="col-span-1 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {item.estimated_total > 0
+                    ? `${formData.currency === 'IDR' ? 'Rp' : formData.currency} ${item.estimated_total.toLocaleString('id-ID', { maximumFractionDigits: 2 })}`
+                    : '—'}
+                </div>
+                {isEditable && (
+                  <div className="col-span-1 flex justify-end">
+                    <button
+                      onClick={() => setItems(p => p.filter((_, i) => i !== idx))}
+                      disabled={items.length === 1}
+                      className="p-1 text-red-400 hover:text-red-600 disabled:opacity-30"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Total */}
@@ -587,8 +589,8 @@ export default function PRForm() {
 
       {/* Approve/Reject Modal */}
       {showApproveModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">
               {approveAction === 'approve' ? '✅ Setujui PR' : '❌ Tolak PR'}
             </h3>
@@ -606,7 +608,7 @@ export default function PRForm() {
                 />
               </div>
             )}
-            <div className="flex gap-2 justify-end">
+            <div className="flex gap-2 justify-end flex-wrap">
               <button onClick={() => setShowApproveModal(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
               <button
                 onClick={handleApprove}
@@ -621,8 +623,8 @@ export default function PRForm() {
 
       {/* Convert to PO Modal */}
       {showConvertModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">🛒 Buat Purchase Order</h3>
 
             {distinctPreferredSuppliers.length > 1 ? (
@@ -678,14 +680,14 @@ export default function PRForm() {
                     </div>
                   </div>
                 </div>
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end gap-2 flex-wrap">
                   <button type="button" className="px-3 py-1.5 border rounded-lg text-sm" onClick={() => setNewSup(null)}>Batal</button>
                   <button type="button" disabled={savingSup} className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm disabled:opacity-50" onClick={createSupplier}>{savingSup ? 'Menyimpan...' : 'Simpan pemasok'}</button>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Data lengkap (alamat, NPWP, rekening) bisa dilengkapi nanti di master pemasok.</p>
               </div>
             )}
-            <div className="flex gap-2 justify-end">
+            <div className="flex gap-2 justify-end flex-wrap">
               <button onClick={() => setShowConvertModal(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
               <button
                 onClick={handleConvertToPO}

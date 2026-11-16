@@ -181,7 +181,7 @@ const ProductionPlanningList: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap justify-between items-center gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Perencanaan Produksi</h1>
             <p className="text-gray-600 dark:text-gray-300">Jadwal Induk Produksi (MPS)</p>
@@ -237,126 +237,128 @@ const ProductionPlanningList: React.FC = () => {
 
       {/* Plans List */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-900">
-            <tr>
-              <SortTh tools={tools} col="plan_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Rencana</SortTh>
-              <SortTh tools={tools} col="plan_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama Rencana</SortTh>
-              <SortTh tools={tools} col="product_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</SortTh>
-              <SortTh tools={tools} col="period_start" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Periode</SortTh>
-              <SortTh tools={tools} col="planned_quantity" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jumlah</SortTh>
-              <SortTh tools={tools} col="completion_percentage" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Progres</SortTh>
-              <SortTh tools={tools} col="status" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
-              <SortTh tools={tools} col="priority" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Prioritas</SortTh>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {tools.rows.length === 0 ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <td colSpan={9} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                  {tools.total === 0 ? 'Belum ada rencana produksi' : 'Tidak ada rencana yang cocok'}
-                </td>
+                <SortTh tools={tools} col="plan_number" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Rencana</SortTh>
+                <SortTh tools={tools} col="plan_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama Rencana</SortTh>
+                <SortTh tools={tools} col="product_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produk</SortTh>
+                <SortTh tools={tools} col="period_start" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Periode</SortTh>
+                <SortTh tools={tools} col="planned_quantity" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jumlah</SortTh>
+                <SortTh tools={tools} col="completion_percentage" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Progres</SortTh>
+                <SortTh tools={tools} col="status" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
+                <SortTh tools={tools} col="priority" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Prioritas</SortTh>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
               </tr>
-            ) : (
-              tools.rows.map((plan) => (
-                <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{plan.plan_number}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">{plan.plan_type}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 dark:text-white">{plan.plan_name}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">Dasar: {plan.based_on}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 dark:text-white">{plan.product_name}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">{plan.product_code}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">
-                      {new Date(plan.period_start).toLocaleDateString('id-ID')}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      s/d {new Date(plan.period_end).toLocaleDateString('id-ID')}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">
-                      {plan.planned_quantity.toLocaleString()} {plan.uom}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      Aktual: {plan.actual_quantity.toLocaleString()}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div
-                          className="bg-primary-600 h-2 rounded-full"
-                          style={{ width: `${plan.completion_percentage}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-gray-600 dark:text-gray-300">{plan.completion_percentage}%</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(plan.status)}`}>
-                      {STATUS_LABEL[plan.status] || plan.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full ${getPriorityBadge(plan.priority)}`}>
-                      {PRIORITY_LABEL[plan.priority] || plan.priority}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex gap-2">
-                      {plan.status === 'draft' && (
-                        <button
-                          onClick={() => handleApprovePlan(plan.id)}
-                          className="text-green-600 hover:text-green-800 dark:text-green-400"
-                          title="Setujui"
-                        >
-                          <CheckCircle size={18} />
-                        </button>
-                      )}
-                      {plan.status === 'approved' && (
-                        <button
-                          onClick={() => setGenerateModal({ show: true, planId: plan.id, planNumber: plan.plan_number })}
-                          className="text-primary-600 hover:text-primary-800 dark:text-primary-400"
-                          title="Buat SPK"
-                        >
-                          <Play size={18} />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => navigate(`/app/production/planning/edit/${plan.id}`)}
-                        className="text-primary-600 hover:text-primary-800 dark:text-primary-400"
-                        title="Ubah"
-                      >
-                        Ubah
-                      </button>
-                      <button
-                        onClick={() => handleDeletePlan(plan.id)}
-                        className="text-red-600 hover:text-red-800 dark:text-red-400"
-                        title="Hapus"
-                      >
-                        Hapus
-                      </button>
-                    </div>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {tools.rows.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                    {tools.total === 0 ? 'Belum ada rencana produksi' : 'Tidak ada rencana yang cocok'}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                tools.rows.map((plan) => (
+                  <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{plan.plan_number}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{plan.plan_type}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900 dark:text-white">{plan.plan_name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Dasar: {plan.based_on}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900 dark:text-white">{plan.product_name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{plan.product_code}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {new Date(plan.period_start).toLocaleDateString('id-ID')}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        s/d {new Date(plan.period_end).toLocaleDateString('id-ID')}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {plan.planned_quantity.toLocaleString()} {plan.uom}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        Aktual: {plan.actual_quantity.toLocaleString()}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div
+                            className="bg-primary-600 h-2 rounded-full"
+                            style={{ width: `${plan.completion_percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-600 dark:text-gray-300">{plan.completion_percentage}%</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(plan.status)}`}>
+                        {STATUS_LABEL[plan.status] || plan.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs rounded-full ${getPriorityBadge(plan.priority)}`}>
+                        {PRIORITY_LABEL[plan.priority] || plan.priority}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <div className="flex gap-2 flex-wrap">
+                        {plan.status === 'draft' && (
+                          <button
+                            onClick={() => handleApprovePlan(plan.id)}
+                            className="text-green-600 hover:text-green-800 dark:text-green-400"
+                            title="Setujui"
+                          >
+                            <CheckCircle size={18} />
+                          </button>
+                        )}
+                        {plan.status === 'approved' && (
+                          <button
+                            onClick={() => setGenerateModal({ show: true, planId: plan.id, planNumber: plan.plan_number })}
+                            className="text-primary-600 hover:text-primary-800 dark:text-primary-400"
+                            title="Buat SPK"
+                          >
+                            <Play size={18} />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => navigate(`/app/production/planning/edit/${plan.id}`)}
+                          className="text-primary-600 hover:text-primary-800 dark:text-primary-400"
+                          title="Ubah"
+                        >
+                          Ubah
+                        </button>
+                        <button
+                          onClick={() => handleDeletePlan(plan.id)}
+                          className="text-red-600 hover:text-red-800 dark:text-red-400"
+                          title="Hapus"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Generate WO Modal */}
       {generateModal.show && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
               Buat SPK
             </h2>
@@ -393,7 +395,7 @@ const ProductionPlanningList: React.FC = () => {
               </div>
             )}
 
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-3 flex-wrap">
               <button
                 onClick={() => setGenerateModal({ show: false, planId: null, planNumber: '' })}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"

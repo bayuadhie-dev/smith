@@ -67,9 +67,9 @@ const navigate = useNavigate()
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pelatihan</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button 
             onClick={() => navigate('/app/reports?module=training')}
             className="btn-outline inline-flex items-center gap-2"
@@ -222,7 +222,7 @@ const navigate = useNavigate()
                           </span>
                         </td>
                         <td>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 flex-wrap">
                             <button
                               className="btn-sm btn-outline inline-flex items-center gap-1"
                               title="View Details"
@@ -321,7 +321,7 @@ const navigate = useNavigate()
                           <span className="font-medium">{program.active_sessions}</span> sessions
                         </td>
                         <td>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 flex-wrap">
                             <button
                               className="btn-sm btn-outline inline-flex items-center gap-1"
                               title="View Program"
@@ -450,7 +450,7 @@ const navigate = useNavigate()
                           </span>
                         </td>
                         <td>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 flex-wrap">
                             <button
                               className="btn-sm btn-outline inline-flex items-center gap-1"
                               title="View Request"

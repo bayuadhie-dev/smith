@@ -139,7 +139,7 @@ const [machines, setMachines] = useState<Machine[]>([])
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Efficiency Tracking</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Monitor OEE, downtime and performance metrics</p>
@@ -361,7 +361,7 @@ const [machines, setMachines] = useState<Machine[]>([])
           {/* OEE Breakdown Chart Placeholder */}
           <div className="card p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">OEE Components Breakdown</h3>
-            <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600 mb-1 dark:text-blue-400">
                   {efficiencyData.availability.availability_rate}%

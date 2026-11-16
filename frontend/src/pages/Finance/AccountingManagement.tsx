@@ -468,94 +468,96 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                {sortTh('No. jurnal', 'entry_number')}
-                {sortTh('Tanggal', 'entry_date')}
-                {sortTh('Deskripsi', 'description')}
-                {sortTh('Total debit', 'total_debit', 'right')}
-                {sortTh('Status', 'status', 'center')}
-                {sortTh('Dibuat oleh', 'created_by')}
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredJournalEntries.map((entry) => (
-                <tr key={entry.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                    {entry.entry_number}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {new Date(entry.entry_date).toLocaleDateString('id-ID')}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                    {entry.document_url ? (
-                      <Link to={entry.document_url} className="text-blue-600 hover:underline dark:text-blue-400" title="Buka transaksi asal jurnal ini">{entry.description}</Link>
-                    ) : entry.reference_type === 'manual_journal' ? (
-                      <span>{entry.description} <span className="ml-1 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">Jurnal manual</span></span>
-                    ) : entry.description}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right font-medium">
-                    {formatRupiah(entry.total_debit)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    {entry.kind === 'reversal' ? (
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" title="Jurnal pembalik dari transaksi yang dibatalkan">Pembalik (void)</span>
-                    ) : entry.kind === 'voided' ? (
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300" title="Transaksi ini sudah dibatalkan; dinetralkan oleh jurnal pembalik">Dibatalkan</span>
-                    ) : (
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(entry.status)}`}>
-                        {entry.status === 'posted' ? 'Terposting' : entry.status === 'draft' ? 'Draft' : entry.status === 'cancelled' ? 'Dibatalkan' : entry.status}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {entry.created_by}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                    <div className="flex justify-center items-center space-x-2">
-                      <button
-                        onClick={() => handleOpenJournalDetail(entry.entry_number)}
-                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
-                        title="Lihat detail"
-                      >
-                        <EyeIcon className="h-4 w-4" />
-                      </button>
-                      {entry.reference_type === 'manual_journal' ? (
-                        <>
-                        <button
-                          onClick={() => handleEditJournal(entry)}
-                          className="text-amber-600 hover:text-amber-800 dark:text-amber-400"
-                          title="Ubah jurnal manual ini"
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteJournal(entry)}
-                          className="text-red-600 hover:text-red-900 dark:text-red-400"
-                          title="Hapus jurnal manual ini"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                        </>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  {sortTh('No. jurnal', 'entry_number')}
+                  {sortTh('Tanggal', 'entry_date')}
+                  {sortTh('Deskripsi', 'description')}
+                  {sortTh('Total debit', 'total_debit', 'right')}
+                  {sortTh('Status', 'status', 'center')}
+                  {sortTh('Dibuat oleh', 'created_by')}
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wide">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {filteredJournalEntries.map((entry) => (
+                  <tr key={entry.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      {entry.entry_number}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {new Date(entry.entry_date).toLocaleDateString('id-ID')}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                      {entry.document_url ? (
+                        <Link to={entry.document_url} className="text-blue-600 hover:underline dark:text-blue-400" title="Buka transaksi asal jurnal ini">{entry.description}</Link>
+                      ) : entry.reference_type === 'manual_journal' ? (
+                        <span>{entry.description} <span className="ml-1 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">Jurnal manual</span></span>
+                      ) : entry.description}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right font-medium">
+                      {formatRupiah(entry.total_debit)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      {entry.kind === 'reversal' ? (
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" title="Jurnal pembalik dari transaksi yang dibatalkan">Pembalik (void)</span>
+                      ) : entry.kind === 'voided' ? (
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300" title="Transaksi ini sudah dibatalkan; dinetralkan oleh jurnal pembalik">Dibatalkan</span>
                       ) : (
-                        <span
-                          className="text-gray-400 text-xs italic"
-                          title="Jurnal otomatis dari transaksi lain - koreksi lewat sumbernya, bukan dari sini"
-                        >
-                          Otomatis
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(entry.status)}`}>
+                          {entry.status === 'posted' ? 'Terposting' : entry.status === 'draft' ? 'Draft' : entry.status === 'cancelled' ? 'Dibatalkan' : entry.status}
                         </span>
                       )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {entry.created_by}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                      <div className="flex justify-center items-center space-x-2 flex-wrap">
+                        <button
+                          onClick={() => handleOpenJournalDetail(entry.entry_number)}
+                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
+                          title="Lihat detail"
+                        >
+                          <EyeIcon className="h-4 w-4" />
+                        </button>
+                        {entry.reference_type === 'manual_journal' ? (
+                          <>
+                          <button
+                            onClick={() => handleEditJournal(entry)}
+                            className="text-amber-600 hover:text-amber-800 dark:text-amber-400"
+                            title="Ubah jurnal manual ini"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteJournal(entry)}
+                            className="text-red-600 hover:text-red-900 dark:text-red-400"
+                            title="Hapus jurnal manual ini"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                          </>
+                        ) : (
+                          <span
+                            className="text-gray-400 text-xs italic"
+                            title="Jurnal otomatis dari transaksi lain - koreksi lewat sumbernya, bukan dari sini"
+                          >
+                            Otomatis
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           
           {journalPages > 1 && (
-            <div className="flex items-center justify-end gap-3 px-6 py-3 text-sm">
+            <div className="flex items-center justify-end gap-3 px-6 py-3 text-sm flex-wrap">
               <button type="button" disabled={journalPage <= 1} onClick={() => setJournalPage((p) => p - 1)} className="btn-secondary disabled:opacity-40">Sebelumnya</button>
               <span>Halaman {journalPage} dari {journalPages}</span>
               <button type="button" disabled={journalPage >= journalPages} onClick={() => setJournalPage((p) => p + 1)} className="btn-secondary disabled:opacity-40">Berikutnya</button>
@@ -580,7 +582,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
       )}
 
       {(journalDetail || loadingJournalDetail) && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60]">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -633,45 +635,47 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                 <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                   Rincian Baris Jurnal
                 </h4>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                      <th className="py-2">#</th>
-                      <th className="py-2">Akun</th>
-                      <th className="py-2 text-right">Debit</th>
-                      <th className="py-2 text-right">Kredit</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {journalDetail.lines.map((line: any, idx: number) => (
-                      <tr key={line.id} className="border-b border-gray-100 dark:border-gray-800">
-                        <td className="py-2 font-mono text-xs">{idx + 1}</td>
-                        <td className="py-2">
-                          {line.account_code} - {line.account_name}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                        <th className="py-2">#</th>
+                        <th className="py-2">Akun</th>
+                        <th className="py-2 text-right">Debit</th>
+                        <th className="py-2 text-right">Kredit</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {journalDetail.lines.map((line: any, idx: number) => (
+                        <tr key={line.id} className="border-b border-gray-100 dark:border-gray-800">
+                          <td className="py-2 font-mono text-xs">{idx + 1}</td>
+                          <td className="py-2">
+                            {line.account_code} - {line.account_name}
+                          </td>
+                          <td className="py-2 text-right">
+                            {line.debit_amount > 0 ? `Rp${line.debit_amount.toLocaleString('id-ID')}` : '-'}
+                          </td>
+                          <td className="py-2 text-right">
+                            {line.credit_amount > 0 ? `Rp${line.credit_amount.toLocaleString('id-ID')}` : '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="font-semibold text-gray-900 dark:text-white border-t-2 border-gray-300 dark:border-gray-600">
+                        <td className="py-2" colSpan={2}>
+                          Total
                         </td>
                         <td className="py-2 text-right">
-                          {line.debit_amount > 0 ? `Rp${line.debit_amount.toLocaleString('id-ID')}` : '-'}
+                          Rp{journalDetail.total_debit.toLocaleString('id-ID')}
                         </td>
                         <td className="py-2 text-right">
-                          {line.credit_amount > 0 ? `Rp${line.credit_amount.toLocaleString('id-ID')}` : '-'}
+                          Rp{journalDetail.total_credit.toLocaleString('id-ID')}
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr className="font-semibold text-gray-900 dark:text-white border-t-2 border-gray-300 dark:border-gray-600">
-                      <td className="py-2" colSpan={2}>
-                        Total
-                      </td>
-                      <td className="py-2 text-right">
-                        Rp{journalDetail.total_debit.toLocaleString('id-ID')}
-                      </td>
-                      <td className="py-2 text-right">
-                        Rp{journalDetail.total_credit.toLocaleString('id-ID')}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
+                    </tfoot>
+                  </table>
+                </div>
               </>
             )}
           </div>
@@ -694,7 +698,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
             
             <form onSubmit={handleSubmitJournal} className="flex flex-col flex-1 overflow-hidden">
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       Entry Date *
@@ -749,89 +753,91 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                     </button>
                   </div>
 
-                  <div className="space-y-3">
-                    {journalFormData.lines.map((line, index) => {
-                      const cur = currencyOfAccount(line.account_id);
-                      const foreign = cur !== 'IDR';
-                      return (
-                      <div key={index} className="grid grid-cols-12 gap-2 items-start p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                        <div className="col-span-4">
-                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-                            Account *
-                          </label>
-                          <SearchableSelect
-                            options={accounts.map((account: any) => ({ id: account.id, name: `${account.code} - ${account.name}` }))}
-                            value={line.account_id ? Number(line.account_id) : null}
-                            onChange={(v: any) => updateJournalLine(index, 'account_id', v ? String(v) : '')}
-                            placeholder="Cari akun (kode atau nama)"
-                          />
-                        </div>
-
-                        <div className="col-span-3">
-                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-                            Debit ({foreign ? cur : 'IDR'})
-                          </label>
-                          <NumberInput 
-                            className="input w-full text-sm"
-                            value={(foreign ? line.fx_debit : line.debit) || ''}
-                            onChange={(e) => updateJournalLine(index, foreign ? 'fx_debit' : 'debit', parseFloat(e.target.value) || 0)}
-                            decimals={2}
-                            min="0"
-                          />
-                        </div>
-
-                        <div className="col-span-3">
-                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
-                            Credit ({foreign ? cur : 'IDR'})
-                          </label>
-                          <NumberInput 
-                            className="input w-full text-sm"
-                            value={(foreign ? line.fx_credit : line.credit) || ''}
-                            onChange={(e) => updateJournalLine(index, foreign ? 'fx_credit' : 'credit', parseFloat(e.target.value) || 0)}
-                            decimals={2}
-                            min="0"
-                          />
-                        </div>
-
-                        <div className="col-span-2 flex items-end">
-                          {journalFormData.lines.length > 2 && (
-                            <button 
-                              type="button"
-                              onClick={() => removeJournalLine(index)}
-                              className="w-full px-2 py-2 text-red-600 hover:bg-red-50 rounded text-sm dark:text-red-400"
-                            >
-                              <TrashIcon className="h-4 w-4 mx-auto" />
-                            </button>
-                          )}
-                        </div>
-
-                        {foreign && (
-                          <div className="col-span-12 flex flex-wrap items-center gap-3 text-sm">
-                            <label className="text-xs font-medium text-gray-700 dark:text-gray-200">Kurs (Rp per {cur})</label>
-                            <NumberInput className="input w-40 text-sm" value={line.fx_rate || ''} decimals={4} min="0"
-                              onChange={(e) => updateJournalLine(index, 'fx_rate', parseFloat(e.target.value) || 0)} />
-                            <span className="text-gray-600 dark:text-gray-300">
-                              Setara {line.debit ? `debit ${formatRupiah(line.debit)}` : line.credit ? `kredit ${formatRupiah(line.credit)}` : 'Rp 0'}
-                            </span>
+                  <div className="overflow-x-auto">
+                    <div className="space-y-3">
+                      {journalFormData.lines.map((line, index) => {
+                        const cur = currencyOfAccount(line.account_id);
+                        const foreign = cur !== 'IDR';
+                        return (
+                        <div key={index} className="grid min-w-[760px] grid-cols-12 gap-2 items-start p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                          <div className="col-span-4">
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                              Account *
+                            </label>
+                            <SearchableSelect
+                              options={accounts.map((account: any) => ({ id: account.id, name: `${account.code} - ${account.name}` }))}
+                              value={line.account_id ? Number(line.account_id) : null}
+                              onChange={(v: any) => updateJournalLine(index, 'account_id', v ? String(v) : '')}
+                              placeholder="Cari akun (kode atau nama)"
+                            />
                           </div>
-                        )}
-
-                        <div className="col-span-12">
-                          <input 
-                            type="text" 
-                            className="input w-full text-sm"
-                            value={line.description}
-                            onChange={(e) => updateJournalLine(index, 'description', e.target.value)}
-                            placeholder="Line description (optional)"
-                          />
+  
+                          <div className="col-span-3">
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                              Debit ({foreign ? cur : 'IDR'})
+                            </label>
+                            <NumberInput 
+                              className="input w-full text-sm"
+                              value={(foreign ? line.fx_debit : line.debit) || ''}
+                              onChange={(e) => updateJournalLine(index, foreign ? 'fx_debit' : 'debit', parseFloat(e.target.value) || 0)}
+                              decimals={2}
+                              min="0"
+                            />
+                          </div>
+  
+                          <div className="col-span-3">
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">
+                              Credit ({foreign ? cur : 'IDR'})
+                            </label>
+                            <NumberInput 
+                              className="input w-full text-sm"
+                              value={(foreign ? line.fx_credit : line.credit) || ''}
+                              onChange={(e) => updateJournalLine(index, foreign ? 'fx_credit' : 'credit', parseFloat(e.target.value) || 0)}
+                              decimals={2}
+                              min="0"
+                            />
+                          </div>
+  
+                          <div className="col-span-2 flex items-end">
+                            {journalFormData.lines.length > 2 && (
+                              <button 
+                                type="button"
+                                onClick={() => removeJournalLine(index)}
+                                className="w-full px-2 py-2 text-red-600 hover:bg-red-50 rounded text-sm dark:text-red-400"
+                              >
+                                <TrashIcon className="h-4 w-4 mx-auto" />
+                              </button>
+                            )}
+                          </div>
+  
+                          {foreign && (
+                            <div className="col-span-12 flex flex-wrap items-center gap-3 text-sm">
+                              <label className="text-xs font-medium text-gray-700 dark:text-gray-200">Kurs (Rp per {cur})</label>
+                              <NumberInput className="input w-40 text-sm" value={line.fx_rate || ''} decimals={4} min="0"
+                                onChange={(e) => updateJournalLine(index, 'fx_rate', parseFloat(e.target.value) || 0)} />
+                              <span className="text-gray-600 dark:text-gray-300">
+                                Setara {line.debit ? `debit ${formatRupiah(line.debit)}` : line.credit ? `kredit ${formatRupiah(line.credit)}` : 'Rp 0'}
+                              </span>
+                            </div>
+                          )}
+  
+                          <div className="col-span-12">
+                            <input 
+                              type="text" 
+                              className="input w-full text-sm"
+                              value={line.description}
+                              onChange={(e) => updateJournalLine(index, 'description', e.target.value)}
+                              placeholder="Line description (optional)"
+                            />
+                          </div>
                         </div>
-                      </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
 
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg dark:bg-blue-900/20">
-                    <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                       <div>
                         <p className="text-gray-600 dark:text-gray-300">Total Debit:</p>
                         <p className="text-lg font-bold text-gray-900 dark:text-white">
@@ -866,7 +872,7 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
                 </div>
               </div>
 
-              <div className="flex justify-end gap-4 p-6 border-t bg-gray-50 dark:bg-gray-900">
+              <div className="flex justify-end gap-4 p-6 border-t bg-gray-50 dark:bg-gray-900 flex-wrap">
                 <button 
                   type="button"
                   onClick={handleCloseJournalModal}

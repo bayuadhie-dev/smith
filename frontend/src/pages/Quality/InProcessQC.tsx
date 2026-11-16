@@ -247,7 +247,7 @@ export default function InProcessQC() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <CogIcon className="w-7 h-7 text-purple-600 dark:text-purple-400" />
@@ -473,7 +473,7 @@ export default function InProcessQC() {
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Parameter Proses</h3>
                 <div className="space-y-3">
                   {formData.parameter_checks.map((param, index) => (
-                    <div key={index} className="grid grid-cols-4 gap-3 p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
+                    <div key={index} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
                       <div>
                         <label className="text-xs text-gray-500 dark:text-gray-400">Parameter</label>
                         <p className="font-medium text-gray-900 dark:text-white">{param.name}</p>
@@ -514,7 +514,7 @@ export default function InProcessQC() {
               </div>
 
               {/* Visual & Compliance */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Visual Check
@@ -568,7 +568,7 @@ export default function InProcessQC() {
               </div>
 
               {/* Sampling */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Jumlah Sampel
@@ -683,7 +683,7 @@ export default function InProcessQC() {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 flex-wrap">
               <button
                 onClick={() => setShowInspectionModal(false)}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700"

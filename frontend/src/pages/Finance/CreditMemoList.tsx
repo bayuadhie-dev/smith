@@ -188,7 +188,7 @@ const CreditMemoList: React.FC = () => {
 
       {active && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-semibold">
               {mode === 'apply' ? 'Pakai ke faktur' : 'Kembalikan dana'} — {active.memo_number}
             </h2>
@@ -238,7 +238,7 @@ const CreditMemoList: React.FC = () => {
                 ))}
               </div>
             )}
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 flex-wrap">
               <button onClick={() => setActive(null)} className="px-4 py-2 rounded border">Batal</button>
               <button onClick={submit} disabled={!canSubmit || saving} className="px-4 py-2 rounded bg-green-700 text-white disabled:opacity-50">
                 {saving ? 'Menyimpan…' : 'Simpan'}

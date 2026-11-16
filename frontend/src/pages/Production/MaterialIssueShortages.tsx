@@ -95,7 +95,7 @@ const MaterialIssueShortages: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <ExclamationTriangleIcon className="h-7 w-7 text-orange-600 dark:text-orange-400" />
@@ -105,7 +105,7 @@ const MaterialIssueShortages: React.FC = () => {
             Material Issue yang gagal di-reserve penuh (partial/insufficient) dari BOM requirement
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button onClick={handleRetryNow} disabled={retrying} className="btn btn-primary flex items-center gap-2">
             <ArrowPathIcon className={`h-4 w-4 ${retrying ? 'animate-spin' : ''}`} /> Retry Reservasi Sekarang
           </button>

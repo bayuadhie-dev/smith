@@ -167,7 +167,7 @@ const ExpenseList: React.FC = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Klaim Karyawan</h1>
           <p className="text-gray-600 dark:text-gray-300">Nota biaya yang diajukan karyawan</p>
@@ -289,7 +289,7 @@ const ExpenseList: React.FC = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="flex justify-center gap-2">
+                      <div className="flex justify-center gap-2 flex-wrap">
                         {expense.status === 'draft' && hasPermission('expense.submit') && (
                           <button
                             onClick={() => handleStatusChange(expense.id, 'submit')}

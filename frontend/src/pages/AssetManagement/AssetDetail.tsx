@@ -159,7 +159,7 @@ const AssetDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 p-6">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/assets/list')}
@@ -190,7 +190,7 @@ const AssetDetail: React.FC = () => {
 
       {/* Tabs */}
       <div className="mb-6 border-b border-slate-200 dark:border-gray-700">
-        <div className="flex gap-6">
+        <div className="flex gap-6 flex-wrap">
           <button
             onClick={() => setActiveTab('overview')}
             className={`pb-3 px-1 border-b-2 transition-colors ${

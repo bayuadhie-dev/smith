@@ -752,7 +752,7 @@ const SystemOverviewEnhanced: React.FC = () => {
                 </div>
               </div>
               
-              <div className="flex items-center space-x-3 md:space-x-4">
+              <div className="flex items-center space-x-3 md:space-x-4 flex-wrap">
                 {/* View Selector Buttons */}
                 <div className="hidden lg:flex items-center space-x-1 bg-slate-800/80 rounded-lg p-1 border border-slate-700/60">
                   {[

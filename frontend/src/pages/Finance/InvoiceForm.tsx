@@ -254,7 +254,7 @@ const navigate = useNavigate()
     
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               {isProductionCost ? '🏭 Production Cost' : 'Invoice Detail'}
@@ -335,44 +335,46 @@ const navigate = useNavigate()
           </div>
           <div className="p-6">
             {invoiceData.items && invoiceData.items.length > 0 ? (
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4">Deskripsi</th>
-                    <th className="text-right py-3 px-4">Qty</th>
-                    <th className="text-right py-3 px-4">Harga Satuan</th>
-                    <th className="text-right py-3 px-4">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {invoiceData.items.map((item: any, index: number) => (
-                    <tr key={index} className="border-b">
-                      <td className="py-3 px-4">{item.description}</td>
-                      <td className="py-3 px-4 text-right">{item.quantity?.toLocaleString()}</td>
-                      <td className="py-3 px-4 text-right">{formatCurrency(item.unit_price || 0)}</td>
-                      <td className="py-3 px-4 text-right font-medium">{formatCurrency(item.amount || 0)}</td>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4">Deskripsi</th>
+                      <th className="text-right py-3 px-4">Qty</th>
+                      <th className="text-right py-3 px-4">Harga Satuan</th>
+                      <th className="text-right py-3 px-4">Total</th>
                     </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-gray-50 dark:bg-gray-900">
-                    <td colSpan={3} className="py-3 px-4 text-right font-semibold">Subtotal</td>
-                    <td className="py-3 px-4 text-right font-semibold">{formatCurrency(invoiceData.subtotal || 0)}</td>
-                  </tr>
-                  {invoiceData.tax_amount > 0 && (
+                  </thead>
+                  <tbody>
+                    {invoiceData.items.map((item: any, index: number) => (
+                      <tr key={index} className="border-b">
+                        <td className="py-3 px-4">{item.description}</td>
+                        <td className="py-3 px-4 text-right">{item.quantity?.toLocaleString()}</td>
+                        <td className="py-3 px-4 text-right">{formatCurrency(item.unit_price || 0)}</td>
+                        <td className="py-3 px-4 text-right font-medium">{formatCurrency(item.amount || 0)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
                     <tr className="bg-gray-50 dark:bg-gray-900">
-                      <td colSpan={3} className="py-3 px-4 text-right">Pajak</td>
-                      <td className="py-3 px-4 text-right">{formatCurrency(invoiceData.tax_amount || 0)}</td>
+                      <td colSpan={3} className="py-3 px-4 text-right font-semibold">Subtotal</td>
+                      <td className="py-3 px-4 text-right font-semibold">{formatCurrency(invoiceData.subtotal || 0)}</td>
                     </tr>
-                  )}
-                  <tr className="bg-blue-50 dark:bg-blue-900/20">
-                    <td colSpan={3} className="py-4 px-4 text-right text-lg font-bold">Total</td>
-                    <td className="py-4 px-4 text-right text-lg font-bold text-blue-600 dark:text-blue-400">
-                      {formatCurrency(invoiceData.total_amount || 0)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
+                    {invoiceData.tax_amount > 0 && (
+                      <tr className="bg-gray-50 dark:bg-gray-900">
+                        <td colSpan={3} className="py-3 px-4 text-right">Pajak</td>
+                        <td className="py-3 px-4 text-right">{formatCurrency(invoiceData.tax_amount || 0)}</td>
+                      </tr>
+                    )}
+                    <tr className="bg-blue-50 dark:bg-blue-900/20">
+                      <td colSpan={3} className="py-4 px-4 text-right text-lg font-bold">Total</td>
+                      <td className="py-4 px-4 text-right text-lg font-bold text-blue-600 dark:text-blue-400">
+                        {formatCurrency(invoiceData.total_amount || 0)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             ) : (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <p>Tidak ada rincian item</p>
@@ -392,7 +394,7 @@ const navigate = useNavigate()
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Invoice</h1>
           <p className="text-gray-600 dark:text-gray-300">Generate invoice for sales or purchases</p>
@@ -738,7 +740,7 @@ const navigate = useNavigate()
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-4 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/finance/invoices')}

@@ -284,7 +284,7 @@ export default function PackingListTab({
           </div>
         </div>
         
-        <div className="mt-4 flex items-center gap-4">
+        <div className="mt-4 flex items-center gap-4 flex-wrap">
           <div className="flex-1">
             <p className="text-sm text-green-600 dark:text-green-400">Batch Mixing Aktif</p>
             <p className="font-medium text-green-800 dark:text-green-300">
@@ -323,71 +323,73 @@ export default function PackingListTab({
       {/* Packing List Table */}
       {items.length > 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                  No. Karton
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                  Batch Mixing
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                  Berat (kg)
-                </th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                  Aksi
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {items.map((item) => (
-                <tr 
-                  key={item.id} 
-                  className={item.is_batch_start ? 'bg-yellow-50 dark:bg-yellow-900/20' : ''}
-                >
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {item.carton_number}
-                    </span>
-                    {item.is_batch_start && (
-                      <span className="ml-2 px-2 py-0.5 text-xs bg-yellow-200 text-yellow-800 rounded dark:text-yellow-300">
-                        Batch Baru
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                    {item.batch_mixing || '-'}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <NumberInput
-                      step="0.001"
-                      min="0"
-                      value={editedItems[item.id]?.weight_kg ?? item.weight_kg ?? ''}
-                      onChange={(e) => handleWeightChange(item.id, e.target.value)}
-                      className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-2 focus:ring-blue-500"
-                      placeholder="0.000"
-                    />
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-center">
-                    <button
-                      onClick={() => openBatchModal(item.carton_number)}
-                      className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400"
-                    >
-                      Set Batch
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    No. Karton
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    Batch Mixing
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    Berat (kg)
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    Aksi
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {items.map((item) => (
+                  <tr 
+                    key={item.id} 
+                    className={item.is_batch_start ? 'bg-yellow-50 dark:bg-yellow-900/20' : ''}
+                  >
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {item.carton_number}
+                      </span>
+                      {item.is_batch_start && (
+                        <span className="ml-2 px-2 py-0.5 text-xs bg-yellow-200 text-yellow-800 rounded dark:text-yellow-300">
+                          Batch Baru
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                      {item.batch_mixing || '-'}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <NumberInput
+                        step="0.001"
+                        min="0"
+                        value={editedItems[item.id]?.weight_kg ?? item.weight_kg ?? ''}
+                        onChange={(e) => handleWeightChange(item.id, e.target.value)}
+                        className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-2 focus:ring-blue-500"
+                        placeholder="0.000"
+                      />
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-center">
+                      <button
+                        onClick={() => openBatchModal(item.carton_number)}
+                        className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                      >
+                        Set Batch
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {/* Pagination */}
           <div className="bg-gray-50 dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-t">
             <div className="text-sm text-gray-600 dark:text-gray-300">
               Menampilkan {(page - 1) * perPage + 1} - {Math.min(page * perPage, totalItems)} dari {totalItems} karton
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
@@ -429,8 +431,8 @@ export default function PackingListTab({
 
       {/* Batch Mixing Modal */}
       {showBatchModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">
               {batchStartCarton 
                 ? `Set Batch Mixing dari Karton #${batchStartCarton}` 
@@ -455,7 +457,7 @@ export default function PackingListTab({
                 </p>
               )}
             </div>
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex justify-end gap-3 flex-wrap">
               <button
                 onClick={() => setShowBatchModal(false)}
                 className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
@@ -476,8 +478,8 @@ export default function PackingListTab({
 
       {/* Start Carton Number Modal */}
       {showStartNumberModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Sinkronkan Packing List</h3>
             <div className="space-y-4">
               <div>
@@ -507,7 +509,7 @@ export default function PackingListTab({
                 )}
               </div>
             </div>
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex justify-end gap-3 flex-wrap">
               <button
                 onClick={() => setShowStartNumberModal(false)}
                 className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
@@ -528,7 +530,7 @@ export default function PackingListTab({
 
       {showOcrModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-3xl my-8">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-3xl my-8 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-1">📷 Input OCR Packing List</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               Foto form "Status Pengiriman Barang" tulisan tangan - sistem baca nomor karton, berat, dan batch, lalu dicocokkan ke karton yang sudah ada di packing list ini.
@@ -542,7 +544,7 @@ export default function PackingListTab({
                   onChange={(e) => setOcrPhoto(e.target.files?.[0] || null)}
                   className="w-full text-sm"
                 />
-                <div className="flex justify-end gap-3">
+                <div className="flex justify-end gap-3 flex-wrap">
                   <button
                     onClick={() => { setShowOcrModal(false); setOcrPhoto(null); }}
                     className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"
@@ -561,41 +563,43 @@ export default function PackingListTab({
             ) : (
               <div className="space-y-4">
                 <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-                    <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
-                      <tr>
-                        <th className="px-3 py-2 text-left">No. Karton</th>
-                        <th className="px-3 py-2 text-left">Gross (kg)</th>
-                        <th className="px-3 py-2 text-left">Netto (kg)</th>
-                        <th className="px-3 py-2 text-left">Batch</th>
-                        <th className="px-3 py-2 text-left">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {ocrRows.map((r, i) => (
-                        <tr key={i} className={r.carton_number_full == null ? 'bg-red-50 dark:bg-red-900/10' : ''}>
-                          <td className="px-3 py-2">{r.carton_number_full ?? '-'}</td>
-                          <td className="px-3 py-2">{r.gross_kg ?? '-'}</td>
-                          <td className="px-3 py-2">{r.netto_kg ?? '-'}</td>
-                          <td className="px-3 py-2">{r.batch_number || '-'}</td>
-                          <td className="px-3 py-2">
-                            {r.carton_number_full == null ? (
-                              <span className="text-red-600 dark:text-red-400">✗ Nomor karton tidak terbaca</span>
-                            ) : r.will_create ? (
-                              <span className="text-blue-600 dark:text-blue-400">+ Karton baru</span>
-                            ) : (
-                              <span className="text-green-600 dark:text-green-400">✓ Update karton lama</span>
-                            )}
-                          </td>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                      <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
+                        <tr>
+                          <th className="px-3 py-2 text-left">No. Karton</th>
+                          <th className="px-3 py-2 text-left">Gross (kg)</th>
+                          <th className="px-3 py-2 text-left">Netto (kg)</th>
+                          <th className="px-3 py-2 text-left">Batch</th>
+                          <th className="px-3 py-2 text-left">Status</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {ocrRows.map((r, i) => (
+                          <tr key={i} className={r.carton_number_full == null ? 'bg-red-50 dark:bg-red-900/10' : ''}>
+                            <td className="px-3 py-2">{r.carton_number_full ?? '-'}</td>
+                            <td className="px-3 py-2">{r.gross_kg ?? '-'}</td>
+                            <td className="px-3 py-2">{r.netto_kg ?? '-'}</td>
+                            <td className="px-3 py-2">{r.batch_number || '-'}</td>
+                            <td className="px-3 py-2">
+                              {r.carton_number_full == null ? (
+                                <span className="text-red-600 dark:text-red-400">✗ Nomor karton tidak terbaca</span>
+                              ) : r.will_create ? (
+                                <span className="text-blue-600 dark:text-blue-400">+ Karton baru</span>
+                              ) : (
+                                <span className="text-green-600 dark:text-green-400">✓ Update karton lama</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   "Karton baru" akan ditambahkan ke packing list ini langsung dari hasil scan - tidak perlu Sinkronkan atau input manual dulu. Periksa angka gross/netto/batch dulu sebelum konfirmasi.
                 </p>
-                <div className="flex justify-end gap-3">
+                <div className="flex justify-end gap-3 flex-wrap">
                   <button
                     onClick={() => { setOcrRows([]); setOcrPhoto(null); }}
                     className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300"

@@ -199,31 +199,33 @@ const FactoryLayoutAdmin: React.FC = () => {
             </div>
           </div>
 
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={th}>Nama</th><th style={th}>Subjudul</th><th style={th}>Urutan</th>
-                <th style={th}>Posisi Label (X, Y)</th><th style={th}>Jumlah Mesin</th><th style={th}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {wings.map((w) => (
-                <tr key={w.id}>
-                  <td style={td}><input style={input} defaultValue={w.name} onBlur={(e) => e.target.value !== w.name && updateWing(w, 'name', e.target.value)} /></td>
-                  <td style={td}><input style={input} defaultValue={w.subtitle || ''} onBlur={(e) => e.target.value !== w.subtitle && updateWing(w, 'subtitle', e.target.value)} /></td>
-                  <td style={td}><input style={{ ...input, width: 60 }} type="number" defaultValue={w.display_order} onBlur={(e) => Number(e.target.value) !== w.display_order && updateWing(w, 'display_order', Number(e.target.value))} /></td>
-                  <td style={td}>
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      <input style={{ ...input, width: 60 }} type="number" defaultValue={w.wing_x} onBlur={(e) => Number(e.target.value) !== w.wing_x && updateWing(w, 'wing_x', Number(e.target.value))} />
-                      <input style={{ ...input, width: 60 }} type="number" defaultValue={w.wing_y} onBlur={(e) => Number(e.target.value) !== w.wing_y && updateWing(w, 'wing_y', Number(e.target.value))} />
-                    </div>
-                  </td>
-                  <td style={td}>{w.nodes.length}</td>
-                  <td style={td}><button style={btnDanger} onClick={() => deleteWing(w)}>Hapus</button></td>
+          <div className="overflow-x-auto">
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={th}>Nama</th><th style={th}>Subjudul</th><th style={th}>Urutan</th>
+                  <th style={th}>Posisi Label (X, Y)</th><th style={th}>Jumlah Mesin</th><th style={th}></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {wings.map((w) => (
+                  <tr key={w.id}>
+                    <td style={td}><input style={input} defaultValue={w.name} onBlur={(e) => e.target.value !== w.name && updateWing(w, 'name', e.target.value)} /></td>
+                    <td style={td}><input style={input} defaultValue={w.subtitle || ''} onBlur={(e) => e.target.value !== w.subtitle && updateWing(w, 'subtitle', e.target.value)} /></td>
+                    <td style={td}><input style={{ ...input, width: 60 }} type="number" defaultValue={w.display_order} onBlur={(e) => Number(e.target.value) !== w.display_order && updateWing(w, 'display_order', Number(e.target.value))} /></td>
+                    <td style={td}>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <input style={{ ...input, width: 60 }} type="number" defaultValue={w.wing_x} onBlur={(e) => Number(e.target.value) !== w.wing_x && updateWing(w, 'wing_x', Number(e.target.value))} />
+                        <input style={{ ...input, width: 60 }} type="number" defaultValue={w.wing_y} onBlur={(e) => Number(e.target.value) !== w.wing_y && updateWing(w, 'wing_y', Number(e.target.value))} />
+                      </div>
+                    </td>
+                    <td style={td}>{w.nodes.length}</td>
+                    <td style={td}><button style={btnDanger} onClick={() => deleteWing(w)}>Hapus</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -256,40 +258,42 @@ const FactoryLayoutAdmin: React.FC = () => {
           {wings.map((wing) => (
             <div key={wing.id} style={{ marginBottom: 24 }}>
               <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: '#374151' }}>{wing.name}</h4>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th style={th}>Mesin</th><th style={th}>Icon Type</th><th style={th}>Variant</th>
-                    <th style={th}>Posisi (X, Y)</th><th style={th}>Label Offset (X, Y)</th><th style={th}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {wing.nodes.map((node) => (
-                    <tr key={node.id}>
-                      <td style={td}>{node.machine_name} <span style={{ color: '#9ca3af' }}>({node.machine_code})</span></td>
-                      <td style={td}>
-                        <select style={input} defaultValue={node.icon_type} onBlur={(e) => e.target.value !== node.icon_type && updateNode(node, 'icon_type', e.target.value)}>
-                          {ICON_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-                        </select>
-                      </td>
-                      <td style={td}><input style={{ ...input, width: 60 }} type="number" defaultValue={node.icon_variant ?? ''} onBlur={(e) => updateNode(node, 'icon_variant', e.target.value === '' ? null : Number(e.target.value))} /></td>
-                      <td style={td}>
-                        <div style={{ display: 'flex', gap: 4 }}>
-                          <input style={{ ...input, width: 60 }} type="number" defaultValue={node.pos_x} onBlur={(e) => Number(e.target.value) !== node.pos_x && updateNode(node, 'pos_x', Number(e.target.value))} />
-                          <input style={{ ...input, width: 60 }} type="number" defaultValue={node.pos_y} onBlur={(e) => Number(e.target.value) !== node.pos_y && updateNode(node, 'pos_y', Number(e.target.value))} />
-                        </div>
-                      </td>
-                      <td style={td}>
-                        <div style={{ display: 'flex', gap: 4 }}>
-                          <input style={{ ...input, width: 60 }} type="number" defaultValue={node.label_offset_x} onBlur={(e) => Number(e.target.value) !== node.label_offset_x && updateNode(node, 'label_offset_x', Number(e.target.value))} />
-                          <input style={{ ...input, width: 60 }} type="number" defaultValue={node.label_offset_y} onBlur={(e) => Number(e.target.value) !== node.label_offset_y && updateNode(node, 'label_offset_y', Number(e.target.value))} />
-                        </div>
-                      </td>
-                      <td style={td}><button style={btnDanger} onClick={() => deleteNode(node)}>Hapus</button></td>
+              <div className="overflow-x-auto">
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      <th style={th}>Mesin</th><th style={th}>Icon Type</th><th style={th}>Variant</th>
+                      <th style={th}>Posisi (X, Y)</th><th style={th}>Label Offset (X, Y)</th><th style={th}></th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {wing.nodes.map((node) => (
+                      <tr key={node.id}>
+                        <td style={td}>{node.machine_name} <span style={{ color: '#9ca3af' }}>({node.machine_code})</span></td>
+                        <td style={td}>
+                          <select style={input} defaultValue={node.icon_type} onBlur={(e) => e.target.value !== node.icon_type && updateNode(node, 'icon_type', e.target.value)}>
+                            {ICON_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                        </td>
+                        <td style={td}><input style={{ ...input, width: 60 }} type="number" defaultValue={node.icon_variant ?? ''} onBlur={(e) => updateNode(node, 'icon_variant', e.target.value === '' ? null : Number(e.target.value))} /></td>
+                        <td style={td}>
+                          <div style={{ display: 'flex', gap: 4 }}>
+                            <input style={{ ...input, width: 60 }} type="number" defaultValue={node.pos_x} onBlur={(e) => Number(e.target.value) !== node.pos_x && updateNode(node, 'pos_x', Number(e.target.value))} />
+                            <input style={{ ...input, width: 60 }} type="number" defaultValue={node.pos_y} onBlur={(e) => Number(e.target.value) !== node.pos_y && updateNode(node, 'pos_y', Number(e.target.value))} />
+                          </div>
+                        </td>
+                        <td style={td}>
+                          <div style={{ display: 'flex', gap: 4 }}>
+                            <input style={{ ...input, width: 60 }} type="number" defaultValue={node.label_offset_x} onBlur={(e) => Number(e.target.value) !== node.label_offset_x && updateNode(node, 'label_offset_x', Number(e.target.value))} />
+                            <input style={{ ...input, width: 60 }} type="number" defaultValue={node.label_offset_y} onBlur={(e) => Number(e.target.value) !== node.label_offset_y && updateNode(node, 'label_offset_y', Number(e.target.value))} />
+                          </div>
+                        </td>
+                        <td style={td}><button style={btnDanger} onClick={() => deleteNode(node)}>Hapus</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ))}
         </div>
@@ -300,35 +304,37 @@ const FactoryLayoutAdmin: React.FC = () => {
           <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 12 }}>
             Alias hanya memengaruhi tampilan di Denah Produksi. Nama asli mesin di modul lain (Daily Controller, dsb) tidak berubah.
           </p>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={th}>Kode</th><th style={th}>Nama Asli</th><th style={th}>Alias</th><th style={th}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {machines.map((m) => (
-                <tr key={m.id}>
-                  <td style={td}>{m.code}</td>
-                  <td style={td}>{m.name}</td>
-                  <td style={td}>
-                    <input
-                      style={input}
-                      placeholder={m.alias_name || '(pakai nama asli)'}
-                      value={aliasDrafts[m.id] ?? m.alias_name ?? ''}
-                      onChange={(e) => setAliasDrafts({ ...aliasDrafts, [m.id]: e.target.value })}
-                    />
-                  </td>
-                  <td style={td}>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <button style={btn} onClick={() => saveAlias(m.id)}>Simpan</button>
-                      {m.alias_name && <button style={btnDanger} onClick={() => deleteAlias(m.id)}>Hapus</button>}
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={th}>Kode</th><th style={th}>Nama Asli</th><th style={th}>Alias</th><th style={th}></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {machines.map((m) => (
+                  <tr key={m.id}>
+                    <td style={td}>{m.code}</td>
+                    <td style={td}>{m.name}</td>
+                    <td style={td}>
+                      <input
+                        style={input}
+                        placeholder={m.alias_name || '(pakai nama asli)'}
+                        value={aliasDrafts[m.id] ?? m.alias_name ?? ''}
+                        onChange={(e) => setAliasDrafts({ ...aliasDrafts, [m.id]: e.target.value })}
+                      />
+                    </td>
+                    <td style={td}>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button style={btn} onClick={() => saveAlias(m.id)}>Simpan</button>
+                        {m.alias_name && <button style={btnDanger} onClick={() => deleteAlias(m.id)}>Hapus</button>}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

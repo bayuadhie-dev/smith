@@ -189,12 +189,12 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Master Produk</h1>
           <p className="text-gray-600 dark:text-gray-300">Manajemen data produk - {totalProducts} produk</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex space-x-3 flex-wrap">
           <button
             onClick={async () => {
               try {
@@ -550,7 +550,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">v{product.version}</div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                          <div className="flex space-x-1">
+                          <div className="flex space-x-1 flex-wrap">
                             <button
                               onClick={() => onView(product)}
                               className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded dark:text-blue-400"
@@ -640,7 +640,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
                           v{product.version}
                         </td>
                         <td className="px-4 py-2 whitespace-nowrap text-sm font-medium">
-                          <div className="flex space-x-1">
+                          <div className="flex space-x-1 flex-wrap">
                             <button
                               onClick={() => onView(product)}
                               className="text-blue-600 hover:text-blue-900 dark:text-blue-400"

@@ -304,7 +304,7 @@ const ManualAdmin: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center flex-wrap justify-between mb-6 gap-3">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/app/manual')}
@@ -444,7 +444,7 @@ const ManualAdmin: React.FC = () => {
                           <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{category.article_count}</td>
                           <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{category.order}</td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <button
                                 onClick={() => openCategoryModal(category)}
                                 className="p-1 text-blue-600 hover:bg-blue-100 rounded dark:text-blue-400"
@@ -512,7 +512,7 @@ const ManualAdmin: React.FC = () => {
                             </span>
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <button
                                 onClick={() => navigate(`/app/manual/article/${article.slug}`)}
                                 className="p-1 text-gray-600 hover:bg-gray-100 rounded dark:hover:bg-gray-700 dark:text-gray-300"
@@ -581,7 +581,7 @@ const ManualAdmin: React.FC = () => {
                             </span>
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <button
                                 onClick={() => openFaqModal(faq)}
                                 className="p-1 text-blue-600 hover:bg-blue-100 rounded dark:text-blue-400"
@@ -612,7 +612,7 @@ const ManualAdmin: React.FC = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen p-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setModalType(null)}></div>
-            <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {editingItem ? 'Edit Kategori' : 'Tambah Kategori'}
@@ -663,7 +663,7 @@ const ManualAdmin: React.FC = () => {
                   />
                 </div>
               </div>
-              <div className="flex justify-end gap-3 mt-6">
+              <div className="flex justify-end gap-3 mt-6 flex-wrap">
                 <button
                   onClick={() => setModalType(null)}
                   className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
@@ -762,7 +762,7 @@ const ManualAdmin: React.FC = () => {
                   </label>
                 </div>
               </div>
-              <div className="flex justify-end gap-3 mt-6">
+              <div className="flex justify-end gap-3 mt-6 flex-wrap">
                 <button
                   onClick={() => setModalType(null)}
                   className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
@@ -786,7 +786,7 @@ const ManualAdmin: React.FC = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen p-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setModalType(null)}></div>
-            <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full p-6">
+            <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {editingItem ? 'Edit FAQ' : 'Tambah FAQ'}
@@ -851,7 +851,7 @@ const ManualAdmin: React.FC = () => {
                   </label>
                 </div>
               </div>
-              <div className="flex justify-end gap-3 mt-6">
+              <div className="flex justify-end gap-3 mt-6 flex-wrap">
                 <button
                   onClick={() => setModalType(null)}
                   className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"

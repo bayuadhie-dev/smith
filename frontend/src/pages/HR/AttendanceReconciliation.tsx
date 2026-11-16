@@ -160,7 +160,7 @@ const AttendanceReconciliation: React.FC = () => {
         Koreksi &amp; Rekonsiliasi Absensi
       </h1>
 
-      <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700 flex-wrap">
         <button
           onClick={() => setTab('correction')}
           className={`px-4 py-2 text-sm font-medium border-b-2 ${tab === 'correction' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400'}`}
@@ -184,44 +184,46 @@ const AttendanceReconciliation: React.FC = () => {
           ) : (
             <>
             <div className="p-4"><ListToolbar tools={corrTools} placeholder="Cari karyawan atau alasan" /></div>
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900">
-                <tr>
-                  <SortTh tools={corrTools} col="employee_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Karyawan</SortTh>
-                  <SortTh tools={corrTools} col="correction_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</SortTh>
-                  <SortTh tools={corrTools} col="change" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Perubahan Diajukan</SortTh>
-                  <SortTh tools={corrTools} col="reason" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Alasan</SortTh>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {corrTools.rows.map(c => (
-                  <tr key={c.id}>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{c.employee_name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{new Date(c.correction_date).toLocaleDateString('id-ID')}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      {c.requested_change.clock_in && (
-                        <div>In: {formatDT(c.requested_change.clock_in.old)} &rarr; {formatDT(c.requested_change.clock_in.new)}</div>
-                      )}
-                      {c.requested_change.clock_out && (
-                        <div>Out: {formatDT(c.requested_change.clock_out.old)} &rarr; {formatDT(c.requested_change.clock_out.new)}</div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs dark:text-gray-400">{c.reason}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <button onClick={() => approveCorrection(c.id)} className="p-1 text-green-600 hover:bg-green-50 rounded dark:text-green-400" title="Setujui">
-                          <CheckCircle className="h-5 w-5" />
-                        </button>
-                        <button onClick={() => rejectCorrection(c.id)} className="p-1 text-red-600 hover:bg-red-50 rounded dark:text-red-400" title="Tolak">
-                          <XCircle className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
+                  <tr>
+                    <SortTh tools={corrTools} col="employee_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Karyawan</SortTh>
+                    <SortTh tools={corrTools} col="correction_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</SortTh>
+                    <SortTh tools={corrTools} col="change" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Perubahan Diajukan</SortTh>
+                    <SortTh tools={corrTools} col="reason" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Alasan</SortTh>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Aksi</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {corrTools.rows.map(c => (
+                    <tr key={c.id}>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{c.employee_name}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{new Date(c.correction_date).toLocaleDateString('id-ID')}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                        {c.requested_change.clock_in && (
+                          <div>In: {formatDT(c.requested_change.clock_in.old)} &rarr; {formatDT(c.requested_change.clock_in.new)}</div>
+                        )}
+                        {c.requested_change.clock_out && (
+                          <div>Out: {formatDT(c.requested_change.clock_out.old)} &rarr; {formatDT(c.requested_change.clock_out.new)}</div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 max-w-xs dark:text-gray-400">{c.reason}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-2 flex-wrap">
+                          <button onClick={() => approveCorrection(c.id)} className="p-1 text-green-600 hover:bg-green-50 rounded dark:text-green-400" title="Setujui">
+                            <CheckCircle className="h-5 w-5" />
+                          </button>
+                          <button onClick={() => rejectCorrection(c.id)} className="p-1 text-red-600 hover:bg-red-50 rounded dark:text-red-400" title="Tolak">
+                            <XCircle className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             </>
           )}
         </div>
@@ -258,37 +260,39 @@ const AttendanceReconciliation: React.FC = () => {
             ) : (
               <>
               <div className="p-4"><ListToolbar tools={flagTools} placeholder="Cari karyawan atau jenis mismatch" /></div>
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-900">
-                  <tr>
-                    <SortTh tools={flagTools} col="employee_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Karyawan</SortTh>
-                    <SortTh tools={flagTools} col="flag_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</SortTh>
-                    <SortTh tools={flagTools} col="mismatch_type" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Jenis Mismatch</SortTh>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {flagTools.rows.map(f => (
-                    <tr key={f.id}>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{f.employee_name}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{new Date(f.flag_date).toLocaleDateString('id-ID')}</td>
-                      <td className="px-6 py-4 text-sm">
-                        <span className="flex items-center gap-1 text-amber-700 dark:text-amber-300">
-                          <AlertTriangle className="h-4 w-4" /> {MISMATCH_LABEL[f.mismatch_type] || f.mismatch_type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => reviewFlag(f.id)}
-                          className="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-lg dark:hover:bg-gray-600"
-                        >
-                          Tandai Sudah Direview
-                        </button>
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                      <SortTh tools={flagTools} col="employee_name" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Karyawan</SortTh>
+                      <SortTh tools={flagTools} col="flag_date" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</SortTh>
+                      <SortTh tools={flagTools} col="mismatch_type" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Jenis Mismatch</SortTh>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Aksi</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {flagTools.rows.map(f => (
+                      <tr key={f.id}>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{f.employee_name}</td>
+                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{new Date(f.flag_date).toLocaleDateString('id-ID')}</td>
+                        <td className="px-6 py-4 text-sm">
+                          <span className="flex items-center gap-1 text-amber-700 dark:text-amber-300">
+                            <AlertTriangle className="h-4 w-4" /> {MISMATCH_LABEL[f.mismatch_type] || f.mismatch_type}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => reviewFlag(f.id)}
+                            className="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-lg dark:hover:bg-gray-600"
+                          >
+                            Tandai Sudah Direview
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               </>
             )}
           </div>

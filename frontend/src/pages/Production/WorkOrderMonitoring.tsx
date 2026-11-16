@@ -129,12 +129,12 @@ const WorkOrderMonitoring: React.FC = () => {
   return (
     <div className="p-6 bg-slate-50 min-h-screen dark:bg-slate-900">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center flex-wrap justify-between mb-6 gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">WO Monitoring</h1>
           <p className="text-slate-500 dark:text-slate-400">Real-time tracking & progress monitoring</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 ${showFilters ? 'bg-blue-600 text-white' : 'bg-white text-slate-700 dark:bg-gray-800 dark:text-slate-200'}`}
@@ -161,7 +161,7 @@ const WorkOrderMonitoring: React.FC = () => {
       {/* Filters */}
       {showFilters && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-200">Status</label>
               <select
@@ -192,7 +192,7 @@ const WorkOrderMonitoring: React.FC = () => {
       )}
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">Total WO</p>
           <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{totalWOs}</p>
@@ -307,7 +307,7 @@ const WorkOrderMonitoring: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-2 flex-wrap">
                       <Link
                         to={`/app/production/work-orders/${wo.id}/timeline`}
                         className="text-blue-600 hover:text-blue-800 dark:text-blue-400"

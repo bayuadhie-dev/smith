@@ -123,7 +123,7 @@ const ExpenseDetail: React.FC = () => {
             </div>
           </div>
           {data.manager_status === 'pending' && data.status === 'submitted' && (
-            <div className="flex gap-2 mt-4">
+            <div className="flex gap-2 mt-4 flex-wrap">
               <button
                 className="btn-primary text-sm"
                 disabled={approving}

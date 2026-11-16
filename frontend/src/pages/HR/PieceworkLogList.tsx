@@ -170,7 +170,7 @@ export default function PieceworkLogList() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Log Kerja Borongan</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Catat dan verifikasi output kerja borongan karyawan</p>
@@ -268,7 +268,7 @@ export default function PieceworkLogList() {
                     <td className="px-4 py-3 text-center">{statusBadge(log.status)}</td>
                     <td className="px-4 py-3">
                       {log.status === 'pending' && (
-                        <div className="flex items-center justify-center gap-1">
+                        <div className="flex items-center justify-center gap-1 flex-wrap">
                           <button
                             onClick={() => handleVerify(log.id, 'verify')}
                             className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg dark:text-green-400"
@@ -300,7 +300,7 @@ export default function PieceworkLogList() {
       {/* Add Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white">Tambah Log Borongan</h2>
               <button onClick={() => setShowForm(false)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg">
@@ -308,7 +308,7 @@ export default function PieceworkLogList() {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <label className={labelClass}>Karyawan <span className="text-red-500">*</span></label>
                   <select className={inputClass} value={formData.employee_id} required
@@ -370,7 +370,7 @@ export default function PieceworkLogList() {
                   onChange={e => setFormData({...formData, notes: e.target.value})} />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 flex-wrap">
                 <button type="button" onClick={() => setShowForm(false)}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                   Batal

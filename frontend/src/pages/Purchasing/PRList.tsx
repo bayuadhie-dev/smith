@@ -59,14 +59,14 @@ export default function PRList() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Permintaan Pembelian (PR)</h1>
           <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-400">
             Permintaan pembelian dari departemen, {tools.total} total
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Link to="/app/imports?kind=purchase_requisition" className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium dark:hover:bg-gray-700 dark:border-gray-600">Import</Link>
           <Link to="/app/imports?kind=purchase_requisition&mode=export" className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium dark:hover:bg-gray-700 dark:border-gray-600">Ekspor</Link>
         <Link
@@ -123,63 +123,65 @@ export default function PRList() {
             )}
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <SortTh tools={tools} col="pr_number" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. PR</SortTh>
-                <SortTh tools={tools} col="requester_name" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Pemohon</SortTh>
-                <SortTh tools={tools} col="department" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Departemen</SortTh>
-                <SortTh tools={tools} col="required_date" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tgl Dibutuhkan</SortTh>
-                <SortTh tools={tools} col="priority" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Prioritas</SortTh>
-                <SortTh tools={tools} col="status" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Status</SortTh>
-                <SortTh tools={tools} col="total_estimated" align="right" className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Est. Total</SortTh>
-                <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-              {tools.rows.map((pr) => {
-                const status = STATUS_CONFIG[pr.status] || { label: pr.status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
-                const priority = PRIORITY_CONFIG[pr.priority] || { label: pr.priority, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
-                return (
-                  <tr
-                    key={pr.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                    onClick={() => navigate(`/app/purchasing/requisitions/${pr.id}`)}
-                  >
-                    <td className="px-4 py-3 font-medium text-primary-700 dark:text-primary-300">{pr.pr_number}</td>
-                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{pr.requester_name || '—'}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{pr.department || '—'}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
-                      {pr.required_date ? new Date(pr.required_date).toLocaleDateString('id-ID') : '—'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${priority.color}`}>
-                        {priority.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${status.color}`}>
-                        {status.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300">
-                      {pr.total_estimated > 0
-                        ? `Rp ${Number(pr.total_estimated).toLocaleString('id-ID')}`
-                        : '—'}
-                    </td>
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <Link
-                        to={`/app/purchasing/requisitions/${pr.id}`}
-                        className="text-xs text-blue-600 hover:underline dark:text-blue-400"
-                      >
-                        Detail
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <SortTh tools={tools} col="pr_number" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">No. PR</SortTh>
+                  <SortTh tools={tools} col="requester_name" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Pemohon</SortTh>
+                  <SortTh tools={tools} col="department" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Departemen</SortTh>
+                  <SortTh tools={tools} col="required_date" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Tgl Dibutuhkan</SortTh>
+                  <SortTh tools={tools} col="priority" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Prioritas</SortTh>
+                  <SortTh tools={tools} col="status" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Status</SortTh>
+                  <SortTh tools={tools} col="total_estimated" align="right" className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-300">Est. Total</SortTh>
+                  <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {tools.rows.map((pr) => {
+                  const status = STATUS_CONFIG[pr.status] || { label: pr.status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
+                  const priority = PRIORITY_CONFIG[pr.priority] || { label: pr.priority, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
+                  return (
+                    <tr
+                      key={pr.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                      onClick={() => navigate(`/app/purchasing/requisitions/${pr.id}`)}
+                    >
+                      <td className="px-4 py-3 font-medium text-primary-700 dark:text-primary-300">{pr.pr_number}</td>
+                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{pr.requester_name || '—'}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{pr.department || '—'}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
+                        {pr.required_date ? new Date(pr.required_date).toLocaleDateString('id-ID') : '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${priority.color}`}>
+                          {priority.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${status.color}`}>
+                          {status.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300">
+                        {pr.total_estimated > 0
+                          ? `Rp ${Number(pr.total_estimated).toLocaleString('id-ID')}`
+                          : '—'}
+                      </td>
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <Link
+                          to={`/app/purchasing/requisitions/${pr.id}`}
+                          className="text-xs text-blue-600 hover:underline dark:text-blue-400"
+                        >
+                          Detail
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

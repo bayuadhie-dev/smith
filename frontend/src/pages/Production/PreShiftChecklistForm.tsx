@@ -335,7 +335,7 @@ const PreShiftChecklistForm = () => {
                   key={item.id} 
                   className={`p-4 transition-colors ${isNG ? 'bg-red-50 dark:bg-red-900/20' : index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50'}`}
                 >
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-4 flex-wrap">
                     {/* Number */}
                     <div className={`w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center font-bold text-sm ${
                       activeTab === 'KONDISI_MESIN' 
@@ -347,14 +347,14 @@ const PreShiftChecklistForm = () => {
                     
                     {/* Item Info */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start justify-between gap-4 flex-wrap">
                         <div>
                           <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{item.item_name}</h4>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.item_code}</p>
                         </div>
                         
                         {/* Status Buttons */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <button
                             onClick={() => handleAnswerChange(item.id, 'OK')}
                             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
@@ -452,7 +452,7 @@ const PreShiftChecklistForm = () => {
                 <span className="font-medium text-gray-700 dark:text-gray-200">{kondisiMesinItems.length + manpowerItems.length}</span> item checklist
               </div>
               
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 flex-wrap">
                 <button
                   onClick={() => navigate('/app/production/pre-shift-checklist')}
                   className="px-5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 transition-colors"

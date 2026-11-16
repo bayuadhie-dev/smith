@@ -262,7 +262,7 @@ const AdvancedReportBuilder: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold mb-4">Data Sources</h2>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {dataSources.map((source) => (
                 <label key={source.id} className="flex items-center">
                   <input
@@ -302,76 +302,78 @@ const AdvancedReportBuilder: React.FC = () => {
               </button>
             </div>
             
-            <div className="space-y-3">
-              {report.fields.map((field) => (
-                <div key={field.id} className="grid grid-cols-12 gap-2 items-center">
-                  <div className="col-span-3">
-                    <select
-                      value={field.source}
-                      onChange={(e) => updateField(field.id, { source: e.target.value })}
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
-                    >
-                      <option value="">Select Source</option>
-                      {dataSources
-                        .filter(ds => report.dataSources.includes(ds.id))
-                        .map(ds => (
-                          <option key={ds.id} value={ds.id}>{ds.name}</option>
-                        ))
-                      }
-                    </select>
+            <div className="overflow-x-auto">
+              <div className="space-y-3">
+                {report.fields.map((field) => (
+                  <div key={field.id} className="grid min-w-[760px] grid-cols-12 gap-2 items-center">
+                    <div className="col-span-3">
+                      <select
+                        value={field.source}
+                        onChange={(e) => updateField(field.id, { source: e.target.value })}
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
+                      >
+                        <option value="">Select Source</option>
+                        {dataSources
+                          .filter(ds => report.dataSources.includes(ds.id))
+                          .map(ds => (
+                            <option key={ds.id} value={ds.id}>{ds.name}</option>
+                          ))
+                        }
+                      </select>
+                    </div>
+                    
+                    <div className="col-span-3">
+                      <select
+                        value={field.field}
+                        onChange={(e) => updateField(field.id, { field: e.target.value })}
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
+                      >
+                        <option value="">Select Field</option>
+                        {field.source && dataSources
+                          .find(ds => ds.id === field.source)?.fields
+                          .map(f => (
+                            <option key={f} value={f}>{f}</option>
+                          ))
+                        }
+                      </select>
+                    </div>
+                    
+                    <div className="col-span-2">
+                      <select
+                        value={field.aggregation}
+                        onChange={(e) => updateField(field.id, { aggregation: e.target.value })}
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
+                      >
+                        <option value="none">None</option>
+                        <option value="sum">Sum</option>
+                        <option value="avg">Average</option>
+                        <option value="count">Count</option>
+                        <option value="min">Min</option>
+                        <option value="max">Max</option>
+                      </select>
+                    </div>
+                    
+                    <div className="col-span-3">
+                      <input
+                        type="text"
+                        value={field.alias}
+                        onChange={(e) => updateField(field.id, { alias: e.target.value })}
+                        placeholder="Column alias"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    
+                    <div className="col-span-1">
+                      <button
+                        onClick={() => removeField(field.id)}
+                        className="text-red-600 hover:text-red-800 dark:text-red-400"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
-                  
-                  <div className="col-span-3">
-                    <select
-                      value={field.field}
-                      onChange={(e) => updateField(field.id, { field: e.target.value })}
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
-                    >
-                      <option value="">Select Field</option>
-                      {field.source && dataSources
-                        .find(ds => ds.id === field.source)?.fields
-                        .map(f => (
-                          <option key={f} value={f}>{f}</option>
-                        ))
-                      }
-                    </select>
-                  </div>
-                  
-                  <div className="col-span-2">
-                    <select
-                      value={field.aggregation}
-                      onChange={(e) => updateField(field.id, { aggregation: e.target.value })}
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
-                    >
-                      <option value="none">None</option>
-                      <option value="sum">Sum</option>
-                      <option value="avg">Average</option>
-                      <option value="count">Count</option>
-                      <option value="min">Min</option>
-                      <option value="max">Max</option>
-                    </select>
-                  </div>
-                  
-                  <div className="col-span-3">
-                    <input
-                      type="text"
-                      value={field.alias}
-                      onChange={(e) => updateField(field.id, { alias: e.target.value })}
-                      placeholder="Column alias"
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  
-                  <div className="col-span-1">
-                    <button
-                      onClick={() => removeField(field.id)}
-                      className="text-red-600 hover:text-red-800 dark:text-red-400"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
@@ -388,59 +390,61 @@ const AdvancedReportBuilder: React.FC = () => {
               </button>
             </div>
             
-            <div className="space-y-3">
-              {report.filters.map((filter) => (
-                <div key={filter.id} className="grid grid-cols-12 gap-2 items-center">
-                  <div className="col-span-4">
-                    <select
-                      value={filter.field}
-                      onChange={(e) => updateFilter(filter.id, { field: e.target.value })}
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
-                    >
-                      <option value="">Select Field</option>
-                      {report.fields.map(field => (
-                        <option key={field.id} value={field.field}>
-                          {field.alias || field.field}
-                        </option>
-                      ))}
-                    </select>
+            <div className="overflow-x-auto">
+              <div className="space-y-3">
+                {report.filters.map((filter) => (
+                  <div key={filter.id} className="grid min-w-[760px] grid-cols-12 gap-2 items-center">
+                    <div className="col-span-4">
+                      <select
+                        value={filter.field}
+                        onChange={(e) => updateFilter(filter.id, { field: e.target.value })}
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
+                      >
+                        <option value="">Select Field</option>
+                        {report.fields.map(field => (
+                          <option key={field.id} value={field.field}>
+                            {field.alias || field.field}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div className="col-span-3">
+                      <select
+                        value={filter.operator}
+                        onChange={(e) => updateFilter(filter.id, { operator: e.target.value })}
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
+                      >
+                        <option value="equals">Equals</option>
+                        <option value="not_equals">Not Equals</option>
+                        <option value="greater_than">Greater Than</option>
+                        <option value="less_than">Less Than</option>
+                        <option value="contains">Contains</option>
+                        <option value="starts_with">Starts With</option>
+                      </select>
+                    </div>
+                    
+                    <div className="col-span-4">
+                      <input
+                        type="text"
+                        value={filter.value}
+                        onChange={(e) => updateFilter(filter.id, { value: e.target.value })}
+                        placeholder="FunnelIcon value"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    
+                    <div className="col-span-1">
+                      <button
+                        onClick={() => removeFilter(filter.id)}
+                        className="text-red-600 hover:text-red-800 dark:text-red-400"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
-                  
-                  <div className="col-span-3">
-                    <select
-                      value={filter.operator}
-                      onChange={(e) => updateFilter(filter.id, { operator: e.target.value })}
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
-                    >
-                      <option value="equals">Equals</option>
-                      <option value="not_equals">Not Equals</option>
-                      <option value="greater_than">Greater Than</option>
-                      <option value="less_than">Less Than</option>
-                      <option value="contains">Contains</option>
-                      <option value="starts_with">Starts With</option>
-                    </select>
-                  </div>
-                  
-                  <div className="col-span-4">
-                    <input
-                      type="text"
-                      value={filter.value}
-                      onChange={(e) => updateFilter(filter.id, { value: e.target.value })}
-                      placeholder="FunnelIcon value"
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  
-                  <div className="col-span-1">
-                    <button
-                      onClick={() => removeFilter(filter.id)}
-                      className="text-red-600 hover:text-red-800 dark:text-red-400"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>

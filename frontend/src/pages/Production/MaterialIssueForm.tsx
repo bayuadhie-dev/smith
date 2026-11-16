@@ -324,7 +324,7 @@ const MaterialIssueForm: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isEdit ? t('production.update_issue') : t('production.create_issue')}
@@ -614,7 +614,7 @@ const MaterialIssueForm: React.FC = () => {
 
             {/* Summary */}
             <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div className="text-center">
                   <div className="font-medium text-gray-900 dark:text-white">Total Items</div>
                   <div className="text-blue-600 dark:text-blue-400">{getTotalItems()}</div>
@@ -660,7 +660,7 @@ const MaterialIssueForm: React.FC = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700 flex-wrap">
             <button
               type="button"
               onClick={() => navigate('/app/production/material-issues')}

@@ -197,7 +197,7 @@ const FGConversionDetail: React.FC = () => {
   return (
     <div className="p-6 space-y-6 h-full overflow-auto">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-wrap justify-between items-start gap-3">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/production/fg-conversion')}

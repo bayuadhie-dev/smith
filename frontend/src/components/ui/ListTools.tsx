@@ -34,7 +34,7 @@ const PRESETS: { label: string; range: () => [string, string] | null }[] = [
 export function ListToolbar<T>({ tools, placeholder = 'Cari di semua kolom', extra }: { tools: ListTools<T>; placeholder?: string; extra?: ReactNode }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="relative w-full max-w-sm">
+      <div className="relative w-full sm:max-w-sm">
         <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" aria-hidden="true" />
         <input
           type="search"
@@ -47,9 +47,9 @@ export function ListToolbar<T>({ tools, placeholder = 'Cari di semua kolom', ext
       </div>
       {tools.period && (
         <div className="flex flex-wrap items-center gap-2" role="group" aria-label={`Periode ${tools.period.label}`}>
-          <input type="date" aria-label="Dari tanggal" className="input-field w-40" value={tools.period.all ? '' : tools.period.from} onChange={(e) => e.target.value && tools.setPeriod(e.target.value, tools.period!.to)} />
+          <input type="date" aria-label="Dari tanggal" className="input-field w-36 sm:w-40" value={tools.period.all ? '' : tools.period.from} onChange={(e) => e.target.value && tools.setPeriod(e.target.value, tools.period!.to)} />
           <span className="text-sm text-gray-400">s/d</span>
-          <input type="date" aria-label="Sampai tanggal" className="input-field w-40" value={tools.period.all ? '' : tools.period.to} onChange={(e) => e.target.value && tools.setPeriod(tools.period!.from, e.target.value)} />
+          <input type="date" aria-label="Sampai tanggal" className="input-field w-36 sm:w-40" value={tools.period.all ? '' : tools.period.to} onChange={(e) => e.target.value && tools.setPeriod(tools.period!.from, e.target.value)} />
           <div className="flex gap-1">
             {PRESETS.map((p) => (
               <button key={p.label} type="button" onClick={() => { const r = p.range(); if (r) tools.setPeriod(r[0], r[1]); else tools.setPeriodAll() }}
@@ -62,7 +62,7 @@ export function ListToolbar<T>({ tools, placeholder = 'Cari di semua kolom', ext
       <span className="text-sm text-gray-500 dark:text-gray-400">
         {tools.rows.length !== tools.total ? `${tools.rows.length} dari ${tools.total} baris` : `${tools.total} baris`}
       </span>
-      <div className="ml-auto flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
         {extra}
         <button type="button" onClick={tools.exportExcel} disabled={tools.rows.length === 0} className="btn-secondary disabled:opacity-50" title="Unduh baris yang tampil sebagai Excel">
           <ArrowDownTrayIcon className="mr-1.5 h-4 w-4" aria-hidden="true" />

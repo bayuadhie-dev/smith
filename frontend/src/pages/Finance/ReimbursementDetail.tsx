@@ -158,13 +158,13 @@ const ReimbursementDetail: React.FC = () => {
                   {actionable && (rejecting === st.level ? (
                     <div className="mt-2 space-y-2">
                       <textarea className="input-field" rows={2} placeholder="Alasan penolakan" value={reason} onChange={(e) => setReason(e.target.value)} />
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <button type="button" disabled={busy || !reason.trim()} className="rounded bg-red-600 px-3 py-1 text-xs text-white disabled:opacity-50" onClick={() => act(st.level, 'reject')}>Konfirmasi tolak</button>
                         <button type="button" className="rounded border px-3 py-1 text-xs" onClick={() => { setRejecting(null); setReason(''); }}>Batal</button>
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-2 flex gap-2">
+                    <div className="mt-2 flex gap-2 flex-wrap">
                       <button type="button" disabled={busy} className="rounded bg-emerald-600 px-3 py-1 text-xs text-white disabled:opacity-50" onClick={() => act(st.level, 'approve')}>Setujui</button>
                       <button type="button" className="rounded border border-red-200 px-3 py-1 text-xs text-red-600 dark:text-red-400 dark:border-red-800" onClick={() => setRejecting(st.level)}>Tolak</button>
                     </div>
@@ -180,26 +180,28 @@ const ReimbursementDetail: React.FC = () => {
       {data.expenses.length === 0 ? (
         <p className="text-sm text-gray-500 dark:text-gray-400">Tidak ada expense dalam reimbursement ini.</p>
       ) : (
-        <table className="w-full text-sm bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-          <thead>
-            <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-              <th className="p-3">No. Expense</th>
-              <th className="p-3">Tanggal</th>
-              <th className="p-3">Kategori</th>
-              <th className="p-3 text-right">Jumlah</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.expenses.map((exp) => (
-              <tr key={exp.id} className="border-b border-gray-100 dark:border-gray-800">
-                <td className="p-3">{exp.expense_number}</td>
-                <td className="p-3">{exp.expense_date ? new Date(exp.expense_date).toLocaleDateString('id-ID') : '-'}</td>
-                <td className="p-3">{exp.expense_category}</td>
-                <td className="p-3 text-right">Rp{exp.amount.toLocaleString('id-ID')}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+            <thead>
+              <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                <th className="p-3">No. Expense</th>
+                <th className="p-3">Tanggal</th>
+                <th className="p-3">Kategori</th>
+                <th className="p-3 text-right">Jumlah</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {data.expenses.map((exp) => (
+                <tr key={exp.id} className="border-b border-gray-100 dark:border-gray-800">
+                  <td className="p-3">{exp.expense_number}</td>
+                  <td className="p-3">{exp.expense_date ? new Date(exp.expense_date).toLocaleDateString('id-ID') : '-'}</td>
+                  <td className="p-3">{exp.expense_category}</td>
+                  <td className="p-3 text-right">Rp{exp.amount.toLocaleString('id-ID')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       <AttachmentsPanel entityType="reimbursement" entityId={id} />
       <RiwayatPanel table="reimbursements" id={id} />

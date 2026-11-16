@@ -375,7 +375,7 @@ const AdjustmentForm: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700 flex-wrap">
             <button
               type="button"
               onClick={() => navigate('/app/warehouse/adjustments')}

@@ -74,7 +74,7 @@ const AttendanceNotClockedOut: React.FC = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center flex-wrap justify-between mb-6 gap-3">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
@@ -172,36 +172,38 @@ const AttendanceNotClockedOut: React.FC = () => {
             <p className="text-gray-500 dark:text-gray-400">Tidak ada staff yang belum clock out hari ini.</p>
           </div>
         ) : (
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No</th>
-                <SortTh tools={tools} col="name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Nama</SortTh>
-                <SortTh tools={tools} col="jabatan" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Jabatan</SortTh>
-                <SortTh tools={tools} col="departemen" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Departemen</SortTh>
-                <SortTh tools={tools} col="clock_in" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Clock In</SortTh>
-                <SortTh tools={tools} col="hours_since_clock_in" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Durasi</SortTh>
-                <SortTh tools={tools} col="status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Status</SortTh>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {tools.rows.map((record, index) => (
-                <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                  <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{index + 1}</td>
-                  <td className="px-4 py-3">
-                    <span className="font-medium text-gray-900 dark:text-white">{record.name}</span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{record.jabatan || '-'}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{record.departemen || '-'}</td>
-                  <td className="px-4 py-3 text-sm font-mono text-gray-600 dark:text-gray-300">{formatTime(record.clock_in)}</td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
-                    {record.hours_since_clock_in.toFixed(1)} jam
-                  </td>
-                  <td className="px-4 py-3">{getStatusBadge(record.hours_since_clock_in)}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No</th>
+                  <SortTh tools={tools} col="name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Nama</SortTh>
+                  <SortTh tools={tools} col="jabatan" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Jabatan</SortTh>
+                  <SortTh tools={tools} col="departemen" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Departemen</SortTh>
+                  <SortTh tools={tools} col="clock_in" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Clock In</SortTh>
+                  <SortTh tools={tools} col="hours_since_clock_in" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Durasi</SortTh>
+                  <SortTh tools={tools} col="status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Status</SortTh>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {tools.rows.map((record, index) => (
+                  <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{index + 1}</td>
+                    <td className="px-4 py-3">
+                      <span className="font-medium text-gray-900 dark:text-white">{record.name}</span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{record.jabatan || '-'}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{record.departemen || '-'}</td>
+                    <td className="px-4 py-3 text-sm font-mono text-gray-600 dark:text-gray-300">{formatTime(record.clock_in)}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+                      {record.hours_since_clock_in.toFixed(1)} jam
+                    </td>
+                    <td className="px-4 py-3">{getStatusBadge(record.hours_since_clock_in)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

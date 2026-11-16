@@ -194,7 +194,7 @@ const RNDProjectDetail: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-wrap justify-between items-start gap-3">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/rnd/projects')}
@@ -213,7 +213,7 @@ const RNDProjectDetail: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {!project.is_locked && (
             <>
               <button
@@ -430,7 +430,7 @@ const RNDProjectDetail: React.FC = () => {
                       <p className="text-gray-600 dark:text-gray-300 mt-1">{formula.name || 'Tanpa nama'}</p>
                     </div>
                     
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       {!project.is_locked && !formula.is_selected && (
                         <button
                           onClick={() => handleSelectFormula(formula.id)}
@@ -456,7 +456,7 @@ const RNDProjectDetail: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div>
                       <p className="text-sm text-gray-500 dark:text-gray-400">Batch Size</p>
                       <p className="font-medium">{formula.batch_size} {formula.batch_uom}</p>
@@ -504,8 +504,8 @@ const RNDProjectDetail: React.FC = () => {
 
       {/* Approval Request Modal */}
       {showApprovalModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Request Approval</h3>
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -518,7 +518,7 @@ const RNDProjectDetail: React.FC = () => {
                 className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg mb-4"
                 rows={4}
               />
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-2 flex-wrap">
                 <button
                   type="button"
                   onClick={() => setShowApprovalModal(false)}

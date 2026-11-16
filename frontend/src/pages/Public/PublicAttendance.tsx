@@ -602,7 +602,7 @@ const PublicAttendance: React.FC = () => {
       {/* Clock Out Reminder Modal */}
       {showClockOutReminder && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-bounce-once">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-bounce-once max-h-[90vh] overflow-y-auto">
             <div className="text-center">
               <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-orange-900/30">
                 <Clock className="w-8 h-8 text-orange-600 dark:text-orange-400" />
@@ -611,7 +611,7 @@ const PublicAttendance: React.FC = () => {
               <p className="text-gray-600 dark:text-gray-300 mb-4">
                 Sudah jam 17:00, jangan lupa untuk melakukan <strong>Clock Out</strong> sebelum pulang.
               </p>
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 <button
                   onClick={() => {
                     setShowClockOutReminder(false);
@@ -822,7 +822,7 @@ const PublicAttendance: React.FC = () => {
                   
                   <canvas ref={canvasRef} className="hidden" />
 
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 flex-wrap">
                     <button
                       onClick={() => {
                         setFaceScanMode(false);
@@ -1126,7 +1126,7 @@ const PublicAttendance: React.FC = () => {
                     
                     <canvas ref={canvasRef} className="hidden" />
                     
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 flex-wrap">
                       {isCameraReady && !capturedPhoto && (
                         <button
                           onClick={capturePhoto}

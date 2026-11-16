@@ -708,7 +708,7 @@ const TransactionsPage: React.FC = () => {
             <input type="text" value={batchFilter} onChange={(e) => setBatchFilter(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm dark:border-gray-600" />
           </div>
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-2 flex-wrap">
             <button onClick={runSearch} className="flex-1 px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium">
               Jalankan Pencarian
             </button>
@@ -761,7 +761,7 @@ const TransactionsPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-              <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+              <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100 dark:border-gray-800 flex-wrap">
                 <button onClick={resetColumnCatalog} className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">Reset Default</button>
                 <button
                   onClick={saveColumnCatalog}
@@ -871,7 +871,7 @@ const TransactionsPage: React.FC = () => {
       {drawerTxnId !== null && (
         <div className="fixed inset-0 z-50 overflow-hidden">
           <div className="absolute inset-0 bg-black/30" onClick={closeDrawer} />
-          <div className="absolute right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl flex flex-col dark:bg-gray-800">
+          <div className="absolute right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl flex flex-col dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Detail Transaksi</h2>

@@ -239,12 +239,12 @@ const navigate = useNavigate()
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Report Scheduler</h1>
           <p className="text-gray-600 dark:text-gray-300">Automate report generation and delivery</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => navigate('/app/reports')}
             className="btn-secondary"
@@ -376,7 +376,7 @@ const navigate = useNavigate()
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <button
                         onClick={() => runReportNow(report)}
                         className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
@@ -416,7 +416,7 @@ const navigate = useNavigate()
 
       {/* New Schedule Modal */}
       {showNewScheduleModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Create New Schedule</h3>
@@ -576,7 +576,7 @@ const navigate = useNavigate()
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 flex-wrap">
               <button
                 onClick={() => setShowNewScheduleModal(false)}
                 className="btn-secondary"

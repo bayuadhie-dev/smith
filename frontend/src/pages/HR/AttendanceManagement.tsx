@@ -81,9 +81,9 @@ const navigate = useNavigate()
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Attendance Management</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button 
             onClick={() => showInfo('Bulk Mark Attendance feature - Coming Soon!')}
             className="btn-outline inline-flex items-center gap-2"
@@ -277,7 +277,7 @@ const navigate = useNavigate()
                       </span>
                     </td>
                     <td>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         {!attendance.clock_in && (
                           <button
                             onClick={() => handleClockIn(attendance.employee.id)}

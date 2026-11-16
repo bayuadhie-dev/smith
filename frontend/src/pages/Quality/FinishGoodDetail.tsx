@@ -140,7 +140,7 @@ export default function FinishGoodDetail() {
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/app/quality/finish-good')}
@@ -156,7 +156,7 @@ export default function FinishGoodDetail() {
             <p className="text-sm text-gray-500 dark:text-gray-400">{wo.product_name} · {wo.product_code}</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {!qcTest ? (
             <Link
               to={`/app/quality/finish-good/${wo.id}/input`}
@@ -236,7 +236,7 @@ export default function FinishGoodDetail() {
           </div>
 
           {/* Stats row */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div className="card p-3 text-center">
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{summary?.shift_count ?? 0}</p>
               <p className="text-xs text-gray-500 mt-0.5 dark:text-gray-400">Total Shift</p>

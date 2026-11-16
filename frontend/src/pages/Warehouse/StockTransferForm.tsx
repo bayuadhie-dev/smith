@@ -123,7 +123,7 @@ export default function StockTransferForm() {
           <label className={lbl}>Catatan</label>
           <textarea className={sel} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 flex-wrap">
           <button type="button" onClick={() => navigate('/app/warehouse/transfers')} className="rounded-md border border-gray-300 px-4 py-2 text-sm dark:border-gray-600 dark:text-gray-200">Batal</button>
           <button type="button" disabled={busy} onClick={submit} className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50">Simpan draft</button>
         </div>

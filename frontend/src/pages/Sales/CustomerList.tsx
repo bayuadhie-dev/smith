@@ -109,7 +109,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Pelanggan</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Manage customer database and relationships</p>
@@ -347,7 +347,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
                   </td>
                   
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       <Link
                         to={`/app/sales/customers/${customer.id}`}
                         className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400"
@@ -371,7 +371,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
             <div className="text-sm text-gray-500 dark:text-gray-400">
               Menampilkan {(currentPage - 1) * perPage + 1}-{Math.min(currentPage * perPage, total)} dari {total} pelanggan
             </div>
-            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+            <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 flex-wrap">
               <label className="flex items-center gap-1.5">
                 Per halaman
                 <select

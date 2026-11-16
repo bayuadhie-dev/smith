@@ -124,7 +124,7 @@ export default function ForcePasswordChange() {
         {caps && <p className="text-xs text-amber-600 dark:text-amber-400">Caps Lock sedang aktif</p>}
         {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
-        <div className="flex justify-between gap-3">
+        <div className="flex justify-between gap-3 flex-wrap">
           <button type="button" className="btn-secondary" onClick={() => dispatch(logout())}>Keluar</button>
           <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan password'}</button>
         </div>

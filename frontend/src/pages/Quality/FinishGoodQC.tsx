@@ -175,7 +175,7 @@ export default function FinishGoodQC() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <ClipboardDocumentCheckIcon className="w-7 h-7 text-green-600 dark:text-green-400" />
@@ -254,7 +254,7 @@ export default function FinishGoodQC() {
       {/* Filters & Tabs */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex flex-wrap gap-4 items-center justify-between">
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => setActiveTab('pending')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -298,108 +298,110 @@ export default function FinishGoodQC() {
             </p>
           </div>
         ) : (
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-700">
-              <tr>
-                <SortTh tools={tools} col="wo_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">SPK</SortTh>
-                <SortTh tools={tools} col="product_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Produk</SortTh>
-                <SortTh tools={tools} col="quantity_produced" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Qty Produksi</SortTh>
-                <SortTh tools={tools} col="machine_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Mesin</SortTh>
-                <SortTh tools={tools} col="completed_date" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Selesai</SortTh>
-                <SortTh tools={tools} col="qc_status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Status</SortTh>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredList.map(wo => (
-                <tr key={wo.id} className="hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700/50">
-                  <td className="px-4 py-4">
-                    <p className="font-medium text-blue-600 dark:text-blue-400">{wo.wo_number}</p>
-                    {wo.batch_number && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Batch: {wo.batch_number}</p>
-                    )}
-                  </td>
-                  <td className="px-4 py-4">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{wo.product_code}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{wo.product_name}</p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div>
-                      <p className="font-bold text-gray-900 dark:text-white">
-                        {wo.quantity_produced.toLocaleString()} {wo.uom}
-                      </p>
-                      <div className="flex gap-2 text-xs mt-1">
-                        <span className="text-green-600 dark:text-green-400">Baik: {wo.quantity_good.toLocaleString()}</span>
-                        {wo.quantity_scrap > 0 && (
-                          <span className="text-red-600 dark:text-red-400">Scrap: {wo.quantity_scrap}</span>
-                        )}
-                      </div>
-                      {wo.pack_per_carton > 0 && (
-                        <p className="text-xs text-blue-500">
-                          = {Math.floor(wo.quantity_good / wo.pack_per_carton)} Karton
-                        </p>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-700">
+                <tr>
+                  <SortTh tools={tools} col="wo_number" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">SPK</SortTh>
+                  <SortTh tools={tools} col="product_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Produk</SortTh>
+                  <SortTh tools={tools} col="quantity_produced" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Qty Produksi</SortTh>
+                  <SortTh tools={tools} col="machine_name" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Mesin</SortTh>
+                  <SortTh tools={tools} col="completed_date" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Selesai</SortTh>
+                  <SortTh tools={tools} col="qc_status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Status</SortTh>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {filteredList.map(wo => (
+                  <tr key={wo.id} className="hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700/50">
+                    <td className="px-4 py-4">
+                      <p className="font-medium text-blue-600 dark:text-blue-400">{wo.wo_number}</p>
+                      {wo.batch_number && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Batch: {wo.batch_number}</p>
                       )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className="text-gray-900 dark:text-white">{wo.machine_name || '-'}</span>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className="text-sm text-gray-500 flex items-center gap-1 dark:text-gray-400">
-                      <CalendarIcon className="w-4 h-4" />
-                      {formatDate(wo.completed_date)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4">
-                    {getStatusBadge(wo.qc_status)}
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center justify-center gap-2">
-                      {wo.qc_status === 'pending' ? (
-                        <button
-                          onClick={() => handleInputQC(wo)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
-                        >
-                          <BeakerIcon className="w-4 h-4" />
-                          Input QC
-                        </button>
-                      ) : (
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => handleViewDetail(wo)}
-                            className="p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-                            title="Lihat Detail"
-                          >
-                            <EyeIcon className="w-4 h-4" />
-                          </button>
-                          {wo.qc_status === 'passed' && (
-                            <>
-                              <button
-                                onClick={() => handlePrintCoA(wo)}
-                                className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg dark:text-blue-400"
-                                title="Cetak CoA"
-                              >
-                                <PrinterIcon className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleSendToWarehouse(wo)}
-                                className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg dark:text-green-400"
-                                title="Kirim ke Gudang"
-                              >
-                                <TruckIcon className="w-4 h-4" />
-                              </button>
-                            </>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{wo.product_code}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{wo.product_name}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div>
+                        <p className="font-bold text-gray-900 dark:text-white">
+                          {wo.quantity_produced.toLocaleString()} {wo.uom}
+                        </p>
+                        <div className="flex gap-2 text-xs mt-1">
+                          <span className="text-green-600 dark:text-green-400">Baik: {wo.quantity_good.toLocaleString()}</span>
+                          {wo.quantity_scrap > 0 && (
+                            <span className="text-red-600 dark:text-red-400">Scrap: {wo.quantity_scrap}</span>
                           )}
                         </div>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                        {wo.pack_per_carton > 0 && (
+                          <p className="text-xs text-blue-500">
+                            = {Math.floor(wo.quantity_good / wo.pack_per_carton)} Karton
+                          </p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="text-gray-900 dark:text-white">{wo.machine_name || '-'}</span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="text-sm text-gray-500 flex items-center gap-1 dark:text-gray-400">
+                        <CalendarIcon className="w-4 h-4" />
+                        {formatDate(wo.completed_date)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      {getStatusBadge(wo.qc_status)}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center justify-center gap-2 flex-wrap">
+                        {wo.qc_status === 'pending' ? (
+                          <button
+                            onClick={() => handleInputQC(wo)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+                          >
+                            <BeakerIcon className="w-4 h-4" />
+                            Input QC
+                          </button>
+                        ) : (
+                          <div className="flex gap-1 flex-wrap">
+                            <button
+                              onClick={() => handleViewDetail(wo)}
+                              className="p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                              title="Lihat Detail"
+                            >
+                              <EyeIcon className="w-4 h-4" />
+                            </button>
+                            {wo.qc_status === 'passed' && (
+                              <>
+                                <button
+                                  onClick={() => handlePrintCoA(wo)}
+                                  className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg dark:text-blue-400"
+                                  title="Cetak CoA"
+                                >
+                                  <PrinterIcon className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleSendToWarehouse(wo)}
+                                  className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg dark:text-green-400"
+                                  title="Kirim ke Gudang"
+                                >
+                                  <TruckIcon className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

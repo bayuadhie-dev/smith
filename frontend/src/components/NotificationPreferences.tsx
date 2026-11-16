@@ -29,31 +29,33 @@ export default function NotificationPreferences() {
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Preferensi Notifikasi</h2>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Pilih kejadian yang ingin Anda terima di lonceng dan di email.</p>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
-            <th className="pb-2">Kejadian</th><th className="pb-2 text-center w-24">Lonceng</th><th className="pb-2 text-center w-24">Email</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-          {prefs.map((p) => (
-            <tr key={p.key}>
-              <td className="py-2.5 pr-3">
-                <div className="font-medium text-gray-900 dark:text-white">{p.label}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">{p.description}</div>
-              </td>
-              <td className="text-center">
-                <input type="checkbox" checked={p.in_app} disabled={p.in_app_required || saving === p.key} onChange={(e) => toggle(p.key, 'in_app', e.target.checked)} title={p.in_app_required ? 'Wajib aktif' : undefined} />
-              </td>
-              <td className="text-center">
-                {p.email_supported
-                  ? <input type="checkbox" checked={p.email} disabled={saving === p.key} onChange={(e) => toggle(p.key, 'email', e.target.checked)} />
-                  : <span className="text-gray-300">-</span>}
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
+              <th className="pb-2">Kejadian</th><th className="pb-2 text-center w-24">Lonceng</th><th className="pb-2 text-center w-24">Email</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+            {prefs.map((p) => (
+              <tr key={p.key}>
+                <td className="py-2.5 pr-3">
+                  <div className="font-medium text-gray-900 dark:text-white">{p.label}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{p.description}</div>
+                </td>
+                <td className="text-center">
+                  <input type="checkbox" checked={p.in_app} disabled={p.in_app_required || saving === p.key} onChange={(e) => toggle(p.key, 'in_app', e.target.checked)} title={p.in_app_required ? 'Wajib aktif' : undefined} />
+                </td>
+                <td className="text-center">
+                  {p.email_supported
+                    ? <input type="checkbox" checked={p.email} disabled={saving === p.key} onChange={(e) => toggle(p.key, 'email', e.target.checked)} />
+                    : <span className="text-gray-300">-</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">Permintaan persetujuan selalu muncul di lonceng. Email baru tersedia untuk permintaan persetujuan. Daftar di atas hanya memuat kejadian yang berkaitan dengan departemen Anda.</p>
     </div>
   )

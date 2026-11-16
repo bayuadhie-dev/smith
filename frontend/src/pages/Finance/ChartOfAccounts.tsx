@@ -323,7 +323,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Chart of Accounts</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Manage your accounting structure and account balances</p>
@@ -415,7 +415,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <select
               className="input"
               value={typeFilter}
@@ -488,7 +488,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-2 flex-wrap">
                           <button
                             onClick={() => handleViewAccount(account)}
                             className="text-blue-600 hover:text-blue-900 inline-flex items-center dark:text-blue-400"
@@ -521,8 +521,8 @@ const [accounts, setAccounts] = useState<Account[]>([])
 
       {/* Add Account Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">{editingAccount ? 'Edit Account' : 'Add New Account'}</h3>
               <button 
@@ -555,7 +555,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
               </div>
 
               {!editingAccount && (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Jenis Akun</label>
                     <select className="input w-full" value={formData.is_header ? 'header' : 'detail'}
@@ -666,7 +666,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
                 />
               </div>
 
-              <div className="flex justify-end gap-4 pt-4 border-t">
+              <div className="flex justify-end gap-4 pt-4 border-t flex-wrap">
                 <button 
                   type="button"
                   onClick={handleCloseModal}
@@ -691,7 +691,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
 
       {/* Account transaction drilldown modal */}
       {detailAccount && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-3xl mx-4 max-h-[85vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <div>
@@ -760,60 +760,62 @@ const [accounts, setAccounts] = useState<Account[]>([])
                 Belum ada transaksi tercatat untuk akun ini.
               </div>
             ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                    <th className="py-2 pr-3">Tanggal</th>
-                    <th className="py-2 pr-3">No. Jurnal</th>
-                    <th className="py-2 pr-3">Deskripsi</th>
-                    <th className="py-2 pr-3 text-right">Debit</th>
-                    <th className="py-2 pr-3 text-right">Kredit</th>
-                    <th className="py-2"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detailTransactions.map((tx) => {
-                    const link = getReferenceLink(tx.reference_type, tx.reference_id)
-                    return (
-                      <tr
-                        key={tx.id}
-                        className={`border-b border-gray-100 dark:border-gray-800 ${
-                          (link || (tx.reference_type === 'payroll_period' && tx.reference_id)) ? 'hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer' : ''
-                        }`}
-                        onClick={() => {
-                          if (tx.reference_type === 'recurring_payment' && tx.reference_id) {
-                            handleOpenRecurringTxDetail(tx.reference_id)
-                          } else if (tx.reference_type === 'payroll_period' && tx.reference_id) {
-                            handleOpenPayrollPeriodDetail(tx.reference_id)
-                          } else if (link) {
-                            window.location.href = link
-                          }
-                        }}
-                      >
-                        <td className="py-2 pr-3">
-                          {tx.entry_date ? new Date(tx.entry_date).toLocaleDateString('id-ID') : '-'}
-                        </td>
-                        <td className="py-2 pr-3 font-mono text-xs">{tx.entry_number}</td>
-                        <td className="py-2 pr-3">{tx.description}</td>
-                        <td className="py-2 pr-3 text-right">
-                          {tx.debit_amount > 0 ? formatRupiah(tx.debit_amount) : '-'}
-                        </td>
-                        <td className="py-2 pr-3 text-right">
-                          {tx.credit_amount > 0 ? formatRupiah(tx.credit_amount) : '-'}
-                        </td>
-                        <td className="py-2 text-blue-600 dark:text-blue-400">{link ? '→' : ''}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                      <th className="py-2 pr-3">Tanggal</th>
+                      <th className="py-2 pr-3">No. Jurnal</th>
+                      <th className="py-2 pr-3">Deskripsi</th>
+                      <th className="py-2 pr-3 text-right">Debit</th>
+                      <th className="py-2 pr-3 text-right">Kredit</th>
+                      <th className="py-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {detailTransactions.map((tx) => {
+                      const link = getReferenceLink(tx.reference_type, tx.reference_id)
+                      return (
+                        <tr
+                          key={tx.id}
+                          className={`border-b border-gray-100 dark:border-gray-800 ${
+                            (link || (tx.reference_type === 'payroll_period' && tx.reference_id)) ? 'hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer' : ''
+                          }`}
+                          onClick={() => {
+                            if (tx.reference_type === 'recurring_payment' && tx.reference_id) {
+                              handleOpenRecurringTxDetail(tx.reference_id)
+                            } else if (tx.reference_type === 'payroll_period' && tx.reference_id) {
+                              handleOpenPayrollPeriodDetail(tx.reference_id)
+                            } else if (link) {
+                              window.location.href = link
+                            }
+                          }}
+                        >
+                          <td className="py-2 pr-3">
+                            {tx.entry_date ? new Date(tx.entry_date).toLocaleDateString('id-ID') : '-'}
+                          </td>
+                          <td className="py-2 pr-3 font-mono text-xs">{tx.entry_number}</td>
+                          <td className="py-2 pr-3">{tx.description}</td>
+                          <td className="py-2 pr-3 text-right">
+                            {tx.debit_amount > 0 ? formatRupiah(tx.debit_amount) : '-'}
+                          </td>
+                          <td className="py-2 pr-3 text-right">
+                            {tx.credit_amount > 0 ? formatRupiah(tx.credit_amount) : '-'}
+                          </td>
+                          <td className="py-2 text-blue-600 dark:text-blue-400">{link ? '→' : ''}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
       )}
 
       {(recurringTxDetail || loadingRecurringTxDetail) && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60]">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-xl mx-4 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -871,30 +873,32 @@ const [accounts, setAccounts] = useState<Account[]>([])
                 <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                   Jurnal yang Diposting
                 </h4>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                      <th className="py-2">Akun</th>
-                      <th className="py-2 text-right">Debit</th>
-                      <th className="py-2 text-right">Kredit</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recurringTxDetail.journal_lines.map((line: any) => (
-                      <tr key={line.id} className="border-b border-gray-100 dark:border-gray-800">
-                        <td className="py-2">
-                          {line.account_code} - {line.account_name}
-                        </td>
-                        <td className="py-2 text-right">
-                          {line.debit_amount > 0 ? `Rp${line.debit_amount.toLocaleString('id-ID')}` : '-'}
-                        </td>
-                        <td className="py-2 text-right">
-                          {line.credit_amount > 0 ? `Rp${line.credit_amount.toLocaleString('id-ID')}` : '-'}
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                        <th className="py-2">Akun</th>
+                        <th className="py-2 text-right">Debit</th>
+                        <th className="py-2 text-right">Kredit</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {recurringTxDetail.journal_lines.map((line: any) => (
+                        <tr key={line.id} className="border-b border-gray-100 dark:border-gray-800">
+                          <td className="py-2">
+                            {line.account_code} - {line.account_name}
+                          </td>
+                          <td className="py-2 text-right">
+                            {line.debit_amount > 0 ? `Rp${line.debit_amount.toLocaleString('id-ID')}` : '-'}
+                          </td>
+                          <td className="py-2 text-right">
+                            {line.credit_amount > 0 ? `Rp${line.credit_amount.toLocaleString('id-ID')}` : '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </>
             )}
           </div>
@@ -902,7 +906,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
       )}
 
       {(payrollPeriodDetail || loadingPayrollPeriodDetail) && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60]">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-xl mx-4 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -944,26 +948,28 @@ const [accounts, setAccounts] = useState<Account[]>([])
                 <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                   Rincian per Karyawan
                 </h4>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                      <th className="py-2 pr-3">Nama</th>
-                      <th className="py-2 pr-3 text-right">Gaji Bruto</th>
-                      <th className="py-2 pr-3 text-right">Potongan</th>
-                      <th className="py-2 pr-3 text-right">Gaji Bersih</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {payrollPeriodDetail.records.map((r: any) => (
-                      <tr key={r.id} className="border-b border-gray-100 dark:border-gray-800">
-                        <td className="py-2 pr-3">{r.employee_name}</td>
-                        <td className="py-2 pr-3 text-right">{formatRupiah(r.gross_salary)}</td>
-                        <td className="py-2 pr-3 text-right">{formatRupiah(r.total_deductions)}</td>
-                        <td className="py-2 pr-3 text-right">{formatRupiah(r.net_salary)}</td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                        <th className="py-2 pr-3">Nama</th>
+                        <th className="py-2 pr-3 text-right">Gaji Bruto</th>
+                        <th className="py-2 pr-3 text-right">Potongan</th>
+                        <th className="py-2 pr-3 text-right">Gaji Bersih</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {payrollPeriodDetail.records.map((r: any) => (
+                        <tr key={r.id} className="border-b border-gray-100 dark:border-gray-800">
+                          <td className="py-2 pr-3">{r.employee_name}</td>
+                          <td className="py-2 pr-3 text-right">{formatRupiah(r.gross_salary)}</td>
+                          <td className="py-2 pr-3 text-right">{formatRupiah(r.total_deductions)}</td>
+                          <td className="py-2 pr-3 text-right">{formatRupiah(r.net_salary)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </>
             )}
           </div>

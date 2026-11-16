@@ -92,7 +92,7 @@ const CashFlowManagement: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Arus Kas</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Cash flow tracking and forecasting</p>

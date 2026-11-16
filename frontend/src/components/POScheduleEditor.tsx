@@ -24,61 +24,63 @@ export default function POScheduleEditor({ quantity, uom, value, onChange, disab
   const remaining = Math.max(0, Number(quantity || 0) - total)
 
   return (
-    <div className="mt-3 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-3">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Jadwal kedatangan (opsional, boleh bertahap)</p>
-        {!disabled && (
-          <button
-            type="button"
-            className="text-sm text-emerald-700 hover:underline inline-flex items-center gap-1 dark:text-emerald-300"
-            onClick={() => onChange([...value, { expected_date: '', quantity: remaining || '' }])}
-          >
-            <PlusIcon className="h-4 w-4" /> Tambah jadwal
-          </button>
-        )}
-      </div>
-      {value.length === 0 && <p className="text-xs text-gray-500 dark:text-gray-400">Belum ada jadwal. Tanggal dibutuhkan PO berlaku untuk seluruh jumlah.</p>}
-      {value.map((r, i) => (
-        <div key={i} className="grid grid-cols-12 gap-2 mb-2 items-center">
-          <input
-            type="date"
-            className="input-field col-span-4"
-            value={r.expected_date || ''}
-            disabled={disabled}
-            onChange={(e) => update(i, { expected_date: e.target.value })}
-          />
-          <div className="col-span-3">
-            <NumberInput
-              className="input-field"
-              value={r.quantity as any}
-              disabled={disabled}
-              onChange={(e: any) => update(i, { quantity: e.target.value })}
-              placeholder="Jumlah"
-            />
-          </div>
-          <span className="col-span-1 text-xs text-gray-500 dark:text-gray-400">{uom}</span>
-          <input
-            type="text"
-            className="input-field col-span-3"
-            value={r.notes || ''}
-            disabled={disabled}
-            placeholder="Catatan"
-            maxLength={255}
-            onChange={(e) => update(i, { notes: e.target.value })}
-          />
+    <div className="overflow-x-auto">
+      <div className="mt-3 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-3">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Jadwal kedatangan (opsional, boleh bertahap)</p>
           {!disabled && (
-            <button type="button" className="col-span-1 btn-danger p-2" onClick={() => onChange(value.filter((_, idx) => idx !== i))}>
-              <TrashIcon className="h-4 w-4" />
+            <button
+              type="button"
+              className="text-sm text-emerald-700 hover:underline inline-flex items-center gap-1 dark:text-emerald-300"
+              onClick={() => onChange([...value, { expected_date: '', quantity: remaining || '' }])}
+            >
+              <PlusIcon className="h-4 w-4" /> Tambah jadwal
             </button>
           )}
         </div>
-      ))}
-      {value.length > 0 && (
-        <p className={`text-xs ${over ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
-          Terjadwal {total.toLocaleString('id-ID')} dari {Number(quantity || 0).toLocaleString('id-ID')} {uom}
-          {over ? ' (melebihi jumlah pesanan)' : remaining > 0 ? `, sisa ${remaining.toLocaleString('id-ID')} belum dijadwalkan` : ''}
-        </p>
-      )}
+        {value.length === 0 && <p className="text-xs text-gray-500 dark:text-gray-400">Belum ada jadwal. Tanggal dibutuhkan PO berlaku untuk seluruh jumlah.</p>}
+        {value.map((r, i) => (
+          <div key={i} className="grid min-w-[760px] grid-cols-12 gap-2 mb-2 items-center">
+            <input
+              type="date"
+              className="input-field col-span-4"
+              value={r.expected_date || ''}
+              disabled={disabled}
+              onChange={(e) => update(i, { expected_date: e.target.value })}
+            />
+            <div className="col-span-3">
+              <NumberInput
+                className="input-field"
+                value={r.quantity as any}
+                disabled={disabled}
+                onChange={(e: any) => update(i, { quantity: e.target.value })}
+                placeholder="Jumlah"
+              />
+            </div>
+            <span className="col-span-1 text-xs text-gray-500 dark:text-gray-400">{uom}</span>
+            <input
+              type="text"
+              className="input-field col-span-3"
+              value={r.notes || ''}
+              disabled={disabled}
+              placeholder="Catatan"
+              maxLength={255}
+              onChange={(e) => update(i, { notes: e.target.value })}
+            />
+            {!disabled && (
+              <button type="button" className="col-span-1 btn-danger p-2" onClick={() => onChange(value.filter((_, idx) => idx !== i))}>
+                <TrashIcon className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        ))}
+        {value.length > 0 && (
+          <p className={`text-xs ${over ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
+            Terjadwal {total.toLocaleString('id-ID')} dari {Number(quantity || 0).toLocaleString('id-ID')} {uom}
+            {over ? ' (melebihi jumlah pesanan)' : remaining > 0 ? `, sisa ${remaining.toLocaleString('id-ID')} belum dijadwalkan` : ''}
+          </p>
+        )}
+      </div>
     </div>
   )
 }

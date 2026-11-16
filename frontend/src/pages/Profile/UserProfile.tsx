@@ -257,7 +257,7 @@ const UserProfile: React.FC = () => {
 
             {/* Edit Button (only for own profile) */}
             {isOwnProfile && (
-              <div className="flex justify-end pt-4 gap-2">
+              <div className="flex justify-end pt-4 gap-2 flex-wrap">
                 {isEditing ? (
                   <>
                     <button

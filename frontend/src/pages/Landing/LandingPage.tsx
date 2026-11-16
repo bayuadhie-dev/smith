@@ -275,7 +275,7 @@ const LandingPage: React.FC = () => {
         {/* Navigation */}
         <nav className="absolute top-0 w-full z-50 bg-white dark:bg-gray-800/10 backdrop-blur-md border-b border-white/20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-6">
+            <div className="flex flex-wrap justify-between items-center py-6 gap-3">
               <div className="flex items-center space-x-3">
                 <div className="h-10 w-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                   <SparklesIcon className="h-6 w-6 text-white" />
@@ -285,7 +285,7 @@ const LandingPage: React.FC = () => {
                   <p className="text-sm text-blue-200">ERP System</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-4 flex-wrap">
                 <Link
                   to="/login"
                   className="px-6 py-2 bg-white/20 text-white rounded-lg hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 transition-all duration-300 backdrop-blur-sm border border-white/30"

@@ -257,7 +257,7 @@ const MachineDetail: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/app/production/machines')}
@@ -560,7 +560,7 @@ const MachineDetail: React.FC = () => {
                                     </div>
                                     
                                     {/* Production Grades */}
-                                    <div className="grid grid-cols-3 gap-2 text-sm mb-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm mb-3">
                                       <div className="p-2 bg-green-100 rounded text-center dark:bg-green-900/30">
                                         <p className="text-xs text-gray-500 dark:text-gray-400">Grade A</p>
                                         <p className="font-bold text-green-600 dark:text-green-400">{shift.grade_a.toLocaleString()}</p>
@@ -576,7 +576,7 @@ const MachineDetail: React.FC = () => {
                                     </div>
                                     
                                     {/* Runtime, Downtime, Idle per Shift */}
-                                    <div className="grid grid-cols-3 gap-2 text-sm">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
                                       <div className="p-2 bg-green-50 rounded text-center border border-green-200 dark:bg-green-900/20 dark:border-green-800">
                                         <p className="text-xs text-gray-500 dark:text-gray-400">Runtime</p>
                                         <p className="font-bold text-green-600 dark:text-green-400">{shift.runtime_minutes || 480} menit</p>
@@ -601,7 +601,7 @@ const MachineDetail: React.FC = () => {
                           {/* Daily Total Summary */}
                           <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
                             <p className="text-sm font-semibold text-blue-800 mb-2 dark:text-blue-300">📊 Total Hari Ini</p>
-                            <div className="grid grid-cols-4 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                               <div className="p-2 bg-white dark:bg-gray-800 rounded text-center">
                                 <p className="text-xs text-gray-500 dark:text-gray-400">Runtime</p>
                                 <p className="text-lg font-bold text-green-600 dark:text-green-400">

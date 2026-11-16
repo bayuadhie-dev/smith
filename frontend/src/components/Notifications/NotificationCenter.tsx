@@ -158,7 +158,7 @@ const [isOpen, setIsOpen] = useState(false);
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-wrap">
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
@@ -194,7 +194,7 @@ const [isOpen, setIsOpen] = useState(false);
                       !notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                     }`}
                   >
-                    <div className="flex items-start space-x-3">
+                    <div className="flex items-start space-x-3 flex-wrap">
                       <div className="flex-shrink-0 mt-0.5">
                         {getNotificationIcon(notification.type)}
                       </div>
@@ -215,7 +215,7 @@ const [isOpen, setIsOpen] = useState(false);
                             </p>
                           </div>
                           
-                          <div className="flex items-center space-x-1 ml-2">
+                          <div className="flex items-center space-x-1 ml-2 flex-wrap">
                             {!notification.read && (
                               <button
                                 onClick={() => markAsRead(notification.id)}

@@ -81,7 +81,7 @@ const AssetList: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 p-6">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Daftar Aset</h1>
           <p className="text-slate-500 dark:text-gray-400 mt-1">

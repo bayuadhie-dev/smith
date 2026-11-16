@@ -129,7 +129,7 @@ const navigate = useNavigate()
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Shipment</h1>
           <p className="text-gray-600 dark:text-gray-300">Create a new shipment for delivery</p>
@@ -441,7 +441,7 @@ const navigate = useNavigate()
 
           {/* Shipping Summary */}
           <div className="mt-6 pt-4 border-t">
-            <div className="grid grid-cols-3 gap-4 text-sm bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
               <div>
                 <span className="text-gray-600 dark:text-gray-300">Total Items:</span>
                 <p className="font-medium">{fields.length}</p>
@@ -463,7 +463,7 @@ const navigate = useNavigate()
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-4 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/shipping/orders')}

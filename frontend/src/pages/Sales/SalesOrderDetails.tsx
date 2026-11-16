@@ -112,14 +112,14 @@ const SalesOrderDetails: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center flex-wrap justify-between mb-4 gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Sales Order: {order.order_number}
             </h1>
             <p className="text-gray-600 dark:text-gray-300">Customer: {order.customer?.company_name || order.customer_name}</p>
           </div>
-          <div className="flex space-x-3">
+          <div className="flex space-x-3 flex-wrap">
             <Link
               to={`/app/sales/orders/${id}/edit`}
               className="btn-secondary inline-flex items-center gap-2"

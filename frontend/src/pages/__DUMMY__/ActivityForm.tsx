@@ -271,7 +271,7 @@ const ActivityForm = () => {
                 <CalendarDaysIcon className="h-4 w-4 inline mr-1" />
                 Start Date & Time
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <input
                   type="date"
                   className="input"
@@ -294,7 +294,7 @@ const ActivityForm = () => {
                 <ClockIcon className="h-4 w-4 inline mr-1" />
                 End Date & Time
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <input
                   type="date"
                   className="input"
@@ -483,7 +483,7 @@ const ActivityForm = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-4 flex-wrap">
           <button
             type="button"
             onClick={() => navigate('/app/sales/activities')}

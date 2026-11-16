@@ -125,7 +125,7 @@ const SalesReport: React.FC = () => {
         >
           Tampilkan
         </button>
-        <div className="flex gap-1 bg-gray-100 rounded p-1 dark:bg-gray-700">
+        <div className="flex gap-1 bg-gray-100 rounded p-1 dark:bg-gray-700 flex-wrap">
           <button
             onClick={() => setView('invoice')}
             className={`px-3 py-1.5 rounded text-sm ${view === 'invoice' ? 'bg-white shadow font-medium dark:bg-gray-800' : 'text-gray-500 dark:text-gray-400'} dark:bg-gray-800 dark:text-gray-400`}

@@ -280,7 +280,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {mode === 'bahan-baku' ? 'Penambahan Bahan Baku' : 'Barang per Gudang'}
@@ -289,7 +289,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
             {mode === 'bahan-baku' ? 'Kelola stok bahan baku' : 'Kelola stok produk dan bahan baku per lokasi gudang'}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <button
             onClick={handleExport}
             className="btn-secondary inline-flex items-center gap-2"
@@ -544,7 +544,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
               <div className="text-sm text-gray-600 dark:text-gray-300">
                 Menampilkan {inventory.length} dari {totalItems} item
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}

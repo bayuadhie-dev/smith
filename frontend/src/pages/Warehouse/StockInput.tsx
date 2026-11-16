@@ -469,136 +469,138 @@ const StockInput: React.FC = () => {
               </div>
             ) : (
               <div className="overflow-visible">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-900">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.quantity')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Batch/Expiry
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {stockItems.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            item.item_type === 'material' 
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
-                              : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-                          }`}>
-                            {item.item_type === 'material' ? t('products.materials') : t('production.product')}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          {item.item_type === 'material' ? (
-                            <div>
-                              <SearchableSelect
-                                options={materials}
-                                value={item.material_id}
-                                onChange={(val) => updateStockItem(item.id, 'material_id', val)}
-                                placeholder="Select Material"
-                                className={`text-sm min-w-[200px] ${item.errors.item ? 'border-red-500' : ''}`}
-                              />
-                              {item.errors.item && (
-                                <div className="text-xs text-red-600 mt-1 dark:text-red-400">{item.errors.item}</div>
-                              )}
-                              {item.item_name && (
-                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                  {item.item_code} | UOM: {item.uom}
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div>
-                              <SearchableSelect
-                                options={products}
-                                value={item.product_id}
-                                onChange={(val) => updateStockItem(item.id, 'product_id', val)}
-                                placeholder={t('common.search') + " " + t('navigation.products')}
-                                className={`text-sm min-w-[200px] ${item.errors.item ? 'border-red-500' : ''}`}
-                              />
-                              {item.errors.item && (
-                                <div className="text-xs text-red-600 mt-1 dark:text-red-400">{item.errors.item}</div>
-                              )}
-                              {item.item_name && (
-                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                  {item.item_code} | UOM: {item.uom}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div>
-                            <NumberInput
-                              value={item.quantity}
-                              onChange={(e) => updateStockItem(item.id, 'quantity', Number(e.target.value))}
-                              min="0.01"
-                              step="0.01"
-                              className={`w-20 px-2 py-1 text-sm border rounded focus:ring-1 focus:ring-blue-500 ${item.errors.quantity ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
-                              required
-                            />
-                            {item.errors.quantity && (
-                              <div className="text-xs text-red-600 mt-1 dark:text-red-400">{item.errors.quantity}</div>
-                            )}
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item.uom}</div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div>
-                            <SearchableSelect
-                              options={locations.map(loc => ({
-                                id: loc.id,
-                                name: loc.name,
-                                label: `${loc.zone_name} - ${loc.name}`
-                              }))}
-                              value={item.location_id}
-                              onChange={(val) => updateStockItem(item.id, 'location_id', val)}
-                              placeholder={t('common.search') + " " + t('warehouse.locations')}
-                              className={`text-sm ${item.errors.location ? 'border-red-500' : ''}`}
-                            />
-                            {item.errors.location && (
-                              <div className="text-xs text-red-600 mt-1 dark:text-red-400">{item.errors.location}</div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <input
-                            type="text"
-                            value={item.batch_number}
-                            onChange={(e) => updateStockItem(item.id, 'batch_number', e.target.value)}
-                            placeholder="Batch number"
-                            className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 mb-1"
-                          />
-                          <input
-                            type="date"
-                            value={item.expiry_date}
-                            onChange={(e) => updateStockItem(item.id, 'expiry_date', e.target.value)}
-                            className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500"
-                          />
-                        </td>
-                        <td className="px-4 py-3">
-                          <button
-                            type="button"
-                            onClick={() => removeStockItem(item.id)}
-                            className="p-1 text-red-600 hover:text-red-800 dark:text-red-400"
-                            title="Remove item"
-                          >
-                            <XMarkIcon className="h-4 w-4" />
-                          </button>
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-900">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.quantity')}</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Batch/Expiry
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {stockItems.map((item) => (
+                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              item.item_type === 'material' 
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                                : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                            }`}>
+                              {item.item_type === 'material' ? t('products.materials') : t('production.product')}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            {item.item_type === 'material' ? (
+                              <div>
+                                <SearchableSelect
+                                  options={materials}
+                                  value={item.material_id}
+                                  onChange={(val) => updateStockItem(item.id, 'material_id', val)}
+                                  placeholder="Select Material"
+                                  className={`text-sm min-w-[200px] ${item.errors.item ? 'border-red-500' : ''}`}
+                                />
+                                {item.errors.item && (
+                                  <div className="text-xs text-red-600 mt-1 dark:text-red-400">{item.errors.item}</div>
+                                )}
+                                {item.item_name && (
+                                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    {item.item_code} | UOM: {item.uom}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div>
+                                <SearchableSelect
+                                  options={products}
+                                  value={item.product_id}
+                                  onChange={(val) => updateStockItem(item.id, 'product_id', val)}
+                                  placeholder={t('common.search') + " " + t('navigation.products')}
+                                  className={`text-sm min-w-[200px] ${item.errors.item ? 'border-red-500' : ''}`}
+                                />
+                                {item.errors.item && (
+                                  <div className="text-xs text-red-600 mt-1 dark:text-red-400">{item.errors.item}</div>
+                                )}
+                                {item.item_name && (
+                                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    {item.item_code} | UOM: {item.uom}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div>
+                              <NumberInput
+                                value={item.quantity}
+                                onChange={(e) => updateStockItem(item.id, 'quantity', Number(e.target.value))}
+                                min="0.01"
+                                step="0.01"
+                                className={`w-20 px-2 py-1 text-sm border rounded focus:ring-1 focus:ring-blue-500 ${item.errors.quantity ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                                required
+                              />
+                              {item.errors.quantity && (
+                                <div className="text-xs text-red-600 mt-1 dark:text-red-400">{item.errors.quantity}</div>
+                              )}
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item.uom}</div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div>
+                              <SearchableSelect
+                                options={locations.map(loc => ({
+                                  id: loc.id,
+                                  name: loc.name,
+                                  label: `${loc.zone_name} - ${loc.name}`
+                                }))}
+                                value={item.location_id}
+                                onChange={(val) => updateStockItem(item.id, 'location_id', val)}
+                                placeholder={t('common.search') + " " + t('warehouse.locations')}
+                                className={`text-sm ${item.errors.location ? 'border-red-500' : ''}`}
+                              />
+                              {item.errors.location && (
+                                <div className="text-xs text-red-600 mt-1 dark:text-red-400">{item.errors.location}</div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <input
+                              type="text"
+                              value={item.batch_number}
+                              onChange={(e) => updateStockItem(item.id, 'batch_number', e.target.value)}
+                              placeholder="Batch number"
+                              className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 mb-1"
+                            />
+                            <input
+                              type="date"
+                              value={item.expiry_date}
+                              onChange={(e) => updateStockItem(item.id, 'expiry_date', e.target.value)}
+                              className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              type="button"
+                              onClick={() => removeStockItem(item.id)}
+                              className="p-1 text-red-600 hover:text-red-800 dark:text-red-400"
+                              title="Remove item"
+                            >
+                              <XMarkIcon className="h-4 w-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>
@@ -635,7 +637,7 @@ const StockInput: React.FC = () => {
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-end space-x-4">
+          <div className="flex items-center justify-end space-x-4 flex-wrap">
             <Link
               to="/app/warehouse/inventory"
               className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"

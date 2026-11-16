@@ -154,7 +154,7 @@ export default function ContractForm() {
 
       <form onSubmit={handleSubmit} className="space-y-6 mt-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Supplier *</label>
               <SearchableSelect
@@ -246,55 +246,57 @@ export default function ContractForm() {
               <button type="button" onClick={addItem} className="text-sm text-primary-600 hover:underline dark:text-primary-400">+ Tambah Item</button>
             )}
           </div>
-          <div className="space-y-3">
-            {items.map((it, idx) => (
-              <div key={idx} className="grid grid-cols-12 gap-2 items-end border-b border-gray-100 dark:border-gray-700 pb-3">
-                <div className="col-span-3">
-                  <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Produk</label>
-                  <SearchableSelect
-                    options={(products?.products || products || []).map((p: any) => ({ id: p.id, code: p.code, name: p.name }))}
-                    value={it.product_id ?? null}
-                    onChange={(value) => updateItem(idx, { product_id: value ? Number(value) : '' })}
-                    placeholder="-"
-                    disabled={locked}
-                  />
+          <div className="overflow-x-auto">
+            <div className="space-y-3">
+              {items.map((it, idx) => (
+                <div key={idx} className="grid min-w-[760px] grid-cols-12 gap-2 items-end border-b border-gray-100 dark:border-gray-700 pb-3">
+                  <div className="col-span-3">
+                    <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Produk</label>
+                    <SearchableSelect
+                      options={(products?.products || products || []).map((p: any) => ({ id: p.id, code: p.code, name: p.name }))}
+                      value={it.product_id ?? null}
+                      onChange={(value) => updateItem(idx, { product_id: value ? Number(value) : '' })}
+                      placeholder="-"
+                      disabled={locked}
+                    />
+                  </div>
+                  <div className="col-span-3">
+                    <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Deskripsi *</label>
+                    <input type="text" value={it.description} onChange={e => updateItem(idx, { description: e.target.value })} disabled={locked}
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
+                  </div>
+                  <div className="col-span-1">
+                    <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Qty</label>
+                    <NumberInput value={it.quantity ?? ''} onChange={e => updateItem(idx, { quantity: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
+                  </div>
+                  <div className="col-span-1">
+                    <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">UOM *</label>
+                    <input type="text" value={it.uom} onChange={e => updateItem(idx, { uom: e.target.value })} disabled={locked}
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Harga Satuan *</label>
+                    <NumberInput currency value={it.unit_price} onChange={e => updateItem(idx, { unit_price: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
+                  </div>
+                  <div className="col-span-1">
+                    <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Lead Time (hari)</label>
+                    <NumberInput value={it.lead_time_days ?? ''} onChange={e => updateItem(idx, { lead_time_days: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
+                      className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
+                  </div>
+                  <div className="col-span-1 flex justify-end">
+                    {!locked && items.length > 1 && (
+                      <button type="button" onClick={() => removeItem(idx)} className="text-red-500 text-xs hover:underline">Hapus</button>
+                    )}
+                  </div>
                 </div>
-                <div className="col-span-3">
-                  <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Deskripsi *</label>
-                  <input type="text" value={it.description} onChange={e => updateItem(idx, { description: e.target.value })} disabled={locked}
-                    className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
-                </div>
-                <div className="col-span-1">
-                  <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Qty</label>
-                  <NumberInput value={it.quantity ?? ''} onChange={e => updateItem(idx, { quantity: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
-                    className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
-                </div>
-                <div className="col-span-1">
-                  <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">UOM *</label>
-                  <input type="text" value={it.uom} onChange={e => updateItem(idx, { uom: e.target.value })} disabled={locked}
-                    className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Harga Satuan *</label>
-                  <NumberInput currency value={it.unit_price} onChange={e => updateItem(idx, { unit_price: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
-                    className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
-                </div>
-                <div className="col-span-1">
-                  <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Lead Time (hari)</label>
-                  <NumberInput value={it.lead_time_days ?? ''} onChange={e => updateItem(idx, { lead_time_days: e.target.value === '' ? '' : Number(e.target.value) })} disabled={locked}
-                    className="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-white" />
-                </div>
-                <div className="col-span-1 flex justify-end">
-                  {!locked && items.length > 1 && (
-                    <button type="button" onClick={() => removeItem(idx)} className="text-red-500 text-xs hover:underline">Hapus</button>
-                  )}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 flex-wrap">
           <button type="button" onClick={() => navigate('/app/purchasing/contracts')}
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm">Batal</button>
           {!locked && (

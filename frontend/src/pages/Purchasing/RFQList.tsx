@@ -34,7 +34,7 @@ export default function RFQList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Permintaan Penawaran (RFQ)</h1>
           <p className="text-gray-600 dark:text-gray-300">Kelola RFQ dan kumpulkan penawaran pemasok</p>
@@ -89,7 +89,7 @@ export default function RFQList() {
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{rfq.quotes_count || 0} penawaran</td>
                       <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                        <div className="flex items-center justify-end space-x-2">
+                        <div className="flex items-center justify-end space-x-2 flex-wrap">
                           <Link to={`/app/purchasing/rfqs/${rfq.id}`} className="p-1 text-primary-700 hover:text-primary-900 dark:text-primary-300" title="Lihat detail" aria-label="Lihat detail">
                             <EyeIcon className="h-4 w-4" />
                           </Link>
