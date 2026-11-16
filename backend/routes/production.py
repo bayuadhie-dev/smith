@@ -21,6 +21,18 @@ import math
 from sqlalchemy import func, and_, or_
 from io import BytesIO
 
+# Status mesin yang sah beserta artinya (dipakai juga di halaman Mesin):
+# idle = siap, tidak sedang produksi | running = sedang jalan (otomatis dari SPK)
+# maintenance = sedang dirawat (otomatis dari modul Perawatan) | breakdown = rusak
+# offline = tidak dipakai
+MACHINE_STATUSES = ('idle', 'running', 'maintenance', 'breakdown', 'offline')
+
+
+def _valid_machine_status(value):
+    v = (value or '').strip().lower()
+    return v if v in MACHINE_STATUSES else None
+
+
 def create_production_notification(user_ids, notification_type, category, title, message, reference_type=None, reference_id=None, priority='normal', action_url=None):
     """Create notifications for production events"""
     try:
@@ -233,7 +245,10 @@ def get_or_update_machine(id):
             if 'serial_number' in data:
                 machine.serial_number = data['serial_number']
             if 'status' in data:
-                machine.status = data['status']
+                status = _valid_machine_status(data['status'])
+                if not status:
+                    return jsonify({'error': f"Status mesin harus salah satu dari: {', '.join(MACHINE_STATUSES)}"}), 400
+                machine.status = status
             if 'location' in data:
                 machine.location = data['location']
             if 'department' in data:
@@ -426,7 +441,10 @@ def update_machine(id):
         if 'serial_number' in data:
             machine.serial_number = data['serial_number']
         if 'status' in data:
-            machine.status = data['status']
+            status = _valid_machine_status(data['status'])
+            if not status:
+                return jsonify({'error': f"Status mesin harus salah satu dari: {', '.join(MACHINE_STATUSES)}"}), 400
+            machine.status = status
         if 'location' in data:
             machine.location = data['location']
         if 'department' in data:

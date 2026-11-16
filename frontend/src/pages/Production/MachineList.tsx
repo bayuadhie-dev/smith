@@ -18,6 +18,7 @@ import { useState, useEffect } from 'react'
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
 import ActivityLogModal from '../../components/ActivityLogModal'
+import { MACHINE_STATUSES, machineStatusLabel, MACHINE_STATUS_HINT } from '../../utils/machineStatus'
 interface Machine {
   id: number
   code: string

@@ -23,6 +23,7 @@ import { showError } from '../../components/ui';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import MachinePartsPanel from '../../components/Maintenance/MachinePartsPanel';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { machineStatusLabel, MACHINE_STATUS_HINT } from '../../utils/machineStatus'
 
 interface Machine {
   id: number;

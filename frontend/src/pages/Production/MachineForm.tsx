@@ -11,6 +11,8 @@ import axiosInstance from '../../utils/axiosConfig'
 import { showError, showSuccess } from '../../components/ui'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
 import NumberInput from '../../components/ui/NumberInput'
+import { MACHINE_STATUSES, machineStatusLabel, MACHINE_STATUS_HINT } from '../../utils/machineStatus'
+import { machineTypeOptions } from '../../utils/machineTypes'
 interface MachineFormData {
   name: string
   code: string
@@ -41,7 +43,7 @@ const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [loadingData, setLoadingData] = useState(false)
   
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<MachineFormData>({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<MachineFormData>({
     defaultValues: {
       machine_type: 'manufacturing',
       status: 'idle',
@@ -80,22 +82,9 @@ const navigate = useNavigate()
     }
   }
 
-  const machineTypes = [
-    { value: 'manufacturing', label: 'Manufacturing' },
-    { value: 'packaging', label: 'Packaging' },
-    { value: 'cutting', label: 'Cutting' },
-    { value: 'printing', label: 'Printing' },
-    { value: 'testing', label: 'Testing' },
-    { value: 'auxiliary', label: 'Auxiliary' }
-  ]
+  const machineTypes = machineTypeOptions(watch('machine_type'))
 
-  const statusOptions = [
-    { value: 'idle', label: 'Idle' },
-    { value: 'running', label: 'Running' },
-    { value: 'maintenance', label: 'Under Maintenance' },
-    { value: 'breakdown', label: 'Breakdown' },
-    { value: 'stopped', label: 'Stopped' }
-  ]
+  const statusOptions = MACHINE_STATUSES.map((value) => ({ value, label: machineStatusLabel(value) }))
 
   const onSubmit = async (data: MachineFormData) => {
     setIsLoading(true)
@@ -221,6 +210,9 @@ const navigate = useNavigate()
                   </option>
                 ))}
               </select>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Siap dan Jalan terisi sendiri mengikuti SPK, Perawatan mengikuti modul Perawatan. Isi manual hanya untuk Rusak atau Tidak Dipakai.
+              </p>
             </div>
 
             <div>
