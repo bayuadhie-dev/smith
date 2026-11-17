@@ -305,6 +305,13 @@ const navigate = useNavigate()
     append({ product_id: null, material_id: null, quantity: 1, unit_price: 0, uom: 'PCS', description: '', notes: '', ppn_code: '' })
   }
 
+  /** Satuan yang didaftarkan untuk barang pada baris ini (utama lalu satuan kedua). */
+  const itemUoms = (item: any): string[] => {
+    if (!item) return []
+    const picked: any = item.product_id ? getProductById(item.product_id) : getMaterialById(item.material_id)
+    return [picked?.primary_uom || picked?.unit_of_measure, picked?.secondary_uom].filter(Boolean) as string[]
+  }
+
   const getProductById = (productId: number) => {
     return products?.products?.find((p: any) => p.id == productId)
   }
@@ -656,7 +663,12 @@ const navigate = useNavigate()
                         disabled={hasGrn}
                         title="Satuan"
                       >
-                        {Array.from(new Set([watchedItems[index]?.uom, ...uomCodes].filter(Boolean) as string[])).map((u) => (
+                        {/* Satuan milik barangnya dulu, baru daftar satuan umum. */}
+                        {Array.from(new Set([
+                          watchedItems[index]?.uom,
+                          ...itemUoms(watchedItems[index]),
+                          ...uomCodes,
+                        ].filter(Boolean) as string[])).map((u) => (
                           <option key={u} value={u}>{u}</option>
                         ))}
                       </select>

@@ -17,7 +17,11 @@ uom_bp = Blueprint('uom', __name__)
 
 @uom_bp.route('/units', methods=['GET'])
 @jwt_required()
-@require_permission('materials.view')
+# Daftar satuan dipakai hampir semua form transaksi (PO, faktur, surat jalan),
+# jadi tidak masuk akal dikunci hanya untuk yang boleh membuka master material -
+# Finance sempat terkunci di satuan PCS karena ini.
+@require_permission('materials.view', 'products.view', 'purchase_orders.view', 'sales_orders.view',
+                    'finance.view', 'shipping.view', 'invoices.view')
 def get_units():
     """Get all units of measure"""
     try:
