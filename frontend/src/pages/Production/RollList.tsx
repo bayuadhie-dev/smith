@@ -31,6 +31,8 @@ interface Roll {
   status: string
   notes: string | null
   created_by_name: string | null
+  batch_number: string | null
+  stock_remaining_kg?: number
 }
 
 const API = '/api/production/rolls'
@@ -56,6 +58,8 @@ const COLUMNS: ListColumn<Roll>[] = [
   { key: 'net_weight_kg', label: 'Berat Bersih (kg)', type: 'number', value: (r) => r.net_weight_kg },
   { key: 'length_m', label: 'Panjang (m)', type: 'number', value: (r) => r.length_m ?? '' },
   { key: 'width_cm', label: 'Lebar (cm)', type: 'number', value: (r) => r.width_cm ?? '' },
+  { key: 'batch_number', label: 'No. Batch Stok', value: (r) => r.batch_number || '' },
+  { key: 'stock_remaining_kg', label: 'Sisa di Stok (kg)', type: 'number', value: (r) => r.stock_remaining_kg ?? '' },
   { key: 'grade', label: 'Grade', value: (r) => r.grade },
   { key: 'status', label: 'Status', value: (r) => r.status, exportValue: (r) => STATUS_LABEL[r.status] || r.status },
   { key: 'notes', label: 'Catatan', value: (r) => r.notes || '' },
@@ -141,6 +145,7 @@ export default function RollList() {
                 <SortTh tools={tools} col="shift" className="px-3 py-2 text-left">Shift</SortTh>
                 <SortTh tools={tools} col="gross_weight_kg" align="right" className="px-3 py-2 text-right">Kotor</SortTh>
                 <SortTh tools={tools} col="net_weight_kg" align="right" className="px-3 py-2 text-right">Bersih</SortTh>
+                <SortTh tools={tools} col="stock_remaining_kg" align="right" className="px-3 py-2 text-right">Sisa di Stok</SortTh>
                 <SortTh tools={tools} col="grade" className="px-3 py-2 text-left">Grade</SortTh>
                 <SortTh tools={tools} col="status" className="px-3 py-2 text-left">Status</SortTh>
                 <th className="px-3 py-2 text-right">Aksi</th>
@@ -158,6 +163,16 @@ export default function RollList() {
                   <td className="px-3 py-2">{r.shift || '-'}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{kg(r.gross_weight_kg)}</td>
                   <td className="px-3 py-2 text-right tabular-nums font-medium">{kg(r.net_weight_kg)}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">
+                    {r.batch_number ? (
+                      <>
+                        {kg(r.stock_remaining_kg)}
+                        <span className="block text-[11px] text-gray-400">batch {r.batch_number}</span>
+                      </>
+                    ) : (
+                      <span className="text-[11px] text-amber-700 dark:text-amber-300">belum masuk stok</span>
+                    )}
+                  </td>
                   <td className="px-3 py-2">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${GRADE_CLASS[r.grade] || ''}`}>{r.grade}</span>
                   </td>

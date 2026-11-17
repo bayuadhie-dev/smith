@@ -96,3 +96,80 @@ def test_ubah_roll_dan_mesin_spunlace_tersedia(client, auth_headers, kain, db_se
     ubah = client.put(f"/api/production/rolls/{roll['id']}", json={'net_weight_kg': 123, 'grade': 'B'}, headers=auth_headers)
     assert ubah.status_code == 200
     assert ubah.get_json()['net_weight_kg'] == 123 and ubah.get_json()['grade'] == 'B'
+
+
+# --- Tahap 2: roll masuk stok kain ---
+
+def _gudang_kain(db_session):
+    from models.warehouse import WarehouseLocation, WarehouseZone
+    z = WarehouseZone.query.filter_by(code='WH-KAIN').first()
+    if not z:
+        z = WarehouseZone(code='WH-KAIN', name='Gudang Kain', material_type='wip', is_active=True)
+        db_session.add(z)
+        db_session.commit()
+        db_session.add(WarehouseLocation(zone_id=z.id, location_code='KAIN-01', rack='R1', level='L1',
+                                         position='P1', capacity=100000, capacity_uom='kg', is_active=True))
+        db_session.commit()
+    return z
+
+
+def _stok(product_id, batch):
+    from models.warehouse import Inventory
+    rows = Inventory.query.filter_by(product_id=product_id, batch_number=batch).all()
+    return sum(float(r.quantity_on_hand or 0) for r in rows)
+
+
+def test_roll_yang_dicatat_langsung_jadi_stok_kain(client, auth_headers, db_session, kain):
+    from models.wms_advanced import InventoryTransaction
+    _gudang_kain(db_session)
+    r = _post(client, auth_headers, kain, roll_number=701, net_weight_kg=118)
+    assert r.status_code == 201, r.get_json()
+    d = r.get_json()
+    assert d['batch_number'] == '701'
+    assert _stok(kain.id, '701') == 118
+
+    mv = InventoryTransaction.query.filter_by(reference_type='production_roll', reference_id=d['id']).one()
+    assert mv.direction == 'in' and float(mv.quantity) == 118 and mv.batch_number == '701'
+
+    daftar = client.get('/api/production/rolls', headers=auth_headers).get_json()
+    baris = next(x for x in daftar['rolls'] if x['id'] == d['id'])
+    assert baris['stock_remaining_kg'] == 118
+
+
+def test_roll_putaran_kedua_dapat_nomor_batch_sendiri(client, auth_headers, db_session, kain):
+    _gudang_kain(db_session)
+    _post(client, auth_headers, kain, roll_number=702, net_weight_kg=100)
+    kedua = _post(client, auth_headers, kain, roll_number=702, net_weight_kg=90, confirm_duplicate=True)
+    assert kedua.status_code == 201
+    assert kedua.get_json()['batch_number'] == '702/P2'      # stok lama tidak tertimpa
+    assert _stok(kain.id, '702') == 100 and _stok(kain.id, '702/P2') == 90
+
+
+def test_pembatalan_menarik_stoknya_lagi(client, auth_headers, db_session, kain):
+    _gudang_kain(db_session)
+    rid = _post(client, auth_headers, kain, roll_number=703, net_weight_kg=120).get_json()['id']
+    assert _stok(kain.id, '703') == 120
+    batal = client.post(f'/api/production/rolls/{rid}/cancel', json={'reason': 'salah timbang'}, headers=auth_headers)
+    assert batal.status_code == 200
+    assert _stok(kain.id, '703') == 0
+
+
+def test_koreksi_berat_ikut_memperbaiki_stok(client, auth_headers, db_session, kain):
+    _gudang_kain(db_session)
+    rid = _post(client, auth_headers, kain, roll_number=704, net_weight_kg=120).get_json()['id']
+    ubah = client.put(f'/api/production/rolls/{rid}', json={'net_weight_kg': 115}, headers=auth_headers)
+    assert ubah.status_code == 200
+    assert _stok(kain.id, '704') == 115
+
+
+def test_stok_yang_sudah_dipakai_tidak_bisa_ditarik(client, auth_headers, db_session, kain):
+    from models.warehouse import Inventory
+    _gudang_kain(db_session)
+    rid = _post(client, auth_headers, kain, roll_number=705, net_weight_kg=120).get_json()['id']
+    inv = Inventory.query.filter_by(product_id=kain.id, batch_number='705').first()
+    inv.quantity_on_hand = 20          # sebagian sudah terkirim
+    inv.quantity_available = 20
+    db_session.commit()
+
+    batal = client.post(f'/api/production/rolls/{rid}/cancel', json={}, headers=auth_headers)
+    assert batal.status_code == 409 and 'sudah dipakai' in batal.get_json()['error']

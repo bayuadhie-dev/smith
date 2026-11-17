@@ -54,6 +54,120 @@ def _bentrok(product_id, roll_number, exclude_id=None):
     return q.order_by(ProductionRoll.id.desc()).first()
 
 
+# ---- Roll masuk stok -------------------------------------------------------
+# Roll yang sudah ditimbang langsung jadi stok kain, dengan nomor batch = nomor
+# rollnya. Dengan begitu saldo kain kelihatan di laporan persediaan dan nomor
+# rollnya bisa dipilih langsung saat dijual lewat Surat Jalan.
+
+def _lokasi_gudang_kain():
+    """Lokasi penyimpanan kain: zona Gudang Kain, kalau tidak ada pakai zona WIP.
+
+    Mengembalikan None kalau gudangnya memang belum disiapkan - roll tetap boleh
+    dicatat, hanya belum menambah stok, dan halamannya memberi tahu.
+    """
+    from models.warehouse import WarehouseLocation, WarehouseZone
+    zona = (WarehouseZone.query.filter(WarehouseZone.code == 'WH-KAIN').first()
+            or WarehouseZone.query.filter(WarehouseZone.name.ilike('%kain%')).first()
+            or WarehouseZone.query.filter(WarehouseZone.material_type == 'wip').first())
+    if not zona:
+        return None
+    return WarehouseLocation.query.filter_by(zone_id=zona.id, is_active=True).order_by(WarehouseLocation.id).first()
+
+
+def _nomor_batch(roll_number, cycle, repeat_number=None):
+    nomor = f'{roll_number}-{repeat_number}' if repeat_number else str(roll_number)
+    return nomor if (cycle or 1) <= 1 else f'{nomor}/P{cycle}'
+
+
+def _baris_stok(roll, buat=False):
+    from models.warehouse import Inventory
+    lokasi = _lokasi_gudang_kain()
+    if not lokasi:
+        return None
+    inv = Inventory.query.filter_by(product_id=roll.product_id, location_id=lokasi.id,
+                                    batch_number=roll.batch_number).first()
+    if not inv and buat:
+        inv = Inventory(product_id=roll.product_id, location_id=lokasi.id, batch_number=roll.batch_number,
+                        quantity_on_hand=0, quantity_available=0, stock_status='available', is_active=True)
+        db.session.add(inv)
+        db.session.flush()
+    return inv
+
+
+def _harga_satuan(roll):
+    """Biaya per kg untuk roll ini: dari BOM SPK kalau ada, kalau tidak dari master produk."""
+    if roll.work_order_id:
+        try:
+            from models.production import WorkOrderBOMItem
+            total = db.session.query(db.func.sum(WorkOrderBOMItem.total_cost_planned)).filter(
+                WorkOrderBOMItem.work_order_id == roll.work_order_id).scalar()
+            wo = roll.work_order
+            if total and wo and float(wo.quantity or 0) > 0:
+                return round(float(total) / float(wo.quantity), 2)
+        except Exception:
+            pass
+    biaya = getattr(roll.product, 'cost', None)
+    return float(biaya) if biaya else None
+
+
+def _masukkan_stok(roll, user_id):
+    """Tambahkan roll ke stok kain. Kalau gudang kainnya belum ada, roll tetap
+    tercatat tanpa stok (dikembalikan False) supaya pencatatan lapangan jalan terus."""
+    from utils.inventory_helpers import record_inventory_transaction
+    inv = _baris_stok(roll, buat=True)
+    if not inv:
+        return False
+    qty = float(roll.net_weight_kg)
+    inv.quantity_on_hand = float(inv.quantity_on_hand or 0) + qty
+    inv.quantity_available = float(inv.quantity_available or 0) + qty
+    inv.updated_at = datetime.utcnow()
+    harga = _harga_satuan(roll)
+    record_inventory_transaction(
+        transaction_type='stock_in', direction='in', quantity=qty,
+        product_id=roll.product_id, to_location_id=inv.location_id,
+        batch_number=roll.batch_number, reference_type='production_roll', reference_id=roll.id,
+        reference_number=roll.batch_number, work_order_id=roll.work_order_id, machine_id=roll.machine_id,
+        shift=roll.shift, unit_cost=harga, total_cost=round(harga * qty, 2) if harga else None,
+        notes=f'Roll spunlace {roll.batch_number} - {roll.product.name if roll.product else ""}',
+        created_by=user_id,
+    )
+    return True
+
+
+def _keluarkan_stok(roll, user_id, alasan):
+    """Tarik kembali stok roll (saat dibatalkan atau beratnya dikoreksi)."""
+    from utils.inventory_helpers import record_inventory_transaction
+    inv = _baris_stok(roll)
+    if not inv:
+        return False          # memang belum pernah masuk stok
+    qty = float(roll.net_weight_kg)
+    if float(inv.quantity_available or 0) < qty - 0.001:
+        raise RollError('Stok roll ini sudah dipakai atau dikirim sebagian, jadi tidak bisa ditarik lagi', 409)
+    inv.quantity_on_hand = float(inv.quantity_on_hand) - qty
+    inv.quantity_available = float(inv.quantity_available) - qty
+    inv.updated_at = datetime.utcnow()
+    record_inventory_transaction(
+        transaction_type='stock_out', direction='out', quantity=qty,
+        product_id=roll.product_id, from_location_id=inv.location_id,
+        batch_number=roll.batch_number, reference_type='production_roll_cancel', reference_id=roll.id,
+        reference_number=roll.batch_number, notes=alasan, created_by=user_id,
+    )
+    return True
+
+
+def _sisa_stok(rolls):
+    """Sisa kg per roll, dibaca dari stok - roll yang sudah terkirim tinggal 0."""
+    from models.warehouse import Inventory
+    batches = [r.batch_number for r in rolls if r.batch_number]
+    if not batches:
+        return {}
+    rows = db.session.query(Inventory.product_id, Inventory.batch_number,
+                            db.func.sum(Inventory.quantity_on_hand)).filter(
+        Inventory.batch_number.in_(batches), Inventory.is_active.is_(True)).group_by(
+        Inventory.product_id, Inventory.batch_number).all()
+    return {(pid, b): float(q or 0) for pid, b, q in rows}
+
+
 @production_roll_bp.route('/meta', methods=['GET'])
 @jwt_required()
 @require_permission('production.view')
@@ -97,7 +211,13 @@ def list_rolls():
     page = a.get('page', 1, type=int)
     per_page = min(a.get('per_page', 200, type=int), 1000)
     rows = q.order_by(ProductionRoll.produced_at.desc(), ProductionRoll.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
-    return jsonify({'rolls': [r.to_dict() for r in rows.items], 'total': rows.total, 'page': page, 'pages': rows.pages})
+    sisa = _sisa_stok(rows.items)
+    out = []
+    for r in rows.items:
+        d = r.to_dict()
+        d['stock_remaining_kg'] = round(sisa.get((r.product_id, r.batch_number), 0.0), 2)
+        out.append(d)
+    return jsonify({'rolls': out, 'total': rows.total, 'page': page, 'pages': rows.pages})
 
 
 @production_roll_bp.route('/<int:rid>', methods=['GET'])
@@ -109,6 +229,7 @@ def get_roll(rid):
         raise RollError('Roll tidak ditemukan', 404)
     data = r.to_dict()
     data['children'] = [c.to_dict() for c in r.children]
+    data['stock_remaining_kg'] = round(_sisa_stok([r]).get((r.product_id, r.batch_number), 0.0), 2)
     return jsonify(data)
 
 
@@ -179,7 +300,10 @@ def create_roll():
         notes=(data.get('notes') or '').strip() or None,
         created_by=int(get_jwt_identity()),
     )
+    roll.batch_number = _nomor_batch(roll.roll_number, roll.cycle)
     db.session.add(roll)
+    db.session.flush()
+    _masukkan_stok(roll, int(get_jwt_identity()))
     db.session.commit()
     return jsonify(roll.to_dict()), 201
 
@@ -201,12 +325,25 @@ def update_roll(rid):
         raise RollError(f"Roll nomor {v['roll_number']} untuk {v['product'].name} masih ada di stok.",
                         409, {'duplicate_of': kembar.to_dict(), 'needs_confirmation': True})
 
+    # Kalau nomor, kain, atau berat bersihnya berubah, stok yang sudah terlanjur
+    # masuk ikut dikoreksi: baris lama ditarik lalu dimasukkan ulang dengan nilai
+    # baru. Kalau stoknya sudah dipakai, perubahan ditolak - bukan diam-diam beda.
+    user_id = int(get_jwt_identity())
+    stok_berubah = (v['roll_number'] != roll.roll_number or v['product'].id != roll.product_id
+                    or abs(float(v['net']) - float(roll.net_weight_kg)) > 0.001)
+    if stok_berubah:
+        _keluarkan_stok(roll, user_id, f'Koreksi roll {roll.batch_number}')
+
     roll.roll_number = v['roll_number']
     roll.product_id = v['product'].id
     roll.produced_at = v['tanggal']
     roll.gross_weight_kg = v['gross']
     roll.net_weight_kg = v['net']
     roll.grade = v['grade']
+    if stok_berubah:
+        roll.batch_number = _nomor_batch(roll.roll_number, roll.cycle)
+        db.session.flush()
+        _masukkan_stok(roll, user_id)
     for k in ('work_order_id', 'machine_id'):
         if k in data:
             setattr(roll, k, data[k] or None)
@@ -232,8 +369,9 @@ def cancel_roll(rid):
         raise RollError(f'Roll berstatus {roll.status} tidak bisa dibatalkan', 409)
     if roll.children:
         raise RollError('Roll ini sudah dipotong jadi jumbo roll, batalkan jumbo roll-nya dulu', 409)
-    roll.status = 'cancelled'
     alasan = (request.get_json(silent=True) or {}).get('reason')
+    _keluarkan_stok(roll, int(get_jwt_identity()), f'Roll {roll.batch_number} dibatalkan' + (f': {alasan}' if alasan else ''))
+    roll.status = 'cancelled'
     if alasan:
         roll.notes = f'Dibatalkan: {alasan}' + (f'\n{roll.notes}' if roll.notes else '')
     db.session.commit()

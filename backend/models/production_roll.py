@@ -37,6 +37,7 @@ class ProductionRoll(db.Model):
     width_cm = db.Column(db.Numeric(10, 2), nullable=True)
     grade = db.Column(db.String(1), nullable=False, default='A')         # A bagus, B perlu sortir, C reject
 
+    batch_number = db.Column(db.String(50), nullable=True)   # nomor batch roll ini di stok
     status = db.Column(db.String(20), nullable=False, default='available', index=True)  # available, consumed, shipped, cancelled
     notes = db.Column(db.Text, nullable=True)
 
@@ -79,6 +80,7 @@ class ProductionRoll(db.Model):
             'length_m': float(self.length_m) if self.length_m is not None else None,
             'width_cm': float(self.width_cm) if self.width_cm is not None else None,
             'grade': self.grade,
+            'batch_number': self.batch_number,
             'status': self.status,
             'notes': self.notes,
             'created_by_name': self.creator.full_name if self.creator else None,
