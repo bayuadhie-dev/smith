@@ -279,15 +279,22 @@ const [status, setStatus] = useState('')
                             <EyeIcon className="h-4 w-4" />
                           </Link>
                           
+                          {/* PO yang sudah disetujui tapi belum ada penerimaan barang masih boleh
+                              dirapikan (salah ketik saat input awal). Begitu ada GRN - status jadi
+                              Diterima Sebagian atau Diterima - barang dan pemasoknya dikunci backend. */}
+                          {['draft', 'approved', 'sent', 'confirmed'].includes(po.status) && (
+                            <Link
+                              to={`/app/purchasing/purchase-orders/${po.id}/edit`}
+                              className="text-indigo-600 hover:text-indigo-900 p-1 dark:text-indigo-400"
+                              title={po.status === 'draft' ? 'Ubah' : 'Ubah (PO sudah disetujui, perubahan tercatat)'}
+                              aria-label="Ubah"
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </Link>
+                          )}
+
                           {po.status === 'draft' && (
                             <>
-                              <Link
-                                to={`/app/purchasing/purchase-orders/${po.id}/edit`}
-                                className="text-indigo-600 hover:text-indigo-900 p-1 dark:text-indigo-400"
-                                title="Ubah" aria-label="Ubah"
-                              >
-                                <PencilIcon className="h-4 w-4" />
-                              </Link>
                               <button
                                 onClick={() => handleSubmitApproval(po)}
                                 className="text-yellow-600 hover:text-yellow-900 p-1 dark:text-yellow-400"
