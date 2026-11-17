@@ -168,6 +168,44 @@ def _sisa_stok(rolls):
     return {(pid, b): float(q or 0) for pid, b, q in rows}
 
 
+def _alasan_habis(roll):
+    """Stok roll habis karena apa: dikirim ke pelanggan atau dipakai produksi."""
+    from models.wms_advanced import InventoryTransaction
+    terakhir = InventoryTransaction.query.filter(
+        InventoryTransaction.product_id == roll.product_id,
+        InventoryTransaction.batch_number == roll.batch_number,
+        InventoryTransaction.direction == 'out',
+    ).order_by(InventoryTransaction.id.desc()).first()
+    rujukan = (terakhir.reference_type if terakhir else '') or ''
+    return 'shipped' if rujukan in ('sales_order', 'shipping', 'shipping_order') else 'consumed'
+
+
+def _sinkron_status(rolls):
+    """Samakan status roll dengan sisa stoknya.
+
+    Stok roll berkurang lewat Surat Jalan, permintaan bahan, atau sliting - semuanya
+    memotong stok langsung tanpa tahu-menahu soal tabel roll. Daripada menyisipkan
+    pengait di tiap jalur itu (mudah terlewat saat jalur baru ditambah), status roll
+    diselaraskan di sini: begitu stoknya habis, rollnya ditandai terkirim atau
+    terpakai sesuai mutasi keluar terakhirnya.
+    """
+    sisa = _sisa_stok(rolls)
+    berubah = False
+    for r in rolls:
+        if r.status != 'available' or not r.batch_number:
+            continue
+        qty = sisa.get((r.product_id, r.batch_number))
+        if qty is None or qty > 0.001:
+            # None = roll ini memang belum pernah masuk stok (gudang kain belum
+            # disiapkan), jadi bukan berarti habis.
+            continue
+        r.status = _alasan_habis(r)
+        berubah = True
+    if berubah:
+        db.session.commit()
+    return sisa
+
+
 @production_roll_bp.route('/meta', methods=['GET'])
 @jwt_required()
 @require_permission('production.view')
@@ -211,7 +249,7 @@ def list_rolls():
     page = a.get('page', 1, type=int)
     per_page = min(a.get('per_page', 200, type=int), 1000)
     rows = q.order_by(ProductionRoll.produced_at.desc(), ProductionRoll.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
-    sisa = _sisa_stok(rows.items)
+    sisa = _sinkron_status(rows.items)
     out = []
     for r in rows.items:
         d = r.to_dict()
@@ -227,9 +265,10 @@ def get_roll(rid):
     r = db.session.get(ProductionRoll, rid)
     if not r:
         raise RollError('Roll tidak ditemukan', 404)
+    sisa = _sinkron_status([r] + list(r.children))
     data = r.to_dict()
     data['children'] = [c.to_dict() for c in r.children]
-    data['stock_remaining_kg'] = round(_sisa_stok([r]).get((r.product_id, r.batch_number), 0.0), 2)
+    data['stock_remaining_kg'] = round(sisa.get((r.product_id, r.batch_number), 0.0), 2)
     return jsonify(data)
 
 

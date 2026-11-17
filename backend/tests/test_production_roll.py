@@ -254,3 +254,52 @@ def test_jumbo_roll_tidak_bisa_dipotong_lagi(client, auth_headers, db_session, k
     anak = _slit(client, auth_headers, induk['id'], [{'net_weight_kg': 50}]).get_json()['children'][0]
     lagi = _slit(client, auth_headers, anak['id'], [{'net_weight_kg': 10}])
     assert lagi.status_code == 409 and 'main roll' in lagi.get_json()['error']
+
+
+# --- Status roll mengikuti sisa stoknya ---
+
+def _kosongkan_stok(db_session, product_id, batch, reference_type):
+    """Tiru pengiriman atau pemakaian: stok batch habis, dengan mutasi keluarnya."""
+    from models.warehouse import Inventory
+    from utils.inventory_helpers import record_inventory_transaction
+    inv = Inventory.query.filter_by(product_id=product_id, batch_number=batch).first()
+    qty = float(inv.quantity_on_hand)
+    inv.quantity_on_hand = 0
+    inv.quantity_available = 0
+    record_inventory_transaction(transaction_type='stock_out', direction='out', quantity=qty,
+                                 product_id=product_id, from_location_id=inv.location_id,
+                                 batch_number=batch, reference_type=reference_type, created_by=1)
+    db_session.commit()
+
+
+def test_roll_yang_habis_terkirim_otomatis_berstatus_terkirim(client, auth_headers, db_session, kain):
+    _gudang_kain(db_session)
+    roll = _post(client, auth_headers, kain, roll_number=901, net_weight_kg=126).get_json()
+    _kosongkan_stok(db_session, kain.id, '901', 'sales_order')
+
+    daftar = client.get('/api/production/rolls', headers=auth_headers).get_json()
+    baris = next(r for r in daftar['rolls'] if r['id'] == roll['id'])
+    assert baris['status'] == 'shipped' and baris['stock_remaining_kg'] == 0
+
+
+def test_roll_yang_habis_dipakai_produksi_berstatus_terpakai(client, auth_headers, db_session, kain):
+    _gudang_kain(db_session)
+    roll = _post(client, auth_headers, kain, roll_number=902, net_weight_kg=100).get_json()
+    _kosongkan_stok(db_session, kain.id, '902', 'material_issue')
+
+    detail = client.get(f"/api/production/rolls/{roll['id']}", headers=auth_headers).get_json()
+    assert detail['status'] == 'consumed'
+
+
+def test_roll_yang_baru_terkirim_sebagian_tetap_di_stok(client, auth_headers, db_session, kain):
+    from models.warehouse import Inventory
+    _gudang_kain(db_session)
+    roll = _post(client, auth_headers, kain, roll_number=903, net_weight_kg=120).get_json()
+    inv = Inventory.query.filter_by(product_id=kain.id, batch_number='903').first()
+    inv.quantity_on_hand = 40
+    inv.quantity_available = 40
+    db_session.commit()
+
+    daftar = client.get('/api/production/rolls', headers=auth_headers).get_json()
+    baris = next(r for r in daftar['rolls'] if r['id'] == roll['id'])
+    assert baris['status'] == 'available' and baris['stock_remaining_kg'] == 40
