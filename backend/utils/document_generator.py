@@ -544,7 +544,28 @@ def generate_surat_jalan_from_shipping_order(shipping_id, user_id):
     return document
 
 
-def build_po_document_data(po):
+def _nama_user(u):
+    return ((u.full_name or u.username) if u else '') or ''
+
+
+def _penyetuju_cetak(po):
+    """Nama + jabatan yang dicetak di kolom "Disetujui oleh,".
+
+    Pakai penyetuju sebenarnya begitu PO disetujui. Selama PO belum disetujui,
+    pakai nama bawaan dari pengaturan sistem supaya lembar PO tetap bisa dicetak
+    untuk tanda tangan basah.
+    """
+    u = po.approved_by_user if po.approved_by else None
+    if u:
+        return _nama_user(u), (u.position or '')
+    from models.settings import SystemSetting
+    rows = {r.setting_key: (r.setting_value or '').strip()
+            for r in SystemSetting.query.filter(SystemSetting.setting_key.in_(
+                ['general.po_approver_name', 'general.po_approver_title'])).all()}
+    return rows.get('general.po_approver_name', ''), rows.get('general.po_approver_title', '')
+
+
+def build_po_document_data(po, printed_by=None):
     """Amounts are pre-formatted in the PO's own currency (the render engine's
     'rp' format is IDR-only)."""
     from utils.tax_helpers import ppn_rate_for_code
@@ -623,6 +644,9 @@ def build_po_document_data(po):
         idr_text = ('Setara Rp ' + f'{total * r:,.0f}'.replace(',', '.'))
         tax_note += '. Setara Rp ' + f'{total * r:,.0f}'.replace(',', '.') + f' ({kurs_text})'
 
+    pembuat = po.created_by_user or printed_by
+    penyetuju_nama, penyetuju_jabatan = _penyetuju_cetak(po)
+
     document_data = {
         'document_number': po.po_number,
         'hdr_no': f'No. {po.po_number}',
@@ -648,6 +672,10 @@ def build_po_document_data(po):
         'tax_label': tax_label,
         'terbilang': (_terbilang(total).strip().capitalize() + ' ' + words_name.get(ccy, ccy)) if total >= 1 else f'Nol {words_name.get(ccy, ccy)}',
         'line_items': line_items,
+        'prepared_by_name': _nama_user(pembuat),
+        'prepared_by_title': (pembuat.position or '') if pembuat else '',
+        'approved_by_name': penyetuju_nama,
+        'approved_by_title': penyetuju_jabatan,
         'company': get_company_context(),
     }
     return document_data
@@ -978,6 +1006,7 @@ def generate_reimbursement_document(reimb_id, user_id):
 def generate_purchase_order_document(po_id, user_id):
     """Printable Purchase Order."""
     from models.purchasing import PurchaseOrder
+    from models.user import User
 
     po = db.session.get(PurchaseOrder, po_id)
     if not po:
@@ -985,7 +1014,7 @@ def generate_purchase_order_document(po_id, user_id):
 
     template = ensure_default_template(user_id, 'purchase_order')
     doc_number = generate_number('DOC-PO', Document, 'document_number')
-    document_data = build_po_document_data(po)
+    document_data = build_po_document_data(po, printed_by=db.session.get(User, user_id) if user_id else None)
     supplier = po.supplier
     document = Document(
         document_number=doc_number,

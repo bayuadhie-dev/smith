@@ -52,6 +52,8 @@ MASTER_CONFIGS = [
     {'key': 'general.date_format',          'category': 'general',      'name': 'Date Format',                       'value': 'DD/MM/YYYY',    'type': 'string',  'description': 'Format tampilan tanggal di seluruh aplikasi.'},
     {'key': 'general.language',             'category': 'general',      'name': 'Default Language',                  'value': 'id',            'type': 'string',  'description': 'Kode bahasa default (id = Indonesia, en = English).'},
     {'key': 'general.fiscal_year_start',    'category': 'general',      'name': 'Fiscal Year Start Month',           'value': '1',             'type': 'integer', 'description': 'Bulan awal tahun fiskal (1 = Januari, 4 = April, dst).'},
+    {'key': 'general.po_approver_name',      'category': 'general',      'name': 'Penyetuju PO (nama cetak)',         'value': '',              'type': 'string',  'description': 'Nama yang dicetak di kolom "Disetujui oleh" pada lembar Purchase Order selama PO belum disetujui di sistem. Begitu PO disetujui, nama penyetuju sebenarnya yang dipakai.'},
+    {'key': 'general.po_approver_title',     'category': 'general',      'name': 'Penyetuju PO (jabatan)',            'value': '',              'type': 'string',  'description': 'Jabatan penyetuju PO untuk cetakan (opsional, tersedia sebagai kolom approved_by_title di Perancang Template).'},
 
     # ────────────────────────────────────────────────────────
     # DATABASE

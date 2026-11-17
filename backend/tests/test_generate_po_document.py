@@ -51,3 +51,31 @@ def test_po_document_inclusive_tax_wording_matches_form(client, auth_headers, db
     d = Document.query.filter_by(reference_type='purchase_order', reference_id=po.id).first().document_data
     assert d['subtotal_label'] == 'DPP (tanpa PPN)' and d['tax_label'] == 'PPN 11% (termasuk)'
     assert d['tax_note'].startswith('Harga sudah termasuk pajak (PPN Y - 11%)')
+
+
+def test_po_document_prints_creator_and_approver_names(client, auth_headers, db_session, test_user):
+    """Kolom tanda tangan: "Dibuat oleh" = pembuat PO, "Disetujui oleh" = penyetujunya."""
+    from models.settings import SystemSetting
+    from models.document_management import Document
+
+    db_session.add(SystemSetting(setting_key='general.po_approver_name', setting_category='general',
+                                 setting_name='Penyetuju PO (nama cetak)', setting_value='Hizkia',
+                                 data_type='string'))
+    db_session.commit()
+
+    po = _make_po(db_session, test_user, 'IDR', False, False)
+    resp = client.post(f'/api/documents/generate-from-purchase-order/{po.id}', headers=auth_headers)
+    assert resp.status_code == 201, resp.get_json()
+    doc = Document.query.filter_by(reference_type='purchase_order', reference_id=po.id).first()
+    d = doc.document_data
+    assert d['prepared_by_name'] == (test_user.full_name or test_user.username)
+    # belum disetujui di sistem: pakai nama bawaan dari pengaturan
+    assert d['approved_by_name'] == 'Hizkia'
+    assert d['prepared_by_name'] in doc.html_content and 'Hizkia' in doc.html_content
+
+    # setelah disetujui: nama penyetuju sebenarnya yang dicetak
+    po.status = 'approved'
+    po.approved_by = test_user.id
+    db_session.commit()
+    from utils.document_generator import build_po_document_data
+    assert build_po_document_data(po)['approved_by_name'] == (test_user.full_name or test_user.username)

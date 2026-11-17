@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-11i'
+LAYOUT = 'v2-2026-11j'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 AUTO_NOTE_PREFIXES = ('Auto-generated', 'Migrasi otomatis')  # the font-unit migration only rescales values of auto-generated layouts
 
@@ -174,7 +174,7 @@ def signatures(left, width, top, labels, caption_paths=None, captions=None, gap=
         if static_cap:
             objs.append(L(static_cap, x, top + gap + 1.3, w, 4, fs=9.5, bold=True, align='center'))
         elif cap:
-            objs.append(F(cap, x, top + gap + 1.3, w, 4, fs=8, align='center', color=MUTED))
+            objs.append(F(cap, x, top + gap + 1.3, w, 4, fs=9, bold=True, align='center'))
         else:
             objs.append(L('Nama jelas & tanda tangan', x, top + gap + 1.3, w, 4, fs=8, align='center', color=MUTED))
     return objs
@@ -227,7 +227,8 @@ def build_po():
     o += flow(notes_side(14, 112, 98, 26))
     o += flow(words_box(14, 142, 182, 14))
     o += flow([F('tax_note', 14, 158, 182, 8, fs=8.5, color=MUTED)])
-    o += flow(signatures(14, 182, 188, ['Dibuat oleh,', 'Disetujui oleh,'], captions={0: ' ', 1: ' '}))
+    o += flow(signatures(14, 182, 188, ['Dibuat oleh,', 'Disetujui oleh,'],
+                         caption_paths={0: 'prepared_by_name', 1: 'approved_by_name'}))
     return o, 'A4', 'portrait', None, None
 
 
