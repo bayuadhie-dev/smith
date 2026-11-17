@@ -8,7 +8,10 @@ Dipakai untuk nilai yang beda per perusahaan, jadi tidak boleh ditaruh di migras
 Kalau kuncinya belum ada, baris baru dibuat dengan kategori 'general' dan tipe
 'string'. Tanpa argumen, isi pengaturan yang ada ditampilkan saja.
 """
+import os
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app
 from models import db
