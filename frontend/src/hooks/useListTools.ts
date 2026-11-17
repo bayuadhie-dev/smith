@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import * as XLSX from 'xlsx'
-import { useUrlState } from './useUrlState'
+import { useUrlMulti, useUrlState } from './useUrlState'
 
 export type CellValue = string | number | null | undefined
 
@@ -79,9 +79,9 @@ export function useListTools<T>(
   const [query, setQueryRaw] = useUrlState<string>(`${opts.paramPrefix || ''}q`, '')
   const pp = opts.paramPrefix || ''
   const dateCol = columns.find((c) => c.key === opts.dateColumn) || columns.find((c) => c.type === 'date')
-  const [pFrom, setPFrom] = useUrlState<string>(`${pp}from`, '')
-  const [pTo, setPTo] = useUrlState<string>(`${pp}to`, '')
-  const [pAll, setPAll] = useUrlState<string>(`${pp}period`, opts.defaultAll ? 'all' : '')
+  const [pFrom] = useUrlState<string>(`${pp}from`, '')
+  const [pTo] = useUrlState<string>(`${pp}to`, '')
+  const [pAll] = useUrlState<string>(`${pp}period`, opts.defaultAll ? 'all' : '')
   const today = new Date()
   const defFrom = isoDay(new Date(today.getFullYear(), today.getMonth(), 1))
   const defTo = isoDay(today)
@@ -147,8 +147,15 @@ export function useListTools<T>(
     XLSX.writeFile(wb, `${opts.filename}_${stamp}.xlsx`)
   }, [columns, rows, opts.filename])
 
-  const setPeriod = useCallback((from: string, to: string) => { setPAll(''); setPFrom(from); setPTo(to) }, [setPAll, setPFrom, setPTo])
-  const setPeriodAll = useCallback(() => { setPAll('all'); setPFrom(''); setPTo('') }, [setPAll, setPFrom, setPTo])
+  // Ketiga kunci periode diubah dalam SATU pembaruan URL; kalau dipanggil
+  // berurutan, yang terakhir menimpa yang sebelumnya dan tanggal "dari" hilang.
+  const setUrl = useUrlMulti()
+  const setPeriod = useCallback((from: string, to: string) => {
+    setUrl({ [`${pp}period`]: null, [`${pp}from`]: from, [`${pp}to`]: to })
+  }, [setUrl, pp])
+  const setPeriodAll = useCallback(() => {
+    setUrl({ [`${pp}period`]: 'all', [`${pp}from`]: null, [`${pp}to`]: null })
+  }, [setUrl, pp])
   const period = dateCol ? { from: periodFrom, to: periodTo, all: allPeriod, label: dateCol.label } : null
 
   return { period, setPeriod, setPeriodAll, rows, total: (data || []).length, query, setQuery, sortKey: sortKey || '', sortDir, toggleSort, columns, exportExcel }

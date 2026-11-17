@@ -31,6 +31,10 @@ const PRESETS: { label: string; range: () => [string, string] | null }[] = [
   { label: 'Semua', range: () => null },
 ]
 
+/** Saat tanggal diketik, tahunnya sempat terbaca 0002 atau 0026 sebelum selesai -
+ *  abaikan dulu supaya daftar tidak berkedip kosong di tengah pengetikan. */
+const tanggalUtuh = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && Number(v.slice(0, 4)) >= 1900
+
 export function ListToolbar<T>({ tools, placeholder = 'Cari di semua kolom', extra }: { tools: ListTools<T>; placeholder?: string; extra?: ReactNode }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -47,9 +51,9 @@ export function ListToolbar<T>({ tools, placeholder = 'Cari di semua kolom', ext
       </div>
       {tools.period && (
         <div className="flex flex-wrap items-center gap-2" role="group" aria-label={`Periode ${tools.period.label}`}>
-          <input type="date" aria-label="Dari tanggal" className="input-field w-36 sm:w-40" value={tools.period.all ? '' : tools.period.from} onChange={(e) => e.target.value && tools.setPeriod(e.target.value, tools.period!.to)} />
+          <input type="date" aria-label="Dari tanggal" className="input-field w-36 sm:w-40" value={tools.period.all ? '' : tools.period.from} onChange={(e) => tanggalUtuh(e.target.value) && tools.setPeriod(e.target.value, tools.period!.to)} />
           <span className="text-sm text-gray-400">s/d</span>
-          <input type="date" aria-label="Sampai tanggal" className="input-field w-36 sm:w-40" value={tools.period.all ? '' : tools.period.to} onChange={(e) => e.target.value && tools.setPeriod(tools.period!.from, e.target.value)} />
+          <input type="date" aria-label="Sampai tanggal" className="input-field w-36 sm:w-40" value={tools.period.all ? '' : tools.period.to} onChange={(e) => tanggalUtuh(e.target.value) && tools.setPeriod(tools.period!.from, e.target.value)} />
           <div className="flex gap-1">
             {PRESETS.map((p) => (
               <button key={p.label} type="button" onClick={() => { const r = p.range(); if (r) tools.setPeriod(r[0], r[1]); else tools.setPeriodAll() }}

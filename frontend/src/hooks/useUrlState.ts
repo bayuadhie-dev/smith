@@ -29,6 +29,29 @@ export function useUrlState<T extends string>(key: string, defaultValue: T, allo
   return [value, set] as const
 }
 
+/**
+ * Mengubah BEBERAPA kunci URL sekaligus dalam satu pembaruan.
+ *
+ * Memanggil beberapa setter useUrlState berurutan tidak bisa dipakai untuk ini:
+ * tiap setter menghitung URL barunya dari alamat yang sedang berlaku saat itu,
+ * jadi panggilan terakhir menimpa hasil panggilan sebelumnya. Itu yang membuat
+ * pemilihan periode di daftar transaksi hanya menyimpan tanggal "sampai" dan
+ * tanggal "dari" selalu kembali ke bawaan (dilaporkan Finance 2026-11-17).
+ */
+export function useUrlMulti() {
+  const [, setParams] = useSearchParams()
+  return useCallback((patch: Record<string, string | null | undefined>, opts?: SetOptions) => {
+    setParams((prev) => {
+      const out = new URLSearchParams(prev)
+      Object.entries(patch).forEach(([k, v]) => {
+        if (v === null || v === undefined || v === '') out.delete(k)
+        else out.set(k, String(v))
+      })
+      return out
+    }, { replace: opts?.replace })
+  }, [setParams])
+}
+
 /** Id (angka) pilihan di URL, null bila tidak ada. */
 export function useUrlNumber(key: string) {
   const [raw, setRaw] = useUrlState<string>(key, '')
