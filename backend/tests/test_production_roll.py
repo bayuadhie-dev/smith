@@ -173,3 +173,84 @@ def test_stok_yang_sudah_dipakai_tidak_bisa_ditarik(client, auth_headers, db_ses
 
     batal = client.post(f'/api/production/rolls/{rid}/cancel', json={}, headers=auth_headers)
     assert batal.status_code == 409 and 'sudah dipakai' in batal.get_json()['error']
+
+
+# --- Tahap 3: sliting main roll jadi jumbo roll ---
+
+def _slit(client, headers, rid, rolls, **kw):
+    return client.post(f'/api/production/rolls/{rid}/slit', json={'rolls': rolls, **kw}, headers=headers)
+
+
+def test_sliting_memecah_main_roll_jadi_jumbo_roll_bernomor_turunan(client, auth_headers, db_session, kain):
+    _gudang_kain(db_session)
+    induk = _post(client, auth_headers, kain, roll_number=801, net_weight_kg=120, gross_weight_kg=126).get_json()
+
+    r = _slit(client, auth_headers, induk['id'], [
+        {'net_weight_kg': 50, 'gross_weight_kg': 52},
+        {'net_weight_kg': 40, 'gross_weight_kg': 42, 'grade': 'B'},
+    ])
+    assert r.status_code == 201, r.get_json()
+    d = r.get_json()
+    assert [c['display_number'] for c in d['children']] == ['801-1', '801-2']
+    assert [c['batch_number'] for c in d['children']] == ['801-1', '801-2']
+    assert all(c['roll_type'] == 'jumbo' and c['parent_roll_id'] == induk['id'] for c in d['children'])
+    assert d['children'][1]['grade'] == 'B'
+
+    # stok pindah: main roll berkurang 90, jumbo roll bertambah
+    assert _stok(kain.id, '801') == 30
+    assert _stok(kain.id, '801-1') == 50 and _stok(kain.id, '801-2') == 40
+    assert d['remaining_kg'] == 30 and d['parent']['status'] == 'available'
+
+
+def test_sliting_habis_menutup_main_roll_dan_waste_ikut_dihitung(client, auth_headers, db_session, kain):
+    _gudang_kain(db_session)
+    induk = _post(client, auth_headers, kain, roll_number=802, net_weight_kg=100).get_json()
+    d = _slit(client, auth_headers, induk['id'], [{'net_weight_kg': 95}], waste_kg=5).get_json()
+    assert d['remaining_kg'] == 0 and d['parent']['status'] == 'consumed'
+    assert _stok(kain.id, '802') == 0 and _stok(kain.id, '802-1') == 95
+
+
+def test_potongan_tidak_boleh_melebihi_sisa_main_roll(client, auth_headers, db_session, kain):
+    _gudang_kain(db_session)
+    induk = _post(client, auth_headers, kain, roll_number=803, net_weight_kg=100).get_json()
+    r = _slit(client, auth_headers, induk['id'], [{'net_weight_kg': 80}, {'net_weight_kg': 30}])
+    assert r.status_code == 400 and 'melebihi sisa' in r.get_json()['error']
+    assert _stok(kain.id, '803') == 100          # tidak ada yang berubah
+
+
+def test_sliting_lanjutan_memakai_nomor_repeat_berikutnya(client, auth_headers, db_session, kain):
+    _gudang_kain(db_session)
+    induk = _post(client, auth_headers, kain, roll_number=804, net_weight_kg=120).get_json()
+    _slit(client, auth_headers, induk['id'], [{'net_weight_kg': 40}])
+    lanjut = _slit(client, auth_headers, induk['id'], [{'net_weight_kg': 30}]).get_json()
+    assert lanjut['children'][0]['display_number'] == '804-2'
+
+    detail = client.get(f"/api/production/rolls/{induk['id']}", headers=auth_headers).get_json()
+    assert sorted(c['display_number'] for c in detail['children']) == ['804-1', '804-2']
+
+
+def test_waste_sliting_bisa_dikembalikan_ke_gudang_bahan_baku(client, auth_headers, db_session, kain, test_material):
+    from models.warehouse import Inventory, WarehouseLocation, WarehouseZone
+    _gudang_kain(db_session)
+    zona = WarehouseZone(code='RM-WASTE', name='Gudang Bahan Baku', material_type='raw_materials',
+                         zone_type='storage', is_active=True)
+    db_session.add(zona)
+    db_session.commit()
+    db_session.add(WarehouseLocation(zone_id=zona.id, location_code='RM-01', rack='R1', level='L1',
+                                     position='P1', capacity=10000, capacity_uom='kg', is_active=True))
+    db_session.commit()
+
+    induk = _post(client, auth_headers, kain, roll_number=805, net_weight_kg=100).get_json()
+    r = _slit(client, auth_headers, induk['id'], [{'net_weight_kg': 90}],
+              waste_kg=10, waste_material_id=test_material.id)
+    assert r.status_code == 201, r.get_json()
+    masuk = Inventory.query.filter_by(material_id=test_material.id, batch_number='805').first()
+    assert masuk and float(masuk.quantity_on_hand) == 10
+
+
+def test_jumbo_roll_tidak_bisa_dipotong_lagi(client, auth_headers, db_session, kain):
+    _gudang_kain(db_session)
+    induk = _post(client, auth_headers, kain, roll_number=806, net_weight_kg=100).get_json()
+    anak = _slit(client, auth_headers, induk['id'], [{'net_weight_kg': 50}]).get_json()['children'][0]
+    lagi = _slit(client, auth_headers, anak['id'], [{'net_weight_kg': 10}])
+    assert lagi.status_code == 409 and 'main roll' in lagi.get_json()['error']

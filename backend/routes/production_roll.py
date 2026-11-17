@@ -401,3 +401,159 @@ def summary():
         'gross_kg': round(sum(float(r.gross_weight_kg or 0) for r in rows), 2),
         'by_grade': sorted(per_grade.values(), key=lambda g: g['grade']),
     })
+
+
+@production_roll_bp.route('/<int:rid>/slit', methods=['POST'])
+@jwt_required()
+@require_permission('production.create')
+def slit_roll(rid):
+    """Potong satu main roll jadi beberapa jumbo roll.
+
+    Jumbo roll memakai nomor main roll-nya ditambah nomor repeat (500-1, 500-2, ...)
+    dan tetap tertaut ke induknya, jadi dari jumbo roll bisa ditelusuri balik sampai
+    SPK dan shift yang membuatnya. Stok main roll berkurang sebesar yang dipotong,
+    stok jumbo roll bertambah, dan sisa potongan (waste sliting) boleh dikembalikan
+    ke gudang bahan baku sebagai material daur ulang.
+    """
+    induk = db.session.get(ProductionRoll, rid)
+    if not induk:
+        raise RollError('Roll tidak ditemukan', 404)
+    if induk.roll_type != 'main':
+        raise RollError('Yang dipotong harus main roll', 409)
+    if induk.status != 'available':
+        raise RollError(f'Main roll ini berstatus {induk.status}, tidak bisa dipotong', 409)
+
+    data = request.get_json() or {}
+    baris = data.get('rolls') or []
+    if not baris:
+        raise RollError('Isi minimal satu jumbo roll hasil potongan')
+
+    waste = _f(data.get('waste_kg')) if data.get('waste_kg') else 0.0
+    if waste < 0:
+        raise RollError('Waste sliting tidak boleh minus')
+
+    user_id = int(get_jwt_identity())
+    tersedia = _sisa_stok([induk]).get((induk.product_id, induk.batch_number), 0.0)
+    if tersedia <= 0:
+        tersedia = float(induk.net_weight_kg)    # belum masuk stok (gudang kain belum ada)
+
+    anak_data = []
+    total = 0.0
+    dipakai = {int(c.repeat_number) for c in induk.children if c.repeat_number}
+    urut = 1
+    for i, b in enumerate(baris, 1):
+        neto = _f(b.get('net_weight_kg'))
+        bruto = _f(b.get('gross_weight_kg')) if b.get('gross_weight_kg') else neto
+        if neto <= 0:
+            raise RollError(f'Baris {i}: isi berat bersih jumbo roll')
+        if neto > bruto:
+            raise RollError(f'Baris {i}: berat bersih tidak boleh lebih besar dari berat kotor')
+        grade = (b.get('grade') or induk.grade or 'A').upper()
+        if grade not in GRADES:
+            raise RollError(f'Baris {i}: grade hanya A, B, atau C')
+        repeat = b.get('repeat_number')
+        if repeat:
+            repeat = int(repeat)
+        else:
+            while urut in dipakai:
+                urut += 1
+            repeat = urut
+        if repeat in dipakai:
+            raise RollError(f'Nomor repeat {repeat} sudah dipakai pada main roll ini')
+        dipakai.add(repeat)
+        total += neto
+        anak_data.append({'repeat': repeat, 'neto': neto, 'bruto': bruto, 'grade': grade,
+                          'length_m': _f(b.get('length_m')) if b.get('length_m') else None,
+                          'width_cm': _f(b.get('width_cm')) if b.get('width_cm') else None,
+                          'notes': (b.get('notes') or '').strip() or None})
+
+    if total + waste > tersedia + 0.001:
+        raise RollError(f'Jumlah potongan ({total + waste:,.2f} kg) melebihi sisa main roll '
+                        f'({tersedia:,.2f} kg)'.replace(',', '#').replace('.', ',').replace('#', '.'))
+
+    # Stok main roll berkurang sebanyak yang dipotong, termasuk waste-nya.
+    terpakai = round(total + waste, 2)
+    inv_induk = _baris_stok(induk)
+    if inv_induk:
+        if float(inv_induk.quantity_available or 0) < terpakai - 0.001:
+            raise RollError('Sisa stok main roll tidak cukup untuk potongan sebanyak ini', 409)
+        inv_induk.quantity_on_hand = float(inv_induk.quantity_on_hand) - terpakai
+        inv_induk.quantity_available = float(inv_induk.quantity_available) - terpakai
+        inv_induk.updated_at = datetime.utcnow()
+        from utils.inventory_helpers import record_inventory_transaction
+        record_inventory_transaction(
+            transaction_type='stock_out', direction='out', quantity=terpakai,
+            product_id=induk.product_id, from_location_id=inv_induk.location_id,
+            batch_number=induk.batch_number, reference_type='roll_slitting', reference_id=induk.id,
+            reference_number=induk.batch_number, notes=f'Sliting main roll {induk.batch_number}',
+            created_by=user_id)
+
+    anak_keluar = []
+    for a in anak_data:
+        anak = ProductionRoll(
+            roll_number=induk.roll_number, cycle=induk.cycle, repeat_number=a['repeat'],
+            roll_type='jumbo', parent_roll_id=induk.id, product_id=induk.product_id,
+            work_order_id=induk.work_order_id, machine_id=induk.machine_id,
+            produced_at=_tanggal_sliting(data, induk), shift=induk.shift,
+            gross_weight_kg=a['bruto'], net_weight_kg=a['neto'], grade=a['grade'],
+            length_m=a['length_m'], width_cm=a['width_cm'], notes=a['notes'],
+            created_by=user_id,
+        )
+        anak.batch_number = _nomor_batch(anak.roll_number, anak.cycle, anak.repeat_number)
+        db.session.add(anak)
+        db.session.flush()
+        _masukkan_stok(anak, user_id)
+        anak_keluar.append(anak)
+
+    if waste > 0:
+        _catat_waste_sliting(induk, waste, data.get('waste_material_id'), user_id)
+
+    sisa = tersedia - terpakai
+    if sisa <= 0.001:
+        induk.status = 'consumed'
+    db.session.commit()
+    return jsonify({'parent': induk.to_dict(), 'children': [a.to_dict() for a in anak_keluar],
+                    'waste_kg': waste, 'remaining_kg': round(max(sisa, 0), 2)}), 201
+
+
+def _tanggal_sliting(data, induk):
+    try:
+        return datetime.fromisoformat(str(data['slit_date'])).date() if data.get('slit_date') else induk.produced_at
+    except (TypeError, ValueError):
+        raise RollError('Tanggal sliting tidak valid')
+
+
+def _catat_waste_sliting(induk, qty, material_id, user_id):
+    """Waste sliting kembali ke gudang bahan baku kalau materialnya ditunjuk -
+    di Fengsheng waste warna campur dipakai lagi sebagai campuran bantal."""
+    from models.warehouse import Inventory, WarehouseLocation, WarehouseZone
+    from utils.inventory_helpers import record_inventory_transaction
+
+    if not material_id:
+        record_inventory_transaction(
+            transaction_type='waste', direction='out', quantity=qty,
+            product_id=induk.product_id, batch_number=induk.batch_number,
+            reference_type='roll_slitting_waste', reference_id=induk.id,
+            notes=f'Waste sliting main roll {induk.batch_number}', created_by=user_id)
+        return
+
+    zona = WarehouseZone.query.filter(WarehouseZone.material_type == 'raw_materials').first()
+    lokasi = WarehouseLocation.query.filter_by(zone_id=zona.id, is_active=True).first() if zona else None
+    if not lokasi:
+        raise RollError('Gudang bahan baku belum punya lokasi penyimpanan untuk menampung waste sliting', 409)
+
+    inv = Inventory.query.filter_by(material_id=int(material_id), location_id=lokasi.id,
+                                    batch_number=induk.batch_number).first()
+    if not inv:
+        inv = Inventory(material_id=int(material_id), location_id=lokasi.id, batch_number=induk.batch_number,
+                        quantity_on_hand=0, quantity_available=0, stock_status='available', is_active=True)
+        db.session.add(inv)
+        db.session.flush()
+    inv.quantity_on_hand = float(inv.quantity_on_hand or 0) + qty
+    inv.quantity_available = float(inv.quantity_available or 0) + qty
+    inv.updated_at = datetime.utcnow()
+    record_inventory_transaction(
+        transaction_type='stock_in', direction='in', quantity=qty,
+        material_id=int(material_id), to_location_id=lokasi.id, batch_number=induk.batch_number,
+        reference_type='roll_slitting_waste', reference_id=induk.id,
+        notes=f'Waste sliting main roll {induk.batch_number} masuk gudang bahan baku', created_by=user_id)

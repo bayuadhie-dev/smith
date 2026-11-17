@@ -69,6 +69,7 @@ export default function RollList() {
   const [rows, setRows] = useState<Roll[]>([])
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState<Roll | 'new' | null>(null)
+  const [potong, setPotong] = useState<Roll | null>(null)
   const [ringkas, setRingkas] = useState<any>(null)
 
   const load = useCallback(() => {
@@ -181,6 +182,9 @@ export default function RollList() {
                     <div className="flex flex-wrap justify-end gap-2">
                       {r.status === 'available' && (
                         <>
+                          {r.roll_type === 'main' && (
+                            <button type="button" onClick={() => setPotong(r)} className="text-xs font-medium text-primary-700 hover:underline dark:text-primary-300">Potong</button>
+                          )}
                           <button type="button" onClick={() => setForm(r)} className="text-xs font-medium text-primary-700 hover:underline dark:text-primary-300">Ubah</button>
                           <button type="button" onClick={() => batalkan(r)} className="text-xs font-medium text-red-600 hover:underline dark:text-red-400">Batalkan</button>
                         </>
@@ -196,6 +200,14 @@ export default function RollList() {
           </table>
         </div>
       </div>
+
+      {potong && (
+        <SlitForm
+          roll={potong}
+          onClose={() => setPotong(null)}
+          onSaved={() => { setPotong(null); load() }}
+        />
+      )}
 
       {form && (
         <RollForm
@@ -362,6 +374,149 @@ function RollForm({ roll, onClose, onSaved }: { roll: Roll | null; onClose: () =
         <button type="button" className="btn-primary disabled:opacity-50" disabled={busy} onClick={() => simpan(false)}>
           {busy ? 'Menyimpan...' : 'Simpan'}
         </button>
+      </div>
+    </AccessibleModal>
+  )
+}
+
+
+interface Potongan { net: string; gross: string; grade: string; length_m: string; width_cm: string }
+
+const potonganBaru = (grade: string): Potongan => ({ net: '', gross: '', grade, length_m: '', width_cm: '' })
+
+function SlitForm({ roll, onClose, onSaved }: { roll: Roll; onClose: () => void; onSaved: () => void }) {
+  const [baris, setBaris] = useState<Potongan[]>([potonganBaru(roll.grade)])
+  const [waste, setWaste] = useState('')
+  const [wasteMaterial, setWasteMaterial] = useState<number | string | null>(null)
+  const [material, setMaterial] = useState<any[]>([])
+  const [tanggal, setTanggal] = useState(ymd(new Date()))
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    axiosInstance.get('/api/materials/?per_page=1000')
+      .then((r) => setMaterial(r.data?.materials || r.data?.items || []))
+      .catch(() => setMaterial([]))
+  }, [])
+
+  const sisaAwal = roll.stock_remaining_kg ?? roll.net_weight_kg
+  const totalPotongan = baris.reduce((s, b) => s + (Number(b.net) || 0), 0) + (Number(waste) || 0)
+  const sisaSesudah = sisaAwal - totalPotongan
+  const lebih = sisaSesudah < -0.001
+
+  const set = (i: number, patch: Partial<Potongan>) => setBaris((p) => p.map((b, idx) => (idx === i ? { ...b, ...patch } : b)))
+
+  const simpan = async () => {
+    if (baris.every((b) => !(Number(b.net) > 0))) { toast.error('Isi berat bersih tiap potongan'); return }
+    if (lebih) { toast.error('Jumlah potongan melebihi sisa main roll'); return }
+    setBusy(true)
+    try {
+      const res = await axiosInstance.post(`${API}/${roll.id}/slit`, {
+        slit_date: tanggal,
+        waste_kg: Number(waste) || undefined,
+        waste_material_id: Number(waste) > 0 && wasteMaterial ? Number(wasteMaterial) : undefined,
+        rolls: baris.filter((b) => Number(b.net) > 0).map((b) => ({
+          net_weight_kg: Number(b.net),
+          gross_weight_kg: Number(b.gross) || undefined,
+          grade: b.grade,
+          length_m: Number(b.length_m) || undefined,
+          width_cm: Number(b.width_cm) || undefined,
+        })),
+      })
+      const anak = (res.data?.children || []).map((c: any) => c.display_number).join(', ')
+      toast.success(`Main roll ${roll.display_number} dipotong jadi ${anak}`)
+      onSaved()
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || 'Gagal menyimpan sliting')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <AccessibleModal isOpen onClose={onClose} title={`Potong main roll ${roll.display_number}`} size="lg">
+      <div className="space-y-4 text-sm">
+        <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-900/50">
+          <p className="text-gray-700 dark:text-gray-200">
+            {[roll.product_code, roll.product_name].filter(Boolean).join(' - ')} - sisa di stok <strong>{kg(sisaAwal)}</strong>.
+          </p>
+          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+            Jumbo roll hasil potongan memakai nomor {roll.display_number} ditambah nomor urut potongan, dan tetap tertaut ke main roll ini.
+          </p>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium">Tanggal sliting</label>
+          <input type="date" className="input-field w-48" value={tanggal} onChange={(e) => setTanggal(e.target.value)} />
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="text-xs uppercase text-gray-500 dark:text-gray-400">
+              <tr>
+                <th className="px-2 py-1 text-left">No.</th>
+                <th className="px-2 py-1 text-right">Berat Bersih (kg)</th>
+                <th className="px-2 py-1 text-right">Berat Kotor (kg)</th>
+                <th className="px-2 py-1 text-left">Grade</th>
+                <th className="px-2 py-1 text-right">Panjang (m)</th>
+                <th className="px-2 py-1 text-right">Lebar (cm)</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {baris.map((b, i) => (
+                <tr key={i}>
+                  <td className="px-2 py-1 whitespace-nowrap text-gray-500 dark:text-gray-400">{roll.display_number}-{i + 1}</td>
+                  <td className="px-2 py-1"><NumberInput className="input-field text-right" value={b.net} onChange={(e: any) => set(i, { net: e.target.value })} /></td>
+                  <td className="px-2 py-1"><NumberInput className="input-field text-right" value={b.gross} onChange={(e: any) => set(i, { gross: e.target.value })} /></td>
+                  <td className="px-2 py-1">
+                    <select className="input-field" value={b.grade} onChange={(e) => set(i, { grade: e.target.value })}>
+                      {['A', 'B', 'C'].map((g) => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </td>
+                  <td className="px-2 py-1"><NumberInput className="input-field text-right" value={b.length_m} onChange={(e: any) => set(i, { length_m: e.target.value })} /></td>
+                  <td className="px-2 py-1"><NumberInput className="input-field text-right" value={b.width_cm} onChange={(e: any) => set(i, { width_cm: e.target.value })} /></td>
+                  <td className="px-2 py-1">
+                    {baris.length > 1 && (
+                      <button type="button" onClick={() => setBaris((p) => p.filter((_, idx) => idx !== i))} className="text-xs text-red-600 hover:underline dark:text-red-400">Hapus</button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <button type="button" onClick={() => setBaris((p) => [...p, potonganBaru(roll.grade)])} className="text-xs font-medium text-primary-700 hover:underline dark:text-primary-300">
+          + Tambah potongan
+        </button>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Waste sliting (kg)</label>
+            <NumberInput className="input-field text-right" value={waste} onChange={(e: any) => setWaste(e.target.value)} placeholder="0" />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Masuk sebagai material</label>
+            <SearchableSelect
+              options={material.map((m: any) => ({ id: m.id, code: m.code, name: m.name }))}
+              value={wasteMaterial}
+              onChange={(v) => setWasteMaterial(v)}
+              placeholder="Opsional - mis. waste untuk campuran bantal"
+            />
+          </div>
+        </div>
+
+        <p className={`text-sm ${lebih ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-300'}`}>
+          Total dipotong {kg(totalPotongan)} dari {kg(sisaAwal)} - sisa main roll {kg(Math.max(sisaSesudah, 0))}
+          {sisaSesudah <= 0.001 && !lebih ? ' (main roll habis)' : ''}
+          {lebih ? ' - melebihi sisa' : ''}
+        </p>
+
+        <div className="flex flex-wrap justify-end gap-2">
+          <button type="button" className="btn-secondary" onClick={onClose}>Batal</button>
+          <button type="button" className="btn-primary disabled:opacity-50" disabled={busy || lebih} onClick={simpan}>
+            {busy ? 'Menyimpan...' : 'Simpan Sliting'}
+          </button>
+        </div>
       </div>
     </AccessibleModal>
   )
