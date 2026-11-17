@@ -4,7 +4,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { BanknotesIcon, PlusIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
-import { useListTools, type ListColumn } from '../../hooks/useListTools';
+import { useListTools, useListPeriod, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 
 interface PaymentRow {
@@ -27,17 +27,6 @@ interface PaymentListProps {
   source: 'kas' | 'invoice';
 }
 
-const localISO = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-function firstDayOfMonth(): string {
-  const d = new Date();
-  return localISO(new Date(d.getFullYear(), d.getMonth(), 1));
-}
-
-function today(): string {
-  return localISO(new Date());
-}
 
 const statusLabel: Record<string, string> = {
   pending: 'Belum Direkonsiliasi',
@@ -47,8 +36,12 @@ const statusLabel: Record<string, string> = {
 };
 
 const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
-  const [dateFrom, setDateFrom] = useState(firstDayOfMonth());
-  const [dateTo, setDateTo] = useState(today());
+  // Halaman ini dulu punya dua kendali tanggal: isian sendiri yang menyaring di
+  // server, dan periode di bilah daftar yang menyaring di layar. Akibatnya
+  // mengubah periode di bilah tidak pernah memunculkan data bulan lalu, karena
+  // server hanya mengirim bulan berjalan. Sekarang satu saja: periode di bilah
+  // daftar yang menentukan data yang diminta ke server.
+  const { from: periodFrom, to: periodTo, all: periodAll } = useListPeriod();
   const [rows, setRows] = useState<PaymentRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,8 +65,9 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
     setLoading(true);
     setError(null);
     try {
+      const periode = periodAll ? '' : `&date_from=${periodFrom}&date_to=${periodTo}`;
       const res = await axiosInstance.get(
-        `/api/finance/payments?type=${type}&source=${source}&date_from=${dateFrom}&date_to=${dateTo}${bankId ? `&bank_account_id=${bankId}` : ''}`
+        `/api/finance/payments?type=${type}&source=${source}${periode}${bankId ? `&bank_account_id=${bankId}` : ''}`
       );
       setRows(res.data.payments || []);
     } catch (e: any) {
@@ -81,7 +75,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
     } finally {
       setLoading(false);
     }
-  }, [type, source, dateFrom, dateTo, bankId]);
+  }, [type, source, periodFrom, periodTo, periodAll, bankId]);
 
   useEffect(() => {
     fetchRows();
@@ -140,24 +134,6 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
       </div>
 
       <div className="bg-white rounded-lg shadow p-4 flex flex-wrap items-end gap-4 dark:bg-gray-800">
-        <div>
-          <label className="block text-sm text-gray-600 mb-1 dark:text-gray-300">Dari Tanggal</label>
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            className="border rounded px-3 py-2"
-          />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-600 mb-1 dark:text-gray-300">Sampai Tanggal</label>
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            className="border rounded px-3 py-2"
-          />
-        </div>
         <div>
           <label className="block text-sm text-gray-600 mb-1 dark:text-gray-300">Kas/Bank</label>
           <select value={bankId} onChange={(e) => setBankId(e.target.value)} className="border rounded px-3 py-2 min-w-[14rem]">

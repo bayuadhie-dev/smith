@@ -62,6 +62,18 @@ export function ListToolbar<T>({ tools, placeholder = 'Cari di semua kolom', ext
       <span className="text-sm text-gray-500 dark:text-gray-400">
         {tools.rows.length !== tools.total ? `${tools.rows.length} dari ${tools.total} baris` : `${tools.total} baris`}
       </span>
+      {/* Data lama sering "hilang" bukan karena tidak ada, tapi karena periode bawaan
+          hanya bulan berjalan - beri tahu dan sediakan jalan keluarnya sekali klik. */}
+      {tools.period && !tools.period.all && tools.rows.length < tools.total && (
+        <button
+          type="button"
+          onClick={tools.setPeriodAll}
+          className="rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-200"
+          title="Hilangkan batas periode supaya data lama ikut tampil"
+        >
+          {tools.total - tools.rows.length} baris di luar periode - tampilkan semua
+        </button>
+      )}
       <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
         {extra}
         <button type="button" onClick={tools.exportExcel} disabled={tools.rows.length === 0} className="btn-secondary disabled:opacity-50" title="Unduh baris yang tampil sebagai Excel">

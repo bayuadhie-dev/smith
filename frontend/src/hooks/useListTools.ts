@@ -57,6 +57,20 @@ function isoToLocal(v: string) {
  * Standar daftar transaksi: kolom bisa diurutkan (klik header), pencarian di semua kolom, dan ekspor Excel
  * dari baris yang sedang tampil. Urutan dan kata cari disimpan di URL (?sort=kolom:asc&q=...).
  */
+/** Periode yang sedang dipilih di bilah daftar (tersimpan di URL), terpisah dari datanya.
+ *  Dipakai halaman yang menyaring tanggalnya di server supaya kendalinya tetap satu. */
+export function useListPeriod(paramPrefix = '', defaultAll = false) {
+  const [pFrom] = useUrlState<string>(`${paramPrefix}from`, '')
+  const [pTo] = useUrlState<string>(`${paramPrefix}to`, '')
+  const [pAll] = useUrlState<string>(`${paramPrefix}period`, defaultAll ? 'all' : '')
+  const today = new Date()
+  return {
+    from: pFrom || isoDay(new Date(today.getFullYear(), today.getMonth(), 1)),
+    to: pTo || isoDay(today),
+    all: pAll === 'all',
+  }
+}
+
 export function useListTools<T>(
   data: T[] | undefined | null,
   columns: ListColumn<T>[],
