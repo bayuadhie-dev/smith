@@ -1,12 +1,12 @@
 """peran yang mengurus dokumen transaksi boleh membaca master barang dan material
 
-Revision ID: c3e5a7b9d1f4
+Revision ID: e5a7c9b1d3f6
 Revises: b2d4f6a8c0e3
 """
 from alembic import op
 import sqlalchemy as sa
 
-revision = 'c3e5a7b9d1f4'
+revision = 'e5a7c9b1d3f6'
 down_revision = 'b2d4f6a8c0e3'
 branch_labels = None
 depends_on = None
