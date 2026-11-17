@@ -156,3 +156,46 @@ def test_po_item_quantity_received_follows_accepted_grn_quantities(client, auth_
     assert float(po_item.quantity_received) == 80
     d = client.get(f'/api/purchasing/purchase-orders/{po_item.po_id}', headers=auth_headers).get_json()
     assert d['items'][0]['quantity_received'] == 80.0
+
+
+def test_barang_ditolak_tidak_terhitung_sebagai_mutasi_keluar(client, auth_headers, db_session, test_material):
+    """Keluhan Finance 2026-11-17: qty yang ditolak QC ikut terhitung di kolom KELUAR
+    laporan Nilai Persediaan, padahal barangnya cuma pindah ke karantina."""
+    from models.wms_advanced import InventoryTransaction
+
+    main_location, quarantine_location = _setup_warehouse(db_session)
+    grn, grn_item = _setup_grn(db_session, main_location, test_material)
+    # create_grn() menerima barang dengan accepted = received, inspeksi baru memecahnya
+    grn_item.quantity_accepted = 100
+    db_session.commit()
+
+    resp = client.post(f'/api/purchasing/grn/{grn.id}/inspect', json={
+        'items': [{'id': grn_item.id, 'quantity_accepted': 80, 'quantity_rejected': 20,
+                   'rejection_reason': 'basah'}]}, headers=auth_headers)
+    assert resp.status_code == 200, resp.get_json()
+
+    rows = InventoryTransaction.query.filter(
+        InventoryTransaction.reference_type.in_(('grn_inspection', 'grn_inspection_reject'))).all()
+    jenis = {(r.reference_type, r.transaction_type, r.direction, float(r.quantity)) for r in rows}
+    assert jenis == {
+        ('grn_inspection', 'transfer_out', 'out', 20.0),          # keluar dari gudang terima
+        ('grn_inspection_reject', 'transfer_in', 'in', 20.0),     # masuk karantina
+    }
+    assert not any(r.transaction_type == 'adjustment' for r in rows)   # bukan penyesuaian stok
+
+
+def test_kelebihan_kirim_saat_inspeksi_tetap_penyesuaian(client, auth_headers, db_session, test_material):
+    """Yang benar-benar menambah barang (over-delivery) tetap dicatat sebagai
+    penyesuaian, jadi tetap terhitung sebagai barang masuk di laporan."""
+    from models.wms_advanced import InventoryTransaction
+
+    main_location, _ = _setup_warehouse(db_session)
+    grn, grn_item = _setup_grn(db_session, main_location, test_material)
+    grn_item.quantity_accepted = 100
+    db_session.commit()
+
+    resp = client.post(f'/api/purchasing/grn/{grn.id}/inspect', json={
+        'items': [{'id': grn_item.id, 'quantity_accepted': 110, 'quantity_rejected': 0}]}, headers=auth_headers)
+    assert resp.status_code == 200, resp.get_json()
+    rows = InventoryTransaction.query.filter_by(reference_type='grn_inspection').all()
+    assert [(r.transaction_type, r.direction, float(r.quantity)) for r in rows] == [('adjustment', 'in', 10.0)]

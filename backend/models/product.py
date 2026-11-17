@@ -245,6 +245,10 @@ class Product(db.Model):
             'id': self.id,
             'kode_produk': self.code,
             'nama_produk': self.name,
+            # Satuan ikut dikirim supaya form transaksi bisa membatasi pilihannya
+            # ke satuan yang memang didaftarkan untuk barang ini.
+            'primary_uom': self.primary_uom,
+            'secondary_uom': self.secondary_uom,
             'gramasi': self.gramasi,
             'cd': self.cd,
             'md': self.md,

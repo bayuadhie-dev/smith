@@ -61,7 +61,7 @@ def test_payment_and_invoice_exports_roundtrip(client, auth_headers, db_session,
     _setup_accounts(db_session)
     inv = client.post('/api/finance/invoices', headers=auth_headers, json={
         'invoice_type': 'sales', 'invoice_date': '2026-10-15', 'customer_id': test_customer.id, 'payment_terms': 'net_30',
-        'items': [{'product_id': test_product.id, 'description': 'Barang X', 'uom': 'KG', 'quantity': 2, 'unit_price': 5000, 'discount_tiers': '10+5'}]})
+        'items': [{'product_id': test_product.id, 'description': 'Barang X', 'uom': 'KG', 'quantity': 2, 'unit_price': 5000, 'discount_tiers': '10+5', 'batch_number': 'BATCH-UJI'}]})
     assert inv.status_code in (200, 201), inv.get_json()
     rows = _download(client, auth_headers, 'sales_invoice', '?date_from=2026-10-01&date_to=2026-10-31')
     assert len(rows) == 2 and rows[1][2] == test_customer.code and rows[1][5] == 'Barang X' and rows[1][7] == 'KG' and rows[1][9] == 14.5

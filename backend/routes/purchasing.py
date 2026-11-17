@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, current_app, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import redis
 import os
@@ -897,6 +897,45 @@ def update_po_schedules(id):
         return jsonify({'error': str(e)}), 500
 
 
+@purchasing_bp.route('/purchase-orders/<int:id>/close', methods=['POST'])
+@jwt_required()
+@require_permission('purchase_orders.update', 'purchase_orders.approve')
+def close_purchase_order(id):
+    """Tutup PO yang barangnya tidak akan datang lagi.
+
+    Dipakai untuk PO yang sudah diterima sebagian lalu sisanya dibatalkan pemasok
+    atau memang tidak dikirim: tanpa ini, PO menggantung di daftar sebagai masih
+    berjalan dan sisa komitmen anggarannya tidak pernah dilepas.
+    """
+    po = db.session.get(PurchaseOrder, id)
+    if not po:
+        return jsonify({'error': 'Purchase Order tidak ditemukan'}), 404
+    if po.status in ('closed', 'received', 'cancelled'):
+        return jsonify({'error': f'PO berstatus {po.status} tidak perlu ditutup lagi'}), 409
+    if po.status in ('draft', 'pending_approval', 'rejected'):
+        return jsonify({'error': 'PO yang belum disetujui dibatalkan atau dihapus, bukan ditutup'}), 409
+
+    data = request.get_json(silent=True) or {}
+    reason = (data.get('reason') or '').strip()
+    if not reason:
+        return jsonify({'error': 'Isi alasan penutupan PO'}), 400
+
+    # Sisa komitmen anggaran dilepas, sama seperti saat PO dihapus atau ditolak.
+    if po.status in ('approved', 'partial', 'confirmed', 'sent'):
+        try:
+            from utils.finance_helpers import release_po_budget_commitment
+            release_po_budget_commitment(po)
+        except Exception as e:
+            current_app.logger.warning(f'Gagal melepas komitmen anggaran PO {po.po_number}: {e}')
+
+    po.status = 'closed'
+    po.closed_at = datetime.utcnow()
+    po.closed_by = int(get_jwt_identity())
+    po.close_reason = reason[:500]
+    db.session.commit()
+    return jsonify({'message': f'PO {po.po_number} ditutup', 'status': po.status}), 200
+
+
 @purchasing_bp.route('/purchase-orders/<int:id>', methods=['DELETE'])
 @jwt_required()
 @require_permission('purchase_orders.delete')
@@ -1686,6 +1725,12 @@ def inspect_grn(grn_id):
 
             item.quantity_accepted = new_accepted
             item.quantity_rejected = new_rejected
+            # Bagian yang hanya BERPINDAH antara lokasi terima dan karantina (diterima
+            # berkurang karena ditolak, atau sebaliknya saat karantina dilepas). Ini
+            # bukan barang masuk atau keluar, jadi dicatat sebagai transfer supaya tidak
+            # muncul sebagai mutasi keluar di laporan persediaan (keluhan Finance
+            # 2026-11-17: qty yang ditolak ikut terhitung keluar).
+            pindah = min(abs(delta), abs(reject_delta)) if delta * reject_delta < 0 else 0.0
             if rejection_reason:
                 item.notes = f"[QC] {rejection_reason}" + (f"\n{item.notes}" if item.notes else "")
 
@@ -1705,7 +1750,7 @@ def inspect_grn(grn_id):
                     inventory.updated_at = get_local_now()
                     mv_direction = 'in' if delta > 0 else 'out'
                     movement = record_inventory_transaction(
-                        transaction_type='adjustment',
+                        transaction_type=('transfer_in' if mv_direction == 'in' else 'transfer_out') if pindah >= abs(delta) - 0.0001 else 'adjustment',
                         direction=mv_direction,
                         quantity=abs(delta),
                         product_id=item.product_id,
@@ -1767,7 +1812,7 @@ def inspect_grn(grn_id):
                     db.session.add(quarantine_inventory)
 
                 record_inventory_transaction(
-                    transaction_type='adjustment',
+                    transaction_type=('transfer_in' if reject_delta > 0 else 'transfer_out') if pindah >= abs(reject_delta) - 0.0001 else 'adjustment',
                     direction='in' if reject_delta > 0 else 'out',
                     quantity=abs(reject_delta),
                     product_id=item.product_id,

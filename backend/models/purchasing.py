@@ -56,7 +56,10 @@ class PurchaseOrder(db.Model):
     required_date = db.Column(db.Date, nullable=True)
     expected_date = db.Column(db.Date, nullable=True)
     delivery_date = db.Column(db.Date, nullable=True)
-    status = db.Column(db.String(50), nullable=False, default='draft')  # draft, sent, confirmed, partial, received, cancelled
+    status = db.Column(db.String(50), nullable=False, default='draft')  # draft, sent, confirmed, partial, received, closed, cancelled
+    closed_at = db.Column(db.DateTime, nullable=True)        # PO ditutup: sisa barang tidak akan datang lagi
+    closed_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    close_reason = db.Column(db.String(500), nullable=True)
     priority = db.Column(db.String(20), nullable=False, default='normal')  # low, normal, high, urgent
     supplier_quote_number = db.Column(db.String(100), nullable=True)
     payment_terms = db.Column(db.String(100), nullable=True)

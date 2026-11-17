@@ -11,6 +11,9 @@ interface Line {
   code: string
   description: string
   uom: string
+  /** Pilihan satuan untuk baris ini, diambil dari master barangnya. */
+  uom_options: string[]
+  batch_number: string
   quantity: string
   unit_price: string
   tiers: string
@@ -26,7 +29,10 @@ const effective = (tiers: string) => {
   const parts = String(tiers || '').replace('%', '').split('+').map((x) => parseFloat(x.trim().replace(',', '.'))).filter((x) => !isNaN(x))
   return parts.length ? (1 - parts.reduce((k, d) => k * (1 - d / 100), 1)) * 100 : 0
 }
-const blank = (): Line => ({ product_id: null, code: '', description: '', uom: 'PCS', quantity: '1', unit_price: '', tiers: '' })
+const blank = (): Line => ({ product_id: null, code: '', description: '', uom: '', uom_options: [], batch_number: '', quantity: '1', unit_price: '', tiers: '' })
+
+/** Satuan yang boleh dipakai untuk satu barang: hanya yang didaftarkan di masternya. */
+const uomsOf = (p: any): string[] => [p?.uom, p?.secondary_uom].filter((u: string) => !!u && String(u).trim())
 
 export default function SalesInvoiceFormNew() {
   const navigate = useNavigate()
@@ -46,12 +52,17 @@ export default function SalesInvoiceFormNew() {
   const [taxRate, setTaxRate] = useState('11')
   const [notes, setNotes] = useState('')
   const [lines, setLines] = useState<Line[]>([blank()])
+  const [batchOptions, setBatchOptions] = useState<Record<number, string[]>>({})
   const [saving, setSaving] = useState(false)
+
+  /** Tanpa Sales Order dan tanpa Surat Jalan, nomor batch jadi satu-satunya jejak ketelusuran. */
+  const butuhBatch = !soId && picked.length === 0
 
   useEffect(() => {
     axiosInstance.get('/api/sales/customers?per_page=1000').then((r) => setCustomers(r.data?.customers || [])).catch(() => {})
     axiosInstance.get('/api/products-new/?per_page=1000').then((r) => setProducts((r.data?.products || []).map((p: any) => ({
-      id: p.id, code: p.kode_produk || p.code, name: p.nama_produk || p.name, uom: p.satuan || p.primary_uom || 'PCS', price: Number(p.harga_jual || p.price || 0),
+      id: p.id, code: p.kode_produk || p.code, name: p.nama_produk || p.name,
+      uom: p.satuan || p.primary_uom || '', secondary_uom: p.secondary_uom || '', price: Number(p.harga_jual || p.price || 0),
     })))).catch(() => {})
   }, [])
 
@@ -72,11 +83,16 @@ export default function SalesInvoiceFormNew() {
       setSo(o)
       setCustomerId(o.customer_id)
       if (o.payment_terms && TERMS[o.payment_terms] !== undefined) setTerms(o.payment_terms)
-      setLines((o.items || []).map((i: any) => ({
-        product_id: i.product_id, code: i.product_code, description: i.description || i.product_name || '',
-        uom: i.uom, quantity: String(i.quantity), unit_price: String(i.unit_price),
-        tiers: i.discount_tiers || (i.discount_percent ? String(i.discount_percent) : ''),
-      })))
+      setLines((o.items || []).map((i: any) => {
+        const p = products.find((x) => x.id === i.product_id)
+        const opts = uomsOf(p)
+        return {
+          product_id: i.product_id, code: i.product_code, description: i.description || i.product_name || '',
+          uom: i.uom || opts[0] || '', uom_options: opts, batch_number: '',
+          quantity: String(i.quantity), unit_price: String(i.unit_price),
+          tiers: i.discount_tiers || (i.discount_percent ? String(i.discount_percent) : ''),
+        }
+      }))
     }).catch(() => toast.error('Gagal memuat Sales Order'))
     axiosInstance.get(`/api/shipping/orders/uninvoiced?sales_order_id=${soId}`).then((r) => setShipments(r.data?.orders || [])).catch(() => setShipments([]))
   }, [soId])
@@ -97,7 +113,13 @@ export default function SalesInvoiceFormNew() {
         const key = it.product_id ? `p${it.product_id}` : `d${String(it.description || '').trim().toLowerCase()}|${String(it.uom || '').toLowerCase()}`
         const cur = agg.get(key)
         if (cur) cur.quantity = String(Number(cur.quantity) + Number(it.quantity))
-        else agg.set(key, { product_id: it.product_id || null, code: it.product_code || '', description: it.description || '', uom: it.uom || 'PCS', quantity: String(it.quantity), unit_price: '', tiers: '' })
+        else {
+          const p = products.find((x) => x.id === it.product_id)
+          const opts = uomsOf(p)
+          agg.set(key, { product_id: it.product_id || null, code: it.product_code || '', description: it.description || '',
+                         uom: it.uom || opts[0] || '', uom_options: opts, batch_number: '',
+                         quantity: String(it.quantity), unit_price: '', tiers: '' })
+        }
       }))
       setLines(agg.size ? Array.from(agg.values()) : [blank()])
       return
@@ -108,6 +130,18 @@ export default function SalesInvoiceFormNew() {
     setLines((ls) => ls.filter((l) => l.product_id && qty[l.product_id]).map((l) => ({ ...l, quantity: String(qty[l.product_id as number]) })))
   }
 
+  useEffect(() => {
+    const ids = Array.from(new Set(lines.map((l) => l.product_id).filter((x): x is number => !!x)))
+    ids.filter((id) => !(id in batchOptions)).forEach((id) => {
+      axiosInstance.get('/api/shipping/stock-options', { params: { product_id: id } })
+        .then((r) => {
+          const batches = (r.data?.zones || []).flatMap((z: any) => (z.batches || []).map((b: any) => b.batch_number)).filter(Boolean)
+          setBatchOptions((p) => ({ ...p, [id]: Array.from(new Set(batches)) as string[] }))
+        })
+        .catch(() => setBatchOptions((p) => ({ ...p, [id]: [] })))
+    })
+  }, [lines, batchOptions])
+
   const setLine = (i: number, patch: Partial<Line>) => setLines((ls) => ls.map((l, idx) => (idx === i ? { ...l, ...patch } : l)))
   const pickProduct = (i: number, pid: number | string | null) => {
     const p = products.find((x) => x.id === pid)
@@ -115,7 +149,11 @@ export default function SalesInvoiceFormNew() {
       const prev = products.find((x) => x.id === lines[i]?.product_id)
       const cur = (lines[i]?.description || '').trim()
       const keep = cur && cur !== (prev?.name || '').trim()
-      setLine(i, { product_id: p.id, code: p.code, description: keep ? lines[i].description : p.name, uom: p.uom, unit_price: String(p.price || '') })
+      const opts = uomsOf(p)
+      setLine(i, {
+        product_id: p.id, code: p.code, description: keep ? lines[i].description : p.name,
+        uom_options: opts, uom: opts[0] || '', batch_number: '', unit_price: String(p.price || ''),
+      })
     }
   }
 
@@ -137,6 +175,9 @@ export default function SalesInvoiceFormNew() {
     const items = lines.filter((l) => l.description.trim() && Number(l.quantity) > 0 && Number(l.unit_price) >= 0)
     if (items.length === 0) { toast.error('Isi minimal satu barang'); return }
     if (picked.length > 0 && !soId && lines.some((l) => l.description.trim() && String(l.unit_price).trim() === '')) { toast.error('Harga tiap barang dari surat jalan harus diisi'); return }
+    if (butuhBatch && items.some((l) => l.product_id && !l.batch_number.trim())) {
+      toast.error('Faktur tanpa Sales Order dan Surat Jalan wajib mencantumkan nomor batch di tiap baris barang'); return
+    }
     setSaving(true)
     try {
       const created = await axiosInstance.post('/api/finance/invoices', {
@@ -151,6 +192,7 @@ export default function SalesInvoiceFormNew() {
         notes: notes || undefined,
         items: items.map((l) => ({
           product_id: l.product_id || undefined, description: l.description, uom: l.uom,
+          batch_number: l.batch_number.trim() || undefined,
           quantity: Number(l.quantity), unit_price: Number(l.unit_price),
           discount_tiers: l.tiers.trim() || undefined,
         })),
@@ -232,7 +274,8 @@ export default function SalesInvoiceFormNew() {
               <thead>
                 <tr className="text-left text-xs uppercase text-gray-500 border-b dark:text-gray-400">
                   <th className="py-2 pr-2">No.</th><th className="pr-2 w-64">Kode / Barang</th><th className="pr-2">Keterangan</th>
-                  <th className="pr-2 w-28 text-right">Qty</th><th className="pr-2 w-24">Satuan</th><th className="pr-2 w-36 text-right">Harga</th>
+                  <th className="pr-2 w-28 text-right">Qty</th><th className="pr-2 w-24">Satuan</th>
+                  <th className="pr-2 w-32">No. Batch{butuhBatch ? ' *' : ''}</th><th className="pr-2 w-36 text-right">Harga</th>
                   <th className="pr-2 w-28">Diskon % (10+5)</th><th className="pr-2 w-36 text-right">Jumlah</th><th />
                 </tr>
               </thead>
@@ -248,7 +291,29 @@ export default function SalesInvoiceFormNew() {
                       </td>
                       <td className="pr-2"><input className="input-field" value={l.description} onChange={(e) => setLine(i, { description: e.target.value })} /></td>
                       <td className="pr-2"><NumberInput className="input-field text-right" value={l.quantity} onChange={(e: any) => setLine(i, { quantity: e.target.value })} /></td>
-                      <td className="pr-2"><input className="input-field" value={l.uom} onChange={(e) => setLine(i, { uom: e.target.value })} /></td>
+                      <td className="pr-2">
+                        {l.uom_options.length > 0 ? (
+                          <select className="input-field" value={l.uom} onChange={(e) => setLine(i, { uom: e.target.value })}>
+                            {l.uom_options.map((u) => <option key={u} value={u}>{u}</option>)}
+                          </select>
+                        ) : (
+                          <input className="input-field" value={l.uom} onChange={(e) => setLine(i, { uom: e.target.value })} placeholder="Satuan" />
+                        )}
+                      </td>
+                      <td className="pr-2">
+                        <input
+                          className="input-field"
+                          value={l.batch_number}
+                          onChange={(e) => setLine(i, { batch_number: e.target.value })}
+                          list={l.product_id ? `batch-${l.product_id}` : undefined}
+                          placeholder={butuhBatch ? 'Wajib' : 'Opsional'}
+                        />
+                        {l.product_id && (
+                          <datalist id={`batch-${l.product_id}`}>
+                            {(batchOptions[l.product_id] || []).map((b) => <option key={b} value={b} />)}
+                          </datalist>
+                        )}
+                      </td>
                       <td className="pr-2"><NumberInput currency className="input-field text-right" value={l.unit_price} onChange={(e: any) => setLine(i, { unit_price: e.target.value })} /></td>
                       <td className="pr-2"><input className="input-field" inputMode="decimal" value={l.tiers} onChange={(e) => setLine(i, { tiers: e.target.value })} placeholder="0" /></td>
                       <td className="pr-2 text-right pt-3">{rp(net)}</td>

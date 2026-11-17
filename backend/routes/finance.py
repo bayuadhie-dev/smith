@@ -221,6 +221,9 @@ def get_invoice(id):
                     'id': item.id,
                     'line_number': item.line_number,
                     'description': item.description,
+                    'product_id': item.product_id,
+                    'uom': item.uom,
+                    'batch_number': item.batch_number,
                     'quantity': float(item.quantity) if item.quantity else 0,
                     'unit_price': float(item.unit_price) if item.unit_price else 0,
                     'amount': float(item.total_amount) if item.total_amount else 0,
@@ -450,6 +453,17 @@ def create_invoice_core(data, user_id, commit=True):
     db.session.add(invoice)
     db.session.flush()
     
+    # Faktur penjualan yang tidak bersandar pada Sales Order maupun Surat Jalan tidak
+    # punya jejak batch dari dokumen lain, jadi batas ketelusurannya diambil di sini:
+    # nomor batch wajib diisi per baris barang (permintaan Finance 2026-11-17).
+    tanpa_rujukan = (data.get('invoice_type') == 'sales'
+                     and not data.get('sales_order_id')
+                     and not (data.get('shipping_order_ids') or data.get('shipping_order_id')))
+    if tanpa_rujukan:
+        for item_data in data.get('items', []):
+            if item_data.get('product_id') and not (item_data.get('batch_number') or '').strip():
+                raise InvoiceInputError('Faktur tanpa Sales Order dan Surat Jalan wajib mencantumkan nomor batch di tiap baris barang')
+
     subtotal = 0
     discount_amount = data.get('discount_amount', 0)
     tax_rate = data.get('tax_rate', 0)
@@ -486,6 +500,8 @@ def create_invoice_core(data, user_id, commit=True):
             description=item_data['description'],
             quantity=item_data['quantity'],
             uom=item_data.get('uom'),
+            batch_number=(item_data.get('batch_number') or '').strip() or None,
+            material_id=item_data.get('material_id'),
             unit_price=item_data['unit_price'],
             discount_percent=item_data.get('discount_percent', 0),
             total_amount=line_net,

@@ -90,11 +90,12 @@ class SalesInvoiceImport(ImportKind):
         Col('kode_pajak', 'Kode Pajak', aliases=['pajak', 'ppn']),
         Col('keterangan', 'Keterangan', aliases=['catatan']),
         Col('no_so', 'No. Pesanan', aliases=['no. so', 'no so', 'no. pesanan penjualan']),
+        Col('no_batch', 'No. Batch', aliases=['batch', 'no batch', 'nomor batch']),
     ]
     sample_rows = [
-        ['INV-A1', '2026-10-01', 'CUST-001', '', '4021802002', '', 100, 'PCK', 25000, 0, '', 'Contoh dua barang satu faktur', ''],
-        ['INV-A1', '2026-10-01', 'CUST-001', '', '4021301002', '', 20, 'ROL', 300000, 5, 'Y', '', ''],
-        ['', '2026-10-02', 'PT Contoh Pelanggan', '2026-11-01', '', 'Jasa pengiriman', 1, '', 750000, '', '', 'Baris tanpa No. Faktur = faktur sendiri', ''],
+        ['INV-A1', '2026-10-01', 'CUST-001', '', '4021802002', '', 100, 'PCK', 25000, 0, '', 'Contoh dua barang satu faktur', '', 'BATCH-01'],
+        ['INV-A1', '2026-10-01', 'CUST-001', '', '4021301002', '', 20, 'ROL', 300000, 5, 'Y', '', '', 'BATCH-02'],
+        ['', '2026-10-02', 'PT Contoh Pelanggan', '2026-11-01', '', 'Jasa pengiriman', 1, '', 750000, '', '', 'Baris tanpa No. Faktur = faktur sendiri', '', ''],
     ]
     guide = [
         'Pelanggan: kode atau nama persis dari master pelanggan.',
@@ -103,6 +104,7 @@ class SalesInvoiceImport(ImportKind):
         'Kode Pajak: Y/A/B/L (PPN 11% / 1,1% / 1,2% / 12%). Kosong = ikut pajak di master barang. Faktur tanpa barang dan tanpa kode pajak tidak kena PPN.',
         'Nomor faktur sistem dibuat otomatis (INV-...). No. Faktur di file hanya untuk menggabungkan baris dan dicatat di Keterangan faktur.',
         'No. Pesanan: nomor Sales Order (opsional), harus milik pelanggan yang sama.',
+        'No. Batch: wajib untuk baris barang pada faktur yang tidak memakai Sales Order maupun Surat Jalan, karena nomor batch jadi satu-satunya jejak ketelusurannya. Baris jasa tanpa barang tidak perlu batch.',
         'Periode yang sudah ditutup (period-close) akan menolak faktur tersebut.',
     ]
 
@@ -138,8 +140,13 @@ class SalesInvoiceImport(ImportKind):
                     raise ValueError('Isi Kode Barang atau Deskripsi')
                 item = {'description': desc, 'quantity': qty, 'unit_price': price, 'discount_percent': disc,
                         'uom': text(rec.get('satuan'), 20) or (product.primary_uom if product else None)}
+                batch = text(rec.get('no_batch'), 100)
+                if batch:
+                    item['batch_number'] = batch
                 if product:
                     item['product_id'] = product.id
+                    if not so_id and not batch:
+                        raise ValueError('Isi No. Batch - faktur tanpa Sales Order dan Surat Jalan wajib mencantumkan batch')
                 net = qty * price * (1 - disc / 100)
                 pc = text(rec.get('kode_pajak'))
                 if pc and pc.lower() not in NO_TAX:

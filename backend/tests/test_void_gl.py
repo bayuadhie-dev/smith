@@ -49,6 +49,7 @@ def _create_sales_invoice(client, auth_headers, customer_id, product_id, qty, un
             'description': 'Test item',
             'quantity': qty,
             'unit_price': unit_price,
+            'batch_number': 'BATCH-UJI',   # faktur tanpa SO/Surat Jalan wajib batch (aturan Finance 2026-11-17)
         }],
     }, headers=auth_headers)
     assert resp.status_code in (200, 201), resp.get_json()

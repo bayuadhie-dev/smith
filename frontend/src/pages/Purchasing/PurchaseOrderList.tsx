@@ -15,14 +15,16 @@ import {
   FunnelIcon,
   MagnifyingGlassIcon,
   PencilIcon,
+  LockClosedIcon,
   PlusIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import axiosInstance from '../../utils/axiosConfig'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
-const STATUS_LABEL: Record<string, string> = { draft: 'Draft', pending_approval: 'Menunggu Persetujuan', approved: 'Disetujui', rejected: 'Ditolak', sent: 'Terkirim', confirmed: 'Dikonfirmasi', partial: 'Diterima Sebagian', received: 'Diterima', cancelled: 'Batal' }
+const STATUS_LABEL: Record<string, string> = { draft: 'Draft', pending_approval: 'Menunggu Persetujuan', approved: 'Disetujui', rejected: 'Ditolak', sent: 'Terkirim', confirmed: 'Dikonfirmasi', partial: 'Diterima Sebagian', received: 'Diterima', closed: 'Ditutup', cancelled: 'Batal' }
 const PRIORITY_LABEL: Record<string, string> = { low: 'Rendah', normal: 'Normal', high: 'Tinggi', urgent: 'Mendesak' }
 const COLUMNS: ListColumn<any>[] = [
   { key: 'po_number', label: 'No. PO', value: (p) => p.po_number },
@@ -40,6 +42,8 @@ export default function PurchaseOrderList() {
 
 const [status, setStatus] = useState('')
   const [priority, setPriority] = useState('')
+  const [closing, setClosing] = useState<any>(null)
+  const [closeReason, setCloseReason] = useState('')
   const [manualRateModal, setManualRateModal] = useState<{
     open: boolean
     poId: number | null
@@ -77,6 +81,7 @@ const [status, setStatus] = useState('')
       confirmed: { class: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300', label: 'Dikonfirmasi' },
       partial: { class: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300', label: 'Diterima Sebagian' },
       received: { class: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', label: 'Diterima' },
+      closed: { class: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200', label: 'Ditutup' },
       cancelled: { class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Batal' }
     }
     return badges[status] || { class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: status }
@@ -90,6 +95,20 @@ const [status, setStatus] = useState('')
       urgent: { class: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', label: 'Mendesak' }
     }
     return badges[priority] || { class: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', label: 'Normal' }
+  }
+
+  const submitClose = async () => {
+    if (!closing) return
+    if (!closeReason.trim()) { toast.error('Isi alasan penutupan PO'); return }
+    try {
+      await axiosInstance.post(`/api/purchasing/purchase-orders/${closing.id}/close`, { reason: closeReason.trim() })
+      toast.success(`PO ${closing.po_number} ditutup`)
+      setClosing(null)
+      setCloseReason('')
+      refetch()
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || 'Gagal menutup PO')
+    }
   }
 
   const handleSubmitApproval = async (po: any) => {
@@ -165,7 +184,7 @@ const [status, setStatus] = useState('')
         <>
           <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Status" className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white">
             <option value="">Semua status</option>
-            {['draft', 'pending_approval', 'approved', 'rejected', 'sent', 'confirmed', 'received'].map((k) => <option key={k} value={k}>{STATUS_LABEL[k]}</option>)}
+            {['draft', 'pending_approval', 'approved', 'rejected', 'sent', 'confirmed', 'partial', 'received', 'closed', 'cancelled'].map((k) => <option key={k} value={k}>{STATUS_LABEL[k]}</option>)}
           </select>
           <select value={priority} onChange={(e) => setPriority(e.target.value)} aria-label="Prioritas" className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white">
             <option value="">Semua prioritas</option>
@@ -279,6 +298,16 @@ const [status, setStatus] = useState('')
                             </>
                           )}
                           
+                          {['partial', 'approved', 'confirmed', 'sent'].includes(po.status) && (
+                            <button
+                              onClick={() => { setClosing(po); setCloseReason('') }}
+                              className="text-gray-600 hover:text-gray-900 p-1 dark:text-gray-300 dark:hover:text-white"
+                              title="Tutup PO: sisa barang tidak akan datang lagi" aria-label="Tutup PO"
+                            >
+                              <LockClosedIcon className="h-4 w-4" />
+                            </button>
+                          )}
+
                           {po.status === 'pending_approval' && (
                             <Link
                               to="/app/approval"
@@ -372,6 +401,34 @@ const [status, setStatus] = useState('')
             >
               {manualRateModal.submitting ? 'Menyimpan...' : 'Kunci Kurs & Submit PO'}
             </button>
+          </div>
+        </div>
+      </AccessibleModal>
+
+      <AccessibleModal
+        isOpen={!!closing}
+        onClose={() => setClosing(null)}
+        title={closing ? `Tutup PO ${closing.po_number}` : 'Tutup PO'}
+        size="md"
+      >
+        <div className="space-y-4 text-sm">
+          <p className="text-gray-700 dark:text-gray-200">
+            Sisa barang yang belum datang dianggap tidak akan dikirim lagi. PO keluar dari daftar yang masih berjalan
+            dan sisa komitmen anggarannya dilepas. Penerimaan dan faktur yang sudah ada tidak berubah.
+          </p>
+          <div>
+            <label className="mb-1 block font-medium text-gray-700 dark:text-gray-200">Alasan penutupan *</label>
+            <textarea
+              className="input-field"
+              rows={3}
+              value={closeReason}
+              onChange={(e) => setCloseReason(e.target.value)}
+              placeholder="Contoh: sisa 200 kg dibatalkan pemasok, stok mereka habis"
+            />
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            <button type="button" className="btn-secondary" onClick={() => setClosing(null)}>Batal</button>
+            <button type="button" className="btn-primary" onClick={submitClose}>Tutup PO</button>
           </div>
         </div>
       </AccessibleModal>

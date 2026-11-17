@@ -95,6 +95,7 @@ class InvoiceItem(db.Model):
     quantity = db.Column(db.Numeric(15, 4), nullable=False)
     account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)  # baris tambahan di luar PO: akun beban pilihan
     uom = db.Column(db.String(20), nullable=True)
+    batch_number = db.Column(db.String(100), nullable=True)   # wajib di faktur penjualan tanpa SO/Surat Jalan
     unit_price = db.Column(db.Numeric(15, 2), nullable=False)
     discount_percent = db.Column(db.Numeric(5, 2), default=0)
     discount_amount = db.Column(db.Numeric(15, 2), default=0)

@@ -8,7 +8,7 @@ from tests.test_fase11_purchase_invoice_total_price_fallback import _setup_po
 from tests.test_void_gl import _setup_accounts
 
 SALES = ['No. Faktur', 'Tanggal', 'Pelanggan', 'Jatuh Tempo', 'Kode Barang', 'Deskripsi', 'Qty', 'Satuan', 'Harga Satuan',
-         'Diskon %', 'Kode Pajak', 'Keterangan', 'No. Pesanan']
+         'Diskon %', 'Kode Pajak', 'Keterangan', 'No. Pesanan', 'No. Batch']
 PURCH = ['No. Faktur Pemasok', 'Tanggal', 'Tanggal Faktur Pemasok', 'No. PO', 'Jatuh Tempo', 'Kode Barang', 'Qty', 'Harga Satuan',
          'Kode Pajak', 'Keterangan']
 
@@ -41,10 +41,10 @@ def test_sales_preview_saves_nothing_and_commit_posts_balanced_journal(client, a
     _setup_accounts(db_session)
     today = date.today().isoformat()
     rows = [
-        ['A1', today, test_customer.code, '', test_product.code, '', 2, '', 100000, 0, '', 'dua barang', ''],
-        ['A1', today, test_customer.code, '', '', 'Jasa kirim', 1, '', 50000, 10, 'Y', '', ''],
-        ['', today, 'TIDAK-ADA', '', test_product.code, '', 1, '', 1000, '', '', '', ''],
-        ['B2', today, test_customer.code, '', 'KODE-SALAH', '', 1, '', 1000, '', '', '', ''],
+        ['A1', today, test_customer.code, '', test_product.code, '', 2, '', 100000, 0, '', 'dua barang', '', 'BATCH-A'],
+        ['A1', today, test_customer.code, '', '', 'Jasa kirim', 1, '', 50000, 10, 'Y', '', '', ''],
+        ['', today, 'TIDAK-ADA', '', test_product.code, '', 1, '', 1000, '', '', '', '', 'BATCH-A'],
+        ['B2', today, test_customer.code, '', 'KODE-SALAH', '', 1, '', 1000, '', '', '', '', 'BATCH-A'],
     ]
     before_inv, before_j = Invoice.query.count(), _journal_totals()
     prev = _post(client, auth_headers, 'sales_invoice', _xlsx(SALES, rows), False)
@@ -68,11 +68,11 @@ def test_sales_rejects_mixed_customers_in_one_invoice_and_bad_values(client, aut
     _setup_accounts(db_session)
     today = date.today().isoformat()
     rows = [
-        ['M1', today, test_customer.code, '', test_product.code, '', 1, '', 1000, '', '', '', ''],
-        ['M1', today, 'Lain', '', test_product.code, '', 1, '', 1000, '', '', '', ''],
-        ['Q1', today, test_customer.code, '', test_product.code, '', 0, '', 1000, '', '', '', ''],
-        ['D1', today, test_customer.code, '', test_product.code, '', 1, '', 1000, 150, '', '', ''],
-        ['T1', today, test_customer.code, '', test_product.code, '', 1, '', 1000, '', 'Z', '', ''],
+        ['M1', today, test_customer.code, '', test_product.code, '', 1, '', 1000, '', '', '', '', 'BATCH-A'],
+        ['M1', today, 'Lain', '', test_product.code, '', 1, '', 1000, '', '', '', '', 'BATCH-A'],
+        ['Q1', today, test_customer.code, '', test_product.code, '', 0, '', 1000, '', '', '', '', 'BATCH-A'],
+        ['D1', today, test_customer.code, '', test_product.code, '', 1, '', 1000, 150, '', '', '', 'BATCH-A'],
+        ['T1', today, test_customer.code, '', test_product.code, '', 1, '', 1000, '', 'Z', '', '', 'BATCH-A'],
     ]
     res = _post(client, auth_headers, 'sales_invoice', _xlsx(SALES, rows), False)
     assert res['summary']['ok'] == 0 and res['summary']['error'] == 4
