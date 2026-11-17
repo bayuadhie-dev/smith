@@ -900,6 +900,8 @@ def create_app(config_class=Config):
     app.register_blueprint(petty_cash_bp, url_prefix='/api/petty-cash')
     from routes.bank_transfer import bank_transfer_bp
     app.register_blueprint(bank_transfer_bp, url_prefix='/api/finance/bank-transfers')
+    from routes.production_roll import production_roll_bp
+    app.register_blueprint(production_roll_bp, url_prefix='/api/production/rolls')
     
 
     # Serve uploaded files

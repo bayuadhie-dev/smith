@@ -108,6 +108,7 @@ const routeLabels: Record<string, string> = {
   'inventory-mutation': 'Nilai Persediaan',
   'inventory-by-warehouse': 'Kuantitas Barang per Gudang',
   'bank-transfers': 'Transfer Kas/Bank',
+  'rolls': 'Roll Spunlace',
 };
 
 // Jalur induk yang tidak punya halaman sendiri: tampil sebagai teks, bukan tautan

@@ -310,6 +310,7 @@ class ProductSpecification(db.Model):
     ph_level = db.Column(db.String(50), nullable=True)
     fragrance = db.Column(db.String(100), nullable=True)
     alcohol_content = db.Column(db.String(50), nullable=True)
+    cone_weight_kg = db.Column(db.Numeric(10, 3), nullable=True)  # berat satu cone (core) - acuan saat menimbang roll
     specifications_json = db.Column(db.Text, nullable=True)  # JSON for additional specs
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

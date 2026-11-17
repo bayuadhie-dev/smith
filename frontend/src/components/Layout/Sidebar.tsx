@@ -281,6 +281,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           children: [
             { name: 'Dashboard', href: '/app/production', icon: PresentationChartLineIcon },
             { name: 'SPK', description: 'Surat Perintah Kerja (Work Order)', href: '/app/production/work-orders', icon: ClipboardDocumentListIcon, permission: 'work_orders' },
+            { name: 'Roll Spunlace', href: '/app/production/rolls', icon: ArrowPathIcon },
             { name: 'Stok WIP', href: '/app/production/wip-stock', icon: ArchiveBoxIcon },
             { name: 'Persetujuan Produksi', href: '/app/production/approvals', icon: ClipboardDocumentCheckIcon },
             {

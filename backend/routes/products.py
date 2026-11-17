@@ -326,7 +326,8 @@ def get_product(id):
                 'tensile_strength': spec.tensile_strength,
                 'ph_level': spec.ph_level,
                 'fragrance': spec.fragrance,
-                'alcohol_content': spec.alcohol_content
+                'alcohol_content': spec.alcohol_content,
+                'cone_weight_kg': float(spec.cone_weight_kg) if spec.cone_weight_kg else None,
             })
             # Also keep nested structure for backward compatibility
             result['specification'] = {
@@ -419,7 +420,7 @@ def create_product():
         # Create specification if provided (handle both nested and flat structure)
         spec_fields = ['gsm', 'width_cm', 'length_m', 'thickness_mm', 'color', 
                       'weight_per_sheet_g', 'absorbency', 'tensile_strength', 
-                      'ph_level', 'fragrance', 'alcohol_content']
+                      'ph_level', 'fragrance', 'alcohol_content', 'cone_weight_kg']
         
         if 'specification' in data:
             # Nested structure
@@ -545,7 +546,7 @@ def update_product(id):
         # Update specification if provided (handle both nested and flat structure)
         spec_fields = ['gsm', 'width_cm', 'length_m', 'thickness_mm', 'color', 
                       'weight_per_sheet_g', 'absorbency', 'tensile_strength', 
-                      'ph_level', 'fragrance', 'alcohol_content']
+                      'ph_level', 'fragrance', 'alcohol_content', 'cone_weight_kg']
         
         if 'specification' in data:
             # Nested structure

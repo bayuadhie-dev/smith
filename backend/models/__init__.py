@@ -97,6 +97,7 @@ from .wms_advanced import (
 )
 from .expense import Expense, Reimbursement, ReimbursementApproval
 from .bank_transfer import BankTransfer
+from .production_roll import ProductionRoll
 from .petty_cash import PettyCashFund, PettyCashTransaction, PettyCashReplenishment, PettyCashCategoryAccount
 from .spc import SPCParameter, SPCProductSpec, SPCSample, SPCMeasurement, SPCControlLimitHistory
 from .accurate import AccurateConfig, AccurateItemMapping, AccurateSyncLog
@@ -211,7 +212,7 @@ __all__ = [
     # Expense models
     'Expense', 'Reimbursement', 'ReimbursementApproval',
     'PettyCashFund', 'PettyCashTransaction', 'PettyCashReplenishment', 'PettyCashCategoryAccount',
-    'BankTransfer',
+    'BankTransfer', 'ProductionRoll',
     'StockTransfer', 'StockTransferLine', 'StockTransferReceipt', 'StockTransferReceiptLine',
     # Accurate models
     'AccurateConfig', 'AccurateItemMapping', 'AccurateSyncLog',

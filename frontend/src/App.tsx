@@ -241,6 +241,7 @@ import Consolidation from './pages/Finance/Consolidation'
 import PaymentForm from './pages/Finance/PaymentForm'
 import PaymentList from './pages/Finance/PaymentList'
 import BankTransferList from './pages/Finance/BankTransferList'
+import RollList from './pages/Production/RollList'
 import BankTransferForm from './pages/Finance/BankTransferForm'
 import AdvanceRecap from './pages/Finance/AdvanceRecap'
 import PaymentDetail from './pages/Finance/PaymentDetail'
@@ -764,6 +765,7 @@ function AppChildRoutes() {
                 <Route path="finance/rekap-uang-muka" element={<AdvanceRecap />} />
                 <Route path="finance/penerimaan" element={<PaymentList key="kas_in" type="receipt" source="kas" />} />
                 <Route path="finance/pembayaran" element={<PaymentList key="kas_out" type="payment" source="kas" />} />
+                <Route path="production/rolls" element={<RollList />} />
                 <Route path="finance/bank-transfers" element={<BankTransferList />} />
                 <Route path="finance/bank-transfers/new" element={<BankTransferForm />} />
                 <Route path="finance/penerimaan-penjualan" element={<PaymentList key="ar" type="receipt" source="invoice" />} />

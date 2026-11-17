@@ -31,6 +31,7 @@ interface ProductFormData {
   thickness_mm?: number
   color?: string
   weight_per_sheet_g?: number
+  cone_weight_kg?: number
   absorbency?: string
   tensile_strength?: string
   ph_level?: string
@@ -366,6 +367,21 @@ const { id } = useParams()
                       className="input-field"
                       placeholder="e.g., 1.250"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                      Berat Cone per pcs (kg)
+                    </label>
+                    <NumberInput
+                      step="0.001"
+                      {...register('cone_weight_kg')}
+                      className="input-field"
+                      placeholder="mis. 1.200"
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Acuan saat menimbang roll. Berat bersih tetap diisi sendiri oleh operator, tidak dihitung sistem.
+                    </p>
                   </div>
 
                   <div>
