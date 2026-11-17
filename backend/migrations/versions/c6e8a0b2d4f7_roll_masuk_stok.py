@@ -27,16 +27,17 @@ def upgrade():
     zona = bind.execute(sa.text("select id from warehouse_zones where code = 'WH-KAIN'")).scalar()
     if not zona:
         bind.execute(sa.text("""
-            insert into warehouse_zones (code, name, material_type, description, is_active, created_at, updated_at)
-            values ('WH-KAIN', 'Gudang Kain', 'wip', 'Main roll dan jumbo roll keluaran spunlace', true, now(), now())
+            insert into warehouse_zones (code, name, material_type, zone_type, description, is_active, created_at, updated_at)
+            values ('WH-KAIN', 'Gudang Kain', 'wip', 'storage', 'Main roll dan jumbo roll keluaran spunlace', true, now(), now())
         """))
         zona = bind.execute(sa.text("select id from warehouse_zones where code = 'WH-KAIN'")).scalar()
 
     ada_lokasi = bind.execute(sa.text("select 1 from warehouse_locations where zone_id = :z"), {'z': zona}).first()
     if not ada_lokasi:
         bind.execute(sa.text("""
-            insert into warehouse_locations (zone_id, location_code, rack, level, position, capacity, capacity_uom, is_active, created_at, updated_at)
-            values (:z, 'KAIN-01', 'R1', 'L1', 'P1', 100000, 'kg', true, now(), now())
+            insert into warehouse_locations (zone_id, location_code, rack, level, position, capacity, capacity_uom,
+                                             occupied, is_active, is_available, created_at, updated_at)
+            values (:z, 'KAIN-01', 'R1', 'L1', 'P1', 100000, 'kg', 0, true, true, now(), now())
         """), {'z': zona})
 
 
