@@ -6,6 +6,7 @@ from models.settings import CompanyProfile
 from utils.i18n import success_response, error_response, get_message
 from utils import generate_number, generate_number_v2
 from datetime import datetime, timedelta, date
+from decimal import Decimal
 from sqlalchemy import func, extract
 from utils.timezone import get_local_now, get_local_today
 from utils.auth_decorators import require_permission
@@ -921,8 +922,6 @@ def create_payment_core(data, user_id, commit=True):
       amount is normalized into one line).
     Total amount is always derived server-side from the allocations/lines."""
     try:
-        from decimal import Decimal
-
         allocations_in = data.get('allocations') or (
             [{'invoice_id': data['invoice_id'], 'amount': data['amount']}] if data.get('invoice_id') else []
         )
