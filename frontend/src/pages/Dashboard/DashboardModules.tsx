@@ -6,6 +6,7 @@ import axiosInstance from '../../utils/axiosConfig'
 import { formatRupiah } from '../../utils/currencyUtils'
 import { useAppSelector } from '../../hooks/redux'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+import { Stagger, StaggerItem, StatCard } from '../../components/motion'
 
 type Tone = 'warn' | 'bad' | null
 interface Item { key: string; label: string; value: number | null; format: 'number' | 'currency' | 'percent'; tone: Tone }
@@ -109,25 +110,25 @@ const DashboardModules = () => {
 
 
       {headline.length > 0 && (
-        <section className="grid grid-cols-2 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 lg:grid-cols-4">
-          {headline.map((h, i) => (
-            <div key={h.key} className={`p-4 ${i > 0 ? 'lg:border-l' : ''} ${i % 2 === 1 ? 'border-l lg:border-l' : ''} ${i > 1 ? 'border-t lg:border-t-0' : ''} border-gray-200 dark:border-gray-700`}>
-              <p className="truncate text-xs text-gray-500 dark:text-gray-400">{h.label}</p>
-              <p className={`mt-1 truncate text-2xl font-semibold tabular-nums ${toneText(h.tone || null)}`}>
-                {h.format === 'currency' ? formatRupiah(h.value) : h.value.toLocaleString('id-ID')}
-              </p>
-              {h.delta !== null && h.delta !== undefined ? (
-                <p className={`mt-1 inline-flex items-center gap-1 text-xs font-medium ${h.delta >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {h.delta >= 0 ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
-                  {Math.abs(h.delta).toLocaleString('id-ID')}%
-                  <span className="font-normal text-gray-400">{h.delta_label}</span>
-                </p>
-              ) : (
-                <p className="mt-1 text-xs text-gray-400">&nbsp;</p>
-              )}
-            </div>
+        <Stagger className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {headline.map((h) => (
+            <StaggerItem key={h.key}>
+              <StatCard
+                label={h.label}
+                value={h.value}
+                format={(n) => (h.format === 'currency' ? formatRupiah(n) : Math.round(n).toLocaleString('id-ID'))}
+                valueClassName={toneText(h.tone || null)}
+                footer={h.delta !== null && h.delta !== undefined ? (
+                  <span className={`inline-flex items-center gap-1 font-medium ${h.delta >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {h.delta >= 0 ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
+                    {Math.abs(h.delta).toLocaleString('id-ID')}%
+                    <span className="font-normal text-gray-400">{h.delta_label}</span>
+                  </span>
+                ) : null}
+              />
+            </StaggerItem>
           ))}
-        </section>
+        </Stagger>
       )}
       <section className="rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
         <h2 className="border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-900 dark:border-gray-700 dark:text-white">Perlu tindakan</h2>

@@ -94,7 +94,12 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
     const loadCompanyName = async () => {
       try {
         const response = await axiosInstance.get('/api/settings/company')
-        if (response.data?.name) setCompanyName(response.data.name)
+        if (response.data?.name) {
+          setCompanyName(response.data.name)
+          // Disimpan supaya layar pembuka (SplashReveal) bisa memakai inisial yang
+          // sama tanpa menunggu permintaan ke server saat halaman baru dibuka.
+          try { localStorage.setItem('erp_company_name', response.data.name) } catch { /* abaikan */ }
+        }
       } catch (e) {
         // biarkan fallback ke inisial generik di bawah
       }
@@ -660,7 +665,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
       {/* Brand */}
       <div className={clsx('flex h-16 shrink-0 items-center border-b border-gray-200 dark:border-gray-800 mb-1', collapsed ? 'justify-center' : 'justify-between')}>
         <div className={clsx('flex items-center gap-2.5 min-w-0', collapsed && 'justify-center')}>
-          <div className="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center shrink-0">
+          <div data-brand-mark className="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center shrink-0">
             <span className="text-white text-xs font-bold tracking-tight">{companyInitials}</span>
           </div>
           {!collapsed && (

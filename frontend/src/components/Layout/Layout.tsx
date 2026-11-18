@@ -14,11 +14,20 @@ import { syncMotionForUser } from '../../utils/motion'
 import { useAppSelector } from '../../hooks/redux'
 import { showWarning } from '../ui'
 import ForcePasswordChange from '../Auth/ForcePasswordChange'
+import SplashReveal from '../motion/SplashReveal'
 
 export default function Layout() {
   const [showShortcutsModal, setShowShortcutsModal] = useState(false)
   const location = useLocation()
   const motionUserId = useAppSelector((state: any) => state.auth?.user?.id)
+  // Inisial perusahaan untuk layar pembuka; dibaca dari cache yang sama dengan
+  // Sidebar/Header supaya tidak menambah permintaan ke server saat halaman dibuka.
+  const [companyName, setCompanyName] = useState(() => localStorage.getItem('erp_company_name') || '')
+  useEffect(() => {
+    const baca = () => setCompanyName(localStorage.getItem('erp_company_name') || '')
+    window.addEventListener('companySettingsUpdated', baca)
+    return () => window.removeEventListener('companySettingsUpdated', baca)
+  }, [])
   useEffect(() => { syncMotionForUser(motionUserId) }, [motionUserId])
   const inWorkspaceModule = moduleForPath(location.pathname) !== null
   
@@ -105,6 +114,7 @@ export default function Layout() {
       {/* Skip Link for keyboard navigation */}
       <SkipLink href="#main-content" />
 
+      <SplashReveal nama={companyName}>
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       <div className={`transition-all duration-300 ${sidebarOpen ? (sidebarCollapsed ? 'lg:pl-[84px]' : 'lg:pl-64') : 'lg:pl-0'}`}>
         <Header toggleSidebar={handleHeaderToggle} />
@@ -120,6 +130,7 @@ export default function Layout() {
           </div>
         </main>
       </div>
+      </SplashReveal>
       
       {/* Keyboard Shortcuts Modal */}
       <KeyboardShortcutsModal 
