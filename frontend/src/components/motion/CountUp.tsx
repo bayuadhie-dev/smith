@@ -20,7 +20,7 @@ export interface CountUpProps {
  * (tiap 2 menit) membuat semua angka berkedip dari nol dan terbaca seperti
  * data hilang.
  */
-export default function CountUp({ value, format, className, duration = 0.6 }: CountUpProps) {
+export default function CountUp({ value, format, className, duration = 1.1 }: CountUpProps) {
   const motionOn = useMotionOn()
   const revealed = useRevealed()
   const fmt = format || ((n: number) => Math.round(n).toLocaleString('id-ID'))

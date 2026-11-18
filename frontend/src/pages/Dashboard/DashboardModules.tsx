@@ -6,7 +6,7 @@ import axiosInstance from '../../utils/axiosConfig'
 import { formatRupiah } from '../../utils/currencyUtils'
 import { useAppSelector } from '../../hooks/redux'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
-import { Stagger, StaggerItem, StatCard } from '../../components/motion'
+import { Reveal, Stagger, StaggerItem, StatCard } from '../../components/motion'
 
 type Tone = 'warn' | 'bad' | null
 interface Item { key: string; label: string; value: number | null; format: 'number' | 'currency' | 'percent'; tone: Tone }
@@ -98,6 +98,7 @@ const DashboardModules = () => {
           menumpang di bawahnya. Ini yang memberi kesan "berani" tanpa mengubah
           satu pun sumber data. */}
       <div className="relative">
+      <Reveal>
       <section className="relative overflow-hidden rounded-3xl bg-gray-900 px-6 pb-24 pt-7 text-white shadow-[0_20px_50px_-30px_rgba(16,24,40,0.9)] dark:bg-gray-950">
         <span aria-hidden className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-primary-500/20 blur-3xl" />
         <span aria-hidden className="pointer-events-none absolute -bottom-28 left-1/3 h-56 w-56 rounded-full bg-primary-400/10 blur-3xl" />
@@ -118,6 +119,7 @@ const DashboardModules = () => {
           </button>
         </div>
       </section>
+      </Reveal>
 
 
       {headline.length > 0 && (
@@ -143,6 +145,7 @@ const DashboardModules = () => {
         </Stagger>
       )}
       </div>
+      <Reveal>
       <section className="rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_28px_-20px_rgba(16,24,40,0.3)] dark:border-gray-700/80 dark:bg-gray-800">
         <h2 className="border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-900 dark:border-gray-700 dark:text-white">Perlu tindakan</h2>
         {isLoading ? (
@@ -170,13 +173,14 @@ const DashboardModules = () => {
           </ul>
         )}
       </section>
+      </Reveal>
 
 
       {(trends.output || trends.sales) && (
-        <div className="grid gap-4 md:grid-cols-2">
+        <Reveal className="grid gap-4 md:grid-cols-2">
           {trends.output && <TrendCard title="Output produksi, 14 hari terakhir" data={trends.output} />}
           {trends.sales && <TrendCard title="Pesanan penjualan, 14 hari terakhir" data={trends.sales} currency />}
-        </div>
+        </Reveal>
       )}
 
       {isError && (
@@ -186,8 +190,9 @@ const DashboardModules = () => {
       )}
 
       <div className="grid gap-4 md:grid-cols-2">
-        {modules.map((m) => (
-          <section key={m.key} className="rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_28px_-20px_rgba(16,24,40,0.3)] dark:border-gray-700/80 dark:bg-gray-800">
+        {modules.map((m, mi) => (
+          <Reveal key={m.key} delay={(mi % 2) * 0.06}>
+          <section className="rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_28px_-20px_rgba(16,24,40,0.3)] dark:border-gray-700/80 dark:bg-gray-800">
             <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
               <h2 className="text-sm font-semibold text-gray-900 dark:text-white">{m.title}</h2>
               <Link to={m.href} className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400">Buka modul</Link>
@@ -212,6 +217,7 @@ const DashboardModules = () => {
               </dl>
             </div>
           </section>
+          </Reveal>
         ))}
       </div>
 
