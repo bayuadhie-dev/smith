@@ -32,12 +32,17 @@ export default function StatCard({
   const motionOn = useMotionOn()
   return (
     <motion.div
-      className={`rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 ${className || ''}`}
+      className={'group relative overflow-hidden rounded-2xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-5 '
+        + 'shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_28px_-18px_rgba(16,24,40,0.35)] '
+        + 'transition-shadow hover:shadow-[0_1px_2px_rgba(16,24,40,0.05),0_20px_40px_-20px_rgba(16,24,40,0.45)] '
+        + `dark:border-gray-700/80 dark:from-gray-800 dark:to-gray-900 ${className || ''}`}
       whileHover={motionOn ? { y: -4 } : undefined}
       transition={{ duration: 0.2, ease: EASE }}
     >
-      <p className="truncate text-xs text-gray-500 dark:text-gray-400">{label}</p>
-      <p className={`mt-1 truncate text-2xl font-semibold ${valueClassName || 'text-gray-900 dark:text-white'}`}>
+      {/* Cahaya lembut di pojok: memberi kesan permukaan, bukan kotak datar. */}
+      <span aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-primary-500/10 blur-2xl dark:bg-primary-400/10" />
+      <p className="truncate text-[11px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{label}</p>
+      <p className={`mt-1.5 truncate text-3xl font-semibold tracking-tight ${valueClassName || 'text-gray-900 dark:text-white'}`}>
         <CountUp value={value} format={format} />
       </p>
       {progress !== undefined && <ProgressBar value={progress} className="mt-2" barClassName={progressClassName} />}

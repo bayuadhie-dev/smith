@@ -61,8 +61,17 @@ export default function SplashReveal({ children, nama }: { children: ReactNode; 
 
   return (
     <RevealContext.Provider value={fase === 'selesai'}>
+      {/* Latar gelap tetap ada SELAMA lingkaran melebar, bukan ikut memudar
+          bersama logo - tanpa ini, bagian di luar lingkaran menampilkan latar
+          halaman yang terang sehingga pembukaannya terlihat "transparan",
+          bukan terbuka dari gelap. Warnanya ikut tema perusahaan (Falmaco
+          mendekati hitam, Fengsheng hijau tua). */}
+      {fase !== 'selesai' && (
+        <div className="fixed inset-0 z-[60]" style={{ backgroundColor: 'rgb(var(--gray-950))' }} aria-hidden />
+      )}
       <motion.div
         ref={ref}
+        className={fase !== 'selesai' ? 'relative z-[70]' : undefined}
         initial={fase === 'selesai' ? false : { clipPath: `circle(0% at ${origin})` }}
         animate={fase === 'reveal' ? { clipPath: `circle(150% at ${origin})` } : undefined}
         transition={{ duration: REVEAL_S, ease: EASE }}
@@ -82,10 +91,10 @@ export default function SplashReveal({ children, nama }: { children: ReactNode; 
         {fase === 'splash' && (
           <motion.div
             key="splash"
-            className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-5 bg-gray-950"
+            className="fixed inset-0 z-[80] flex flex-col items-center justify-center gap-5"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: EASE }}
+            transition={{ duration: 0.25, ease: EASE }}
             aria-hidden
           >
             <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600 text-lg font-bold tracking-tight text-white">

@@ -39,7 +39,7 @@ const TrendCard = ({ title, data, currency }: { title: string; data: Point[]; cu
   const total = data.reduce((a, b) => a + b.value, 0)
   const fmt = (v: number) => (currency ? formatRupiah(v) : v.toLocaleString('id-ID'))
   return (
-    <section className="rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+    <section className="rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_28px_-20px_rgba(16,24,40,0.3)] dark:border-gray-700/80 dark:bg-gray-800">
       <div className="flex items-baseline justify-between px-4 pt-3">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-white">{title}</h2>
         <span className="text-xs tabular-nums text-gray-500 dark:text-gray-400">Total {fmt(total)}</span>
@@ -119,10 +119,10 @@ const DashboardModules = () => {
                 format={(n) => (h.format === 'currency' ? formatRupiah(n) : Math.round(n).toLocaleString('id-ID'))}
                 valueClassName={toneText(h.tone || null)}
                 footer={h.delta !== null && h.delta !== undefined ? (
-                  <span className={`inline-flex items-center gap-1 font-medium ${h.delta >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium ${h.delta >= 0 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-300'}`}>
                     {h.delta >= 0 ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
                     {Math.abs(h.delta).toLocaleString('id-ID')}%
-                    <span className="font-normal text-gray-400">{h.delta_label}</span>
+                    <span className="font-normal opacity-70">{h.delta_label}</span>
                   </span>
                 ) : null}
               />
@@ -130,7 +130,7 @@ const DashboardModules = () => {
           ))}
         </Stagger>
       )}
-      <section className="rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+      <section className="rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_28px_-20px_rgba(16,24,40,0.3)] dark:border-gray-700/80 dark:bg-gray-800">
         <h2 className="border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-900 dark:border-gray-700 dark:text-white">Perlu tindakan</h2>
         {isLoading ? (
           <div className="space-y-2 p-4">
@@ -174,7 +174,7 @@ const DashboardModules = () => {
 
       <div className="grid gap-4 md:grid-cols-2">
         {modules.map((m) => (
-          <section key={m.key} className="rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+          <section key={m.key} className="rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_28px_-20px_rgba(16,24,40,0.3)] dark:border-gray-700/80 dark:bg-gray-800">
             <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
               <h2 className="text-sm font-semibold text-gray-900 dark:text-white">{m.title}</h2>
               <Link to={m.href} className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400">Buka modul</Link>
@@ -207,7 +207,7 @@ const DashboardModules = () => {
       )}
 
       {activity && activity.length > 0 && (
-        <section className="rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+        <section className="rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_28px_-20px_rgba(16,24,40,0.3)] dark:border-gray-700/80 dark:bg-gray-800">
           <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
             <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Aktivitas terbaru</h2>
             <Link to="/app/settings/audit-trail" className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400">Lihat semua</Link>
