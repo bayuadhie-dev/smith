@@ -6,7 +6,7 @@ import axiosInstance from '../../utils/axiosConfig'
 import { formatRupiah } from '../../utils/currencyUtils'
 import { useAppSelector } from '../../hooks/redux'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
-import { Reveal, Stagger, StaggerItem, StatCard } from '../../components/motion'
+import { CountUp, Reveal, Stagger, StaggerItem, StatCard } from '../../components/motion'
 
 type Tone = 'warn' | 'bad' | null
 interface Item { key: string; label: string; value: number | null; format: 'number' | 'currency' | 'percent'; tone: Tone }
@@ -37,6 +37,21 @@ const sapaan = () => {
   return 'Selamat malam'
 }
 
+
+/** Angka satu baris ringkasan modul: ikut berjalan naik dan berkedip saat berubah. */
+const AngkaItem = ({ it }: { it: Item }) => {
+  if (it.value === null || it.value === undefined) return <>-</>
+  return (
+    <CountUp
+      value={it.value}
+      format={(n) => (it.format === 'currency'
+        ? formatRupiah(n)
+        : it.format === 'percent'
+          ? `${Math.round(n).toLocaleString('id-ID')}%`
+          : Math.round(n).toLocaleString('id-ID'))}
+    />
+  )
+}
 
 const TrendCard = ({ title, data, currency }: { title: string; data: Point[]; currency?: boolean }) => {
   const total = data.reduce((a, b) => a + b.value, 0)
@@ -99,7 +114,10 @@ const DashboardModules = () => {
           satu pun sumber data. */}
       <div className="relative">
       <Reveal>
-      <section className="relative overflow-hidden rounded-3xl bg-gray-900 px-6 pb-24 pt-7 text-white shadow-[0_20px_50px_-30px_rgba(16,24,40,0.9)] dark:bg-gray-950">
+      <section className="relative overflow-hidden rounded-3xl px-6 pb-24 pt-7 text-white shadow-[0_20px_50px_-30px_rgba(16,24,40,0.9)]"
+        // Warna panel ikut merek perusahaan (Falmaco gunmetal, Fengsheng hijau hutan),
+        // bukan hitam netral - masukan user 2026-11-18: "ga sesuai dengan tema warna".
+        style={{ backgroundColor: 'rgb(var(--brand-900))' }}>
         <span aria-hidden className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-primary-500/20 blur-3xl" />
         <span aria-hidden className="pointer-events-none absolute -bottom-28 left-1/3 h-56 w-56 rounded-full bg-primary-400/10 blur-3xl" />
         <div className="relative flex flex-wrap items-end justify-between gap-3">
@@ -201,7 +219,9 @@ const DashboardModules = () => {
               {m.items[0] && (
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{m.items[0].label}</p>
-                  <p className={`mt-0.5 text-2xl font-semibold tabular-nums ${toneText(m.items[0].tone)}`}>{formatValue(m.items[0])}</p>
+                  <p className={`mt-0.5 text-2xl font-semibold ${toneText(m.items[0].tone)}`}>
+                    <AngkaItem it={m.items[0]} />
+                  </p>
                 </div>
               )}
               <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3 dark:border-gray-700 sm:grid-cols-3">
@@ -211,7 +231,7 @@ const DashboardModules = () => {
                       {it.tone && <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${it.tone === 'bad' ? 'bg-red-500' : 'bg-amber-500'}`} />}
                       <span className="truncate">{it.label}</span>
                     </dt>
-                    <dd className={`mt-0.5 truncate text-base font-semibold tabular-nums ${toneText(it.tone)}`}>{formatValue(it)}</dd>
+                    <dd className={`mt-0.5 truncate text-base font-semibold ${toneText(it.tone)}`}><AngkaItem it={it} /></dd>
                   </div>
                 ))}
               </dl>

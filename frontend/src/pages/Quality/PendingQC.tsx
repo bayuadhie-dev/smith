@@ -258,7 +258,7 @@ export default function PendingQC() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-200 dark:divide-gray-700">
                 {tools.rows.map((wo) => (
                   <tr key={wo.id} className="hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700/50">
                     <td className="px-4 py-4">

@@ -142,7 +142,7 @@ export default function WasteRecordList() {
                   <th>Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-200 dark:divide-gray-700">
                 {tools.rows.map((record: any) => (
                   <tr key={record.id} className={record.source === 'production' ? 'bg-orange-50 dark:bg-orange-900/20' : ''}>
                     <td className="font-medium">

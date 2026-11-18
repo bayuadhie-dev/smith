@@ -208,7 +208,7 @@ export default function StockOpnameList({ mode = 'perintah' }: StockOpnameListPr
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody key={tools.rowsKey} className="ui-rows bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {tools.rows.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">

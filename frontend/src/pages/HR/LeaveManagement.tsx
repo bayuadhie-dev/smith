@@ -251,7 +251,7 @@ const navigate = useNavigate()
                   <th>Aksi</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody key={tools.rowsKey} className="ui-rows">
                 {tools.rows.map((leave: any) => (
                   <tr key={leave.id}>
                     <td className="font-medium">{leave.leave_number}</td>

@@ -237,7 +237,7 @@ const navigate = useNavigate()
                   <th>Aksi</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody key={tools.rowsKey} className="ui-rows">
                 {tools.rows.map((attendance: any) => (
                   <tr key={attendance.id}>
                     <td>

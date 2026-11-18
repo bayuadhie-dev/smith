@@ -81,7 +81,7 @@ export default function DownPaymentList() {
             <SortTh tools={tools} col="remaining" align="right" className={`${th} text-right`}>Sisa</SortTh>
             <SortTh tools={tools} col="status" className={th}>Status</SortTh>
           </tr></thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+          <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-100 dark:divide-gray-700">
             {loading && rows.length === 0 && Array.from({ length: 6 }).map((_, i) => <tr key={`sk${i}`}><td colSpan={8} className="px-4 py-3"><Skeleton className="h-4 w-full" /></td></tr>)}
             {!loading && tools.rows.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{tools.total === 0 ? 'Belum ada uang muka.' : 'Tidak ada uang muka yang cocok.'}</td></tr>}
             {tools.rows.map((r) => (

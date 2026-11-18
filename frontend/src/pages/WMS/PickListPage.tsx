@@ -137,7 +137,7 @@ const PickListPage: React.FC = () => {
                   <SortTh tools={tools} col="status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-200 dark:divide-gray-700">
                 {tools.rows.map((pl) => {
                   const cfg = statusConfig[pl.status] || statusConfig.draft;
                   const progress = pl.total_items > 0 ? Math.round(pl.picked_items / pl.total_items * 100) : 0;

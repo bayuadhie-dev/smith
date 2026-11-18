@@ -159,7 +159,7 @@ const QuotationList = () => {
                 <th className={th}>Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+            <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
               {tools.rows.map((quotation) => {
                 const expiringSoon = isExpiringSoon(quotation.valid_until)
                 return (

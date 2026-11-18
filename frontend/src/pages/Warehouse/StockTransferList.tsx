@@ -69,7 +69,7 @@ export default function StockTransferList({ receiveMode = false }: { receiveMode
           <thead className="bg-gray-50 dark:bg-gray-900"><tr>
             <SortTh tools={tools} col="transfer_number" className={th}>Nomor</SortTh><SortTh tools={tools} col="created_at" className={th}>Tanggal</SortTh><SortTh tools={tools} col="source" className={th}>Sumber</SortTh><SortTh tools={tools} col="from_label" className={th}>Dari</SortTh><SortTh tools={tools} col="to_label" className={th}>Ke</SortTh><SortTh tools={tools} col="line_count" className={`${th} text-right`} align="right">Barang</SortTh><SortTh tools={tools} col="status" className={th}>Status</SortTh>{receiveMode && <th className={th}>Aksi</th>}
           </tr></thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+          <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-100 dark:divide-gray-700">
             {loading && rows.length === 0 && Array.from({ length: 6 }).map((_, i) => <tr key={`sk${i}`}><td colSpan={8} className="px-4 py-3"><Skeleton className="h-4 w-full" /></td></tr>)}
             {!loading && tools.rows.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{tools.total > 0 ? 'Tidak ada pemindahan yang cocok.' : receiveMode ? 'Tidak ada pemindahan yang menunggu diterima.' : 'Belum ada pemindahan barang.'}</td></tr>}
             {tools.rows.map((r) => {

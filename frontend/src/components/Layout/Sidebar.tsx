@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect } from 'react'
+import { Fragment, useState, useEffect, useRef } from 'react'
 import { clearWorkspaceStorage } from '../../workspace/WorkspaceContext'
 import { Dialog, Transition } from '@headlessui/react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '../../hooks/redux'
 import { logout } from '../../store/slices/authSlice'
 import ThemeToggle from '../Common/ThemeToggle'
 import SidebarSearch from './SidebarSearch'
+import SidebarActiveMarker from './SidebarActiveMarker'
 import SidebarSearchResults from './SidebarSearchResults'
 import { flattenMenu, getMenuEntries, searchMenu, setMenuEntries } from '../../utils/menuIndex'
 import { useDataSearch } from '../../hooks/useDataSearch'
@@ -89,6 +90,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
   // Nama perusahaan diambil dari Settings (bukan di-hardcode "SMITH ERP") - "SMITH ERP"
   // itu cuma nama proyek development, bukan brand yang mau ditampilkan ke user PT.
   // Falmaco. Sama pola dengan Header.tsx (loadCompanySettings + event companySettingsUpdated).
+  const navRef = useRef<HTMLElement>(null)
   const [companyName, setCompanyName] = useState('')
   const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem('erp_company_logo') || '')
   useEffect(() => {
@@ -716,7 +718,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
       {/* Pencarian: menu disaring di sidebar, hasil data tampil sebagai dropdown */}
       {!collapsed && <SidebarSearch value={menuSearch} onChange={setMenuSearch} loading={dataLoading} />}
 
-      <nav className="flex flex-1 flex-col" role="navigation" aria-label="Menu utama">
+      <nav ref={navRef} className="relative flex flex-1 flex-col" role="navigation" aria-label="Menu utama">
+        <SidebarActiveMarker wadah={navRef} />
         {searching ? (
           <SidebarSearchResults
             query={menuQuery}
@@ -867,6 +870,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                         child.href.includes('?') ? (
                                           <button
                                             onClick={() => navigate(child.href)}
+                                            aria-current={isActivePath(child.href) ? 'page' : undefined}
                                             className={clsx(
                                               isActivePath(child.href)
                                                 ? 'bg-primary-600 text-white shadow-sm'

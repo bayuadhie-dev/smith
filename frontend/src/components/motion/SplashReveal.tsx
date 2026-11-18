@@ -102,7 +102,7 @@ export default function SplashReveal({ children, nama, logo }: {
         <div
           ref={tirai}
           className="fixed inset-0 z-[80]"
-          style={{ backgroundColor: 'rgb(var(--gray-950))', willChange: 'mask-image' }}
+          style={{ backgroundColor: 'rgb(var(--brand-900))', willChange: 'mask-image' }}
           aria-hidden
         />
       )}

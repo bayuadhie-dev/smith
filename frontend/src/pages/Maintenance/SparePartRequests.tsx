@@ -178,7 +178,7 @@ const SparePartRequests = () => {
               <SortTh tools={tools} col="status" className={th}>Status</SortTh>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+          <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-100 dark:divide-gray-700">
             {loading && <tr><td colSpan={6} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>}
             {!loading && tools.rows.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Tidak ada permintaan.</td></tr>}
             {tools.rows.map((r) => (

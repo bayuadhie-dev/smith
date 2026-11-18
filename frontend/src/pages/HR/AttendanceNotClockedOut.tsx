@@ -185,7 +185,7 @@ const AttendanceNotClockedOut: React.FC = () => {
                   <SortTh tools={tools} col="status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Status</SortTh>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-200 dark:divide-gray-700">
                 {tools.rows.map((record, index) => (
                   <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{index + 1}</td>

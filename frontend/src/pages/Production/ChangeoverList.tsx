@@ -208,7 +208,7 @@ const ChangeoverList: React.FC = () => {
                   <SortTh tools={tools} col="status" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</SortTh>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody key={tools.rowsKey} className="ui-rows bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {tools.rows.map((co) => (
                   <tr key={co.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     <td className="px-4 py-3">

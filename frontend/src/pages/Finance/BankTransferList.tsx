@@ -127,7 +127,7 @@ export default function BankTransferList() {
                 <th className="px-3 py-2 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-200 dark:divide-gray-700">
               {tools.rows.map((r) => (
                 <React.Fragment key={r.id}>
                   <tr className={r.status === 'cancelled' ? 'text-gray-400 line-through dark:text-gray-500' : ''}>

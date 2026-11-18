@@ -166,7 +166,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
                 <SortTh tools={tools} col="status" align="center" className="px-4 py-2 text-center">Status</SortTh>
               </tr>
             </thead>
-            <tbody>
+            <tbody key={tools.rowsKey} className="ui-rows">
               {tools.rows.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-4 py-6 text-center text-gray-400">

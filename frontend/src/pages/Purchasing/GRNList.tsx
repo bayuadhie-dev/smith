@@ -90,7 +90,7 @@ export default function GRNList() {
                   <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-100 dark:divide-gray-700">
                 {tools.rows.map((grn) => {
                   const status = STATUS_CONFIG[grn.status] || { label: grn.status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
                   const qc = grn.quality_status ? QC_CONFIG[grn.quality_status] : null;

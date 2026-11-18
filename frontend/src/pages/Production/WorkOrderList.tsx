@@ -394,7 +394,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
                 <SortTh tools={tools} col="status" className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">Status</SortTh>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
+            <tbody key={tools.rowsKey} className="ui-rows bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
               {tools.rows.map((wo) => {
                 const StatusIcon = getStatusIcon(wo.status)
                 const rawProgress = wo.quantity > 0 ? (wo.quantity_produced / wo.quantity * 100) : 0

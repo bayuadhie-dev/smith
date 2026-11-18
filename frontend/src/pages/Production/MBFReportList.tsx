@@ -182,7 +182,7 @@ const MBFReportList: React.FC = () => {
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody key={tools.rowsKey} className="ui-rows bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {tools.rows.map(report => (
                   <tr
                     key={report.id}

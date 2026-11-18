@@ -73,7 +73,7 @@ export default function QuoteList() {
                   <th className={`${th} text-right`}>Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+              <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                 {tools.rows.map((quote: any) => {
                   const badge = STATUS[quote.status] || { cls: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: quote.status }
                   const expired = isExpired(quote.valid_until)

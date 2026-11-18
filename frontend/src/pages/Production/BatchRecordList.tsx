@@ -74,7 +74,7 @@ export default function BatchRecordList() {
                 <th className="px-4 py-3">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+            <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-100 dark:divide-gray-700">
               {loading ? (
                 <tr><td colSpan={9} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
               ) : tools.rows.length === 0 ? (

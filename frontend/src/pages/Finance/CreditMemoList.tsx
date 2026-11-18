@@ -159,7 +159,7 @@ const CreditMemoList: React.FC = () => {
                 <th className="px-4 py-2 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody key={tools.rowsKey} className="ui-rows">
               {tools.rows.length === 0 && (
                 <tr><td colSpan={8} className="text-center text-gray-500 py-6 dark:text-gray-400">{tools.total === 0 ? 'Tidak ada nota kredit' : 'Tidak ada nota kredit yang cocok'}</td></tr>
               )}

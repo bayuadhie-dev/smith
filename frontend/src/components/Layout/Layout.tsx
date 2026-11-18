@@ -15,6 +15,7 @@ import { useAppSelector } from '../../hooks/redux'
 import { showWarning } from '../ui'
 import ForcePasswordChange from '../Auth/ForcePasswordChange'
 import SplashReveal from '../motion/SplashReveal'
+import TopProgress from '../ui/TopProgress'
 
 export default function Layout() {
   const [showShortcutsModal, setShowShortcutsModal] = useState(false)
@@ -115,6 +116,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <ForcePasswordChange />
+      <TopProgress />
       {/* Skip Link for keyboard navigation */}
       <SkipLink href="#main-content" />
 

@@ -235,7 +235,7 @@ const ExpenseList: React.FC = () => {
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+            <tbody key={tools.rowsKey} className="ui-rows bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
               {loading ? (
                 <tr>
                   <td colSpan={9} className="space-y-2 px-6 py-4">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</td>

@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import * as XLSX from 'xlsx'
+import { useSearchParams } from 'react-router-dom'
 import { useUrlMulti, useUrlState } from './useUrlState'
 
 export type CellValue = string | number | null | undefined
@@ -20,6 +21,9 @@ export interface ListColumn<T> {
 export interface ListTools<T> {
   rows: T[]
   total: number
+  /** Kunci untuk <tbody>: berubah saat halaman, urutan, kata cari, atau periode
+   *  berubah, sehingga barisnya digambar ulang dan animasi masuknya berjalan. */
+  rowsKey: string
   query: string
   setQuery: (q: string) => void
   sortKey: string
@@ -76,6 +80,8 @@ export function useListTools<T>(
   columns: ListColumn<T>[],
   opts: { filename: string; initialSort?: { key: string; dir?: 'asc' | 'desc' }; paramPrefix?: string; dateColumn?: string; defaultAll?: boolean },
 ): ListTools<T> {
+  const [params] = useSearchParams()
+  const hal = params.get('hal') || '1'
   const [query, setQueryRaw] = useUrlState<string>(`${opts.paramPrefix || ''}q`, '')
   const pp = opts.paramPrefix || ''
   const dateCol = columns.find((c) => c.key === opts.dateColumn) || columns.find((c) => c.type === 'date')
@@ -158,5 +164,8 @@ export function useListTools<T>(
   }, [setUrl, pp])
   const period = dateCol ? { from: periodFrom, to: periodTo, all: allPeriod, label: dateCol.label } : null
 
-  return { period, setPeriod, setPeriodAll, rows, total: (data || []).length, query, setQuery, sortKey: sortKey || '', sortDir, toggleSort, columns, exportExcel }
+  // Kunci baris: ikut berubah saat halaman, urutan, kata cari, atau periode
+  // berganti, supaya <tbody> digambar ulang dan animasi masuknya jalan.
+  const rowsKey = `${sortKey || ''}:${sortDir}:${query}:${period ? `${period.from}-${period.to}-${period.all}` : ''}:${hal}`
+  return { period, setPeriod, setPeriodAll, rows, total: (data || []).length, query, setQuery, sortKey: sortKey || '', sortDir, toggleSort, columns, exportExcel, rowsKey }
 }

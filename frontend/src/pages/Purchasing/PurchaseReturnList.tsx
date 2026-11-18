@@ -112,7 +112,7 @@ export default function PurchaseReturnList() {
                   <SortTh tools={tools} col="approval_status" className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Persetujuan</SortTh>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-100 dark:divide-gray-700">
                 {tools.rows.map((ret) => {
                   const status = STATUS_CONFIG[ret.status] || { label: ret.status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
                   const approval = APPROVAL_CONFIG[ret.approval_status] || { label: ret.approval_status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };

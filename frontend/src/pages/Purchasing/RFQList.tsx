@@ -70,7 +70,7 @@ export default function RFQList() {
                   <th className={`${th} text-right`}>Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+              <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                 {tools.rows.map((rfq: any) => {
                   const badge = STATUS[rfq.status] || { cls: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: rfq.status }
                   return (

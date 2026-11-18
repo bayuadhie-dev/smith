@@ -357,7 +357,7 @@ const WIPBatchList: React.FC = () => {
                     <th>Aksi</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody key={tools.rowsKey} className="ui-rows">
                   {tools.rows.map((batch) => (
                     <tr key={batch.id}>
                       <td className="font-medium">{batch.wip_batch_no}</td>

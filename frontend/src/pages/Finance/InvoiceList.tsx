@@ -100,7 +100,7 @@ const [scope] = useUrlState<'all' | 'sales' | 'purchase'>('scope', 'all', ['all'
                   <th>{t('common.actions')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-200 dark:divide-gray-700">
                 {tools.rows.map((invoice: any) => (
                   <tr key={invoice.id}>
                     <td className="font-medium">

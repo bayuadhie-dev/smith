@@ -141,7 +141,7 @@ const OpenInvoicesPage = ({ cfg }: { cfg: OpenInvoicesConfig }) => {
               <th className={`${th} text-right`}>Aksi</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+          <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-100 dark:divide-gray-700">
             {loading && rows.length === 0 && (
               <tr><td colSpan={8} className="space-y-2 p-4">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</td></tr>
             )}

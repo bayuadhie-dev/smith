@@ -138,7 +138,7 @@ export default function PRList() {
                   <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-100 dark:divide-gray-700">
                 {tools.rows.map((pr) => {
                   const status = STATUS_CONFIG[pr.status] || { label: pr.status, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
                   const priority = PRIORITY_CONFIG[pr.priority] || { label: pr.priority, color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };

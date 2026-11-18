@@ -547,3 +547,48 @@ html.dark .ui-row-flash > td { animation-name: ui-flash-bg-dark; }
   transform: scaleX(1);
 }
 html[data-motion='off'] .ui-shimmer { animation: none; }
+/* Garis muat di puncak layar (components/ui/TopProgress.tsx) */
+@keyframes erp-top-progress {
+  0%   { transform: translateX(-100%); }
+  60%  { transform: translateX(180%); }
+  100% { transform: translateX(320%); }
+}
+
+/* Umpan balik tombol ditekan: sedikit mengecil, 90 ms.
+   Dipasang di tingkat global supaya berlaku untuk semua tombol tanpa menyentuh
+   ratusan berkas. Isian dan tautan sengaja tidak ikut. Keluhan yang mendasari:
+   di server yang lambat pemakai menekan tombol dua kali karena ragu tombolnya
+   kena atau tidak. */
+html[data-motion='on'] button:not(:disabled):not([aria-disabled='true']),
+html:not([data-motion]) button:not(:disabled):not([aria-disabled='true']) {
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+html[data-motion='on'] button:not(:disabled):not([aria-disabled='true']):active,
+html:not([data-motion]) button:not(:disabled):not([aria-disabled='true']):active {
+  transform: scale(0.97);
+}
+
+/* Angka yang baru berubah berkedip sebentar (components/motion/CountUp.tsx).
+   Tujuannya menunjukkan APA yang berubah setelah sebuah aksi, bukan hiasan -
+   karena itu hanya sekali, 0,9 detik, dan tidak berjalan saat animasi dimatikan. */
+@keyframes erp-flash {
+  0%   { background-color: rgb(var(--cta-500) / 0.22); box-shadow: 0 0 0 4px rgb(var(--cta-500) / 0.12); }
+  100% { background-color: transparent; box-shadow: 0 0 0 4px transparent; }
+}
+html[data-motion='on'] .erp-flash,
+html:not([data-motion]) .erp-flash {
+  border-radius: 0.25rem;
+  animation: erp-flash 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1;
+}
+
+/* Baris daftar muncul halus saat halaman/urutan/saringan berganti.
+   Dipasang di <tbody> yang kuncinya berubah (useListTools.rowsKey), jadi
+   animasinya berjalan ulang tiap pergantian - bukan tiap render. */
+@keyframes erp-rows-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+html[data-motion='on'] .ui-rows,
+html:not([data-motion]) .ui-rows {
+  animation: erp-rows-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) 1;
+}

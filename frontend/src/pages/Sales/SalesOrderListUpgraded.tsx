@@ -263,7 +263,7 @@ const SalesOrderListUpgraded: React.FC = () => {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody key={tools.rowsKey} className="ui-rows bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {tools.rows.map((order: SalesOrder) => {
                 const statusConfig = getStatusConfig(order.status);
                 const priorityConfig = getPriorityConfig(order.priority || 'normal');

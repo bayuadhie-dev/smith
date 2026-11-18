@@ -164,7 +164,7 @@ const navigate = useNavigate()
                   <th>Aksi</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody key={tools.rowsKey} className="ui-rows">
                 {tools.rows.map((period: any) => (
                   <tr key={period.id}>
                     <td className="font-medium">{period.period_name}</td>

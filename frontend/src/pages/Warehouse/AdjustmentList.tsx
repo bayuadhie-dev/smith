@@ -141,7 +141,7 @@ const AdjustmentList: React.FC = () => {
                   <SortTh tools={tools} col="created_at" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</SortTh>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody key={tools.rowsKey} className="ui-rows divide-y divide-gray-200 dark:divide-gray-700">
                 {tools.rows.map((a) => {
                   const st = statusMap[a.status] || statusMap.pending;
                   return (
