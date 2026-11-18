@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { RevealContext, useMotionOn } from './RevealContext'
 
-const KEY = 'erp_splash_shown'
+const KEY = 'erp_splash_pending'
 const SPLASH_MS = 900
 const REVEAL_S = 0.9
 const EASE: [number, number, number, number] = [0.65, 0, 0.35, 1]
@@ -18,26 +18,28 @@ function brandOrigin() {
   return `${x.toFixed(1)}% ${y.toFixed(1)}%`
 }
 
-function sudahPernah() {
+function adaPenanda() {
   try {
-    return sessionStorage.getItem(KEY) === '1'
+    return localStorage.getItem(KEY) === '1'
   } catch {
-    return false           // penyimpanan diblokir: anggap belum, tetap aman
+    return false           // penyimpanan diblokir: lewati layar pembuka
   }
 }
 
-function tandai() {
+function pakaiPenanda() {
   try {
-    sessionStorage.setItem(KEY, '1')
-  } catch { /* abaikan: cuma berarti layar pembuka muncul lagi di tab ini */ }
+    localStorage.removeItem(KEY)
+  } catch { /* abaikan: paling-paling layar pembuka muncul sekali lagi */ }
 }
 
 /**
  * Layar pembuka singkat lalu isi aplikasi "dibuka" dengan lingkaran yang melebar
  * dari tanda perusahaan di sidebar.
  *
- * Hanya sekali per tab (sessionStorage) - ERP ini dibuka berkali-kali sehari,
- * layar pembuka yang muncul tiap pindah halaman akan jadi gangguan, bukan sambutan.
+ * Muncul SEKALI PER LOGIN, bukan per tab: penandanya dipasang saat masuk
+ * (authSlice) dan dipakai habis di sini. Jadi menyegarkan halaman atau membuka
+ * tab baru tidak memunculkannya lagi - ERP ini dibuka berkali-kali sehari,
+ * layar pembuka yang muncul berulang jadi gangguan, bukan sambutan.
  */
 export default function SplashReveal({ children, nama, logo }: {
   children: ReactNode
@@ -48,13 +50,13 @@ export default function SplashReveal({ children, nama, logo }: {
   const motionOn = useMotionOn()
   const [logoGagal, setLogoGagal] = useState(false)
   const [fase, setFase] = useState<'splash' | 'reveal' | 'selesai'>(
-    () => (motionOn && !sudahPernah() ? 'splash' : 'selesai'))
+    () => (motionOn && adaPenanda() ? 'splash' : 'selesai'))
   const [origin, setOrigin] = useState('4% 6%')
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (fase !== 'splash') return
-    tandai()
+    pakaiPenanda()
     const t = setTimeout(() => {
       setOrigin(brandOrigin())
       setFase('reveal')
