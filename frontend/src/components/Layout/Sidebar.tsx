@@ -90,16 +90,26 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
   // itu cuma nama proyek development, bukan brand yang mau ditampilkan ke user PT.
   // Falmaco. Sama pola dengan Header.tsx (loadCompanySettings + event companySettingsUpdated).
   const [companyName, setCompanyName] = useState('')
+  const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem('erp_company_logo') || '')
   useEffect(() => {
     const loadCompanyName = async () => {
       try {
         const response = await axiosInstance.get('/api/settings/company')
         if (response.data?.name) {
           setCompanyName(response.data.name)
-          // Disimpan supaya layar pembuka (SplashReveal) bisa memakai inisial yang
-          // sama tanpa menunggu permintaan ke server saat halaman baru dibuka.
+          // Disimpan supaya layar pembuka (SplashReveal) bisa memakai logo dan
+          // inisial yang sama tanpa menunggu permintaan ke server saat halaman
+          // baru dibuka.
           try { localStorage.setItem('erp_company_name', response.data.name) } catch { /* abaikan */ }
         }
+        const logo = response.data?.logoUrl
+          ? `${axiosInstance.defaults.baseURL || ''}${response.data.logoUrl}`
+          : ''
+        setLogoUrl(logo)
+        try {
+          if (logo) localStorage.setItem('erp_company_logo', logo)
+          else localStorage.removeItem('erp_company_logo')
+        } catch { /* abaikan */ }
       } catch (e) {
         // biarkan fallback ke inisial generik di bawah
       }
@@ -665,8 +675,16 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
       {/* Brand */}
       <div className={clsx('flex h-16 shrink-0 items-center border-b border-gray-200 dark:border-gray-800 mb-1', collapsed ? 'justify-center' : 'justify-between')}>
         <div className={clsx('flex items-center gap-2.5 min-w-0', collapsed && 'justify-center')}>
-          <div data-brand-mark className="w-8 h-8 rounded-md bg-primary-600 flex items-center justify-center shrink-0">
-            <span className="text-white text-xs font-bold tracking-tight">{companyInitials}</span>
+          <div data-brand-mark className={clsx(
+            'w-8 h-8 rounded-md flex items-center justify-center shrink-0 overflow-hidden',
+            logoUrl ? 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700' : 'bg-primary-600',
+          )}>
+            {logoUrl ? (
+              <img src={logoUrl} alt={companyName || 'Logo perusahaan'} className="h-full w-full object-contain p-0.5"
+                   onError={() => setLogoUrl('')} />
+            ) : (
+              <span className="text-white text-xs font-bold tracking-tight">{companyInitials}</span>
+            )}
           </div>
           {!collapsed && (
             <div className="min-w-0">

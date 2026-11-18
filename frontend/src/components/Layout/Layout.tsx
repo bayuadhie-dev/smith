@@ -23,8 +23,12 @@ export default function Layout() {
   // Inisial perusahaan untuk layar pembuka; dibaca dari cache yang sama dengan
   // Sidebar/Header supaya tidak menambah permintaan ke server saat halaman dibuka.
   const [companyName, setCompanyName] = useState(() => localStorage.getItem('erp_company_name') || '')
+  const [companyLogo, setCompanyLogo] = useState(() => localStorage.getItem('erp_company_logo') || '')
   useEffect(() => {
-    const baca = () => setCompanyName(localStorage.getItem('erp_company_name') || '')
+    const baca = () => {
+      setCompanyName(localStorage.getItem('erp_company_name') || '')
+      setCompanyLogo(localStorage.getItem('erp_company_logo') || '')
+    }
     window.addEventListener('companySettingsUpdated', baca)
     return () => window.removeEventListener('companySettingsUpdated', baca)
   }, [])
@@ -114,7 +118,7 @@ export default function Layout() {
       {/* Skip Link for keyboard navigation */}
       <SkipLink href="#main-content" />
 
-      <SplashReveal nama={companyName}>
+      <SplashReveal nama={companyName} logo={companyLogo}>
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       <div className={`transition-all duration-300 ${sidebarOpen ? (sidebarCollapsed ? 'lg:pl-[84px]' : 'lg:pl-64') : 'lg:pl-0'}`}>
         <Header toggleSidebar={handleHeaderToggle} />

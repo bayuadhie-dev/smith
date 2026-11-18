@@ -39,8 +39,14 @@ function tandai() {
  * Hanya sekali per tab (sessionStorage) - ERP ini dibuka berkali-kali sehari,
  * layar pembuka yang muncul tiap pindah halaman akan jadi gangguan, bukan sambutan.
  */
-export default function SplashReveal({ children, nama }: { children: ReactNode; nama?: string }) {
+export default function SplashReveal({ children, nama, logo }: {
+  children: ReactNode
+  nama?: string
+  /** Logo perusahaan; bila kosong dipakai inisial namanya. */
+  logo?: string
+}) {
   const motionOn = useMotionOn()
+  const [logoGagal, setLogoGagal] = useState(false)
   const [fase, setFase] = useState<'splash' | 'reveal' | 'selesai'>(
     () => (motionOn && !sudahPernah() ? 'splash' : 'selesai'))
   const [origin, setOrigin] = useState('4% 6%')
@@ -97,9 +103,14 @@ export default function SplashReveal({ children, nama }: { children: ReactNode; 
             transition={{ duration: 0.25, ease: EASE }}
             aria-hidden
           >
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600 text-lg font-bold tracking-tight text-white">
-              {inisial}
-            </div>
+            {logo && !logoGagal ? (
+              <img src={logo} alt={nama || 'Logo perusahaan'} onError={() => setLogoGagal(true)}
+                   className="h-16 w-auto max-w-[220px] object-contain" />
+            ) : (
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600 text-lg font-bold tracking-tight text-white">
+                {inisial}
+              </div>
+            )}
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-700 border-t-primary-500" />
           </motion.div>
         )}
