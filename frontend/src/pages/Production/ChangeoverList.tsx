@@ -9,6 +9,7 @@ import {
   ClockIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Changeover {
   id: number;
@@ -58,7 +59,7 @@ const COLUMNS: ListColumn<Changeover>[] = [
 const ChangeoverList: React.FC = () => {
   const [changeovers, setChangeovers] = useState<Changeover[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
   const [summary, setSummary] = useState({ in_progress: 0, completed_today: 0 });
 
   useEffect(() => {

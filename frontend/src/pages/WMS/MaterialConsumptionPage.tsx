@@ -9,6 +9,7 @@ import {
   FunnelIcon,
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 
 interface Consumption {
   id: number;
@@ -41,8 +42,8 @@ const MaterialConsumptionPage: React.FC = () => {
   const [data, setData] = useState<Consumption[]>([]);
   const [loading, setLoading] = useState(true);
   const [woId, setWoId] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [page, setPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {

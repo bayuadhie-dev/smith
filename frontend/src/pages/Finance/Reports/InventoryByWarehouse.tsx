@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react'
 import { BuildingStorefrontIcon } from '@heroicons/react/24/outline'
 import { DataTable, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, SearchBox, StatCards, Td, Th, fmtDate, idr, iso, num, useDebounced, useReport, usePeriod } from './reportKit'
 import { groupLabel } from './inventoryShared'
+import { useUrlFilter } from '../../../hooks/useUrlState'
 
 export default function InventoryByWarehouse() {
   const p = usePeriod('Hari ini')
-  const [source, setSource] = useState<'stock' | 'ledger'>('stock')
+  const [source, setSource] = useUrlFilter<'stock' | 'ledger'>('sumber', 'stock')
   const [group, setGroup] = useState('all')
   const [hideZero, setHideZero] = useState(true)
   const [q, setQ] = useState('')

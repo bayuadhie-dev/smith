@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface WorkOrder {
   id: number;
@@ -46,8 +47,8 @@ interface WorkOrder {
 const WorkOrderMonitoring: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [machineFilter, setMachineFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [machineFilter, setMachineFilter] = useUrlFilter<string>('mesin', '')
   const [showFilters, setShowFilters] = useState(false);
 
   const fetchData = async () => {

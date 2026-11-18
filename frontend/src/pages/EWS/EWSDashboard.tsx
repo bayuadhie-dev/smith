@@ -9,11 +9,12 @@ import {
 import { format, subDays } from 'date-fns'
 import NumberInput from '../../components/ui/NumberInput'
 import { DetailSkeleton, Skeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 export default function EWSDashboard() {
   const { t } = useLanguage()
-  const [statusFilter, setStatusFilter] = useState<string>('')
-  const [machineFilter, setMachineFilter] = useState<string>('')
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [machineFilter, setMachineFilter] = useUrlFilter<string>('mesin', '')
   const [periodDays, setPeriodDays] = useState<number>(7)
   const [selectedShiftId, setSelectedShiftId] = useState<number | null>(null)
 

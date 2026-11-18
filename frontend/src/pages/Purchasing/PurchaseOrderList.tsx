@@ -23,6 +23,7 @@ import NumberInput from '../../components/ui/NumberInput'
 import axiosInstance from '../../utils/axiosConfig'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 const STATUS_LABEL: Record<string, string> = { draft: 'Draft', pending_approval: 'Menunggu Persetujuan', approved: 'Disetujui', rejected: 'Ditolak', sent: 'Terkirim', confirmed: 'Dikonfirmasi', partial: 'Diterima Sebagian', received: 'Diterima', closed: 'Ditutup', cancelled: 'Batal' }
 const PRIORITY_LABEL: Record<string, string> = { low: 'Rendah', normal: 'Normal', high: 'Tinggi', urgent: 'Mendesak' }
@@ -40,8 +41,8 @@ const COLUMNS: ListColumn<any>[] = [
 
 export default function PurchaseOrderList() {
 
-const [status, setStatus] = useState('')
-  const [priority, setPriority] = useState('')
+const [status, setStatus] = useUrlFilter<string>('status', '')
+  const [priority, setPriority] = useUrlFilter<string>('prioritas', '')
   const [closing, setClosing] = useState<any>(null)
   const [closeReason, setCloseReason] = useState('')
   const [manualRateModal, setManualRateModal] = useState<{

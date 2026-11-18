@@ -15,6 +15,7 @@ import {
   ArchiveBoxArrowDownIcon
 } from '@heroicons/react/24/outline';
 import QuickStockInputModal from '../../components/Warehouse/QuickStockInputModal';
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 interface Material {
   id: number;
   code: string;
@@ -49,9 +50,9 @@ const MaterialsList: React.FC = () => {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [selectedType, setSelectedType] = useUrlFilter<string>('tipe', '')
+  const [currentPage, setCurrentPage] = useUrlPage()
   const [pagination, setPagination] = useState<any>(null);
   const [showQuickStockModal, setShowQuickStockModal] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);

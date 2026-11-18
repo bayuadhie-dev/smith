@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface WorkOrderStatusItem {
   id: number;
@@ -75,9 +76,9 @@ export default function WorkOrderStatus() {
   const [loading, setLoading] = useState(true);
   const [workOrders, setWorkOrders] = useState<WorkOrderStatusItem[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<WorkOrderStatusItem[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [inputStatusFilter, setInputStatusFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', 'all')
+  const [inputStatusFilter, setInputStatusFilter] = useUrlFilter<string>('input', 'all')
   const [refreshing, setRefreshing] = useState(false);
 
   // Summary stats

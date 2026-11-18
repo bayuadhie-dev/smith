@@ -19,6 +19,7 @@ import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
 import ActivityLogModal from '../../components/ActivityLogModal'
 import { MACHINE_STATUSES, machineStatusLabel, MACHINE_STATUS_HINT } from '../../utils/machineStatus'
+import { useUrlFilter } from '../../hooks/useUrlState'
 interface Machine {
   id: number
   code: string
@@ -43,9 +44,9 @@ const MachineList = () => {
 
 const [machines, setMachines] = useState<Machine[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
-  const [typeFilter, setTypeFilter] = useState('')
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [typeFilter, setTypeFilter] = useUrlFilter<string>('tipe', '')
   const [showActivityLog, setShowActivityLog] = useState(false)
 
   useEffect(() => {

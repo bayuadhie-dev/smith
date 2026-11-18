@@ -7,6 +7,7 @@ import { Search, Eye, Pencil, Trash2, Play, CheckCircle2 } from 'lucide-react';
 import { PageHeader, KpiStrip, Panel } from '../../components/ui/PageKit';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 
 interface MaintenanceRecord {
   id: number;
@@ -78,9 +79,9 @@ const MaintenanceList: React.FC = () => {
   const [completingRecord, setCompletingRecord] = useState<MaintenanceRecord | null>(null);
   const [rootCauseForm, setRootCauseForm] = useState({ root_cause_category: '', root_cause: '' });
   const [submittingComplete, setSubmittingComplete] = useState(false);
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', 'all')
+  const [typeFilter, setTypeFilter] = useUrlFilter<string>('tipe', 'all')
+  const [currentPage, setCurrentPage] = useUrlPage()
   const itemsPerPage = 10;
 
   useEffect(() => {

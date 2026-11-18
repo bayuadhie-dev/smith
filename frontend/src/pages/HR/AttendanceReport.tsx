@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useUrlState } from '../../hooks/useUrlState';
+import { useUrlFilter, useUrlState, useUrlPage } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { 
   Calendar, Clock, Users, AlertTriangle, CheckCircle, 
@@ -65,13 +65,13 @@ const AttendanceReport: React.FC = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
-  const [nameFilter, setNameFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [nameFilter, setNameFilter] = useUrlFilter<string>('nama', '')
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
   const [selectedMonth, setSelectedMonth] = useState(() => new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
   
   // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
 

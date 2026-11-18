@@ -15,6 +15,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import { confirmDialog, showError, showSuccess } from '../../components/ui';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface ProductCategory {
   id: number;
@@ -43,8 +44,8 @@ const ProductCategories: React.FC = () => {
   const [filteredCategories, setFilteredCategories] = useState<ProductCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [statusFilter, setStatusFilter] = useUrlFilter<'all' | 'active' | 'inactive'>('status', 'all')
   
   // Modal states
   const [showModal, setShowModal] = useState(false);

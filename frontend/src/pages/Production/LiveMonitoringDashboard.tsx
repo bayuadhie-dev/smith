@@ -12,6 +12,7 @@ import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { showError, showWarning } from '../../components/ui';
+import { useUrlFilter, useUrlState } from '../../hooks/useUrlState'
 
 const STOP_CATEGORIES = [
   { value: 'mesin', label: 'Mesin Rusak' },
@@ -71,7 +72,7 @@ const LiveMonitoringDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DashboardData | null>(null);
   const [checkDate, setCheckDate] = useState(new Date().toISOString().split('T')[0]);
-  const [shift, setShift] = useState('shift_1');
+  const [shift, setShift] = useUrlFilter<string>('shift', 'shift_1')
   const [editingSlot, setEditingSlot] = useState<{ machineId: number; slot: number; machine: MachineRow } | null>(null);
   const [showMismatch, setShowMismatch] = useState(false);
   const [mismatchData, setMismatchData] = useState<any>(null);
@@ -372,8 +373,7 @@ const CheckInputModal: React.FC<CheckInputModalProps> = ({ machineId, machine, s
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
   const [checklistAnswers, setChecklistAnswers] = useState<{[key: number]: ChecklistAnswer}>({});
   const [loadingChecklist, setLoadingChecklist] = useState(true);
-  const [activeTab, setActiveTab] = useState<'status' | 'checklist'>('status');
-  
+  const [activeTab, setActiveTab] = useUrlState<'status' | 'checklist'>('tab', 'status')
   // Fetch checklist items for this machine
   useEffect(() => {
     const fetchChecklistItems = async () => {

@@ -13,6 +13,7 @@ import {
   TruckIcon
 
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 interface MaterialRequirement {
   id: number;
   material_name: string;
@@ -51,7 +52,7 @@ const MaterialRequirements: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
   const [selectedPriority, setSelectedPriority] = useState('all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useUrlFilter<string>('status', 'all')
 
   useEffect(() => {
     loadMaterialRequirements();

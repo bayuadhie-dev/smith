@@ -19,13 +19,14 @@ import {
 ,
   PlusIcon
 } from '@heroicons/react/24/outline'; 
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 export default function ContractList() {
     const { t } = useLanguage();
 
-const [search, setSearch] = useState('')
-  const [status, setStatus] = useState('')
-  const [contractType, setContractType] = useState('')
-  const [page, setPage] = useState(1)
+const [search, setSearch] = useUrlFilter<string>('cari', '')
+  const [status, setStatus] = useUrlFilter<string>('status', '')
+  const [contractType, setContractType] = useUrlFilter<string>('tipe', '')
+  const [page, setPage] = useUrlPage()
   
   const { data, isLoading, refetch } = useGetContractsQuery({
     search,

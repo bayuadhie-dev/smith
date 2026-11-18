@@ -14,6 +14,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface MaterialIssue {
   id: number
@@ -46,7 +47,7 @@ const COLUMNS: ListColumn<MaterialIssue>[] = [
 const MaterialIssueList: React.FC = () => {
   const [issues, setIssues] = useState<MaterialIssue[]>([])
   const [loading, setLoading] = useState(true)
-  const [statusFilter, setStatusFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
   const [showFilters, setShowFilters] = useState(false)
   const [pagination, setPagination] = useState({
     page: 1,

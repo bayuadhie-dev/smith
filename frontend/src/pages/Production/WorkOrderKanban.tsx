@@ -13,6 +13,7 @@ import {
   ChevronRightIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface WorkOrder {
   id: number;
@@ -113,9 +114,9 @@ const WorkOrderKanban: React.FC = () => {
   const [allWorkOrders, setAllWorkOrders] = useState<WorkOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [machineFilter, setMachineFilter] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [machineFilter, setMachineFilter] = useUrlFilter<string>('mesin', '')
+  const [priorityFilter, setPriorityFilter] = useUrlFilter<string>('prioritas', '')
   const [machines, setMachines] = useState<{ id: number; name: string }[]>([]);
   const [dragError, setDragError] = useState<string | null>(null);
   const [updatingWO, setUpdatingWO] = useState<number | null>(null);

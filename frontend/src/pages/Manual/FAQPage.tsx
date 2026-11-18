@@ -10,6 +10,7 @@ import {
   ArrowLeftIcon,
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface FAQ {
   id: number;
@@ -31,7 +32,7 @@ const FAQPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedFaqs, setExpandedFaqs] = useState<number[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useUrlFilter<string>('cari', '')
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   useEffect(() => {

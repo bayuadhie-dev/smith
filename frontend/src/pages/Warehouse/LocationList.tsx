@@ -15,6 +15,7 @@ import {
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 interface WarehouseLocation {
   id: number;
   code?: string;
@@ -35,9 +36,9 @@ const LocationList: React.FC = () => {
 
   const [locations, setLocations] = useState<WarehouseLocation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterZone, setFilterZone] = useState('');
-  const [filterType, setFilterType] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [filterZone, setFilterZone] = useUrlFilter<string>('zona', '')
+  const [filterType, setFilterType] = useUrlFilter<string>('tipe', '')
   const [zones, setZones] = useState<any[]>([]);
 
   const locationTypes = [

@@ -16,6 +16,7 @@ import {
   DocumentTextIcon,
   ChevronDownIcon,
 } from '@heroicons/react/24/outline';
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 
 const REFERENCE_TYPE_LABELS: Record<string, string> = {
   purchase_order: 'Purchase Order',
@@ -190,11 +191,11 @@ const TransactionsPage: React.FC = () => {
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [movementTypeFilters, setMovementTypeFilters] = useState<string[]>([]);
   const [movementTypeDropdownOpen, setMovementTypeDropdownOpen] = useState(false);
-  const [accountFilter, setAccountFilter] = useState('');
-  const [locationFilter, setLocationFilter] = useState('');
+  const [accountFilter, setAccountFilter] = useUrlFilter<string>('akun', '')
+  const [locationFilter, setLocationFilter] = useUrlFilter<string>('lokasi', '')
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [batchFilter, setBatchFilter] = useState('');
+  const [batchFilter, setBatchFilter] = useUrlFilter<string>('batch', '')
 
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [locations, setLocations] = useState<WarehouseLocationOpt[]>([]);
@@ -206,10 +207,10 @@ const TransactionsPage: React.FC = () => {
   const [catalogSaving, setCatalogSaving] = useState(false);
 
   // ALV-style sortable columns (click a header)
-  const [sortBy, setSortBy] = useState('transaction_date');
+  const [sortBy, setSortBy] = useUrlFilter<string>('urut', 'transaction_date')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [summary, setSummary] = useState<{

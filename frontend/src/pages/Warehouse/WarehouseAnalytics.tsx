@@ -11,10 +11,11 @@ import {
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
+import { useUrlFilter } from '../../hooks/useUrlState'
 export default function WarehouseAnalytics() {
     const { t } = useLanguage();
 
-const [period, setPeriod] = useState('monthly')
+const [period, setPeriod] = useUrlFilter<string>('periode', 'monthly')
   const [warehouseId, setWarehouseId] = useState<number | undefined>()
 
   const { data: analyticsData, isLoading } = useGetWarehouseAnalyticsQuery({ 

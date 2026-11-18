@@ -5,6 +5,7 @@ import { confirmDialog, showError, showSuccess, showWarning } from '../../compon
 import NumberInput from '../../components/ui/NumberInput'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 // ============================================================
 // TypeScript Interfaces
@@ -210,8 +211,8 @@ const StatusBadge = ({ status }: { status: string }) => {
 const DocumentListTab = () => {
   const [docs, setDocs] = useState<DccDocumentItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [levelFilter, setLevelFilter] = useState('');
+  const [search, setSearch] = useUrlFilter<string>('cari', '')
+  const [levelFilter, setLevelFilter] = useUrlFilter<string>('level', '')
   const [showForm, setShowForm] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
   const [formData, setFormData] = useState({ document_number: '', title: '', document_level: 'II', department_code: 'DCC', retention_period_years: 5, required_reviewers: 1, assigned_reviewer_id: '', assigned_reviewer2_id: '', assigned_approver_id: '' });
@@ -1022,9 +1023,9 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
 const CapaTab = () => {
   const [capas, setCapas] = useState<CapaItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [typeFilter, setTypeFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useUrlFilter<string>('tipe', '')
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [search, setSearch] = useUrlFilter<string>('cari2', '')
   const [showForm, setShowForm] = useState(false);
   const [selectedCapa, setSelectedCapa] = useState<number | null>(null);
   const [formData, setFormData] = useState({

@@ -27,7 +27,7 @@ import RoleModal from '../../components/Settings/RoleModal';
 import PermissionModal from '../../components/Settings/PermissionModal';
 import PendingUserTable, { PendingUser } from '../../components/Settings/PendingUserTable';
 import axiosInstance from '../../utils/axiosConfig';
-import { useUrlState } from '../../hooks/useUrlState';
+import { useUrlFilter, useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 
 // Components
@@ -47,8 +47,8 @@ const UserRoleManagementNew: React.FC = () => {
   // Local state
   const [activeTab, setActiveTab] = useUrlState<'pending' | 'users' | 'roles' | 'permissions'>('tab', 'pending', ['pending', 'users', 'roles', 'permissions']);
   useBreadcrumbTrail(activeTab === 'pending' ? [] : [{ label: ({ users: 'Users', roles: 'Roles', permissions: 'Permissions' } as Record<string, string>)[activeTab] }]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [filterStatus, setFilterStatus] = useUrlFilter<'all' | 'active' | 'inactive'>('status', 'all')
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   

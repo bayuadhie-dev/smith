@@ -7,6 +7,7 @@ import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter } from '../../hooks/useUrlState'
 interface Row { id: number; transfer_number: string; source_type: string; source_number: string | null; from_label: string | null; to_label: string | null; status: string; created_at: string; line_count: number; receipt_count: number }
 
 export const TRANSFER_STATUS: Record<string, { label: string; cls: string }> = {
@@ -31,7 +32,7 @@ const COLUMNS: ListColumn<Row>[] = [
 
 export default function StockTransferList({ receiveMode = false }: { receiveMode?: boolean }) {
   const [rows, setRows] = useState<Row[]>([])
-  const [status, setStatus] = useState('')
+  const [status, setStatus] = useUrlFilter<string>('status', '')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

@@ -10,6 +10,7 @@ import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface WIPLedger {
   id: number;
@@ -43,7 +44,7 @@ export default function WIPLedger() {
     significant_variances: 0
   });
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useUrlFilter<string>('saring', 'all')
   const [glWip, setGlWip] = useState<any>(null);
 
   useEffect(() => {

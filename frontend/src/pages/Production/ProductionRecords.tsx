@@ -14,6 +14,7 @@ import {
 import { useState, useEffect } from 'react'
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import { useUrlPage } from '../../hooks/useUrlState'
 interface ProductionRecord {
   id: number
   work_order: {
@@ -48,7 +49,7 @@ const ProductionRecords = () => {
 
 const [records, setRecords] = useState<ProductionRecord[]>([])
   const [loading, setLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1)
   const [filters, setFilters] = useState({
     work_order_id: '',

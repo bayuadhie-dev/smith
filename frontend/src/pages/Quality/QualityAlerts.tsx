@@ -9,6 +9,7 @@ import {
   XMarkIcon
 
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 interface QualityAlert {
   id: number;
   alert_number: string;
@@ -27,9 +28,9 @@ interface QualityAlert {
 }
 
 export default function QualityAlerts() {
-  const [statusFilter, setStatusFilter] = useState('active');
-  const [severityFilter, setSeverityFilter] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', 'active')
+  const [severityFilter, setSeverityFilter] = useUrlFilter<string>('tingkat', '')
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
   const [resolveNotes, setResolveNotes] = useState<{[key: number]: string}>({});
 
   const { data: alertsData, isLoading, refetch } = useGetQualityAlertsQuery({ 

@@ -8,6 +8,7 @@ import {
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 const DAYS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
 
@@ -31,7 +32,7 @@ interface WeeklySummaryData {
 const LiveMonitoringWeekly: React.FC = () => {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [shift, setShift] = useState('shift_1');
+  const [shift, setShift] = useUrlFilter<string>('shift', 'shift_1')
   const [data, setData] = useState<WeeklySummaryData | null>(null);
   const [loading, setLoading] = useState(false);
 

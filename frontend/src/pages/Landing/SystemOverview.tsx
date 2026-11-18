@@ -44,6 +44,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
+import { useUrlFilter } from '../../hooks/useUrlState'
 interface SystemModule {
   id: string;
   name: string;
@@ -157,7 +158,7 @@ const SystemOverviewEnhanced: React.FC = () => {
 
   const [selectedView, setSelectedView] = useState<'overview' | 'performance' | 'modules'>('overview');
   const [userIP, setUserIP] = useState<string>('Loading...');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useUrlFilter<string>('cari', '')
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {

@@ -8,6 +8,7 @@ import {
   PlusIcon,
   EyeIcon
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Asset {
   id: number;
@@ -31,9 +32,9 @@ const AssetList: React.FC = () => {
   const navigate = useNavigate();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filterType, setFilterType] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [search, setSearch] = useUrlFilter<string>('cari', '')
+  const [filterType, setFilterType] = useUrlFilter<string>('tipe', '')
+  const [filterStatus, setFilterStatus] = useUrlFilter<string>('status', '')
 
   useEffect(() => {
     fetchAssets();

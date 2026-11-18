@@ -11,11 +11,12 @@ import {
   TruckIcon
 
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 export default function DeliveryTracking() {
   const { t } = useLanguage();
   const [trackingNumber, setTrackingNumber] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useUrlFilter<string>('cari', '')
   
   // Fetch tracking data when search is performed
   const { data: trackingData, isLoading, error } = useGetDeliveryTrackingQuery(

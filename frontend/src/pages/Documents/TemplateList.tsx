@@ -9,6 +9,7 @@ import {
   ArrowDownTrayIcon, LockClosedIcon, GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Template {
   id: number;
@@ -61,7 +62,7 @@ export default function TemplateList() {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
-  const [typeFilter, setTypeFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useUrlFilter<string>('tipe', '')
   const [expanded, setExpanded] = useState<number | null>(null);
   const [versions, setVersions] = useState<VersionRow[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);

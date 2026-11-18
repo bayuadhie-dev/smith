@@ -15,6 +15,7 @@ import {
   TrashIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 interface Category {
   id: number;
   name: string;
@@ -35,9 +36,9 @@ export default function CategoryList() {
 const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [parentFilter, setParentFilter] = useState<'all' | 'parent' | 'child'>('all');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [statusFilter, setStatusFilter] = useUrlFilter<'all' | 'active' | 'inactive'>('status', 'all')
+  const [parentFilter, setParentFilter] = useUrlFilter<'all' | 'parent' | 'child'>('induk', 'all')
 
   useEffect(() => {
     loadCategories();

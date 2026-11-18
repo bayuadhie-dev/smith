@@ -17,6 +17,7 @@ import {
   TrashIcon as Trash2
 } from '@heroicons/react/24/outline';
 import NumberInput from './ui/NumberInput'
+import { useUrlFilter, useUrlPage } from '../hooks/useUrlState'
 interface ProductNew {
   id: number;
   kode_produk: string;
@@ -73,8 +74,8 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
 
   const [products, setProducts] = useState<ProductNew[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [currentPage, setCurrentPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
   const [showFilters, setShowFilters] = useState(false);

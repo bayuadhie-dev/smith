@@ -18,6 +18,7 @@ import {
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface TaxSummary {
   vat_payable: number
@@ -46,7 +47,7 @@ const TaxManagement = () => {
 const [taxSummary, setTaxSummary] = useState<TaxSummary | null>(null)
   const [taxTransactions, setTaxTransactions] = useState<TaxTransaction[]>([])
   const [loading, setLoading] = useState(true)
-  const [period, setPeriod] = useState('')
+  const [period, setPeriod] = useUrlFilter<string>('periode', '')
   const [showAddModal, setShowAddModal] = useState(false)
   const [efakturStart, setEfakturStart] = useState('')
   const [efakturEnd, setEfakturEnd] = useState('')

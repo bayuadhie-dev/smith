@@ -14,6 +14,7 @@ import {
   PlusIcon,
   UserIcon
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 interface QualityAudit {
   id: number;
   audit_number: string;
@@ -37,8 +38,8 @@ interface QualityAudit {
 export default function QualityAudits() {
     const { t } = useLanguage();
 
-const [statusFilter, setStatusFilter] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
+const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [typeFilter, setTypeFilter] = useUrlFilter<string>('tipe', '')
   const [showNewAuditForm, setShowNewAuditForm] = useState(false);
 
   const { data: auditsData, isLoading } = useGetQualityAuditsQuery({ 

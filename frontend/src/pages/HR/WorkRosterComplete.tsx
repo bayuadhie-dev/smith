@@ -19,6 +19,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Employee {
   id: number;
@@ -102,7 +103,7 @@ export default function WorkRosterComplete() {
   const [showEmployeeModal, setShowEmployeeModal] = useState(false);
   const [currentRole, setCurrentRole] = useState<string>('');
   const [currentMachineId, setCurrentMachineId] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
 
   // Fetch machines
   useEffect(() => {

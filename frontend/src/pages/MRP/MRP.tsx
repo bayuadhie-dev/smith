@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUrlState } from '../../hooks/useUrlState';
+import { useUrlFilter, useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetMRPMaterialsQuery, useGetMRPBOMsQuery, useGetMRPRequirementsQuery, useGetMRPForecastsQuery } from '../../services/api';
@@ -17,7 +17,7 @@ import {
 const MRP: React.FC = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [selectedMaterialType, setSelectedMaterialType] = useState<string>('');
+  const [selectedMaterialType, setSelectedMaterialType] = useUrlFilter<string>('tipe', '')
   const [daysAhead, setDaysAhead] = useState<number>(30);
   const [includeForecast, setIncludeForecast] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useUrlState<string>('tab', 'requirements', ['requirements', 'simulation', 'forecasts', 'materials', 'boms']);

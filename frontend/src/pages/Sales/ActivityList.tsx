@@ -17,6 +17,7 @@ import {
 import { useState, useEffect } from 'react'
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 
 interface SalesActivity {
   id: number
@@ -41,9 +42,9 @@ const ActivityList = () => {
   const { t } = useLanguage();
   const [activities, setActivities] = useState<SalesActivity[]>([])
   const [loading, setLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
   const [filters, setFilters] = useState({
     activity_type: '',
     status: '',

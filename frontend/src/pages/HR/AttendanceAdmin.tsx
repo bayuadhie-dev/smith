@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, Trash2, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
 import api from '../../utils/axiosConfig';
 import { confirmDialog } from '../../components/ui';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface AttendanceRecord {
   id: number;
@@ -15,7 +16,7 @@ interface AttendanceRecord {
 }
 
 const AttendanceAdmin: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useUrlFilter<string>('cari', '')
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);

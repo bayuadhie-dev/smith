@@ -5,6 +5,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import SearchableSelect from '../../components/SearchableSelect';
 import { showSuccess, showError } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Material {
   id: number;
@@ -36,7 +37,7 @@ const MaterialStockManagement: React.FC = () => {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
   const [showAddStockModal, setShowAddStockModal] = useState(false);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);

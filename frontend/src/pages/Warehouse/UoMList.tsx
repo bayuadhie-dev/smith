@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useUrlState } from '../../hooks/useUrlState';
+import { useUrlFilter, useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
@@ -57,8 +57,8 @@ const UoMList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useUrlState<'units' | 'conversions'>('tab', 'units', ['units', 'conversions']);
   useBreadcrumbTrail(activeTab === 'units' ? [] : [{ label: 'Konversi' }]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [filterCategory, setFilterCategory] = useUrlFilter<string>('kategori', '')
 
   // Modal states
   const [showUnitModal, setShowUnitModal] = useState(false);

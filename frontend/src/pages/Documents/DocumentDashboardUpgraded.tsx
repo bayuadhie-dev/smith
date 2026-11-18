@@ -25,6 +25,7 @@ import {
   DocumentArrowDownIcon,
   TableCellsIcon
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Document {
   id: number;
@@ -84,11 +85,11 @@ export default function DocumentDashboardUpgraded() {
     recent_activity: []
   });
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [typeFilter, setTypeFilter] = useUrlFilter<string>('tipe', '')
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [dateFilter, setDateFilter] = useUrlFilter<string>('tanggal', '')
+  const [viewMode, setViewMode] = useUrlFilter<'grid' | 'table'>('tampilan', 'table')
   const [showActions, setShowActions] = useState<number | null>(null);
   const [selectedDocs, setSelectedDocs] = useState<number[]>([]);
 

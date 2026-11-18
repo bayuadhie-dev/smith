@@ -22,6 +22,7 @@ import {
 } from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
 import { typeLabel, typeRank, TYPE_HINTS } from '../../utils/searchTypes'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface SearchResult {
   id: string | number
@@ -78,7 +79,7 @@ export default function GlobalSearchPage() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [query, setQuery] = useState(searchParams.get('q') || '')
-  const [moduleFilter, setModuleFilter] = useState('all')
+  const [moduleFilter, setModuleFilter] = useUrlFilter<string>('modul', 'all')
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [showFilters, setShowFilters] = useState(false)

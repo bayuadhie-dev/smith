@@ -8,6 +8,7 @@ import {
   MagnifyingGlassIcon,
   FunnelIcon,
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface StockAlert {
   id: string;
@@ -37,9 +38,9 @@ const StockAlerts: React.FC = () => {
   const [alerts, setAlerts] = useState<StockAlert[]>([]);
   const [summary, setSummary] = useState<AlertSummary>({ out_of_stock: 0, low_stock: 0 });
   const [loading, setLoading] = useState(true);
-  const [filterType, setFilterType] = useState('');
-  const [filterItemType, setFilterItemType] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useUrlFilter<string>('tipe', '')
+  const [filterItemType, setFilterItemType] = useUrlFilter<string>('jenis', '')
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
 
   useEffect(() => {
     fetchAlerts();

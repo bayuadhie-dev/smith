@@ -8,6 +8,7 @@ import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter } from '../../hooks/useUrlState'
 interface Row { id: number; dp_number: string; po_number: string | null; supplier_name: string | null; dp_date: string; amount: number; allocated_amount: number; remaining: number; status: string }
 
 const STATUS: Record<string, { label: string; cls: string }> = {
@@ -32,7 +33,7 @@ export default function DownPaymentList() {
   const poId = params.get('po_id')
   const [rows, setRows] = useState<Row[]>([])
   const [summary, setSummary] = useState({ count: 0, paid: 0, allocated: 0, remaining: 0 })
-  const [status, setStatus] = useState('')
+  const [status, setStatus] = useUrlFilter<string>('status', '')
   const [onlyOpen, setOnlyOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const tools = useListTools<Row>(rows, COLUMNS, { filename: 'Uang_Muka_Pembelian', initialSort: { key: 'dp_date', dir: 'desc' } })

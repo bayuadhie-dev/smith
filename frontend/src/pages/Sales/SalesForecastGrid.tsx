@@ -10,6 +10,7 @@ import { periodLabel, shiftPeriod } from './forecastPeriod';
 import NumberInput from '../../components/ui/NumberInput'
 
 import { TableSkeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter } from '../../hooks/useUrlState'
 interface ForecastLine {
   id: number;
   product_id: number;
@@ -118,7 +119,7 @@ export default function SalesForecastGrid() {
   // §2 (masukan manajemen, 2026-08-25): input forecast cepat - copy-paste blok angka
   // langsung dari file Excel rencana marketing, plus cari/urutkan produk biar gampang
   // cocokkan urutan sama file Excel-nya.
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
   const [sortAsc, setSortAsc] = useState<boolean | null>(null); // null = urutan asli
 
   // Seleksi sel ala Excel: klik=1 sel, shift+klik=perluas rentang, ctrl/cmd+klik=gabung

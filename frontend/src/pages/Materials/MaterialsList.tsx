@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 interface Material {
   id: number;
   code: string;
@@ -42,9 +43,9 @@ const MaterialsList: React.FC = () => {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [selectedType, setSelectedType] = useUrlFilter<string>('tipe', '')
+  const [currentPage, setCurrentPage] = useUrlPage()
   const [pagination, setPagination] = useState<any>(null);
 
   const materialTypes = [

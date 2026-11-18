@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useUrlState } from '../../hooks/useUrlState';
+import { useUrlFilter, useUrlState } from '../../hooks/useUrlState';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowPathIcon,
@@ -80,7 +80,7 @@ const OpportunityListUpgraded: React.FC = () => {
   const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   const [selectedPipeline, setSelectedPipeline] = useState<Pipeline | null>(null);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
   const [viewMode, setViewModeUrl] = useUrlState<'kanban' | 'list'>('view', 'kanban', ['kanban', 'list']);
   const setViewMode = (v: 'kanban' | 'list') => setViewModeUrl(v, { replace: true });
   const [showActions, setShowActions] = useState<number | null>(null);

@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface ReportType {
   id: string;
@@ -61,7 +62,7 @@ export default function Reports() {
   const [selectedReport, setSelectedReport] = useState<string>('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [department, setDepartment] = useState('');
+  const [department, setDepartment] = useUrlFilter<string>('departemen', '')
   const [loading, setLoading] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
 

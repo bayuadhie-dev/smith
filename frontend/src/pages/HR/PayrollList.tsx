@@ -16,6 +16,7 @@ import { confirmDialog, showSuccess, showError } from '../../components/ui';
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 import { TableSkeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 const STATUS_LABEL: Record<string, string> = { draft: 'Draft', processing: 'Diproses', completed: 'Selesai', locked: 'Terkunci' }
 const fmtDate = (v?: string | null) => (v ? new Date(v).toLocaleDateString('id-ID') : '-')
@@ -35,7 +36,7 @@ export default function PayrollList() {
     const { t } = useLanguage();
 
 const navigate = useNavigate()
-  const [selectedStatus, setSelectedStatus] = useState('')
+  const [selectedStatus, setSelectedStatus] = useUrlFilter<string>('status', '')
   const { data, isLoading, refetch } = useGetPayrollPeriodsQuery({
     status: selectedStatus || undefined,
     per_page: 1000,

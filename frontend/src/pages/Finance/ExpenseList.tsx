@@ -16,6 +16,7 @@ import { confirmDialog } from '../../components/ui';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Expense {
   id: number;
@@ -61,8 +62,8 @@ const ExpenseList: React.FC = () => {
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [categoryFilter, setCategoryFilter] = useUrlFilter<string>('kategori', '')
 
   useEffect(() => {
     fetchExpenses();

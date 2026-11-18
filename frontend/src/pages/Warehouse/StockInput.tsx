@@ -13,6 +13,7 @@ import {
 import SearchableSelect from '../../components/SearchableSelect';
 import { showSuccess } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Product {
   id: number;
@@ -71,7 +72,7 @@ const StockInput: React.FC = () => {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [stockItems, setStockItems] = useState<StockInputItem[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
   const [selectedItemType, setSelectedItemType] = useState<'product' | 'material'>('material');
   const [submitErrors, setSubmitErrors] = useState<string[]>([]);
 

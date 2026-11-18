@@ -9,6 +9,7 @@ import {
   UserGroupIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface ApprovalStats {
   pending_review: number;
@@ -40,7 +41,7 @@ export default function ApprovalDashboard() {
   });
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('my_tasks');
+  const [filter, setFilter] = useUrlFilter<string>('saring', 'my_tasks')
 
   useEffect(() => {
     loadData();

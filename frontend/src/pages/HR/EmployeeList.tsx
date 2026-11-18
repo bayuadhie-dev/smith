@@ -16,13 +16,14 @@ import {
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { confirmDialog } from '../../components/ui';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 export default function EmployeeList() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [departmentFilter, setDepartmentFilter] = useState('')
-  const [positionFilter, setPositionFilter] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
-  const [employmentTypeFilter, setEmploymentTypeFilter] = useState('')
+  const [searchQuery, setSearchQuery] = useUrlFilter<string>('cari', '')
+  const [departmentFilter, setDepartmentFilter] = useUrlFilter<string>('departemen', '')
+  const [positionFilter, setPositionFilter] = useUrlFilter<string>('jabatan', '')
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [employmentTypeFilter, setEmploymentTypeFilter] = useUrlFilter<string>('kontrak', '')
   const [showFilters, setShowFilters] = useState(false)
 
   const { data, isLoading, refetch } = useGetEmployeesQuery({})

@@ -11,6 +11,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 
 interface WIPStock {
   id: number;
@@ -42,8 +43,8 @@ interface WIPMovement {
 export default function WIPStock() {
   const [wipStocks, setWipStocks] = useState<WIPStock[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
+  const [search, setSearch] = useUrlFilter<string>('cari', '')
+  const [page, setPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1);
 
   const [showAdjustModal, setShowAdjustModal] = useState(false);

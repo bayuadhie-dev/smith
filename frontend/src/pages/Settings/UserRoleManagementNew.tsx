@@ -18,7 +18,7 @@ import UserManagementHeader from '../../components/Settings/UserManagementHeader
 import UserTable from '../../components/Settings/UserTable';
 import RoleTable from '../../components/Settings/RoleTable';
 import UserModal from '../../components/Settings/UserModal';
-import { useUrlState } from '../../hooks/useUrlState';
+import { useUrlFilter, useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 
 // Components
@@ -37,8 +37,8 @@ const UserRoleManagementNew: React.FC = () => {
   // Local state
   const [activeTab, setActiveTab] = useUrlState<'pending' | 'users' | 'roles' | 'permissions'>('tab', 'users', ['pending', 'users', 'roles', 'permissions']);
   useBreadcrumbTrail(activeTab === 'users' ? [] : [{ label: ({ pending: 'Pending Approval', roles: 'Roles', permissions: 'Permissions' } as Record<string, string>)[activeTab] }]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [filterStatus, setFilterStatus] = useUrlFilter<'all' | 'active' | 'inactive'>('status', 'all')
   
   // Modal states
   const [showUserModal, setShowUserModal] = useState(false);

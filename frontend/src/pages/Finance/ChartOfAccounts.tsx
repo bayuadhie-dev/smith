@@ -16,6 +16,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Account {
   id: number
@@ -31,8 +32,8 @@ const ChartOfAccounts = () => {
 
 const [accounts, setAccounts] = useState<Account[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [typeFilter, setTypeFilter] = useState('')
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [typeFilter, setTypeFilter] = useUrlFilter<string>('tipe', '')
   const [showAddModal, setShowAddModal] = useState(false)
 
   useEffect(() => {

@@ -10,6 +10,7 @@ import {
   DocumentDuplicateIcon,
   ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Template {
   id: number;
@@ -108,7 +109,7 @@ export default function DocumentGeneratorUpgraded() {
   const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
   const [references, setReferences] = useState<ReferenceItem[]>([]);
   const [selectedReference, setSelectedReference] = useState<ReferenceItem | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [documentTitle, setDocumentTitle] = useState('');

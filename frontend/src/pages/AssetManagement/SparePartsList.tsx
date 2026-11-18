@@ -7,6 +7,7 @@ import {
   WrenchScrewdriverIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface SparePart {
   id: number;
@@ -25,7 +26,7 @@ const SparePartsList: React.FC = () => {
   const [parts, setParts] = useState<SparePart[]>([]);
   const [loading, setLoading] = useState(true);
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useUrlFilter<string>('cari', '')
 
   useEffect(() => {
     fetchParts();

@@ -7,6 +7,7 @@ import { ReceiptRefundIcon } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Memo {
   id: number;
@@ -37,7 +38,7 @@ const COLUMNS: ListColumn<Memo>[] = [
 const CreditMemoList: React.FC = () => {
   const [memos, setMemos] = useState<Memo[]>([]);
   const [openBalance, setOpenBalance] = useState(0);
-  const [status, setStatus] = useState<'open' | 'closed' | ''>('open');
+  const [status, setStatus] = useUrlFilter<'open' | 'closed' | ''>('status', 'open')
   const [loading, setLoading] = useState(false);
   const tools = useListTools<Memo>(memos, COLUMNS, { filename: 'Nota_Kredit', initialSort: { key: 'memo_date', dir: 'desc' } });
   const [active, setActive] = useState<Memo | null>(null);

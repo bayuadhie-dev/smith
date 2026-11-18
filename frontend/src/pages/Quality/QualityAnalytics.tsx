@@ -13,8 +13,9 @@ import {
   FunnelIcon
 
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 export default function QualityAnalytics() {
-  const [period, setPeriod] = useState('monthly');
+  const [period, setPeriod] = useUrlFilter<string>('periode', 'monthly')
   const [productId, setProductId] = useState<number | undefined>();
 
   const { data: analyticsData, isLoading } = useGetQualityAnalyticsQuery({

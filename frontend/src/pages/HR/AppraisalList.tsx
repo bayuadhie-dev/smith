@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useUrlState } from '../../hooks/useUrlState'
+import { useUrlFilter, useUrlState } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -19,7 +19,7 @@ const navigate = useNavigate()
   const [activeTab, setActiveTab] = useUrlState<'cycles' | 'appraisals'>('tab', 'cycles', ['cycles', 'appraisals'])
   useBreadcrumbTrail(activeTab === 'cycles' ? [] : [{ label: ({ appraisals: 'Employee Appraisals' } as Record<string, string>)[activeTab] }])
   const [selectedCycle, setSelectedCycle] = useState('')
-  const [selectedStatus, setSelectedStatus] = useState('')
+  const [selectedStatus, setSelectedStatus] = useUrlFilter<string>('status', '')
   
   const { data: cyclesData, isLoading: cyclesLoading } = useGetAppraisalCyclesQuery({})
   const { data: appraisalsData, isLoading: appraisalsLoading } = useGetEmployeeAppraisalsQuery({

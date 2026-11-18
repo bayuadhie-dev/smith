@@ -9,14 +9,14 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, BarChart, CartesianGrid, XAxis, YAxis, Bar, ScatterChart, Scatter } from 'recharts';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 export default function ABCAnalysis() {
     const { t } = useLanguage();
 
 const [warehouseId, setWarehouseId] = useState<number | undefined>()
-  const [sortBy, setSortBy] = useState('total_value')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-
+  const [sortBy, setSortBy] = useUrlFilter<string>('urut', 'total_value')
+  const [sortOrder, setSortOrder] = useUrlFilter<'asc' | 'desc'>('arah', 'desc')
   const { data: abcData, isLoading } = useGetABCAnalysisQuery({ 
     warehouse_id: warehouseId 
   })

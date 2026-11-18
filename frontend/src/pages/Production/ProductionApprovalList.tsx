@@ -13,7 +13,7 @@ import {
   CubeIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
-import { useUrlState } from '../../hooks/useUrlState';
+import { useUrlFilter, useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import toast from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
@@ -113,7 +113,7 @@ const ProductionApprovalList: React.FC = () => {
   const [monthlyPlanSummary, setMonthlyPlanSummary] = useState({ pending: 0 });
   const [scheduleGridSummary, setScheduleGridSummary] = useState({ pending: 0 });
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
   const [expandedMonthlyPlan, setExpandedMonthlyPlan] = useState<string | null>(null);
 
   useEffect(() => {

@@ -4,6 +4,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { showError } from '../../components/ui';
 import { PageHeader, KpiStrip, Panel } from '../../components/ui/PageKit';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface CorrectiveAction {
   id: number;
@@ -57,8 +58,9 @@ const filterCls = 'rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text
 const ChecklistNGItems: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<NGItem[]>([]);
-  const [filterStatus, setFilterStatus] = useState<string>('');
-  const [filterMachine, setFilterMachine] = useState<number | ''>('');
+  const [filterStatus, setFilterStatus] = useUrlFilter<string>('status', '')
+  // id mesin disimpan sebagai teks di URL, dipakai sebagai angka saat dikirim
+  const [filterMachine, setFilterMachine] = useUrlFilter<string>('mesin', '')
   const [machines, setMachines] = useState<Array<{id: number; name: string}>>([]);
   const [dateFrom, setDateFrom] = useState(() => {
     const d = new Date();
@@ -176,7 +178,7 @@ const ChecklistNGItems: React.FC = () => {
         <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className={filterCls} />
         <span className="text-gray-400">-</span>
         <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className={filterCls} />
-        <select value={filterMachine} onChange={e => setFilterMachine(e.target.value ? Number(e.target.value) : '')} className={filterCls}>
+        <select value={filterMachine} onChange={e => setFilterMachine(e.target.value)} className={filterCls}>
           <option value="">Semua mesin</option>
           {machines.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
         </select>

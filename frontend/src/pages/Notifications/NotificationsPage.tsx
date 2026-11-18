@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BellIcon, CheckIcon, TrashIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { useNavigate } from 'react-router-dom';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Notification {
   id: number;
@@ -20,8 +21,8 @@ interface Notification {
 const NotificationsPage: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
-  const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [filter, setFilter] = useUrlFilter<'all' | 'unread' | 'read'>('saring', 'all')
+  const [categoryFilter, setCategoryFilter] = useUrlFilter<string>('kategori', '')
   const [total, setTotal] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();

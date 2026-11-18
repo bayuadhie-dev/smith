@@ -22,6 +22,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell
 } from 'recharts';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface ProductLifecycleData {
   product_id: number;
@@ -75,9 +76,9 @@ const ProductLifecycle: React.FC = () => {
   const [timeline, setTimeline] = useState<LifecycleTimeline[]>([]);
   const [transitions, setTransitions] = useState<ProductTransition[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [stageFilter, setStageFilter] = useState<string>('all');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [stageFilter, setStageFilter] = useUrlFilter<string>('tahap', 'all')
+  const [categoryFilter, setCategoryFilter] = useUrlFilter<string>('kategori', 'all')
   const [selectedPeriod, setSelectedPeriod] = useState('6months');
 
   useEffect(() => {

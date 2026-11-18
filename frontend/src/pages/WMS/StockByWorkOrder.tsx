@@ -9,6 +9,7 @@ import {
   ChevronRightIcon,
   FunnelIcon,
 } from '@heroicons/react/24/outline';
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 
 interface WOStock {
   wo_id: number;
@@ -38,9 +39,9 @@ const StockByWorkOrder: React.FC = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<WOStock[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [page, setPage] = useState(1);
+  const [search, setSearch] = useUrlFilter<string>('cari', '')
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [page, setPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {

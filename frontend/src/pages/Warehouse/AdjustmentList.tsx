@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Adjustment {
   id: number;
@@ -58,7 +59,7 @@ const AdjustmentList: React.FC = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<Adjustment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
 
   const tools = useListTools<Adjustment>(data, COLUMNS, { filename: 'Penyesuaian_Stok', initialSort: { key: 'created_at', dir: 'desc' } });
 

@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { showError } from '../../components/ui';
+import { useUrlPage } from '../../hooks/useUrlState'
 interface AuditLog {
   id: number;
   user_id: number;
@@ -48,7 +49,7 @@ const AuditTrail: React.FC = () => {
   const [showDetails, setShowDetails] = useState(false);
   
   // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1);
   const [totalLogs, setTotalLogs] = useState(0);
   const logsPerPage = 50;

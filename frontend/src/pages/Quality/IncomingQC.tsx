@@ -19,6 +19,7 @@ import {
 import NumberInput from '../../components/ui/NumberInput'
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface IncomingMaterial {
   id: number;
@@ -72,7 +73,7 @@ export default function IncomingQC() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [materials, setMaterials] = useState<IncomingMaterial[]>([]);
-  const [filterStatus, setFilterStatus] = useState<string>('pending');
+  const [filterStatus, setFilterStatus] = useUrlFilter<string>('status', 'pending')
   const [selectedMaterial, setSelectedMaterial] = useState<IncomingMaterial | null>(null);
   const [showInspectionModal, setShowInspectionModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);

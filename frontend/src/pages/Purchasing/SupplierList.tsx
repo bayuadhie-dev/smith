@@ -16,14 +16,15 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon
 } from '@heroicons/react/24/outline';
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 export default function SupplierList() {
     const { t } = useLanguage();
 
-const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
+const [search, setSearch] = useUrlFilter<string>('cari', '')
+  const [page, setPage] = useUrlPage()
   const [perPage, setPerPage] = useState(50)
-  const [supplierType, setSupplierType] = useState('')
-  const [status, setStatus] = useState('')
+  const [supplierType, setSupplierType] = useUrlFilter<string>('tipe', '')
+  const [status, setStatus] = useUrlFilter<string>('status', '')
   
   const { data, isLoading, refetch } = useGetSuppliersQuery({
     search,

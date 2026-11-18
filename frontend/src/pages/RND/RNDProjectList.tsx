@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import axiosInstance from '../../utils/axiosConfig';
 import { confirmDialog, showError } from '../../components/ui';
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 
 interface Project {
   id: number;
@@ -62,10 +63,10 @@ const RNDProjectList: React.FC = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [stageFilter, setStageFilter] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
-  const [page, setPage] = useState(1);
+  const [search, setSearch] = useUrlFilter<string>('cari', '')
+  const [stageFilter, setStageFilter] = useUrlFilter<string>('tahap', '')
+  const [typeFilter, setTypeFilter] = useUrlFilter<string>('tipe', '')
+  const [page, setPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 

@@ -23,10 +23,11 @@ import {
   useGetWarehouseLocationsQuery,
   useGetInventoryQuery
 } from '../../services/api';
+import { useUrlFilter } from '../../hooks/useUrlState'
 export default function WarehouseDashboardEnhanced() {
     const { t } = useLanguage();
 
-const [alertFilter, setAlertFilter] = useState('active')
+const [alertFilter, setAlertFilter] = useUrlFilter<string>('peringatan', 'active')
   
   const { data: dashboardData, isLoading: dashboardLoading } = useGetWarehouseDashboardQuery(undefined)
   const { data: alertsData, isLoading: alertsLoading } = useGetWarehouseAlertsQuery({ status: alertFilter })

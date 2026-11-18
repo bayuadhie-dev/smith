@@ -8,6 +8,7 @@ import {
   ExclamationCircleIcon,
   FunnelIcon,
 } from '@heroicons/react/24/outline';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface CycleCount {
   id: number;
@@ -37,7 +38,7 @@ const freqLabels: Record<string, string> = {
 const CycleCountPage: React.FC = () => {
   const [data, setData] = useState<CycleCount[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
 
   useEffect(() => {
     fetchData();

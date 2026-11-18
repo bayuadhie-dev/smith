@@ -13,6 +13,7 @@ import SearchableSelect from '../../components/SearchableSelect';
 import { toast } from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface RemainingStockItem {
   id: number;
@@ -41,7 +42,7 @@ export default function RemainingStock() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingStock, setEditingStock] = useState<RemainingStockItem | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
   const [exporting, setExporting] = useState(false);
   
   // Form state

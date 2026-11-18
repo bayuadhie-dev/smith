@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import { DocumentTextIcon, EyeIcon, PencilIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 const STATUS: Record<string, { cls: string; label: string }> = {
   draft: { cls: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', label: 'Draft' },
@@ -27,7 +28,7 @@ const COLUMNS: ListColumn<any>[] = [
 const fmt = (v?: string | null) => (v ? format(new Date(v), 'dd MMM yyyy') : '-')
 
 export default function RFQList() {
-  const [status, setStatus] = useState('')
+  const [status, setStatus] = useUrlFilter<string>('status', '')
   const { data, isLoading } = useGetRFQsQuery({ status, per_page: 1000 })
   const tools = useListTools<any>(data?.rfqs, COLUMNS, { filename: 'RFQ', initialSort: { key: 'issue_date', dir: 'desc' } })
   const th = 'px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider'

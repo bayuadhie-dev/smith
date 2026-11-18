@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Trash2, RefreshCw, AlertCircle, CheckCircle, Users, Camera } from 'lucide-react';
 import api from '../../utils/axiosConfig';
 import { confirmDialog } from '../../components/ui';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface RegisteredFace {
   id: number;
@@ -15,7 +16,7 @@ interface RegisteredFace {
 const FaceAdmin: React.FC = () => {
   const [registeredFaces, setRegisteredFaces] = useState<RegisteredFace[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useUrlFilter<string>('cari', '')
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);

@@ -15,6 +15,7 @@ import {
 import { useState, useEffect } from 'react'
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
+import { useUrlPage } from '../../hooks/useUrlState'
 interface Customer {
   id: number
   code: string
@@ -41,7 +42,7 @@ const CustomerList = () => {
 
 const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
   const [perPage, setPerPage] = useState(50)

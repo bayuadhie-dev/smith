@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react'
 import { CubeIcon } from '@heroicons/react/24/outline'
 import { DataTable, ExportButtons, LoadState, Money, PeriodFilter, ReportShell, SearchBox, StatCards, Td, Th, idr, num, periodLabel, useDebounced, useReport, usePeriod } from './reportKit'
 import { groupLabel } from './inventoryShared'
+import { useUrlFilter } from '../../../hooks/useUrlState'
 
 export default function InventoryMutation() {
   const p = usePeriod('Bulan ini')
-  const [zone, setZone] = useState('')
+  const [zone, setZone] = useUrlFilter<string>('zona', '')
   const [group, setGroup] = useState('all')
   const [hideZero, setHideZero] = useState(true)
   const [q, setQ] = useState('')

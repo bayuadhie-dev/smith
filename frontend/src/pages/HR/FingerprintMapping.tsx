@@ -7,6 +7,7 @@ import { confirmDialog, showSuccess, showError } from '../../components/ui'
 import { usePermissions } from '../../contexts/PermissionContext'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 
 type Status = 'mapped' | 'exact' | 'similar' | 'none'
 type Conf = 'tinggi' | 'sedang' | 'rendah'
@@ -71,10 +72,10 @@ const FingerprintMapping = () => {
   const [freeEmps, setFreeEmps] = useState<FreeEmp[]>([])
   const [empSearch, setEmpSearch] = useState('')
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('')
-  const [search, setSearch] = useState('')
+  const [filter, setFilter] = useUrlFilter<string>('saring', '')
+  const [search, setSearch] = useUrlFilter<string>('cari', '')
   const [debounced, setDebounced] = useState('')
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useUrlPage()
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {

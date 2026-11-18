@@ -10,6 +10,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 import { confirmDialog } from '../../components/ui';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Department {
   id: number;
@@ -25,7 +26,7 @@ interface Department {
 }
 
 export default function Departments() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
   const [showModal, setShowModal] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
   const [formData, setFormData] = useState<{ code: string; name: string; description: string; parent_department_id: string; manager_id: string }>({ code: '', name: '', description: '', parent_department_id: '', manager_id: '' });

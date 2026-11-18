@@ -25,6 +25,7 @@ import ConfirmAndStartProductionModal from '../../components/Sales/ConfirmAndSta
 import ImportCustomerPOModal from '../../components/Sales/ImportCustomerPOModal';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface SalesOrder {
   id: number;
@@ -56,8 +57,8 @@ const COLUMNS: ListColumn<SalesOrder>[] = [
 ];
 
 const SalesOrderListUpgraded: React.FC = () => {
-  const [statusFilter, setStatusFilter] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [priorityFilter, setPriorityFilter] = useUrlFilter<string>('prioritas', '')
   const [showActions, setShowActions] = useState<number | null>(null);
   const [approvingOrder, setApprovingOrder] = useState<SalesOrder | null>(null);
   const actionsRef = useRef<HTMLDivElement>(null);

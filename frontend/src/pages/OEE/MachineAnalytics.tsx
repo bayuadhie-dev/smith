@@ -13,13 +13,14 @@ import {
   WrenchScrewdriverIcon
 } from '@heroicons/react/24/outline';
 import { useGetMachineAnalyticsQuery } from '../../services/api'
+import { useUrlFilter } from '../../hooks/useUrlState'
 export default function MachineAnalytics() {
     const { t } = useLanguage();
 
 const { machineId } = useParams<{ machineId: string }>()
   const navigate = useNavigate()
   
-  const [period, setPeriod] = useState('monthly')
+  const [period, setPeriod] = useUrlFilter<string>('periode', 'monthly')
   const [months, setMonths] = useState(6)
   
   const { data, isLoading, error } = useGetMachineAnalyticsQuery({

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useUrlState } from '../../hooks/useUrlState';
+import { useUrlFilter, useUrlState } from '../../hooks/useUrlState';
 import { Link } from 'react-router-dom';
 import {
   ArrowTopRightOnSquareIcon,
@@ -57,9 +57,9 @@ interface LeadStats {
 const LeadListUpgraded: React.FC = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [sourceFilter, setSourceFilter] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [sourceFilter, setSourceFilter] = useUrlFilter<string>('sumber', '')
   const [viewMode, setViewModeUrl] = useUrlState<'grid' | 'table'>('view', 'grid', ['grid', 'table']);
   const setViewMode = (v: 'grid' | 'table') => setViewModeUrl(v, { replace: true });
   const [selectedLeads, setSelectedLeads] = useState<number[]>([]);

@@ -5,6 +5,7 @@ import ActivityLogModal from '../../components/ActivityLogModal';
 import { ArrowPathIcon, ClockIcon } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
 import { TableSkeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 
 interface Batch {
   id: number;
@@ -30,9 +31,9 @@ const STATUS_BADGE: Record<string, string> = {
 export default function BatchStatusChange() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [page, setPage] = useState(1);
+  const [search, setSearch] = useUrlFilter<string>('cari', '')
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [page, setPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1);
 
   const [selected, setSelected] = useState<Batch | null>(null);

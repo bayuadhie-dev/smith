@@ -15,6 +15,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import toast from 'react-hot-toast';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface FGConversion {
   id: number;
@@ -79,7 +80,7 @@ const FGConversionList: React.FC = () => {
   const [conversions, setConversions] = useState<FGConversion[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
 
   useEffect(() => {
     fetchConversions();

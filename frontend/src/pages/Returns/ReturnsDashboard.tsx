@@ -12,13 +12,14 @@ import {
   XCircleIcon
 } from '@heroicons/react/24/outline';
 import { useGetReturnsQuery, useGetReturnAnalyticsQuery } from '../../services/returnsApi'
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 export default function ReturnsDashboard() {
     const { t } = useLanguage();
 
-const [page, setPage] = useState(1)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
-  const [qcStatusFilter, setQcStatusFilter] = useState('')
+const [page, setPage] = useUrlPage()
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [qcStatusFilter, setQcStatusFilter] = useUrlFilter<string>('qc', '')
 
   const { data: returnsData, isLoading, refetch } = useGetReturnsQuery({
     page,

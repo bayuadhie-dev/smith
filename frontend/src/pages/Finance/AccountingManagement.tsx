@@ -18,7 +18,7 @@ import { Link } from 'react-router-dom';
 import ChartOfAccounts from './ChartOfAccounts';
 import { confirmDialog, showSuccess, showError, showWarning } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
-import { useUrlState } from '../../hooks/useUrlState'
+import { useUrlFilter, useUrlState } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 
 interface Account {
@@ -70,14 +70,14 @@ const AccountingManagement: React.FC<AccountingManagementProps> = ({ initialTab 
   const [journalPages, setJournalPages] = useState(1);
   const [journalSummary, setJournalSummary] = useState<{ journals: number; total_debit: number; hidden: number } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [filterType, setFilterType] = useUrlFilter<string>('tipe', 'all')
   const [journalDetail, setJournalDetail] = useState<any | null>(null);
   const [loadingJournalDetail, setLoadingJournalDetail] = useState(false);
   const [showAddJournalModal, setShowAddJournalModal] = useState(false);
   const [editingJournalId, setEditingJournalId] = useState<number | null>(null);
   const [fxRates, setFxRates] = useState<Record<string, number>>({});
-  const [sourceFilter, setSourceFilter] = useState('');
+  const [sourceFilter, setSourceFilter] = useUrlFilter<string>('sumber', '')
   const [journalSort, setJournalSort] = useState<{ key: string; dir: 'asc' | 'desc' }>({ key: 'entry_date', dir: 'desc' });
   const [journalFormData, setJournalFormData] = useState<{ entry_date: string; description: string; reference_number: string; lines: JLine[] }>({
     entry_date: new Date().toISOString().split('T')[0],

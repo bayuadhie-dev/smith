@@ -8,6 +8,7 @@ import {
   useUpdateAccountMutation,
 } from '../../services/api';
 import { TableSkeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 const ACCOUNT_TYPES = ['asset', 'liability', 'equity', 'revenue', 'expense'];
 
@@ -43,7 +44,7 @@ export default function MasterDataAccountsTab() {
   const [createAccount] = useCreateAccountMutation();
   const [updateAccount] = useUpdateAccountMutation();
 
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useUrlFilter<string>('cari', '')
   const [showModal, setShowModal] = useState(false);
   const [editingCode, setEditingCode] = useState<string | null>(null);
   const [form, setForm] = useState<typeof emptyForm>(emptyForm);

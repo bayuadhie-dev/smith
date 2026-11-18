@@ -8,7 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { Package, CheckCircle2, Factory, AlertTriangle, TrendingDown } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { useUrlState } from '../../hooks/useUrlState';
+import { useUrlFilter, useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
@@ -58,7 +58,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
   const [data, setData] = useState<any>(null);
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [viewMode, setViewMode] = useState<'monthly' | 'weekly'>('monthly');
+  const [viewMode, setViewMode] = useUrlFilter<'monthly' | 'weekly'>('tampilan', 'monthly')
   const [weekNumber, setWeekNumber] = useState(0);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useUrlState<TabId>('tab', 'overview', TAB_IDS);
@@ -818,7 +818,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
 // ==================== MACHINE DAILY TAB ====================
 const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
-  const [filterMachine, setFilterMachine] = useState('');
+  const [filterMachine, setFilterMachine] = useUrlFilter<string>('mesin', '')
 
   const toggleDay = (d: string) => {
     setExpandedDays(prev => {
@@ -2885,12 +2885,12 @@ const DowntimeTab: React.FC<{
   allTimeDowntime: any[];
   allTimeDowntimeLoading: boolean;
 }> = ({ data, downtimePieData, combinedDowntimeByCategory, convertingDailyRecords, allTimeDowntime, allTimeDowntimeLoading }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
-  const [filterDateFrom, setFilterDateFrom] = useState('');
-  const [filterDateTo, setFilterDateTo] = useState('');
-  const [filterMachine, setFilterMachine] = useState('all');
-  const [filterType, setFilterType] = useState('all');
+  const [filterDateFrom, setFilterDateFrom] = useUrlFilter<string>('filterdatefrom', '')
+  const [filterDateTo, setFilterDateTo] = useUrlFilter<string>('filterdateto', '')
+  const [filterMachine, setFilterMachine] = useUrlFilter<string>('mesin2', 'all')
+  const [filterType, setFilterType] = useUrlFilter<string>('tipe', 'all')
 
   // Build machine option list from all occurrences
   const machineOptions = useMemo(() => {
@@ -4742,8 +4742,8 @@ const ConvertingTab: React.FC = () => {
 const PackingListTab: React.FC = () => {
   const [packingLists, setPackingLists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [search, setSearch] = useUrlFilter<string>('cari2', '')
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {

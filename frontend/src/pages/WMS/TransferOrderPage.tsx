@@ -9,6 +9,7 @@ import {
   ClockIcon,
   FunnelIcon,
 } from '@heroicons/react/24/outline';
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 
 interface TransferOrder {
   id: number;
@@ -51,8 +52,8 @@ const TransferOrderPage: React.FC = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<TransferOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [page, setPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {

@@ -10,6 +10,7 @@ import { showSuccess, showError } from '../../components/ui'
 import { usePermissions } from '../../contexts/PermissionContext'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 
 interface Part {
   id: number
@@ -77,11 +78,11 @@ const SparePartStock = () => {
   const [summary, setSummary] = useState<Summary | null>(null)
   const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useUrlPage()
   const [pages, setPages] = useState(1)
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useUrlFilter<string>('cari', '')
   const [debounced, setDebounced] = useState('')
-  const [category, setCategory] = useState('')
+  const [category, setCategory] = useUrlFilter<string>('kategori', '')
   const [lowOnly, setLowOnly] = useState(false)
   const [suppliers, setSuppliers] = useState<{ id: number; name: string }[]>([])
 

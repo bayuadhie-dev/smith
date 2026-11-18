@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useUrlState } from '../../hooks/useUrlState'
+import { useUrlFilter, useUrlState, useUrlPage } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { Search } from 'lucide-react'
 import axiosInstance from '../../utils/axiosConfig'
@@ -64,8 +64,8 @@ const AttendanceSchedules = () => {
   const [form, setForm] = useState<Form>(emptyForm())
   const [saving, setSaving] = useState(false)
 
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
+  const [search, setSearch] = useUrlFilter<string>('cari', '')
+  const [page, setPage] = useUrlPage()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkSchedule, setBulkSchedule] = useState('')
 

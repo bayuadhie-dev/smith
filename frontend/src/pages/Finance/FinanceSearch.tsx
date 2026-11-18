@@ -4,6 +4,7 @@ import { MagnifyingGlassIcon, FunnelIcon, XMarkIcon } from '@heroicons/react/24/
 import axiosInstance from '../../utils/axiosConfig'
 import { useDraftState } from '../../workspace/drafts'
 import { DataTable, LoadState, Money, Td, Th, fmtDate, iso } from './Reports/reportKit'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 const TYPES: [string, string][] = [
   ['sales_invoice', 'Faktur Penjualan'], ['purchase_invoice', 'Faktur Pembelian'], ['receipt', 'Penerimaan'],
@@ -35,7 +36,7 @@ const FinanceSearch: React.FC = () => {
   const [data, setData] = useState<{ results: Row[]; counts: Record<string, number>; total: number; terms: string[]; limit: number } | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [activeType, setActiveType] = useState('')
+  const [activeType, setActiveType] = useUrlFilter<string>('tipe', '')
 
   const hasInput = !!(q.trim() || dateFrom || dateTo || status || amountMin || amountMax)
 

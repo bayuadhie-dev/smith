@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface PendingTransfer {
   id: number
@@ -73,7 +74,7 @@ export default function QCToWarehouse() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedItems, setSelectedItems] = useState<number[]>([])
   const [selectedLocation, setSelectedLocation] = useState<string>('')
-  const [filterDisposition, setFilterDisposition] = useState<string>('')
+  const [filterDisposition, setFilterDisposition] = useUrlFilter<string>('disposisi', '')
   const [isTransferring, setIsTransferring] = useState(false)
 
   useEffect(() => {

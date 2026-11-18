@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useUrlState } from '../../hooks/useUrlState'
+import { useUrlFilter, useUrlState } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -19,8 +19,8 @@ export default function TrainingManagement() {
 const navigate = useNavigate()
   const [activeTab, setActiveTab] = useUrlState<'sessions' | 'programs' | 'requests'>('tab', 'sessions', ['sessions', 'programs', 'requests'])
   useBreadcrumbTrail(activeTab === 'sessions' ? [] : [{ label: ({ programs: 'Training Programs', requests: 'Training Requests' } as Record<string, string>)[activeTab] }])
-  const [selectedStatus, setSelectedStatus] = useState('')
-  const [selectedType, setSelectedType] = useState('')
+  const [selectedStatus, setSelectedStatus] = useUrlFilter<string>('status', '')
+  const [selectedType, setSelectedType] = useUrlFilter<string>('tipe', '')
   
   const { data: sessionsData, isLoading: sessionsLoading } = useGetTrainingSessionsQuery({
     status: selectedStatus || undefined

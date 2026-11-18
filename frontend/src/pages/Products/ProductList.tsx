@@ -11,11 +11,12 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import { TableSkeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 
 export default function ProductList() {
   const { t } = useLanguage();
-  const [page, setPage] = useState(1)
-  const [search, setSearch] = useState('')
+  const [page, setPage] = useUrlPage()
+  const [search, setSearch] = useUrlFilter<string>('cari', '')
   const { data, isLoading, refetch } = useGetProductsQuery({ page, search })
   const [deleteProduct] = useDeleteProductMutation()
 

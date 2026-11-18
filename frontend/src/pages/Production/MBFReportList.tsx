@@ -15,6 +15,7 @@ import axios from 'axios';
 import { confirmDialog } from '../../components/ui';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
+import { useUrlFilter } from '../../hooks/useUrlState'
 interface MBFReportItem {
   id: number;
   report_number: string;
@@ -45,7 +46,7 @@ const MBFReportList: React.FC = () => {
   const navigate = useNavigate();
   const [reports, setReports] = useState<MBFReportItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
 
   useEffect(() => {
     fetchReports();

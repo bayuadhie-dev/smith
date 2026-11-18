@@ -13,6 +13,7 @@ import { showSuccess, showError } from '../../components/ui';
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 import { TableSkeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 const STATUS_LABEL: Record<string, string> = { pending: 'Menunggu', approved: 'Disetujui', rejected: 'Ditolak', cancelled: 'Dibatalkan' }
 const TYPE_LABEL: Record<string, string> = { annual: 'Cuti Tahunan', sick: 'Sakit', personal: 'Keperluan Pribadi', maternity: 'Melahirkan', unpaid: 'Tanpa Gaji' }
@@ -35,8 +36,8 @@ export default function LeaveManagement() {
     const { t } = useLanguage();
 
 const navigate = useNavigate()
-  const [selectedStatus, setSelectedStatus] = useState('')
-  const [selectedType, setSelectedType] = useState('')
+  const [selectedStatus, setSelectedStatus] = useUrlFilter<string>('status', '')
+  const [selectedType, setSelectedType] = useUrlFilter<string>('tipe', '')
   
   const { data, isLoading, refetch } = useGetLeavesQuery({
     status: selectedStatus || undefined,

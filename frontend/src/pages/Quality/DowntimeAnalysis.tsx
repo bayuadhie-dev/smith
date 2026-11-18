@@ -17,6 +17,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface DowntimeReason {
   reason: string;
@@ -80,8 +81,7 @@ const DowntimeAnalysis: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [machines, setMachines] = useState<MachineDowntime[]>([]);
   const [rootCauses, setRootCauses] = useState<RootCauseRecord[]>([]);
-  const [period, setPeriod] = useState('');
-  
+  const [period, setPeriod] = useUrlFilter<string>('periode', '')
   // Modal states
   const [showRootCauseModal, setShowRootCauseModal] = useState(false);
   const [editingRecord, setEditingRecord] = useState<RootCauseRecord | null>(null);

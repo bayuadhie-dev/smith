@@ -13,6 +13,7 @@ import toast from 'react-hot-toast'
 import NumberInput from '../../components/ui/NumberInput'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface PieceworkLogItem {
   id: number
@@ -57,10 +58,10 @@ export default function PieceworkLogList() {
   const [loading, setLoading] = useState(true)
   const [employees, setEmployees] = useState<Employee[]>([])
   const [showForm, setShowForm] = useState(false)
-  const [filterEmployee, setFilterEmployee] = useState('')
-  const [filterStatus, setFilterStatus] = useState('')
-  const [filterStartDate, setFilterStartDate] = useState('')
-  const [filterEndDate, setFilterEndDate] = useState('')
+  const [filterEmployee, setFilterEmployee] = useUrlFilter<string>('filteremployee', '')
+  const [filterStatus, setFilterStatus] = useUrlFilter<string>('status', '')
+  const [filterStartDate, setFilterStartDate] = useUrlFilter<string>('filterstartdate', '')
+  const [filterEndDate, setFilterEndDate] = useUrlFilter<string>('filterenddate', '')
   const [total, setTotal] = useState(0)
 
   const [formData, setFormData] = useState({

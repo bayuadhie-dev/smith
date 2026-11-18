@@ -13,6 +13,7 @@ import { useGetMachinesQuery } from '../../services/api';
 import SearchableSelect from '../../components/SearchableSelect';
 import NumberInput from '../../components/ui/NumberInput'
 import { Skeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 const emptyForm = { product_id: '', machine_id: '', batch_size: '', rate_per_hour: '', is_default: false };
 
@@ -26,7 +27,7 @@ export default function MasterDataRecipeTab() {
 
   const [form, setForm] = useState<any>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useUrlFilter<string>('cari', '')
 
   const recipes: any[] = recipesData?.recipes || [];
   const products: any[] = productsData?.products || productsData || [];

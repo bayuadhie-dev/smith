@@ -12,6 +12,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlPage } from '../../hooks/useUrlState'
 
 interface LedgerEntry {
   id: number
@@ -50,7 +51,7 @@ const GeneralLedger = () => {
 
 const [entries, setEntries] = useState<LedgerEntry[]>([])
   const [loading, setLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1)
   const [searchParams] = useSearchParams()
   const linkedAccountCode = searchParams.get('account_code')

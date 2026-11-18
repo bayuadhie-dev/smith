@@ -17,6 +17,7 @@ import { confirmDialog, showError, showSuccess } from '../../components/ui';
 import SearchableSelect from '../../components/SearchableSelect';
 import NumberInput from '../../components/ui/NumberInput'
 import { TableSkeleton } from '../../components/ui/Skeleton'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface BOMItem {
   id: number;
@@ -77,7 +78,7 @@ const BOMManagement: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
   const [selectedBOM, setSelectedBOM] = useState<BOM | null>(null);
   const [showBOMModal, setShowBOMModal] = useState(false);
   const [showItemModal, setShowItemModal] = useState(false);

@@ -6,7 +6,7 @@ import AccessibleModal from '../../components/ui/AccessibleModal'
 import NumberInput from '../../components/ui/NumberInput'
 import { PendingAttachments, uploadAttachments } from '../../components/AttachmentsPanel'
 import { confirmDialog, showError, showSuccess } from '../../components/ui'
-import { useUrlState } from '../../hooks/useUrlState'
+import { useUrlState, useUrlPage } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { useDebounce } from '../../hooks/useDebounce'
 import { usePermissions } from '../../contexts/PermissionContext'
@@ -432,7 +432,7 @@ function Transaksi({ fund, categories, canCreate, reload }: { fund: any; categor
   const pc = usePc()
   const [rows, setRows] = useState<any[]>([])
   const [total, setTotal] = useState(0)
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useUrlPage()
   const [flt, setFlt] = useState({ status: '', category: '', date_from: '', date_to: '', q: '' })
   const [form, setForm] = useState<{ editing: any | null } | null>(null)
   const [rejecting, setRejecting] = useState<any | null>(null)

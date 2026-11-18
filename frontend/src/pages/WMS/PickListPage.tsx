@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface PickListData {
   id: number;
@@ -62,7 +63,7 @@ const COLUMNS: ListColumn<PickListData>[] = [
 const PickListPage: React.FC = () => {
   const [data, setData] = useState<PickListData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
 
   useEffect(() => {
     fetchData();

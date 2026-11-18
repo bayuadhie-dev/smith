@@ -23,6 +23,7 @@ import {
 import * as XLSX from 'xlsx';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface Employee {
   id: number;
@@ -174,7 +175,7 @@ const SearchableLeaderSelect: React.FC<SearchableLeaderSelectProps> = ({
   onRemoveCustomLeader
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useUrlFilter<string>('cari', '')
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -442,7 +443,7 @@ export default function WorkRosterWeekly() {
   const [showEmployeeModal, setShowEmployeeModal] = useState(false);
   const [currentRole, setCurrentRole] = useState<string>('');
   const [currentMachineId, setCurrentMachineId] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari2', '')
 
   // Computed week info
   const { week, year } = getWeekNumber(currentDate);

@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline'
 import axiosInstance from '../../utils/axiosConfig'
 import { showError } from '../../components/ui'
+import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 
 interface InventoryItem {
   id: number
@@ -58,14 +59,14 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
   const [zones, setZones] = useState<Zone[]>([])
   const [loading, setLoading] = useState(true)
   const [totalItems, setTotalItems] = useState(0)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1)
 
   // Filters
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useUrlFilter<string>('cari', '')
   const [itemType, setItemType] = useState<string>(mode === 'bahan-baku' ? 'material' : '')
   const [zoneId, setZoneId] = useState<string>('')
-  const [stockStatus, setStockStatus] = useState<string>('')
+  const [stockStatus, setStockStatus] = useUrlFilter<string>('status', '')
   const [categoryGroup, setCategoryGroup] = useState<string>('')
   const [showFilters, setShowFilters] = useState(false)
 

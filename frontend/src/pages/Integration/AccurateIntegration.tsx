@@ -67,7 +67,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { confirmDialog, showSuccess, showError, showWarning } from '../../components/ui'
 import NumberInput from '../../components/ui/NumberInput'
-import { useUrlState } from '../../hooks/useUrlState'
+import { useUrlFilter, useUrlState } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { Skeleton } from '../../components/ui/Skeleton'
 
@@ -173,7 +173,7 @@ export default function AccurateIntegration() {
     }
   }
 
-  const [transferPrefixFilter, setTransferPrefixFilter] = useState<string>('')
+  const [transferPrefixFilter, setTransferPrefixFilter] = useUrlFilter<string>('transferprefixfilter', '')
   const { data: transferListResp, isFetching: fetchingTransferList, refetch: refetchTransferList } = useGetWarehouseTransferListQuery(
     { doc_prefix: transferPrefixFilter || undefined }
   )
@@ -299,7 +299,7 @@ export default function AccurateIntegration() {
   >('item')
   const [sortColIndex, setSortColIndex] = useState<number | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useUrlFilter<string>('cari', '')
 
   const handleHeaderClick = (colIdx: number) => {
     if (sortColIndex === colIdx) {

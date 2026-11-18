@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useUrlState } from '../../hooks/useUrlState'
+import { useUrlFilter, useUrlState, useUrlPage } from '../../hooks/useUrlState'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { Link } from 'react-router-dom'
 import axiosInstance from '../../utils/axiosConfig'
@@ -438,9 +438,9 @@ const FingerprintAttendance = () => {
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useUrlState<'people' | 'days' | 'calendar'>('tab', 'people', ['people', 'days', 'calendar'])
   useBreadcrumbTrail(tab === 'people' ? [] : [{ label: ({ days: 'Harian', calendar: 'Kalender' } as Record<string, string>)[tab] }])
-  const [statusFilter, setStatusFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
   const [showHoliday, setShowHoliday] = useState(false)
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useUrlPage()
   const [rulesOpen, setRulesOpen] = useState(false)
   const [empOptions, setEmpOptions] = useState<{ id: number; name: string }[]>([])
   const [calOptions, setCalOptions] = useState<{ id: number; name: string }[]>([])

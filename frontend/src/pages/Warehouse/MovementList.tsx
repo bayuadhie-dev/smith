@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { showError } from '../../components/ui';
-import { useUrlState } from '../../hooks/useUrlState';
+import { useUrlFilter, useUrlState, useUrlPage } from '../../hooks/useUrlState';
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
@@ -45,13 +45,13 @@ const MovementList: React.FC = () => {
 
   const [movements, setMovements] = useState<InventoryMovement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [filterType, setFilterType] = useUrlFilter<string>('tipe', '')
+  const [filterStatus, setFilterStatus] = useUrlFilter<string>('status', '')
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [sort, setSort] = useUrlState<string>('sort', '');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useUrlPage()
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 20;
 

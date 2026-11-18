@@ -4,6 +4,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import { PlusIcon, DocumentTextIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: 'Draft',      color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
@@ -34,8 +35,8 @@ export default function PRList() {
   const navigate = useNavigate();
   const [prs, setPrs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
+  const [priorityFilter, setPriorityFilter] = useUrlFilter<string>('prioritas', '')
 
   const fetchPRs = async () => {
     setLoading(true);

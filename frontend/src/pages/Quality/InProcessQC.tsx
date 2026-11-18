@@ -19,6 +19,7 @@ import {
   ChartBarIcon,
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface ProductionProcess {
   id: number;
@@ -81,8 +82,8 @@ export default function InProcessQC() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [processes, setProcesses] = useState<ProductionProcess[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useUrlFilter<string>('cari', '')
+  const [filterStatus, setFilterStatus] = useUrlFilter<string>('status', 'all')
   const [selectedProcess, setSelectedProcess] = useState<ProductionProcess | null>(null);
   const [showInspectionModal, setShowInspectionModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
