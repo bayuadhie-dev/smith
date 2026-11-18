@@ -8,6 +8,8 @@ const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
 export interface StatCardProps {
   label: string
+  /** Ikon kecil di kotak berwarna lembut; memberi kartu titik berat visual. */
+  icon?: ReactNode
   value: number
   /** Pemformat angka (mis. rupiah). Bawaan: ribuan gaya Indonesia. */
   format?: (n: number) => string
@@ -27,7 +29,7 @@ export interface StatCardProps {
  * kartu ini hanya cara menampilkannya.
  */
 export default function StatCard({
-  label, value, format, valueClassName, progress, progressClassName, footer, className,
+  label, value, format, valueClassName, progress, progressClassName, footer, className, icon,
 }: StatCardProps) {
   const motionOn = useMotionOn()
   return (
@@ -41,8 +43,13 @@ export default function StatCard({
     >
       {/* Cahaya lembut di pojok: memberi kesan permukaan, bukan kotak datar. */}
       <span aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-primary-500/10 blur-2xl dark:bg-primary-400/10" />
-      <p className="truncate text-[11px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{label}</p>
-      <p className={`mt-1.5 truncate text-3xl font-semibold tracking-tight ${valueClassName || 'text-gray-900 dark:text-white'}`}>
+      {icon && (
+        <span className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-700 ring-1 ring-inset ring-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:ring-primary-800/60">
+          {icon}
+        </span>
+      )}
+      <p className="truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-500 dark:text-gray-400">{label}</p>
+      <p className={`mt-1 truncate text-[2rem] font-bold leading-tight tracking-tight ${valueClassName || 'text-gray-900 dark:text-white'}`}>
         <CountUp value={value} format={format} />
       </p>
       {progress !== undefined && <ProgressBar value={progress} className="mt-2" barClassName={progressClassName} />}

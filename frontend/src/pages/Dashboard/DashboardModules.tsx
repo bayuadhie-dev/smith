@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { RefreshCw, ChevronRight, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { RefreshCw, ChevronRight, ArrowUpRight, ArrowDownRight, Wallet, Factory, ShoppingBag, Clock } from 'lucide-react'
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts'
 import axiosInstance from '../../utils/axiosConfig'
 import { formatRupiah } from '../../utils/currencyUtils'
@@ -25,6 +25,9 @@ const formatValue = (it: Item) => {
 
 const toneText = (tone: Tone) =>
   tone === 'bad' ? 'text-red-600 dark:text-red-400' : tone === 'warn' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-white'
+
+// Ikon per angka ringkasan; kuncinya datang dari /api/dashboard/modules.
+const HEADLINE_ICON: Record<string, any> = { omzet: ShoppingBag, output: Factory, kas: Wallet, ar_jt: Clock }
 
 const sapaan = () => {
   const h = new Date().getHours()
@@ -91,29 +94,38 @@ const DashboardModules = () => {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 pb-10">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            {sapaan()}{nama ? `, ${nama}` : ''}
-          </h1>
-          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{tanggal}</p>
+      {/* Panel gelap sebagai titik berat halaman: sapaan di atas, kartu angka
+          menumpang di bawahnya. Ini yang memberi kesan "berani" tanpa mengubah
+          satu pun sumber data. */}
+      <div className="relative">
+      <section className="relative overflow-hidden rounded-3xl bg-gray-900 px-6 pb-24 pt-7 text-white shadow-[0_20px_50px_-30px_rgba(16,24,40,0.9)] dark:bg-gray-950">
+        <span aria-hidden className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-primary-500/20 blur-3xl" />
+        <span aria-hidden className="pointer-events-none absolute -bottom-28 left-1/3 h-56 w-56 rounded-full bg-primary-400/10 blur-3xl" />
+        <div className="relative flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              {sapaan()}{nama ? `, ${nama}` : ''}
+            </h1>
+            <p className="mt-1 text-sm text-white/60">{tanggal}</p>
+          </div>
+          <button
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur transition hover:bg-white/20 disabled:opacity-60"
+          >
+            <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+            Muat ulang
+          </button>
         </div>
-        <button
-          onClick={() => refetch()}
-          disabled={isFetching}
-          className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-60 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-        >
-          <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
-          Muat ulang
-        </button>
-      </div>
+      </section>
 
 
       {headline.length > 0 && (
-        <Stagger className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Stagger className="relative -mt-16 grid grid-cols-1 gap-4 px-1 sm:grid-cols-2 lg:grid-cols-4">
           {headline.map((h) => (
             <StaggerItem key={h.key}>
               <StatCard
+                icon={HEADLINE_ICON[h.key] ? (() => { const I = HEADLINE_ICON[h.key]; return <I className="h-5 w-5" /> })() : undefined}
                 label={h.label}
                 value={h.value}
                 format={(n) => (h.format === 'currency' ? formatRupiah(n) : Math.round(n).toLocaleString('id-ID'))}
@@ -130,6 +142,7 @@ const DashboardModules = () => {
           ))}
         </Stagger>
       )}
+      </div>
       <section className="rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_28px_-20px_rgba(16,24,40,0.3)] dark:border-gray-700/80 dark:bg-gray-800">
         <h2 className="border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-900 dark:border-gray-700 dark:text-white">Perlu tindakan</h2>
         {isLoading ? (
