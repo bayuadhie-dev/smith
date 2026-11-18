@@ -50,6 +50,9 @@ interface QcWarning {
   history_reason: string | null;
 }
 
+const kgFmt = (n: number | null | undefined) =>
+  `${Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })} kg`;
+
 export default function CloseWorkOrder() {
   const { id: workOrderId } = useParams();
   const navigate = useNavigate();
@@ -68,6 +71,7 @@ export default function CloseWorkOrder() {
   const [completing, setCompleting] = useState(false);
   const [missingRequirements, setMissingRequirements] = useState<string[]>([]);
   const [qcWarnings, setQcWarnings] = useState<QcWarning[]>([]);
+  const [spunlace, setSpunlace] = useState<any>(null);
   const [showQcConfirm, setShowQcConfirm] = useState(false);
 
   useEffect(() => {
@@ -81,7 +85,7 @@ export default function CloseWorkOrder() {
       const woRes = await axiosInstance.get(`/api/production/work-orders/${workOrderId}`);
       setWorkOrder(woRes.data.work_order);
 
-      await Promise.all([fetchWaste(), fetchWasteCategories(), fetchBatches(), fetchMaterialIssues(), fetchQcWarnings()]);
+      await Promise.all([fetchWaste(), fetchWasteCategories(), fetchBatches(), fetchMaterialIssues(), fetchQcWarnings(), fetchSpunlace()]);
     } catch (error) {
       console.error(error);
       toast.error('Gagal memuat data SPK');
@@ -96,6 +100,17 @@ export default function CloseWorkOrder() {
       setQcWarnings(res.data.warnings || []);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const fetchSpunlace = async () => {
+    // SPK spunlace keluarannya roll: tidak lewat batch dan packing list, jadi
+    // halaman ini menampilkan neraca fiber vs berat roll sebagai gantinya.
+    try {
+      const res = await axiosInstance.get(`/api/production/rolls/spk/${workOrderId}/summary`);
+      setSpunlace(res.data?.is_spunlace ? res.data : null);
+    } catch (error) {
+      setSpunlace(null);
     }
   };
 
@@ -236,7 +251,70 @@ export default function CloseWorkOrder() {
         </div>
       )}
 
+      {spunlace && (
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-1">Hasil Roll Spunlace</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            SPK spunlace keluarannya roll, bukan karton - stoknya sudah masuk Gudang Kain waktu tiap roll dicatat.
+            Selisih di bawah ini susut proses (trim, serat terbuang, air), ditampilkan sebagai informasi.
+          </p>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {[
+              { label: 'Jumlah roll', value: `${spunlace.rolls} roll` },
+              { label: 'Berat bersih', value: kgFmt(spunlace.net_kg) },
+              { label: 'Grade A + B', value: kgFmt(spunlace.net_good_kg) },
+              { label: 'Grade C (waste)', value: kgFmt(spunlace.net_reject_kg) },
+            ].map((x) => (
+              <div key={x.label} className="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+                <div className="text-xs text-gray-500 dark:text-gray-400">{x.label}</div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-white">{x.value}</div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">Bahan yang keluar gudang</div>
+              {(spunlace.materials || []).length === 0 ? (
+                <div className="text-sm text-gray-400">Belum ada permintaan bahan yang dikeluarkan untuk SPK ini.</div>
+              ) : (
+                <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                  {spunlace.materials.map((m: any, i: number) => (
+                    <li key={i} className="flex justify-between gap-4">
+                      <span className="truncate">{m.name}</span>
+                      <span className="whitespace-nowrap">{Number(m.qty).toLocaleString('id-ID')} {m.uom}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+              <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">Neraca</div>
+              {spunlace.fiber_kg > 0 ? (
+                <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                  <li className="flex justify-between"><span>Bahan keluar (kg)</span><span>{kgFmt(spunlace.fiber_kg)}</span></li>
+                  <li className="flex justify-between"><span>Berat roll</span><span>{kgFmt(spunlace.net_kg)}</span></li>
+                  <li className="flex justify-between font-semibold border-t border-gray-200 dark:border-gray-700 pt-1">
+                    <span>Susut</span>
+                    <span className={spunlace.susut_kg < 0 ? 'text-red-600 dark:text-red-400' : ''}>
+                      {kgFmt(spunlace.susut_kg)} ({spunlace.susut_pct}%)
+                    </span>
+                  </li>
+                </ul>
+              ) : (
+                <div className="text-sm text-gray-400">Belum bisa dihitung - bahan baku belum dikeluarkan lewat permintaan bahan.</div>
+              )}
+              {spunlace.susut_kg < 0 && (
+                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                  Berat roll melebihi bahan yang keluar. Periksa lagi penimbangan atau permintaan bahannya.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Section 1: Tutup Batch - partial/bertahap, satu baris = satu event produksi fisik */}
+      {!spunlace && (
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-1">1. Tutup Batch (Bahan Aktual per Batch)</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -283,6 +361,7 @@ export default function CloseWorkOrder() {
           </div>
         )}
       </div>
+      )}
 
       {/* Section 2: Material Issue (review) */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
@@ -405,6 +484,7 @@ export default function CloseWorkOrder() {
       </div>
 
       {/* Section 4: Packing List */}
+      {!spunlace && (
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">4. Packing List</h2>
         {packPerCarton > 0 ? (
@@ -418,6 +498,7 @@ export default function CloseWorkOrder() {
           <div className="text-sm text-gray-400">Pack per carton belum diatur untuk produk ini.</div>
         )}
       </div>
+      )}
 
       {/* Complete button */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">

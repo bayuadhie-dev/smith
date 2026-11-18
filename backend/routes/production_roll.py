@@ -23,6 +23,45 @@ NOMOR_MAKS = 10000
 AKTIF = ('available',)
 
 
+SPK_AKTIF = ('planned', 'released', 'in_progress')
+
+
+def _spk_spunlace(wo):
+    """SPK yang keluarannya roll: mesinnya mesin spunlace, atau memang sudah punya roll.
+
+    Produksi menegaskan NJO dan RPS itu dokumen yang sama, jadi satu SPK spunlace
+    mewakili keduanya.
+    """
+    if wo is None:
+        return False
+    m = wo.machine
+    if m is not None and ((m.machine_type or '').lower() == 'spunlace' or (m.department or '').lower() == 'spunlace'):
+        return True
+    return db.session.query(ProductionRoll.id).filter(ProductionRoll.work_order_id == wo.id).first() is not None
+
+
+def _sinkron_realisasi(wo_id):
+    """Realisasi SPK spunlace = jumlah berat bersih roll utamanya.
+
+    Grade A dan B dihitung sebagai hasil baik (B masih bisa disortir dan dijual),
+    grade C masuk waste. Jumbo roll hasil sliting sengaja tidak ikut dijumlah -
+    isinya berasal dari main roll yang sudah dihitung, jadi akan ganda.
+    """
+    from models.production import WorkOrder
+
+    wo = db.session.get(WorkOrder, wo_id) if wo_id else None
+    if wo is None:
+        return
+    rolls = ProductionRoll.query.filter(ProductionRoll.work_order_id == wo.id,
+                                        ProductionRoll.parent_roll_id.is_(None),
+                                        ProductionRoll.status != 'cancelled').all()
+    baik = sum(float(r.net_weight_kg or 0) for r in rolls if r.grade in ('A', 'B'))
+    reject = sum(float(r.net_weight_kg or 0) for r in rolls if r.grade == 'C')
+    wo.quantity_produced = round(baik + reject, 2)
+    wo.quantity_good = round(baik, 2)
+    wo.quantity_scrap = round(reject, 2)
+
+
 class RollError(Exception):
     def __init__(self, message, status=400, extra=None):
         super().__init__(message)
@@ -213,9 +252,18 @@ def meta():
     from models.production import Machine
     mesin = Machine.query.filter(Machine.is_active.is_(True),
                                  or_(Machine.machine_type == 'spunlace', Machine.department == 'Spunlace')).all()
+    from models.production import WorkOrder
+
+    spk_q = WorkOrder.query.filter(WorkOrder.status.in_(SPK_AKTIF))
+    if mesin:
+        spk_q = spk_q.filter(or_(WorkOrder.machine_id.in_([m.id for m in mesin]), WorkOrder.machine_id.is_(None)))
+    spk = spk_q.order_by(WorkOrder.id.desc()).limit(200).all()
     return jsonify({
         'grades': [{'value': g, 'label': GRADE_LABEL[g]} for g in GRADES],
         'machines': [{'id': m.id, 'code': m.code, 'name': m.name} for m in mesin],
+        'work_orders': [{'id': w.id, 'wo_number': w.wo_number,
+                         'product_name': w.product.name if w.product else '',
+                         'quantity': float(w.quantity or 0), 'uom': w.uom or ''} for w in spk],
         'max_number': NOMOR_MAKS,
     })
 
@@ -301,7 +349,23 @@ def _validate(data, exclude_id=None):
     except (TypeError, ValueError):
         raise RollError('Tanggal produksi tidak valid')
 
-    return {'roll_number': nomor, 'product': product, 'gross': gross, 'net': net, 'grade': grade, 'tanggal': tanggal}
+    return {'roll_number': nomor, 'product': product, 'gross': gross, 'net': net, 'grade': grade,
+            'tanggal': tanggal, 'wo': _validate_spk(data.get('work_order_id'))}
+
+
+def _validate_spk(wo_id):
+    """Setiap roll harus menunjuk SPK spunlace (NJO/RPS) - keputusan produksi
+    2026-11-18: wajib mutlak, tidak ada roll tanpa job order."""
+    from models.production import WorkOrder
+
+    if not wo_id:
+        raise RollError('Pilih SPK (NJO) produksinya - setiap roll harus menunjuk job order')
+    wo = db.session.get(WorkOrder, wo_id)
+    if not wo:
+        raise RollError('SPK tidak ditemukan')
+    if wo.status in ('completed', 'cancelled'):
+        raise RollError(f'SPK {wo.wo_number} sudah {wo.status}, tidak bisa menerima roll baru')
+    return wo
 
 
 @production_roll_bp.route('', methods=['POST'])
@@ -327,7 +391,7 @@ def create_roll():
         cycle=(kembar.cycle + 1) if kembar else 1,
         roll_type='main',
         product_id=v['product'].id,
-        work_order_id=data.get('work_order_id') or None,
+        work_order_id=v['wo'].id,
         machine_id=data.get('machine_id') or None,
         produced_at=v['tanggal'],
         shift=(data.get('shift') or '').strip()[:20] or None,
@@ -343,6 +407,7 @@ def create_roll():
     db.session.add(roll)
     db.session.flush()
     _masukkan_stok(roll, int(get_jwt_identity()))
+    _sinkron_realisasi(roll.work_order_id)
     db.session.commit()
     return jsonify(roll.to_dict()), 201
 
@@ -383,9 +448,10 @@ def update_roll(rid):
         roll.batch_number = _nomor_batch(roll.roll_number, roll.cycle)
         db.session.flush()
         _masukkan_stok(roll, user_id)
-    for k in ('work_order_id', 'machine_id'):
-        if k in data:
-            setattr(roll, k, data[k] or None)
+    spk_lama = roll.work_order_id
+    roll.work_order_id = v['wo'].id
+    if 'machine_id' in data:
+        roll.machine_id = data['machine_id'] or None
     for k in ('length_m', 'width_cm'):
         if k in data:
             setattr(roll, k, _f(data[k]) if data[k] else None)
@@ -393,6 +459,9 @@ def update_roll(rid):
         roll.shift = (data['shift'] or '').strip()[:20] or None
     if 'notes' in data:
         roll.notes = (data['notes'] or '').strip() or None
+    _sinkron_realisasi(spk_lama)
+    if roll.work_order_id != spk_lama:
+        _sinkron_realisasi(roll.work_order_id)
     db.session.commit()
     return jsonify(roll.to_dict())
 
@@ -413,8 +482,68 @@ def cancel_roll(rid):
     roll.status = 'cancelled'
     if alasan:
         roll.notes = f'Dibatalkan: {alasan}' + (f'\n{roll.notes}' if roll.notes else '')
+    _sinkron_realisasi(roll.work_order_id)
     db.session.commit()
     return jsonify(roll.to_dict())
+
+
+@production_roll_bp.route('/spk/<int:wo_id>/summary', methods=['GET'])
+@jwt_required()
+@require_permission('production.view')
+def spk_summary(wo_id):
+    """Neraca sederhana SPK spunlace: fiber yang keluar gudang lawan berat roll.
+
+    Dipakai halaman Tutup SPK. Selisihnya adalah susut proses (trim, serat
+    terbuang, air) - ditampilkan apa adanya, bukan gerbang yang memblokir,
+    karena belum ada angka toleransi dari produksi.
+    """
+    from models.material_issue import MaterialIssue, MaterialIssueItem
+    from models.production import WorkOrder
+
+    wo = db.session.get(WorkOrder, wo_id)
+    if not wo:
+        raise RollError('SPK tidak ditemukan', 404)
+
+    rolls = ProductionRoll.query.filter(ProductionRoll.work_order_id == wo.id,
+                                        ProductionRoll.parent_roll_id.is_(None),
+                                        ProductionRoll.status != 'cancelled').all()
+    per_grade = {}
+    for r in rolls:
+        g = per_grade.setdefault(r.grade, {'grade': r.grade, 'label': GRADE_LABEL.get(r.grade, r.grade),
+                                           'rolls': 0, 'net_kg': 0.0})
+        g['rolls'] += 1
+        g['net_kg'] = round(g['net_kg'] + float(r.net_weight_kg or 0), 2)
+    net_total = round(sum(float(r.net_weight_kg or 0) for r in rolls), 2)
+    net_baik = round(sum(float(r.net_weight_kg or 0) for r in rolls if r.grade in ('A', 'B')), 2)
+
+    bahan = {}
+    rows = (db.session.query(MaterialIssueItem, MaterialIssue)
+            .join(MaterialIssue, MaterialIssueItem.material_issue_id == MaterialIssue.id)
+            .filter(MaterialIssue.work_order_id == wo.id,
+                    MaterialIssue.status.in_(('issued', 'completed'))).all())
+    for item, _issue in rows:
+        qty = float(item.issued_quantity or 0) - float(item.returned_quantity or 0)
+        if abs(qty) < 0.0001:
+            continue
+        key = (item.material_id, item.product_id, item.uom)
+        b = bahan.setdefault(key, {'name': item.description, 'uom': item.uom, 'qty': 0.0})
+        b['qty'] = round(b['qty'] + qty, 2)
+    fiber_kg = round(sum(b['qty'] for b in bahan.values() if (b['uom'] or '').upper() == 'KG'), 2)
+
+    return jsonify({
+        'work_order_id': wo.id,
+        'wo_number': wo.wo_number,
+        'is_spunlace': _spk_spunlace(wo),
+        'rolls': len(rolls),
+        'net_kg': net_total,
+        'net_good_kg': net_baik,
+        'net_reject_kg': round(net_total - net_baik, 2),
+        'per_grade': sorted(per_grade.values(), key=lambda x: x['grade']),
+        'materials': sorted(bahan.values(), key=lambda x: x['name'] or ''),
+        'fiber_kg': fiber_kg,
+        'susut_kg': round(fiber_kg - net_total, 2) if fiber_kg else 0.0,
+        'susut_pct': round((fiber_kg - net_total) / fiber_kg * 100, 2) if fiber_kg else 0.0,
+    })
 
 
 @production_roll_bp.route('/summary', methods=['GET'])

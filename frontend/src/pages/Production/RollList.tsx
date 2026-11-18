@@ -20,6 +20,7 @@ interface Roll {
   product_code: string | null
   product_name: string | null
   machine_name: string | null
+  work_order_id: number | null
   work_order_number: string | null
   produced_at: string
   shift: string | null
@@ -143,6 +144,7 @@ export default function RollList() {
                 <SortTh tools={tools} col="display_number" className="px-3 py-2 text-left">No. Roll</SortTh>
                 <SortTh tools={tools} col="produced_at" className="px-3 py-2 text-left">Tanggal</SortTh>
                 <SortTh tools={tools} col="product" className="px-3 py-2 text-left">Jenis Kain</SortTh>
+                <SortTh tools={tools} col="work_order_number" className="px-3 py-2 text-left">SPK</SortTh>
                 <SortTh tools={tools} col="shift" className="px-3 py-2 text-left">Shift</SortTh>
                 <SortTh tools={tools} col="gross_weight_kg" align="right" className="px-3 py-2 text-right">Kotor</SortTh>
                 <SortTh tools={tools} col="net_weight_kg" align="right" className="px-3 py-2 text-right">Bersih</SortTh>
@@ -161,6 +163,7 @@ export default function RollList() {
                   </td>
                   <td className="px-3 py-2">{tanggal(r.produced_at)}</td>
                   <td className="px-3 py-2">{[r.product_code, r.product_name].filter(Boolean).join(' - ')}</td>
+                  <td className="px-3 py-2">{r.work_order_number || '-'}</td>
                   <td className="px-3 py-2">{r.shift || '-'}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{kg(r.gross_weight_kg)}</td>
                   <td className="px-3 py-2 text-right tabular-nums font-medium">{kg(r.net_weight_kg)}</td>
@@ -229,12 +232,13 @@ const Kartu = ({ label, nilai }: { label: string; nilai: string }) => (
 
 function RollForm({ roll, onClose, onSaved }: { roll: Roll | null; onClose: () => void; onSaved: () => void }) {
   const [produk, setProduk] = useState<any[]>([])
-  const [meta, setMeta] = useState<any>({ grades: [], machines: [] })
+  const [meta, setMeta] = useState<any>({ grades: [], machines: [], work_orders: [] })
   const [busy, setBusy] = useState(false)
   const [peringatan, setPeringatan] = useState<string | null>(null)
   const [f, setF] = useState({
     roll_number: roll ? String(roll.roll_number) : '',
     product_id: roll?.product_id ?? (null as number | string | null),
+    work_order_id: roll?.work_order_id ? String(roll.work_order_id) : '',
     produced_at: roll?.produced_at || ymd(new Date()),
     shift: roll?.shift || '',
     machine_id: '' as string,
@@ -254,6 +258,7 @@ function RollForm({ roll, onClose, onSaved }: { roll: Roll | null; onClose: () =
     axiosInstance.get(`${API}/meta`).then((r) => {
       setMeta(r.data || {})
       if (!roll && (r.data?.machines || []).length === 1) setF((p) => ({ ...p, machine_id: String(r.data.machines[0].id) }))
+      if (!roll && (r.data?.work_orders || []).length === 1) setF((p) => ({ ...p, work_order_id: String(r.data.work_orders[0].id) }))
     }).catch(() => undefined)
   }, [roll])
 
@@ -263,6 +268,7 @@ function RollForm({ roll, onClose, onSaved }: { roll: Roll | null; onClose: () =
     const body = {
       roll_number: Number(f.roll_number),
       product_id: Number(f.product_id),
+      work_order_id: f.work_order_id ? Number(f.work_order_id) : undefined,
       produced_at: f.produced_at,
       shift: f.shift || undefined,
       machine_id: f.machine_id ? Number(f.machine_id) : undefined,
@@ -307,6 +313,19 @@ function RollForm({ roll, onClose, onSaved }: { roll: Roll | null; onClose: () =
             placeholder="Pilih kain"
             required
           />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">SPK / NJO *</label>
+          <select className="input-field" value={f.work_order_id} onChange={(e) => set('work_order_id', e.target.value)}>
+            <option value="">- Pilih SPK -</option>
+            {roll?.work_order_id && !(meta.work_orders || []).some((w: any) => w.id === roll.work_order_id) && (
+              <option value={roll.work_order_id}>{roll.work_order_number}</option>
+            )}
+            {(meta.work_orders || []).map((w: any) => (
+              <option key={w.id} value={w.id}>{w.wo_number}{w.product_name ? ` - ${w.product_name}` : ''}</option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Setiap roll harus menunjuk job order produksinya.</p>
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Tanggal produksi *</label>

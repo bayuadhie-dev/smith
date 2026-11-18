@@ -3089,6 +3089,17 @@ def _check_closing_requirements(wo):
     dicek di level WO (lihat catatan di _check_batch_closing_requirements soal
     kenapa packing list tidak bisa dipecah per-batch).
     Return (ok: bool, missing: list[str])."""
+    from routes.production_roll import _spk_spunlace
+
+    if _spk_spunlace(wo):
+        # SPK spunlace keluarannya roll, bukan karton: tidak lewat packing list dan
+        # tidak dijadwalkan per batch. Yang dipastikan hanya hasilnya sudah dicatat.
+        from models.production_roll import ProductionRoll
+        ada = ProductionRoll.query.filter(ProductionRoll.work_order_id == wo.id,
+                                          ProductionRoll.parent_roll_id.is_(None),
+                                          ProductionRoll.status != 'cancelled').first()
+        return (True, []) if ada else (False, ['Belum ada roll yang dicatat untuk SPK ini'])
+
     if not wo.product or (wo.product.material_type or '').strip().lower() != 'finished_goods':
         return True, []
 
@@ -3241,6 +3252,7 @@ def get_work_order_qc_warnings(wo_id):
 def complete_work_order(id):
     try:
         from routes.production_integration import auto_receive_finished_goods
+        from routes.production_roll import _spk_spunlace as _spk_spunlace_wo
 
         wo = db.session.get(WorkOrder, id)
         if not wo:
@@ -3283,7 +3295,17 @@ def complete_work_order(id):
                 .scalar()
             )
 
-        if qty_good > 0:
+        # SPK spunlace: stok sudah masuk Gudang Kain per roll waktu rollnya
+        # dicatat, jadi penerimaan barang jadi di sini akan menggandakan stok.
+        spunlace = _spk_spunlace_wo(wo)
+        if spunlace:
+            integration_results['finished_goods_receipt'] = {
+                'success': True,
+                'message': 'Dilewati: stok roll sudah masuk Gudang Kain saat roll dicatat',
+                'inventory_id': None,
+                'quantity_received': 0,
+            }
+        elif qty_good > 0:
             success, message, inventory_id = auto_receive_finished_goods(id, qty_good, user_id)
             integration_results['finished_goods_receipt'] = {
                 'success': success,
@@ -3305,7 +3327,9 @@ def complete_work_order(id):
             func.coalesce(func.sum(ShiftProduction.good_quantity), 0),
         ).filter(ShiftProduction.work_order_id == id).first()
         shift_produced, shift_good = float(shift_totals[0]), float(shift_totals[1])
-        if shift_produced > 0:
+        # SPK spunlace tidak diisi lewat input shift - realisasinya sudah
+        # dijumlahkan dari berat roll, jangan ditimpa angka shift yang kosong.
+        if shift_produced > 0 and not spunlace:
             wo.quantity_produced = shift_produced
             wo.quantity_good = shift_good
 
@@ -3382,6 +3406,20 @@ def revert_completed_work_order(id):
             return jsonify({'error': f"WO ini berstatus '{wo.status}', bukan 'completed' - aksi ini hanya untuk membatalkan SPK yang sudah completed."}), 400
 
         user_id = int(get_jwt_identity())
+
+        # SPK spunlace tidak pernah menerima barang jadi lewat Tutup SPK (stoknya
+        # masuk per roll), jadi tidak ada yang perlu dibalik di sini - cukup
+        # dikembalikan ke 'released'. Rollnya sendiri dibatalkan satu per satu di
+        # halaman Roll Spunlace kalau memang salah catat.
+        from routes.production_roll import _spk_spunlace
+        if _spk_spunlace(wo):
+            _log_wo_status_change(wo, 'released', user_id=user_id, notes='Batal Tutup SPK (spunlace)')
+            wo.actual_end_date = None
+            db.session.commit()
+            return jsonify({
+                'message': f'SPK {wo.wo_number} dibuka kembali. Stok roll tidak diubah - batalkan rollnya di halaman Roll Spunlace kalau ada yang salah catat.',
+                'work_order_id': wo.id, 'status': wo.status,
+            }), 200
 
         # Block if already shipped (any active, non-cancelled shipment
         # referencing this WO) - goods are physically gone, nothing left to

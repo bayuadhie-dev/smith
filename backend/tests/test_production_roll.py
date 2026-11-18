@@ -5,6 +5,7 @@ import pytest
 
 from models import db
 from models.product import Product
+from models.production import WorkOrder
 from models.production_roll import ProductionRoll
 
 
@@ -14,12 +15,21 @@ def kain(db_session):
                 primary_uom='KG', is_active=True)
     db_session.add(p)
     db_session.commit()
+    # Setiap roll wajib menunjuk SPK (NJO) sejak 2026-11-18, jadi fixture kain
+    # sekalian menyiapkan satu NJO aktif yang dipakai _body() sebagai bawaan.
+    db_session.add(WorkOrder(wo_number='NJO-UJI-1', product_id=p.id, quantity=1000, uom='KG', status='released'))
+    db_session.commit()
     return p
+
+
+def _njo():
+    return WorkOrder.query.filter_by(wo_number='NJO-UJI-1').first()
 
 
 def _body(kain, **kw):
     b = {'roll_number': 500, 'product_id': kain.id, 'produced_at': date.today().isoformat(),
-         'gross_weight_kg': 130, 'net_weight_kg': 125, 'grade': 'A', 'shift': 'Pagi'}
+         'gross_weight_kg': 130, 'net_weight_kg': 125, 'grade': 'A', 'shift': 'Pagi',
+         'work_order_id': _njo().id}
     b.update(kw)
     return b
 
@@ -303,3 +313,99 @@ def test_roll_yang_baru_terkirim_sebagian_tetap_di_stok(client, auth_headers, db
     daftar = client.get('/api/production/rolls', headers=auth_headers).get_json()
     baris = next(r for r in daftar['rolls'] if r['id'] == roll['id'])
     assert baris['status'] == 'available' and baris['stock_remaining_kg'] == 40
+
+
+def test_roll_wajib_menunjuk_spk(client, auth_headers, kain):
+    """Keputusan produksi 2026-11-18: wajib mutlak, tidak ada roll tanpa job order."""
+    tanpa = client.post('/api/production/rolls', json=_body(kain, work_order_id=None), headers=auth_headers)
+    assert tanpa.status_code == 400 and 'SPK' in tanpa.get_json()['error']
+
+    njo = _njo()
+    njo.status = 'completed'
+    db.session.commit()
+    tutup = _post(client, auth_headers, kain)
+    assert tutup.status_code == 400 and 'sudah completed' in tutup.get_json()['error']
+
+
+def test_realisasi_spk_dijumlah_dari_berat_roll(client, auth_headers, kain):
+    """Grade A+B jadi hasil baik, grade C masuk waste - jawaban produksi 2026-11-18."""
+    _post(client, auth_headers, kain, roll_number=11, gross_weight_kg=130, net_weight_kg=125)
+    _post(client, auth_headers, kain, roll_number=12, gross_weight_kg=105, net_weight_kg=100, grade='B')
+    c = _post(client, auth_headers, kain, roll_number=13, gross_weight_kg=85, net_weight_kg=80, grade='C').get_json()
+
+    njo = _njo()
+    assert float(njo.quantity_good) == 225 and float(njo.quantity_scrap) == 80
+    assert float(njo.quantity_produced) == 305
+
+    client.post(f"/api/production/rolls/{c['id']}/cancel", json={'reason': 'salah catat'}, headers=auth_headers)
+    db.session.refresh(njo)
+    assert float(njo.quantity_scrap) == 0 and float(njo.quantity_produced) == 225
+
+
+def test_ringkasan_spk_membandingkan_bahan_keluar_dengan_berat_roll(client, auth_headers, kain, db_session, test_user):
+    from models.product import Material
+    from models.material_issue import MaterialIssue, MaterialIssueItem
+
+    _post(client, auth_headers, kain, roll_number=21, gross_weight_kg=130, net_weight_kg=125)
+    _post(client, auth_headers, kain, roll_number=22, gross_weight_kg=85, net_weight_kg=80, grade='C')
+
+    fiber = Material(code='RAYON-A2', name='RAYON A2', material_type='raw_materials',
+                     category='fiber', primary_uom='KG')
+    db_session.add(fiber)
+    db_session.commit()
+    issue = MaterialIssue(issue_number='MI-UJI-1', work_order_id=_njo().id, status='issued',
+                          issue_date=date.today(), requested_by=test_user.id)
+    db_session.add(issue)
+    db_session.commit()
+    db_session.add(MaterialIssueItem(material_issue_id=issue.id, line_number=1, material_id=fiber.id,
+                                     description='RAYON A2', required_quantity=250, issued_quantity=250,
+                                     returned_quantity=20, uom='KG'))
+    db_session.commit()
+
+    r = client.get(f'/api/production/rolls/spk/{_njo().id}/summary', headers=auth_headers)
+    assert r.status_code == 200
+    d = r.get_json()
+    assert d['is_spunlace'] is True and d['rolls'] == 2
+    assert d['net_kg'] == 205 and d['net_good_kg'] == 125 and d['net_reject_kg'] == 80
+    assert d['fiber_kg'] == 230                      # 250 keluar - 20 dikembalikan
+    assert d['susut_kg'] == 25 and d['materials'][0]['name'] == 'RAYON A2'
+
+
+def test_tutup_spk_spunlace_butuh_roll_dan_tidak_menggandakan_stok(client, auth_headers, kain, db_session):
+    """SPK spunlace tidak lewat batch/packing list; stoknya sudah masuk per roll."""
+    from models.production import Machine
+    from models.warehouse import Inventory
+
+    mesin = Machine(code='SPUNLACE-UJI', name='Mesin Spunlace', machine_type='spunlace',
+                    department='Spunlace', is_active=True)
+    db_session.add(mesin)
+    db_session.commit()
+    kosong = WorkOrder(wo_number='NJO-UJI-KOSONG', product_id=kain.id, quantity=500, uom='KG',
+                       status='released', machine_id=mesin.id)
+    db_session.add(kosong)
+    db_session.commit()
+
+    gagal = client.put(f'/api/production/work-orders/{kosong.id}/complete', json={}, headers=auth_headers)
+    assert gagal.status_code == 400
+    assert 'Belum ada roll' in ' '.join(gagal.get_json()['missing'])
+
+    _post(client, auth_headers, kain, roll_number=31, gross_weight_kg=130, net_weight_kg=125)
+    sebelum = sum(float(i.quantity_on_hand or 0) for i in Inventory.query.filter_by(product_id=kain.id).all())
+    ok = client.put(f'/api/production/work-orders/{_njo().id}/complete', json={}, headers=auth_headers)
+    assert ok.status_code == 200, ok.get_json()
+    sesudah = sum(float(i.quantity_on_hand or 0) for i in Inventory.query.filter_by(product_id=kain.id).all())
+    assert sesudah == sebelum          # tidak ada penerimaan barang jadi kedua kali
+
+
+def test_batal_tutup_spk_spunlace_tidak_mengutak_atik_stok_roll(client, auth_headers, kain):
+    from models.warehouse import Inventory
+
+    _post(client, auth_headers, kain, roll_number=41, gross_weight_kg=130, net_weight_kg=125)
+    assert client.put(f'/api/production/work-orders/{_njo().id}/complete', json={}, headers=auth_headers).status_code == 200
+    sebelum = sum(float(i.quantity_on_hand or 0) for i in Inventory.query.filter_by(product_id=kain.id).all())
+
+    r = client.put(f'/api/production/work-orders/{_njo().id}/revert-to-released', json={}, headers=auth_headers)
+    assert r.status_code == 200, r.get_json()
+    assert _njo().status == 'released'
+    sesudah = sum(float(i.quantity_on_hand or 0) for i in Inventory.query.filter_by(product_id=kain.id).all())
+    assert sesudah == sebelum
