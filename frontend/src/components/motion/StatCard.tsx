@@ -8,25 +8,25 @@ const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
 export interface StatCardProps {
   label: string
-  /** Ikon kecil di kotak berwarna lembut; memberi kartu titik berat visual. */
+  /** Small icon in a soft tinted tile; gives the card a visual anchor. */
   icon?: ReactNode
   value: number
-  /** Pemformat angka (mis. rupiah). Bawaan: ribuan gaya Indonesia. */
+  /** Number formatter (e.g. rupiah). Defaults to Indonesian thousands. */
   format?: (n: number) => string
-  /** Kelas warna angka, mengikuti nada data (netral/peringatan/buruk). */
+  /** Colour class for the figure, following the data tone (neutral/warn/bad). */
   valueClassName?: string
-  /** 0-1; bila diisi, bar tipis muncul di bawah angka. */
+  /** 0-1; when set, a thin bar appears under the figure. */
   progress?: number
   progressClassName?: string
-  /** Baris kecil di bawah angka (mis. delta terhadap periode lalu). */
+  /** Small line under the figure (e.g. delta against the previous period). */
   footer?: ReactNode
   className?: string
 }
 
 /**
- * Kartu angka dashboard: angka naik ke nilainya, bar opsional, dan sedikit
- * terangkat saat disentuh kursor. Sumber datanya tetap milik pemanggil -
- * kartu ini hanya cara menampilkannya.
+ * Dashboard figure card: the number counts up, an optional bar, and a small
+ * lift on hover. The data stays the caller's - this component is only a way of
+ * presenting it.
  */
 export default function StatCard({
   label, value, format, valueClassName, progress, progressClassName, footer, className, icon,
@@ -41,7 +41,7 @@ export default function StatCard({
       whileHover={motionOn ? { y: -4 } : undefined}
       transition={{ duration: 0.2, ease: EASE }}
     >
-      {/* Cahaya lembut di pojok: memberi kesan permukaan, bukan kotak datar. */}
+      {/* Soft corner glow: reads as a surface rather than a flat box. */}
       <span aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-primary-500/10 blur-2xl dark:bg-primary-400/10" />
       {icon && (
         <span className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary-700 ring-1 ring-inset ring-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:ring-primary-800/60 sm:mb-3 sm:h-10 sm:w-10 sm:rounded-xl">

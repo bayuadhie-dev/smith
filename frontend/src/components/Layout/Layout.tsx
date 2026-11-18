@@ -21,8 +21,8 @@ export default function Layout() {
   const [showShortcutsModal, setShowShortcutsModal] = useState(false)
   const location = useLocation()
   const motionUserId = useAppSelector((state: any) => state.auth?.user?.id)
-  // Inisial perusahaan untuk layar pembuka; dibaca dari cache yang sama dengan
-  // Sidebar/Header supaya tidak menambah permintaan ke server saat halaman dibuka.
+  // Company name/logo for the splash screen, read from the same cache the
+  // Sidebar fills in, so opening a page costs no extra request.
   const [companyName, setCompanyName] = useState(() => localStorage.getItem('erp_company_name') || '')
   const [companyLogo, setCompanyLogo] = useState(() => localStorage.getItem('erp_company_logo') || '')
   useEffect(() => {
@@ -120,7 +120,7 @@ export default function Layout() {
       {/* Skip Link for keyboard navigation */}
       <SkipLink href="#main-content" />
 
-      <SplashReveal nama={companyName} logo={companyLogo}>
+      <SplashReveal name={companyName} logo={companyLogo}>
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       <div className={`transition-all duration-300 ${sidebarOpen ? (sidebarCollapsed ? 'lg:pl-[84px]' : 'lg:pl-64') : 'lg:pl-0'}`}>
         <Header toggleSidebar={handleHeaderToggle} />

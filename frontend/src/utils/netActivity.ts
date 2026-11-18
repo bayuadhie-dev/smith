@@ -1,34 +1,34 @@
 /**
- * Penghitung permintaan HTTP yang sedang berjalan lewat axios.
+ * Counter of in-flight axios requests.
  *
- * Dipakai garis muat di puncak layar (components/ui/TopProgress.tsx). Ditaruh
- * terpisah dari axiosConfig supaya berkas itu tetap soal HTTP saja, dan supaya
- * komponen tampilan tidak perlu mengenal axios.
+ * Feeds the thin progress bar at the top of the screen
+ * (components/ui/TopProgress.tsx). Kept out of axiosConfig so that file stays
+ * about HTTP only, and so the view layer never has to know about axios.
  */
-type Pendengar = (jumlah: number) => void
+type Listener = (count: number) => void
 
-let jumlah = 0
-const pendengar = new Set<Pendengar>()
+let inFlight = 0
+const listeners = new Set<Listener>()
 
-function kabari() {
-  pendengar.forEach((f) => f(jumlah))
+function notify() {
+  listeners.forEach((fn) => fn(inFlight))
 }
 
-export function mulaiPermintaan() {
-  jumlah += 1
-  kabari()
+export function startRequest() {
+  inFlight += 1
+  notify()
 }
 
-export function selesaiPermintaan() {
-  jumlah = Math.max(0, jumlah - 1)
-  kabari()
+export function finishRequest() {
+  inFlight = Math.max(0, inFlight - 1)
+  notify()
 }
 
-export function jumlahPermintaan() {
-  return jumlah
+export function activeRequests() {
+  return inFlight
 }
 
-export function langganPermintaan(f: Pendengar) {
-  pendengar.add(f)
-  return () => { pendengar.delete(f) }
+export function subscribeRequests(fn: Listener) {
+  listeners.add(fn)
+  return () => { listeners.delete(fn) }
 }

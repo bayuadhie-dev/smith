@@ -1,6 +1,6 @@
 import { renewIfNeeded } from './sessionToken';
 import axios from 'axios';
-import { mulaiPermintaan, selesaiPermintaan } from './netActivity';
+import { startRequest, finishRequest } from './netActivity';
 
 // Custom event for session expiry - same as in store/api.ts
 export const SESSION_EXPIRED_EVENT = 'session-expired';
@@ -35,8 +35,8 @@ const axiosInstance = axios.create({
 // Request interceptor to add auth token
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Garis muat di puncak layar ikut hitungan ini (utils/netActivity).
-    mulaiPermintaan();
+    // The top progress bar reads this counter (utils/netActivity).
+    startRequest();
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -47,7 +47,7 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
-    selesaiPermintaan();
+    finishRequest();
     return Promise.reject(error);
   }
 );
@@ -55,11 +55,11 @@ axiosInstance.interceptors.request.use(
 // Response interceptor for error handling
 axiosInstance.interceptors.response.use(
   (response) => {
-    selesaiPermintaan();
+    finishRequest();
     return response;
   },
   (error) => {
-    selesaiPermintaan();
+    finishRequest();
     if (error.response?.status === 401) {
       // Dispatch session expired event so SessionTimeoutModal can handle it
       window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));

@@ -3,9 +3,9 @@ import { useMotionOn, useRevealed } from './RevealContext'
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
-const jepit = (n: number) => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0))
+const clamp = (n: number) => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0))
 
-/** Bar mendatar yang memanjang dari kiri. `value` 0-1. */
+/** Horizontal bar that grows from the left. `value` is 0-1. */
 export function ProgressBar({ value, className, barClassName }: {
   value: number
   className?: string
@@ -13,7 +13,7 @@ export function ProgressBar({ value, className, barClassName }: {
 }) {
   const motionOn = useMotionOn()
   const revealed = useRevealed()
-  const v = jepit(value)
+  const v = clamp(value)
   return (
     <div className={`h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700 ${className || ''}`}>
       <motion.div
@@ -27,7 +27,7 @@ export function ProgressBar({ value, className, barClassName }: {
   )
 }
 
-/** Bar tegak yang tumbuh dari bawah; `index` memberi jeda berurutan. */
+/** Vertical bar growing from the bottom; `index` staggers the start. */
 export function GrowBar({ value, index = 0, className, barClassName, title }: {
   value: number
   index?: number
@@ -37,7 +37,7 @@ export function GrowBar({ value, index = 0, className, barClassName, title }: {
 }) {
   const motionOn = useMotionOn()
   const revealed = useRevealed()
-  const v = jepit(value)
+  const v = clamp(value)
   return (
     <div className={`flex h-full w-full items-end ${className || ''}`} title={title}>
       <motion.div

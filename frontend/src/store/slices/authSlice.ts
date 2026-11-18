@@ -60,8 +60,8 @@ export const login = createAsyncThunk(
     try {
       const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials)
       localStorage.setItem('token', response.data.access_token)
-      // Layar pembuka muncul sekali per login (dipakai habis oleh SplashReveal),
-      // bukan per tab - masukan user 2026-11-18.
+      // The splash screen shows once per login (consumed by SplashReveal),
+      // not once per tab - user feedback 2026-11-18.
       try { localStorage.setItem('erp_splash_pending', '1') } catch { /* abaikan */ }
       // Store user info for quick access
       if (response.data.user) {
@@ -129,7 +129,7 @@ const authSlice = createSlice({
       state.token = action.payload
     },
     setCredentials: (state, action) => {
-      // Jalur masuk lain (Google OAuth, lengkapi profil) juga menandai layar pembuka.
+      // Other sign-in paths (Google OAuth, complete profile) flag it too.
       try { localStorage.setItem('erp_splash_pending', '1') } catch { /* abaikan */ }
       state.user = action.payload.user
       state.token = action.payload.token

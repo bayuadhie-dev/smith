@@ -99,9 +99,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
         const response = await axiosInstance.get('/api/settings/company')
         if (response.data?.name) {
           setCompanyName(response.data.name)
-          // Disimpan supaya layar pembuka (SplashReveal) bisa memakai logo dan
-          // inisial yang sama tanpa menunggu permintaan ke server saat halaman
-          // baru dibuka.
+          // Cached so the splash screen (SplashReveal) can use the same logo
+          // and initials without waiting for a request when a page opens.
           try { localStorage.setItem('erp_company_name', response.data.name) } catch { /* abaikan */ }
         }
         const logo = response.data?.logoUrl
@@ -719,7 +718,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
       {!collapsed && <SidebarSearch value={menuSearch} onChange={setMenuSearch} loading={dataLoading} />}
 
       <nav ref={navRef} className="relative flex flex-1 flex-col" role="navigation" aria-label="Menu utama">
-        <SidebarActiveMarker wadah={navRef} />
+        <SidebarActiveMarker container={navRef} />
         {searching ? (
           <SidebarSearchResults
             query={menuQuery}
@@ -1049,12 +1048,13 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
                 leaveFrom="translate-x-0"
                 leaveTo="-translate-x-full"
               >
-                {/* Tombol tutup ada DI DALAM panel. Dulu dia ditaruh di luar
-                    (absolute left-full) tapi masih di dalam kotak yang bisa
-                    digulir, jadi begitu dialog membuka dan tombol itu difokus,
-                    panelnya tergulir 64px ke kanan dan menu terlihat terpotong
-                    di kiri - persis yang dilaporkan di layar HP. Sekaligus
-                    `mr-16` dilepas supaya drawer-nya dapat 64px lebih lebar. */}
+                {/* The close button lives INSIDE the panel. It used to sit
+                    outside it (absolute left-full) yet still inside the
+                    scrollable box, so when the dialog opened and that button
+                    took focus the panel scrolled 64px to the right and the menu
+                    looked cut off on the left - exactly what was reported on
+                    phones. Dropping `mr-16` also buys the drawer 64px more
+                    width. */}
                 <Dialog.Panel className="relative flex w-full max-w-xs flex-1 max-h-[90vh] overflow-y-auto overflow-x-hidden rounded-xl">
                   <button
                     type="button"

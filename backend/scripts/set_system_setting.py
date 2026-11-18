@@ -1,12 +1,13 @@
-"""Isi atau ubah satu pengaturan sistem (tabel system_settings) dari baris perintah.
+"""Set or change one system setting (system_settings table) from the shell.
 
-Dipakai untuk nilai yang beda per perusahaan, jadi tidak boleh ditaruh di migrasi
-(migrasi jalan di semua server). Contoh: nama penyetuju yang dicetak di lembar PO.
+For values that differ per company, which therefore must not live in a
+migration (migrations run on every server). Example: the approver name printed
+on the purchase order sheet.
 
     python scripts/set_system_setting.py general.po_approver_name "Hizkia Wijaya"
 
-Kalau kuncinya belum ada, baris baru dibuat dengan kategori 'general' dan tipe
-'string'. Tanpa argumen, isi pengaturan yang ada ditampilkan saja.
+If the key does not exist yet it is created with category 'general' and type
+'string'. With no arguments the current settings are listed instead.
 """
 import os
 import sys

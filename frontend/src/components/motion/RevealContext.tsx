@@ -3,24 +3,24 @@ import { useReducedMotion } from 'framer-motion'
 import { motionEnabled } from '../../utils/motion'
 
 /**
- * Penanda "isi layar sudah dibuka" dari SplashReveal.
+ * Flag set by SplashReveal once the screen has been uncovered.
  *
- * Stagger, CountUp, dan bar menunggu penanda ini supaya tidak jalan di balik
- * layar pembuka - kalau jalan duluan, animasinya selesai sebelum sempat dilihat.
- * Di luar SplashReveal nilainya true, jadi komponen ini tetap bisa dipakai di
- * halaman lain tanpa layar pembuka.
+ * Stagger, CountUp and the bars wait for it so they do not run behind the
+ * splash screen - otherwise their animation is over before anyone sees it.
+ * Outside SplashReveal the value is true, so these components still work on
+ * pages that have no splash.
  */
 export const RevealContext = createContext(true)
 
 export const useRevealed = () => useContext(RevealContext)
 
 /**
- * Animasi boleh jalan atau tidak.
+ * Whether animation is allowed to run.
  *
- * Dua sumber dihormati sekaligus: pengaturan "kurangi gerakan" di perangkat
- * (useReducedMotion) dan toggle animasi per pengguna di halaman Profil
- * (html[data-motion='off'], lihat utils/motion.ts). Mati di salah satunya =
- * semua tampil langsung tanpa gerakan.
+ * Two sources are honoured: the device's "reduce motion" setting
+ * (useReducedMotion) and this app's own per-user animation toggle on the
+ * Profile page (html[data-motion='off'], see utils/motion.ts). Off in either
+ * one means everything renders instantly, with no movement.
  */
 export function useMotionOn() {
   const reduced = useReducedMotion()

@@ -21,8 +21,8 @@ export interface ListColumn<T> {
 export interface ListTools<T> {
   rows: T[]
   total: number
-  /** Kunci untuk <tbody>: berubah saat halaman, urutan, kata cari, atau periode
-   *  berubah, sehingga barisnya digambar ulang dan animasi masuknya berjalan. */
+  /** Key for <tbody>: changes when the page, sort, search text or period
+   *  changes, so the rows remount and their entrance animation replays. */
   rowsKey: string
   query: string
   setQuery: (q: string) => void
@@ -164,8 +164,8 @@ export function useListTools<T>(
   }, [setUrl, pp])
   const period = dateCol ? { from: periodFrom, to: periodTo, all: allPeriod, label: dateCol.label } : null
 
-  // Kunci baris: ikut berubah saat halaman, urutan, kata cari, atau periode
-  // berganti, supaya <tbody> digambar ulang dan animasi masuknya jalan.
+  // Row key: changes with page, sort, search text or period so <tbody>
+  // remounts and the entrance animation runs again.
   const rowsKey = `${sortKey || ''}:${sortDir}:${query}:${period ? `${period.from}-${period.to}-${period.all}` : ''}:${hal}`
   return { period, setPeriod, setPeriodAll, rows, total: (data || []).length, query, setQuery, sortKey: sortKey || '', sortDir, toggleSort, columns, exportExcel, rowsKey }
 }

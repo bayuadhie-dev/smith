@@ -61,13 +61,12 @@ export function useUrlNumber(key: string) {
 }
 
 /**
- * Nomor halaman daftar yang tersimpan di URL (?hal=3).
+ * List page number kept in the URL (?hal=3).
  *
- * Dipakai supaya daftar kembali ke halaman yang sama setelah layar dimuat ulang
- * - keluhan pemakai 2026-11-18: "kalau ngerefresh balik dari awal, saya harus
- * cari lagi tadi sampai di halaman berapa". Perpindahan halaman memakai replace
- * supaya tombol Back browser keluar dari daftar, bukan menelusuri halaman satu
- * per satu.
+ * Makes a list come back to the same page after a reload - user complaint
+ * 2026-11-18: "when it refreshes I'm back at the start and have to find which
+ * page I was on". Page changes use replace so the browser Back button leaves
+ * the list instead of stepping through every page.
  */
 export function useUrlPage(key = 'hal') {
   const [raw, setRaw] = useUrlState<string>(key, '1')
@@ -83,12 +82,12 @@ export function useUrlPage(key = 'hal') {
 }
 
 /**
- * Saringan daftar (cari, status, jenis, ...) yang tersimpan di URL.
+ * List filter (search, status, type, ...) kept in the URL.
  *
- * Sama seperti useUrlState, bedanya perubahan memakai replace supaya mengetik
- * di kotak cari tidak menumpuk riwayat browser - tanpa ini satu kata yang
- * diketik membuat tombol Back harus ditekan sebanyak hurufnya. Tab halaman
- * tetap memakai useUrlState biasa karena memang ingin bisa di-Back.
+ * Same as useUrlState except changes use replace, so typing in a search box
+ * does not pile up browser history - without it one typed word means pressing
+ * Back once per letter. Page tabs keep plain useUrlState because stepping back
+ * through them is wanted.
  */
 export function useUrlFilter<T extends string>(key: string, defaultValue: T, allowed?: readonly T[]) {
   const [value, setRaw] = useUrlState<T>(key, defaultValue, allowed)

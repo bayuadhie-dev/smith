@@ -5,11 +5,11 @@ import { useMotionOn } from './RevealContext'
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
 /**
- * Bagian halaman yang muncul saat tergulir ke layar.
+ * A page section that animates in when it is scrolled into view.
  *
- * Dipakai untuk bagian di bawah lipatan: tanpa ini, halaman panjang terasa diam
- * karena animasi masuknya sudah selesai jauh sebelum pemakai menggulir ke sana.
- * Hanya sekali (`once`), jadi menggulir naik-turun tidak membuatnya berkedip.
+ * Used for everything below the fold: without it a long page feels static,
+ * because the entrance animation is long finished by the time the reader
+ * scrolls down. Runs `once`, so scrolling up and down does not make it blink.
  */
 export default function Reveal({ children, delay = 0, className }: {
   children: ReactNode

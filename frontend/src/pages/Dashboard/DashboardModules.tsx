@@ -26,7 +26,7 @@ const formatValue = (it: Item) => {
 const toneText = (tone: Tone) =>
   tone === 'bad' ? 'text-red-600 dark:text-red-400' : tone === 'warn' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-white'
 
-// Ikon per angka ringkasan; kuncinya datang dari /api/dashboard/modules.
+// Icon per headline figure; the keys come from /api/dashboard/modules.
 const HEADLINE_ICON: Record<string, any> = { omzet: ShoppingBag, output: Factory, kas: Wallet, ar_jt: Clock }
 
 const sapaan = () => {
@@ -38,8 +38,8 @@ const sapaan = () => {
 }
 
 
-/** Angka satu baris ringkasan modul: ikut berjalan naik dan berkedip saat berubah. */
-const AngkaItem = ({ it }: { it: Item }) => {
+/** One figure in a module summary: counts up and flashes when it changes. */
+const ItemValue = ({ it }: { it: Item }) => {
   if (it.value === null || it.value === undefined) return <>-</>
   return (
     <CountUp
@@ -109,14 +109,14 @@ const DashboardModules = () => {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 pb-10">
-      {/* Panel gelap sebagai titik berat halaman: sapaan di atas, kartu angka
-          menumpang di bawahnya. Ini yang memberi kesan "berani" tanpa mengubah
-          satu pun sumber data. */}
+      {/* Dark panel as the page's visual anchor: greeting on top, figure cards
+          overlapping below it. This is what makes the page feel bold, without
+          changing a single data source. */}
       <div className="relative">
       <Reveal>
       <section className="relative overflow-hidden rounded-2xl px-4 pb-16 pt-5 text-white shadow-[0_20px_50px_-30px_rgba(16,24,40,0.9)] sm:rounded-3xl sm:px-6 sm:pb-24 sm:pt-7"
-        // Warna panel ikut merek perusahaan (Falmaco gunmetal, Fengsheng hijau hutan),
-        // bukan hitam netral - masukan user 2026-11-18: "ga sesuai dengan tema warna".
+        // Panel colour follows the company brand (Falmaco gunmetal, Fengsheng
+        // forest green) rather than neutral black - user feedback 2026-11-18.
         style={{ backgroundColor: 'rgb(var(--brand-900))' }}>
         <span aria-hidden className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-primary-500/20 blur-3xl" />
         <span aria-hidden className="pointer-events-none absolute -bottom-28 left-1/3 h-56 w-56 rounded-full bg-primary-400/10 blur-3xl" />
@@ -220,7 +220,7 @@ const DashboardModules = () => {
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{m.items[0].label}</p>
                   <p className={`mt-0.5 text-2xl font-semibold ${toneText(m.items[0].tone)}`}>
-                    <AngkaItem it={m.items[0]} />
+                    <ItemValue it={m.items[0]} />
                   </p>
                 </div>
               )}
@@ -231,7 +231,7 @@ const DashboardModules = () => {
                       {it.tone && <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${it.tone === 'bad' ? 'bg-red-500' : 'bg-amber-500'}`} />}
                       <span className="truncate">{it.label}</span>
                     </dt>
-                    <dd className={`mt-0.5 truncate text-base font-semibold ${toneText(it.tone)}`}><AngkaItem it={it} /></dd>
+                    <dd className={`mt-0.5 truncate text-base font-semibold ${toneText(it.tone)}`}><ItemValue it={it} /></dd>
                   </div>
                 ))}
               </dl>

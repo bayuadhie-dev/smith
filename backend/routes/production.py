@@ -3092,8 +3092,8 @@ def _check_closing_requirements(wo):
     from routes.production_roll import _spk_spunlace
 
     if _spk_spunlace(wo):
-        # SPK spunlace keluarannya roll, bukan karton: tidak lewat packing list dan
-        # tidak dijadwalkan per batch. Yang dipastikan hanya hasilnya sudah dicatat.
+        # A spunlace SPK outputs rolls, not cartons: no packing list and no
+        # per-batch scheduling. The only gate is that output has been recorded.
         from models.production_roll import ProductionRoll
         ada = ProductionRoll.query.filter(ProductionRoll.work_order_id == wo.id,
                                           ProductionRoll.parent_roll_id.is_(None),
@@ -3295,8 +3295,8 @@ def complete_work_order(id):
                 .scalar()
             )
 
-        # SPK spunlace: stok sudah masuk Gudang Kain per roll waktu rollnya
-        # dicatat, jadi penerimaan barang jadi di sini akan menggandakan stok.
+        # Spunlace SPK: stock already entered Gudang Kain per roll as each roll
+        # was recorded, so receiving finished goods here would double it.
         spunlace = _spk_spunlace_wo(wo)
         if spunlace:
             integration_results['finished_goods_receipt'] = {
@@ -3327,8 +3327,8 @@ def complete_work_order(id):
             func.coalesce(func.sum(ShiftProduction.good_quantity), 0),
         ).filter(ShiftProduction.work_order_id == id).first()
         shift_produced, shift_good = float(shift_totals[0]), float(shift_totals[1])
-        # SPK spunlace tidak diisi lewat input shift - realisasinya sudah
-        # dijumlahkan dari berat roll, jangan ditimpa angka shift yang kosong.
+        # Spunlace SPKs are not filled in through shift input - their output is
+        # summed from roll weights, so do not overwrite it with empty shift totals.
         if shift_produced > 0 and not spunlace:
             wo.quantity_produced = shift_produced
             wo.quantity_good = shift_good
@@ -3407,10 +3407,10 @@ def revert_completed_work_order(id):
 
         user_id = int(get_jwt_identity())
 
-        # SPK spunlace tidak pernah menerima barang jadi lewat Tutup SPK (stoknya
-        # masuk per roll), jadi tidak ada yang perlu dibalik di sini - cukup
-        # dikembalikan ke 'released'. Rollnya sendiri dibatalkan satu per satu di
-        # halaman Roll Spunlace kalau memang salah catat.
+        # A spunlace SPK never receives finished goods through Tutup SPK (stock
+        # arrives per roll), so there is nothing to unwind here - just put it
+        # back to 'released'. Individual rolls are cancelled on the Roll Spunlace
+        # page when they were recorded wrongly.
         from routes.production_roll import _spk_spunlace
         if _spk_spunlace(wo):
             _log_wo_status_change(wo, 'released', user_id=user_id, notes='Batal Tutup SPK (spunlace)')

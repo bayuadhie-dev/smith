@@ -6,61 +6,61 @@ const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
 export interface CountUpProps {
   value: number
-  /** Kedipkan sebentar saat nilainya berubah sesudah tampil (data disegarkan). */
+  /** Flash briefly when the value changes after it is already on screen. */
   flashOnChange?: boolean
-  /** Pemformat angka; bawaan ribuan gaya Indonesia. */
+  /** Number formatter; defaults to Indonesian thousand separators. */
   format?: (n: number) => string
   className?: string
   duration?: number
 }
 
 /**
- * Angka yang naik ke nilai aslinya.
+ * A number that counts up to its value.
  *
- * Saat data di-muat ulang, hitungan LANJUT dari angka terakhir yang tampil -
- * bukan mundur ke nol dulu. Tanpa itu, setiap penyegaran otomatis dashboard
- * (tiap 2 menit) membuat semua angka berkedip dari nol dan terbaca seperti
- * data hilang.
+ * On a data refresh the count CONTINUES from the number currently shown instead
+ * of dropping back to zero first. Without that, every automatic dashboard
+ * refresh (every 2 minutes) makes all figures blink from zero, which reads like
+ * the data was lost.
  */
 export default function CountUp({ value, format, className, duration = 1.1, flashOnChange = true }: CountUpProps) {
   const motionOn = useMotionOn()
   const revealed = useRevealed()
   const fmt = format || ((n: number) => Math.round(n).toLocaleString('id-ID'))
   const mv = useMotionValue(0)
-  const terakhir = useRef(0)
-  const nilaiLama = useRef<number | null>(null)
-  const [kedip, setKedip] = useState(false)
-  const [teks, setTeks] = useState(() => fmt(motionOn ? 0 : value))
+  const lastShown = useRef(0)
+  const prevValue = useRef<number | null>(null)
+  const [flash, setFlash] = useState(false)
+  const [text, setText] = useState(() => fmt(motionOn ? 0 : value))
 
-  // Kedip hanya untuk perubahan SESUDAH angka pertama tampil - penyegaran
-  // otomatis yang nilainya sama tidak membuat layar berkedip-kedip.
+  // Flash only for changes AFTER the first number was painted, so an automatic
+  // refresh returning the same value does not make the screen blink.
   useEffect(() => {
-    const lama = nilaiLama.current
-    nilaiLama.current = value
-    if (!flashOnChange || !motionOn || lama === null || lama === value) return
-    setKedip(true)
-    const t = setTimeout(() => setKedip(false), 900)
+    const previous = prevValue.current
+    prevValue.current = value
+    if (!flashOnChange || !motionOn || previous === null || previous === value) return
+    setFlash(true)
+    const t = setTimeout(() => setFlash(false), 900)
     return () => clearTimeout(t)
   }, [value, flashOnChange, motionOn])
 
   useEffect(() => {
     if (!motionOn || !revealed) {
-      terakhir.current = value
+      lastShown.current = value
       mv.set(value)
-      setTeks(fmt(value))
+      setText(fmt(value))
       return
     }
-    mv.set(terakhir.current)
-    const kontrol = animate(mv, value, {
+    mv.set(lastShown.current)
+    const controls = animate(mv, value, {
       duration,
       ease: EASE,
-      onUpdate: (n) => { terakhir.current = n; setTeks(fmt(n)) },
-      onComplete: () => { terakhir.current = value; setTeks(fmt(value)) },
+      onUpdate: (n) => { lastShown.current = n; setText(fmt(n)) },
+      onComplete: () => { lastShown.current = value; setText(fmt(value)) },
     })
-    return () => kontrol.stop()
-    // fmt sengaja tidak ikut: pemanggil umumnya mengirim fungsi baru tiap render
+    return () => controls.stop()
+    // fmt is deliberately excluded: callers usually pass a fresh function per render
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, motionOn, revealed, duration])
 
-  return <span className={`tabular-nums ${kedip ? 'erp-flash' : ''} ${className || ''}`}>{teks}</span>
+  return <span className={`tabular-nums ${flash ? 'erp-flash' : ''} ${className || ''}`}>{text}</span>
 }

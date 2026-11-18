@@ -7,100 +7,99 @@ const SPLASH_MS = 900
 const REVEAL_S = 0.9
 const EASE: [number, number, number, number] = [0.65, 0, 0.35, 1]
 
-/** Titik tengah tanda perusahaan di sidebar, dalam piksel layar. */
+/** Centre of the company mark in the sidebar, in viewport pixels. */
 function brandOrigin() {
-  const bawaan = { x: window.innerWidth * 0.04, y: window.innerHeight * 0.06 }
+  const fallback = { x: window.innerWidth * 0.04, y: window.innerHeight * 0.06 }
   const el = document.querySelector('[data-brand-mark]')
-  if (!el) return bawaan
+  if (!el) return fallback
   const r = el.getBoundingClientRect()
-  if (!r.width || !r.height) return bawaan
+  if (!r.width || !r.height) return fallback
   return { x: r.left + r.width / 2, y: r.top + r.height / 2 }
 }
 
-function adaPenanda() {
+function hasPendingFlag() {
   try {
     return localStorage.getItem(KEY) === '1'
   } catch {
-    return false           // penyimpanan diblokir: lewati layar pembuka
+    return false           // storage blocked: skip the splash screen
   }
 }
 
-function pakaiPenanda() {
+function consumePendingFlag() {
   try {
     localStorage.removeItem(KEY)
-  } catch { /* abaikan: paling-paling layar pembuka muncul sekali lagi */ }
+  } catch { /* ignore: worst case the splash shows once more */ }
 }
 
 /**
- * Layar pembuka singkat, lalu tirai gelap dilubangi lingkaran yang melebar dari
- * tanda perusahaan di sidebar.
+ * A short splash screen, then a dark curtain with a hole that widens out of the
+ * company mark in the sidebar.
  *
- * Muncul SEKALI PER LOGIN, bukan per tab: penandanya dipasang saat masuk
- * (authSlice) dan dipakai habis di sini. Jadi menyegarkan halaman atau membuka
- * tab baru tidak memunculkannya lagi - ERP ini dibuka berkali-kali sehari,
- * layar pembuka yang berulang jadi gangguan, bukan sambutan.
+ * Shows ONCE PER LOGIN, not per tab: the flag is set on sign-in (authSlice) and
+ * consumed here. Refreshing the page or opening a new tab does not bring it
+ * back - this ERP is opened many times a day, and a splash that keeps
+ * reappearing is an interruption, not a welcome.
  *
- * Catatan teknis (keluhan "kurang halus", 2026-11-18): dulu yang dianimasikan
- * `clip-path` pada PEMBUNGKUS SELURUH APLIKASI, sehingga setiap frame memaksa
- * seluruh pohon DOM (sidebar, header, isi dashboard) digambar ulang - patah di
- * layar besar, dan selama animasi elemen position:fixed di dalamnya berubah
- * acuan. Sekarang yang bergerak hanya SATU lapisan gelap kosong di atas
- * aplikasi; lubangnya dibuat dengan mask radial-gradient yang radiusnya ditulis
- * langsung ke style tiap frame, tanpa render ulang React. Isi aplikasi tidak
- * ikut digambar ulang sama sekali.
+ * Technical note (user: "it is not smooth", 2026-11-18): this used to animate
+ * `clip-path` on the WRAPPER AROUND THE WHOLE APP, so every frame forced the
+ * entire DOM tree (sidebar, header, dashboard) to repaint - janky on a large
+ * screen, and position:fixed descendants changed their containing block while
+ * it ran. Now only ONE empty dark layer on top of the app moves; its hole is a
+ * radial-gradient mask whose radius is written straight to style each frame,
+ * with no React re-render. The app itself is never repainted.
  */
-export default function SplashReveal({ children, nama, logo }: {
+export default function SplashReveal({ children, name, logo }: {
   children: ReactNode
-  nama?: string
-  /** Logo perusahaan; bila kosong dipakai inisial namanya. */
+  name?: string
+  /** Company logo; the name initials are used when it is missing. */
   logo?: string
 }) {
   const motionOn = useMotionOn()
-  const [logoGagal, setLogoGagal] = useState(false)
-  const [fase, setFase] = useState<'splash' | 'reveal' | 'selesai'>(
-    () => (motionOn && adaPenanda() ? 'splash' : 'selesai'))
-  const tirai = useRef<HTMLDivElement>(null)
+  const [logoFailed, setLogoFailed] = useState(false)
+  const [phase, setPhase] = useState<'splash' | 'reveal' | 'done'>(
+    () => (motionOn && hasPendingFlag() ? 'splash' : 'done'))
+  const curtain = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (fase !== 'splash') return
-    pakaiPenanda()
-    const t = setTimeout(() => setFase('reveal'), SPLASH_MS)
+    if (phase !== 'splash') return
+    consumePendingFlag()
+    const t = setTimeout(() => setPhase('reveal'), SPLASH_MS)
     return () => clearTimeout(t)
-  }, [fase])
+  }, [phase])
 
   useEffect(() => {
-    if (fase !== 'reveal') return
-    const el = tirai.current
-    if (!el) { setFase('selesai'); return }
+    if (phase !== 'reveal') return
+    const el = curtain.current
+    if (!el) { setPhase('done'); return }
     const { x, y } = brandOrigin()
-    // Jarak terjauh dari titik asal ke sudut layar, dilebihkan sedikit supaya
-    // tepi lingkaran benar-benar keluar layar saat animasi selesai.
-    const maks = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y)) * 1.05
-    const lubang = (r: number) => {
+    // Longest distance from the origin to a screen corner, with a little extra
+    // so the circle edge is fully off-screen when the animation ends.
+    const maxRadius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y)) * 1.05
+    const hole = (r: number) => {
       const g = `radial-gradient(circle ${r}px at ${x}px ${y}px, transparent 0 ${r}px, #000 ${r + 0.5}px)`
       el.style.maskImage = g
       ;(el.style as any).webkitMaskImage = g
     }
-    lubang(0)
-    const kontrol = animate(0, maks, {
+    hole(0)
+    const controls = animate(0, maxRadius, {
       duration: REVEAL_S,
       ease: EASE,
-      onUpdate: lubang,
-      onComplete: () => setFase('selesai'),
+      onUpdate: hole,
+      onComplete: () => setPhase('done'),
     })
-    return () => kontrol.stop()
-  }, [fase])
+    return () => controls.stop()
+  }, [phase])
 
-  const inisial = (nama || '').replace(/^PT\.?\s*/i, '').trim().split(/\s+/).slice(0, 2)
+  const initials = (name || '').replace(/^PT\.?\s*/i, '').trim().split(/\s+/).slice(0, 2)
     .map((w) => w[0]).join('').toUpperCase() || 'ER'
 
   return (
-    <RevealContext.Provider value={fase === 'selesai'}>
+    <RevealContext.Provider value={phase === 'done'}>
       {children}
 
-      {fase !== 'selesai' && (
+      {phase !== 'done' && (
         <div
-          ref={tirai}
+          ref={curtain}
           className="fixed inset-0 z-[80]"
           style={{ backgroundColor: 'rgb(var(--brand-900))', willChange: 'mask-image' }}
           aria-hidden
@@ -108,7 +107,7 @@ export default function SplashReveal({ children, nama, logo }: {
       )}
 
       <AnimatePresence>
-        {fase === 'splash' && (
+        {phase === 'splash' && (
           <motion.div
             key="splash"
             className="fixed inset-0 z-[90] flex flex-col items-center justify-center gap-5"
@@ -117,12 +116,12 @@ export default function SplashReveal({ children, nama, logo }: {
             transition={{ duration: 0.25, ease: EASE }}
             aria-hidden
           >
-            {logo && !logoGagal ? (
-              <img src={logo} alt={nama || 'Logo perusahaan'} onError={() => setLogoGagal(true)}
+            {logo && !logoFailed ? (
+              <img src={logo} alt={name || 'Logo perusahaan'} onError={() => setLogoFailed(true)}
                    className="h-16 w-auto max-w-[220px] object-contain" />
             ) : (
               <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600 text-lg font-bold tracking-tight text-white">
-                {inisial}
+                {initials}
               </div>
             )}
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-700 border-t-primary-500" />

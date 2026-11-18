@@ -3,56 +3,56 @@ import { useLocation } from 'react-router-dom'
 import { motionEnabled } from '../../utils/motion'
 
 /**
- * Batang tipis di tepi kiri sidebar yang meluncur ke menu yang sedang aktif.
+ * Thin bar on the sidebar's left edge that slides to the menu item in view.
  *
- * Dibuat sebagai satu elemen yang diukur dari DOM (`[aria-current="page"]`),
- * bukan satu penanda per baris menu: sidebar punya tiga tingkat (modul, anak,
- * cucu) yang digambar di tempat berbeda, jadi menyisipkan penanda di tiap
- * tingkat akan mengacak-acak berkas 900 baris itu. Latar menu aktif yang sudah
- * ada tidak diganggu - ini tambahan, bukan pengganti.
+ * Built as a single element measured from the DOM (`[aria-current="page"]`)
+ * rather than one marker per row: the sidebar renders three levels of menu
+ * (module, child, grandchild) in different places, so adding a marker to each
+ * level would churn that 900-line file. The existing active-item background is
+ * left alone - this is an addition, not a replacement.
  */
-export default function SidebarActiveMarker({ wadah }: { wadah: RefObject<HTMLElement> }) {
-  const lokasi = useLocation()
-  const [kotak, setKotak] = useState<{ top: number; height: number } | null>(null)
+export default function SidebarActiveMarker({ container }: { container: RefObject<HTMLElement> }) {
+  const location = useLocation()
+  const [box, setBox] = useState<{ top: number; height: number } | null>(null)
   const rafRef = useRef(0)
 
   useEffect(() => {
-    const el = wadah.current
+    const el = container.current
     if (!el) return
 
-    const ukur = () => {
-      const aktif = el.querySelector('[aria-current="page"]') as HTMLElement | null
-      if (!aktif) { setKotak(null); return }
-      const a = aktif.getBoundingClientRect()
-      const w = el.getBoundingClientRect()
-      setKotak({ top: a.top - w.top + el.scrollTop, height: a.height })
+    const measure = () => {
+      const active = el.querySelector('[aria-current="page"]') as HTMLElement | null
+      if (!active) { setBox(null); return }
+      const a = active.getBoundingClientRect()
+      const c = el.getBoundingClientRect()
+      setBox({ top: a.top - c.top + el.scrollTop, height: a.height })
     }
 
-    // Diukur pada frame berikutnya: saat rute baru saja berganti, tata letak
-    // menu (termasuk grup yang membuka diri sendiri) belum selesai dihitung.
-    rafRef.current = requestAnimationFrame(() => requestAnimationFrame(ukur))
+    // Measured on the next frame: right after a route change the menu layout
+    // (including groups that expand themselves) is not settled yet.
+    rafRef.current = requestAnimationFrame(() => requestAnimationFrame(measure))
 
-    const pengamat = new MutationObserver(ukur)
-    pengamat.observe(el, { subtree: true, attributes: true, childList: true, attributeFilter: ['aria-current'] })
-    el.addEventListener('scroll', ukur)
-    window.addEventListener('resize', ukur)
+    const observer = new MutationObserver(measure)
+    observer.observe(el, { subtree: true, attributes: true, childList: true, attributeFilter: ['aria-current'] })
+    el.addEventListener('scroll', measure)
+    window.addEventListener('resize', measure)
     return () => {
       cancelAnimationFrame(rafRef.current)
-      pengamat.disconnect()
-      el.removeEventListener('scroll', ukur)
-      window.removeEventListener('resize', ukur)
+      observer.disconnect()
+      el.removeEventListener('scroll', measure)
+      window.removeEventListener('resize', measure)
     }
-  }, [wadah, lokasi.pathname, lokasi.search])
+  }, [container, location.pathname, location.search])
 
-  if (!kotak) return null
+  if (!box) return null
 
   return (
     <span
       aria-hidden
       className="pointer-events-none absolute left-0 w-0.5 rounded-full bg-primary-600 dark:bg-primary-400"
       style={{
-        top: kotak.top,
-        height: kotak.height,
+        top: box.top,
+        height: box.height,
         transition: motionEnabled() ? 'top 260ms cubic-bezier(0.16,1,0.3,1), height 260ms cubic-bezier(0.16,1,0.3,1)' : undefined,
       }}
     />
