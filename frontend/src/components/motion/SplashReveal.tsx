@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, animate, motion } from 'framer-motion'
 import { RevealContext, useMotionOn } from './RevealContext'
 
 const KEY = 'erp_splash_pending'
@@ -7,15 +7,14 @@ const SPLASH_MS = 900
 const REVEAL_S = 0.9
 const EASE: [number, number, number, number] = [0.65, 0, 0.35, 1]
 
-/** Titik tengah tanda perusahaan di sidebar, dalam persen layar. */
+/** Titik tengah tanda perusahaan di sidebar, dalam piksel layar. */
 function brandOrigin() {
+  const bawaan = { x: window.innerWidth * 0.04, y: window.innerHeight * 0.06 }
   const el = document.querySelector('[data-brand-mark]')
-  if (!el) return '4% 6%'
+  if (!el) return bawaan
   const r = el.getBoundingClientRect()
-  if (!r.width || !r.height) return '4% 6%'
-  const x = ((r.left + r.width / 2) / window.innerWidth) * 100
-  const y = ((r.top + r.height / 2) / window.innerHeight) * 100
-  return `${x.toFixed(1)}% ${y.toFixed(1)}%`
+  if (!r.width || !r.height) return bawaan
+  return { x: r.left + r.width / 2, y: r.top + r.height / 2 }
 }
 
 function adaPenanda() {
@@ -33,13 +32,22 @@ function pakaiPenanda() {
 }
 
 /**
- * Layar pembuka singkat lalu isi aplikasi "dibuka" dengan lingkaran yang melebar
- * dari tanda perusahaan di sidebar.
+ * Layar pembuka singkat, lalu tirai gelap dilubangi lingkaran yang melebar dari
+ * tanda perusahaan di sidebar.
  *
  * Muncul SEKALI PER LOGIN, bukan per tab: penandanya dipasang saat masuk
  * (authSlice) dan dipakai habis di sini. Jadi menyegarkan halaman atau membuka
  * tab baru tidak memunculkannya lagi - ERP ini dibuka berkali-kali sehari,
- * layar pembuka yang muncul berulang jadi gangguan, bukan sambutan.
+ * layar pembuka yang berulang jadi gangguan, bukan sambutan.
+ *
+ * Catatan teknis (keluhan "kurang halus", 2026-11-18): dulu yang dianimasikan
+ * `clip-path` pada PEMBUNGKUS SELURUH APLIKASI, sehingga setiap frame memaksa
+ * seluruh pohon DOM (sidebar, header, isi dashboard) digambar ulang - patah di
+ * layar besar, dan selama animasi elemen position:fixed di dalamnya berubah
+ * acuan. Sekarang yang bergerak hanya SATU lapisan gelap kosong di atas
+ * aplikasi; lubangnya dibuat dengan mask radial-gradient yang radiusnya ditulis
+ * langsung ke style tiap frame, tanpa render ulang React. Isi aplikasi tidak
+ * ikut digambar ulang sama sekali.
  */
 export default function SplashReveal({ children, nama, logo }: {
   children: ReactNode
@@ -51,17 +59,36 @@ export default function SplashReveal({ children, nama, logo }: {
   const [logoGagal, setLogoGagal] = useState(false)
   const [fase, setFase] = useState<'splash' | 'reveal' | 'selesai'>(
     () => (motionOn && adaPenanda() ? 'splash' : 'selesai'))
-  const [origin, setOrigin] = useState('4% 6%')
-  const ref = useRef<HTMLDivElement>(null)
+  const tirai = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (fase !== 'splash') return
     pakaiPenanda()
-    const t = setTimeout(() => {
-      setOrigin(brandOrigin())
-      setFase('reveal')
-    }, SPLASH_MS)
+    const t = setTimeout(() => setFase('reveal'), SPLASH_MS)
     return () => clearTimeout(t)
+  }, [fase])
+
+  useEffect(() => {
+    if (fase !== 'reveal') return
+    const el = tirai.current
+    if (!el) { setFase('selesai'); return }
+    const { x, y } = brandOrigin()
+    // Jarak terjauh dari titik asal ke sudut layar, dilebihkan sedikit supaya
+    // tepi lingkaran benar-benar keluar layar saat animasi selesai.
+    const maks = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y)) * 1.05
+    const lubang = (r: number) => {
+      const g = `radial-gradient(circle ${r}px at ${x}px ${y}px, transparent 0 ${r}px, #000 ${r + 0.5}px)`
+      el.style.maskImage = g
+      ;(el.style as any).webkitMaskImage = g
+    }
+    lubang(0)
+    const kontrol = animate(0, maks, {
+      duration: REVEAL_S,
+      ease: EASE,
+      onUpdate: lubang,
+      onComplete: () => setFase('selesai'),
+    })
+    return () => kontrol.stop()
   }, [fase])
 
   const inisial = (nama || '').replace(/^PT\.?\s*/i, '').trim().split(/\s+/).slice(0, 2)
@@ -69,37 +96,22 @@ export default function SplashReveal({ children, nama, logo }: {
 
   return (
     <RevealContext.Provider value={fase === 'selesai'}>
-      {/* Latar gelap tetap ada SELAMA lingkaran melebar, bukan ikut memudar
-          bersama logo - tanpa ini, bagian di luar lingkaran menampilkan latar
-          halaman yang terang sehingga pembukaannya terlihat "transparan",
-          bukan terbuka dari gelap. Warnanya ikut tema perusahaan (Falmaco
-          mendekati hitam, Fengsheng hijau tua). */}
+      {children}
+
       {fase !== 'selesai' && (
-        <div className="fixed inset-0 z-[60]" style={{ backgroundColor: 'rgb(var(--gray-950))' }} aria-hidden />
+        <div
+          ref={tirai}
+          className="fixed inset-0 z-[80]"
+          style={{ backgroundColor: 'rgb(var(--gray-950))', willChange: 'mask-image' }}
+          aria-hidden
+        />
       )}
-      <motion.div
-        ref={ref}
-        className={fase !== 'selesai' ? 'relative z-[70]' : undefined}
-        initial={fase === 'selesai' ? false : { clipPath: `circle(0% at ${origin})` }}
-        animate={fase === 'reveal' ? { clipPath: `circle(150% at ${origin})` } : undefined}
-        transition={{ duration: REVEAL_S, ease: EASE }}
-        onAnimationComplete={() => {
-          // Clip-path dilepas langsung lewat ref, BUKAN dianimasikan ke "none":
-          // Framer Motion menerjemahkan "none" jadi circle(0%) sehingga seluruh
-          // isi layar menghilang. Sekalian supaya elemen position:fixed di dalam
-          // (sidebar, header) kembali mengacu ke viewport, bukan ke kotak ini.
-          if (ref.current) ref.current.style.clipPath = 'none'
-          setFase('selesai')
-        }}
-      >
-        {children}
-      </motion.div>
 
       <AnimatePresence>
         {fase === 'splash' && (
           <motion.div
             key="splash"
-            className="fixed inset-0 z-[80] flex flex-col items-center justify-center gap-5"
+            className="fixed inset-0 z-[90] flex flex-col items-center justify-center gap-5"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25, ease: EASE }}
