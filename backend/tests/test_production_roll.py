@@ -409,3 +409,72 @@ def test_batal_tutup_spk_spunlace_tidak_mengutak_atik_stok_roll(client, auth_hea
     assert _njo().status == 'released'
     sesudah = sum(float(i.quantity_on_hand or 0) for i in Inventory.query.filter_by(product_id=kain.id).all())
     assert sesudah == sebelum
+
+
+def _bon(db_session, test_user, wo_id, material, qty, tanggal, returned=0, nomor='MI-UJI'):
+    from models.material_issue import MaterialIssue, MaterialIssueItem
+    issue = MaterialIssue(issue_number=nomor, work_order_id=wo_id, status='issued',
+                          issue_date=tanggal, requested_by=test_user.id)
+    db_session.add(issue)
+    db_session.commit()
+    db_session.add(MaterialIssueItem(material_issue_id=issue.id, line_number=1, material_id=material.id,
+                                     description=material.name, required_quantity=qty, issued_quantity=qty,
+                                     returned_quantity=returned, uom='KG'))
+    db_session.commit()
+    return issue
+
+
+@pytest.fixture
+def fiber(db_session):
+    from models.product import Material
+    m = Material(code='RAYON-A2-U', name='RAYON A2', material_type='raw_materials',
+                 category='fiber', primary_uom='KG')
+    db_session.add(m)
+    db_session.commit()
+    return m
+
+
+def test_susut_diberi_status_sesuai_batas_wajar(client, auth_headers, kain, db_session, test_user, fiber):
+    """Produksi 2026-11-18: susut wajar 5-10%, di luar itu diberi tanda."""
+    _post(client, auth_headers, kain, roll_number=51, gross_weight_kg=100, net_weight_kg=93)
+    bon = _bon(db_session, test_user, _njo().id, fiber, 100, date.today())
+
+    d = client.get(f'/api/production/rolls/spk/{_njo().id}/summary', headers=auth_headers).get_json()
+    assert d['susut_pct'] == 7 and d['susut_status'] == 'wajar'
+    assert d['susut_min_pct'] == 5 and d['susut_max_pct'] == 10
+
+    bon.items[0].issued_quantity = 120          # susut 22,5% - terlalu tinggi
+    db_session.commit()
+    assert client.get(f'/api/production/rolls/spk/{_njo().id}/summary',
+                      headers=auth_headers).get_json()['susut_status'] == 'tinggi'
+
+    bon.items[0].issued_quantity = 95           # susut 2,1% - terlalu rendah
+    db_session.commit()
+    assert client.get(f'/api/production/rolls/spk/{_njo().id}/summary',
+                      headers=auth_headers).get_json()['susut_status'] == 'rendah'
+
+    bon.items[0].issued_quantity = 90           # berat roll melebihi bahan
+    db_session.commit()
+    assert client.get(f'/api/production/rolls/spk/{_njo().id}/summary',
+                      headers=auth_headers).get_json()['susut_status'] == 'negatif'
+
+
+def test_bahan_satu_hari_dibagi_ke_dua_njo_menurut_berat_roll(client, auth_headers, kain, db_session, test_user, fiber):
+    """Pilihan (b) produksi: satu shift dua NJO -> bahan dibagi proporsional."""
+    lain = WorkOrder(wo_number='NJO-UJI-2', product_id=kain.id, quantity=500, uom='KG', status='released')
+    db_session.add(lain)
+    db_session.commit()
+
+    _post(client, auth_headers, kain, roll_number=61, gross_weight_kg=100, net_weight_kg=90)   # NJO-UJI-1
+    client.post('/api/production/rolls', headers=auth_headers,
+                json=_body(kain, roll_number=62, gross_weight_kg=40, net_weight_kg=30, work_order_id=lain.id))
+    # satu BON tertulis atas NJO-UJI-1 saja, padahal hari itu dua NJO jalan
+    _bon(db_session, test_user, _njo().id, fiber, 120, date.today())
+
+    satu = client.get(f'/api/production/rolls/spk/{_njo().id}/summary', headers=auth_headers).get_json()
+    dua = client.get(f'/api/production/rolls/spk/{lain.id}/summary', headers=auth_headers).get_json()
+
+    assert satu['fiber_kg'] == 90 and dua['fiber_kg'] == 30      # 90:30 kg roll -> 75% : 25%
+    assert round(satu['fiber_kg'] + dua['fiber_kg'], 2) == 120   # tidak ada bahan yang hilang/dobel
+    assert satu['pembagian'][0]['bagian_pct'] == 75 and dua['pembagian'][0]['bagian_pct'] == 25
+    assert satu['susut_kg'] == 0 and dua['susut_kg'] == 0

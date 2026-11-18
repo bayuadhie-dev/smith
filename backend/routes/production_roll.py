@@ -487,17 +487,114 @@ def cancel_roll(rid):
     return jsonify(roll.to_dict())
 
 
+SUSUT_MIN_DEFAULT = 5.0
+SUSUT_MAKS_DEFAULT = 10.0
+
+
+def _batas_susut():
+    """Rentang susut wajar spunlace, dari produksi 2026-11-18: 5-10%.
+
+    Bisa diubah di Pengaturan > Konfigurasi Sistem Lanjutan tanpa menyentuh kode.
+    """
+    from models.settings import SystemSetting
+
+    nilai = {r.setting_key: (r.setting_value or '').strip()
+             for r in SystemSetting.query.filter(SystemSetting.setting_key.in_(
+                 ['production.spunlace_susut_min_pct', 'production.spunlace_susut_max_pct'])).all()}
+
+    def angka(key, bawaan):
+        try:
+            return float(nilai.get(key) or bawaan)
+        except (TypeError, ValueError):
+            return bawaan
+
+    return (angka('production.spunlace_susut_min_pct', SUSUT_MIN_DEFAULT),
+            angka('production.spunlace_susut_max_pct', SUSUT_MAKS_DEFAULT))
+
+
+def _berat_roll_per_spk(tanggal_set):
+    """Berat bersih roll per (tanggal, SPK) untuk tanggal-tanggal yang diminta."""
+    if not tanggal_set:
+        return {}
+    rolls = ProductionRoll.query.filter(ProductionRoll.produced_at.in_(list(tanggal_set)),
+                                        ProductionRoll.parent_roll_id.is_(None),
+                                        ProductionRoll.status != 'cancelled',
+                                        ProductionRoll.work_order_id.isnot(None)).all()
+    out = {}
+    for r in rolls:
+        out.setdefault(r.produced_at, {}).setdefault(r.work_order_id, 0.0)
+        out[r.produced_at][r.work_order_id] += float(r.net_weight_kg or 0)
+    return out
+
+
+def _bahan_spk_spunlace(wo):
+    """Bahan yang keluar gudang untuk SPK ini, dengan pembagian antar NJO.
+
+    Keputusan produksi 2026-11-18 (pilihan b): kalau satu shift menjalankan dua
+    NJO, bahan dari BON Permintaan Bahan hari itu dibagi menurut proporsi berat
+    roll tiap NJO - bukan ditimpakan semua ke satu NJO yang kebetulan tertulis
+    di BON. BON pada tanggal yang tidak punya roll sama sekali tetap utuh milik
+    SPK yang tertulis di BON itu.
+
+    Mengembalikan (daftar bahan, fiber_kg, catatan pembagian).
+    """
+    from models.material_issue import MaterialIssue, MaterialIssueItem
+
+    # Tanggal produksi SPK ini menentukan hari mana saja yang mungkin dipakai
+    # bersama NJO lain; BON yang diperiksa dibatasi ke SPK-SPK itu saja supaya
+    # tidak memindai seluruh permintaan bahan pabrik.
+    tanggal = {r.produced_at for r in ProductionRoll.query.filter(
+        ProductionRoll.work_order_id == wo.id, ProductionRoll.parent_roll_id.is_(None),
+        ProductionRoll.status != 'cancelled').all() if r.produced_at}
+    berat = _berat_roll_per_spk(tanggal)
+    spk_terkait = {wo.id} | {i for hari in berat.values() for i in hari}
+
+    rows = (db.session.query(MaterialIssueItem, MaterialIssue)
+            .join(MaterialIssue, MaterialIssueItem.material_issue_id == MaterialIssue.id)
+            .filter(MaterialIssue.status.in_(('issued', 'completed')),
+                    MaterialIssue.work_order_id.in_(spk_terkait)).all())
+
+    bahan, pembagian = {}, {}
+    for item, issue in rows:
+        tgl = issue.issue_date.date() if hasattr(issue.issue_date, 'date') else issue.issue_date
+        per_spk = berat.get(tgl) or {}
+        milik_sendiri = issue.work_order_id == wo.id
+        if per_spk and wo.id in per_spk:
+            total = sum(per_spk.values())
+            bagian = (per_spk[wo.id] / total) if total else 0.0
+        elif milik_sendiri:
+            # Hari itu SPK ini belum menghasilkan roll (bahan ditarik lebih dulu,
+            # rollnya jadi besok): biarkan utuh di SPK yang tertulis di BON.
+            bagian = 1.0
+        else:
+            continue              # BON milik SPK lain dan SPK ini tidak produksi hari itu
+
+        qty = (float(item.issued_quantity or 0) - float(item.returned_quantity or 0)) * bagian
+        if abs(qty) < 0.0001:
+            continue
+        key = (item.material_id, item.product_id, item.uom)
+        b = bahan.setdefault(key, {'name': item.description, 'uom': item.uom, 'qty': 0.0})
+        b['qty'] = round(b['qty'] + qty, 2)
+        if bagian < 0.9999 and tgl:
+            lain = [i for i in per_spk if i != wo.id]
+            pembagian[tgl] = {'tanggal': tgl.isoformat(), 'bagian_pct': round(bagian * 100, 1),
+                              'spk_lain': len(lain)}
+
+    fiber = round(sum(b['qty'] for b in bahan.values() if (b['uom'] or '').upper() == 'KG'), 2)
+    return sorted(bahan.values(), key=lambda x: x['name'] or ''), fiber, sorted(
+        pembagian.values(), key=lambda x: x['tanggal'])
+
+
 @production_roll_bp.route('/spk/<int:wo_id>/summary', methods=['GET'])
 @jwt_required()
 @require_permission('production.view')
 def spk_summary(wo_id):
-    """Neraca sederhana SPK spunlace: fiber yang keluar gudang lawan berat roll.
+    """Neraca SPK spunlace: bahan yang keluar gudang lawan berat roll.
 
-    Dipakai halaman Tutup SPK. Selisihnya adalah susut proses (trim, serat
-    terbuang, air) - ditampilkan apa adanya, bukan gerbang yang memblokir,
-    karena belum ada angka toleransi dari produksi.
+    Dipakai halaman Tutup SPK. Selisihnya susut proses (trim, serat terbuang,
+    air). Rentang wajarnya 5-10% menurut produksi; di luar itu diberi peringatan,
+    tapi tetap bukan gerbang yang memblokir penutupan SPK.
     """
-    from models.material_issue import MaterialIssue, MaterialIssueItem
     from models.production import WorkOrder
 
     wo = db.session.get(WorkOrder, wo_id)
@@ -516,19 +613,20 @@ def spk_summary(wo_id):
     net_total = round(sum(float(r.net_weight_kg or 0) for r in rolls), 2)
     net_baik = round(sum(float(r.net_weight_kg or 0) for r in rolls if r.grade in ('A', 'B')), 2)
 
-    bahan = {}
-    rows = (db.session.query(MaterialIssueItem, MaterialIssue)
-            .join(MaterialIssue, MaterialIssueItem.material_issue_id == MaterialIssue.id)
-            .filter(MaterialIssue.work_order_id == wo.id,
-                    MaterialIssue.status.in_(('issued', 'completed'))).all())
-    for item, _issue in rows:
-        qty = float(item.issued_quantity or 0) - float(item.returned_quantity or 0)
-        if abs(qty) < 0.0001:
-            continue
-        key = (item.material_id, item.product_id, item.uom)
-        b = bahan.setdefault(key, {'name': item.description, 'uom': item.uom, 'qty': 0.0})
-        b['qty'] = round(b['qty'] + qty, 2)
-    fiber_kg = round(sum(b['qty'] for b in bahan.values() if (b['uom'] or '').upper() == 'KG'), 2)
+    bahan, fiber_kg, pembagian = _bahan_spk_spunlace(wo)
+    susut_kg = round(fiber_kg - net_total, 2) if fiber_kg else 0.0
+    susut_pct = round(susut_kg / fiber_kg * 100, 2) if fiber_kg else 0.0
+    batas_min, batas_maks = _batas_susut()
+    if not fiber_kg:
+        status = 'belum'
+    elif susut_kg < 0:
+        status = 'negatif'
+    elif susut_pct > batas_maks:
+        status = 'tinggi'
+    elif susut_pct < batas_min:
+        status = 'rendah'
+    else:
+        status = 'wajar'
 
     return jsonify({
         'work_order_id': wo.id,
@@ -539,10 +637,14 @@ def spk_summary(wo_id):
         'net_good_kg': net_baik,
         'net_reject_kg': round(net_total - net_baik, 2),
         'per_grade': sorted(per_grade.values(), key=lambda x: x['grade']),
-        'materials': sorted(bahan.values(), key=lambda x: x['name'] or ''),
+        'materials': bahan,
         'fiber_kg': fiber_kg,
-        'susut_kg': round(fiber_kg - net_total, 2) if fiber_kg else 0.0,
-        'susut_pct': round((fiber_kg - net_total) / fiber_kg * 100, 2) if fiber_kg else 0.0,
+        'susut_kg': susut_kg,
+        'susut_pct': susut_pct,
+        'susut_status': status,
+        'susut_min_pct': batas_min,
+        'susut_max_pct': batas_maks,
+        'pembagian': pembagian,
     })
 
 

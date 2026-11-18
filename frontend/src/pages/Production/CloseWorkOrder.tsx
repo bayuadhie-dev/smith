@@ -50,6 +50,13 @@ interface QcWarning {
   history_reason: string | null;
 }
 
+const SUSUT_CLASS: Record<string, string> = {
+  negatif: 'text-red-600 dark:text-red-400',
+  tinggi: 'text-amber-700 dark:text-amber-300',
+  rendah: 'text-amber-700 dark:text-amber-300',
+  wajar: 'text-emerald-700 dark:text-emerald-300',
+};
+
 const kgFmt = (n: number | null | undefined) =>
   `${Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 })} kg`;
 
@@ -295,7 +302,7 @@ export default function CloseWorkOrder() {
                   <li className="flex justify-between"><span>Berat roll</span><span>{kgFmt(spunlace.net_kg)}</span></li>
                   <li className="flex justify-between font-semibold border-t border-gray-200 dark:border-gray-700 pt-1">
                     <span>Susut</span>
-                    <span className={spunlace.susut_kg < 0 ? 'text-red-600 dark:text-red-400' : ''}>
+                    <span className={SUSUT_CLASS[spunlace.susut_status] || ''}>
                       {kgFmt(spunlace.susut_kg)} ({spunlace.susut_pct}%)
                     </span>
                   </li>
@@ -303,9 +310,18 @@ export default function CloseWorkOrder() {
               ) : (
                 <div className="text-sm text-gray-400">Belum bisa dihitung - bahan baku belum dikeluarkan lewat permintaan bahan.</div>
               )}
-              {spunlace.susut_kg < 0 && (
-                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
-                  Berat roll melebihi bahan yang keluar. Periksa lagi penimbangan atau permintaan bahannya.
+              {spunlace.susut_status && spunlace.susut_status !== 'belum' && (
+                <p className={`mt-2 text-xs ${SUSUT_CLASS[spunlace.susut_status] || 'text-gray-500 dark:text-gray-400'}`}>
+                  {spunlace.susut_status === 'negatif' && 'Berat roll melebihi bahan yang keluar. Periksa lagi penimbangan atau permintaan bahannya.'}
+                  {spunlace.susut_status === 'tinggi' && `Di atas batas wajar ${spunlace.susut_min_pct}-${spunlace.susut_max_pct}%. Cek bahan yang terbuang atau roll yang belum dicatat.`}
+                  {spunlace.susut_status === 'rendah' && `Di bawah batas wajar ${spunlace.susut_min_pct}-${spunlace.susut_max_pct}%. Cek timbangan atau BON yang belum dicatat.`}
+                  {spunlace.susut_status === 'wajar' && `Masih dalam batas wajar ${spunlace.susut_min_pct}-${spunlace.susut_max_pct}%.`}
+                </p>
+              )}
+              {(spunlace.pembagian || []).length > 0 && (
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  Hari yang dipakai dua NJO, bahannya dibagi menurut berat roll:{' '}
+                  {spunlace.pembagian.map((d: any) => `${d.tanggal} ${d.bagian_pct}%`).join(', ')}.
                 </p>
               )}
             </div>
