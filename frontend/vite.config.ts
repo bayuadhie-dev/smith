@@ -44,6 +44,11 @@ export default defineConfig({
     // (Finance, 2026-11-18). Setiap berkas yang tersinkron dari laptop juga
     // memicu muat ulang penuh untuk modul yang bukan komponen React.
     // Dimatikan = halaman hanya berganti kode saat pemakai menyegarkan sendiri.
+    // Catatan Vite 8: soket dev server pindah ke server.ws, dan hmr:false SAJA
+    // tidak mematikannya (dicek di node_modules: `if (serverConfig.hmr === false
+    // || serverConfig.ws === false) return;`). Soket yang masih hidup itu yang
+    // memicu muat ulang, jadi keduanya dimatikan bersama.
+    ...(process.env.VITE_NO_HMR ? { ws: false as const } : {}),
     hmr: process.env.VITE_NO_HMR
       ? false
       : process.env.VITE_HMR_HOST
