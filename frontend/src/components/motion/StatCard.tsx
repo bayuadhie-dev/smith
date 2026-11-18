@@ -34,7 +34,7 @@ export default function StatCard({
   const motionOn = useMotionOn()
   return (
     <motion.div
-      className={'group relative overflow-hidden rounded-2xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-5 '
+      className={'group relative overflow-hidden rounded-xl border border-gray-200/80 bg-gradient-to-b from-white to-gray-50 p-3.5 sm:rounded-2xl sm:p-5 '
         + 'shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_28px_-18px_rgba(16,24,40,0.35)] '
         + 'transition-shadow hover:shadow-[0_1px_2px_rgba(16,24,40,0.05),0_20px_40px_-20px_rgba(16,24,40,0.45)] '
         + `dark:border-gray-700/80 dark:from-gray-800 dark:to-gray-900 ${className || ''}`}
@@ -44,12 +44,12 @@ export default function StatCard({
       {/* Cahaya lembut di pojok: memberi kesan permukaan, bukan kotak datar. */}
       <span aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-primary-500/10 blur-2xl dark:bg-primary-400/10" />
       {icon && (
-        <span className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-700 ring-1 ring-inset ring-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:ring-primary-800/60">
+        <span className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary-700 ring-1 ring-inset ring-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:ring-primary-800/60 sm:mb-3 sm:h-10 sm:w-10 sm:rounded-xl">
           {icon}
         </span>
       )}
-      <p className="truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-500 dark:text-gray-400">{label}</p>
-      <p className={`mt-1 truncate text-[2rem] font-bold leading-tight tracking-tight ${valueClassName || 'text-gray-900 dark:text-white'}`}>
+      <p className="line-clamp-2 min-h-[1.9em] text-[10px] font-semibold uppercase leading-tight tracking-[0.1em] text-gray-500 dark:text-gray-400 sm:text-[11px] sm:tracking-[0.12em] lg:line-clamp-1 lg:min-h-0">{label}</p>
+      <p className={`mt-1 truncate text-xl font-bold leading-tight tracking-tight sm:text-[2rem] ${valueClassName || 'text-gray-900 dark:text-white'}`}>
         <CountUp value={value} format={format} />
       </p>
       {progress !== undefined && <ProgressBar value={progress} className="mt-2" barClassName={progressClassName} />}

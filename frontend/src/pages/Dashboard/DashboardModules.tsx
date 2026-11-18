@@ -114,7 +114,7 @@ const DashboardModules = () => {
           satu pun sumber data. */}
       <div className="relative">
       <Reveal>
-      <section className="relative overflow-hidden rounded-3xl px-6 pb-24 pt-7 text-white shadow-[0_20px_50px_-30px_rgba(16,24,40,0.9)]"
+      <section className="relative overflow-hidden rounded-2xl px-4 pb-16 pt-5 text-white shadow-[0_20px_50px_-30px_rgba(16,24,40,0.9)] sm:rounded-3xl sm:px-6 sm:pb-24 sm:pt-7"
         // Warna panel ikut merek perusahaan (Falmaco gunmetal, Fengsheng hijau hutan),
         // bukan hitam netral - masukan user 2026-11-18: "ga sesuai dengan tema warna".
         style={{ backgroundColor: 'rgb(var(--brand-900))' }}>
@@ -122,15 +122,15 @@ const DashboardModules = () => {
         <span aria-hidden className="pointer-events-none absolute -bottom-28 left-1/3 h-56 w-56 rounded-full bg-primary-400/10 blur-3xl" />
         <div className="relative flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               {sapaan()}{nama ? `, ${nama}` : ''}
             </h1>
-            <p className="mt-1 text-sm text-white/60">{tanggal}</p>
+            <p className="mt-1 text-xs text-white/60 sm:text-sm">{tanggal}</p>
           </div>
           <button
             onClick={() => refetch()}
             disabled={isFetching}
-            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur transition hover:bg-white/20 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition hover:bg-white/20 disabled:opacity-60 sm:px-4 sm:py-2 sm:text-sm"
           >
             <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
             Muat ulang
@@ -141,7 +141,7 @@ const DashboardModules = () => {
 
 
       {headline.length > 0 && (
-        <Stagger className="relative -mt-16 grid grid-cols-1 gap-4 px-1 sm:grid-cols-2 lg:grid-cols-4">
+        <Stagger className="relative -mt-12 grid grid-cols-2 gap-2.5 px-1 sm:-mt-16 sm:gap-4 md:grid-cols-4">
           {headline.map((h) => (
             <StaggerItem key={h.key}>
               <StatCard

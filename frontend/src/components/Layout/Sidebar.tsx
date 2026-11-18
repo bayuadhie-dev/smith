@@ -1049,23 +1049,21 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
                 leaveFrom="translate-x-0"
                 leaveTo="-translate-x-full"
               >
-                <Dialog.Panel className="relative mr-16 flex w-full max-w-xs flex-1 max-h-[90vh] overflow-y-auto">
-                  <Transition.Child
-                    as={Fragment}
-                    enter="ease-in-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in-out duration-300"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
+                {/* Tombol tutup ada DI DALAM panel. Dulu dia ditaruh di luar
+                    (absolute left-full) tapi masih di dalam kotak yang bisa
+                    digulir, jadi begitu dialog membuka dan tombol itu difokus,
+                    panelnya tergulir 64px ke kanan dan menu terlihat terpotong
+                    di kiri - persis yang dilaporkan di layar HP. Sekaligus
+                    `mr-16` dilepas supaya drawer-nya dapat 64px lebih lebar. */}
+                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 max-h-[90vh] overflow-y-auto overflow-x-hidden rounded-xl">
+                  <button
+                    type="button"
+                    onClick={handleMobileClose}
+                    aria-label="Tutup menu"
+                    className="absolute right-2 top-2 z-10 rounded-full bg-gray-100 p-2 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                   >
-                    <div className="absolute left-full top-0 flex w-16 justify-center pt-5">
-                      <button type="button" className="-m-2.5 p-2.5" onClick={handleMobileClose}>
-                        <span className="sr-only">Close sidebar</span>
-                        <XMarkIcon className="h-6 w-6 text-white" aria-hidden="true" />
-                      </button>
-                    </div>
-                  </Transition.Child>
+                    <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                  </button>
                   <SidebarContent />
                 </Dialog.Panel>
               </Transition.Child>
