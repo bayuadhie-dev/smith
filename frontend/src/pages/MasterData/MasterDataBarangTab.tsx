@@ -5,6 +5,7 @@ import { PencilIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import SearchableSelect from '../../components/SearchableSelect';
 import AccountSlotSelector from '../../components/Finance/AccountSlotSelector';
 import axiosInstance from '../../utils/axiosConfig';
+import { useUrlMulti, useUrlState } from '../../hooks/useUrlState';
 import {
   useGetProductsQuery,
   useLazyGetProductQuery,
@@ -62,10 +63,20 @@ const AKUN_FIELDS: { key: string; label: string }[] = [
 ];
 
 export default function MasterDataBarangTab() {
-  const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState<'all' | Source | 'non_inventory'>('all');
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  // Pencarian, saringan jenis, dan halaman disimpan di URL supaya kembali ke
+  // tempat yang sama kalau halaman ter-refresh atau tautannya dibagikan.
+  const setUrl = useUrlMulti();
+  const [search] = useUrlState<string>('cari', '');
+  const [typeFilter] = useUrlState<'all' | Source | 'non_inventory'>(
+    'tipe', 'all', ['all', 'product', 'material', 'non_inventory'] as const);
+  const [pageRaw] = useUrlState<string>('hal', '1');
+  const [pageSizeRaw] = useUrlState<string>('per', '50');
+  const page = Math.max(1, Number(pageRaw) || 1);
+  const pageSize = Number(pageSizeRaw) || 50;
+  const setSearch = (v: string) => setUrl({ cari: v, hal: null }, { replace: true });
+  const setTypeFilter = (v: string) => setUrl({ tipe: v === 'all' ? null : v, hal: null });
+  const setPage = (v: number) => setUrl({ hal: v <= 1 ? null : String(v) });
+  const setPageSize = (v: number) => setUrl({ per: v === 50 ? null : String(v), hal: null });
   const [niOpen, setNiOpen] = useState(false);
   const [niSaving, setNiSaving] = useState(false);
   const [ni, setNi] = useState({ code: '', name: '', primary_uom: 'UNIT', akun_beban_id: null as number | null, ppn_code: '', description: '' });
@@ -254,13 +265,13 @@ export default function MasterDataBarangTab() {
           placeholder="Cari kode, nama, barcode, atau merek..."
           className="input-field flex-1 min-w-[240px]"
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          onChange={(e) => setSearch(e.target.value)}
         />
         <Link to="/app/imports?kind=item" className="btn-secondary inline-flex items-center gap-2 whitespace-nowrap" title="Buka Pusat Impor & Ekspor Data">
           <ArrowUpTrayIcon className="h-5 w-5" />
           Import Excel
         </Link>
-        <select className="input-field w-auto" value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value as any); setPage(1); }}>
+        <select className="input-field w-auto" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
           <option value="all">Semua Tipe</option>
           <option value="product">Product</option>
           <option value="material">Material</option>
@@ -335,7 +346,7 @@ export default function MasterDataBarangTab() {
               {filtered.length === 0 ? '0 item' : `${(safePage - 1) * pageSize + 1}-${Math.min(safePage * pageSize, filtered.length)} dari ${filtered.length} item`}
             </span>
             <div className="flex items-center gap-2 flex-wrap">
-              <select className="input-field w-auto" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}>
+              <select className="input-field w-auto" value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}>
                 {[25, 50, 100, 200].map((n) => <option key={n} value={n}>{n} / halaman</option>)}
               </select>
               <button type="button" className="btn-secondary disabled:opacity-40" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}>Sebelumnya</button>

@@ -36,13 +36,23 @@ export default defineConfig({
     // proxy can upgrade it back to the local dev server. VITE_HMR_HOST is
     // opt-in per environment (set only where needed) so this stays a no-op
     // (hmr: true) for every setup that doesn't define it.
-    hmr: process.env.VITE_HMR_HOST
-      ? {
-          protocol: process.env.VITE_HMR_PROTOCOL || 'wss',
-          host: process.env.VITE_HMR_HOST,
-          clientPort: Number(process.env.VITE_HMR_CLIENT_PORT) || 443,
-        }
-      : true,
+    // VITE_NO_HMR=1 (dipasang di server UAT/produksi lewat env PM2) mematikan
+    // HMR sepenuhnya. Alasannya: di server, soket HMR putus sendiri kalau
+    // halaman didiamkan (idle timeout nginx/Cloudflare), lalu klien Vite
+    // MEMUAT ULANG halaman begitu servernya terjangkau lagi - itu yang
+    // dilaporkan pemakai sebagai "halaman refresh sendiri, balik ke awal"
+    // (Finance, 2026-11-18). Setiap berkas yang tersinkron dari laptop juga
+    // memicu muat ulang penuh untuk modul yang bukan komponen React.
+    // Dimatikan = halaman hanya berganti kode saat pemakai menyegarkan sendiri.
+    hmr: process.env.VITE_NO_HMR
+      ? false
+      : process.env.VITE_HMR_HOST
+        ? {
+            protocol: process.env.VITE_HMR_PROTOCOL || 'wss',
+            host: process.env.VITE_HMR_HOST,
+            clientPort: Number(process.env.VITE_HMR_CLIENT_PORT) || 443,
+          }
+        : true,
     // Opt-in (VITE_WARMUP=1, set only on the VPS): pre-transform the most used
     // modules at dev-server start so the first browser load is not a cold one.
     ...(process.env.VITE_WARMUP
