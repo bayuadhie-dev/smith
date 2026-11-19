@@ -52,7 +52,7 @@ export default function SalesInvoiceFormNew() {
   const [taxRate, setTaxRate] = useState('11')
   const [notes, setNotes] = useState('')
   const [lines, setLines] = useState<Line[]>([blank()])
-  type BatchOption = { no: string; qty: number }
+  type BatchOption = { no: string; qty: number; expiry: string | null }
   const [batchOptions, setBatchOptions] = useState<Record<number, BatchOption[]>>({})
   // Baris yang sengaja diketik manual: batch lama yang stoknya sudah habis tidak
   // muncul di daftar, dan faktur susulan untuk barang yang sudah terkirim masih
@@ -140,21 +140,66 @@ export default function SalesInvoiceFormNew() {
     ids.filter((id) => !(id in batchOptions)).forEach((id) => {
       axiosInstance.get('/api/shipping/stock-options', { params: { product_id: id } })
         .then((r) => {
-          // Sisa per batch dijumlahkan dari semua zona: Finance memilih nomor
-          // batch, bukan lokasi, jadi yang perlu terlihat totalnya.
-          const perBatch = new Map<string, number>()
+          // Remaining stock per batch is summed across zones: Finance picks a
+          // number, not a location. The earliest expiry of that batch rides
+          // along so the oldest stock is the obvious choice.
+          const perBatch = new Map<string, { qty: number; expiry: string | null }>()
           ;(r.data?.zones || []).forEach((z: any) => (z.batches || []).forEach((b: any) => {
             const no = (b.batch_number || '').trim()
             if (!no) return
-            perBatch.set(no, (perBatch.get(no) || 0) + Number(b.qty || 0))
+            const prev = perBatch.get(no)
+            const expiry = b.expiry_date || null
+            perBatch.set(no, {
+              qty: (prev?.qty || 0) + Number(b.qty || 0),
+              expiry: !prev?.expiry ? expiry : (expiry && expiry < prev.expiry ? expiry : prev.expiry),
+            })
           }))
-          const batches = Array.from(perBatch.entries()).map(([no, qty]) => ({ no, qty }))
-          batches.sort((a, b) => a.no.localeCompare(b.no, 'id', { numeric: true }))
+          const batches = Array.from(perBatch.entries()).map(([no, v]) => ({ no, qty: v.qty, expiry: v.expiry }))
+          // Nearest expiry first (batches without one go last), then by number:
+          // the list itself nudges towards selling the oldest stock. Nothing is
+          // picked automatically - that stays the team's call, same as Accurate.
+          batches.sort((a, b) => {
+            if (a.expiry && b.expiry && a.expiry !== b.expiry) return a.expiry < b.expiry ? -1 : 1
+            if (a.expiry && !b.expiry) return -1
+            if (!a.expiry && b.expiry) return 1
+            return a.no.localeCompare(b.no, 'id', { numeric: true })
+          })
           setBatchOptions((p) => ({ ...p, [id]: batches }))
         })
         .catch(() => setBatchOptions((p) => ({ ...p, [id]: [] })))
     })
   }, [lines, batchOptions])
+
+  const bulanTahun = (iso: string) => {
+    const [y, m] = iso.split('-')
+    return `${m}/${y}`
+  }
+  const sisaBatch = (productId: number | null, batch: string) =>
+    (productId && batchOptions[productId] ? batchOptions[productId].find((b) => b.no === batch)?.qty : undefined)
+
+  /** Pecah satu baris jadi beberapa baris, satu batch per baris, diisi dari batch
+   *  yang kedaluwarsanya paling dekat (daftar sudah terurut begitu). Accurate
+   *  menyelesaikan ini dengan memilih beberapa nomor dalam satu baris; di sini
+   *  satu baris tetap satu batch supaya nomornya ikut tercetak per baris faktur. */
+  const bagiPerBatch = (i: number) => {
+    const line = lines[i]
+    if (!line.product_id) return
+    const opsi = batchOptions[line.product_id] || []
+    let sisaButuh = Number(line.quantity || 0)
+    if (!sisaButuh || opsi.length === 0) return
+    const pecahan: Line[] = []
+    for (const b of opsi) {
+      if (sisaButuh <= 0) break
+      const ambil = Math.min(sisaButuh, b.qty)
+      if (ambil <= 0) continue
+      pecahan.push({ ...line, batch_number: b.no, quantity: String(ambil) })
+      sisaButuh -= ambil
+    }
+    if (sisaButuh > 0) pecahan.push({ ...line, batch_number: '', quantity: String(sisaButuh) })
+    if (pecahan.length <= 1) return
+    setLines((ls) => [...ls.slice(0, i), ...pecahan, ...ls.slice(i + 1)])
+    setManualBatch({})
+  }
 
   const setLine = (i: number, patch: Partial<Line>) => setLines((ls) => ls.map((l, idx) => (idx === i ? { ...l, ...patch } : l)))
   const pickProduct = (i: number, pid: number | string | null) => {
@@ -335,7 +380,7 @@ export default function SalesInvoiceFormNew() {
                             <option value="">{butuhBatch ? '- Pilih batch -' : '- Tanpa batch -'}</option>
                             {(batchOptions[l.product_id] || []).map((b) => (
                               <option key={b.no} value={b.no}>
-                                {b.no} (sisa {b.qty.toLocaleString('id-ID')})
+                                {b.no} (sisa {b.qty.toLocaleString('id-ID')}{b.expiry ? `, exp ${bulanTahun(b.expiry)}` : ''})
                               </option>
                             ))}
                             <option value="__manual__">Ketik manual...</option>
@@ -351,6 +396,27 @@ export default function SalesInvoiceFormNew() {
                         {l.product_id && (batchOptions[l.product_id] || []).length === 0 && (
                           <p className="mt-1 text-[11px] text-gray-400">Belum ada batch dengan stok</p>
                         )}
+                        {/* Qty melebihi sisa batch yang dipilih: ditegur di sini, bukan
+                            saat disimpan, dan ditawarkan memecahnya seperti memilih
+                            beberapa nomor pada satu barang di Accurate. */}
+                        {(() => {
+                          const sisa = sisaBatch(l.product_id, l.batch_number)
+                          const butuh = Number(l.quantity || 0)
+                          if (sisa === undefined || !butuh || butuh <= sisa) return null
+                          const totalSisa = (batchOptions[l.product_id as number] || []).reduce((t, b) => t + b.qty, 0)
+                          return (
+                            <div className="mt-1 text-[11px] text-amber-700 dark:text-amber-300">
+                              Qty {butuh.toLocaleString('id-ID')} melebihi sisa batch ini ({sisa.toLocaleString('id-ID')}).
+                              {totalSisa >= butuh ? (
+                                <button type="button" className="ml-1 underline" onClick={() => bagiPerBatch(i)}>
+                                  Bagi ke beberapa batch
+                                </button>
+                              ) : (
+                                <span className="ml-1">Total semua batch cuma {totalSisa.toLocaleString('id-ID')}.</span>
+                              )}
+                            </div>
+                          )
+                        })()}
                         {/* Jalan kembali ke daftar, supaya "Ketik manual" tidak jadi jalan buntu. */}
                         {l.product_id && manualBatch[i] && (batchOptions[l.product_id] || []).length > 0 && (
                           <button

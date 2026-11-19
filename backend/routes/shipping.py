@@ -545,15 +545,22 @@ def stock_options():
     pid = request.args.get('product_id', type=int)
     if not pid:
         return jsonify({'zones': []}), 200
-    rows = db.session.query(WarehouseZone.id, WarehouseZone.name, Inventory.batch_number, db.func.sum(Inventory.quantity_on_hand)).join(
+    # The earliest expiry per batch comes along: the sales invoice shows it next
+    # to the number so the oldest stock is the obvious pick (Accurate shows the
+    # same thing and, like us, never picks a batch by itself).
+    rows = db.session.query(
+        WarehouseZone.id, WarehouseZone.name, Inventory.batch_number,
+        db.func.sum(Inventory.quantity_on_hand), db.func.min(Inventory.expiry_date),
+    ).join(
         WarehouseLocation, WarehouseLocation.zone_id == WarehouseZone.id).join(Inventory, Inventory.location_id == WarehouseLocation.id).filter(
         Inventory.product_id == pid, Inventory.is_active.is_(True), Inventory.quantity_on_hand > 0,
         Inventory.stock_status.notin_(['quarantine', 'reject'])).group_by(WarehouseZone.id, WarehouseZone.name, Inventory.batch_number).all()
     zones = {}
-    for zid, zname, batch, qty in rows:
+    for zid, zname, batch, qty, expiry in rows:
         z = zones.setdefault(zid, {'id': zid, 'name': zname, 'qty': 0.0, 'batches': []})
         z['qty'] += float(qty)
-        z['batches'].append({'batch_number': batch or '', 'qty': float(qty)})
+        z['batches'].append({'batch_number': batch or '', 'qty': float(qty),
+                             'expiry_date': expiry.isoformat() if expiry else None})
     return jsonify({'zones': sorted(zones.values(), key=lambda z: z['name'])}), 200
 
 
