@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
-import axiosInstance from '../../utils/axiosConfig';
+import axiosInstance from '../../utils/axiosConfig'
+import { ServerSortTh } from '../../components/ui/ListTools';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { confirmDialog, showError, showWarning, showInfo } from '../../components/ui';
 import {
@@ -12,7 +13,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
-import { useUrlPage } from '../../hooks/useUrlState'
+import { useUrlPage, useUrlState, useUrlMulti } from '../../hooks/useUrlState'
 
 interface LedgerEntry {
   id: number
@@ -52,6 +53,22 @@ const GeneralLedger = () => {
 const [entries, setEntries] = useState<LedgerEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useUrlPage()
+  // Sorting is kept in the URL and executed by the backend: this list is
+  // paginated server-side, so sorting only the rows on screen would lie.
+  const [sortBy] = useUrlState<string>('urut', 'entry_date')
+  const [sortDir] = useUrlState<'asc' | 'desc'>('arah', 'desc')
+  // Column, direction and page are written in ONE URL update: two useUrlState
+  // setters in a row each compute their next URL from the current one, so the
+  // second overwrites the first and the column would be lost.
+  const setUrl = useUrlMulti()
+  const toggleSort = (col: string) => {
+    const dir = col === sortBy ? (sortDir === 'asc' ? 'desc' : 'asc') : (col === 'entry_date' ? 'desc' : 'asc')
+    setUrl({
+      urut: col === 'entry_date' ? null : col,
+      arah: dir === 'desc' ? null : dir,
+      hal: null,
+    })
+  }
   const [totalPages, setTotalPages] = useState(1)
   const [searchParams] = useSearchParams()
   const linkedAccountCode = searchParams.get('account_code')
@@ -71,7 +88,7 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
 
   useEffect(() => {
     loadEntries()
-  }, [currentPage, filters])
+  }, [currentPage, filters, sortBy, sortDir])
 
   useEffect(() => {
     loadAccounts()
@@ -99,7 +116,9 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
         ...(filters.account_id && { account_id: filters.account_id }),
         ...(filters.start_date && { start_date: filters.start_date }),
         ...(filters.end_date && { end_date: filters.end_date }),
-        ...(filters.search && { search: filters.search })
+        ...(filters.search && { search: filters.search }),
+        sort_by: sortBy,
+        sort_dir: sortDir,
       })
 
       const response = await axiosInstance.get(`/api/finance/general-ledger?${params}`)
@@ -295,21 +314,13 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Account
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.description')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Reference
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Debit
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Credit
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <ServerSortTh col="entry_date" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date')}</ServerSortTh>
+                <ServerSortTh col="account_code" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Account</ServerSortTh>
+                <ServerSortTh col="description" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.description')}</ServerSortTh>
+                <ServerSortTh col="reference_number" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reference</ServerSortTh>
+                <ServerSortTh col="debit_amount" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Debit</ServerSortTh>
+                <ServerSortTh col="credit_amount" sortKey={sortBy} sortDir={sortDir} onSort={toggleSort} align="right" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Credit</ServerSortTh>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" title={sortBy === 'entry_date' ? undefined : 'Saldo berjalan hanya berlaku saat diurutkan menurut tanggal'}>
                   Running Balance
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -348,11 +359,18 @@ const [entries, setEntries] = useState<LedgerEntry[]>([])
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className={`text-sm font-medium ${
-                      calculateRunningBalance(index) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                    }`}>
-                      {formatRupiah(calculateRunningBalance(index))}
-                    </div>
+                    {/* A running balance only means something while the rows are
+                        in date order; sorted by amount or account it would be a
+                        number that adds up to nothing. */}
+                    {sortBy === 'entry_date' ? (
+                      <div className={`text-sm font-medium ${
+                        calculateRunningBalance(index) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {formatRupiah(calculateRunningBalance(index))}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-gray-400" title="Urutkan menurut tanggal untuk melihat saldo berjalan">-</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900 dark:text-white">{entry.created_by}</div>

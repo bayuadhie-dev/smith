@@ -22,6 +22,42 @@ export function SortTh<T>({ tools, col, children, className = '', align }: { too
   )
 }
 
+/**
+ * Sortable header for lists that are paginated on the SERVER.
+ *
+ * SortTh above works on rows already in the browser, which is wrong for a list
+ * whose pages come from the backend: it would only sort the rows on screen, so
+ * the first row would not be the real first row. This variant just reports the
+ * clicked column and lets the page re-query.
+ */
+export function ServerSortTh({ col, sortKey, sortDir, onSort, children, className = '', align }: {
+  col: string
+  sortKey: string
+  sortDir: 'asc' | 'desc'
+  onSort: (col: string) => void
+  children: ReactNode
+  className?: string
+  align?: 'right' | 'center'
+}) {
+  const active = sortKey === col
+  const aria = active ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+  const Icon = active ? (sortDir === 'asc' ? ArrowUpIcon : ArrowDownIcon) : ArrowsUpDownIcon
+  const justify = align === 'right' ? 'justify-end' : align === 'center' ? 'justify-center' : ''
+  return (
+    <th className={className} aria-sort={aria as any} scope="col">
+      <button
+        type="button"
+        onClick={() => onSort(col)}
+        className={`inline-flex w-full items-center gap-1 uppercase hover:text-gray-900 dark:hover:text-white ${justify}`}
+        title="Klik untuk mengurutkan"
+      >
+        <span>{children}</span>
+        <Icon className={`h-3.5 w-3.5 shrink-0 ${active ? 'text-primary-600 dark:text-primary-300' : 'text-gray-300 dark:text-gray-600'}`} aria-hidden="true" />
+      </button>
+    </th>
+  )
+}
+
 /** Pencarian, jumlah baris, dan tombol Ekspor Excel di atas tabel daftar. */
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 const PRESETS: { label: string; range: () => [string, string] | null }[] = [

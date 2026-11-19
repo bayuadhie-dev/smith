@@ -1688,7 +1688,26 @@ def get_general_ledger():
                 )
             )
 
-        entries = query.order_by(AccountingEntry.entry_date.desc(), AccountingEntry.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
+        # Sorting happens in SQL, not in the browser: this list is paginated
+        # server-side, so sorting only the 20 rows on screen would be worse than
+        # no sorting at all - the first row would not be the real first row.
+        sort_by = (request.args.get('sort_by') or 'entry_date').strip()
+        sort_dir = (request.args.get('sort_dir') or 'desc').strip().lower()
+        sortable = {
+            'entry_date': AccountingEntry.entry_date,
+            'entry_number': AccountingEntry.entry_number,
+            'account_code': AccountingEntry.account_code,
+            'account_name': AccountingEntry.account_name,
+            'description': AccountingEntry.description,
+            'debit_amount': AccountingEntry.debit_amount,
+            'credit_amount': AccountingEntry.credit_amount,
+            'reference_number': AccountingEntry.reference_number,
+        }
+        column = sortable.get(sort_by, AccountingEntry.entry_date)
+        ordered = column.asc() if sort_dir == 'asc' else column.desc()
+        # id as tie-breaker keeps paging stable when many rows share a value
+        # (one journal posts several lines with the same date and number).
+        entries = query.order_by(ordered, AccountingEntry.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
         from routes.finance_reports import _doc_url
 
         return jsonify({
