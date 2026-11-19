@@ -6,6 +6,7 @@ import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import ErrorBoundary from '../components/ui/ErrorBoundary'
 import LoadingSpinner from '../components/Common/LoadingSpinner'
 import { confirmDialog } from '../components/ui'
+import { installCancelGuard } from './cancelGuard'
 import { installClickTracker, titleFromElement } from './clickTracker'
 import { attachDomDraft, type DomDraftHandle } from './domDraft'
 import { TabContext, isTabDirty, useDirtyVersion } from './drafts'
@@ -16,6 +17,7 @@ import TabRouter, { tabNavs } from './TabRouter'
 import { useWorkspace, type TabState } from './WorkspaceContext'
 
 installClickTracker()
+installCancelGuard()
 
 type NavMeta = { type: 'POP' | 'PUSH' | 'REPLACE'; idx: number }
 

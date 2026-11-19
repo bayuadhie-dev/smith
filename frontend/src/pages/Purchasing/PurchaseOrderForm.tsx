@@ -100,6 +100,16 @@ const navigate = useNavigate()
   })
   const discardDraft = useFormDraft({ watch, getValues, reset }, !isEdit)
 
+  // Show the number the backend would hand out, so the format set in
+  // Settings > Document Numbering is visible before saving.
+  const [nextNumber, setNextNumber] = useState('')
+  useEffect(() => {
+    if (isEdit) return
+    axiosInstance.get('/api/purchasing/purchase-orders/next-number')
+      .then((r) => setNextNumber(r.data?.next_number || ''))
+      .catch(() => undefined)
+  }, [isEdit])
+
   // Alamat penerima bawaan = alamat perusahaan di pengaturan; hanya untuk PO baru dan hanya bila masih kosong.
   useEffect(() => {
     if (isEdit) return
@@ -387,12 +397,16 @@ const navigate = useNavigate()
               <input
                 {...register('po_number')}
                 className="input-field"
-                placeholder="Kosongkan agar nomor dibuat otomatis"
+                placeholder={nextNumber ? `Kosongkan agar otomatis: ${nextNumber}` : 'Kosongkan agar nomor dibuat otomatis'}
                 disabled={isEdit}
                 maxLength={100}
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {isEdit ? 'Nomor PO tidak bisa diubah setelah dibuat.' : 'Diisi = dipakai sebagai nomor PO. Kosong = nomor otomatis.'}
+                {isEdit
+                  ? 'Nomor PO tidak bisa diubah setelah dibuat.'
+                  : nextNumber
+                    ? `Dibiarkan kosong, nomornya jadi ${nextNumber}. Formatnya diatur di Pengaturan > Penomoran Dokumen.`
+                    : 'Diisi = dipakai sebagai nomor PO. Kosong = nomor otomatis.'}
               </p>
             </div>
 

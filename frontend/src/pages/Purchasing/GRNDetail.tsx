@@ -223,6 +223,23 @@ export default function GRNDetail() {
         </div>
       </div>
 
+      {/* Finance asked why a receipt cannot be deleted. Say it on the page instead of
+          leaving them to guess, and point at the two documents that do undo it. */}
+      {grn.status === 'approved' && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-100">
+          <p className="font-medium">Penerimaan yang sudah disetujui tidak bisa dihapus.</p>
+          <p className="mt-1">
+            Stok dan jurnalnya sudah terbentuk, jadi nomornya harus tetap ada sebagai jejak. Lewat <strong>Ubah</strong> masih
+            bisa diperbaiki: tanggal, nomor surat jalan, nomor faktur pemasok, sopir/kendaraan, catatan, nomor batch dan lot.
+            Jumlah dan gudang terkunci - untuk mengurangi stok buat{' '}
+            <Link to="/app/purchasing/returns/new" className="underline">Retur Pembelian</Link>{' '}
+            (barang dikembalikan ke pemasok) atau{' '}
+            <Link to="/app/warehouse/adjustments/new" className="underline">Penyesuaian Stok</Link>{' '}
+            (salah hitung, barang tidak dikembalikan).
+          </p>
+        </div>
+      )}
+
       {/* Info cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[

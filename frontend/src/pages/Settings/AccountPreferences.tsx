@@ -350,12 +350,15 @@ const BarangJasaTab: React.FC = () => {
  * generate_number() calls throughout the codebase.
  */
 const NomorDokumenTab: React.FC = () => {
-  type SequenceRow = { id: number; sequence_key: string; prefix: string; description: string | null };
+  type SequenceRow = {
+    id: number; sequence_key: string; prefix: string; description: string | null;
+    number_format: string | null; reset_period: string; preview: string;
+  };
   const [sequences, setSequences] = useState<SequenceRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ prefix: '', description: '' });
-  const [newForm, setNewForm] = useState({ sequence_key: '', prefix: '', description: '' });
+  const [editForm, setEditForm] = useState({ prefix: '', description: '', number_format: '', reset_period: 'month' });
+  const [newForm, setNewForm] = useState({ sequence_key: '', prefix: '', description: '', number_format: '', reset_period: 'month' });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -373,17 +376,18 @@ const NomorDokumenTab: React.FC = () => {
     loadSequences();
   }, []);
 
-  const handleSave = async (sequence_key: string, prefix: string, description: string) => {
+  const handleSave = async (sequence_key: string, prefix: string, description: string,
+                            number_format: string, reset_period: string) => {
     setSaving(true);
     setMessage(null);
     try {
-      await axios.post('/finance/number-sequences', { sequence_key, prefix, description });
+      await axios.post('/finance/number-sequences', { sequence_key, prefix, description, number_format, reset_period });
       setMessage({ type: 'success', text: 'Berhasil disimpan.' });
       setEditingKey(null);
-      setNewForm({ sequence_key: '', prefix: '', description: '' });
+      setNewForm({ sequence_key: '', prefix: '', description: '', number_format: '', reset_period: 'month' });
       loadSequences();
-    } catch (e) {
-      setMessage({ type: 'error', text: 'Gagal menyimpan.' });
+    } catch (e: any) {
+      setMessage({ type: 'error', text: e?.response?.data?.error || 'Gagal menyimpan.' });
     } finally {
       setSaving(false);
     }
@@ -397,8 +401,12 @@ const NomorDokumenTab: React.FC = () => {
     <div>
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Penomoran Dokumen</h2>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-        Atur prefix nomor dokumen (misal INV, PO). Perubahan di sini hanya berlaku untuk fitur baru yang
-        dibangun ke depannya, tidak mengubah nomor dokumen dari fitur lama yang sudah ada.
+        Atur nomor dokumen. Isi <span className="font-mono">Format</span> kalau ingin bentuk sendiri,
+        contoh <span className="font-mono">YY-MM-OLC-###</span> menghasilkan <span className="font-mono">26-11-OLC-001</span>.
+        Tandanya: <span className="font-mono">YYYY</span> tahun 4 digit, <span className="font-mono">YY</span> 2 digit,
+        <span className="font-mono"> MM</span> bulan, <span className="font-mono">DD</span> tanggal, dan
+        <span className="font-mono"> #</span> sebanyak digit nomor urut. Kosongkan Format untuk memakai prefix saja.
+        Nomor yang sudah terlanjur dibuat tidak berubah.
       </p>
 
       {message && (
@@ -417,6 +425,9 @@ const NomorDokumenTab: React.FC = () => {
             <tr className="text-left text-gray-500 dark:text-gray-400 border-b">
               <th className="pb-2">Kunci</th>
               <th className="pb-2">Prefix</th>
+              <th className="pb-2">Format</th>
+              <th className="pb-2">Nomor urut diulang</th>
+              <th className="pb-2">Contoh</th>
               <th className="pb-2">Keterangan</th>
               <th className="pb-2"></th>
             </tr>
@@ -437,6 +448,35 @@ const NomorDokumenTab: React.FC = () => {
                     s.prefix
                   )}
                 </td>
+                <td className="py-2 font-mono">
+                  {editingKey === s.sequence_key ? (
+                    <input
+                      type="text"
+                      value={editForm.number_format}
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, number_format: e.target.value }))}
+                      placeholder="YY-MM-OLC-###"
+                      className="w-40 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded"
+                    />
+                  ) : (
+                    s.number_format || <span className="text-gray-400 font-sans">(prefix saja)</span>
+                  )}
+                </td>
+                <td className="py-2">
+                  {editingKey === s.sequence_key ? (
+                    <select
+                      value={editForm.reset_period}
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, reset_period: e.target.value }))}
+                      className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded"
+                    >
+                      <option value="month">Tiap bulan</option>
+                      <option value="year">Tiap tahun</option>
+                      <option value="never">Tidak pernah</option>
+                    </select>
+                  ) : (
+                    { month: 'Tiap bulan', year: 'Tiap tahun', never: 'Tidak pernah' }[s.reset_period] || s.reset_period
+                  )}
+                </td>
+                <td className="py-2 font-mono text-gray-500 dark:text-gray-400">{s.preview}</td>
                 <td className="py-2 text-gray-500 dark:text-gray-400">
                   {editingKey === s.sequence_key ? (
                     <input
@@ -452,7 +492,7 @@ const NomorDokumenTab: React.FC = () => {
                 <td className="py-2 text-right">
                   {editingKey === s.sequence_key ? (
                     <button
-                      onClick={() => handleSave(s.sequence_key, editForm.prefix, editForm.description)}
+                      onClick={() => handleSave(s.sequence_key, editForm.prefix, editForm.description, editForm.number_format, editForm.reset_period)}
                       disabled={saving}
                       className="text-primary-600 hover:underline dark:text-primary-400"
                     >
@@ -462,7 +502,8 @@ const NomorDokumenTab: React.FC = () => {
                     <button
                       onClick={() => {
                         setEditingKey(s.sequence_key);
-                        setEditForm({ prefix: s.prefix, description: s.description || '' });
+                        setEditForm({ prefix: s.prefix, description: s.description || '',
+                          number_format: s.number_format || '', reset_period: s.reset_period || 'month' });
                       }}
                       className="text-gray-500 hover:underline dark:text-gray-400"
                     >
@@ -500,9 +541,25 @@ const NomorDokumenTab: React.FC = () => {
             onChange={(e) => setNewForm((prev) => ({ ...prev, description: e.target.value }))}
             className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md"
           />
+          <input
+            type="text"
+            placeholder="format (opsional), mis. YY-MM-OLC-###"
+            value={newForm.number_format}
+            onChange={(e) => setNewForm((prev) => ({ ...prev, number_format: e.target.value }))}
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md font-mono"
+          />
+          <select
+            value={newForm.reset_period}
+            onChange={(e) => setNewForm((prev) => ({ ...prev, reset_period: e.target.value }))}
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md"
+          >
+            <option value="month">Nomor urut diulang tiap bulan</option>
+            <option value="year">Nomor urut diulang tiap tahun</option>
+            <option value="never">Nomor urut tidak pernah diulang</option>
+          </select>
         </div>
         <button
-          onClick={() => handleSave(newForm.sequence_key, newForm.prefix, newForm.description)}
+          onClick={() => handleSave(newForm.sequence_key, newForm.prefix, newForm.description, newForm.number_format, newForm.reset_period)}
           disabled={saving || !newForm.sequence_key || !newForm.prefix}
           className="mt-3 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
         >

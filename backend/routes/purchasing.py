@@ -998,6 +998,20 @@ def get_grns():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@purchasing_bp.route('/purchase-orders/next-number', methods=['GET'])
+@jwt_required()
+@require_permission('purchasing.view')
+def po_next_number():
+    """Preview of the number the next purchase order will get.
+
+    Shown in the form so nobody types their own number "to be safe" and ends up
+    with two formats side by side, which is exactly what happened before the
+    template was configurable (Finance, 2026-11-19).
+    """
+    from utils.helpers import peek_number_v2
+    return jsonify({'next_number': peek_number_v2('purchase_order', 'PO', PurchaseOrder, 'po_number')}), 200
+
+
 @purchasing_bp.route('/grn/next-number', methods=['GET'])
 @jwt_required()
 @require_permission('purchasing.view', 'warehouse.view')

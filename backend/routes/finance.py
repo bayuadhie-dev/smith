@@ -4739,10 +4739,28 @@ def get_number_sequences():
                 'sequence_key': s.sequence_key,
                 'prefix': s.prefix,
                 'description': s.description,
+                'number_format': s.number_format,
+                'reset_period': s.reset_period or 'month',
+                'preview': _sequence_preview(s),
             } for s in sequences]
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+def _sequence_preview(seq):
+    """What a number made right now would look like - shown next to the format
+    so a typo in the template is visible before any document is created."""
+    from utils.helpers import render_number_format
+
+    fmt = (seq.number_format or '').strip()
+    if not fmt:
+        from datetime import datetime as _dt
+        return f"{seq.prefix}-{_dt.now():%Y%m}-00001"
+    try:
+        return render_number_format(fmt, 1)
+    except Exception:
+        return ''
 
 
 @finance_bp.route('/number-sequences', methods=['POST'])
@@ -4756,15 +4774,32 @@ def upsert_number_sequence():
         if not data.get('sequence_key') or not data.get('prefix'):
             return jsonify({'error': 'sequence_key and prefix are required'}), 400
 
+        fmt = (data.get('number_format') or '').strip()
+        if fmt:
+            import re as _re
+            if not _re.search(r'#', fmt):
+                return jsonify({'error': "Format harus memuat tanda # untuk nomor urut, contoh YY-MM-OLC-###"}), 400
+            if len(fmt) > 100:
+                return jsonify({'error': 'Format maksimal 100 karakter'}), 400
+        reset = (data.get('reset_period') or 'month').strip()
+        if reset not in ('year', 'month', 'never'):
+            return jsonify({'error': "Pengulangan nomor hanya 'year', 'month', atau 'never'"}), 400
+
         seq = NumberSequence.query.filter_by(sequence_key=data['sequence_key']).first()
         if seq:
             seq.prefix = data['prefix']
             seq.description = data.get('description', seq.description)
+            if 'number_format' in data:
+                seq.number_format = fmt or None
+            if 'reset_period' in data:
+                seq.reset_period = reset
         else:
             seq = NumberSequence(
                 sequence_key=data['sequence_key'],
                 prefix=data['prefix'],
                 description=data.get('description'),
+                number_format=fmt or None,
+                reset_period=reset,
             )
             db.session.add(seq)
 

@@ -111,6 +111,132 @@ def peek_number(prefix, model, field_name, style='compact'):
     return f"{prefix}-{period}-{last + 1:05d}"
 
 
+# ---------------------------------------------------------------------------
+# Full number templates (2026-11-19)
+#
+# Finance writes purchase orders as 26-11-OLC-011: year, month, their own text,
+# then a sequence that restarts every year. A prefix cannot express that, so a
+# NumberSequence row may carry a whole template instead. Tokens: YYYY, YY, MM,
+# DD, and a run of '#' for the sequence - the number of '#' is the MINIMUM
+# padding, so the format survives the day the counter outgrows it (Finance
+# asked for 3 digits in 2026 and 4 in 2027; 1000 simply prints as 1000).
+# ---------------------------------------------------------------------------
+
+_TOKEN_RE = re.compile(r'(YYYY|YY|MM|DD|#+)')
+
+
+def _format_parts(fmt, now=None):
+    now = now or datetime.now()
+    values = {'YYYY': now.strftime('%Y'), 'YY': now.strftime('%y'),
+              'MM': now.strftime('%m'), 'DD': now.strftime('%d')}
+    return values
+
+
+def render_number_format(fmt, seq, now=None):
+    """Turn 'YY-MM-OLC-###' + 11 into '26-11-OLC-011'."""
+    values = _format_parts(fmt, now)
+
+    def sub(m):
+        t = m.group(0)
+        if t.startswith('#'):
+            return str(seq).zfill(len(t))
+        return values[t]
+
+    return _TOKEN_RE.sub(sub, fmt)
+
+
+def format_like_pattern(fmt, reset_period, now=None):
+    """SQL LIKE pattern for numbers that share one counter.
+
+    For a yearly counter the month varies inside the same sequence, so MM/DD
+    become wildcards; for a monthly counter only the day does. Used to seed the
+    counter from numbers that already exist (Finance typed theirs by hand
+    before this), so the next one continues instead of colliding at 001.
+    """
+    values = _format_parts(fmt, now)
+    wild = {'DD'}
+    if reset_period == 'year':
+        wild |= {'MM'}
+    elif reset_period == 'never':
+        wild |= {'MM', 'YY', 'YYYY'}
+
+    def sub(m):
+        t = m.group(0)
+        if t.startswith('#'):
+            return '%'
+        return '%' if t in wild else values[t]
+
+    return _TOKEN_RE.sub(sub, fmt)
+
+
+def _counter_period(reset_period, now=None):
+    now = now or datetime.now()
+    if reset_period == 'year':
+        return now.strftime('%Y')
+    if reset_period == 'never':
+        return 'ALL'
+    return now.strftime('%Y%m')
+
+
+def _format_counter_key(sequence_key):
+    # Kept apart from the plain-prefix counters so switching a document to a
+    # template never reuses (or disturbs) the old PO-YYYYMM counter.
+    return f'fmt:{sequence_key}'[:50]
+
+
+def _seq_from_number(value, fmt):
+    """Read the sequence back out of an existing number."""
+    m = re.search(r'(\d+)\s*$', str(value or ''))
+    return int(m.group(1)) if m else 0
+
+
+def generate_from_format(sequence_key, fmt, reset_period, model, field_name, now=None):
+    """Next number for a template-based sequence, row-locked like the rest."""
+    from models import db
+    from models.finance import NumberSequenceCounter
+    from sqlalchemy.exc import IntegrityError
+
+    period = _counter_period(reset_period, now)
+    key = _format_counter_key(sequence_key)
+    counter = NumberSequenceCounter.query.filter_by(prefix=key, period=period).with_for_update().first()
+    if not counter:
+        nested = db.session.begin_nested()
+        try:
+            counter = NumberSequenceCounter(prefix=key, period=period, last_seq=0)
+            db.session.add(counter)
+            db.session.flush()
+            nested.commit()
+        except IntegrityError:
+            nested.rollback()
+            counter = NumberSequenceCounter.query.filter_by(prefix=key, period=period).with_for_update().first()
+
+    if counter.last_seq == 0 and model is not None:
+        field = getattr(model, field_name)
+        pattern = format_like_pattern(fmt, reset_period, now)
+        for (value,) in db.session.query(field).filter(field.like(pattern)).all():
+            counter.last_seq = max(counter.last_seq, _seq_from_number(value, fmt))
+
+    counter.last_seq += 1
+    db.session.flush()
+    return render_number_format(fmt, counter.last_seq, now)
+
+
+def peek_from_format(sequence_key, fmt, reset_period, model, field_name, now=None):
+    """What generate_from_format() would return, without consuming it."""
+    from models import db
+    from models.finance import NumberSequenceCounter
+
+    period = _counter_period(reset_period, now)
+    counter = NumberSequenceCounter.query.filter_by(prefix=_format_counter_key(sequence_key), period=period).first()
+    last = counter.last_seq if counter else 0
+    if last == 0 and model is not None:
+        field = getattr(model, field_name)
+        pattern = format_like_pattern(fmt, reset_period, now)
+        for (value,) in db.session.query(field).filter(field.like(pattern)).all():
+            last = max(last, _seq_from_number(value, fmt))
+    return render_number_format(fmt, last + 1, now)
+
+
 def generate_number_v2(sequence_key, default_prefix, model=None, field_name='number', style='compact'):
     """
     Same numbering scheme as generate_number() ({prefix}-{year}{month}-{seq}),
@@ -139,9 +265,25 @@ def generate_number_v2(sequence_key, default_prefix, model=None, field_name='num
     from models.finance import NumberSequence
 
     seq_config = NumberSequence.query.filter_by(sequence_key=sequence_key).first()
+    fmt = (getattr(seq_config, 'number_format', None) or '').strip() if seq_config else ''
+    if fmt and model is not None:
+        return generate_from_format(sequence_key, fmt, getattr(seq_config, 'reset_period', 'month') or 'month',
+                                    model, field_name)
     prefix = seq_config.prefix if seq_config else default_prefix
 
     return generate_number(prefix, model=model, field_name=field_name, style=style)
+
+
+def peek_number_v2(sequence_key, default_prefix, model, field_name='number', style='compact'):
+    """Preview of the next number for a sequence that may use a template."""
+    from models.finance import NumberSequence
+
+    seq_config = NumberSequence.query.filter_by(sequence_key=sequence_key).first()
+    fmt = (getattr(seq_config, 'number_format', None) or '').strip() if seq_config else ''
+    if fmt:
+        return peek_from_format(sequence_key, fmt, getattr(seq_config, 'reset_period', 'month') or 'month',
+                                model, field_name)
+    return peek_number(seq_config.prefix if seq_config else default_prefix, model, field_name, style=style)
 
 
 def generate_code(prefix: str = "", length: int = 8) -> str:

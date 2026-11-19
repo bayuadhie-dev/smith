@@ -672,6 +672,13 @@ class NumberSequence(db.Model):
     sequence_key = db.Column(db.String(50), unique=True, nullable=False, index=True)  # e.g. 'invoice', 'purchase_order'
     prefix = db.Column(db.String(20), nullable=False)  # e.g. 'INV', 'PO'
     description = db.Column(db.String(200), nullable=True)
+    # Full number template, e.g. 'YY-MM-OLC-###' -> 26-11-OLC-011 (Finance's
+    # requested purchase order format, 2026-11-19). Tokens: YYYY, YY, MM, DD
+    # and a run of '#' for the sequence (its length is the minimum padding).
+    # Empty = keep the old prefix-only behaviour.
+    number_format = db.Column(db.String(100), nullable=True)
+    # When the sequence restarts: 'year', 'month' (old behaviour) or 'never'.
+    reset_period = db.Column(db.String(10), nullable=False, default='month')
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
