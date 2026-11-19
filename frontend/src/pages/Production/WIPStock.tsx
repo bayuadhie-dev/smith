@@ -70,7 +70,7 @@ export default function WIPStock() {
         ...(search && { search })
       });
       
-      const response = await axiosInstance.get(`/api/packing-list/wip-stock?${params}`);
+      const response = await axiosInstance.get(`/api/production/wip-stock?${params}`);
       setWipStocks(response.data.wip_stocks);
       setTotalPages(response.data.pagination.pages);
     } catch (error) {
@@ -84,7 +84,7 @@ export default function WIPStock() {
   const fetchMovements = async (productId: number) => {
     try {
       setLoadingMovements(true);
-      const response = await axiosInstance.get(`/api/packing-list/wip-stock/${productId}/movements`);
+      const response = await axiosInstance.get(`/api/production/wip-stock/${productId}/movements`);
       setMovements(response.data.movements);
     } catch (error) {
       console.error('Error fetching movements:', error);
@@ -115,7 +115,7 @@ export default function WIPStock() {
 
     try {
       setAdjusting(true);
-      await axiosInstance.post('/api/packing-list/wip-stock/adjustment', {
+      await axiosInstance.post('/api/production/wip-stock/adjustment', {
         product_id: selectedProduct.product_id,
         adjustment_carton: parseInt(adjustmentCarton),
         adjustment_pcs: parseInt(adjustmentCarton) * selectedProduct.pack_per_carton,
@@ -406,7 +406,10 @@ export default function WIPStock() {
                           </span>
                         </td>
                         <td className={`px-3 py-2 text-right text-xs font-medium ${getMovementColor(m.movement_type)}`}>
-                          {m.movement_type === 'out' ? '-' : '+'}{m.quantity_carton} ktn
+                          {/* An adjustment carries its own sign, so prefixing '+'
+                              blindly produced "+-2 ktn". */}
+                          {m.quantity_carton > 0 && m.movement_type !== 'out' ? '+' : ''}
+                          {m.movement_type === 'out' ? -Math.abs(m.quantity_carton) : m.quantity_carton} ktn
                         </td>
                         <td className="px-3 py-2 text-right text-xs text-gray-600 dark:text-gray-300">
                           {m.balance_carton} ktn

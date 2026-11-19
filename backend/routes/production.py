@@ -4383,6 +4383,103 @@ def get_production_dashboard():
 # ============= PACKING LIST =============
 from models.production import PackingList, PackingListItem
 
+# ===================== WIP STOCK =====================
+# The WIP Stock page used to call /api/packing-list/wip-stock*, a blueprint that
+# never existed - the page has been broken since the packing list moved to being
+# per work order (found 2026-10-26, fixed 2026-11-19). The rows themselves were
+# always written: shift production input and production approval both post into
+# wip_stocks / wip_stock_movements. Only the read and correct endpoints were
+# missing, and they belong here next to the code that writes them.
+
+@production_bp.route('/wip-stock', methods=['GET'])
+@jwt_required()
+@require_permission('production.view')
+def list_wip_stock():
+    from models.production import WIPStock
+
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 20, type=int), 200)
+    search = (request.args.get('search') or '').strip()
+
+    query = WIPStock.query.join(Product, WIPStock.product_id == Product.id)
+    if search:
+        like = f'%{search}%'
+        query = query.filter(db.or_(Product.name.ilike(like), Product.code.ilike(like)))
+
+    rows = query.order_by(Product.name.asc()).paginate(page=page, per_page=per_page, error_out=False)
+    return jsonify({
+        'wip_stocks': [w.to_dict() for w in rows.items],
+        'pagination': {'page': rows.page, 'pages': rows.pages or 1, 'per_page': per_page, 'total': rows.total},
+    })
+
+
+@production_bp.route('/wip-stock/<int:product_id>/movements', methods=['GET'])
+@jwt_required()
+@require_permission('production.view')
+def list_wip_stock_movements(product_id):
+    from models.production import WIPStockMovement
+
+    limit = min(request.args.get('limit', 100, type=int), 500)
+    movements = (WIPStockMovement.query
+                 .filter_by(product_id=product_id)
+                 .order_by(WIPStockMovement.created_at.desc(), WIPStockMovement.id.desc())
+                 .limit(limit).all())
+    return jsonify({'movements': [m.to_dict() for m in movements]})
+
+
+@production_bp.route('/wip-stock/adjustment', methods=['POST'])
+@jwt_required()
+@require_permission('production.create')
+def adjust_wip_stock():
+    """Manual correction of a WIP figure, written as a movement like any other.
+
+    A reason is required: a WIP balance that changes without one cannot be
+    explained later, and this is the only place the figure can be edited by hand.
+    """
+    from models.production import WIPStock, WIPStockMovement
+
+    data = request.get_json() or {}
+    product_id = data.get('product_id')
+    notes = (data.get('notes') or '').strip()
+    if not product_id:
+        return jsonify({'error': 'Produk wajib dipilih'}), 400
+    if not notes:
+        return jsonify({'error': 'Alasan penyesuaian wajib diisi'}), 400
+
+    wip = WIPStock.query.filter_by(product_id=product_id).first()
+    if not wip:
+        return jsonify({'error': 'Produk ini belum punya stok WIP'}), 404
+
+    pack = int(wip.pack_per_carton or 1) or 1
+    try:
+        carton = int(data.get('adjustment_carton') or 0)
+        pcs = int(data.get('adjustment_pcs') if data.get('adjustment_pcs') is not None else carton * pack)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Jumlah penyesuaian harus angka'}), 400
+    if carton == 0 and pcs == 0:
+        return jsonify({'error': 'Jumlah penyesuaian tidak boleh nol'}), 400
+
+    new_pcs = float(wip.quantity_pcs or 0) + pcs
+    new_carton = float(wip.quantity_carton or 0) + carton
+    if new_pcs < 0 or new_carton < 0:
+        return jsonify({'error': 'Penyesuaian membuat stok WIP minus - periksa lagi jumlahnya'}), 400
+
+    wip.quantity_pcs = new_pcs
+    wip.quantity_carton = new_carton
+    wip.last_updated_at = datetime.utcnow()
+
+    user_id = int(get_jwt_identity())
+    db.session.add(WIPStockMovement(
+        wip_stock_id=wip.id, product_id=product_id, movement_type='adjustment',
+        quantity_pcs=pcs, quantity_carton=carton,
+        reference_type='adjustment', reference_number=None,
+        balance_pcs=new_pcs, balance_carton=new_carton,
+        notes=notes, created_by=user_id,
+    ))
+    db.session.commit()
+    return jsonify({'message': 'Penyesuaian stok WIP tersimpan', 'wip_stock': wip.to_dict()})
+
+
 @production_bp.route('/work-orders/<int:wo_id>/packing-list', methods=['GET'])
 @jwt_required()
 @require_permission('work_orders.view')
