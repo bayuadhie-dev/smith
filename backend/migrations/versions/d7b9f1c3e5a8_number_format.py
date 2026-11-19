@@ -10,6 +10,8 @@ Revision ID: d7b9f1c3e5a8
 Revises: c6e8a0b2d4f7
 Create Date: 2026-11-19
 """
+from datetime import datetime
+
 from alembic import op
 import sqlalchemy as sa
 
@@ -41,9 +43,12 @@ def upgrade():
                 "UPDATE number_sequences SET number_format = :f, reset_period = 'year' WHERE id = :id"),
                 {'f': 'YY-MM-OLC-###', 'id': row[0]})
         else:
+            # created_at is NOT NULL without a default on this table.
             bind.execute(sa.text(
-                "INSERT INTO number_sequences (sequence_key, prefix, description, number_format, reset_period)"
-                " VALUES ('purchase_order', 'PO', 'Pesanan Pembelian', 'YY-MM-OLC-###', 'year')"))
+                "INSERT INTO number_sequences (sequence_key, prefix, description, number_format,"
+                " reset_period, created_at)"
+                " VALUES ('purchase_order', 'PO', 'Pesanan Pembelian', 'YY-MM-OLC-###', 'year', :now)"),
+                {'now': datetime.utcnow()})
 
 
 def downgrade():
