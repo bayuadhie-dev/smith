@@ -52,7 +52,12 @@ export default function SalesInvoiceFormNew() {
   const [taxRate, setTaxRate] = useState('11')
   const [notes, setNotes] = useState('')
   const [lines, setLines] = useState<Line[]>([blank()])
-  const [batchOptions, setBatchOptions] = useState<Record<number, string[]>>({})
+  type BatchOption = { no: string; qty: number }
+  const [batchOptions, setBatchOptions] = useState<Record<number, BatchOption[]>>({})
+  // Baris yang sengaja diketik manual: batch lama yang stoknya sudah habis tidak
+  // muncul di daftar, dan faktur susulan untuk barang yang sudah terkirim masih
+  // perlu nomornya.
+  const [manualBatch, setManualBatch] = useState<Record<number, boolean>>({})
   const [saving, setSaving] = useState(false)
 
   /** Tanpa Sales Order dan tanpa Surat Jalan, nomor batch jadi satu-satunya jejak ketelusuran. */
@@ -135,8 +140,17 @@ export default function SalesInvoiceFormNew() {
     ids.filter((id) => !(id in batchOptions)).forEach((id) => {
       axiosInstance.get('/api/shipping/stock-options', { params: { product_id: id } })
         .then((r) => {
-          const batches = (r.data?.zones || []).flatMap((z: any) => (z.batches || []).map((b: any) => b.batch_number)).filter(Boolean)
-          setBatchOptions((p) => ({ ...p, [id]: Array.from(new Set(batches)) as string[] }))
+          // Sisa per batch dijumlahkan dari semua zona: Finance memilih nomor
+          // batch, bukan lokasi, jadi yang perlu terlihat totalnya.
+          const perBatch = new Map<string, number>()
+          ;(r.data?.zones || []).forEach((z: any) => (z.batches || []).forEach((b: any) => {
+            const no = (b.batch_number || '').trim()
+            if (!no) return
+            perBatch.set(no, (perBatch.get(no) || 0) + Number(b.qty || 0))
+          }))
+          const batches = Array.from(perBatch.entries()).map(([no, qty]) => ({ no, qty }))
+          batches.sort((a, b) => a.no.localeCompare(b.no, 'id', { numeric: true }))
+          setBatchOptions((p) => ({ ...p, [id]: batches }))
         })
         .catch(() => setBatchOptions((p) => ({ ...p, [id]: [] })))
     })
@@ -301,17 +315,51 @@ export default function SalesInvoiceFormNew() {
                         )}
                       </td>
                       <td className="pr-2">
-                        <input
-                          className="input-field"
-                          value={l.batch_number}
-                          onChange={(e) => setLine(i, { batch_number: e.target.value })}
-                          list={l.product_id ? `batch-${l.product_id}` : undefined}
-                          placeholder={butuhBatch ? 'Wajib' : 'Opsional'}
-                        />
-                        {l.product_id && (
-                          <datalist id={`batch-${l.product_id}`}>
-                            {(batchOptions[l.product_id] || []).map((b) => <option key={b} value={b} />)}
-                          </datalist>
+                        {/* Finance meminta batch dipilih dari daftar, bukan diketik
+                            (masukan 2026-11-19). Daftarnya nomor batch yang masih
+                            punya stok, lengkap dengan sisanya supaya tidak salah
+                            pilih batch yang tinggal sedikit. */}
+                        {l.product_id && (batchOptions[l.product_id] || []).length > 0 && !manualBatch[i] ? (
+                          <select
+                            className="input-field min-w-[150px]"
+                            value={l.batch_number}
+                            onChange={(e) => {
+                              if (e.target.value === '__manual__') {
+                                setManualBatch((m) => ({ ...m, [i]: true }))
+                                setLine(i, { batch_number: '' })
+                                return
+                              }
+                              setLine(i, { batch_number: e.target.value })
+                            }}
+                          >
+                            <option value="">{butuhBatch ? '- Pilih batch -' : '- Tanpa batch -'}</option>
+                            {(batchOptions[l.product_id] || []).map((b) => (
+                              <option key={b.no} value={b.no}>
+                                {b.no} (sisa {b.qty.toLocaleString('id-ID')})
+                              </option>
+                            ))}
+                            <option value="__manual__">Ketik manual...</option>
+                          </select>
+                        ) : (
+                          <input
+                            className="input-field"
+                            value={l.batch_number}
+                            onChange={(e) => setLine(i, { batch_number: e.target.value })}
+                            placeholder={butuhBatch ? 'Wajib' : 'Opsional'}
+                          />
+                        )}
+                        {l.product_id && (batchOptions[l.product_id] || []).length === 0 && (
+                          <p className="mt-1 text-[11px] text-gray-400">Belum ada batch dengan stok</p>
+                        )}
+                        {/* Jalan kembali ke daftar, supaya "Ketik manual" tidak jadi jalan buntu. */}
+                        {l.product_id && manualBatch[i] && (batchOptions[l.product_id] || []).length > 0 && (
+                          <button
+                            type="button"
+                            className="mt-1 text-[11px] text-primary-700 hover:underline dark:text-primary-300"
+                            onClick={() => { setManualBatch((m) => ({ ...m, [i]: false })); setLine(i, { batch_number: '' }) }}
+                          >
+                            Pilih dari daftar
+                          </button>
                         )}
                       </td>
                       <td className="pr-2"><NumberInput currency className="input-field text-right" value={l.unit_price} onChange={(e: any) => setLine(i, { unit_price: e.target.value })} /></td>
