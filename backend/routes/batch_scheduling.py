@@ -521,6 +521,13 @@ def get_batches():
         if work_order_id:
             query = query.filter_by(work_order_id=work_order_id)
         batches = query.order_by(ProductionBatch.scheduled_date, ProductionBatch.machine_id, ProductionBatch.shift_number, ProductionBatch.sequence_in_shift).all()
+        # ?bahan=1: kecukupan bahan tiap batch draft, sudah memperhitungkan batch
+        # draft lain yang antre di depannya (lihat utils/batch_material_outlook.py).
+        # Opsional karena harus meledakkan BOM tiap batch.
+        outlook = {}
+        if request.args.get('bahan') in ('1', 'true', 'yes'):
+            from utils.batch_material_outlook import outlook_batch_draft
+            outlook = outlook_batch_draft(batches)
         return jsonify({
             'batches': [{
                 'id': b.id,
@@ -546,6 +553,8 @@ def get_batches():
                 'spk_document_id': b.spk_document_id,
                 'spk_is_outdated': b.spk_is_outdated,
                 'admin_closed': b.admin_closed,
+                'material_status': outlook.get(b.id, {}).get('status'),
+                'material_shortages': outlook.get(b.id, {}).get('kekurangan', []),
             } for b in batches]
         }), 200
     except Exception as e:

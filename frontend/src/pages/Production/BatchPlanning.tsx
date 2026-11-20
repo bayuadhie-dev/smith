@@ -27,6 +27,8 @@ interface Batch {
   is_over_capacity_warning: boolean;
   spk_document_id: number | null;
   spk_is_outdated: boolean;
+  material_status?: 'cukup' | 'kurang' | 'tanpa_bom' | null;
+  material_shortages?: { material_id: number; nama: string; uom: string | null; kurang: number }[];
 }
 
 interface Recipe {
@@ -132,6 +134,9 @@ const BatchPlanning: React.FC = () => {
       const params: any = {};
       if (statusFilter) params.status = statusFilter;
       if (woFilter) params.work_order_id = woFilter;
+      // Kecukupan bahan dihitung dengan memperhitungkan batch draft lain yang
+      // antre lebih dulu - batch draft belum menahan stok apa pun.
+      params.bahan = 1;
       const res = await axiosInstance.get('/api/batch-scheduling/batches', { params });
       const loadedBatches: Batch[] = res.data.batches || [];
       setBatches(loadedBatches);
@@ -327,6 +332,7 @@ const BatchPlanning: React.FC = () => {
               <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Mesin</th>
               <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Jadwal</th>
               <th className="px-3 py-2 text-right font-medium text-gray-500 dark:text-gray-400">Qty</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Bahan</th>
               <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Status</th>
               <th className="px-3 py-2 text-left font-medium text-gray-500 dark:text-gray-400">SPK</th>
               <th className="px-3 py-2"></th>
@@ -334,10 +340,10 @@ const BatchPlanning: React.FC = () => {
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {loading && (
-              <tr><td colSpan={9} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
+              <tr><td colSpan={10} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>
             )}
             {!loading && batches.length === 0 && (
-              <tr><td colSpan={9} className="px-3 py-6 text-center text-gray-400">Tidak ada batch</td></tr>
+              <tr><td colSpan={10} className="px-3 py-6 text-center text-gray-400">Tidak ada batch</td></tr>
             )}
             {batches.map((b) => (
               <tr key={b.id} className={b.is_over_capacity_warning ? 'bg-amber-50 dark:bg-amber-900/10' : ''}>
@@ -419,6 +425,22 @@ const BatchPlanning: React.FC = () => {
                 </td>
                 <td className="px-3 py-2 align-top text-right">
                   {b.planned_qty}{b.realized_qty ? ` / ${b.realized_qty}` : ''}
+                </td>
+                <td className="px-3 py-2 align-top">
+                  {b.material_status === 'kurang' ? (
+                    <span
+                      className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                      title={(b.material_shortages || []).map((k) => `${k.nama} kurang ${k.kurang} ${k.uom || ''}`.trim()).join('\n')}
+                    >
+                      Kurang {(b.material_shortages || []).length > 1 ? `${(b.material_shortages || []).length} bahan` : (b.material_shortages || [])[0]?.nama}
+                    </span>
+                  ) : b.material_status === 'cukup' ? (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">Cukup</span>
+                  ) : b.material_status === 'tanpa_bom' ? (
+                    <span className="text-xs text-gray-400" title="Produk ini belum punya BOM aktif">belum ada BOM</span>
+                  ) : (
+                    <span className="text-xs text-gray-400">-</span>
+                  )}
                 </td>
                 <td className="px-3 py-2 align-top">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLOR[b.status] || ''}`}>{STATUS_LABEL[b.status] || b.status}</span>
