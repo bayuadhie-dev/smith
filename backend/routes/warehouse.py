@@ -86,6 +86,13 @@ def create_zone():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+def _terpakai_di_lokasi(location_id):
+    """Isi lokasi menurut tabel stok (bukan kolom `occupied` yang tidak terawat)."""
+    total = db.session.query(db.func.sum(Inventory.quantity_on_hand)).filter(
+        Inventory.location_id == location_id, Inventory.is_active == True).scalar()  # noqa: E712
+    return float(total or 0)
+
+
 @warehouse_bp.route('/locations', methods=['GET'])
 @jwt_required()
 @require_permission('warehouse.view', 'purchasing.view')
@@ -267,10 +274,16 @@ def get_location_detail(id):
                 'rack': location.rack,
                 'level': location.level,
                 'position': location.position,
+                # Sama seperti daftar lokasi: pemakaian dihitung dari tabel stok,
+                # kolom `occupied` tidak pernah benar. Kapasitas 0 = tidak dibatasi.
                 'capacity': float(location.capacity),
                 'capacity_uom': location.capacity_uom,
-                'occupied': float(location.occupied),
-                'available': float(location.capacity - location.occupied),
+                'unlimited': float(location.capacity or 0) <= 0,
+                'occupied': round(_terpakai_di_lokasi(location.id), 3),
+                'available': ((float(location.capacity) - _terpakai_di_lokasi(location.id))
+                              if float(location.capacity or 0) > 0 else None),
+                'current_utilization': (round(_terpakai_di_lokasi(location.id) / float(location.capacity) * 100, 1)
+                                        if float(location.capacity or 0) > 0 else None),
                 'is_active': location.is_active,
                 'is_available': location.is_available,
                 'created_at': location.created_at.isoformat() if location.created_at else None,

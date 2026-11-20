@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ItemStockModal from '../../components/Warehouse/ItemStockModal';
 import { useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { useParams, useNavigate, Link } from 'react-router-dom';
@@ -28,7 +29,9 @@ interface LocationData {
   capacity: number;
   capacity_uom: string;
   occupied: number;
-  available: number;
+  available: number | null;
+  unlimited?: boolean;
+  current_utilization?: number | null;
   is_active: boolean;
   is_available: boolean;
   created_at: string | null;
@@ -72,6 +75,7 @@ const LocationDetail: React.FC = () => {
   const [location, setLocation] = useState<LocationData | null>(null);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [movements, setMovements] = useState<Movement[]>([]);
+  const [detail, setDetail] = useState<{ kind: 'material' | 'product'; id: number; name: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useUrlState<'inventory' | 'movements'>('tab', 'inventory', ['inventory', 'movements']);
   useBreadcrumbTrail(activeTab === 'inventory' ? [] : [{ label: 'Riwayat Pergerakan' }]);
@@ -233,11 +237,13 @@ const LocationDetail: React.FC = () => {
             </div>
             <span className="text-sm text-gray-600 dark:text-gray-300">Kapasitas</span>
           </div>
+          {/* Kapasitas 0 artinya tidak dibatasi, bukan "tidak muat apa-apa". */}
           <p className="text-lg font-semibold text-gray-900 dark:text-white">
-            {location.capacity.toLocaleString()} {location.capacity_uom}
+            {location.capacity ? `${location.capacity.toLocaleString('id-ID')} ${location.capacity_uom || ''}` : 'Tidak dibatasi'}
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Terpakai: {location.occupied.toLocaleString()} | Sisa: {location.available.toLocaleString()}
+            Terpakai: {location.occupied.toLocaleString('id-ID')}
+            {location.available !== null && location.available !== undefined ? ` | Sisa: ${location.available.toLocaleString('id-ID')}` : ''}
           </p>
         </div>
 
@@ -245,17 +251,26 @@ const LocationDetail: React.FC = () => {
           <div className="flex items-center gap-3 mb-2">
             <span className="text-sm text-gray-600 dark:text-gray-300">Utilisasi</span>
           </div>
-          <p className={`text-2xl font-bold ${
-            utilPct >= 90 ? 'text-red-600 dark:text-red-400' : utilPct >= 75 ? 'text-orange-600 dark:text-orange-400' : utilPct >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'
-          }`}>
-            {utilPct.toFixed(1)}%
-          </p>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
-            <div
-              className={`h-2 rounded-full ${getUtilizationColor(utilPct)}`}
-              style={{ width: `${Math.min(utilPct, 100)}%` }}
-            ></div>
-          </div>
+          {location.capacity ? (
+            <>
+              <p className={`text-2xl font-bold ${
+                utilPct >= 90 ? 'text-red-600 dark:text-red-400' : utilPct >= 75 ? 'text-orange-600 dark:text-orange-400' : utilPct >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'
+              }`}>
+                {utilPct.toFixed(1)}%
+              </p>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                <div
+                  className={`h-2 rounded-full ${getUtilizationColor(utilPct)}`}
+                  style={{ width: `${Math.min(utilPct, 100)}%` }}
+                ></div>
+              </div>
+            </>
+          ) : (
+            /* Tanpa batas kapasitas, persentase tidak berarti apa-apa. */
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Lokasi ini tidak dibatasi kapasitasnya. Isinya sekarang {location.occupied.toLocaleString('id-ID')}.
+            </p>
+          )}
         </div>
       </div>
 
@@ -311,7 +326,12 @@ const LocationDetail: React.FC = () => {
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {inventoryItems.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                        <tr
+                          key={item.id}
+                          onClick={() => (item.material_id || item.product_id) && setDetail({ kind: item.material_id ? 'material' : 'product', id: (item.material_id || item.product_id) as number, name: item.item_name })}
+                          className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
+                          title="Klik untuk melihat rincian stok per batch dan mutasinya"
+                        >
                           <td className="px-4 py-3">
                             <div>
                               <p className="text-sm font-medium text-gray-900 dark:text-white">{item.item_name}</p>
@@ -422,6 +442,10 @@ const LocationDetail: React.FC = () => {
           )}
         </div>
       </div>
+
+      {detail && (
+        <ItemStockModal kind={detail.kind} itemId={detail.id} name={detail.name} onClose={() => setDetail(null)} />
+      )}
     </div>
   );
 };

@@ -53,3 +53,21 @@ def test_stok_yang_dipesan_tetap_tampil_walau_fisiknya_nol(client, auth_headers,
     r = client.get('/api/warehouse/inventory?per_page=100', headers=auth_headers)
     batches = [i.get('batch_number') for i in (r.get_json().get('inventory') or r.get_json().get('items') or [])]
     assert 'B-RESERVED' in batches
+
+
+def test_detail_lokasi_memakai_isi_stok_sungguhan(client, auth_headers, db_session, test_material):
+    """Kolom `occupied` tidak pernah terawat - pemakaian lokasi dihitung dari tabel stok."""
+    from models.warehouse import Inventory
+
+    lok = _lokasi(db_session, 'Z-KAP', 'WH-KAP-01')
+    lok.capacity = 0            # 0 = tidak dibatasi
+    db_session.add(Inventory(material_id=test_material.id, location_id=lok.id, batch_number='B-KAP',
+                             quantity_on_hand=1200, quantity_available=1200, is_active=True))
+    db_session.commit()
+
+    r = client.get(f'/api/warehouse/locations/{lok.id}', headers=auth_headers)
+    assert r.status_code == 200, r.get_json()
+    d = r.get_json()['location']
+    assert d['occupied'] == 1200, 'isi lokasi harus dari tabel stok, bukan kolom occupied'
+    assert d['unlimited'] is True
+    assert d['available'] is None and d['current_utilization'] is None
