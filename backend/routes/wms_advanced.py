@@ -857,22 +857,6 @@ def _end_of_day_filter_bound(end_date_str):
     return end_dt
 
 
-# Pemeriksaan QC pada penerimaan barang memindahkan barang antara gudang biasa
-# dan karantina. Perpindahan itu ditulis berpasangan (transfer_out + transfer_in,
-# jumlah sama, detik yang sama) supaya laporan nilai persediaan tetap benar - tapi
-# di daftar transaksi gudang pasangan itu cuma bikin ramai: barangnya tidak pernah
-# benar-benar keluar masuk. Finance minta disembunyikan (2026-11-20).
-_INTERNAL_QC_REF = 'grn_inspection'
-_INTERNAL_QC_TYPES = ('transfer_in', 'transfer_out')
-
-
-def _hide_internal_qc(query):
-    return query.filter(db.not_(db.and_(
-        InventoryTransaction.reference_type == _INTERNAL_QC_REF,
-        InventoryTransaction.transaction_type.in_(_INTERNAL_QC_TYPES),
-    )))
-
-
 @wms_advanced_bp.route('/transactions', methods=['GET'])
 @jwt_required()
 @require_permission('warehouse.view')
@@ -896,8 +880,6 @@ def get_transactions():
         per_page = request.args.get('per_page', 50, type=int)
 
         query = InventoryTransaction.query
-        if request.args.get('include_internal', '').lower() not in ('1', 'true', 'yes'):
-            query = _hide_internal_qc(query)
 
         if txn_type:
             # Selection-screen multi-select (MB51-style): comma-separated
@@ -2052,8 +2034,6 @@ def get_transactions_summary():
             func.count(InventoryTransaction.id).label('count'),
         )
 
-        if request.args.get('include_internal', '').lower() not in ('1', 'true', 'yes'):
-            query = _hide_internal_qc(query)
         if txn_type:
             types = [t.strip() for t in txn_type.split(',') if t.strip()]
             query = query.filter(InventoryTransaction.transaction_type.in_(types)) if len(types) > 1 else query.filter(InventoryTransaction.transaction_type == types[0])
