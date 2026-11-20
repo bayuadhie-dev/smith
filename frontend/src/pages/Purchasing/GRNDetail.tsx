@@ -42,6 +42,7 @@ interface InspectItem {
   batch_number: string;
   expiry_date: string;
   zone_name?: string | null;
+  zone_id?: number | null;
   location_code?: string | null;
 }
 
@@ -74,6 +75,7 @@ export default function GRNDetail() {
           rejection_reason: '',
           uom: item.uom,
           zone_name: item.zone_name,
+          zone_id: item.zone_id,
           location_code: item.location_code,
           display_qty: item.display_qty,
           display_uom: item.display_uom,
@@ -335,10 +337,17 @@ export default function GRNDetail() {
                     {item.expiry_date && (
                       <p className="text-xs text-gray-400">Exp: {item.expiry_date}</p>
                     )}
-                    {/* Gudang tujuan barang ini - pertanyaan pertama orang gudang. */}
+                    {/* Gudang tujuan barang ini - pertanyaan pertama orang gudang,
+                        dan namanya membuka isi gudangnya. */}
                     {item.zone_name && (
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Gudang: {item.zone_name}{item.location_code ? ` (${item.location_code})` : ''}
+                        Gudang:{' '}
+                        {item.zone_id ? (
+                          <Link to={`/app/warehouse/gudang/${item.zone_id}`} className="text-emerald-700 hover:underline dark:text-emerald-300">
+                            {item.zone_name}
+                          </Link>
+                        ) : item.zone_name}
+                        {item.location_code ? ` (${item.location_code})` : ''}
                       </p>
                     )}
                   </div>

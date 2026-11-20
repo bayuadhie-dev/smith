@@ -1461,6 +1461,7 @@ def get_grn(grn_id):
                 # Nama gudangnya ikut: detail GRN harus bisa menjawab "barangnya
                 # ditaruh di mana" tanpa membuka form ubah.
                 'location_code': item.location.location_code if item.location else None,
+                'zone_id': (item.location.zone_id if item.location else None),
                 'zone_name': (item.location.zone.name if item.location and item.location.zone else None),
                 'notes': item.notes,
             } for item in grn.items],
