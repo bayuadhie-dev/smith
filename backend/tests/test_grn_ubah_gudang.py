@@ -95,3 +95,44 @@ def test_detail_grn_menyebut_gudangnya(client, auth_headers, db_session, test_ma
     item = r.get_json()['items'][0]
     assert item['location_code'] == l1.location_code
     assert item['zone_name'] == 'Gudang Bahan Baku'
+
+
+def test_persetujuan_grn_melepas_stok_dari_karantina(client, auth_headers, db_session, test_material):
+    """Semua barang di master bertanda erp_approval, jadi stok lahir karantina.
+    Tanpa pelepasan di persetujuan GRN, barang yang sudah diperiksa tetap terkunci."""
+    from models.warehouse import Inventory
+
+    test_material.erp_approval = True
+    db_session.commit()
+    grn, l1, _ = _siapkan(client, auth_headers, db_session, test_material, qty=50)
+
+    inv = Inventory.query.filter_by(material_id=test_material.id, location_id=l1.id).first()
+    inv.stock_status = 'quarantine'
+    inv.grn_id = grn.id
+    grn.quality_status = 'passed'
+    grn.status = 'inspected'
+    db_session.commit()
+
+    r = client.post(f'/api/purchasing/grn/{grn.id}/approve', headers=auth_headers)
+    assert r.status_code == 200, r.get_json()
+    assert r.get_json()['stok_dilepas_dari_karantina'] == 1
+
+    db_session.refresh(inv)
+    assert inv.stock_status == 'available'
+
+
+def test_grn_gagal_qc_tidak_melepas_karantina(client, auth_headers, db_session, test_material):
+    from models.warehouse import Inventory
+
+    grn, l1, _ = _siapkan(client, auth_headers, db_session, test_material, qty=50)
+    inv = Inventory.query.filter_by(material_id=test_material.id, location_id=l1.id).first()
+    inv.stock_status = 'quarantine'
+    inv.grn_id = grn.id
+    grn.quality_status = 'failed'
+    grn.status = 'inspected'
+    db_session.commit()
+
+    r = client.post(f'/api/purchasing/grn/{grn.id}/approve', headers=auth_headers)
+    assert r.status_code == 200, r.get_json()
+    db_session.refresh(inv)
+    assert inv.stock_status == 'quarantine'

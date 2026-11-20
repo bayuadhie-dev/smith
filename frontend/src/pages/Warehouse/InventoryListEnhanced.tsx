@@ -16,6 +16,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig'
 import { showError } from '../../components/ui'
 import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
+import ItemStockModal from '../../components/Warehouse/ItemStockModal'
 
 interface InventoryItem {
   id: number
@@ -56,6 +57,7 @@ interface InventoryListEnhancedProps {
 
 export default function InventoryListEnhanced({ mode = 'per-gudang' }: InventoryListEnhancedProps) {
   const [inventory, setInventory] = useState<InventoryItem[]>([])
+  const [detail, setDetail] = useState<{ kind: 'material' | 'product'; id: number; name: string } | null>(null)
   const [zones, setZones] = useState<Zone[]>([])
   const [loading, setLoading] = useState(true)
   const [totalItems, setTotalItems] = useState(0)
@@ -133,6 +135,37 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
       setLoading(false)
     }
   }
+
+  /**
+   * Satu barang bisa punya belasan baris stok karena batch-nya banyak - daftar
+   * ini menggabungkannya jadi satu baris per barang per gudang. Rincian tiap
+   * batch dibuka lewat popup, bukan dengan membanjiri daftar.
+   */
+  const groupedInventory = React.useMemo(() => {
+    const map = new Map<string, InventoryItem & { batch_count: number; batch_list: string[]; expiry_nearest: string | null }>()
+    inventory.forEach((it) => {
+      const key = `${it.item_type}-${it.material_id ?? it.product_id}-${it.location_id}`
+      const cur = map.get(key)
+      if (!cur) {
+        map.set(key, {
+          ...it,
+          batch_count: it.batch_number ? 1 : 0,
+          batch_list: it.batch_number ? [it.batch_number] : [],
+          expiry_nearest: it.expiry_date || null,
+        })
+        return
+      }
+      cur.quantity_on_hand += it.quantity_on_hand
+      cur.quantity_available += it.quantity_available
+      cur.quantity_reserved += it.quantity_reserved
+      if (it.batch_number && !cur.batch_list.includes(it.batch_number)) {
+        cur.batch_list.push(it.batch_number)
+        cur.batch_count += 1
+      }
+      if (it.expiry_date && (!cur.expiry_nearest || it.expiry_date < cur.expiry_nearest)) cur.expiry_nearest = it.expiry_date
+    })
+    return Array.from(map.values())
+  }, [inventory])
 
   const getStockStatusBadge = (item: InventoryItem) => {
     const qty = item.quantity_on_hand
@@ -481,7 +514,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {inventory.map((item) => (
+                  {groupedInventory.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                       <td className="px-4 py-3 whitespace-nowrap">
                         {getItemTypeBadge(item.item_type)}
@@ -490,7 +523,18 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
                         {item.item_code}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm text-gray-900 dark:text-white">{(item.material_id || item.product_id) ? <Link to={`/app/warehouse/item-stock/${item.material_id ? 'material' : 'product'}/${item.material_id || item.product_id}`} className="hover:text-emerald-700 hover:underline" title="Buka rincian lengkap: stok per gudang, batch, kedaluwarsa, dan mutasinya">{item.item_name}</Link> : item.item_name}</div>
+                        <div className="text-sm text-gray-900 dark:text-white">
+                          {(item.material_id || item.product_id) ? (
+                            <button
+                              type="button"
+                              onClick={() => setDetail({ kind: item.material_id ? 'material' : 'product', id: (item.material_id || item.product_id) as number, name: item.item_name })}
+                              className="text-left hover:text-emerald-700 hover:underline"
+                              title="Lihat rincian: stok per batch, kedaluwarsa, dan mutasinya"
+                            >
+                              {item.item_name}
+                            </button>
+                          ) : item.item_name}
+                        </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">{item.uom}</div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
@@ -519,7 +563,9 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
                         {item.quantity_reserved.toLocaleString()}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                        {item.batch_number || '-'}
+                        {(item as any).batch_count > 1
+                          ? <span title={(item as any).batch_list.join(', ')}>{(item as any).batch_count} batch</span>
+                          : (item.batch_number || '-')}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex flex-col gap-1 items-start">
@@ -528,9 +574,9 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
                         </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm">
-                        {item.expiry_date ? (
-                          <span className={new Date(item.expiry_date) < new Date() ? 'text-red-600 font-medium dark:text-red-400' : 'text-gray-600 dark:text-gray-300'}>
-                            {new Date(item.expiry_date).toLocaleDateString('id-ID')}
+                        {(item as any).expiry_nearest ? (
+                          <span className={new Date((item as any).expiry_nearest) < new Date() ? 'text-red-600 font-medium dark:text-red-400' : 'text-gray-600 dark:text-gray-300'}>
+                            {new Date((item as any).expiry_nearest).toLocaleDateString('id-ID')}
                           </span>
                         ) : '-'}
                       </td>
@@ -543,7 +589,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
             {/* Pagination */}
             <div className="px-4 py-3 border-t flex items-center justify-between">
               <div className="text-sm text-gray-600 dark:text-gray-300">
-                Menampilkan {inventory.length} dari {totalItems} item
+                Menampilkan {groupedInventory.length} baris ({inventory.length} dari {totalItems} baris stok)
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <button
@@ -568,6 +614,10 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
           </>
         )}
       </div>
+
+      {detail && (
+        <ItemStockModal kind={detail.kind} itemId={detail.id} name={detail.name} onClose={() => setDetail(null)} />
+      )}
     </div>
   )
 }

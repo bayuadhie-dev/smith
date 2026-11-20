@@ -1906,8 +1906,23 @@ def approve_grn(grn_id):
         grn.status = 'approved'
         grn.approved_by = user_id
         grn.approved_at = get_local_now()
+
+        # Stok lahir berstatus karantina karena SEMUA barang di master bertanda
+        # erp_approval - jadi tanpa ini, barang yang sudah diperiksa dan disetujui
+        # di penerimaan tetap terkunci dan tidak bisa dipakai siapa pun.
+        # Pemeriksaan GRN memang pemeriksaan masuknya; yang ditolak sudah pindah
+        # ke gudang karantina/waste dengan status tersendiri, jadi tidak ikut lepas.
+        dilepas = 0
+        if grn.quality_status != 'failed':
+            from models.warehouse import Inventory
+            for inv in Inventory.query.filter_by(grn_id=grn.id, stock_status='quarantine').all():
+                inv.stock_status = 'released' if inv.product_id else 'available'
+                inv.updated_at = get_local_now()
+                dilepas += 1
+
         db.session.commit()
-        return jsonify({'message': 'GRN disetujui', 'grn_id': grn.id}), 200
+        return jsonify({'message': 'GRN disetujui', 'grn_id': grn.id,
+                        'stok_dilepas_dari_karantina': dilepas}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
