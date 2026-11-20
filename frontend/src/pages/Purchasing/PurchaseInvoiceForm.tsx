@@ -245,7 +245,6 @@ export default function PurchaseInvoiceForm() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!poId && !grnId && !editInv?.grn_id) return showError('Pilih PO terlebih dahulu')
-    if (!supplierInvoiceNumber.trim()) return showError('No. Faktur Pemasok wajib diisi')
     const items = lines.filter((l) => Number(l.qty) > 0)
     if (items.length === 0) return showError('Isi jumlah tagihan minimal satu baris')
     const badExtra = items.find((l) => l.extra && (!l.account_id || !(l.description || '').trim()))
@@ -351,8 +350,11 @@ export default function PurchaseInvoiceForm() {
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{editId ? 'Nomor lama dipertahankan kecuali Anda ganti.' : 'Terisi nomor berikutnya secara otomatis; bisa diganti manual.'}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Faktur Pemasok *</label>
-            <input className="input-field" value={supplierInvoiceNumber} onChange={(e) => setSupplierInvoiceNumber(e.target.value)} placeholder="Terisi otomatis kalau sudah diisi di GRN" />
+            {/* Tidak wajib: sebagian pemasok tidak mengirim faktur bernomor
+                (masukan Finance 2026-11-20). Kalau ada, nomornya tetap berguna
+                untuk mencocokkan tagihan dan menghindari bayar dua kali. */}
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">No. Faktur Pemasok</label>
+            <input className="input-field" value={supplierInvoiceNumber} onChange={(e) => setSupplierInvoiceNumber(e.target.value)} placeholder="Kosongkan kalau pemasok tidak memberi nomor" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Tanggal Faktur Pemasok</label>
