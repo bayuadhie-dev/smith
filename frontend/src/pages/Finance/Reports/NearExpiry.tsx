@@ -51,6 +51,22 @@ export default function NearExpiry() {
           {loading ? 'Memuat...' : 'Muat ulang'}
         </button>
       </div>
+      {/* Tanpa masa simpan di master, hasil produksi tidak punya dasar hitungan
+          kedaluwarsa - laporan akan sepi tanpa sebab yang kelihatan. */}
+      {s?.needs_setup > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-100">
+          <p className="font-medium">{s.needs_setup} barang ditandai "pakai tanggal kedaluwarsa" tapi masa simpannya belum diisi.</p>
+          <p className="mt-1">
+            Penerimaan barang masih bisa mengetik tanggalnya satu per satu, tapi hasil produksi tidak punya dasar hitungan sama
+            sekali sampai masa simpan diisi di Master Data.
+            {(data?.needs_setup || []).length > 0 && (
+              <span className="mt-1 block text-xs">
+                Contoh: {(data.needs_setup || []).slice(0, 6).map((x: any) => `${x.code} ${x.name}`).join(' · ')}
+              </span>
+            )}
+          </p>
+        </div>
+      )}
       {s && (
         <StatCards items={[
           { label: 'Batch terdaftar', value: num(s.batches) },

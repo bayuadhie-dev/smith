@@ -1181,6 +1181,18 @@ def create_grn():
                 inventory.quantity_on_hand = float(inventory.quantity_on_hand) + quantity_accepted
                 inventory.quantity_available = float(inventory.quantity_available) + quantity_accepted
                 inventory.updated_at = get_local_now()
+
+                # Tanggal kedaluwarsa ikut turun ke baris stok. Sebelumnya hanya
+                # tersimpan di baris GRN, jadi laporan batch kedaluwarsa dan
+                # urutan FEFO di faktur penjualan tidak pernah melihatnya.
+                from utils.expiry_helper import isi_kedaluwarsa_stok
+                isi_kedaluwarsa_stok(
+                    inventory,
+                    explicit=grn_item.expiry_date,
+                    base_date=grn_item.production_date or grn.receipt_date,
+                    product=db.session.get(Product, product_id) if product_id else None,
+                    material=db.session.get(Material, material_id) if material_id else None,
+                )
                 
                 # Ensure the inventory record is saved so we can get its ID for movement
                 db.session.flush()

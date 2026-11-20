@@ -665,9 +665,15 @@ def approve_production(id):
                 
                 # 2. Update Master Inventory (Add to FG Location ID 3)
                 # Check for existing inventory record at FG location (3)
+                # Batch ikut jadi kunci: tanpa ini semua hasil produksi menumpuk di
+                # satu baris stok tanpa nomor batch, sehingga tanggal kedaluwarsa
+                # per batch tidak bisa disimpan dan pilihan batch di faktur
+                # penjualan tidak pernah terisi.
+                batch_fg = (wo.batch_number or '').strip() or None
                 inv = Inventory.query.filter_by(
                     product_id=wo.product_id,
                     location_id=3,
+                    batch_number=batch_fg,
                     is_active=True
                 ).first()
                 
@@ -678,11 +684,17 @@ def approve_production(id):
                         location_id=3,
                         quantity_on_hand=0,
                         quantity_available=0,
+                        batch_number=batch_fg,
                         stock_status=resolve_initial_stock_status('available', product=wo.product),
                         created_by=user_id
                     )
                     db.session.add(inv)
                     db.session.flush()
+
+                # Barang jadi tidak punya tanggal kedaluwarsa yang diketik siapa pun,
+                # jadi dihitung dari masa simpan di master produk (self_life_days).
+                from utils.expiry_helper import isi_kedaluwarsa_stok
+                isi_kedaluwarsa_stok(inv, base_date=get_local_now().date(), product=wo.product)
                 
                 # Add to inventory
                 old_qty = float(inv.quantity_on_hand or 0)

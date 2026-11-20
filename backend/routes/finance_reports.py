@@ -1075,11 +1075,24 @@ def near_expiry():
                      'qty': round(_f(qty), 3),
                      'bucket': 'kedaluwarsa' if sisa_hari < 0 else ('30' if sisa_hari <= 30 else ('90' if sisa_hari <= 90 else 'lebih'))})
     rows.sort(key=lambda r: (r['days_left'], r['name'] or ''))
+    # Barang yang ditandai "pakai tanggal kedaluwarsa" tapi masa simpannya belum
+    # diisi: penerimaan barang masih bisa mengetik tanggalnya, tapi hasil produksi
+    # tidak punya dasar hitungan sama sekali - laporan ini akan sepi tanpa sebab
+    # yang kelihatan kalau tidak diberitahu.
+    _, Product, Material, *_ = _inv_models()
+    belum_diatur = []
+    for obj, umur in ((Product, 'self_life_days'), (Material, 'expiry_days')):
+        kolom = getattr(obj, umur)
+        for it in obj.query.filter(obj.require_expiry.is_(True),
+                                   db.or_(kolom.is_(None), kolom <= 0)).limit(200).all():
+            belum_diatur.append({'code': it.code, 'name': it.name,
+                                 'kind': 'product' if obj is Product else 'material'})
     ringkas = {
         'batches': len(rows),
         'expired': len([r for r in rows if r['bucket'] == 'kedaluwarsa']),
         'within_30': len([r for r in rows if r['bucket'] == '30']),
         'qty_expired': round(sum(r['qty'] for r in rows if r['bucket'] == 'kedaluwarsa'), 3),
+        'needs_setup': len(belum_diatur),
     }
     if _wants_xlsx():
         headers = ['Kode', 'Nama', 'Batch', 'Gudang', 'Kedaluwarsa', 'Sisa hari', 'Kuantitas', 'Satuan']
@@ -1089,7 +1102,8 @@ def near_expiry():
                      f'batch_kedaluwarsa_{today}.xlsx', f'Sampai {days} hari ke depan · per {today}', (5, 6))
     zones = [{'id': z.id, 'name': z.name} for z in Zone.query.filter(Zone.is_active.is_(True)).order_by(Zone.code).all()]
     return jsonify({'rows': rows, 'summary': ringkas, 'groups': _inv_group_choices(),
-                    'zones': zones, 'days': days, 'date': today.isoformat()}), 200
+                    'zones': zones, 'days': days, 'date': today.isoformat(),
+                    'needs_setup': belum_diatur[:25]}), 200
 
 
 @finance_reports_bp.route('/stock-vs-ledger', methods=['GET'])
