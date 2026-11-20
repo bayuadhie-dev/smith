@@ -1458,6 +1458,10 @@ def get_grn(grn_id):
                 'production_date': item.production_date.isoformat() if item.production_date else None,
                 'expiry_date': item.expiry_date.isoformat() if item.expiry_date else None,
                 'location_id': item.location_id,
+                # Nama gudangnya ikut: detail GRN harus bisa menjawab "barangnya
+                # ditaruh di mana" tanpa membuka form ubah.
+                'location_code': item.location.location_code if item.location else None,
+                'zone_name': (item.location.zone.name if item.location and item.location.zone else None),
                 'notes': item.notes,
             } for item in grn.items],
         }), 200

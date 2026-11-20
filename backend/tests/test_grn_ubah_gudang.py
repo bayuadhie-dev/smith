@@ -84,3 +84,14 @@ def test_tolak_kalau_stoknya_sudah_terpakai(client, auth_headers, db_session, te
     assert r.status_code == 400
     assert 'tinggal' in r.get_json()['error']
     assert _stok(test_material.id, l2.id) == 0
+
+
+def test_detail_grn_menyebut_gudangnya(client, auth_headers, db_session, test_material):
+    """Detail GRN harus menjawab "barangnya ditaruh di mana" tanpa membuka form ubah."""
+    grn, l1, _ = _siapkan(client, auth_headers, db_session, test_material, qty=25)
+
+    r = client.get(f'/api/purchasing/grn/{grn.id}', headers=auth_headers)
+    assert r.status_code == 200, r.get_json()
+    item = r.get_json()['items'][0]
+    assert item['location_code'] == l1.location_code
+    assert item['zone_name'] == 'Gudang Bahan Baku'
