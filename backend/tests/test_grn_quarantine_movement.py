@@ -1,10 +1,8 @@
-"""Perpindahan karantina QC tidak lagi ditulis ke buku stok.
+"""Perpindahan karantina QC tetap tercatat di buku stok.
 
-Masukan Finance 2026-11-20: satu penerimaan yang diperiksa QC memunculkan
-sepasang baris transfer_out + transfer_in dengan jumlah sama di detik yang sama.
-Barangnya tidak pernah benar-benar keluar masuk gudang - cuma pindah rak - jadi
-barisnya dihapus, bukan disembunyikan. Selisih jumlah yang sebenarnya tetap
-dicatat sebagai adjustment.
+Sempat dihentikan 2026-11-20 karena dikira baris sampah, padahal yang
+mengganggu Finance hanyalah dua baris data contoh di Fengsheng. Pencatatannya
+dikembalikan: perpindahan antar gudang memang harus punya jejak.
 """
 from datetime import date
 
@@ -44,34 +42,32 @@ def _grn_diperiksa(client, auth_headers, db_session, test_material, diterima, di
     })
     assert r.status_code in (200, 201), r.get_json()
     grn = GoodsReceivedNote.query.order_by(GoodsReceivedNote.id.desc()).first()
-    item = grn.items[0]
 
     r2 = client.post(f'/api/purchasing/grn/{grn.id}/inspect', headers=auth_headers, json={
-        'items': [{'id': item.id, 'quantity_accepted': diterima, 'quantity_rejected': ditolak}],
+        'items': [{'id': grn.items[0].id, 'quantity_accepted': diterima, 'quantity_rejected': ditolak}],
     })
     assert r2.status_code in (200, 201), r2.get_json()
     return grn
 
 
-def _mutasi(grn_id, *refs):
+def _mutasi(grn_id):
     from models.wms_advanced import InventoryTransaction
-    return InventoryTransaction.query.filter(InventoryTransaction.reference_id == grn_id,
-                                             InventoryTransaction.reference_type.in_(refs)).all()
+    return InventoryTransaction.query.filter(
+        InventoryTransaction.reference_id == grn_id,
+        InventoryTransaction.reference_type.in_(('grn_inspection', 'grn_inspection_reject'))).all()
 
 
-def test_pindah_karantina_tidak_menulis_mutasi(client, auth_headers, db_session, test_material):
-    """100 diterima -> 20 ditolak: 20 cuma pindah ke karantina, bukan keluar gudang."""
+def test_pindah_karantina_tercatat_berpasangan(client, auth_headers, db_session, test_material):
+    """20 KG ditolak: keluar dari gudang bahan baku, masuk ke karantina."""
     grn = _grn_diperiksa(client, auth_headers, db_session, test_material, diterima=80, ditolak=20)
 
-    rows = _mutasi(grn.id, 'grn_inspection', 'grn_inspection_reject')
-    assert not [t for t in rows if t.transaction_type in ('transfer_in', 'transfer_out')], \
-        'perpindahan karantina tidak boleh menghasilkan baris mutasi'
+    jenis = sorted(t.transaction_type for t in _mutasi(grn.id))
+    assert jenis == ['transfer_in', 'transfer_out'], jenis
+    assert all(float(t.quantity) == 20 for t in _mutasi(grn.id))
 
 
-def test_selisih_jumlah_sebenarnya_tetap_dicatat(client, auth_headers, db_session, test_material):
-    """Kalau jumlah totalnya ikut berubah (bukan sekadar pindah), itu mutasi beneran."""
+def test_selisih_jumlah_dicatat_sebagai_penyesuaian(client, auth_headers, db_session, test_material):
+    """Jumlah totalnya ikut berubah (bukan sekadar pindah) - itu penyesuaian, bukan transfer."""
     grn = _grn_diperiksa(client, auth_headers, db_session, test_material, diterima=90, ditolak=0)
 
-    rows = _mutasi(grn.id, 'grn_inspection')
-    assert [t for t in rows if t.transaction_type == 'adjustment'], \
-        'pengurangan 10 KG tanpa karantina harus tercatat sebagai penyesuaian'
+    assert [t.transaction_type for t in _mutasi(grn.id)] == ['adjustment']

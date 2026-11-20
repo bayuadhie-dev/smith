@@ -1775,12 +1775,8 @@ def inspect_grn(grn_id):
                     inventory.quantity_on_hand = max(0, float(inventory.quantity_on_hand) + delta)
                     inventory.updated_at = get_local_now()
                     mv_direction = 'in' if delta > 0 else 'out'
-                    # Perpindahan murni ke/dari karantina TIDAK dicatat sebagai mutasi:
-                    # barangnya tidak keluar-masuk gudang, cuma pindah rak, dan pasangan
-                    # keluar+masuk-nya hanya meramaikan daftar transaksi (permintaan
-                    # Finance 2026-11-20). Yang dicatat hanya selisih jumlah sebenarnya.
-                    movement = None if pindah >= abs(delta) - 0.0001 else record_inventory_transaction(
-                        transaction_type='adjustment',
+                    movement = record_inventory_transaction(
+                        transaction_type=('transfer_in' if mv_direction == 'in' else 'transfer_out') if pindah >= abs(delta) - 0.0001 else 'adjustment',
                         direction=mv_direction,
                         quantity=abs(delta),
                         product_id=item.product_id,
@@ -1841,23 +1837,21 @@ def inspect_grn(grn_id):
                     )
                     db.session.add(quarantine_inventory)
 
-                # Sama seperti di atas: pindah ke karantina bukan mutasi stok.
-                if pindah < abs(reject_delta) - 0.0001:
-                    record_inventory_transaction(
-                        transaction_type='adjustment',
-                        direction='in' if reject_delta > 0 else 'out',
-                        quantity=abs(reject_delta),
-                        product_id=item.product_id,
-                        material_id=item.material_id,
-                        to_location_id=quarantine_location.id if reject_delta > 0 else None,
-                        from_location_id=quarantine_location.id if reject_delta < 0 else None,
-                        reference_number=grn.grn_number,
-                        reference_type='grn_inspection_reject',
-                        reference_id=grn.id,
-                        batch_number=item.batch_number,
-                        notes=f"GRN {grn.grn_number} - barang ditolak QC masuk karantina",
-                        created_by=user_id
-                    )
+                record_inventory_transaction(
+                    transaction_type=('transfer_in' if reject_delta > 0 else 'transfer_out') if pindah >= abs(reject_delta) - 0.0001 else 'adjustment',
+                    direction='in' if reject_delta > 0 else 'out',
+                    quantity=abs(reject_delta),
+                    product_id=item.product_id,
+                    material_id=item.material_id,
+                    to_location_id=quarantine_location.id if reject_delta > 0 else None,
+                    from_location_id=quarantine_location.id if reject_delta < 0 else None,
+                    reference_number=grn.grn_number,
+                    reference_type='grn_inspection_reject',
+                    reference_id=grn.id,
+                    batch_number=item.batch_number,
+                    notes=f"GRN {grn.grn_number} - barang ditolak QC masuk karantina",
+                    created_by=user_id
+                )
 
             total_accepted += new_accepted
             total_rejected += new_rejected
