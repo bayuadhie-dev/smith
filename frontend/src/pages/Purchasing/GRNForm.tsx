@@ -76,7 +76,9 @@ export default function GRNForm() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    axiosInstance.get('/api/warehouse/locations', { params: { per_page: 1000 } })
+    // Saat mengubah GRN lama, gudang nonaktif ikut diambil - kalau tidak,
+    // penerimaan yang dulu masuk ke gudang lama akan tampil sebagai "-".
+    axiosInstance.get('/api/warehouse/locations', { params: { per_page: 1000, include_inactive: isEdit ? 1 : undefined } })
       .then((r) => setLocations(r.data.locations || []))
       .catch((e) => {
         if (e?.response?.status === 403) showError('Akun ini belum punya izin melihat gudang. Hubungi admin untuk memberi izin Gudang (lihat).')
@@ -204,13 +206,24 @@ export default function GRNForm() {
       .catch(() => showError('Gagal memuat GRN'))
   }, [id, isEdit])
 
+  // Nama gudang ditaruh di depan: yang dicari petugas "Gudang Bahan Baku",
+  // bukan kode raknya.
   const locationOptions = useMemo(
-    () => locations.map((l) => ({ id: l.id, name: `${l.location_code}${l.zone_name ? ' - ' + l.zone_name : ''}` })),
+    () => locations.map((l) => ({ id: l.id, name: l.zone_name ? `${l.zone_name} (${l.location_code})` : l.location_code })),
     [locations],
   )
 
-  const update = (i: number, patch: Partial<Row>) => setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))
-  const applyBulk = (loc: number | null) => { setBulkLocation(loc); if (loc) setRows((rs) => rs.map((r) => (num(r.qty) > 0 ? { ...r, location_id: loc } : r))) }
+  // Baris yang baru diisi jumlahnya ikut memakai gudang yang sudah dipilih di
+  // atas. Dulu gudang hanya menempel ke baris yang SAAT ITU sudah ada qty-nya,
+  // jadi kalau gudang dipilih duluan (urutan yang wajar) pilihannya seolah tidak
+  // berpengaruh - lalu simpan ditolak "pilih gudang dulu".
+  const update = (i: number, patch: Partial<Row>) => setRows((rs) => rs.map((r, idx) => {
+    if (idx !== i) return r
+    const next = { ...r, ...patch }
+    if (bulkLocation && !next.location_id && num(next.qty) > 0) next.location_id = bulkLocation
+    return next
+  }))
+  const applyBulk = (loc: number | null) => { setBulkLocation(loc); if (loc) setRows((rs) => rs.map((r) => ({ ...r, location_id: loc }))) }
 
   // Satuan fleksibel (mis. ROL -> PCS): jumlah diketik dalam satuan pilihan, disimpan dalam satuan baris (satuan dasar).
   const factorOf = (r: Row) => {

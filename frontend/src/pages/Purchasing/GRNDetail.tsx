@@ -203,13 +203,22 @@ export default function GRNDetail() {
           <Link to={`/app/purchasing/grn/${grn.id}/edit`} className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-600">Ubah</Link>
           <DocumentGenerateButton transactionType="grn" transactionId={grn.id} transactionNumber={grn.grn_number} label="Cetak" />
           <DocumentGenerateButton transactionType="grn" transactionId={grn.id} transactionNumber={grn.grn_number} label="Cetak + rincian batch" detail />
-          {grn.status === 'approved' && (
+          {grn.status === 'approved' ? (
             <Link
               to={grn.po_id ? `/app/purchasing/invoices/new?po_id=${grn.po_id}` : `/app/purchasing/invoices/new?grn_id=${grn.id}`}
               className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium"
             >
               Buat Faktur Pembelian
             </Link>
+          ) : (
+            /* Tombolnya tetap kelihatan walau belum bisa ditekan: kalau disembunyikan,
+               orang mengira faktur memang tidak bisa dibuat dari penerimaan. */
+            <span
+              className="flex cursor-not-allowed items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-400 dark:bg-gray-700 dark:text-gray-500"
+              title="Faktur pembelian baru bisa dibuat setelah penerimaan ini disetujui"
+            >
+              Buat Faktur Pembelian
+            </span>
           )}
           {grn.status === 'inspected' && (
             <button
