@@ -21,14 +21,41 @@ branch_labels = None
 depends_on = None
 
 
+REFERENSI = [
+    ('inventory_movements', 'inventory_id'),
+    ('stock_opname_items', 'inventory_id'),
+    ('material_consumptions', 'from_inventory_id'),
+    ('pick_list_items', 'inventory_id'),
+    ('stock_transfer_items', 'from_inventory_id'),
+    ('inventory_adjustments', 'inventory_id'),
+]
+
+
 def upgrade():
-    hasil = op.get_bind().execute(sa.text("""
-        DELETE FROM inventory
-        WHERE COALESCE(quantity_on_hand, 0) = 0
-          AND COALESCE(quantity_reserved, 0) = 0
-          AND COALESCE(quantity_available, 0) = 0
+    bind = op.get_bind()
+    tabel = set(sa.inspect(bind).get_table_names())
+    dipakai = ' OR '.join(
+        f"EXISTS (SELECT 1 FROM {t} x WHERE x.{k} = i.id)"
+        for t, k in REFERENSI if t in tabel
+    ) or 'FALSE'
+
+    kosong = f"""
+        COALESCE(i.quantity_on_hand, 0) = 0
+        AND COALESCE(i.quantity_reserved, 0) = 0
+        AND COALESCE(i.quantity_available, 0) = 0
+    """
+
+    # Baris kosong yang masih dirujuk dokumen lain (opname, pick list, mutasi)
+    # tidak boleh dihapus - cukup dinonaktifkan supaya hilang dari daftar.
+    dinonaktifkan = bind.execute(sa.text(f"""
+        UPDATE inventory i SET is_active = FALSE
+        WHERE {kosong} AND i.is_active AND ({dipakai})
     """))
-    print(f'  baris stok kosong dihapus: {hasil.rowcount}')
+    dihapus = bind.execute(sa.text(f"""
+        DELETE FROM inventory i
+        WHERE {kosong} AND NOT ({dipakai})
+    """))
+    print(f'  baris stok kosong: {dihapus.rowcount} dihapus, {dinonaktifkan.rowcount} dinonaktifkan')
 
 
 def downgrade():
