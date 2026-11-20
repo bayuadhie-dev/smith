@@ -131,6 +131,23 @@ const RNDProjectDetail: React.FC = () => {
     }
   };
 
+  // Bahan trial keluar lewat Permintaan Barang seperti produksi: gudang
+  // menyiapkan, stok berkurang saat barang diserahkan, dan ada jejaknya.
+  const handleRequestMaterials = async (formulaId: number, itemCount: number) => {
+    if (!itemCount) { showError('Formula ini belum punya bahan yang menunjuk master material'); return }
+    const ok = await confirmDialog(
+      'Buat Permintaan Barang ke gudang berisi bahan formula ini? Stok berkurang saat gudang menyerahkan barangnya, bukan sekarang.',
+      { title: 'Minta bahan trial', confirmText: 'Buat permintaan', cancelText: 'Batal', danger: false },
+    )
+    if (!ok) return
+    try {
+      const r = await axiosInstance.post(`/api/rnd/formulas/${formulaId}/material-request`, { factor: 1 })
+      showSuccess(`Permintaan ${r.data?.material_issue?.issue_number || ''} dibuat, menunggu gudang`)
+    } catch (e: any) {
+      showError(e?.response?.data?.error || 'Gagal membuat permintaan bahan')
+    }
+  }
+
   const handleSelectFormula = async (formulaId: number) => {
     try {
       await axiosInstance.post(`/api/rnd/formulas/${formulaId}/select`);
@@ -445,6 +462,15 @@ const RNDProjectDetail: React.FC = () => {
                       >
                         Detail
                       </Link>
+                      {!project.is_locked && (
+                        <button
+                          onClick={() => handleRequestMaterials(formula.id, formula.item_count)}
+                          className="px-3 py-1 text-sm bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300"
+                          title="Buat Permintaan Barang berisi bahan formula ini"
+                        >
+                          Minta bahan trial
+                        </button>
+                      )}
                       {!project.is_locked && !formula.is_selected && (
                         <button
                           onClick={() => handleDeleteFormula(formula.id)}

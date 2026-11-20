@@ -563,6 +563,93 @@ def update_formula(id):
         return jsonify({'error': str(e)}), 500
 
 
+@rnd_bp.route('/formulas/<int:id>/material-request', methods=['POST'])
+@jwt_required()
+@require_permission('rnd.edit', 'rnd.create')
+def request_trial_materials(id):
+    """Minta bahan trial ke gudang lewat Permintaan Barang.
+
+    Eksperimen R&D dulu hanya mencatat pemakaian bahan sebagai angka di layar;
+    stok gudang tidak pernah berkurang dan tidak ada yang tahu barang diambil.
+    Sekarang bahannya keluar lewat dokumen yang sama dengan produksi: gudang
+    menyiapkan, lalu stok berkurang saat barang benar-benar diserahkan.
+
+    Body: {"factor": 1, "experiment_id": null, "required_date": null, "notes": ""}
+    `factor` mengalikan kebutuhan formula - trial biasanya hanya sebagian batch.
+    """
+    from models.material_issue import MaterialIssue, MaterialIssueItem
+    from models.product import Material
+    from utils import generate_number
+    from utils.timezone import get_local_now
+
+    formula = db.session.get(RNDFormula, id)
+    if not formula:
+        return jsonify({'error': 'Formula tidak ditemukan'}), 404
+
+    data = request.get_json() or {}
+    try:
+        factor = float(data.get('factor') or 1)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Faktor harus angka'}), 400
+    if factor <= 0:
+        return jsonify({'error': 'Faktor harus lebih dari 0'}), 400
+
+    experiment_id = data.get('experiment_id')
+    if experiment_id:
+        exp = db.session.get(RNDExperiment, experiment_id)
+        if not exp or exp.formula_id != formula.id:
+            return jsonify({'error': 'Eksperimen tidak cocok dengan formula ini'}), 400
+        sudah = MaterialIssue.query.filter(MaterialIssue.rnd_experiment_id == experiment_id,
+                                           MaterialIssue.status != 'cancelled').first()
+        if sudah:
+            return jsonify({'error': f'Eksperimen ini sudah punya permintaan barang {sudah.issue_number}'}), 400
+
+    baris = [it for it in formula.items if it.material_id and float(it.quantity or 0) > 0]
+    if not baris:
+        return jsonify({'error': 'Formula ini belum punya bahan yang menunjuk master material'}), 400
+
+    user_id = int(get_jwt_identity())
+    mi = MaterialIssue(
+        issue_number=generate_number('MI', MaterialIssue, 'issue_number'),
+        trigger_source='rnd',
+        issue_type='rnd',
+        department='R&D',
+        issue_date=get_local_now(),
+        requested_by=user_id,
+        status='pending',
+        priority=data.get('priority', 'normal'),
+        rnd_formula_id=formula.id,
+        rnd_experiment_id=experiment_id or None,
+        required_date=datetime.fromisoformat(data['required_date']) if data.get('required_date') else None,
+        notes=(data.get('notes') or f'Bahan trial formula {formula.version} (proyek {formula.project_id})'
+               + (f' x{factor:g}' if factor != 1 else '')),
+    )
+    db.session.add(mi)
+    db.session.flush()
+
+    for idx, it in enumerate(baris, 1):
+        material = db.session.get(Material, it.material_id)
+        qty = round(float(it.quantity) * factor, 4)
+        item = MaterialIssueItem(
+            material_issue_id=mi.id,
+            line_number=idx,
+            material_id=it.material_id,
+            description=it.material_name or (material.name if material else 'Bahan trial'),
+            required_quantity=qty,
+            uom=it.uom or (material.primary_uom if material else 'KG'),
+            unit_cost=getattr(material, 'cost_per_unit', None),
+            status='pending',
+        )
+        if item.unit_cost:
+            item.total_cost = float(item.unit_cost) * qty
+        db.session.add(item)
+
+    db.session.commit()
+    return jsonify({'message': 'Permintaan bahan trial dibuat',
+                    'material_issue': {'id': mi.id, 'issue_number': mi.issue_number,
+                                       'items': len(baris), 'status': mi.status}}), 201
+
+
 @rnd_bp.route('/formulas/<int:id>/select', methods=['POST'])
 @jwt_required()
 @require_permission('rd.create')

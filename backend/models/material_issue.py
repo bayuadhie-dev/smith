@@ -14,6 +14,10 @@ class MaterialIssue(db.Model):
     # created this. A WorkOrder can have several ProductionBatch/SPK, so work_order_id
     # alone can't disambiguate which SPK a staging request came from.
     production_batch_id = db.Column(db.Integer, db.ForeignKey('production_batches.id'), nullable=True)
+    # Trial R&D: bahannya keluar lewat dokumen yang sama dengan produksi supaya
+    # gudang tahu barang diambil dan stoknya berkurang pada saat diserahkan.
+    rnd_formula_id = db.Column(db.Integer, db.ForeignKey('rnd_formulas.id'), nullable=True)
+    rnd_experiment_id = db.Column(db.Integer, db.ForeignKey('rnd_experiments.id'), nullable=True)
     # Where this MaterialIssue came from: 'manual' (staf minta manual), 'auto_reserve'
     # (dibuat otomatis saat SO confirmed / Plan approved / WO released), or 'spk' (dibuat
     # otomatis saat SPK batch terbit - SPK_STAGING_BAHAN_BAKU_RENCANA_TEKNIS.md)
@@ -54,6 +58,8 @@ class MaterialIssue(db.Model):
     sales_order = db.relationship('SalesOrder')
     production_plan = db.relationship('ProductionPlan')
     production_batch = db.relationship('ProductionBatch')
+    rnd_formula = db.relationship('RNDFormula')
+    rnd_experiment = db.relationship('RNDExperiment')
     requested_by_user = db.relationship('User', foreign_keys=[requested_by])
     approved_by_user = db.relationship('User', foreign_keys=[approved_by])
     issued_by_user = db.relationship('User', foreign_keys=[issued_by])
