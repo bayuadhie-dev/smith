@@ -283,6 +283,8 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                 { name: 'Mutasi Stok', href: '/app/warehouse/movements' },
                 { name: 'Nilai Persediaan', href: '/app/finance/reports/inventory-mutation' },
                 { name: 'Kuantitas Barang per Gudang', href: '/app/finance/reports/inventory-by-warehouse' },
+                { name: 'Selisih Stok Fisik vs Buku Stok', href: '/app/finance/reports/stock-vs-ledger' },
+                { name: 'Batch Segera Kedaluwarsa', href: '/app/finance/reports/near-expiry' },
                 { name: 'Stok Minimum', href: '/app/warehouse/alerts' },
                 { name: 'Analisa Gudang', href: '/app/warehouse/analytics' },
               ]

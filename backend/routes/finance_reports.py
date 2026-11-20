@@ -1027,6 +1027,133 @@ def inventory_mutation():
     })
 
 
+@finance_reports_bp.route('/near-expiry', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view', 'warehouse.view')
+def near_expiry():
+    """Batch yang sudah atau segera kedaluwarsa, per gudang.
+
+    Padanan laporan "Nomor Produksi Segera Kadaluarsa" di Accurate. Sistem tidak
+    memilihkan batch mana yang keluar (sama seperti Accurate), jadi laporan ini
+    yang menjaga barang lama tidak tertinggal di gudang.
+    """
+    try:
+        days = int(request.args.get('days') or 90)
+    except ValueError:
+        return _err('Jumlah hari harus angka')
+    days = max(0, min(days, 3650))
+    group = request.args.get('group') or 'all'
+    q = request.args.get('q') or ''
+    zone_id = request.args.get('zone_id', type=int)
+
+    _, _, _, Zone, Loc, Inventory = _inv_models()
+    today = get_local_today()
+    batas = today + timedelta(days=days)
+
+    rows_q = db.session.query(
+        Inventory.product_id, Inventory.material_id, Inventory.batch_number,
+        Inventory.expiry_date, Zone.id, Zone.name,
+        func.coalesce(func.sum(Inventory.quantity_on_hand), 0),
+    ).join(Loc, Inventory.location_id == Loc.id).join(Zone, Loc.zone_id == Zone.id).filter(
+        Inventory.is_active.is_(True), Inventory.quantity_on_hand > 0,
+        Inventory.expiry_date.isnot(None), Inventory.expiry_date <= batas,
+    )
+    if zone_id:
+        rows_q = rows_q.filter(Zone.id == zone_id)
+    rows_q = rows_q.group_by(Inventory.product_id, Inventory.material_id, Inventory.batch_number,
+                             Inventory.expiry_date, Zone.id, Zone.name).all()
+
+    items = _inv_items([(pid, mid) for pid, mid, *_ in rows_q], group, q)
+    rows = []
+    for pid, mid, batch, exp, zid, zname, qty in rows_q:
+        meta = items.get((pid, mid))
+        if not meta:
+            continue
+        sisa_hari = (exp - today).days
+        rows.append({**meta, 'batch_number': batch or '(tanpa batch)', 'expiry_date': exp.isoformat(),
+                     'days_left': sisa_hari, 'zone_id': zid, 'zone_name': zname,
+                     'qty': round(_f(qty), 3),
+                     'bucket': 'kedaluwarsa' if sisa_hari < 0 else ('30' if sisa_hari <= 30 else ('90' if sisa_hari <= 90 else 'lebih'))})
+    rows.sort(key=lambda r: (r['days_left'], r['name'] or ''))
+    ringkas = {
+        'batches': len(rows),
+        'expired': len([r for r in rows if r['bucket'] == 'kedaluwarsa']),
+        'within_30': len([r for r in rows if r['bucket'] == '30']),
+        'qty_expired': round(sum(r['qty'] for r in rows if r['bucket'] == 'kedaluwarsa'), 3),
+    }
+    if _wants_xlsx():
+        headers = ['Kode', 'Nama', 'Batch', 'Gudang', 'Kedaluwarsa', 'Sisa hari', 'Kuantitas', 'Satuan']
+        data = [[r['code'], r['name'], r['batch_number'], r['zone_name'], r['expiry_date'],
+                 r['days_left'], r['qty'], r['uom']] for r in rows]
+        return _xlsx('Batch Segera Kedaluwarsa', headers, data,
+                     f'batch_kedaluwarsa_{today}.xlsx', f'Sampai {days} hari ke depan · per {today}', (5, 6))
+    zones = [{'id': z.id, 'name': z.name} for z in Zone.query.filter(Zone.is_active.is_(True)).order_by(Zone.code).all()]
+    return jsonify({'rows': rows, 'summary': ringkas, 'groups': _inv_group_choices(),
+                    'zones': zones, 'days': days, 'date': today.isoformat()}), 200
+
+
+@finance_reports_bp.route('/stock-vs-ledger', methods=['GET'])
+@jwt_required()
+@require_permission('finance.view', 'warehouse.view')
+def stock_vs_ledger():
+    """Selisih Stok Fisik vs Buku Stok per barang.
+
+    Dua angka yang seharusnya sama: saldo hasil menjumlahkan seluruh mutasi
+    (buku stok) dan isi tabel stok yang dipakai transaksi sehari-hari. Kalau
+    berbeda, salah satunya pernah diubah tanpa mencatat mutasi - laporan ini
+    menunjuk barang mana saja, bukan sekadar bilang totalnya tidak cocok.
+    """
+    try:
+        _, _, _, group, q, hide_zero = _inv_args()
+    except ValueError as e:
+        return _err(e)
+    T, _, _, _, _, Inventory = _inv_models()
+    date_to = get_local_today()
+    avg = _inv_avg_cost()
+    _, sign_q, _ = _inv_value_exprs(T, avg)
+
+    buku = {}
+    for pid, mid, sq_ in db.session.query(
+            T.product_id, T.material_id, func.coalesce(func.sum(sign_q), 0)).select_from(T).outerjoin(
+            avg, _inv_item_key(T) == avg.c.k).filter(
+            *_inv_valid(T, date_to), T.transaction_type != 'transfer').group_by(T.product_id, T.material_id).all():
+        buku[(pid, mid)] = buku.get((pid, mid), 0.0) + _f(sq_)
+    # mutasi 'transfer' gaya lama memindahkan antar lokasi, saldo totalnya tidak berubah
+
+    fisik = {}
+    for pid, mid, qty_ in db.session.query(
+            Inventory.product_id, Inventory.material_id,
+            func.coalesce(func.sum(Inventory.quantity_on_hand), 0)).filter(
+            Inventory.is_active.is_(True)).group_by(Inventory.product_id, Inventory.material_id).all():
+        fisik[(pid, mid)] = _f(qty_)
+
+    items = _inv_items(list(set(buku) | set(fisik)), group, q)
+    rows = []
+    for key, meta in items.items():
+        b, f = buku.get(key, 0.0), fisik.get(key, 0.0)
+        selisih = f - b
+        if hide_zero and abs(selisih) < 0.0005:
+            continue
+        rows.append({**meta, 'ledger_qty': round(b, 3), 'stock_qty': round(f, 3),
+                     'diff': round(selisih, 3), 'no_history': key not in buku})
+    rows.sort(key=lambda r: -abs(r['diff']))
+    ringkas = {
+        'items_checked': len(items),
+        'items_differ': len(rows),
+        'items_no_history': len([r for r in rows if r['no_history']]),
+        'diff_plus': round(sum(r['diff'] for r in rows if r['diff'] > 0), 3),
+        'diff_minus': round(sum(r['diff'] for r in rows if r['diff'] < 0), 3),
+    }
+    if _wants_xlsx():
+        headers = ['Kode', 'Nama', 'Satuan', 'Buku stok', 'Stok fisik', 'Selisih', 'Tanpa riwayat']
+        data = [[r['code'], r['name'], r['uom'], r['ledger_qty'], r['stock_qty'], r['diff'],
+                 'ya' if r['no_history'] else ''] for r in rows]
+        return _xlsx('Selisih Stok Fisik vs Buku Stok', headers, data,
+                     f'selisih_stok_{date_to}.xlsx', f'Per {date_to}', (3, 4, 5))
+    return jsonify({'rows': rows, 'summary': ringkas, 'groups': _inv_group_choices(),
+                    'date_to': date_to.isoformat()}), 200
+
+
 @finance_reports_bp.route('/inventory-by-warehouse', methods=['GET'])
 @jwt_required()
 @require_permission('finance.view', 'warehouse.view')

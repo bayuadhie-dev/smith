@@ -209,6 +209,8 @@ import FinanceSearch from './pages/Finance/FinanceSearch'
 import TrialBalance from './pages/Finance/Reports/TrialBalance'
 import InventoryMutation from './pages/Finance/Reports/InventoryMutation'
 import InventoryByWarehouse from './pages/Finance/Reports/InventoryByWarehouse'
+import StockVsLedger from './pages/Finance/Reports/StockVsLedger'
+import NearExpiry from './pages/Finance/Reports/NearExpiry'
 import AccountLedger from './pages/Finance/Reports/AccountLedger'
 import CashDaily from './pages/Finance/Reports/CashDaily'
 import CashDailyDetail from './pages/Finance/Reports/CashDailyDetail'
@@ -805,6 +807,8 @@ function AppChildRoutes() {
                 <Route path="finance/reports/trial-balance" element={<TrialBalance />} />
                 <Route path="finance/reports/inventory-mutation" element={<InventoryMutation />} />
                 <Route path="finance/reports/inventory-by-warehouse" element={<InventoryByWarehouse />} />
+                <Route path="finance/reports/stock-vs-ledger" element={<StockVsLedger />} />
+                <Route path="finance/reports/near-expiry" element={<NearExpiry />} />
                 <Route path="finance/reports/bank-mutation" element={<AccountLedger mode="bank" />} />
                 <Route path="finance/reports/ledger/:accountId" element={<AccountLedger mode="ledger" />} />
                 <Route path="finance/reports/cash-daily" element={<CashDaily />} />

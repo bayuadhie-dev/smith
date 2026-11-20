@@ -37,6 +37,8 @@ const GROUPS: { title: string; hint: string; items: Item[] }[] = [
   { title: 'Persediaan', hint: 'Nilai dan stok barang', items: [
     { title: 'Nilai Persediaan', desc: 'Mutasi per barang: saldo awal, masuk, keluar, saldo akhir (kuantitas dan nilai)', to: '/app/finance/reports/inventory-mutation', icon: CubeIcon, isNew: true },
     { title: 'Kuantitas Barang per Gudang', desc: 'Kuantitas dan total biaya tiap barang di tiap gudang per tanggal', to: '/app/finance/reports/inventory-by-warehouse', icon: BuildingStorefrontIcon, isNew: true },
+    { title: 'Selisih Stok Fisik vs Buku Stok', desc: 'Barang yang saldo mutasinya tidak sama dengan tabel stok, termasuk stok tanpa riwayat', to: '/app/finance/reports/stock-vs-ledger', icon: ScaleIcon, isNew: true },
+    { title: 'Batch Segera Kedaluwarsa', desc: 'Batch yang sudah lewat atau mendekati tanggal kedaluwarsa, per gudang', to: '/app/finance/reports/near-expiry', icon: CubeIcon, isNew: true },
   ] },
   { title: 'Buku Besar & Pajak', hint: 'Jurnal dan perpajakan', items: [
     { title: 'Buku Besar', desc: 'Semua jurnal, filter per akun (akun induk didukung)', to: '/app/accounting/general-ledger', icon: BookOpenIcon },

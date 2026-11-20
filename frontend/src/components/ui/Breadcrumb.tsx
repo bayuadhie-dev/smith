@@ -107,6 +107,8 @@ const routeLabels: Record<string, string> = {
   'petty-cash': 'Kas Kecil',
   'inventory-mutation': 'Nilai Persediaan',
   'inventory-by-warehouse': 'Kuantitas Barang per Gudang',
+  'stock-vs-ledger': 'Selisih Stok Fisik vs Buku Stok',
+  'near-expiry': 'Batch Segera Kedaluwarsa',
   'bank-transfers': 'Transfer Kas/Bank',
   'rolls': 'Roll Spunlace',
 };
