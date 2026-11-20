@@ -36,6 +36,7 @@ interface Row {
   lot_number: string
   production_date: string
   expiry_date: string
+  location_id0?: number | null
   notes: string
   open: boolean
   requireExpiry?: boolean
@@ -197,6 +198,7 @@ export default function GRNForm() {
             name: it.item_name || (it.po_item_id && byId[it.po_item_id] ? itemName(byId[it.po_item_id]) : (it.material_name || it.product_name || `Item #${it.id}`)),
             code: it.material_code || it.product_code, uom: it.uom, ordered: Number(it.quantity_ordered || 0),
             receivedBefore: 0, qty: total, qty0: total, location_id: it.location_id ?? null,
+            location_id0: it.location_id ?? null,
             batch_number: batches.join(', '), lot_number: it.lot_number || '',
             production_date: it.production_date ? String(it.production_date).split('T')[0] : '',
             expiry_date: it.expiry_date ? String(it.expiry_date).split('T')[0] : '', notes: it.notes || '', open: false,
@@ -346,6 +348,8 @@ export default function GRNForm() {
             .map((r) => ({ ids: r.group0!.map((g) => g.id), items: r.group!.map((g) => ({ id: g.id, batch_number: g.batch || null, quantity: g.qty })) })),
           items: rows.flatMap((r) => (r.group0 && r.group0.length ? r.group0 : [{ id: r.itemId as number, batch: r.batch_number, qty: 0 }]).map((g) => ({
             id: g.id, po_item_id: r.po_item_id, item_name: r.name.trim() || null,
+            // Gudang ikut dikirim saat diubah: backend memindahkan stoknya.
+            ...(r.location_id && r.location_id !== r.location_id0 ? { location_id: r.location_id } : {}),
             ...((r.group0?.length || 1) === 1 && !(r.group && JSON.stringify(r.group) !== JSON.stringify(r.group0)) && num(r.qty) !== num(r.qty0) ? { quantity_received: num(r.qty) } : {}), lot_number: r.lot_number || null, notes: r.notes || null,
             production_date: r.production_date || null, expiry_date: r.expiry_date || null,
           }))),
@@ -535,10 +539,12 @@ export default function GRNForm() {
                             <input className="input-field" value={r.notes} onChange={(e) => update(i, { notes: e.target.value })} placeholder="Catatan baris (opsional)" />
                           </td>
                           <td className="py-2 pr-3">
-                            {isEdit ? (
-                              <div>
-                                <div className="text-sm">{locationOptions.find((l) => l.id === r.location_id)?.name || '-'}</div>
-                                {r.location_id && <a href={`/app/warehouse/transfers/new?grn=${id}`} target="_blank" rel="noreferrer" className="text-xs text-emerald-700 hover:underline dark:text-emerald-300">Pindahkan ke gudang lain</a>}
+                            {isEdit && !r.is_service ? (
+                              <div className="space-y-1">
+                                {/* Gudang bisa diganti di sini; stoknya ikut dipindahkan oleh
+                                    backend, bukan cuma ganti tulisan. */}
+                                <SearchableSelect options={locationOptions} value={r.location_id} onChange={(v) => update(i, { location_id: v ? Number(v) : null })} placeholder="Pilih lokasi" className="w-full" />
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Mengubah gudang memindahkan stoknya juga</p>
                               </div>
                             ) : r.is_service ? (
                               <div className="text-xs text-gray-500 dark:text-gray-400">Jasa, tidak masuk gudang</div>

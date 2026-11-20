@@ -1913,6 +1913,80 @@ class _RebatchError(Exception):
     pass
 
 
+def _pindahkan_stok_penerimaan(grn, grn_item, lokasi_baru_id, user_id):
+    """Pindahkan stok hasil penerimaan ini dari gudang lama ke gudang baru.
+
+    Dipakai saat gudang diubah lewat form Ubah GRN. Barangnya memang sudah ada di
+    rak lama, jadi mengganti isi kolom saja akan membuat catatan dan kenyataan
+    berbeda - stoknya ikut dipindah dan perpindahannya dicatat sebagai mutasi
+    transfer, sama seperti Transfer Stok biasa.
+
+    Menolak kalau stok di gudang lama sudah terpakai: yang sudah keluar tidak bisa
+    ikut pindah, dan diam-diam memindahkan sisanya akan menyembunyikan selisih.
+    """
+    from models.warehouse import Inventory
+    from utils.inventory_helpers import record_inventory_transaction
+
+    lokasi_lama_id = grn_item.location_id
+    qty = float(grn_item.quantity_accepted or 0)
+    if not lokasi_lama_id or lokasi_lama_id == lokasi_baru_id or qty <= 0:
+        grn_item.location_id = lokasi_baru_id
+        return 0.0
+
+    def _cari(lok_id):
+        q = Inventory.query.filter_by(location_id=lok_id)
+        q = q.filter_by(product_id=grn_item.product_id) if grn_item.product_id else q.filter_by(material_id=grn_item.material_id)
+        if grn_item.batch_number:
+            q = q.filter_by(batch_number=grn_item.batch_number)
+        return q.first()
+
+    asal = _cari(lokasi_lama_id)
+    if not asal:
+        grn_item.location_id = lokasi_baru_id
+        return 0.0
+    tersedia = float(asal.quantity_on_hand or 0)
+    if tersedia + 0.0001 < qty:
+        nama = grn_item.item_name or (grn_item.material.name if grn_item.material else None) or (grn_item.product.name if grn_item.product else 'barang')
+        raise _RebatchError(
+            f'Stok "{nama}" di gudang lama tinggal {tersedia:,.3f} dari {qty:,.3f} yang diterima, '
+            'jadi tidak bisa dipindahkan utuh. Sebagian sudah dipakai - pakai Transfer Stok untuk sisanya.')
+
+    asal.quantity_on_hand = tersedia - qty
+    asal.quantity_available = max(0.0, float(asal.quantity_available or 0) - qty)
+    asal.updated_at = get_local_now()
+
+    tujuan = _cari(lokasi_baru_id)
+    if tujuan:
+        tujuan.quantity_on_hand = float(tujuan.quantity_on_hand or 0) + qty
+        tujuan.quantity_available = float(tujuan.quantity_available or 0) + qty
+        tujuan.updated_at = get_local_now()
+    else:
+        tujuan = Inventory(
+            product_id=grn_item.product_id, material_id=grn_item.material_id,
+            location_id=lokasi_baru_id, quantity_on_hand=qty, quantity_available=qty,
+            batch_number=grn_item.batch_number, lot_number=grn_item.lot_number,
+            expiry_date=asal.expiry_date, production_date=asal.production_date,
+            stock_status=asal.stock_status, grn_id=grn.id, is_active=True,
+        )
+        db.session.add(tujuan)
+    db.session.flush()
+
+    for arah, dari, ke in (('out', lokasi_lama_id, None), ('in', None, lokasi_baru_id)):
+        record_inventory_transaction(
+            transaction_type='transfer_out' if arah == 'out' else 'transfer_in',
+            direction=arah, quantity=qty,
+            product_id=grn_item.product_id, material_id=grn_item.material_id,
+            from_location_id=dari, to_location_id=ke,
+            reference_number=grn.grn_number, reference_type='grn_location_change',
+            reference_id=grn.id, batch_number=grn_item.batch_number,
+            notes=f'Gudang penerimaan {grn.grn_number} diubah',
+            created_by=user_id,
+        )
+
+    grn_item.location_id = lokasi_baru_id
+    return qty
+
+
 def _apply_rebatch(grn, spec):
     """Atur ulang pembagian batch satu barang pada GRN (ganti nomor, ubah jumlah per batch, tambah/hapus batch) tanpa mengubah
     total diterima. Stok dipindah antar baris batch di lokasi yang sama; ditolak kalau stok batch lama sudah terpakai.
@@ -2004,6 +2078,7 @@ def update_grn(grn_id):
     once the GRN itself has been through final QC approval (existing
     'approved' lock used by inspect/approve endpoints)."""
     try:
+        user_id = int(get_jwt_identity())
         grn = db.session.get(GoodsReceivedNote, grn_id)
         if not grn:
             return jsonify({'error': 'GRN not found'}), 404
@@ -2018,7 +2093,9 @@ def update_grn(grn_id):
         data = request.get_json() or {}
         if invoiced and not locked:
             locked = True
-        stock_fields = {'quantity_accepted', 'quantity_rejected', 'location_id'}
+        # location_id TIDAK ikut terkunci: mengubah gudang itu memindahkan barang,
+        # bukan mengubah nilai penerimaan, dan stoknya ikut dipindahkan di bawah.
+        stock_fields = {'quantity_accepted', 'quantity_rejected'}
         # Jumlah DITERIMA boleh dikoreksi (catatan fisik) selama tidak lebih kecil dari jumlah lolos QC;
         # stok dan jurnal bersumber dari jumlah lolos QC sehingga tidak ikut berubah.
         for item_data in data.get('items') or []:
@@ -2035,9 +2112,8 @@ def update_grn(grn_id):
                     continue
                 for f in stock_fields:
                     if f in item_data and item_data[f] is not None and str(item_data[f]) != str(getattr(gi, f)) \
-                            and not (f != 'location_id' and float(item_data[f]) == float(getattr(gi, f) or 0)) \
-                            and not (f == 'location_id' and getattr(gi, f) == item_data[f]):
-                        return jsonify({'error': 'Jumlah/gudang tidak bisa diubah karena GRN sudah disetujui atau difaktur. Ubah catatan, batch, lot, tanggal, atau buat retur.'}), 400
+                            and float(item_data[f]) != float(getattr(gi, f) or 0):
+                        return jsonify({'error': 'Jumlah tidak bisa diubah karena GRN sudah disetujui atau difaktur. Ubah gudang, catatan, batch, lot, tanggal, atau buat retur.'}), 400
 
         new_no = (data.get('grn_number') or '').strip()
         if new_no and new_no != grn.grn_number:
@@ -2070,8 +2146,17 @@ def update_grn(grn_id):
                 grn_item = items_by_id.get(item_data.get('id')) or items_by_po_item.get(po_item_id)
                 if not grn_item:
                     continue
+                # Gudang diurus tersendiri supaya stoknya ikut berpindah.
+                if 'location_id' in item_data and item_data['location_id'] and \
+                        int(item_data['location_id']) != (grn_item.location_id or 0):
+                    try:
+                        _pindahkan_stok_penerimaan(grn, grn_item, int(item_data['location_id']), user_id)
+                    except _RebatchError as e:
+                        db.session.rollback()
+                        return jsonify({'error': str(e)}), 400
+
                 for f in ['quantity_received', 'quantity_accepted', 'quantity_rejected', 'item_name',
-                          'batch_number', 'lot_number', 'location_id', 'notes']:
+                          'batch_number', 'lot_number', 'notes']:
                     if locked and f in stock_fields:
                         continue
                     if f in item_data:
