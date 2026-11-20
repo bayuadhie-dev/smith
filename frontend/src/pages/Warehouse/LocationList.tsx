@@ -58,7 +58,9 @@ const LocationList: React.FC = () => {
   const fetchLocations = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/warehouse/locations', {
+      // Halaman master: lokasi di gudang nonaktif pun harus kelihatan supaya
+      // bisa diurus. Pilihan di form transaksi memakai daftar yang sudah tersaring.
+      const response = await fetch('/api/warehouse/locations?include_inactive=1&per_page=500', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

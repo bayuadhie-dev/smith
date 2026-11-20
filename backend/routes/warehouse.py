@@ -98,8 +98,14 @@ def get_locations():
         material_type = request.args.get('material_type')  # finished_goods, raw_materials, etc.
         search = request.args.get('search', '')
         available_only = request.args.get('available_only', 'false').lower() == 'true'
-        
-        cache_key = f'warehouse_locations_page{page}_per{per_page}_zone{zone_id or "none"}_type{material_type or "none"}_search{search}_avail{available_only}'
+        # Gudang yang sudah dinonaktifkan tidak boleh muncul di pilihan mana pun -
+        # dari situlah barang nyangkut di gudang lama (stok WIP di zona WIP-01 yang
+        # sudah mati). Halaman master lokasi memanggil dengan include_inactive=1
+        # supaya tetap bisa mengurus yang lama.
+        include_inactive = request.args.get('include_inactive', 'false').lower() in ('1', 'true', 'yes')
+
+        cache_key = (f'warehouse_locations_page{page}_per{per_page}_zone{zone_id or "none"}'
+                     f'_type{material_type or "none"}_search{search}_avail{available_only}_inact{include_inactive}')
         try:
             redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
             r = redis.from_url(redis_url)
@@ -110,7 +116,10 @@ def get_locations():
             print(f"Redis cache error (using fallback): {cache_error}")
             
         query = WarehouseLocation.query.join(WarehouseZone)
-        
+
+        if not include_inactive:
+            query = query.filter(WarehouseZone.is_active == True, WarehouseLocation.is_active == True)  # noqa: E712
+
         if zone_id:
             query = query.filter(WarehouseLocation.zone_id == zone_id)
         
