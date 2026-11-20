@@ -1113,11 +1113,10 @@ def create_grn():
             # Hanya barang bertanda "Pakai tanggal kadaluarsa" (master barang) yang wajib tanggal kedaluwarsa saat diterima.
             # Nomor batch TIDAK diwajibkan di penerimaan: batch dipakai di pengiriman (FIFO).
             _item_obj = db.session.get(Material, material_id) if material_id else (db.session.get(Product, product_id) if product_id else None)
-            if _item_obj is not None and quantity_accepted > 0:
-                _label = f'{_item_obj.code} - {_item_obj.name}'
-                if getattr(_item_obj, 'require_expiry', False) and not item_data.get('expiry_date'):
-                    db.session.rollback()
-                    return jsonify({'error': f'{_label} wajib memakai tanggal kedaluwarsa. Isi Tanggal Kadaluarsa sebelum menerima.'}), 400
+            # Tanggal kedaluwarsa TIDAK diwajibkan (permintaan user 2026-11-20:
+            # "dibuat ga wajib isi aja") - sebagian pemasok mengirim barang tanpa
+            # tanggal tercetak. Kalau diisi, tanggalnya tetap ikut turun ke baris
+            # stok dan terbaca laporan Batch Segera Kedaluwarsa.
             uom = item_data['uom']
             batch_number = item_data.get('batch_number')
             stocked = bool(product_id or material_id) and not is_service

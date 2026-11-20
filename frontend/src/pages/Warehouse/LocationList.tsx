@@ -26,7 +26,8 @@ interface WarehouseLocation {
   location_type?: string;
   capacity?: number;
   capacity_uom?: string;
-  current_utilization?: number;
+  current_utilization?: number | null;
+  occupied?: number;
   is_active: boolean;
   created_at?: string;
 }
@@ -289,14 +290,23 @@ const LocationList: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-300">Capacity:</span>
                   <span className="text-sm font-medium">
-                    {location.capacity ?? '-'} {location.capacity_uom || ''}
+                    {/* kapasitas 0 = tidak dibatasi, bukan "tidak muat apa-apa" */}
+                    {!location.capacity ? 'Tidak dibatasi' : `${location.capacity.toLocaleString('id-ID')} ${location.capacity_uom || ''}`}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-300">Utilization:</span>
-                  <span className={`text-sm font-medium ${getUtilizationColor(location.current_utilization ?? 0)}`}>
-                    {(location.current_utilization ?? 0).toFixed(1)}%
-                  </span>
+                  {/* Tanpa kapasitas, persentase pemakaian tidak punya arti - jangan
+                      tampilkan 0,0% seolah gudangnya kosong melompong. */}
+                  {location.current_utilization === null || location.current_utilization === undefined ? (
+                    <span className="text-sm text-gray-400">
+                      {location.occupied ? `terisi ${location.occupied.toLocaleString('id-ID')}` : 'kosong'}
+                    </span>
+                  ) : (
+                    <span className={`text-sm font-medium ${getUtilizationColor(location.current_utilization)}`}>
+                      {location.current_utilization.toFixed(1)}%
+                    </span>
+                  )}
                 </div>
                 
                 {/* Utilization Bar */}

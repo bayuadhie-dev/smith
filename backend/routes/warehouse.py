@@ -133,6 +133,18 @@ def get_locations():
             query = query.filter(WarehouseLocation.location_code.ilike(f'%{search}%'))
         
         locations = query.paginate(page=page, per_page=per_page)
+
+        # Pemakaian gudang dihitung dari tabel stok, bukan dari kolom `occupied`:
+        # kolom itu hanya diperbarui oleh Transfer Stok, jadi penerimaan dan
+        # pengiriman tidak pernah tercermin di sana.
+        terpakai = {}
+        if locations.items:
+            ids = [l.id for l in locations.items]
+            for loc_id, qty in db.session.query(
+                    Inventory.location_id, db.func.sum(Inventory.quantity_on_hand)).filter(
+                    Inventory.location_id.in_(ids), Inventory.is_active == True).group_by(  # noqa: E712
+                    Inventory.location_id).all():
+                terpakai[loc_id] = float(qty or 0)
         
         response_data = {
             'locations': [{
@@ -144,9 +156,14 @@ def get_locations():
                 'rack': l.rack,
                 'level': l.level,
                 'position': l.position,
+                # kapasitas 0 = tidak dibatasi (lihat migrasi c6e8a0b2d4f5)
                 'capacity': float(l.capacity),
-                'occupied': float(l.occupied),
-                'available': float(l.capacity - l.occupied),
+                'capacity_uom': l.capacity_uom,
+                'unlimited': float(l.capacity or 0) <= 0,
+                'occupied': round(terpakai.get(l.id, 0.0), 3),
+                'available': (float(l.capacity) - terpakai.get(l.id, 0.0)) if float(l.capacity or 0) > 0 else None,
+                'current_utilization': (round(terpakai.get(l.id, 0.0) / float(l.capacity) * 100, 1)
+                                        if float(l.capacity or 0) > 0 else None),
                 'is_available': l.is_available
             } for l in locations.items],
             'total': locations.total,

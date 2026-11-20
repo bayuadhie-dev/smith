@@ -134,7 +134,10 @@ export default function GRNForm() {
       key: `po-${it.id}`, po_item_id: it.id, is_service: service, product_id: it.product_id ?? null, material_id: it.material_id ?? null,
       name: itemName(it), code: [it.material_code || it.product_code, masterName(it) && masterName(it) !== itemName(it) ? masterName(it) : ''].filter(Boolean).join(' · '), uom: it.uom || 'PCS',
       ordered: Number(it.quantity), receivedBefore: before, qty: service ? Number(it.quantity) : outstanding, location_id: null,
-      batch_number: '', lot_number: '', production_date: '', expiry_date: '', notes: it.notes || '', open: false,
+      batch_number: '', lot_number: '', production_date: '', expiry_date: '', notes: it.notes || '',
+      // Barang bertanda "pakai tanggal kedaluwarsa" dibuka otomatis: kolomnya ada
+      // di rincian baris, dan kalau tertutup orang mengira kolomnya tidak ada.
+      open: !!it.require_expiry,
       requireExpiry: !!it.require_expiry,
     }
   })
@@ -323,8 +326,6 @@ export default function GRNForm() {
       const noLoc = active.find((r) => needsWarehouse(r) && !r.location_id)
       if (noLoc) return setError(`Lokasi gudang wajib diisi untuk "${noLoc.name}" (tanpa lokasi stok tidak bertambah)`)
       if (active.some((r) => num(r.qty) < 0)) return setError('Jumlah diterima tidak boleh negatif')
-      const noExp = active.find((r) => r.requireExpiry && !r.expiry_date)
-      if (noExp) return setError(`"${noExp.name}" wajib memakai tanggal kedaluwarsa. Buka rincian baris lalu isi Tanggal Kadaluarsa.`)
     }
     if (!isEdit) {
       for (const r of active) {
@@ -568,7 +569,7 @@ export default function GRNForm() {
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <div><label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">No. Lot</label><input data-col="lot" className="input-field" value={r.lot_number} onChange={(e) => update(i, { lot_number: e.target.value })} /></div>
                                 <div><label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Tanggal Produksi</label><input type="date" className="input-field" value={r.production_date} onChange={(e) => update(i, { production_date: e.target.value })} /></div>
-                                <div><label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Tanggal Kadaluarsa{r.requireExpiry ? ' *' : ''}</label><input type="date" className="input-field" value={r.expiry_date} onChange={(e) => update(i, { expiry_date: e.target.value })} /></div>
+                                <div><label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">Tanggal Kadaluarsa{r.requireExpiry ? ' (barang ini pakai kedaluwarsa)' : ''}</label><input type="date" className="input-field" value={r.expiry_date} onChange={(e) => update(i, { expiry_date: e.target.value })} /></div>
                               </div>
                             </td>
                           </tr>
