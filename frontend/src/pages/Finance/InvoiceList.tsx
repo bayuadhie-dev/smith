@@ -123,14 +123,28 @@ const [scope] = useUrlState<'all' | 'sales' | 'purchase'>('scope', 'all', ['all'
                       </span>
                     </td>
                     <td>
-                      {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
-                        <Link
-                          to={`/app/finance/payments/new?invoice_id=${invoice.id}`}
-                          className="text-primary-600 hover:text-primary-800 text-sm whitespace-nowrap dark:text-primary-400"
-                        >
-                          Catat Pembayaran
-                        </Link>
-                      )}
+                      <div className="flex flex-wrap items-center gap-3">
+                        {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
+                          <Link
+                            to={`/app/finance/payments/new?invoice_id=${invoice.id}`}
+                            className="text-primary-600 hover:text-primary-800 text-sm whitespace-nowrap dark:text-primary-400"
+                          >
+                            Catat Pembayaran
+                          </Link>
+                        )}
+                        {/* Ubah hanya selama belum ada pembayaran: faktur pengganti memakai
+                            nomor yang sama, yang lama dibatalkan dan diberi akhiran -V. */}
+                        {invoice.invoice_type === 'sales' && invoice.status !== 'cancelled'
+                          && !(invoice.paid_amount > 0) && (
+                          <Link
+                            to={`/app/sales/invoices/${invoice.id}/edit`}
+                            className="text-sm whitespace-nowrap text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                            title="Ubah faktur: nomornya tetap, faktur lama dibatalkan dan jurnalnya dibalik"
+                          >
+                            Ubah
+                          </Link>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -15,7 +15,7 @@ from datetime import datetime
 from models import db
 from models.document_management import DocumentTemplate, TemplateVersion
 
-LAYOUT = 'v2-2026-11j'
+LAYOUT = 'v2-2026-11k'
 AUTO_NOTE_PREFIX = 'Auto-generated'
 AUTO_NOTE_PREFIXES = ('Auto-generated', 'Migrasi otomatis')  # the font-unit migration only rescales values of auto-generated layouts
 
@@ -250,7 +250,8 @@ def build_purchase_invoice():
     o += flow(po_totals(116, 104))
     o += flow(notes_side(14, 104, 98, 26))
     o += flow(words_box(14, 134, 182, 14))
-    o += flow(signatures(14, 182, 160, ['Dibuat oleh,', 'Disetujui oleh,'], captions={0: ' ', 1: ' '}))
+    o += flow(signatures(14, 182, 160, ['Dibuat oleh,', 'Disetujui oleh,'],
+                         caption_paths={0: 'prepared_by_name', 1: 'approved_by_name'}))
     return o, 'A4', 'portrait', None, None
 
 
@@ -293,7 +294,8 @@ def build_three_way_match():
                BOX(177, 106, 55, 7, fill=TEAL), BOX(232, 106, 55, 7, fill=TEAL), L('Selisih nilai', 178.5, 107.5, 52, 4, fs=9.5, bold=True, color='#ffffff'),
                F('value_diff_text', 233.5, 107.5, 52, 4, fs=9.5, bold=True, align='right', color='#ffffff')])
     o += flow(notes_side(10, 92, 160, 22))
-    o += flow(signatures(10, 277, 122, ['Dibuat oleh,', 'Diperiksa oleh,', 'Disetujui oleh,'], captions={0: ' ', 1: ' ', 2: ' '}))
+    o += flow(signatures(10, 277, 122, ['Dibuat oleh,', 'Diperiksa oleh,', 'Disetujui oleh,'],
+                         caption_paths={0: 'prepared_by_name', 1: 'checked_by_name', 2: 'approved_by_name'}))
     return o, 'A4', 'landscape', None, None
 
 

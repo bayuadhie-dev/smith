@@ -8,7 +8,8 @@ import { useUrlFilter } from '../../hooks/useUrlState'
 
 const TYPES: [string, string][] = [
   ['sales_invoice', 'Faktur Penjualan'], ['purchase_invoice', 'Faktur Pembelian'], ['receipt', 'Penerimaan'],
-  ['disbursement', 'Pembayaran'], ['credit_memo', 'Nota Kredit'], ['journal', 'Jurnal'], ['account', 'Akun Perkiraan'],
+  ['disbursement', 'Pembayaran'], ['credit_memo', 'Nota Kredit'], ['bank_transfer', 'Transfer Kas/Bank'],
+  ['journal', 'Jurnal'], ['account', 'Akun Perkiraan'],
 ]
 const STATUSES = ['', 'draft', 'sent', 'paid', 'partial', 'overdue', 'pending', 'cleared', 'cancelled']
 

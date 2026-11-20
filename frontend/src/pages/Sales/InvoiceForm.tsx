@@ -212,15 +212,11 @@ const InvoiceForm: React.FC = () => {
     }
 
     try {
-      const url = isEdit
-        ? `/api/finance/invoices/${id}`
-        : '/api/finance/invoices';
-
-      if (isEdit) {
-        await axiosInstance.put(url, formData);
-      } else {
-        await axiosInstance.post(url, formData);
-      }
+      // Ubah faktur = faktur pengganti dengan nomor yang sama; jurnal faktur lama
+      // dibalik dan nomornya diberi akhiran -V. Pola yang sama dipakai faktur
+      // pembelian dan pembayaran - dokumen terposting tidak ditimpa diam-diam.
+      await axiosInstance.post('/api/finance/invoices',
+        isEdit ? { ...formData, replace_invoice_id: Number(id) } : formData);
       navigate('/app/sales/invoices');
     } catch (error: any) {
       setError(error?.response?.data?.message || 'Failed to save invoice');

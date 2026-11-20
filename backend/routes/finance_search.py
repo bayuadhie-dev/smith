@@ -8,6 +8,7 @@ from datetime import date
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy import and_, func, or_
+from sqlalchemy.orm import aliased
 
 from models import db
 from models.finance import Account, AccountingEntry, CreditMemo, Invoice, Payment
@@ -21,6 +22,7 @@ TYPE_LABELS = {
     'receipt': 'Penerimaan',
     'disbursement': 'Pembayaran',
     'credit_memo': 'Nota Kredit',
+    'bank_transfer': 'Transfer Kas/Bank',
     'journal': 'Jurnal',
     'account': 'Akun Perkiraan',
 }
@@ -149,6 +151,27 @@ def search():
             'id': r[0].id, 'number': r[0].memo_number, 'date': _d(r[0].memo_date), 'party': r[1],
             'description': r[0].notes or '', 'amount': float(r[0].amount or 0), 'status': None,
             'url': '/app/finance/credit-memos'})
+
+    if 'bank_transfer' in wanted:
+        from models.bank_transfer import BankTransfer
+        AsalAkun, TujuanAkun = aliased(Account), aliased(Account)
+        q = (db.session.query(BankTransfer, AsalAkun.account_name, TujuanAkun.account_name)
+             .outerjoin(AsalAkun, BankTransfer.from_account_id == AsalAkun.id)
+             .outerjoin(TujuanAkun, BankTransfer.to_account_id == TujuanAkun.id))
+        f = _text_filter([BankTransfer.number, BankTransfer.reference_number, BankTransfer.notes,
+                          BankTransfer.journal_number, AsalAkun.account_name, TujuanAkun.account_name], terms)
+        if f is not None:
+            q = q.filter(f)
+        if df: q = q.filter(BankTransfer.transfer_date >= df)
+        if dt: q = q.filter(BankTransfer.transfer_date <= dt)
+        if status: q = q.filter(func.lower(BankTransfer.status) == status)
+        q = amount_filter(BankTransfer.amount, q)
+        take('bank_transfer', q, BankTransfer.transfer_date, lambda r: {
+            'id': r[0].id, 'number': r[0].number, 'date': _d(r[0].transfer_date),
+            'party': f'{r[1] or "?"} -> {r[2] or "?"}',
+            'description': r[0].notes or r[0].reference_number or '',
+            'amount': float(r[0].amount or 0), 'status': r[0].status,
+            'url': f'/app/finance/bank-transfers?q={r[0].number}'})
 
     if 'journal' in wanted:
         q = AccountingEntry.query.filter(AccountingEntry.status == 'posted')

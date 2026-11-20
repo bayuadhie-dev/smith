@@ -102,3 +102,23 @@ def test_daftar_transfer_bisa_disaring(client, auth_headers, akun):
     assert data['total'] == 1 and data['transfers'][0]['from_account']['code'] == '110101'
     kosong = client.get(f"/api/finance/bank-transfers?account_id={akun['piutang'].id}", headers=auth_headers).get_json()
     assert kosong['total'] == 0
+
+
+def test_bank_transfer_muncul_di_pencarian_finance(client, auth_headers, akun):
+    """Finance mencari lewat Pencarian Transaksi: transfer kas/bank harus ikut ketemu."""
+    resp = _post(client, auth_headers, from_account_id=akun['bca'].id, to_account_id=akun['kas_pbg'].id,
+                 amount=2500000, notes='Pengisian kas pabrik Purbalingga')
+    assert resp.status_code in (200, 201), resp.get_json()
+    nomor = (resp.get_json().get('transfer') or resp.get_json())['number']
+
+    r = client.get('/api/finance/search?q=Purbalingga', headers=auth_headers)
+    assert r.status_code == 200, r.get_json()
+    rows = [x for x in r.get_json()['results'] if x['type'] == 'bank_transfer']
+    assert len(rows) == 1, r.get_json()['results']
+    assert rows[0]['number'] == nomor and rows[0]['type_label'] == 'Transfer Kas/Bank'
+    assert 'Bank BCA' in rows[0]['party'] and 'Kas Purbalingga' in rows[0]['party']
+    assert rows[0]['url'].endswith(nomor)
+
+    # ikut tersaring saat jenisnya dibatasi
+    r2 = client.get('/api/finance/search?q=Purbalingga&types=journal', headers=auth_headers)
+    assert not [x for x in r2.get_json()['results'] if x['type'] == 'bank_transfer']

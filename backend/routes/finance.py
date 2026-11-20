@@ -426,11 +426,51 @@ def create_invoice():
         return jsonify({'error': str(e)}), 500
 
 
+def _void_for_replacement(replace_id, data, user_id):
+    """Siapkan penggantian faktur penjualan: balik jurnalnya, lepas surat jalannya,
+    beri akhiran -V pada yang lama, lalu kembalikan nomor yang dipakai ulang."""
+    from models.finance import CreditMemoApplication
+
+    old = db.session.get(Invoice, replace_id)
+    if not old or old.invoice_type != 'sales':
+        raise InvoiceInputError('Faktur yang akan diubah tidak ditemukan', 404)
+    if Payment.query.filter_by(invoice_id=old.id).first():
+        raise InvoiceInputError('Faktur ini sudah punya pembayaran. Batalkan pembayarannya dulu sebelum mengubah faktur.')
+    if CreditMemoApplication.query.filter_by(invoice_id=old.id).first():
+        raise InvoiceInputError('Faktur ini sudah punya nota kredit. Batalkan nota kreditnya dulu sebelum mengubah faktur.')
+
+    err = _void_invoice_core(old, user_id, 'Diubah menjadi transaksi baru')
+    if err:
+        raise InvoiceInputError(err[0], err[1])
+    db.session.flush()
+
+    # Surat jalan dilepas supaya faktur pengganti boleh memakainya lagi.
+    from models.shipping import ShippingOrder
+    for so_ship in ShippingOrder.query.filter_by(invoice_id=old.id).all():
+        so_ship.invoice_id = None
+
+    nomor = old.invoice_number
+    n = Invoice.query.filter(Invoice.invoice_number.like(f'{nomor}-V%')).count() + 1
+    old.invoice_number = f'{nomor}-V{n}'
+    db.session.flush()
+    return nomor
+
+
 def create_invoice_core(data, user_id, commit=True):
     """Buat faktur penjualan/umum + jurnal GL. commit=False dipakai Pusat Impor (savepoint dipegang pemanggil).
-    Kesalahan input -> InvoiceInputError."""
-    
-    invoice_number = generate_number_v2('invoice', 'INV', Invoice, 'invoice_number')
+    Kesalahan input -> InvoiceInputError.
+
+    `replace_invoice_id` = alur "Ubah faktur": faktur lama dibalik jurnalnya lalu
+    diberi akhiran -V1, dan faktur penggantinya memakai nomor aslinya. Pola yang
+    sama dipakai faktur pembelian (routes/purchase_invoice.py) dan pembayaran -
+    dokumen yang sudah terposting tidak ditimpa diam-diam, jejaknya tetap ada.
+    """
+
+    replace_id = data.get('replace_invoice_id')
+    if replace_id:
+        invoice_number = _void_for_replacement(replace_id, data, user_id)
+    else:
+        invoice_number = generate_number_v2('invoice', 'INV', Invoice, 'invoice_number')
 
     invoice_date_parsed = datetime.fromisoformat(data['invoice_date'])
 

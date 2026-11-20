@@ -13,6 +13,7 @@ from models import db
 from models.document_management import DocumentTemplate, TemplateVersion, Document, DocumentLog
 from models.sales import SalesOrder, SalesOrderItem
 from models.production import WorkOrder
+from models.user import User
 from datetime import datetime
 from utils import generate_number
 from utils.company_context import get_company_context
@@ -565,6 +566,25 @@ def _penyetuju_cetak(po):
     return rows.get('general.po_approver_name', ''), rows.get('general.po_approver_title', '')
 
 
+def _setelan_nama(*pasangan):
+    """Nama + jabatan penanda tangan dari pengaturan sistem.
+
+    Dipakai dokumen yang tidak punya kolom penyetuju sendiri di database
+    (Faktur Pembelian, Pencocokan 3 Arah): lembar tetap bisa dicetak lengkap
+    untuk tanda tangan basah. Pasangan kunci dicoba berurutan, yang pertama
+    terisi dipakai - sehingga cukup mengisi satu nama direktur di Pengaturan
+    dan semua dokumen ikut.
+    """
+    from models.settings import SystemSetting
+    semua = [k for pair in pasangan for k in pair]
+    rows = {r.setting_key: (r.setting_value or '').strip()
+            for r in SystemSetting.query.filter(SystemSetting.setting_key.in_(semua)).all()}
+    for nama_key, jabatan_key in pasangan:
+        if rows.get(nama_key):
+            return rows[nama_key], rows.get(jabatan_key, '')
+    return '', ''
+
+
 def build_po_document_data(po, printed_by=None):
     """Amounts are pre-formatted in the PO's own currency (the render engine's
     'rp' format is IDR-only)."""
@@ -723,6 +743,9 @@ def generate_purchase_invoice_document(invoice_id, user_id):
         f'Attn: {supplier.contact_person}' if supplier and supplier.contact_person else '',
         f'Telp: {supplier.phone or supplier.mobile}' if supplier and (supplier.phone or supplier.mobile) else '',
         supplier.email if supplier and supplier.email else ''] if x)
+    # Faktur pembelian tidak punya kolom penyetuju sendiri; namanya dari pengaturan.
+    _pi_penyetuju = _setelan_nama(('general.doc_approver_name', 'general.doc_approver_title'),
+                                  ('general.po_approver_name', 'general.po_approver_title'))
     document_data = {
         'document_number': inv.invoice_number,
         'hdr_no': f'No. {inv.invoice_number}',
@@ -742,6 +765,10 @@ def generate_purchase_invoice_document(invoice_id, user_id):
         'subtotal_text': money(dpp), 'discount_text': money(inv.discount_amount or 0), 'tax_text': money(tax), 'total_text': money(total),
         'terbilang': (_terbilang(total).strip().capitalize() + ' ' + words_name.get(ccy, ccy)) if total >= 1 else f'Nol {words_name.get(ccy, ccy)}',
         'line_items': line_items,
+        'prepared_by_name': _nama_user(inv.created_by_user or db.session.get(User, user_id)),
+        'prepared_by_title': ((inv.created_by_user or db.session.get(User, user_id)).position or '') if (inv.created_by_user or db.session.get(User, user_id)) else '',
+        'approved_by_name': _pi_penyetuju[0],
+        'approved_by_title': _pi_penyetuju[1],
         'company': get_company_context(),
     }
     template = ensure_default_template(user_id, 'purchase_invoice')
@@ -799,6 +826,9 @@ def generate_three_way_match_document(invoice_id, user_id):
         })
     notes = '\n'.join(f"{r['item_name']}: " + ' | '.join(l['issues']) for r, l in zip(rows, m['lines']) if l['issues'])
     d = lambda x: x.strftime('%d-%m-%Y') if x else ''
+    _pencetak = db.session.get(User, user_id)
+    _tw_penyetuju = _setelan_nama(('general.doc_approver_name', 'general.doc_approver_title'),
+                                  ('general.po_approver_name', 'general.po_approver_title'))
     document_data = {
         'document_number': inv.invoice_number,
         'hdr_no': f'No. Faktur {inv.invoice_number}',
@@ -810,6 +840,12 @@ def generate_three_way_match_document(invoice_id, user_id):
         'lines': rows, 'notes': notes,
         'po_total_text': money(m['po_total_invoiced']), 'invoice_subtotal_text': money(m['invoice_subtotal']),
         'value_diff_text': money(m['invoice_subtotal'] - m['po_total_invoiced']),
+        'prepared_by_name': _nama_user(inv.created_by_user or _pencetak),
+        'prepared_by_title': ((inv.created_by_user or _pencetak).position or '') if (inv.created_by_user or _pencetak) else '',
+        'checked_by_name': _nama_user(_pencetak),
+        'checked_by_title': (_pencetak.position or '') if _pencetak else '',
+        'approved_by_name': _tw_penyetuju[0],
+        'approved_by_title': _tw_penyetuju[1],
         'company': get_company_context(),
     }
     template = ensure_default_template(user_id, 'three_way_match')
@@ -918,7 +954,6 @@ def generate_purchase_requisition_document(pr_id, user_id):
             names[st.kind] = (u.full_name or u.username) if u else ''
     if not names:
         from utils.pr_approval import get_chain
-        from models.user import User
         for link in get_chain():
             u = db.session.get(User, link['user_id'])
             names[link['kind']] = (u.full_name or u.username) if u else ''
@@ -954,7 +989,6 @@ def generate_reimbursement_document(reimb_id, user_id):
     from models.expense import Reimbursement
     from models.finance import Account
     from utils.reimb_approval import get_chain
-    from models.user import User
 
     r = db.session.get(Reimbursement, reimb_id)
     if not r:
@@ -1006,7 +1040,6 @@ def generate_reimbursement_document(reimb_id, user_id):
 def generate_purchase_order_document(po_id, user_id):
     """Printable Purchase Order."""
     from models.purchasing import PurchaseOrder
-    from models.user import User
 
     po = db.session.get(PurchaseOrder, po_id)
     if not po:
