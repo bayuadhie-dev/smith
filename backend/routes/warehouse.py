@@ -310,7 +310,18 @@ def get_inventory():
         search = request.args.get('search', '')
         
         query = db.session.query(Inventory).filter(Inventory.is_active == True)
-        
+
+        # Baris berisi 0 tidak ditampilkan: daftar ini menjawab "apa yang ada di
+        # gudang", dan sisa baris kosong (mis. batch yang sudah keluar dari
+        # karantina) cuma meramaikan layar. Masih bisa dipanggil dengan
+        # ?include_empty=1 kalau ada yang perlu menelusuri batch lamanya.
+        # Penyaring 'out_of_stock' memang mencari yang nol, jadi dikecualikan.
+        minta_kosong = (request.args.get('include_empty', '').lower() in ('1', 'true', 'yes')
+                        or stock_status == 'out_of_stock')
+        if not minta_kosong:
+            query = query.filter(db.or_(Inventory.quantity_on_hand > 0,
+                                        Inventory.quantity_reserved > 0))
+
         # Filter by item type
         if item_type == 'product':
             query = query.filter(Inventory.product_id.isnot(None))
