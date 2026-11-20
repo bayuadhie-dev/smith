@@ -21,6 +21,8 @@ interface Line {
 interface ManualLine {
   key: number
   kind: 'product' | 'service'
+  /** Nilai pilihan: 'p:<id>' untuk produk jadi, 'm:<id>' untuk material (waste,
+   *  drum bekas, sisa packaging) - dua master berbeda dalam satu daftar pilihan. */
   product_id: number | string | null
   description: string
   qty: string
@@ -46,6 +48,7 @@ export default function ShippingOrderForm() {
   const [mode, setMode] = useState<'so' | 'manual'>('so')
   const [customers, setCustomers] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
+  const [materials, setMaterials] = useState<any[]>([])
   const [services, setServices] = useState<any[]>([])
   const [customerId, setCustomerId] = useState<number | string | null>(null)
   const [manual, setManual] = useState<ManualLine[]>([])
@@ -75,6 +78,9 @@ export default function ShippingOrderForm() {
     axiosInstance.get('/api/uom/units', { params: { per_page: 500 } }).then((r) => setUoms((r.data?.uoms || r.data?.units || []).map((u: any) => u.code).filter(Boolean))).catch(() => undefined)
     axiosInstance.get('/api/shipping/service-items').then((r) => setServices(r.data?.items || [])).catch(() => toast.error('Gagal memuat master non persediaan'))
     axiosInstance.get('/api/products?status=active&per_page=2000').then((r) => setProducts(r.data?.products || r.data?.items || [])).catch(() => toast.error('Gagal memuat barang'))
+    // Waste dan sisa bahan tercatat sebagai material, bukan produk jadi - ikut
+    // ditawarkan di baris barang supaya stoknya benar-benar terpotong.
+    axiosInstance.get('/api/materials?per_page=2000').then((r) => setMaterials(r.data?.materials || r.data?.items || [])).catch(() => undefined)
   }, [mode, customers.length])
 
   useEffect(() => {
@@ -106,11 +112,14 @@ export default function ShippingOrderForm() {
   )
   const addManual = (kind: ManualLine['kind']) => setManual((m) => [...m, { key: Date.now() + m.length, kind, product_id: null, description: '', qty: '', uom: kind === 'service' ? 'LOT' : '', zone_id: '', batch: '' }])
   const patchManual = (key: number, patch: Partial<ManualLine>) => setManual((m) => m.map((l) => (l.key === key ? { ...l, ...patch } : l)))
-  const pickProduct = (key: number, pid: number | string | null) => {
-    const prod = products.find((x: any) => x.id === pid)
-    patchManual(key, { product_id: pid, uom: prod?.primary_uom || '', description: prod?.name || '', zone_id: '', batch: '' })
-    if (pid) {
-      axiosInstance.get('/api/shipping/stock-options', { params: { product_id: pid } })
+  const pickProduct = (key: number, pick: number | string | null) => {
+    const val = pick === null || pick === undefined ? null : String(pick)
+    const isMaterial = val?.startsWith('m:')
+    const rawId = val ? Number(val.slice(2)) : null
+    const item = isMaterial ? materials.find((x: any) => x.id === rawId) : products.find((x: any) => x.id === rawId)
+    patchManual(key, { product_id: val, uom: item?.primary_uom || item?.unit || '', description: item?.name || '', zone_id: '', batch: '' })
+    if (rawId) {
+      axiosInstance.get('/api/shipping/stock-options', { params: isMaterial ? { material_id: rawId } : { product_id: rawId } })
         .then((r) => setStockOpts((o) => ({ ...o, [String(key)]: r.data?.zones || [] })))
         .catch(() => setStockOpts((o) => ({ ...o, [String(key)]: [] })))
     }
@@ -146,9 +155,15 @@ export default function ShippingOrderForm() {
         if (l.kind === 'product' && !l.product_id) { toast.error('Pilih barang pada baris barang/waste'); return }
         if (l.kind === 'service' && !l.description.trim()) { toast.error('Isi keterangan pada baris jasa/lainnya'); return }
       }
-      items = manual.map((l) => (l.kind === 'product'
-        ? { product_id: l.product_id, quantity: Number(l.qty), uom: l.uom, zone_id: l.zone_id ? Number(l.zone_id) : undefined, batch_number: l.batch || undefined }
-        : { description: l.description.trim(), quantity: Number(l.qty), uom: l.uom || 'LOT' }))
+      items = manual.map((l) => {
+        if (l.kind !== 'product') return { description: l.description.trim(), quantity: Number(l.qty), uom: l.uom || 'LOT' }
+        const val = String(l.product_id)
+        const id = Number(val.slice(2))
+        const common = { quantity: Number(l.qty), uom: l.uom, zone_id: l.zone_id ? Number(l.zone_id) : undefined, batch_number: l.batch || undefined }
+        return val.startsWith('m:')
+          ? { material_id: id, description: l.description.trim() || undefined, ...common }
+          : { product_id: id, ...common }
+      })
     }
     setSaving(true)
     try {
@@ -273,10 +288,13 @@ export default function ShippingOrderForm() {
                   <div className="md:col-span-5">
                     {l.kind === 'product' ? (
                       <SearchableSelect
-                        options={products.map((p: any) => ({ id: p.id, code: p.code, name: p.name }))}
+                        options={[
+                          ...products.map((p: any) => ({ id: `p:${p.id}`, code: p.code, name: p.name })),
+                          ...materials.map((m: any) => ({ id: `m:${m.id}`, code: m.code, name: `${m.name} (bahan)` })),
+                        ]}
                         value={l.product_id}
                         onChange={(v) => pickProduct(l.key, v)}
-                        placeholder="Pilih barang / waste"
+                        placeholder="Pilih barang jadi / waste / bahan"
                       />
                     ) : (
                       <div className="space-y-2">

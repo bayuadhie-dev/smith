@@ -97,9 +97,10 @@ def generate_surat_jalan_from_sales_order(sales_order_id, user_id, items_to_ship
             items_data.append({
                 'no': len(items_data) + 1,
                 'batch_text': ', '.join(f"{m['batch_number']} ({_format_value(m['quantity_deducted'], 'num')})" for m in result['movements']),
-                'code': item.product.code if item.product else '',
+                'code': item.product.code if item.product else (item.material.code if item.material else ''),
                 'pack': item.product.packaging.packs_per_karton if item.product and item.product.packaging else None,
-                'product_name': item.product.name if item.product else item.description,
+                'product_name': (item.product.name if item.product
+                                 else (item.material.name if item.material else item.description)),
                 'quantity': qty_to_ship,
                 'uom': item.uom,
                 'description': item.description or '',

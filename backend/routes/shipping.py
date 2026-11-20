@@ -132,6 +132,16 @@ def create_shipping_order_core(data, user_id, commit=True):
         # as the running total never exceeds what was actually ordered.
         from models.sales import SalesOrderItem
         for item_data in data.get('items', []):
+            if item_data.get('product_id') and item_data.get('material_id'):
+                raise ShippingInputError('Satu baris hanya boleh produk atau material, tidak keduanya')
+            if item_data.get('material_id'):
+                # Waste dan sisa bahan dijual juga lewat surat jalan; stoknya nyata,
+                # jadi barisnya diperlakukan seperti barang, bukan keterangan bebas.
+                if data.get('sales_order_id'):
+                    raise ShippingInputError('Baris material hanya boleh pada surat jalan tanpa Sales Order')
+                if float(item_data.get('quantity') or 0) <= 0:
+                    raise ShippingInputError('Qty harus lebih dari 0')
+                continue
             if not item_data.get('product_id'):
                 if data.get('sales_order_id'):
                     raise ShippingInputError('Baris tanpa produk hanya boleh pada surat jalan tanpa Sales Order')
@@ -186,6 +196,47 @@ def create_shipping_order_core(data, user_id, commit=True):
         for item_data in data.get('items', []):
             quantity = float(item_data['quantity'])
             batch_number = item_data.get('batch_number')
+
+            if item_data.get('material_id'):
+                hasil = fifo_deduct_stock(
+                    material_id=item_data['material_id'],
+                    quantity_needed=quantity,
+                    reference_number=shipping_number,
+                    reference_type='sales_order',
+                    reference_id=order.id,
+                    notes=f"Dikirim lewat {shipping_number}",
+                    user_id=user_id,
+                    zone_id=item_data.get('zone_id') or None,
+                    batch_number=batch_number or None,
+                )
+                if not hasil['success']:
+                    raise ShippingInputError(hasil['error'])
+                for gerak in hasil['movements']:
+                    if gerak.get('_transaction'):
+                        stock_txns.append(gerak['_transaction'])
+                    db.session.add(ShippingItem(
+                        shipping_id=order.id, material_id=item_data['material_id'],
+                        description=(item_data.get('description') or '').strip()[:500] or None,
+                        quantity=gerak['quantity_deducted'], uom=(item_data.get('uom') or 'KG')[:20],
+                        batch_number=gerak.get('batch_number'),
+                    ))
+                    # HPP material memakai akun bawaan global: slot akun per barang
+                    # (resolve_account) hanya mengenal produk, bukan material.
+                    biaya = float(gerak.get('unit_cost') or 0) * float(gerak['quantity_deducted'])
+                    if biaya > 0:
+                        try:
+                            cogs_journal_lines.append({
+                                'account_id': resolve_account('akun_hpp_id'), 'debit': biaya, 'credit': 0,
+                                'description': f'HPP pengiriman {shipping_number} - material',
+                            })
+                            cogs_journal_lines.append({
+                                'account_id': resolve_account('akun_persediaan_id'), 'debit': 0, 'credit': biaya,
+                                'description': f'Persediaan bahan keluar {shipping_number}',
+                            })
+                            total_cogs_amount += biaya
+                        except ValueError:
+                            pass
+                continue
 
             if not item_data.get('product_id'):
                 db.session.add(ShippingItem(
@@ -388,7 +439,8 @@ def get_tracking():
                 'recipient_phone': shipping_order.customer.phone if shipping_order.customer else 'Phone not available',
                 'items': [{
                     'id': item.id,
-                    'product_name': item.product.name if item.product else (item.description or 'Unknown Product'),
+                    'product_name': (item.product.name if item.product
+                                     else (item.material.name if item.material else (item.description or 'Unknown Product'))),
                     'quantity': float(item.quantity),
                     'weight': 1.0,  # Default weight
                     'length': 30,   # Default dimensions
@@ -543,7 +595,8 @@ def stock_options():
     from models import Inventory
     from models.warehouse import WarehouseLocation, WarehouseZone
     pid = request.args.get('product_id', type=int)
-    if not pid:
+    mid = request.args.get('material_id', type=int)
+    if not pid and not mid:
         return jsonify({'zones': []}), 200
     # The earliest expiry per batch comes along: the sales invoice shows it next
     # to the number so the oldest stock is the obvious pick (Accurate shows the
@@ -553,7 +606,8 @@ def stock_options():
         db.func.sum(Inventory.quantity_on_hand), db.func.min(Inventory.expiry_date),
     ).join(
         WarehouseLocation, WarehouseLocation.zone_id == WarehouseZone.id).join(Inventory, Inventory.location_id == WarehouseLocation.id).filter(
-        Inventory.product_id == pid, Inventory.is_active.is_(True), Inventory.quantity_on_hand > 0,
+        (Inventory.product_id == pid) if pid else (Inventory.material_id == mid),
+        Inventory.is_active.is_(True), Inventory.quantity_on_hand > 0,
         Inventory.stock_status.notin_(['quarantine', 'reject'])).group_by(WarehouseZone.id, WarehouseZone.name, Inventory.batch_number).all()
     zones = {}
     for zid, zname, batch, qty, expiry in rows:
@@ -640,7 +694,8 @@ def get_shipping_order(order_id):
                 'items': [{
                     'id': item.id,
                     'product_id': item.product_id,
-                    'product_name': item.product.name if item.product else item.description,
+                    'product_name': (item.product.name if item.product
+                                     else (item.material.name if item.material else item.description)),
                     'quantity': float(item.quantity),
                     'uom': item.uom,
                     'batch_number': item.batch_number,
@@ -1066,7 +1121,8 @@ def get_available_sales_orders():
                 'items': [{
                     'id': item.id,
                     'product_id': item.product_id,
-                    'product_name': item.product.name if item.product else item.description,
+                    'product_name': (item.product.name if item.product
+                                     else (item.material.name if item.material else item.description)),
                     'quantity': float(item.quantity),
                     'uom': item.uom,
                     'unit_price': float(item.unit_price)

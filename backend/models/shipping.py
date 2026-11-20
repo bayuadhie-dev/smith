@@ -85,6 +85,10 @@ class ShippingItem(db.Model):
     shipping_id = db.Column(db.Integer, db.ForeignKey('shipping_orders.id', ondelete='CASCADE'), nullable=False)
     sales_order_item_id = db.Column(db.Integer, db.ForeignKey('sales_order_items.id'), nullable=True)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)  # kosong = baris jasa/lainnya (surat jalan tanpa SO)
+    # Barang yang dijual tapi tercatat sebagai material, bukan produk jadi:
+    # waste sliting, drum bekas, sisa packaging. Dulu hanya bisa ditulis sebagai
+    # baris keterangan bebas, jadi stoknya tidak pernah berkurang.
+    material_id = db.Column(db.Integer, db.ForeignKey('materials.id'), nullable=True)
     description = db.Column(db.String(500), nullable=True)
     quantity = db.Column(db.Numeric(15, 2), nullable=False)
     uom = db.Column(db.String(20), nullable=False)
@@ -97,6 +101,7 @@ class ShippingItem(db.Model):
     shipping_order = db.relationship('ShippingOrder', back_populates='items')
     sales_order_item = db.relationship('SalesOrderItem')
     product = db.relationship('Product')
+    material = db.relationship('Material')
     handling_units = db.relationship('HandlingUnit', back_populates='shipping_item', cascade='all, delete-orphan')
 
 
