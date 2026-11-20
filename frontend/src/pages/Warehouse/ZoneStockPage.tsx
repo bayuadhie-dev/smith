@@ -5,6 +5,7 @@ import { PageHeader, Panel } from '../../components/ui/PageKit'
 import { showError } from '../../components/ui'
 
 import { DetailSkeleton } from '../../components/ui/Skeleton'
+import ItemStockModal from '../../components/Warehouse/ItemStockModal'
 const TYPE: Record<string, string> = {
   goods_receipt: 'Penerimaan Barang', transfer_out: 'Pemindahan keluar', transfer_in: 'Terima Barang', transfer: 'Pemindahan', material_issue: 'Permintaan Barang',
   adjustment: 'Penyesuaian', stock_in: 'Stok masuk', stock_out: 'Stok keluar',
@@ -13,6 +14,7 @@ const TYPE: Record<string, string> = {
 export default function ZoneStockPage() {
   const { id } = useParams()
   const [d, setD] = useState<any>(null)
+  const [detail, setDetail] = useState<{ kind: 'material' | 'product'; id: number; name: string } | null>(null)
   useEffect(() => {
     axiosInstance.get(`/api/stock-transfers/zone-stock/${id}`).then((r) => setD(r.data)).catch(() => showError('Data gudang gagal dimuat'))
   }, [id])
@@ -42,9 +44,14 @@ export default function ZoneStockPage() {
               <thead><tr><th className={th}>Kode</th><th className={th}>Nama</th><th className={`${th} text-right`}>Stok</th><th className={`${th} text-right`}>Tersedia</th></tr></thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {d.items.map((i: any) => (
-                  <tr key={`${i.kind}${i.item_id}`}>
+                  <tr
+                    key={`${i.kind}${i.item_id}`}
+                    onClick={() => setDetail({ kind: i.kind, id: i.item_id, name: i.name })}
+                    className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+                    title="Lihat rincian: stok per batch, kedaluwarsa, dan mutasinya"
+                  >
                     <td className="px-3 py-2">{i.code}</td>
-                    <td className="px-3 py-2"><Link to={`/app/warehouse/item-stock/${i.kind}/${i.item_id}`} className="text-emerald-700 hover:underline dark:text-emerald-300">{i.name}</Link></td>
+                    <td className="px-3 py-2 text-emerald-700 hover:underline dark:text-emerald-300">{i.name}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{n(i.on_hand)} {i.uom}</td><td className="px-3 py-2 text-right tabular-nums">{n(i.available)}</td>
                   </tr>
                 ))}
@@ -53,6 +60,10 @@ export default function ZoneStockPage() {
           </div>
         )}
       </Panel>
+      {detail && (
+        <ItemStockModal kind={detail.kind} itemId={detail.id} name={detail.name} onClose={() => setDetail(null)} />
+      )}
+
       <Panel title="Mutasi gudang">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">

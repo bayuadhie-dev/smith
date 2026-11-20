@@ -515,7 +515,12 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {groupedInventory.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
+                    <tr
+                      key={item.id}
+                      onClick={() => (item.material_id || item.product_id) && setDetail({ kind: item.material_id ? 'material' : 'product', id: (item.material_id || item.product_id) as number, name: item.item_name })}
+                      className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900"
+                      title="Klik untuk melihat rincian stok per batch dan mutasinya"
+                    >
                       <td className="px-4 py-3 whitespace-nowrap">
                         {getItemTypeBadge(item.item_type)}
                       </td>
