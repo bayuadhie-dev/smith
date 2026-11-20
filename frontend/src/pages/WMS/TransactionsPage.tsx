@@ -196,6 +196,10 @@ const TransactionsPage: React.FC = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [batchFilter, setBatchFilter] = useUrlFilter<string>('batch', '')
+  // Pemeriksaan QC pada penerimaan memindahkan barang ke/dari karantina dan
+  // menulisnya berpasangan (keluar + masuk, jumlah sama). Barangnya tidak pernah
+  // benar-benar keluar gudang, jadi pasangan itu disembunyikan kecuali diminta.
+  const [showInternal, setShowInternal] = useUrlFilter<string>('internal', '')
 
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [locations, setLocations] = useState<WarehouseLocationOpt[]>([]);
@@ -233,6 +237,7 @@ const TransactionsPage: React.FC = () => {
     if (accountFilter) params.account_code = accountFilter;
     if (locationFilter) params.location_id = locationFilter;
     if (batchFilter) params.batch_number = batchFilter;
+    if (showInternal) params.include_internal = 1;
     if (startDate) params.start_date = startDate;
     if (endDate) params.end_date = endDate;
     return params;
@@ -708,6 +713,12 @@ const TransactionsPage: React.FC = () => {
             <label className="block text-xs text-gray-500 mb-1 dark:text-gray-400">No. Batch</label>
             <input type="text" value={batchFilter} onChange={(e) => setBatchFilter(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm dark:border-gray-600" />
+          </div>
+          <div className="flex items-end">
+            <label className="flex items-center gap-2 pb-1.5 text-sm text-gray-600 dark:text-gray-300" title="Perpindahan ke/dari karantina saat pemeriksaan QC penerimaan barang">
+              <input type="checkbox" checked={!!showInternal} onChange={(e) => setShowInternal(e.target.checked ? '1' : '')} />
+              Tampilkan perpindahan karantina QC
+            </label>
           </div>
           <div className="flex items-end gap-2 flex-wrap">
             <button onClick={runSearch} className="flex-1 px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium">
