@@ -333,26 +333,98 @@ def cancel_transfer(tid):
 @jwt_required()
 @require_permission('warehouse.view')
 def item_stock():
-    """Per barang: stok di tiap gudang/lokasi/batch, plus mutasinya."""
+    """Per barang: identitas, stok di tiap gudang/lokasi/batch, nilai, dan mutasinya.
+
+    Dipakai halaman "Stok & Mutasi Barang" yang dibuka dari daftar Barang per
+    Gudang. Dibuat selengkap mungkin supaya orang gudang tidak perlu pindah
+    halaman untuk menjawab "barang ini ada berapa, di mana, batch apa, kapan
+    kedaluwarsa, dan dari mana datangnya".
+    """
     from models.wms_advanced import InventoryTransaction
+    from models.product import Material, Product
+
     mid, pid = request.args.get('material_id', type=int), request.args.get('product_id', type=int)
     if not mid and not pid:
         return jsonify({'error': 'material_id atau product_id wajib'}), 400
+    try:
+        limit = max(10, min(int(request.args.get('limit') or 200), 1000))
+    except ValueError:
+        limit = 200
+    sejak = request.args.get('date_from')
+    sampai = request.args.get('date_to')
+
+    item = db.session.get(Material, mid) if mid else db.session.get(Product, pid)
+    info = {
+        'kind': 'material' if mid else 'product',
+        'id': mid or pid,
+        'code': getattr(item, 'code', None),
+        'name': getattr(item, 'name', None),
+        'uom': getattr(item, 'primary_uom', None) or getattr(item, 'unit_of_measure', None),
+        'group': getattr(item, 'material_type', None),
+        'category': getattr(item, 'category', None),
+        'min_stock': float(getattr(item, 'min_stock_level', 0) or 0),
+        'shelf_life_days': getattr(item, 'expiry_days', None) if mid else getattr(item, 'self_life_days', None),
+        'require_batch': bool(getattr(item, 'require_batch', False)),
+        'require_expiry': bool(getattr(item, 'require_expiry', False)),
+        'unit_cost': float(getattr(item, 'cost_per_unit', None) or getattr(item, 'cost', None) or 0),
+    } if item else {}
+
     iq = Inventory.query.filter(Inventory.quantity_on_hand != 0)
     iq = iq.filter(Inventory.material_id == mid) if mid else iq.filter(Inventory.product_id == pid)
-    stock = [{'zone': r.location.zone.name if r.location and r.location.zone else None, 'location': r.location.location_code if r.location else None,
-              'batch_number': r.batch_number, 'on_hand': float(r.quantity_on_hand), 'available': float(r.quantity_available), 'stock_status': r.stock_status}
+    stock = [{'zone': r.location.zone.name if r.location and r.location.zone else None,
+              'location': r.location.location_code if r.location else None,
+              'batch_number': r.batch_number, 'lot_number': r.lot_number,
+              'on_hand': float(r.quantity_on_hand), 'available': float(r.quantity_available),
+              'reserved': float(r.quantity_reserved or 0),
+              'expiry_date': r.expiry_date.isoformat() if r.expiry_date else None,
+              'production_date': r.production_date.isoformat() if r.production_date else None,
+              'stock_status': r.stock_status}
              for r in iq.order_by(Inventory.location_id, Inventory.id).all()]
+
     tq = InventoryTransaction.query
     tq = tq.filter(InventoryTransaction.material_id == mid) if mid else tq.filter(InventoryTransaction.product_id == pid)
-    moves = [{'date': m.transaction_date.isoformat() if m.transaction_date else None, 'type': m.transaction_type, 'direction': m.direction,
-              'quantity': float(m.quantity), 'batch_number': m.batch_number, 'reference_number': m.reference_number,
-              'from_location_id': m.from_location_id, 'to_location_id': m.to_location_id}
-             for m in tq.order_by(InventoryTransaction.id.desc()).limit(200).all()]
+    if sejak:
+        tq = tq.filter(InventoryTransaction.transaction_date >= datetime.fromisoformat(sejak))
+    if sampai:
+        tq = tq.filter(InventoryTransaction.transaction_date <= datetime.fromisoformat(sampai + 'T23:59:59'))
+    rows = tq.order_by(InventoryTransaction.transaction_date.asc(), InventoryTransaction.id.asc()).all()
+
+    # Saldo berjalan dihitung maju dari mutasi tertua supaya angkanya bisa
+    # dicocokkan baris per baris dengan buku stok.
+    saldo = 0.0
+    moves = []
+    for m in rows:
+        qty = float(m.quantity or 0)
+        saldo += qty if m.direction == 'in' else -qty
+        moves.append({'date': m.transaction_date.isoformat() if m.transaction_date else None,
+                      'type': m.transaction_type, 'direction': m.direction, 'quantity': qty,
+                      'balance': round(saldo, 3), 'batch_number': m.batch_number,
+                      'reference_number': m.reference_number, 'reference_type': m.reference_type,
+                      'reference_id': m.reference_id,
+                      'unit_cost': float(m.unit_cost or 0) if m.unit_cost is not None else None,
+                      'notes': m.notes,
+                      'from_location_id': m.from_location_id, 'to_location_id': m.to_location_id})
+    moves = list(reversed(moves))[:limit]
+
     locs = {l.id: _loc_label(l) for l in WarehouseLocation.query.all()}
     for m in moves:
         m['from_label'], m['to_label'] = locs.get(m['from_location_id']), locs.get(m['to_location_id'])
-    return jsonify({'stock': stock, 'total_on_hand': sum(s['on_hand'] for s in stock), 'movements': moves}), 200
+
+    total = sum(s['on_hand'] for s in stock)
+    kedaluwarsa = sorted([s['expiry_date'] for s in stock if s['expiry_date']])
+    ringkas = {
+        'total_on_hand': total,
+        'total_available': sum(s['available'] for s in stock),
+        'total_reserved': sum(s['reserved'] for s in stock),
+        'locations': len({(s['zone'], s['location']) for s in stock}),
+        'batches': len({s['batch_number'] for s in stock if s['batch_number']}),
+        'nearest_expiry': kedaluwarsa[0] if kedaluwarsa else None,
+        'value': round(total * (info.get('unit_cost') or 0), 2),
+        'last_movement': moves[0]['date'] if moves else None,
+        'below_min': bool(info.get('min_stock') and total < info['min_stock']),
+    }
+    return jsonify({'item': info, 'stock': stock, 'total_on_hand': total,
+                    'summary': ringkas, 'movements': moves}), 200
 
 
 @stock_transfer_bp.route('/zone-stock/<int:zone_id>', methods=['GET'])
