@@ -71,3 +71,20 @@ def test_selisih_jumlah_dicatat_sebagai_penyesuaian(client, auth_headers, db_ses
     grn = _grn_diperiksa(client, auth_headers, db_session, test_material, diterima=90, ditolak=0)
 
     assert [t.transaction_type for t in _mutasi(grn.id)] == ['adjustment']
+
+
+def test_zona_karantina_ketemu_walau_namanya_gudang_waste(db_session):
+    """Gudang Reject berganti nama jadi Gudang Waste - pencarian lokasinya jangan ikut patah."""
+    from models.warehouse import WarehouseZone, WarehouseLocation
+    from routes.purchasing import _resolve_grn_quarantine_location
+
+    z = WarehouseZone(code='WH-WASTE-UJI', name='Gudang Waste', material_type='all',
+                      zone_type='quarantine', is_active=True)
+    db_session.add(z)
+    db_session.commit()
+    db_session.add(WarehouseLocation(zone_id=z.id, location_code='WH-WASTE-UJI-01', rack='R1',
+                                     level='L1', position='P1', capacity=1000, capacity_uom='kg'))
+    db_session.commit()
+
+    lok = _resolve_grn_quarantine_location()
+    assert lok is not None and lok.location_code == 'WH-WASTE-UJI-01'

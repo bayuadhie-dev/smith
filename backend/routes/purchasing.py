@@ -1470,8 +1470,9 @@ def _resolve_grn_quarantine_location():
     """Cari lokasi karantina untuk barang reject GRN (Fase 4 audit fix,
     2026-09-30). Keputusan pemilik: pakai zona 'Gudang Reject' yang sudah
     ada (dibuat saat warehouse restructure, bukan zona baru khusus GRN),
-    dicari lewat zone_type='quarantine' ATAU nama zona mengandung 'reject'
-    (case-insensitive) supaya tidak bergantung pada satu ejaan nama pasti.
+    dicari lewat zone_type ('quarantine'/'reject'/'waste') ATAU nama zona yang
+    mengandung 'reject'/'waste' (case-insensitive) supaya tidak bergantung pada
+    satu ejaan nama pasti - gudangnya pernah berganti nama jadi "Gudang Waste".
 
     Raises ValueError kalau zona/lokasi belum ada - sengaja tidak
     auto-create WarehouseZone di sini (keputusan lokasi karantina adalah
@@ -1481,15 +1482,16 @@ def _resolve_grn_quarantine_location():
 
     zone = WarehouseZone.query.filter(
         db.or_(
-            WarehouseZone.zone_type == 'quarantine',
+            WarehouseZone.zone_type.in_(('quarantine', 'reject', 'waste')),
             WarehouseZone.name.ilike('%reject%'),
+            WarehouseZone.name.ilike('%waste%'),
         )
     ).first()
     if not zone:
         raise ValueError(
-            "Zona karantina/reject belum ada di sistem ini (dicari lewat "
-            "zone_type='quarantine' atau nama mengandung 'reject'). GRN "
-            "reject tidak bisa diproses sampai zona ini dibuat."
+            "Zona karantina/reject/waste belum ada di sistem ini (dicari lewat "
+            "zone_type quarantine/reject/waste atau nama mengandung 'reject'/'waste'). "
+            "GRN reject tidak bisa diproses sampai zona ini dibuat."
         )
 
     location = WarehouseLocation.query.filter_by(zone_id=zone.id, is_active=True).first()
