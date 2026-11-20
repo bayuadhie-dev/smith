@@ -32,15 +32,17 @@ def upgrade():
             WHERE i.grn_id IS NOT NULL AND i.is_active AND i.quantity_on_hand > 0
             GROUP BY i.grn_id, i.material_id, i.product_id, i.batch_number
         ) s
-        JOIN warehouse_locations l ON l.id = gi.location_id
-        JOIN warehouse_zones z ON z.id = l.zone_id
         WHERE s.grn_id = gi.grn_id
           AND s.lokasi = 1
           AND COALESCE(s.material_id, 0) = COALESCE(gi.material_id, 0)
           AND COALESCE(s.product_id, 0) = COALESCE(gi.product_id, 0)
           AND COALESCE(s.batch_number, '') = COALESCE(gi.batch_number, '')
           AND gi.location_id <> s.location_id
-          AND NOT z.is_active
+          AND gi.location_id IN (
+              SELECT l.id FROM warehouse_locations l
+              JOIN warehouse_zones z ON z.id = l.zone_id
+              WHERE NOT z.is_active
+          )
     """))
     print(f'  baris penerimaan disamakan dengan lokasi stoknya: {hasil.rowcount}')
 
