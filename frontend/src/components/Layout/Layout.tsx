@@ -16,6 +16,7 @@ import { showWarning } from '../ui'
 import ForcePasswordChange from '../Auth/ForcePasswordChange'
 import SplashReveal from '../motion/SplashReveal'
 import TopProgress from '../ui/TopProgress'
+import ListFab from '../ui/ListFab'
 
 export default function Layout() {
   const [showShortcutsModal, setShowShortcutsModal] = useState(false)
@@ -117,6 +118,7 @@ export default function Layout() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <ForcePasswordChange />
       <TopProgress />
+      <ListFab />
       {/* Skip Link for keyboard navigation */}
       <SkipLink href="#main-content" />
 
