@@ -236,31 +236,35 @@ def get_location_detail(id):
                 'created_at': inv.created_at.isoformat() if inv.created_at else None
             })
         
-        # Get recent movements at this location
-        recent_movements = InventoryMovement.query.filter_by(
-            location_id=id
-        ).order_by(InventoryMovement.created_at.desc()).limit(20).all()
-        
+        # Riwayat pergerakan dibaca dari inventory_transactions - tabel itulah yang
+        # benar-benar diisi (record_inventory_transaction). `inventory_movements`
+        # tidak pernah terisi sama sekali, jadi tab ini selalu kosong sebelumnya.
+        from models.wms_advanced import InventoryTransaction
+        recent_movements = InventoryTransaction.query.filter(
+            or_(InventoryTransaction.to_location_id == id,
+                InventoryTransaction.from_location_id == id)
+        ).order_by(InventoryTransaction.transaction_date.desc(),
+                   InventoryTransaction.id.desc()).limit(50).all()
+
         movements = []
         for mv in recent_movements:
-            mv_item_name = ''
-            if mv.product_id and mv.product:
-                mv_item_name = mv.product.name
-            elif mv.material_id and mv.material:
-                mv_item_name = mv.material.name
-            
+            obj = (db.session.get(Material, mv.material_id) if mv.material_id
+                   else (db.session.get(Product, mv.product_id) if mv.product_id else None))
+            # Dari sudut pandang lokasi ini: masuk kalau tujuannya ke sini.
+            masuk = mv.to_location_id == id
             movements.append({
                 'id': mv.id,
-                'movement_type': mv.movement_type,
-                'item_name': mv_item_name,
-                'quantity': float(mv.quantity),
+                'movement_type': mv.transaction_type,
+                'direction': 'in' if masuk else 'out',
+                'item_name': getattr(obj, 'name', '') or '',
+                'quantity': float(mv.quantity or 0),
                 'batch_number': mv.batch_number,
                 'reference_number': mv.reference_number,
                 'reference_type': mv.reference_type,
                 'unit_cost': float(mv.unit_cost) if mv.unit_cost else None,
                 'total_cost': float(mv.total_cost) if mv.total_cost else None,
                 'notes': mv.notes,
-                'created_at': mv.created_at.isoformat() if mv.created_at else None
+                'created_at': (mv.transaction_date or mv.created_at).isoformat() if (mv.transaction_date or mv.created_at) else None
             })
         
         return jsonify({

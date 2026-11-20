@@ -71,3 +71,30 @@ def test_detail_lokasi_memakai_isi_stok_sungguhan(client, auth_headers, db_sessi
     assert d['occupied'] == 1200, 'isi lokasi harus dari tabel stok, bukan kolom occupied'
     assert d['unlimited'] is True
     assert d['available'] is None and d['current_utilization'] is None
+
+
+def test_riwayat_lokasi_dibaca_dari_tabel_yang_benar(client, auth_headers, db_session, test_material):
+    """Tab "Riwayat Pergerakan" dulu membaca inventory_movements yang tidak pernah terisi."""
+    from models.wms_advanced import InventoryTransaction
+    from utils.timezone import get_local_now
+
+    lok = _lokasi(db_session, 'Z-MUT', 'WH-MUT-01')
+    db_session.add_all([
+        InventoryTransaction(transaction_number='IT-MASUK', transaction_type='stock_in',
+                             transaction_date=get_local_now(), material_id=test_material.id,
+                             quantity=100, direction='in', to_location_id=lok.id,
+                             batch_number='B-MUT', status='completed'),
+        InventoryTransaction(transaction_number='IT-KELUAR', transaction_type='material_issue',
+                             transaction_date=get_local_now(), material_id=test_material.id,
+                             quantity=40, direction='out', from_location_id=lok.id,
+                             batch_number='B-MUT', status='completed'),
+    ])
+    db_session.commit()
+
+    r = client.get(f'/api/warehouse/locations/{lok.id}', headers=auth_headers)
+    assert r.status_code == 200, r.get_json()
+    mut = r.get_json()['recent_movements']
+    assert len(mut) == 2, 'kedua arah harus ikut terbaca'
+    arah = {m['reference_number'] or m['movement_type']: m['direction'] for m in mut}
+    assert arah['stock_in'] == 'in' and arah['material_issue'] == 'out'
+    assert all(m['item_name'] for m in mut), 'nama barang harus ikut'

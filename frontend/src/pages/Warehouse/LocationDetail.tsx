@@ -55,9 +55,17 @@ interface InventoryItem {
   created_at: string | null;
 }
 
+type GroupedItem = InventoryItem & {
+  batch_count: number;
+  batch_list: string[];
+  statuses: string[];
+  first_in: string | null;
+};
+
 interface Movement {
   id: number;
   movement_type: string;
+  direction?: string;
   item_name: string;
   quantity: number;
   batch_number: string | null;
@@ -68,6 +76,14 @@ interface Movement {
   notes: string | null;
   created_at: string | null;
 }
+
+const JENIS_MUTASI: Record<string, string> = {
+  stock_in: 'Stok masuk', stock_out: 'Stok keluar', goods_receipt: 'Penerimaan Barang',
+  transfer_in: 'Terima Barang', transfer_out: 'Pemindahan keluar', transfer: 'Pemindahan',
+  material_issue: 'Permintaan Barang', adjustment: 'Penyesuaian',
+  qc_disposition: 'Keputusan QC', qc_disposition_out: 'Keputusan QC (keluar)',
+  production_output: 'Hasil produksi', production_consumption: 'Pemakaian produksi',
+};
 
 const LocationDetail: React.FC = () => {
   const { id } = useParams();
@@ -106,6 +122,37 @@ const LocationDetail: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Satu barang = satu baris. Material yang terbagi ke banyak batch dulu tampil
+  // berulang-ulang (17 baris untuk 2 material); batch-nya cukup dihitung di sini,
+  // rinciannya sudah ada di popup yang terbuka saat barisnya diklik.
+  const groupedItems = React.useMemo(() => {
+    const map = new Map<string, GroupedItem>()
+    inventoryItems.forEach((it) => {
+      const key = `${it.item_type}-${it.material_id ?? it.product_id ?? it.item_code}`
+      const cur = map.get(key)
+      if (!cur) {
+        map.set(key, {
+          ...it,
+          batch_count: it.batch_number ? 1 : 0,
+          batch_list: it.batch_number ? [it.batch_number] : [],
+          statuses: it.stock_status ? [it.stock_status] : [],
+          first_in: it.created_at,
+        })
+        return
+      }
+      cur.quantity_on_hand += it.quantity_on_hand
+      cur.quantity_reserved += it.quantity_reserved
+      cur.quantity_available += it.quantity_available
+      if (it.batch_number && !cur.batch_list.includes(it.batch_number)) {
+        cur.batch_list.push(it.batch_number)
+        cur.batch_count += 1
+      }
+      if (it.stock_status && !cur.statuses.includes(it.stock_status)) cur.statuses.push(it.stock_status)
+      if (it.created_at && (!cur.first_in || it.created_at < cur.first_in)) cur.first_in = it.created_at
+    })
+    return Array.from(map.values())
+  }, [inventoryItems])
 
   const getUtilizationPercent = () => {
     if (!location || location.capacity <= 0) return 0;
@@ -286,7 +333,7 @@ const LocationDetail: React.FC = () => {
                   : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
               }`}
             >
-              Inventory ({inventoryItems.length})
+              Inventory ({groupedItems.length})
             </button>
             <button
               onClick={() => setActiveTab('movements')}
@@ -304,7 +351,7 @@ const LocationDetail: React.FC = () => {
         <div className="p-4">
           {activeTab === 'inventory' && (
             <>
-              {inventoryItems.length === 0 ? (
+              {groupedItems.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <CubeIcon className="mx-auto h-10 w-10 text-gray-300 mb-3" />
                   <p>Tidak ada inventory di lokasi ini</p>
@@ -325,7 +372,7 @@ const LocationDetail: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {inventoryItems.map((item) => (
+                      {groupedItems.map((item) => (
                         <tr
                           key={item.id}
                           onClick={() => (item.material_id || item.product_id) && setDetail({ kind: item.material_id ? 'material' : 'product', id: (item.material_id || item.product_id) as number, name: item.item_name })}
@@ -346,8 +393,12 @@ const LocationDetail: React.FC = () => {
                             </span>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
-                            {item.batch_number || '-'}
-                            {item.lot_number && <span className="text-xs text-gray-400 block">Lot: {item.lot_number}</span>}
+                            {item.batch_count > 1 ? (
+                              <span title={item.batch_list.join(', ')}>{item.batch_count} batch</span>
+                            ) : (
+                              item.batch_list[0] || '-'
+                            )}
+                            {item.batch_count <= 1 && item.lot_number && <span className="text-xs text-gray-400 block">Lot: {item.lot_number}</span>}
                           </td>
                           <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 dark:text-white">
                             {item.quantity_on_hand.toLocaleString()}
@@ -359,12 +410,24 @@ const LocationDetail: React.FC = () => {
                             {item.quantity_available.toLocaleString()}
                           </td>
                           <td className="px-4 py-3">
-                            <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(item.stock_status)}`}>
-                              {item.stock_status}
-                            </span>
+                            {item.statuses.length > 1 ? (
+                              <span
+                                className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200"
+                                title={item.statuses.join(', ')}
+                              >
+                                campuran
+                              </span>
+                            ) : (
+                              <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(item.statuses[0] || item.stock_status)}`}>
+                                {item.statuses[0] || item.stock_status}
+                              </span>
+                            )}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-                            {item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}
+                          <td
+                            className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400"
+                            title={item.batch_count > 1 ? 'Tanggal masuk batch paling awal' : undefined}
+                          >
+                            {item.first_in ? new Date(item.first_in).toLocaleDateString('id-ID') : '-'}
                           </td>
                         </tr>
                       ))}
@@ -404,13 +467,15 @@ const LocationDetail: React.FC = () => {
                             <div className="flex items-center gap-2">
                               {getMovementIcon(mv.movement_type)}
                               <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getMovementColor(mv.movement_type)}`}>
-                                {mv.movement_type.replace('_', ' ')}
+                                {JENIS_MUTASI[mv.movement_type] || mv.movement_type.replace(/_/g, ' ')}
                               </span>
                             </div>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{mv.item_name || '-'}</td>
-                          <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 dark:text-white">
-                            {mv.movement_type === 'stock_out' ? '-' : '+'}{mv.quantity.toLocaleString()}
+                          <td className={`px-4 py-3 text-sm text-right font-medium ${
+                            mv.direction === 'out' ? 'text-red-600 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-300'
+                          }`}>
+                            {mv.direction === 'out' ? '-' : '+'}{mv.quantity.toLocaleString('id-ID')}
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{mv.batch_number || '-'}</td>
                           <td className="px-4 py-3">
