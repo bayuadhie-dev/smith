@@ -148,10 +148,13 @@ export default function Header({ toggleSidebar }: HeaderProps) {
 
   return (
     <>
-      <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+      {/* Bilah atas sengaja tipis dan tembus pandang: judul halaman yang besar
+          ada di dalam konten (PageHeader), bukan di sini. Tombol tiga baris
+          cuma untuk layar kecil - di desktop tugasnya diambil rel ikon. */}
+      <div className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-x-3 border-b border-gray-200/60 bg-white/70 px-4 backdrop-blur-md dark:border-gray-700/50 dark:bg-gray-900/60 sm:gap-x-5 sm:px-6 lg:px-8">
         <button
           type="button"
-          className="-m-2.5 p-2.5 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+          className="-m-2.5 p-2.5 text-gray-700 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white lg:hidden"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -162,13 +165,11 @@ export default function Header({ toggleSidebar }: HeaderProps) {
           <Bars3Icon className="h-6 w-6" aria-hidden="true" />
         </button>
 
-        <div className="h-6 w-px bg-gray-200 dark:bg-gray-700" aria-hidden="true" />
-
         <div className="flex min-w-0 flex-1 gap-x-4 self-stretch lg:gap-x-6">
           <div className="flex min-w-0 flex-1 items-center">
             <h1
               onClick={handleHeaderClick}
-              className={`truncate text-sm font-bold cursor-pointer select-none transition-all duration-300 sm:text-base lg:text-lg ${
+              className={`truncate cursor-pointer select-none text-sm font-semibold tracking-tight transition-all duration-300 sm:text-[15px] ${
                 isGlowing
                   ? 'text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400 animate-pulse scale-105'
                   : 'text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400'

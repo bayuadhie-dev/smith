@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
+import IconRail from './IconRail'
 import Header from './Header'
 import Breadcrumb from '../ui/Breadcrumb'
 import { BreadcrumbTrailProvider } from '../ui/BreadcrumbTrail'
@@ -115,7 +116,7 @@ export default function Layout() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="fn-ground min-h-screen">
       <ForcePasswordChange />
       <TopProgress />
       <ListFab />
@@ -123,8 +124,14 @@ export default function Layout() {
       <SkipLink href="#main-content" />
 
       <SplashReveal name={companyName} logo={companyLogo}>
+      {/* Sidebar yang diciutkan sudah berupa rel ikon sendiri - menampilkan dua
+          rel berdampingan cuma membuang ruang, jadi rel ini sembunyi. */}
+      {!(sidebarOpen && sidebarCollapsed) && (
+        <IconRail companyName={companyName} logo={companyLogo} onToggleSidebar={handleHeaderToggle} />
+      )}
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
-      <div className={`transition-all duration-300 ${sidebarOpen ? (sidebarCollapsed ? 'lg:pl-[84px]' : 'lg:pl-64') : 'lg:pl-0'}`}>
+      {/* 56px rel ikon + lebar sidebar (240 terbuka), atau 84px sidebar ciut saja. */}
+      <div className={`transition-all duration-300 ${sidebarOpen ? (sidebarCollapsed ? 'lg:pl-[84px]' : 'lg:pl-[296px]') : 'lg:pl-14'}`}>
         <Header toggleSidebar={handleHeaderToggle} />
         <main id="main-content" className="py-6" role="main" aria-label="Konten utama">
           <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">

@@ -156,7 +156,7 @@ html[data-company='fengsheng']:not(.dark) .bg-white {
 @layer base {
   body {
     @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-family: 'Onest', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -590,4 +590,102 @@ html:not([data-motion]) .erp-flash {
 html[data-motion='on'] .ui-rows,
 html:not([data-motion]) .ui-rows {
   animation: erp-rows-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) 1;
+}
+
+
+/* =====================================================================
+   Lapisan tampilan (2026-11-21)
+
+   Bahasa visual baru: latar bergradasi lembut, kartu bersudut besar dengan
+   garis cahaya di tepi atas, label kecil huruf kapital bergaya mono, dan
+   angka besar yang jadi pusat perhatian. Warnanya TIDAK dipatok di sini -
+   semua mengambil variabel perusahaan di atas, jadi Falmaco tetap
+   gunmetal/cobalt dan Fengsheng tetap forest/burnt orange.
+   ===================================================================== */
+:root {
+  --fn-radius: 20px;
+  --fn-card-a: 255 255 255;      /* gradien kartu, bagian atas */
+  --fn-card-b: 248 249 250;      /* gradien kartu, bagian bawah */
+}
+html[data-company='fengsheng'] {
+  --fn-card-a: 253 250 244;
+  --fn-card-b: 246 241 230;
+}
+.dark {
+  --fn-card-a: var(--gray-800);
+  --fn-card-b: var(--gray-900);
+}
+
+/* Latar halaman: cahaya jatuh dari atas, bukan abu-abu rata. */
+.fn-ground {
+  background:
+    radial-gradient(120% 70% at 50% 0%,
+      rgb(var(--surface-50)) 0%,
+      rgb(var(--surface-100)) 45%,
+      rgb(var(--surface-200)) 100%);
+}
+.dark .fn-ground {
+  background:
+    radial-gradient(120% 70% at 50% 0%,
+      rgb(var(--gray-800)) 0%,
+      rgb(var(--gray-900)) 45%,
+      rgb(var(--gray-950)) 100%);
+}
+
+/* Kartu: sudut besar, permukaan bergradasi, bayangan berlapis. */
+.fn-card {
+  position: relative;
+  border-radius: var(--fn-radius);
+  background: linear-gradient(rgb(var(--fn-card-a)), rgb(var(--fn-card-b)));
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.9) inset,
+    0 0 0 1px rgb(255 255 255 / 0.6),
+    0 12px 26px -14px rgb(30 35 45 / 0.2),
+    0 2px 4px rgb(30 35 45 / 0.05);
+}
+.dark .fn-card {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.05) inset,
+    0 0 0 1px rgb(255 255 255 / 0.07),
+    0 12px 26px -14px rgb(0 0 0 / 0.5),
+    0 2px 4px rgb(0 0 0 / 0.25);
+}
+.fn-card-sm { --fn-radius: 14px; }
+
+/* Kilau menyapu selama data belum datang - pengganti kotak abu-abu kedap. */
+.fn-card.is-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.85) 50%, transparent 70%);
+  background-size: 250% 100%;
+  animation: fn-shimmer 1.4s linear infinite;
+}
+.dark .fn-card.is-loading::after {
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.07) 50%, transparent 70%);
+  background-size: 250% 100%;
+}
+@keyframes fn-shimmer {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+
+/* Tekan sedikit saat diklik - umpan balik tanpa animasi berisik. */
+.fn-press { transition: transform 0.12s ease, box-shadow 0.2s ease; }
+.fn-press:active { transform: scale(0.985); }
+
+/* Hormati tombol "kurangi gerakan" / preferensi animasi per pengguna. */
+html[data-motion='off'] .fn-card.is-loading::after { animation: none; opacity: 0; }
+html[data-motion='off'] .fn-press { transition: none; }
+html[data-motion='off'] .fn-press:active { transform: none; }
+
+@layer components {
+  /* Label mikro: huruf kapital kecil bergaya mono, seperti penanda cetak. */
+  .fn-label {
+    @apply font-mono text-[10px] uppercase tracking-[0.09em] text-gray-500 dark:text-gray-400;
+  }
+  /* Angka selalu rata lebar supaya kolom tabel tidak goyang. */
+  .fn-num { @apply font-mono tabular-nums; }
 }

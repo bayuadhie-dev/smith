@@ -84,6 +84,11 @@ export default {
           900: 'rgb(var(--slate-900) / <alpha-value>)',
         },
       },
+      fontFamily: {
+        // Onest = wajah antarmuka, JetBrains Mono = angka, kode dokumen, label kecil.
+        sans: ['Onest', 'Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+      },
       typography: {
         DEFAULT: {
           css: {
