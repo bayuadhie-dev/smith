@@ -213,15 +213,6 @@ export default function DashboardEnhanced() {
     }
   }, [])
 
-  // Send heartbeat to chat system (for online status)
-  const sendHeartbeat = useCallback(async () => {
-    try {
-      await axiosInstance.post('/api/chat/heartbeat')
-    } catch (error) {
-      console.error('Error sending heartbeat:', error)
-    }
-  }, [])
-
   // Update time every second
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000)
@@ -234,13 +225,6 @@ export default function DashboardEnhanced() {
     const interval = setInterval(fetchActiveUsers, 30000)
     return () => clearInterval(interval)
   }, [fetchActiveUsers])
-
-  // Send heartbeat every 2 minutes
-  useEffect(() => {
-    sendHeartbeat()
-    const interval = setInterval(sendHeartbeat, 2 * 60 * 1000)
-    return () => clearInterval(interval)
-  }, [sendHeartbeat])
 
   // Auto-refresh dashboard every 5 minutes
   useEffect(() => {

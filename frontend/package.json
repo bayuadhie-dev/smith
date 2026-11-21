@@ -48,8 +48,7 @@
     "react-redux": "^9.0.4",
     "react-router-dom": "^7.18.3",
     "recharts": "^2.15.4",
-    "remark-gfm": "^4.0.1",
-    "socket.io-client": "^4.8.3",
+    "remark-gfm": "^4.0.1",
     "swiper": "^12.1.4",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },

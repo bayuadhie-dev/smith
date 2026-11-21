@@ -384,8 +384,6 @@ import UserProfile from './pages/Profile/UserProfile'
 import UserManual from './pages/Manual/UserManual'
 import FAQPage from './pages/Manual/FAQPage'
 import ManualAdmin from './pages/Manual/ManualAdmin'
-import GroupChat from './pages/Chat/GroupChat'
-import ServerSettings from './pages/Chat/ServerSettings'
 import AdminRoute from './components/Auth/AdminRoute'
 import StaffAdminRoute from './components/Auth/StaffAdminRoute'
 import AccurateIntegration from './pages/Integration/AccurateIntegration'
@@ -1022,8 +1020,6 @@ function AppChildRoutes() {
                 <Route path="manual/admin" element={<AdminRoute><ManualAdmin /></AdminRoute>} />
 
                 {/* Group Chat */}
-                <Route path="chat" element={<GroupChat />} />
-                <Route path="chat/server/:serverId/settings" element={<ServerSettings />} />
 
                 {/* Integration - Admin Only */}
                 <Route path="integration/accurate" element={<StaffAdminRoute><AccurateIntegration /></StaffAdminRoute>} />

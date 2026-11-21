@@ -1415,8 +1415,9 @@ def get_alerts():  # executive_alerts():
 def get_active_users():
     """Get list of active users with their recent activity"""
     try:
-        from models.group_chat import ChatUserStatus
+        from models.settings_extended import AuditLog
         from utils.timezone import utc_to_local
+        from datetime import datetime as _dt
         
         users = db.session.query(User).filter(User.is_active == True).all()
         
@@ -1424,20 +1425,29 @@ def get_active_users():
         online_threshold = now - timedelta(minutes=5)
         recent_threshold = now - timedelta(hours=24)
         
+        # Dulu kehadiran dibaca dari detak obrolan (ChatUserStatus). Obrolan
+        # sudah dihapus, jadi jejak terakhir diambil dari audit: satu permintaan
+        # ke API apa pun sudah tercatat di sana. Dibatasi 7 hari supaya tidak
+        # memindai seluruh riwayat - ambang terjauh yang dipakai cuma 24 jam.
+        jejak_sejak = _dt.utcnow() - timedelta(days=7)
+        jejak_terakhir = dict(
+            db.session.query(AuditLog.user_id, db.func.max(AuditLog.timestamp))
+            .filter(AuditLog.user_id.isnot(None), AuditLog.timestamp >= jejak_sejak)
+            .group_by(AuditLog.user_id)
+            .all()
+        )
+        
         active_users = []
         online_count = 0
         recent_count = 0
         
         for user in users:
-            # Get chat status for real-time online detection
-            chat_status = db.session.query(ChatUserStatus).filter(
-                ChatUserStatus.user_id == user.id
-            ).first()
-            
-            # Determine status based on chat heartbeat
+            # Jejak terbaru menang; kalau belum ada (mis. admin yang tidak
+            # diaudit), pakai waktu masuk terakhir.
+            jejak = jejak_terakhir.get(user.id)
             last_activity = None
-            if chat_status and chat_status.last_seen:
-                last_activity = utc_to_local(chat_status.last_seen)
+            if jejak:
+                last_activity = utc_to_local(jejak)
             elif user.last_login:
                 # last_login is stored as get_local_now() (WIB naive) — do NOT call utc_to_local again
                 last_activity = user.last_login

@@ -824,11 +824,6 @@ def create_app(config_class=Config):
 
     
 
-    # Import and register Group Chat blueprint
-
-    from routes.group_chat import chat_bp
-
-    app.register_blueprint(chat_bp, url_prefix='/api/chat')
 
     
 
@@ -1135,10 +1130,6 @@ def create_app(config_class=Config):
             engineio_logger=False
 
         )
-
-        # Register SocketIO event handlers
-
-        import routes.socketio_chat  # noqa: F401 — side-effect import (registers events)
 
         print("\u2713 WebSocket (Flask-SocketIO) initialized")
 

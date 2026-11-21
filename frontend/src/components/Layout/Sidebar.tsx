@@ -18,7 +18,6 @@ import {
   BookOpenIcon,
   BuildingOfficeIcon,
   BuildingStorefrontIcon,
-  ChatBubbleLeftRightIcon,
   ChartBarIcon,
   ChevronDownIcon,
   Cog6ToothIcon,
@@ -621,7 +620,6 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           ]
         },
         { name: 'TV Display', href: '/app/tv-display', icon: TvIcon, permission: 'tv_display' },
-        { name: 'Obrolan Grup', href: '/app/chat', icon: ChatBubbleLeftRightIcon },
         {
           name: 'User Manual',
           href: '/app/manual',

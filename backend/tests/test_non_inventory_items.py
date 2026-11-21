@@ -133,8 +133,18 @@ def test_accurate_extra_columns_are_stored_and_backfilled_without_overwriting(cl
     assert m.brand == 'ABC' and m.barcode is None
 
 
-def test_grn_requires_expiry_only_for_flagged_items_and_never_batch(client, auth_headers, db_session):
+def test_grn_tidak_mewajibkan_batch_maupun_kedaluwarsa(client, auth_headers, db_session):
+    """Penerimaan tidak boleh tertahan karena batch atau tanggal kedaluwarsa.
+
+    Permintaan user 2026-11-20 ("dibuat ga wajib isi aja"): sebagian pemasok
+    mengirim barang tanpa tanggal tercetak. Penanda `require_expiry` di master
+    barang tinggal menjadi petunjuk di form, bukan penghalang simpan - tapi
+    kalau tanggalnya diisi, nilainya tetap tersimpan. Tes ini dulu menuntut
+    tolakan 400 dan jadi basi sejak aturannya dilonggarkan.
+    """
+    from models import db
     from models.warehouse import WarehouseZone, WarehouseLocation
+    from models.purchasing import GoodsReceivedNote
     supplier, material, po, po_item = _setup_po(db_session, unit_price=1000, quantity=10)
     material.require_batch = True; material.require_expiry = True; po.status = 'approved'
     zone = WarehouseZone(code='Z-RB', name='Z', zone_type='all', material_type='all'); db_session.add(zone); db_session.commit()
@@ -143,10 +153,16 @@ def test_grn_requires_expiry_only_for_flagged_items_and_never_batch(client, auth
     base = {'po_item_id': po_item.id, 'material_id': material.id, 'quantity_ordered': 10, 'quantity_received': 10, 'uom': 'KG', 'location_id': loc.id}
     post = lambda **extra: client.post('/api/purchasing/grn', headers=auth_headers, json={
         'po_id': po.id, 'supplier_id': supplier.id, 'received_date': date.today().isoformat(), 'items': [{**base, **extra}]})
-    r = post()                                        # tanpa batch dan tanpa tanggal: ditolak karena kedaluwarsa, BUKAN batch
-    assert r.status_code == 400 and 'kedaluwarsa' in r.get_json()['error'].lower()
-    assert post(expiry_date='2027-12-31').status_code in (200, 201)      # tanpa batch tetap boleh
+
+    r = post()                                        # tanpa batch, tanpa tanggal: tetap diterima
+    assert r.status_code in (200, 201), r.get_json()
+    r2 = post(expiry_date='2027-12-31')               # diisi: ikut tersimpan
+    assert r2.status_code in (200, 201), r2.get_json()
+    grn_id = r2.get_json()['grn_id']
+    tersimpan = db.session.get(GoodsReceivedNote, grn_id)
+    assert str(tersimpan.items[0].expiry_date) == '2027-12-31'
+
     material.require_expiry = False; db_session.commit()
-    assert post().status_code in (200, 201)           # tidak bertanda kedaluwarsa: tidak diminta apa pun
+    assert post().status_code in (200, 201)
     detail = client.get(f'/api/purchasing/purchase-orders/{po.id}', headers=auth_headers).get_json()
     assert (detail.get('purchase_order', detail))['items'][0]['require_expiry'] is False

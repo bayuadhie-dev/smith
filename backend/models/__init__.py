@@ -71,11 +71,6 @@ from .bom_history import BOMHistory, BOMImportLog
 from .custom_bom import CustomBOM, CustomBOMItem
 from .kpi_target import KPITarget, seed_kpi_targets
 from .user_manual import ManualCategory, ManualArticle, ManualFAQ
-from .group_chat import (
-    ChatServer, ChatCategory, ChatChannel, ChatMessage, ChatAttachment,
-    ChatReaction, ChatMention, ChatPinnedMessage, ChatServerRole,
-    ChatServerRoleMember, ChatUserStatus, ChatUnreadMessage
-)
 from .work_order_bom import WorkOrderBOMItem
 from .converting import ConvertingMachine, ConvertingProduction
 from .uom import UnitOfMeasure, UoMConversion
@@ -189,9 +184,6 @@ __all__ = [
     # User Manual models
     'ManualCategory', 'ManualArticle', 'ManualFAQ',
     # Group Chat models
-    'ChatServer', 'ChatCategory', 'ChatChannel', 'ChatMessage', 'ChatAttachment',
-    'ChatReaction', 'ChatMention', 'ChatPinnedMessage', 'ChatServerRole',
-    'ChatServerRoleMember', 'ChatUserStatus', 'ChatUnreadMessage',
     # Converting models
     'ConvertingMachine', 'ConvertingProduction',
     # UoM models

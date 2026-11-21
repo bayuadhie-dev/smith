@@ -515,15 +515,6 @@ def test_efaktur_export_keeps_invoices_with_bad_npwp_but_warns(client, auth_head
     assert resp.headers['X-Npwp-Warning-Count'] == '2'
 
 
-def test_group_chat_owner_can_update_and_delete_own_server(client, auth_headers, db_session):
-    """Regression: owner checks compared int owner_id with the str JWT identity, so owners were always refused."""
-    created = client.post('/api/chat/servers', json={'name': 'Tim Uji'}, headers=auth_headers)
-    assert created.status_code in (200, 201), created.get_json()
-    server_id = (created.get_json().get('server') or created.get_json())['id']
-    assert client.put(f'/api/chat/servers/{server_id}', json={'name': 'Tim Baru'}, headers=auth_headers).status_code == 200
-    assert client.delete(f'/api/chat/servers/{server_id}', headers=auth_headers).status_code == 200
-
-
 def test_aging_report_buckets_and_matches_gl(client, auth_headers, db_session):
     from models.finance import Invoice
     from models.sales import Customer
