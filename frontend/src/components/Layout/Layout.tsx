@@ -127,7 +127,7 @@ export default function Layout() {
       {/* Sidebar yang diciutkan sudah berupa rel ikon sendiri - menampilkan dua
           rel berdampingan cuma membuang ruang, jadi rel ini sembunyi. */}
       {!(sidebarOpen && sidebarCollapsed) && (
-        <IconRail companyName={companyName} logo={companyLogo} onToggleSidebar={handleHeaderToggle} />
+        <IconRail onToggleSidebar={handleHeaderToggle} />
       )}
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       {/* 56px rel ikon + lebar sidebar (240 terbuka), atau 84px sidebar ciut saja. */}

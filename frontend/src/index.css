@@ -611,7 +611,13 @@ html[data-company='fengsheng'] {
   --fn-card-a: 253 250 244;
   --fn-card-b: 246 241 230;
 }
-.dark {
+/* Mode gelap harus menang atas blok per-perusahaan di atas. `.dark` saja
+   kalah tingkat kekhususan dari `html[data-company='fengsheng']`, jadi kartu
+   Fengsheng tetap krem walau layarnya sudah gelap - itu bug yang terlihat
+   seperti "mode gelap rusak". Pakai html.dark + pasangan per perusahaan. */
+html.dark,
+html.dark[data-company],
+html.dark[data-company='fengsheng'] {
   --fn-card-a: var(--gray-800);
   --fn-card-b: var(--gray-900);
 }

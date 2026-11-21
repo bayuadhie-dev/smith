@@ -69,6 +69,7 @@ import {
   ArrowUturnLeftIcon
 } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
+import ThemeToggle from '../Common/ThemeToggle'
 import axiosInstance from '../../utils/axiosConfig'
 import { usePermissions } from '../../contexts/PermissionContext'
 
@@ -696,7 +697,9 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           {!collapsed && (
             <div className="min-w-0">
               <p className="text-gray-900 dark:text-white text-sm font-semibold leading-none truncate" title={companyName || undefined}>{companyName || 'ERP System'}</p>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-1">{user?.full_name || 'User'}</p>
+              {/* Nama pengguna ada di kartu kaki sidebar - di sini cukup
+                  identitas perusahaannya saja supaya tidak dobel. */}
+              <p className="fn-label mt-1 truncate">Sistem ERP</p>
             </div>
           )}
         </div>
@@ -941,15 +944,25 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
 
       {/* Kartu pengguna di kaki sidebar: wajah, nama, jabatan, lalu keluar.
           Tombol tema pindah ke rel ikon supaya kartu ini bersih. */}
-      <div className={clsx('mt-auto pt-3', collapsed && 'flex flex-col items-center')}>
+      {/* Menempel di dasar sidebar: menu bisa panjang sekali, dan tombol tema
+          serta keluar tidak boleh ikut hanyut ke bawah lipatan. */}
+      <div className={clsx(
+        'sticky bottom-0 z-10 mt-auto -mx-4 px-4 pb-1 pt-3',
+        collapsed && 'flex flex-col items-center',
+      )} style={{ backgroundColor: 'rgb(var(--sidebar-bg))' }}>
         {collapsed ? (
-          <button
-            onClick={handleLogout}
-            title="Keluar"
-            className="fn-press flex h-8 w-8 items-center justify-center rounded-xl text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
-          >
-            <ArrowRightOnRectangleIcon className="w-4 h-4" />
-          </button>
+          /* Rel ikon sembunyi saat sidebar diciutkan, jadi tombol temanya
+             harus ada di sini - kalau tidak, tidak ada jalan ganti tema. */
+          <div className="flex flex-col items-center gap-1.5">
+            <ThemeToggle collapsed />
+            <button
+              onClick={handleLogout}
+              title="Keluar"
+              className="fn-press flex h-8 w-8 items-center justify-center rounded-xl text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
+            >
+              <ArrowRightOnRectangleIcon className="w-4 h-4" />
+            </button>
+          </div>
         ) : (
           <div className="flex items-center gap-2.5 rounded-xl bg-white/[0.07] p-2.5 ring-1 ring-white/10">
             <button
