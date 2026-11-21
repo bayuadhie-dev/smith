@@ -69,7 +69,6 @@ import {
   ArrowUturnLeftIcon
 } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
-import ThemeToggle from '../Common/ThemeToggle'
 import axiosInstance from '../../utils/axiosConfig'
 import { usePermissions } from '../../contexts/PermissionContext'
 
@@ -978,20 +977,15 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
         collapsed && 'flex flex-col items-center',
       )} style={{ backgroundColor: 'rgb(var(--sidebar-bg))' }}>
         {collapsed ? (
-          /* Rel ikon sembunyi saat sidebar diciutkan, jadi tombol temanya
-             harus ada di sini - kalau tidak, tidak ada jalan ganti tema. */
-          <div className="flex flex-col items-center gap-1.5">
-            <ThemeToggle collapsed />
-            <button
-              onClick={handleLogout}
-              title="Keluar"
-              className="fn-press flex h-8 w-8 items-center justify-center rounded-xl text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
-            >
-              <ArrowRightOnRectangleIcon className="w-4 h-4" />
-            </button>
-          </div>
+          <button
+            onClick={handleLogout}
+            title="Keluar"
+            className="fn-press flex h-8 w-8 items-center justify-center rounded-xl text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
+          >
+            <ArrowRightOnRectangleIcon className="w-4 h-4" />
+          </button>
         ) : (
-          <div className="flex items-center gap-2.5 rounded-xl bg-white/[0.07] p-2.5 ring-1 ring-white/10">
+          <div className="flex items-center gap-2 rounded-xl bg-white/[0.07] p-2.5 ring-1 ring-white/10">
             <button
               onClick={() => navigate('/app/profile')}
               title="Buka profil"
@@ -1126,8 +1120,7 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
       )}
 
       {/* Desktop sidebar */}
-      {/* lg:left-14 = memberi ruang untuk rel ikon (IconRail) di paling kiri. */}
-      <div className={`hidden lg:fixed lg:inset-y-0 lg:z-40 ${collapsed ? 'lg:left-0 lg:w-[84px]' : 'lg:left-14 lg:w-60'} lg:flex-col transition-all duration-300 ${open ? 'lg:flex' : 'lg:hidden'
+      <div className={`hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 ${collapsed ? 'lg:w-[84px]' : 'lg:w-60'} lg:flex-col transition-all duration-300 ${open ? 'lg:flex' : 'lg:hidden'
         }`}>
         <SidebarContent collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
       </div>

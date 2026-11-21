@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import NotificationBell from '../NotificationBell';
+import ThemeToggle from '../Common/ThemeToggle';
 import { useAppSelector } from '../../hooks/redux';
 
 interface HeaderProps {
@@ -179,7 +180,10 @@ export default function Header({ toggleSidebar }: HeaderProps) {
               {companyName}
             </h1>
           </div>
-          <div className="flex items-center gap-x-4 lg:gap-x-6">
+          <div className="flex items-center gap-x-1 sm:gap-x-2">
+            {/* Tema ikut di sini, bukan di sidebar: bilah ini selalu kelihatan,
+                termasuk saat sidebar diciutkan atau disembunyikan. */}
+            <ThemeToggle collapsed />
             <NotificationBell />
           </div>
         </div>

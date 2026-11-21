@@ -35,7 +35,7 @@ export default function ThemeToggle({ collapsed = false }: Props) {
         onClick={(e) => choose(!isDark, e)}
         title={isDark ? 'Ganti ke tema terang' : 'Ganti ke tema gelap'}
         aria-label={isDark ? 'Ganti ke tema terang' : 'Ganti ke tema gelap'}
-        className="relative flex h-9 w-9 items-center justify-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+        className="relative flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white dark:focus-visible:ring-white/40"
       >
         <SunIcon className={clsx('absolute h-[18px] w-[18px] transition-all duration-300', isDark ? 'rotate-90 scale-0 opacity-0' : 'rotate-0 scale-100 opacity-100')} aria-hidden="true" />
         <MoonIcon className={clsx('absolute h-[18px] w-[18px] transition-all duration-300', isDark ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-0 opacity-0')} aria-hidden="true" />
