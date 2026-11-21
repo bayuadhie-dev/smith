@@ -21,8 +21,15 @@ export default function SidebarActiveMarker({ container }: { container: RefObjec
     if (!el) return
 
     const measure = () => {
-      const active = el.querySelector('[aria-current="page"]') as HTMLElement | null
-      if (!active) { setBox(null); return }
+      // Beberapa baris bisa sama-sama "aktif": induk cocok karena awalan
+      // alamatnya sama, anaknya cocok persis. Yang pertama di DOM biasanya si
+      // induk - itu sebabnya penanda dulu berhenti di baris yang salah. Yang
+      // dipakai: baris yang alamatnya persis sama; kalau tidak ada, yang
+      // paling dalam (terakhir di DOM).
+      const semua = Array.from(el.querySelectorAll('[aria-current="page"]')) as HTMLElement[]
+      if (semua.length === 0) { setBox(null); return }
+      const kini = location.pathname + location.search
+      const active = semua.find((n) => n.getAttribute('href') === kini) || semua[semua.length - 1]
       const a = active.getBoundingClientRect()
       const c = el.getBoundingClientRect()
       setBox({ top: a.top - c.top + el.scrollTop, height: a.height })
@@ -34,11 +41,17 @@ export default function SidebarActiveMarker({ container }: { container: RefObjec
 
     const observer = new MutationObserver(measure)
     observer.observe(el, { subtree: true, attributes: true, childList: true, attributeFilter: ['aria-current'] })
+    // Melipat satu kelompok menu hanya mengubah kelas (bukan isi), jadi
+    // pengamat di atas diam saja dan penanda tertinggal di tempat lama.
+    // Tingginya nav yang berubah itulah sinyal yang bisa diandalkan.
+    const ro = new ResizeObserver(() => measure())
+    ro.observe(el)
     el.addEventListener('scroll', measure)
     window.addEventListener('resize', measure)
     return () => {
       cancelAnimationFrame(rafRef.current)
       observer.disconnect()
+      ro.disconnect()
       el.removeEventListener('scroll', measure)
       window.removeEventListener('resize', measure)
     }

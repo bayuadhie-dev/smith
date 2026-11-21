@@ -80,6 +80,20 @@ interface SidebarProps {
 
 function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: boolean; onToggleCollapse?: () => void }) {
   const [expandedItems, setExpandedItems] = useState<string[]>([])
+  // Kelompok menu yang sedang dilipat. Dengan ~50 modul, satu kelompok yang
+  // tidak pernah dipakai cuma memanjangkan gulungan - sekarang bisa ditutup,
+  // dan pilihannya diingat per peramban.
+  const [closedGroups, setClosedGroups] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('erp_sidebar_groups_closed') || '[]') } catch { return [] }
+  })
+  const isGroupClosed = (name: string) => closedGroups.includes(name)
+  const toggleGroup = (name: string) => {
+    setClosedGroups((prev) => {
+      const next = prev.includes(name) ? prev.filter((g) => g !== name) : [...prev, name]
+      try { localStorage.setItem('erp_sidebar_groups_closed', JSON.stringify(next)) } catch { /* abaikan */ }
+      return next
+    })
+  }
   const [menuSearch, setMenuSearch] = useState('')
   const { hits: dataHits, loading: dataLoading } = useDataSearch(menuSearch)
   // Kalau sidebar dilebarkan otomatis gara-gara user klik menu-bersubmenu waktu lagi
@@ -737,7 +751,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             onPick={() => setMenuSearch('')}
           />
         ) : (
-        <div className="space-y-5">
+        <div className="space-y-4">
           {menuGroups
             .filter((group: any) => group.show === undefined || group.show)
             .map((group: any) => {
@@ -749,17 +763,30 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
 
               return (
                 <div key={group.groupName}>
-                  {/* Group Label */}
+                  {/* Judul kelompok: menempel di atas saat menu digulung, dan
+                      bisa diklik untuk melipat seluruh kelompoknya. */}
                   {group.groupName !== 'MAIN' && !collapsed && (
-                    <div className="flex items-center gap-2 px-3 mb-2 mt-1">
-                      <span className="fn-label whitespace-nowrap">
-                        {group.groupName}
-                      </span>
-                      <span className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(group.groupName)}
+                      aria-expanded={!isGroupClosed(group.groupName)}
+                      className="sticky top-0 z-10 -mx-1 mb-1.5 mt-1 flex w-[calc(100%+0.5rem)] items-center gap-2 px-4 py-1.5 text-left"
+                      style={{ backgroundColor: 'rgb(var(--sidebar-bg))' }}
+                      title={isGroupClosed(group.groupName) ? 'Buka kelompok' : 'Lipat kelompok'}
+                    >
+                      <span className="fn-label whitespace-nowrap">{group.groupName}</span>
+                      <span className="h-px flex-1 bg-gray-200 dark:bg-white/10" />
+                      <ChevronDownIcon className={clsx(
+                        'h-3.5 w-3.5 shrink-0 text-gray-400 transition-transform duration-200 dark:text-gray-500',
+                        isGroupClosed(group.groupName) && '-rotate-90',
+                      )} />
+                    </button>
                   )}
 
-                  <ul role="list" className="space-y-1">
+                  <ul role="list" className={clsx(
+                    'space-y-0.5',
+                    !collapsed && group.groupName !== 'MAIN' && isGroupClosed(group.groupName) && 'hidden',
+                  )}>
                     {visibleItems.map((item: any) => (
                       <li key={item.name}>
                         {item.children ? (
@@ -776,16 +803,16 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                               title={collapsed ? item.name : undefined}
                               className={clsx(
                                 hasActiveChild(item)
-                                  ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-200'
+                                  ? 'bg-gray-100 text-gray-900 dark:bg-white/[0.09] dark:text-white'
                                   : isExpanded(item.name.toLowerCase()) && !collapsed
-                                    ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
-                                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
-                                'group fn-press flex w-full items-center gap-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-150',
+                                    ? 'bg-gray-50 text-gray-900 dark:bg-white/[0.05] dark:text-white'
+                                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white dark:hover:bg-white/[0.06]',
+                                'group fn-press flex w-full items-center gap-x-2.5 rounded-lg px-2.5 py-2 text-[13.5px] font-medium transition-colors duration-150',
                                 collapsed && 'justify-center px-0'
                               )}
                             >
                               <item.icon className={clsx(
-                                'h-5 w-5 shrink-0 transition-colors duration-150',
+                                'h-[18px] w-[18px] shrink-0 transition-colors duration-150',
                                 isExpanded(item.name.toLowerCase()) && !collapsed || hasActiveChild(item)
                                   ? 'text-current'
                                   : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-200'
@@ -813,7 +840,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                               'overflow-hidden transition-all duration-200',
                               !collapsed && (isExpanded(item.name.toLowerCase()) || hasActiveChild(item)) ? 'max-h-[800px] opacity-100 mt-1' : 'max-h-0 opacity-0'
                             )}>
-                              <ul className="ml-4 border-l border-gray-200 dark:border-gray-700 pl-3 space-y-0.5">
+                              <ul className="ml-[18px] space-y-0.5 border-l border-gray-200 pl-3 dark:border-white/10">
                                 {item.children
                                   .filter((child: any) => !child.permission || canView(child.permission))
                                   .map((child: any) => (
@@ -825,11 +852,11 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                             onClick={() => toggleExpanded(`${item.name}-${child.name}`.toLowerCase())}
                                             className={clsx(
                                               hasActiveChild(child)
-                                                ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-200'
+                                                ? 'bg-gray-100 text-gray-900 dark:bg-white/[0.09] dark:text-white'
                                                 : isExpanded(`${item.name}-${child.name}`.toLowerCase())
-                                                  ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
-                                                  : 'text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
-                                              'group fn-press flex w-full items-center gap-x-2.5 rounded-xl py-2 px-2.5 text-sm font-medium transition-colors duration-150'
+                                                  ? 'bg-gray-50 text-gray-900 dark:bg-white/[0.05] dark:text-white'
+                                                  : 'text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white dark:hover:bg-white/[0.06]',
+                                              'group fn-press flex w-full items-center gap-x-2.5 rounded-lg py-1.5 px-2.5 text-[13px] font-medium transition-colors duration-150'
                                             )}
                                           >
                                             {child.icon && (
@@ -848,7 +875,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                             'overflow-hidden transition-all duration-200',
                                             isExpanded(`${item.name}-${child.name}`.toLowerCase()) || hasActiveChild(child) ? 'max-h-64 opacity-100 mt-0.5' : 'max-h-0 opacity-0'
                                           )}>
-                                            <ul className="ml-4 border-l border-gray-200 dark:border-gray-700 pl-3 space-y-0.5">
+                                            <ul className="ml-3 space-y-0.5 border-l border-gray-200 pl-3 dark:border-white/10">
                                               {child.subChildren?.map((subChild: any) => (
                                                 <li key={subChild.name}>
                                                   <NavLink
@@ -856,9 +883,9 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                                     className={
                                                       clsx(
                                                         isActivePath(subChild.href)
-                                                          ? 'bg-primary-600 text-white shadow-sm'
-                                                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800',
-                                                        'group flex items-center gap-x-2 rounded-lg py-1.5 px-2.5 text-[13px] transition-colors duration-150'
+                                                          ? 'bg-primary-600 text-white shadow-sm ring-1 ring-white/10'
+                                                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white dark:hover:bg-white/[0.06]',
+                                                        'group flex items-center gap-x-2 rounded-lg py-1.5 px-2.5 text-[12.5px] transition-colors duration-150'
                                                       )
                                                     }
                                                   >
@@ -881,9 +908,9 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                             aria-current={isActivePath(child.href) ? 'page' : undefined}
                                             className={clsx(
                                               isActivePath(child.href)
-                                                ? 'bg-primary-600 text-white shadow-sm'
-                                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
-                                              'group fn-press flex items-center gap-x-2.5 rounded-xl py-2 px-2.5 text-sm transition-colors duration-150 w-full text-left'
+                                                ? 'bg-primary-600 text-white shadow-sm ring-1 ring-white/10'
+                                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white dark:hover:bg-white/[0.06]',
+                                              'group fn-press flex items-center gap-x-2.5 rounded-lg py-1.5 px-2.5 text-[13px] transition-colors duration-150 w-full text-left'
                                             )}
                                           >
                                             {child.icon && <child.icon className="h-4 w-4 shrink-0" />}
@@ -896,9 +923,9 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                                             className={
                                               clsx(
                                                 isActivePath(child.href)
-                                                  ? 'bg-primary-600 text-white shadow-sm'
-                                                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
-                                                'group fn-press flex items-center gap-x-2.5 rounded-xl py-2 px-2.5 text-sm transition-colors duration-150'
+                                                  ? 'bg-primary-600 text-white shadow-sm ring-1 ring-white/10'
+                                                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white dark:hover:bg-white/[0.06]',
+                                                'group fn-press flex items-center gap-x-2.5 rounded-lg py-1.5 px-2.5 text-[13px] transition-colors duration-150'
                                               )
                                             }
                                           >
@@ -921,14 +948,14 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
                             className={
                               clsx(
                                 isActivePath(item.href)
-                                  ? 'bg-primary-600 text-white shadow-sm'
-                                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800',
-                                'group fn-press flex items-center gap-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-150',
+                                  ? 'bg-primary-600 text-white shadow-sm ring-1 ring-white/10'
+                                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white dark:hover:bg-white/[0.06]',
+                                'group fn-press flex items-center gap-x-2.5 rounded-lg px-2.5 py-2 text-[13.5px] font-medium transition-colors duration-150',
                                 collapsed && 'justify-center px-0'
                               )
                             }
                           >
-                            <item.icon className="h-5 w-5 shrink-0 transition-colors duration-150" strokeWidth={isActivePath(item.href) ? 2 : 1.5} aria-hidden="true" />
+                            <item.icon className="h-[18px] w-[18px] shrink-0 transition-colors duration-150" strokeWidth={isActivePath(item.href) ? 2 : 1.5} aria-hidden="true" />
                             {!collapsed && item.name}
                           </NavLink>
                         )}
