@@ -3,10 +3,10 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.auth_decorators import require_permission
 from models import db, Material, Product, BillOfMaterials, BOMItem, WorkOrder, SalesOrder, Inventory, Machine, PurchaseOrder
 from utils.forecast_helper import forecast_rows_in_range, iter_forecast_month_rows
-from sqlalchemy import func
+from sqlalchemy import func, or_, and_
 from utils.i18n import success_response, error_response, get_message
 from utils.helpers import get_setting_value
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from math import isnan, isinf
 import json
 from utils.timezone import get_local_now, get_local_today
@@ -793,17 +793,14 @@ def get_dashboard_metrics():
             WorkOrder.status.in_(['planned', 'released', 'in_progress'])
         ).count()
         
-        # Calculate material shortages (simplified for now)
-        material_shortages = 0
-        
-        # Calculate capacity utilization (simplified)
-        total_capacity = db.session.query(func.sum(Machine.capacity_per_hour)).scalar() or 0
-        if total_capacity > 0:
-            active_machines = Machine.query.filter_by(status='running').count()
-            total_machines = Machine.query.count()
-            capacity_utilization = (active_machines / total_machines * 100) if total_machines > 0 else 0
-        else:
-            capacity_utilization = 0
+        material_shortages = len(_material_di_bawah_minimum())
+
+        # Ini porsi mesin yang sedang jalan, bukan pemakaian kapasitas.
+        # Namanya dulu 'capacity_utilization' sehingga dashboard menyebutnya
+        # pemakaian kapasitas, padahal tidak ada kapasitas yang dihitung.
+        active_machines = Machine.query.filter_by(status='running').count()
+        total_machines = Machine.query.count()
+        machines_running_pct = (active_machines / total_machines * 100) if total_machines > 0 else 0
         
         # Calculate on-time delivery
         completed_on_time = WorkOrder.query.filter(
@@ -819,7 +816,9 @@ def get_dashboard_metrics():
             'completed_orders': completed_orders,
             'overdue_orders': overdue_orders,
             'material_shortages': material_shortages,
-            'capacity_utilization': round(capacity_utilization, 1),
+            'machines_running_pct': round(machines_running_pct, 1),
+            'machines_running': active_machines,
+            'machines_total': total_machines,
             'on_time_delivery': round(on_time_delivery, 1)
         }
         
@@ -894,45 +893,112 @@ def get_dashboard_demand_forecast():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+def _material_di_bawah_minimum():
+    """Material dan produk yang stoknya sudah di bawah batas minimum.
+
+    Dulu daftar ini ditulis kosong ("simplified for now") sehingga kartu
+    "Material Shortages" di dashboard MRP selalu 0 dan panelnya selalu
+    kosong, apa pun isi gudangnya.
+    """
+    kurang = []
+    produk = db.session.query(
+        Product.id, Product.code, Product.name,
+        func.sum(Inventory.quantity_on_hand), Product.min_stock_level,
+    ).join(Inventory, Inventory.product_id == Product.id).filter(
+        Product.min_stock_level > 0
+    ).group_by(Product.id, Product.code, Product.name, Product.min_stock_level).all()
+
+    material = db.session.query(
+        Material.id, Material.code, Material.name,
+        func.sum(Inventory.quantity_on_hand), Material.min_stock_level,
+    ).join(Inventory, Inventory.material_id == Material.id).filter(
+        Material.min_stock_level > 0
+    ).group_by(Material.id, Material.code, Material.name, Material.min_stock_level).all()
+
+    for baris in list(produk) + list(material):
+        _id, kode, nama, ada, minimum = baris
+        ada = float(ada or 0)
+        minimum = float(minimum or 0)
+        if ada <= minimum:
+            kurang.append({
+                'id': _id,
+                'code': kode,
+                'material_name': nama,
+                'required_qty': minimum,
+                'available_qty': ada,
+                'shortage_qty': max(0.0, minimum - ada),
+            })
+    return kurang
+
+
 @mrp_bp.route('/dashboard/capacity', methods=['GET'])
 @jwt_required()
 @require_permission('mrp.view')
 def get_dashboard_capacity():
     """Get capacity data for dashboard"""
     try:
-        # Get real capacity data from machines
+        # Kapasitas terpakai dihitung dari SPK yang benar-benar dijadwalkan di
+        # mesin itu hari ini. Sebelumnya rencana = kapasitas x 70%, jadi setiap
+        # mesin selalu menunjukkan angka yang sama persis (70,0%) dan "bottleneck"
+        # tidak pernah mungkin menyala.
         capacity = []
-        
+
         machines = Machine.query.filter_by(is_active=True).all()
-        
+        hari_ini = get_local_now().date()
+        awal_hari = datetime.combine(hari_ini, time.min)
+        akhir_hari = datetime.combine(hari_ini, time.max)
+
+        STATUS_TERBUKA = ('planned', 'released', 'in_progress')
+
+        # Sisa kuantitas SPK yang membebani mesin hari ini: yang jadwalnya
+        # melewati hari ini, ditambah yang sudah mulai dikerjakan dan belum
+        # selesai (lewat jadwal pun pekerjaannya masih memakai mesin).
+        rencana_per_mesin = dict(
+            db.session.query(
+                WorkOrder.machine_id,
+                func.sum(
+                    func.coalesce(WorkOrder.quantity, 0) - func.coalesce(WorkOrder.quantity_produced, 0)
+                ),
+            )
+            .filter(
+                WorkOrder.machine_id.isnot(None),
+                WorkOrder.status.in_(STATUS_TERBUKA),
+                or_(
+                    WorkOrder.status == 'in_progress',
+                    and_(
+                        WorkOrder.scheduled_start_date <= akhir_hari,
+                        func.coalesce(WorkOrder.scheduled_end_date, WorkOrder.scheduled_start_date) >= awal_hari,
+                    ),
+                ),
+            )
+            .group_by(WorkOrder.machine_id)
+            .all()
+        )
+
+        shift_hours = float(get_setting_value('production.shift2_runtime', 480)) / 60.0
+        bottleneck_threshold = float(get_setting_value('mrp.bottleneck_utilization_pct', 95.0))
+
         for machine in machines:
             try:
-                # Calculate available capacity (hours per day) - ensure valid number
-                machine_capacity = getattr(machine, 'capacity_per_hour', 100) or 100
-                shift_hours = float(get_setting_value('production.shift2_runtime', 480)) / 60.0 # fallback to shift 2 = 8 hours
-                available_capacity = float(machine_capacity) * shift_hours
-                
-                # Calculate planned capacity from work orders (simplified to avoid date issues)
-                planned_util_rate = float(get_setting_value('mrp.planned_utilization_pct', 70.0)) / 100.0
-                planned_capacity = available_capacity * planned_util_rate
-                
-                # Calculate utilization percentage
-                utilization_percent = (planned_capacity / available_capacity * 100) if available_capacity > 0 else 0
-                
-                # Ensure all values are valid numbers
-                available_capacity = float(available_capacity) if not (isnan(available_capacity) or isinf(available_capacity)) else 100.0
-                planned_capacity = float(planned_capacity) if not (isnan(planned_capacity) or isinf(planned_capacity)) else 70.0
-                utilization_percent = float(utilization_percent) if not (isnan(utilization_percent) or isinf(utilization_percent)) else 70.0
-                
-                bottleneck_threshold = float(get_setting_value('mrp.bottleneck_utilization_pct', 95.0))
-                bottleneck = utilization_percent > bottleneck_threshold
-                
+                per_jam = getattr(machine, 'capacity_per_hour', None)
+                # Mesin yang kapasitasnya belum diisi tidak boleh dikarang 100/jam;
+                # lebih baik jujur bahwa angkanya belum ada.
+                available_capacity = float(per_jam) * shift_hours if per_jam else None
+                planned_capacity = float(rencana_per_mesin.get(machine.id) or 0)
+
+                utilization_percent = (
+                    round(planned_capacity / available_capacity * 100, 1)
+                    if available_capacity else None
+                )
+
                 capacity.append({
                     'resource': f"{machine.name} ({machine.code})" if hasattr(machine, 'name') and hasattr(machine, 'code') else f"Machine {machine.id}",
-                    'available_capacity': round(available_capacity, 1),
+                    'available_capacity': round(available_capacity, 1) if available_capacity else None,
                     'planned_capacity': round(planned_capacity, 1),
-                    'utilization_percent': round(utilization_percent, 1),
-                    'bottleneck': bottleneck
+                    'utilization_percent': utilization_percent,
+                    'capacity_not_set': available_capacity is None,
+                    'bottleneck': utilization_percent is not None and utilization_percent > bottleneck_threshold,
                 })
             except Exception as machine_error:
                 print(f"Error processing machine {machine.id}: {machine_error}")
@@ -957,43 +1023,33 @@ def get_dashboard_capacity():
 def get_dashboard_material_shortages():
     """Get material shortages for dashboard"""
     try:
-        # Get real material shortage data
         shortages = []
-        
-        # Find materials with stock below minimum level (simplified for now)
-        # Note: This requires proper Material-Inventory relationship
-        materials_with_shortage = []
-        
-        for material_id, material_name, min_stock, available_qty in materials_with_shortage:
-            shortage_qty = max(0, min_stock - available_qty)
-            
-            # Determine impact level based on shortage percentage
-            shortage_percent = (shortage_qty / min_stock * 100) if min_stock > 0 else 100
-            
-            if shortage_percent >= 80:
+
+        for kurang in _material_di_bawah_minimum():
+            minimum = kurang['required_qty']
+            persen = (kurang['shortage_qty'] / minimum * 100) if minimum > 0 else 100
+
+            if persen >= 80:
                 impact_level = 'critical'
-            elif shortage_percent >= 50:
+            elif persen >= 50:
                 impact_level = 'high'
-            elif shortage_percent >= 20:
+            elif persen >= 20:
                 impact_level = 'medium'
             else:
                 impact_level = 'low'
-            
-            # Get expected delivery from purchase orders (simplified for now)
-            next_po = None
-            
-            expected_delivery = next_po.expected_delivery_date.isoformat() if next_po and next_po.expected_delivery_date else None
-            
+
             shortages.append({
-                'id': material_id,
-                'material_name': material_name,
-                'required_qty': int(min_stock),
-                'available_qty': int(available_qty),
-                'shortage_qty': int(shortage_qty),
+                'id': kurang['id'],
+                'material_name': kurang['material_name'],
+                'required_qty': int(kurang['required_qty']),
+                'available_qty': int(kurang['available_qty']),
+                'shortage_qty': int(kurang['shortage_qty']),
                 'impact_level': impact_level,
-                'expected_delivery': expected_delivery
+                'expected_delivery': None,
             })
-        
+
+        shortages.sort(key=lambda r: r['shortage_qty'], reverse=True)
+
         return jsonify({'shortages': shortages}), 200
         
     except Exception as e:

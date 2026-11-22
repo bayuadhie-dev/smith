@@ -18,6 +18,7 @@ import {
 
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { PageHeader, KpiStrip } from '../../components/ui/PageKit';
 
 interface TimePhasedContributor {
   // 'type' dan field forecast_* baru dari Safety Stock (opsional - baris lama dari
@@ -52,7 +53,9 @@ interface MRPMetrics {
   completed_orders?: number;
   overdue_orders?: number;
   material_shortages?: number;
-  capacity_utilization?: number;
+  machines_running_pct?: number;
+  machines_running?: number;
+  machines_total?: number;
   on_time_delivery?: number;
 }
 
@@ -90,6 +93,14 @@ interface PlanningTimeline {
   capacity_available?: number;
 }
 
+// null/undefined/NaN tetap null supaya layar bisa bilang "belum ada angka"
+// alih-alih menampilkan nol yang kelihatan seperti data sungguhan.
+const angkaAtauNull = (v: any): number | null => {
+  if (v === null || v === undefined || v === '') return null
+  const n = Number(v)
+  return Number.isFinite(n) ? n : null
+}
+
 const MRPDashboard: React.FC = () => {
   const { t } = useLanguage();
 
@@ -100,7 +111,9 @@ const MRPDashboard: React.FC = () => {
     completed_orders: 0,
     overdue_orders: 0,
     material_shortages: 0,
-    capacity_utilization: 0,
+    machines_running_pct: 0,
+    machines_running: 0,
+    machines_total: 0,
     on_time_delivery: 0
   });
 
@@ -185,64 +198,25 @@ const MRPDashboard: React.FC = () => {
       }));
       setDemandForecast(cleanDemandForecast);
       
-      // Validate and clean capacity data
-      const cleanCapacityData = (capacityRes.data?.capacity || [])
+      // Angka kapasitas dipakai apa adanya. Dulu blok "ultra safe" di sini
+      // menukar nilai yang tidak lolos pemeriksaan dengan 100/80/80, dan
+      // kalau satu baris saja gagal, seluruh daftar diganti tiga mesin
+      // karangan ("Machine A/B/C"). Akibatnya mesin yang kapasitasnya belum
+      // diatur tampil 80% dan mesin yang bebannya 427% juga tampil 80%.
+      const capacityBersih = (capacityRes.data?.capacity || [])
         .filter((item: any) => item.resource && typeof item.resource === 'string')
-        .map((item: any) => {
-          const cleanItem = {
-            ...item,
-            available_capacity: validateNumber(item.available_capacity),
-            planned_capacity: validateNumber(item.planned_capacity),
-            utilization_percent: validateNumber(item.utilization_percent)
-          };
-          
-          // Extra validation to ensure no NaN values
-          Object.keys(cleanItem).forEach(key => {
-            if (typeof cleanItem[key] === 'number' && (isNaN(cleanItem[key]) || !isFinite(cleanItem[key]))) {
-              cleanItem[key] = 0;
-            }
-          });
-          
-          return cleanItem;
-        });
-      console.log('Raw Capacity Data:', capacityRes.data?.capacity);
-      console.log('Clean Capacity Data:', cleanCapacityData);
-      
-      // Ultra-safe validation - ensure all numeric values are valid
-      const ultraSafeCapacityData = cleanCapacityData.map((item: any) => {
-        // Convert all values to numbers and validate
-        const available = parseFloat(item.available_capacity);
-        const planned = parseFloat(item.planned_capacity);
-        const utilization = parseFloat(item.utilization_percent);
-        
-        return {
-          resource: String(item.resource || 'Unknown'),
-          available_capacity: (Number.isFinite(available) && available >= 0) ? available : 100,
-          planned_capacity: (Number.isFinite(planned) && planned >= 0) ? planned : 80,
-          utilization_percent: (Number.isFinite(utilization) && utilization >= 0 && utilization <= 200) ? utilization : 80,
-          bottleneck: Boolean(item.bottleneck)
-        };
-      });
-      
-      console.log('Ultra Safe Capacity Data:', ultraSafeCapacityData);
-      
-      // Always use fallback data to prevent NaN issues
-      const fallbackCapacityData = [
-        { resource: 'Machine A', available_capacity: 100, planned_capacity: 80, utilization_percent: 80, bottleneck: false },
-        { resource: 'Machine B', available_capacity: 100, planned_capacity: 60, utilization_percent: 60, bottleneck: false },
-        { resource: 'Machine C', available_capacity: 100, planned_capacity: 90, utilization_percent: 90, bottleneck: true }
-      ];
-      
-      // Use real data if available and valid, otherwise use fallback
-      const finalCapacityData = ultraSafeCapacityData.length > 0 && 
-        ultraSafeCapacityData.every((item: any) => 
-          Number.isFinite(item.utilization_percent) && 
-          Number.isFinite(item.available_capacity) && 
-          Number.isFinite(item.planned_capacity)
-        ) ? ultraSafeCapacityData : fallbackCapacityData;
-      
-      setCapacityData(finalCapacityData);
-      
+        .map((item: any) => ({
+          resource: String(item.resource),
+          // null berarti "belum diatur", bukan nol.
+          available_capacity: angkaAtauNull(item.available_capacity),
+          planned_capacity: angkaAtauNull(item.planned_capacity) ?? 0,
+          utilization_percent: angkaAtauNull(item.utilization_percent),
+          capacity_not_set: Boolean(item.capacity_not_set),
+          bottleneck: Boolean(item.bottleneck),
+        }));
+
+      setCapacityData(capacityBersih);
+
       setMaterialShortages(shortagesRes.data?.shortages || []);
       
       // Validate and clean timeline data
@@ -492,141 +466,124 @@ const MRPDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex flex-wrap justify-between items-center gap-3">
-        <div className="mb-6">
-          <div className="fn-label mb-1.5">MRP · RINGKASAN</div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">MRP</h1>
-          <p className="text-gray-600 dark:text-gray-300">Integrated production planning and material requirements analysis</p>
-          <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-            <span className="flex items-center">
-              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-              Production Integration
-            </span>
-            <span className="flex items-center">
-              <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-              Purchasing Integration
-            </span>
-            <span className="flex items-center">
-              <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-              Warehouse Integration
-            </span>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            to="/app/production/demand-planning"
-            className="flex items-center px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
-          >
-            <ChartBarIcon className="h-4 w-4 mr-2" />
-            Demand Planning
-          </Link>
-          <Link
-            to="/app/production/capacity-planning"
-            className="flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
-          >
-            <CogIcon className="h-4 w-4 mr-2" />
-            Capacity Planning
-          </Link>
-          <Link
-            to="/app/production/material-requirements"
-            className="flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
-          >
-            <CubeIcon className="h-4 w-4 mr-2" />
-            Material Requirements
-          </Link>
-          <Link
-            to="/app/purchasing/supplier-integration"
-            className="flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
-          >
-            <TruckIcon className="h-4 w-4 mr-2" />
-            Supplier Integration
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="MRP · RINGKASAN"
+        title="Perencanaan Kebutuhan Material"
+        subtitle="Rencana produksi dan kebutuhan material dari satu tempat."
+        actions={
+          <>
+            <Link
+              to="/app/production/demand-planning"
+              className="fn-press inline-flex items-center gap-2 rounded-lg bg-cta-600 px-4 py-2 text-sm font-medium text-white hover:bg-cta-700"
+            >
+              <ChartBarIcon className="h-4 w-4" />
+              Rencana Permintaan
+            </Link>
+            <Link
+              to="/app/production/capacity-planning"
+              className="fn-press inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              <CogIcon className="h-4 w-4" />
+              Kapasitas
+            </Link>
+            <Link
+              to="/app/production/material-requirements"
+              className="fn-press inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              <CubeIcon className="h-4 w-4" />
+              Kebutuhan Material
+            </Link>
+            <Link
+              to="/app/purchasing/supplier-integration"
+              className="fn-press inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              <TruckIcon className="h-4 w-4" />
+              Pemasok
+            </Link>
+          </>
+        }
+      />
 
-      {/* KPI Cards - bento: Total SPK spans 2 cols (primary metric) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg"><CubeIcon className="w-5 h-5" /></div>
-            <p className="text-sm opacity-90">Total SPK</p>
-          </div>
-          <p className="text-3xl font-bold">{formatNumber(metrics.total_work_orders)}</p>
-          <p className="text-xs opacity-75 mt-1">
-            {metrics.in_progress_orders} In Progress &middot; {metrics.completed_orders} Completed
-          </p>
-        </div>
-
-        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg"><ExclamationTriangleIcon className="w-5 h-5" /></div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Material Shortages</p>
-          <p className="text-2xl font-bold">{formatNumber(metrics.material_shortages)}</p>
-          <Link to="/app/mrp/material-requirements" className="text-xs underline opacity-90 hover:opacity-100">
-            View Details →
-          </Link>
-        </div>
-
-        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg"><BuildingOfficeIcon className="w-5 h-5" /></div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Capacity Utilization</p>
-          <p className="text-2xl font-bold">{formatPercent(metrics.capacity_utilization)}</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg"><CheckCircleIcon className="w-5 h-5" /></div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">On-Time Delivery</p>
-          <p className="text-2xl font-bold">{formatPercent(metrics.on_time_delivery)}</p>
-          <p className="text-xs opacity-75 mt-1">{metrics.overdue_orders} Overdue</p>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          {
+            label: 'Total SPK',
+            value: formatNumber(metrics.total_work_orders),
+            hint: `${metrics.in_progress_orders} dikerjakan \u00b7 ${metrics.completed_orders} selesai`,
+          },
+          {
+            label: 'Material kurang',
+            value: formatNumber(metrics.material_shortages),
+            tone: metrics.material_shortages > 0 ? 'bad' : null,
+            to: '/app/mrp/material-requirements',
+          },
+          {
+            label: 'Mesin jalan',
+            value: `${metrics.machines_running ?? 0} / ${metrics.machines_total ?? 0}`,
+            hint: formatPercent(metrics.machines_running_pct),
+          },
+          {
+            label: 'Pengiriman tepat waktu',
+            value: formatPercent(metrics.on_time_delivery),
+            hint: `${metrics.overdue_orders} lewat tempo`,
+            tone: metrics.overdue_orders > 0 ? 'warn' : 'good',
+          },
+        ]}
+      />
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Capacity Utilization - Custom Bar Chart */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 dark:text-white">Resource Capacity Utilization</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 dark:text-white">Pemakaian Kapasitas Mesin</h3>
           {capacityData.length > 0 ? (
             <div className="space-y-4">
               {capacityData.map((item: any, index: number) => {
-                // Ultra-safe value extraction
-                const utilization = Math.max(0, Math.min(100, Number(item.utilization_percent) || 0));
-                const resource = String(item.resource || `Machine ${index + 1}`);
+                const resource = String(item.resource || `Mesin ${index + 1}`);
+                // Mesin yang kapasitas per jamnya belum diisi tidak punya angka
+                // pemakaian - jangan digambar sebagai 0% seolah-olah menganggur.
+                const belumDiatur = item.capacity_not_set || item.utilization_percent === null;
+                // Angka yang ditampilkan adalah angka sebenarnya; yang dijepit
+                // ke 0-100 hanya lebar batangnya. Beban 427% itu nyata (SPK
+                // menumpuk), jadi jangan ditulis 100%.
+                const utilization = belumDiatur ? 0 : Number(item.utilization_percent) || 0;
+                const lebarBatang = Math.max(0, Math.min(100, utilization));
                 const isBottleneck = Boolean(item.bottleneck);
-                
+
                 return (
                   <div key={index} className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{resource}</span>
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-600 dark:text-gray-300">{utilization.toFixed(1)}%</span>
+                        {belumDiatur ? (
+                          <span className="text-xs text-gray-400">kapasitas belum diatur</span>
+                        ) : (
+                          <span className="fn-num text-sm text-gray-600 dark:text-gray-300">{utilization.toFixed(1)}%</span>
+                        )}
                         {isBottleneck && (
-                          <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full dark:bg-red-900/30 dark:text-red-300">
+                          <span className="px-2 py-0.5 text-xs bg-red-100 text-red-800 rounded-full dark:bg-red-900/30 dark:text-red-300">
+                            Bottleneck
                           </span>
                         )}
                       </div>
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                      <div 
-                        className={`h-3 rounded-full transition-all duration-300 ${
-                          utilization > 90 ? 'bg-red-500' :
-                          utilization > 75 ? 'bg-yellow-500' :
-                          'bg-green-500'
-                        }`}
-                        style={{ width: `${utilization}%` }}
-                      />
+                      {!belumDiatur && (
+                        <div
+                          className={`h-3 rounded-full transition-all duration-300 ${
+                            utilization > 90 ? 'bg-red-500' :
+                            utilization > 75 ? 'bg-yellow-500' :
+                            'bg-green-500'
+                          }`}
+                          style={{ width: `${lebarBatang}%` }}
+                        />
+                      )}
                     </div>
                     <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-                      <span>Available: {Number(item.available_capacity || 0).toFixed(0)}</span>
-                      <span>Planned: {Number(item.planned_capacity || 0).toFixed(0)}</span>
+                      <span>
+                        Kapasitas sehari: {belumDiatur ? '-' : Number(item.available_capacity || 0).toLocaleString('id-ID')}
+                      </span>
+                      <span>Dijadwalkan: {Number(item.planned_capacity || 0).toLocaleString('id-ID')}</span>
                     </div>
                   </div>
                 );
@@ -636,7 +593,7 @@ const MRPDashboard: React.FC = () => {
             <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
               <div className="text-center">
                 <CubeIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p>No capacity data available</p>
+                <p>Belum ada data kapasitas</p>
               </div>
             </div>
           )}
