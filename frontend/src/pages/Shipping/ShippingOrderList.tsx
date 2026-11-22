@@ -32,7 +32,10 @@ export default function ShippingOrderList() {
   return (
     <div className="space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Surat Jalan</h1>
+        <div>
+          <div className="fn-label mb-1.5">PENGIRIMAN · SURAT JALAN</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Surat Jalan</h1>
+        </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Link to="/app/imports?kind=shipping_order" className="btn-secondary">Impor</Link>
           <Link to="/app/shipping/orders/new" className="btn-primary">

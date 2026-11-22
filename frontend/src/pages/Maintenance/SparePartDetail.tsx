@@ -61,6 +61,7 @@ const SparePartDetail = () => {
   return (
     <div className="space-y-4 p-6">
       <PageHeader
+        eyebrow="PERAWATAN · SUKU CADANG"
         title={`${part.part_number} · ${part.part_name}`}
         subtitle={[part.category, part.warehouse_location ? `Rak ${part.warehouse_location}` : null].filter(Boolean).join(' · ') || undefined}
         actions={<Link to="/app/maintenance/spare-parts" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Kembali ke daftar</Link>}

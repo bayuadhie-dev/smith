@@ -18,8 +18,8 @@ const MachineParts = () => {
   }, [])
 
   return (
-    <div className="space-y-4 p-6">
-      <PageHeader title="Sparepart per Mesin" subtitle="Daftar sparepart yang terpasang di tiap mesin, beserta interval penggantian dan stoknya" />
+    <div className="mx-auto max-w-6xl space-y-4 pb-10">
+      <PageHeader eyebrow="PERAWATAN · SUKU CADANG MESIN" title="Suku Cadang per Mesin" subtitle="Suku cadang yang terpasang di tiap mesin, berikut jarak penggantian dan stoknya." />
       <Panel title="Pilih mesin">
         <div className="max-w-md p-4">
           <SearchableSelect
@@ -33,7 +33,7 @@ const MachineParts = () => {
       {machineId ? (
         <MachinePartsPanel key={machineId} machineId={machineId} />
       ) : (
-        <p className="text-sm text-gray-500 dark:text-gray-400">Pilih mesin untuk melihat daftar sparepart-nya.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Pilih mesin untuk melihat daftar suku cadangnya.</p>
       )}
     </div>
   )

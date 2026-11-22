@@ -122,7 +122,10 @@ export default function LogisticsProviders() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Kelola Provider Logistik</h1>
+        <div>
+          <div className="fn-label mb-1.5">PENGIRIMAN · EKSPEDISI</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Kelola Provider Logistik</h1>
+        </div>
         <div className="flex items-center gap-4 flex-wrap">
           <button
             onClick={() => navigate('/app/shipping')}
@@ -173,10 +176,10 @@ export default function LogisticsProviders() {
                   onChange={handleInputChange}
                   className="input"
                 >
-                  <option value="regular">Regular</option>
-                  <option value="express">Express</option>
-                  <option value="same_day">Same Day</option>
-                  <option value="next_day">Next Day</option>
+                  <option value="regular">Reguler</option>
+                  <option value="express">Ekspres</option>
+                  <option value="same_day">Hari yang sama</option>
+                  <option value="next_day">Hari berikutnya</option>
                 </select>
               </div>
 

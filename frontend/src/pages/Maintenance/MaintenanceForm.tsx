@@ -272,6 +272,7 @@ const MaintenanceForm: React.FC = () => {
   return (
     <div className="space-y-4 p-6">
       <PageHeader
+        eyebrow="PERAWATAN · CATATAN"
         title={isEdit ? 'Ubah SPK Perawatan' : 'SPK Perawatan Baru'}
         subtitle={isEdit ? 'Perbarui rincian pekerjaan perawatan' : 'Jadwalkan pekerjaan perawatan mesin'}
         actions={<Link to="/app/maintenance/records" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Kembali ke daftar</Link>}
@@ -363,10 +364,10 @@ const MaintenanceForm: React.FC = () => {
 
           <Panel
             title="Sparepart yang dibutuhkan"
-            action={<button type="button" onClick={addPart} className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400"><Plus className="h-3.5 w-3.5" /> Tambah sparepart</button>}
+            action={<button type="button" onClick={addPart} className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-400"><Plus className="h-3.5 w-3.5" /> Tambah suku cadang</button>}
           >
             {formData.required_parts.length === 0 ? (
-              <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Belum ada sparepart. Pilih "Tambah sparepart" untuk mencatat kebutuhannya.</p>
+              <p className="p-4 text-sm text-gray-500 dark:text-gray-400">Belum ada suku cadang. Pilih "Tambah suku cadang" untuk mencatat kebutuhannya.</p>
             ) : (
               <div className="overflow-x-auto">
                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -385,7 +386,7 @@ const MaintenanceForm: React.FC = () => {
                                 : p)
                             }));
                           }}
-                          placeholder="Pilih sparepart dari gudang sparepart"
+                          placeholder="Pilih suku cadang dari gudang"
                         />
                         {part.spare_part_id ? (() => {
                           const sp = spareParts.find((x) => x.id === part.spare_part_id);
@@ -394,7 +395,7 @@ const MaintenanceForm: React.FC = () => {
                       </div>
                       <NumberInput placeholder="Jumlah" value={part.quantity} onChange={(e) => updatePart(index, 'quantity', parseFloat(e.target.value) || 0)} min="1" className={`${inputCls} col-span-5 text-right md:col-span-2`} />
                       <NumberInput currency placeholder="Harga satuan" value={part.unit_cost} onChange={(e) => updatePart(index, 'unit_cost', parseFloat(e.target.value) || 0)} min="0" className={`${inputCls} col-span-6 text-right md:col-span-4`} />
-                      <button type="button" onClick={() => removePart(index)} className="col-span-1 text-gray-400 hover:text-red-600" title="Hapus sparepart"><Trash2 className="mx-auto h-4 w-4" /></button>
+                      <button type="button" onClick={() => removePart(index)} className="col-span-1 text-gray-400 hover:text-red-600" title="Hapus suku cadang"><Trash2 className="mx-auto h-4 w-4" /></button>
                     </div>
                   ))}
                 </div>
@@ -417,7 +418,7 @@ const MaintenanceForm: React.FC = () => {
               <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Prioritas</dt><dd className="font-medium">{priorityLabel}</dd></div>
               <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Tanggal</dt><dd className="font-medium">{formData.scheduled_date || '-'}</dd></div>
               <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Langkah</dt><dd className="font-medium">{formData.tasks.length}{tasksHours > 0 ? ` (${tasksHours} jam)` : ''}</dd></div>
-              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Nilai sparepart</dt><dd className="font-medium tabular-nums">Rp {partsTotal.toLocaleString('id-ID')}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-gray-500 dark:text-gray-400">Nilai suku cadang</dt><dd className="font-medium tabular-nums">Rp {partsTotal.toLocaleString('id-ID')}</dd></div>
             </dl>
             <div className="space-y-2 border-t border-gray-200 p-4 dark:border-gray-700">
               {!formData.machine_id && <p className="text-sm text-amber-700 dark:text-amber-400">Pilih mesin dulu.</p>}

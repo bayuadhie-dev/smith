@@ -130,7 +130,7 @@ const SparePartRequests = () => {
   const approve = async () => {
     if (!detail) return
     const ok = await confirmDialog(
-      `Setujui ${detail.request_number}? Stok sparepart langsung berkurang sesuai jumlah yang diminta dan tidak bisa dibatalkan dari sini.`,
+      `Setujui ${detail.request_number}? Stok suku cadang langsung berkurang sesuai jumlah yang diminta dan tidak bisa dibatalkan dari sini.`,
     )
     if (ok) act('approve')
   }
@@ -143,8 +143,9 @@ const SparePartRequests = () => {
   return (
     <div className="space-y-4 p-6">
       <PageHeader
-        title="Permintaan Sparepart"
-        subtitle="Permintaan sparepart dari mekanik. Disetujui oleh kepala maintenance, stok berkurang saat disetujui."
+        eyebrow="PERAWATAN · PERMINTAAN SUKU CADANG"
+        title="Permintaan Suku Cadang"
+        subtitle="Permintaan suku cadang dari mekanik. Disetujui kepala perawatan, stok berkurang begitu disetujui."
         actions={<Link to="/app/maintenance/parts-requests/new" className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Permintaan baru</Link>}
       />
 

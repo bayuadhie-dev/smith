@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import api from '../../utils/axiosConfig';
-import { PageHeader, KpiStrip, QuickLinks } from '../../components/ui/PageKit';
+import { PageHeader, KpiStrip, Panel, QuickLinks } from '../../components/ui/PageKit';
+import RunChart from '../../components/charts/RunChart';
 import {
   ArrowPathIcon as Activity,
   ArrowDownTrayIcon,
@@ -186,9 +186,34 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
     );
   }
 
+  const labelStatus: Record<string, string> = {
+    scheduled: 'Dijadwalkan',
+    in_progress: 'Dikerjakan',
+    completed: 'Selesai',
+    cancelled: 'Dibatalkan',
+    pending: 'Menunggu',
+    overdue: 'Terlambat',
+  };
+
+  const labelJenis: Record<string, string> = {
+    preventive: 'Terencana',
+    corrective: 'Perbaikan',
+    emergency: 'Darurat',
+    predictive: 'Prediktif',
+    inspection: 'Pemeriksaan',
+  };
+
+  const labelTingkat: Record<string, string> = {
+    low: 'rendah',
+    medium: 'sedang',
+    high: 'tinggi',
+    critical: 'kritis',
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
+        eyebrow="PERAWATAN · RINGKASAN"
         title="Dashboard Perawatan"
         subtitle="Kinerja mesin dan aktivitas perawatan"
         actions={
@@ -223,51 +248,51 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
         ]}
       />
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Tren perawatan */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Tren perawatan</h3>
-            <ChartBarIcon className="h-5 w-5 text-gray-400" />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Panel title="Tren perawatan">
+          <div className="px-4 pb-3 pt-1">
+            {trends.length === 0 ? (
+              <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada catatan perawatan pada rentang ini.</p>
+            ) : (
+              <RunChart
+                values={trends.map((t: any) => Number(t.preventive || 0) + Number(t.corrective || 0) + Number(t.emergency || 0))}
+                axis={Array.from(new Set([0, Math.floor(trends.length / 2), trends.length - 1]))
+                  .map((i: number) => String((trends[i] as any)?.month || ''))
+                  .filter(Boolean)}
+                rows={[
+                  { label: 'Terencana', values: trends.map((t: any) => Number(t.preventive || 0)) },
+                  { label: 'Perbaikan', values: trends.map((t: any) => Number(t.corrective || 0)) },
+                  { label: 'Darurat', values: trends.map((t: any) => Number(t.emergency || 0)) },
+                ]}
+                height={220}
+                unit="kegiatan"
+              />
+            )}
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={trends}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Area type="monotone" dataKey="preventive" stackId="1" stroke="#10B981" fill="#10B981" />
-              <Area type="monotone" dataKey="corrective" stackId="1" stroke="#F59E0B" fill="#F59E0B" />
-              <Area type="monotone" dataKey="emergency" stackId="1" stroke="#EF4444" fill="#EF4444" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+        </Panel>
 
-        {/* Analisis biaya */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Analisis biaya</h3>
-            <ArrowTrendingUpIcon className="h-5 w-5 text-gray-400" />
+        <Panel title="Biaya perawatan">
+          <div className="px-4 pb-3 pt-1">
+            {trends.length === 0 ? (
+              <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada biaya tercatat pada rentang ini.</p>
+            ) : (
+              <RunChart
+                values={trends.map((t: any) => Number(t.cost || 0))}
+                axis={Array.from(new Set([0, Math.floor(trends.length / 2), trends.length - 1]))
+                  .map((i: number) => String((trends[i] as any)?.month || ''))
+                  .filter(Boolean)}
+                height={220}
+                unit="rupiah"
+              />
+            )}
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={trends}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-              <Legend />
-              <Line type="monotone" dataKey="cost" stroke="#3B82F6" strokeWidth={3} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        </Panel>
       </div>
 
       {/* Alerts and SPK */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Peringatan aktif */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div className="fn-card p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Peringatan aktif</h3>
             <AlertTriangle className="h-5 w-5 text-gray-400" />
@@ -283,7 +308,7 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
               alerts.slice(0, 5).map((alert) => (
                 <div key={alert.id} className="flex items-start space-x-3 p-3 rounded-lg border">
                   <div className={`px-2 py-1 rounded-full text-xs font-medium ${getSeverityColor(alert.severity)}`}>
-                    {alert.severity.toUpperCase()}
+                    {(labelTingkat[alert.severity] || alert.severity).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">{alert.machine_name}</p>
@@ -299,7 +324,7 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
         </div>
 
         {/* SPK terbaru */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div className="fn-card p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">SPK terbaru</h3>
             <Settings className="h-5 w-5 text-gray-400" />
@@ -318,12 +343,12 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
                     <div className="flex items-center space-x-2">
                       <p className="text-sm font-medium text-gray-900 dark:text-white">{order.record_number}</p>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                        {order.status}
+                        {labelStatus[order.status] || order.status}
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-300">{order.machine_name}</p>
                     <p className="text-xs text-gray-400">
-                      {order.maintenance_type} • {order.assigned_to}
+                      {labelJenis[order.maintenance_type] || order.maintenance_type} • {order.assigned_to}
                     </p>
                   </div>
                   <div className="text-right">
@@ -340,7 +365,7 @@ const MaintenanceDashboardEnhanced: React.FC = () => {
       </div>
 
       {/* Kinerja mesin */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className="fn-card p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Kinerja mesin</h3>
           <div className="flex items-center gap-2">

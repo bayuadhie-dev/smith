@@ -71,12 +71,12 @@ const ShippingReportsForm: React.FC = () => {
   const [carriers, setCarriers] = useState<string[]>([]);
 
   const reportTypes = [
-    { value: 'summary', label: 'Summary Report', icon: ChartBarIcon },
-    { value: 'performance', label: 'Performance Report', icon: ArrowTrendingUpIcon },
-    { value: 'cost_analysis', label: 'Cost Analysis', icon: CurrencyDollarIcon },
-    { value: 'carrier_comparison', label: 'Carrier Comparison', icon: TruckIcon },
-    { value: 'customer_analysis', label: 'Customer Analysis', icon: UsersIcon },
-    { value: 'detailed', label: 'Detailed Report', icon: DocumentTextIcon }
+    { value: 'summary', label: 'Ringkasan', icon: ChartBarIcon },
+    { value: 'performance', label: 'Kinerja pengantaran', icon: ArrowTrendingUpIcon },
+    { value: 'cost_analysis', label: 'Analisis biaya', icon: CurrencyDollarIcon },
+    { value: 'carrier_comparison', label: 'Perbandingan ekspedisi', icon: TruckIcon },
+    { value: 'customer_analysis', label: 'Analisis pelanggan', icon: UsersIcon },
+    { value: 'detailed', label: 'Rincian', icon: DocumentTextIcon }
   ];
 
   const statusOptions = [
@@ -217,8 +217,11 @@ const ShippingReportsForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Shipping Reports</h1>
-          <p className="text-gray-600 dark:text-gray-300">Generate comprehensive shipping and delivery reports</p>
+          <div>
+            <div className="fn-label mb-1.5">PENGIRIMAN · LAPORAN</div>
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Laporan Pengiriman</h1>
+          </div>
+          <p className="text-gray-600 dark:text-gray-300">Ringkasan pengiriman dan kinerja pengantaran.</p>
         </div>
         
         {reportData && (
@@ -235,23 +238,23 @@ const ShippingReportsForm: React.FC = () => {
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
             >
               <ArrowDownTrayIcon className="inline h-4 w-4 mr-2" />
-              Export PDF
+              Ekspor PDF
             </button>
           </div>
         )}
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div className="fn-card p-6">
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
           <FunnelIcon className="inline h-4 w-4 mr-1" />
-          Report Filters
+          Penyaring laporan
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              Report Type
+              Jenis laporan
             </label>
             <select
               name="report_type"
@@ -269,7 +272,7 @@ const ShippingReportsForm: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              From Date
+              Dari tanggal
             </label>
             <input
               type="date"
@@ -282,7 +285,7 @@ const ShippingReportsForm: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              To Date
+              Sampai tanggal
             </label>
             <input
               type="date"
@@ -295,6 +298,7 @@ const ShippingReportsForm: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+              Pelanggan
             </label>
             <select
               name="customer_id"
@@ -302,7 +306,7 @@ const ShippingReportsForm: React.FC = () => {
               onChange={handleFilterChange}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">All Customers</option>
+              <option value="">Semua pelanggan</option>
               {customers.map(customer => (
                 <option key={customer.id} value={customer.id}>
                   {customer.company_name}
@@ -313,6 +317,7 @@ const ShippingReportsForm: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+              Ekspedisi
             </label>
             <select
               name="carrier"
@@ -320,7 +325,7 @@ const ShippingReportsForm: React.FC = () => {
               onChange={handleFilterChange}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">All Carriers</option>
+              <option value="">Semua ekspedisi</option>
               {carriers.map(carrier => (
                 <option key={carrier} value={carrier}>
                   {carrier}
@@ -337,7 +342,7 @@ const ShippingReportsForm: React.FC = () => {
               onChange={handleFilterChange}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">All Status</option>
+              <option value="">Semua status</option>
               {statusOptions.map(status => (
                 <option key={status} value={status}>
                   {status.replace('_', ' ').toUpperCase()}
@@ -348,7 +353,7 @@ const ShippingReportsForm: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-              Shipping Method
+              Metode pengiriman
             </label>
             <select
               name="shipping_method"
@@ -356,7 +361,7 @@ const ShippingReportsForm: React.FC = () => {
               onChange={handleFilterChange}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">All Methods</option>
+              <option value="">Semua metode</option>
               {shippingMethods.map(method => (
                 <option key={method} value={method}>
                   {method.replace('_', ' ').toUpperCase()}
@@ -376,7 +381,7 @@ const ShippingReportsForm: React.FC = () => {
               ) : (
                 <>
                   <ChartBarIcon className="inline h-4 w-4 mr-2" />
-                  Generate Report
+                  Buat laporan
                 </>
               )}
             </button>
@@ -389,21 +394,21 @@ const ShippingReportsForm: React.FC = () => {
         <div className="space-y-6">
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div className="fn-card p-4">
               <div className="flex items-center">
                 <CubeIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Shipments</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total pengiriman</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.total_shipments}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div className="fn-card p-4">
               <div className="flex items-center">
                 <CurrencyDollarIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Value</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total nilai</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {formatCurrency(reportData.summary.total_value)}
                   </p>
@@ -411,41 +416,41 @@ const ShippingReportsForm: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div className="fn-card p-4">
               <div className="flex items-center">
                 <CubeIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Weight</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total berat</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.total_weight} kg</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div className="fn-card p-4">
               <div className="flex items-center">
                 <ClockIcon className="h-8 w-8 text-orange-600 dark:text-orange-400" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Delivery Time</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.average_delivery_time} days</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Rata-rata waktu antar</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.average_delivery_time} hari</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div className="fn-card p-4">
               <div className="flex items-center">
                 <ArrowTrendingUpIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">On-Time Rate</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Tepat waktu</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.on_time_delivery_rate}%</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div className="fn-card p-4">
               <div className="flex items-center">
                 <ExclamationCircleIcon className="h-8 w-8 text-red-600 dark:text-red-400" />
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Damaged</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Rusak</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{reportData.summary.damaged_shipments}</p>
                 </div>
               </div>
@@ -455,8 +460,8 @@ const ShippingReportsForm: React.FC = () => {
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Shipments by Status */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Shipments by Status</h3>
+            <div className="fn-card p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Pengiriman per status</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -479,8 +484,8 @@ const ShippingReportsForm: React.FC = () => {
             </div>
 
             {/* Shipments by Method */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Shipments by Method</h3>
+            <div className="fn-card p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Pengiriman per metode</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={reportData.charts.shipments_by_method}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -493,8 +498,8 @@ const ShippingReportsForm: React.FC = () => {
             </div>
 
             {/* Delivery Performance */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Delivery Performance</h3>
+            <div className="fn-card p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Kinerja pengantaran</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={reportData.charts.delivery_performance}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -509,8 +514,8 @@ const ShippingReportsForm: React.FC = () => {
             </div>
 
             {/* Cost Analysis */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Cost Analysis</h3>
+            <div className="fn-card p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Analisis biaya</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={reportData.charts.cost_analysis}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -527,8 +532,8 @@ const ShippingReportsForm: React.FC = () => {
 
           {/* Detailed Table */}
           {filters.report_type === 'detailed' && reportData.details.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Detailed Report</h3>
+            <div className="fn-card p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Rincian</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-900">
@@ -589,12 +594,12 @@ const ShippingReportsForm: React.FC = () => {
 
       {/* Empty State */}
       {!reportData && !loading && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+        <div className="fn-card p-8">
           <div className="text-center">
             <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Report Generated</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Laporan belum dibuat</h3>
             <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Configure your filters and click "Generate Report" to view shipping analytics.
+              Atur penyaringnya lalu tekan "Buat laporan" untuk melihat angkanya.
             </p>
           </div>
         </div>

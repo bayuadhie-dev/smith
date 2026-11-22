@@ -193,6 +193,7 @@ const MaintenanceList: React.FC = () => {
   return (
     <div className="space-y-4 p-6">
       <PageHeader
+        eyebrow="PERAWATAN · CATATAN"
         title="Catatan Perawatan"
         subtitle="SPK perawatan mesin: terjadwal, berjalan, dan selesai"
         actions={

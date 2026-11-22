@@ -8,8 +8,24 @@ function parse(value: string | number) {
   const m = PATTERN.exec(text.trim())
   if (!m) return null
   const [, prefix, num, suffix] = m
-  const decimals = num.includes(',') ? num.split(',')[1].length : 0
-  const target = parseFloat(num.replace(/\./g, '').replace(',', '.'))
+
+  let decimals: number
+  let target: number
+  if (num.includes(',')) {
+    // Format Indonesia: titik ribuan, koma desimal.
+    decimals = num.split(',')[1].length
+    target = parseFloat(num.replace(/\./g, '').replace(',', '.'))
+  } else {
+    // Sebagian halaman mengirim angka gaya Inggris ("100.0%"). Dulu titiknya
+    // dianggap pemisah ribuan sehingga 100,0% dipajang jadi 1.000% - salah
+    // sepuluh kali lipat (2026-11-22). Titik di akhir yang hanya diikuti satu
+    // atau dua angka pasti desimal; tiga angka berarti ribuan.
+    const desimal = /\.(\d{1,2})$/.exec(num)
+    decimals = desimal ? desimal[1].length : 0
+    target = desimal
+      ? parseFloat(num.slice(0, num.length - desimal[0].length).replace(/\./g, '') + '.' + desimal[1])
+      : parseFloat(num.replace(/\./g, ''))
+  }
   if (!isFinite(target)) return null
   return { prefix, suffix, decimals, target }
 }

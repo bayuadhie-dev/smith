@@ -36,7 +36,22 @@ export function splitPath(path: string): { pathname: string; search: string } {
   return q >= 0 && q < end ? { pathname: path.slice(0, q), search: path.slice(q, end) } : { pathname: path.slice(0, end), search: '' }
 }
 
-const SEGMENT_WORDS: Record<string, string> = { new: 'Baru', edit: 'Ubah', create: 'Baru', 'petty-cash': 'Kas Kecil', 'inventory-mutation': 'Nilai Persediaan', 'inventory-by-warehouse': 'Kuantitas per Gudang', 'bank-transfers': 'Transfer Kas/Bank', rolls: 'Roll Spunlace' }
+const SEGMENT_WORDS: Record<string, string> = {
+  new: 'Baru', edit: 'Ubah', create: 'Baru',
+  'petty-cash': 'Kas Kecil', 'inventory-mutation': 'Nilai Persediaan',
+  'inventory-by-warehouse': 'Kuantitas per Gudang', 'bank-transfers': 'Transfer Kas/Bank',
+  rolls: 'Roll Spunlace',
+  'shipping/orders': 'Surat Jalan',
+  'from-qc': 'Dari QC', request: 'Permintaan', 'parts-requests': 'Permintaan Suku Cadang',
+  // Judul tab yang kalau tidak dipetakan muncul dalam bahasa Inggris.
+  orders: 'Pesanan', tracking: 'Pelacakan', providers: 'Ekspedisi',
+  calculator: 'Kalkulator', reports: 'Laporan', records: 'Catatan',
+  schedules: 'Jadwal', analytics: 'Analitik', 'spare-parts': 'Suku Cadang',
+  'spare-part-requests': 'Permintaan Suku Cadang', 'machine-parts': 'Suku Cadang Mesin',
+  'checklist-ng': 'Temuan NG', assets: 'Aset', depreciation: 'Penyusutan',
+  'functional-locations': 'Lokasi Fungsional', products: 'Produk',
+  categories: 'Kategori', lifecycle: 'Daur Hidup', list: 'Daftar',
+}
 
 // Fallback tab title when nothing was clicked (e.g. a deep link): "penerimaan-penjualan" -> "Penerimaan Penjualan".
 export function pathLabel(path: string): string {
@@ -44,7 +59,11 @@ export function pathLabel(path: string): string {
   const parts = pathname.split('/').filter(Boolean).slice(1) // drop "app"
   const named = parts.filter((p) => !/^\d+$/.test(p))
   const last = named[named.length - 1] || parts[0] || 'Halaman'
-  const word = SEGMENT_WORDS[last] || last.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+  // Satu kata terakhir kadang ambigu ("orders" ada di pembelian, penjualan,
+  // dan pengiriman), jadi pasangan dua segmen diperiksa lebih dulu.
+  const pair = named.length >= 2 ? `${named[named.length - 2]}/${last}` : ''
+  const word = SEGMENT_WORDS[pair] || SEGMENT_WORDS[last]
+    || last.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
   const hasId = parts.some((p) => /^\d+$/.test(p))
   if (hasId && !SEGMENT_WORDS[last]) return `${word} #${parts.find((p) => /^\d+$/.test(p))}`
   if (hasId) return `${named[named.length - 2] ? named[named.length - 2].replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : ''} ${word}`.trim()

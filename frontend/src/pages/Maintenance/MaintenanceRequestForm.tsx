@@ -297,6 +297,7 @@ const MaintenanceRequestForm: React.FC = () => {
   return (
     <div className="space-y-4 p-6">
       <PageHeader
+        eyebrow="PERAWATAN · PERMINTAAN"
         title={isEdit ? 'Ubah Permintaan Perawatan' : 'Permintaan Perawatan Baru'}
         subtitle={isEdit ? 'Perbarui rincian permintaan perawatan' : 'Jadwalkan pekerjaan perawatan mesin'}
         actions={

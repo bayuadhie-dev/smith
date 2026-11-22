@@ -151,7 +151,10 @@ export default function ShippingCalculator() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Kalkulator Biaya Pengiriman</h1>
+        <div>
+          <div className="fn-label mb-1.5">PENGIRIMAN · KALKULATOR</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Kalkulator Biaya Pengiriman</h1>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -257,9 +257,12 @@ const ShippingTrackingForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
+          <div>
+            <div className="fn-label mb-1.5">PENGIRIMAN · PELACAKAN</div>
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
             {isEdit ? 'Edit Tracking Event' : 'Add Tracking Event'}
           </h1>
+          </div>
           {shippingOrder && (
             <p className="text-gray-600 dark:text-gray-300">
               Shipping Order: {shippingOrder.shipping_number} - {shippingOrder.customer_name}
@@ -357,7 +360,7 @@ const ShippingTrackingForm: React.FC = () => {
                     value={formData.location}
                     onChange={handleInputChange}
                     required
-                    placeholder="Enter location or address"
+                    placeholder="Lokasi atau alamat"
                     className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                   <button
@@ -387,7 +390,7 @@ const ShippingTrackingForm: React.FC = () => {
                 onChange={handleInputChange}
                 required
                 rows={3}
-                placeholder="Describe what happened at this tracking event..."
+                placeholder="Ceritakan apa yang terjadi pada titik ini..."
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -476,7 +479,7 @@ const ShippingTrackingForm: React.FC = () => {
               value={formData.notes}
               onChange={handleInputChange}
               rows={2}
-              placeholder="Any additional notes or observations..."
+              placeholder="Catatan tambahan..."
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>

@@ -49,7 +49,7 @@ const reportTypes = [
   { value: 'performance', label: 'Kinerja' },
   { value: 'cost_analysis', label: 'Analisis biaya' },
   { value: 'downtime', label: 'Downtime' },
-  { value: 'parts_usage', label: 'Pemakaian sparepart' },
+  { value: 'parts_usage', label: 'Pemakaian suku cadang' },
   { value: 'compliance', label: 'Kepatuhan jadwal' },
 ];
 
@@ -185,8 +185,9 @@ const MaintenanceAnalyticsForm: React.FC = () => {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Analitik Maintenance"
-        subtitle="Kinerja perawatan mesin: ketersediaan, MTTR, biaya, dan downtime"
+        eyebrow="PERAWATAN · ANALITIK"
+        title="Analitik Perawatan"
+        subtitle="Kinerja perawatan mesin: ketersediaan, MTTR, biaya, dan waktu berhenti."
         actions={
           analyticsData ? (
             <button

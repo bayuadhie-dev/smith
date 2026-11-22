@@ -401,9 +401,12 @@ const ShippingOrderDetails: React.FC = () => {
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
+            <div>
+              <div className="fn-label mb-1.5">PENGIRIMAN · SURAT JALAN</div>
+              <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
               Shipping Order {order.shipping_number}
             </h1>
+            </div>
             <p className="text-gray-600 dark:text-gray-300">
               Created on {new Date(order.created_at).toLocaleDateString()}
             </p>
@@ -451,7 +454,7 @@ const ShippingOrderDetails: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           {/* Order Information */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Order Information</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Keterangan surat jalan</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -522,7 +525,7 @@ const ShippingOrderDetails: React.FC = () => {
 
           {/* Shipping Items + Handling Unit drill-down */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Shipping Items</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Barang yang dikirim</h3>
 
             <div className="space-y-2">
               {order.items?.map((item) => {
@@ -572,7 +575,7 @@ const ShippingOrderDetails: React.FC = () => {
                       <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-4 space-y-4">
                         <div>
                           <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
-                            <span>Progress packing</span>
+                            <span>Kemajuan pengemasan</span>
                             <span>{packed}/{total} {item.uom} ({pct}%)</span>
                           </div>
                           <div className="w-full h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
@@ -774,7 +777,7 @@ const ShippingOrderDetails: React.FC = () => {
           {/* Tracking History */}
           {order.tracking_history && order.tracking_history.length > 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Tracking History</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Riwayat pelacakan</h3>
               
               <div className="space-y-4">
                 {order.tracking_history.map((event, index) => (
@@ -815,7 +818,7 @@ const ShippingOrderDetails: React.FC = () => {
         <div className="space-y-6">
           {/* Customer Information */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Customer Information</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Keterangan pelanggan</h3>
             
             <div className="space-y-3">
               <div className="flex items-center gap-2">
@@ -828,11 +831,11 @@ const ShippingOrderDetails: React.FC = () => {
 
           {/* Shipping Costs */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Shipping Costs</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Biaya pengiriman</h3>
             
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Shipping Cost</span>
+                <span className="text-gray-600 dark:text-gray-300">Ongkos kirim</span>
                 <span className="text-gray-900 dark:text-white">{formatCurrency(order.shipping_cost)}</span>
               </div>
               
@@ -853,19 +856,19 @@ const ShippingOrderDetails: React.FC = () => {
             
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Total Weight</span>
+                <span className="text-gray-600 dark:text-gray-300">Total berat</span>
                 <span className="text-gray-900 dark:text-white">{order.total_weight} kg</span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Total Volume</span>
+                <span className="text-gray-600 dark:text-gray-300">Total volume</span>
                 <span className="text-gray-900 dark:text-white">{order.total_volume} m³</span>
               </div>
             </div>
             
             {order.notes && (
               <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Notes</h4>
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Catatan</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">{order.notes}</p>
               </div>
             )}
@@ -873,7 +876,7 @@ const ShippingOrderDetails: React.FC = () => {
 
           {/* Quick Actions */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Aksi cepat</h3>
             
             <div className="space-y-2">
               {order.status === 'preparing' && (
@@ -899,7 +902,7 @@ const ShippingOrderDetails: React.FC = () => {
                   onClick={() => updateOrderStatus('delivered')}
                   className="w-full px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 >
-                  Mark Delivered
+                  Tandai sudah diterima
                 </button>
               )}
               
@@ -908,7 +911,7 @@ const ShippingOrderDetails: React.FC = () => {
                   onClick={() => updateOrderStatus('cancelled')}
                   className="w-full px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                 >
-                  Cancel Order
+                  Batalkan surat jalan
                 </button>
               )}
             </div>

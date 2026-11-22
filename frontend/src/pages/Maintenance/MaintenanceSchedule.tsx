@@ -163,7 +163,7 @@ const MaintenanceSchedule = () => {
   }
 
   const generate = async (s: Schedule) => {
-    const ok = await confirmDialog(`Buat perintah kerja perawatan untuk ${s.machine_name} sekarang?\n\nTanggal jadwal berikutnya akan maju sesuai interval, dan permintaan sparepart dibuat otomatis bila jadwal ini punya daftar sparepart.`)
+    const ok = await confirmDialog(`Buat perintah kerja perawatan untuk ${s.machine_name} sekarang?\n\nTanggal jadwal berikutnya akan maju sesuai interval, dan permintaan suku cadang dibuat otomatis bila jadwal ini punya daftarnya.`)
     if (!ok) return
     try {
       await axiosInstance.post(`/api/maintenance/schedules/${s.id}/generate`)
@@ -189,8 +189,9 @@ const MaintenanceSchedule = () => {
   return (
     <div className="space-y-4 p-6">
       <PageHeader
+        eyebrow="PERAWATAN · JADWAL"
         title="Jadwal Perawatan"
-        subtitle="Jadwal preventive per mesin beserta sparepart yang dibutuhkan"
+        subtitle="Jadwal preventive per mesin beserta suku cadang yang dibutuhkan"
         actions={canSchedule ? (
           <button onClick={openNew} className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Jadwal baru</button>
         ) : undefined}
@@ -228,7 +229,7 @@ const MaintenanceSchedule = () => {
               <th className={th}>Frekuensi</th>
               <th className={th}>Terakhir</th>
               <th className={th}>Berikutnya</th>
-              <th className={th}>Sparepart dibutuhkan</th>
+              <th className={th}>Suku cadang dibutuhkan</th>
               {canSchedule && <th className={`${th} text-right`}>Aksi</th>}
             </tr>
           </thead>
@@ -345,7 +346,7 @@ const MaintenanceSchedule = () => {
                         options={partOpts.map((o) => ({ id: o.id, code: o.part_number, name: o.part_name }))}
                         value={p.spare_part_id}
                         onChange={(v) => setPart(i, { spare_part_id: v ? Number(v) : null })}
-                        placeholder="Pilih sparepart"
+                        placeholder="Pilih suku cadang"
                       />
                     </div>
                     <NumberInput className={`${inputCls} !w-24 text-right`} placeholder="Jumlah" value={p.qty} onChange={(e) => setPart(i, { qty: e.target.value })} />
@@ -354,9 +355,9 @@ const MaintenanceSchedule = () => {
                 ))}
               </div>
               <button type="button" className="mt-2 text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400" onClick={() => setForm({ ...form, parts: [...form.parts, { spare_part_id: null, qty: '1' }] })}>
-                + Tambah sparepart
+                + Tambah suku cadang
               </button>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Saat perintah kerja dibuat dari jadwal ini, permintaan sparepart dibuat otomatis untuk disetujui kepala maintenance.</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Saat perintah kerja dibuat dari jadwal ini, permintaan suku cadang dibuat otomatis untuk disetujui kepala perawatan.</p>
             </div>
 
             <div>

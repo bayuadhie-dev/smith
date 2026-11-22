@@ -49,7 +49,7 @@ const MachinePartsPanel = ({ machineId }: { machineId: number | string }) => {
       setParts(res.data.parts || [])
     } catch (e: any) {
       setParts([])
-      showError(e.response?.data?.error || 'Daftar sparepart gagal dimuat.')
+      showError(e.response?.data?.error || 'Daftar suku cadang gagal dimuat.')
     } finally {
       setLoading(false)
     }
@@ -66,7 +66,7 @@ const MachinePartsPanel = ({ machineId }: { machineId: number | string }) => {
         const res = await axiosInstance.get('/api/spare-parts', { params: { per_page: 200 } })
         setOptions((res.data.spare_parts || []).map((p: any) => ({ id: p.id, code: p.part_number, name: p.part_name })))
       } catch (e: any) {
-        showError(e.response?.data?.error || 'Daftar sparepart gagal dimuat.')
+        showError(e.response?.data?.error || 'Daftar suku cadang gagal dimuat.')
       }
     }
   }
@@ -95,7 +95,7 @@ const MachinePartsPanel = ({ machineId }: { machineId: number | string }) => {
           last_replaced_date: form.last_replaced_date || null,
           notes: form.notes,
         })
-        showSuccess('Sparepart diperbarui.')
+        showSuccess('Suku cadang diperbarui.')
       } else {
         await axiosInstance.post(`/api/spare-parts/machines/${machineId}`, {
           spare_part_id: form.spare_part_id,
@@ -115,7 +115,7 @@ const MachinePartsPanel = ({ machineId }: { machineId: number | string }) => {
   }
 
   const remove = async (p: MachinePart) => {
-    if (!(await confirmDialog(`Hapus ${p.part_number} - ${p.part_name} dari daftar mesin ini? Stok sparepart tidak berubah.`))) return
+    if (!(await confirmDialog(`Hapus ${p.part_number} - ${p.part_name} dari daftar mesin ini? Stok suku cadang tidak berubah.`))) return
     try {
       await axiosInstance.delete(`/api/spare-parts/machine-links/${p.link_id}`)
       showSuccess('Dihapus dari daftar mesin.')
@@ -133,7 +133,7 @@ const MachinePartsPanel = ({ machineId }: { machineId: number | string }) => {
         title="Sparepart mesin ini"
         action={
           <button type="button" onClick={openAdd} className="rounded-md bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-800">
-            Tambah sparepart
+            Tambah suku cadang
           </button>
         }
       >
@@ -153,7 +153,7 @@ const MachinePartsPanel = ({ machineId }: { machineId: number | string }) => {
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {loading && <tr><td colSpan={7} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>}
               {!loading && parts.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada sparepart yang didaftarkan untuk mesin ini.</td></tr>
+                <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada suku cadang yang didaftarkan untuk mesin ini.</td></tr>
               )}
               {parts.map((p) => (
                 <tr key={p.link_id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
@@ -180,7 +180,7 @@ const MachinePartsPanel = ({ machineId }: { machineId: number | string }) => {
       <AccessibleModal
         isOpen={open}
         onClose={() => setOpen(false)}
-        title={editing ? 'Ubah sparepart mesin' : 'Tambah sparepart ke mesin'}
+        title={editing ? 'Ubah suku cadang mesin' : 'Tambah suku cadang ke mesin'}
         footer={
           <div className="flex justify-end gap-2 flex-wrap">
             <button type="button" onClick={() => setOpen(false)} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 dark:border-gray-600 dark:text-gray-200">Batal</button>
@@ -200,7 +200,7 @@ const MachinePartsPanel = ({ machineId }: { machineId: number | string }) => {
                 options={chosen}
                 value={form.spare_part_id}
                 onChange={(v) => setForm({ ...form, spare_part_id: v ? Number(v) : null })}
-                placeholder="Cari kode atau nama sparepart"
+                placeholder="Cari kode atau nama suku cadang"
               />
             )}
           </div>

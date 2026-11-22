@@ -531,7 +531,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
           children: [
             { name: 'Dashboard', href: '/app/assets', icon: PresentationChartLineIcon },
             { name: 'Daftar Aset', href: '/app/assets/list', icon: ClipboardDocumentListIcon },
-            { name: 'Sparepart Aset', href: '/app/assets/spare-parts', icon: WrenchScrewdriverIcon },
+            { name: 'Suku Cadang Aset', href: '/app/assets/spare-parts', icon: WrenchScrewdriverIcon },
             { name: 'Penyusutan Aset', href: '/app/assets/depreciation', icon: CurrencyDollarIcon },
             { name: 'Tambah Aset', href: '/app/assets/new', icon: ClipboardDocumentCheckIcon },
             { name: 'Lokasi Fungsional', description: 'Hierarki lokasi Plant > Building > Line untuk penempatan aset/mesin', href: '/app/assets/functional-locations', icon: WrenchScrewdriverIcon },
@@ -549,10 +549,10 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Checklist Barang Reject (NG)', href: '/app/maintenance/checklist-ng', icon: ExclamationTriangleIcon },
             { name: 'Buat Permintaan Perawatan', href: '/app/maintenance/request/new', icon: ClipboardDocumentCheckIcon },
             {
-              name: 'Sparepart', icon: CubeIcon, isSubMenu: true, subChildren: [
-                { name: 'Gudang Sparepart', href: '/app/maintenance/spare-parts' },
-                { name: 'Sparepart per Mesin', href: '/app/maintenance/machine-parts' },
-                { name: 'Permintaan Sparepart', href: '/app/maintenance/spare-part-requests' },
+              name: 'Suku Cadang', icon: CubeIcon, isSubMenu: true, subChildren: [
+                { name: 'Gudang Suku Cadang', href: '/app/maintenance/spare-parts' },
+                { name: 'Suku Cadang per Mesin', href: '/app/maintenance/machine-parts' },
+                { name: 'Permintaan Suku Cadang', href: '/app/maintenance/spare-part-requests' },
               ]
             },
             { name: 'Analisa Perawatan', href: '/app/maintenance/analytics', icon: ChartPieIcon },

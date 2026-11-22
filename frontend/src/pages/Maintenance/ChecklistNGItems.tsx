@@ -154,8 +154,9 @@ const ChecklistNGItems: React.FC = () => {
   return (
     <div className="space-y-4 p-6">
       <PageHeader
-        title="Item NG Checklist"
-        subtitle="Item yang perlu diperbaiki dari Pre-Shift Checklist"
+        eyebrow="PERAWATAN · TEMUAN NG"
+        title="Temuan NG Checklist"
+        subtitle="Hal yang perlu diperbaiki dari Checklist Awal Shift."
         actions={
           <button onClick={fetchData} className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
             <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />

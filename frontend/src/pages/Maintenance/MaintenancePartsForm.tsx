@@ -31,7 +31,7 @@ const MaintenancePartsForm = () => {
   useEffect(() => {
     axiosInstance.get('/api/spare-parts', { params: { per_page: 200 } })
       .then((res) => setParts((res.data.spare_parts || []).map((p: any) => ({ id: p.id, code: p.part_number, name: p.part_name, uom: p.uom, stock: p.current_stock }))))
-      .catch((e) => showError(e.response?.data?.error || 'Daftar sparepart gagal dimuat.'))
+      .catch((e) => showError(e.response?.data?.error || 'Daftar suku cadang gagal dimuat.'))
     axiosInstance.get('/api/production/machines')
       .then((res) => setMachines((res.data.machines || []).map((m: any) => ({ id: m.id, code: m.code, name: m.name }))))
       .catch(() => setMachines([]))
@@ -43,8 +43,8 @@ const MaintenancePartsForm = () => {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     const items = lines.filter((l) => l.spare_part_id || Number(l.qty))
-    if (items.length === 0) { showError('Pilih minimal satu sparepart.'); return }
-    if (items.some((l) => !l.spare_part_id || !(Number(l.qty) > 0))) { showError('Setiap baris harus punya sparepart dan jumlah lebih dari 0.'); return }
+    if (items.length === 0) { showError('Pilih minimal satu suku cadang.'); return }
+    if (items.some((l) => !l.spare_part_id || !(Number(l.qty) > 0))) { showError('Setiap baris harus punya suku cadang dan jumlah lebih dari 0.'); return }
     const ids = items.map((l) => l.spare_part_id)
     if (new Set(ids).size !== ids.length) { showError('Satu sparepart tidak boleh dipilih dua kali.'); return }
     setSaving(true)
@@ -66,7 +66,8 @@ const MaintenancePartsForm = () => {
   return (
     <div className="space-y-4 p-6">
       <PageHeader
-        title="Permintaan Sparepart Baru"
+        eyebrow="PERAWATAN · PERMINTAAN SUKU CADANG"
+        title="Permintaan Suku Cadang Baru"
         subtitle="Setelah dikirim, permintaan menunggu persetujuan kepala maintenance. Permintaan tidak bisa diedit, hanya dibatalkan."
         actions={<button type="button" onClick={() => navigate('/app/maintenance/spare-part-requests')} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Batal</button>}
       />
@@ -84,7 +85,7 @@ const MaintenancePartsForm = () => {
           </div>
         </Panel>
 
-        <Panel title="Sparepart yang diminta">
+        <Panel title="Suku cadang yang diminta">
           <div className="overflow-x-auto">
             <div className="space-y-3 p-4">
               {lines.map((l, i) => {
@@ -93,7 +94,7 @@ const MaintenancePartsForm = () => {
                 return (
                   <div key={i} className="grid min-w-[760px] grid-cols-12 items-start gap-2">
                     <div className="col-span-12 md:col-span-6">
-                      <SearchableSelect options={parts} value={l.spare_part_id} onChange={(v) => setLine(i, { spare_part_id: v ? Number(v) : null })} placeholder="Cari kode atau nama sparepart" />
+                      <SearchableSelect options={parts} value={l.spare_part_id} onChange={(v) => setLine(i, { spare_part_id: v ? Number(v) : null })} placeholder="Cari kode atau nama suku cadang" />
                       {p && <p className={`mt-1 text-xs ${short ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>Stok tersedia {p.stock.toLocaleString('id-ID')} {p.uom}{short ? '. Jumlah melebihi stok.' : ''}</p>}
                     </div>
                     <div className="col-span-5 md:col-span-2">

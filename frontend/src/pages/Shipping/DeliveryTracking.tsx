@@ -75,7 +75,10 @@ export default function DeliveryTracking() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Lacak Pengiriman</h1>
+        <div>
+          <div className="fn-label mb-1.5">PENGIRIMAN · PELACAKAN</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Lacak Pengiriman</h1>
+        </div>
       </div>
 
       {/* Search Form */}

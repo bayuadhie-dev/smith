@@ -18,8 +18,21 @@ const routeLabels: Record<string, string> = {
   'bom': 'Bill of Materials',
   'categories': 'Kategori',
   'lifecycle': 'Daur Hidup',
-  'calculator': 'Kalkulator Nonwoven',
+  'calculator': 'Kalkulator',
   'analytics': 'Analitik',
+  // Perawatan
+  'maintenance': 'Perawatan',
+  'spare-part-requests': 'Permintaan Suku Cadang',
+  'machine-parts': 'Suku Cadang per Mesin',
+  'schedules': 'Jadwal',
+  'records': 'Catatan',
+  'checklist-ng': 'Temuan NG',
+  // Pengiriman
+  'shipping': 'Pengiriman',
+  'from-qc': 'Dari QC',
+  'providers': 'Ekspedisi',
+  'tracking': 'Pelacakan',
+  'reports': 'Laporan',
   // Aset
   'assets': 'Aset',
   'spare-parts': 'Suku Cadang',
@@ -53,24 +66,20 @@ const routeLabels: Record<string, string> = {
   // Purchasing
   'purchasing': 'Purchasing',
   'suppliers': 'Suppliers',
-  'orders': 'Orders',
+  'orders': 'Pesanan',
   'rfq': 'RFQ',
   'contracts': 'Contracts',
   'price-comparison': 'Price Comparison',
   'supplier-integration': 'Supplier Integration',
   // Sales
   'sales': 'Sales',
-  // Shipping
-  'shipping': 'Shipping',
-  'tracking': 'Tracking',
-  'providers': 'Providers',
+  // Pengiriman: lihat blok Pengiriman di atas
   // Finance
   'finance': 'Finance',
   'accounting': 'Accounting',
   'budget': 'Budget',
   'cash-flow': 'Cash Flow',
   'wip-ledger': 'WIP Ledger',
-  'reports': 'Reports',
   'approval': 'Approvals',
   // HR
   'hr': 'Human Resources',
@@ -81,11 +90,8 @@ const routeLabels: Record<string, string> = {
   'appraisal': 'Performance',
   'training': 'Training',
   'roster': 'Work Roster',
-  // Maintenance
-  'maintenance': 'Maintenance',
-  'records': 'SPK',
-  'schedules': 'Schedule',
-  'request': 'Request',
+  // Maintenance (sisanya ada di blok Perawatan di atas)
+  'request': 'Permintaan',
   // R&D
   'rd': 'R&D',
   'projects': 'Projects',
@@ -100,11 +106,12 @@ const routeLabels: Record<string, string> = {
   'tv-display': 'TV Display',
   'documents': 'Documents',
   'settings': 'Settings',
-  // Actions
-  'new': 'New',
-  'edit': 'Edit',
-  'details': 'Details',
-  'list': 'List',
+  // Aksi
+  'new': 'Baru',
+  'edit': 'Ubah',
+  'create': 'Baru',
+  'details': 'Rincian',
+  'list': 'Daftar',
   'executive': 'Eksekutif',
   'production-monitoring': 'Production Monitoring',
   'pre-shift-checklist': 'Pre-Shift Checklist',

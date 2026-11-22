@@ -69,7 +69,7 @@ const Modal = ({ title, onClose, children }: { title: string; onClose: () => voi
 )
 
 const SparePartStock = () => {
-  useDocumentTitle('Gudang Sparepart')
+  useDocumentTitle('Gudang Suku Cadang')
   const { hasPermission, isSuperAdmin } = usePermissions()
   const canCreate = isSuperAdmin || hasPermission('maintenance.create')
   const canEdit = isSuperAdmin || hasPermission('maintenance.edit')
@@ -107,7 +107,7 @@ const SparePartStock = () => {
         setSummary(r.data.summary || null)
         setCategories(r.data.categories || [])
       })
-      .catch(() => { setParts([]); showError('Data sparepart gagal dimuat.') })
+      .catch(() => { setParts([]); showError('Data suku cadang gagal dimuat.') })
       .finally(() => setLoading(false))
   }, [page, debounced, category, lowOnly])
 
@@ -143,15 +143,15 @@ const SparePartStock = () => {
       if (editing === 'new') {
         if (form.opening_stock) body.opening_stock = form.opening_stock
         await axiosInstance.post('/api/spare-parts', body)
-        showSuccess('Sparepart dibuat.')
+        showSuccess('Suku cadang dibuat.')
       } else if (editing) {
         await axiosInstance.put(`/api/spare-parts/${editing.id}`, body)
-        showSuccess('Sparepart diperbarui.')
+        showSuccess('Suku cadang diperbarui.')
       }
       setEditing(null)
       load()
     } catch (err: any) {
-      showError(err.response?.data?.error || 'Gagal menyimpan sparepart.')
+      showError(err.response?.data?.error || 'Gagal menyimpan suku cadang.')
     } finally {
       setSaving(false)
     }
@@ -182,14 +182,15 @@ const SparePartStock = () => {
   return (
     <div className="space-y-4 p-6">
       <PageHeader
-        title="Gudang Sparepart"
-        subtitle="Stok sparepart perawatan mesin, terpisah dari gudang utama"
-        actions={canCreate ? <button onClick={openNew} className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Sparepart baru</button> : undefined}
+        eyebrow="PERAWATAN · STOK SUKU CADANG"
+        title="Gudang Suku Cadang"
+        subtitle="Stok suku cadang perawatan mesin, terpisah dari gudang utama"
+        actions={canCreate ? <button onClick={openNew} className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Suku cadang baru</button> : undefined}
       />
 
       <KpiStrip
         items={[
-          { label: 'Jenis sparepart', value: fmtNum(summary?.total || 0) },
+          { label: 'Jenis suku cadang', value: fmtNum(summary?.total || 0) },
           { label: 'Stok menipis', value: fmtNum(summary?.low_stock || 0), tone: summary?.low_stock ? 'warn' : null, hint: 'di bawah atau sama dengan minimum' },
           { label: 'Stok habis', value: fmtNum(summary?.out_of_stock || 0), tone: summary?.out_of_stock ? 'bad' : null },
           { label: 'Nilai stok', value: formatRupiah(summary?.stock_value || 0), hint: 'stok × harga satuan' },
@@ -199,7 +200,7 @@ const SparePartStock = () => {
       <div className="flex flex-col gap-2 md:flex-row md:items-center">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari kode atau nama sparepart" className={`${inputCls} pl-9`} />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari kode atau nama suku cadang" className={`${inputCls} pl-9`} />
         </div>
         <select value={category} onChange={(e) => { setCategory(e.target.value); setPage(1) }} className={`${inputCls} md:w-48`}>
           <option value="">Semua kategori</option>
@@ -229,7 +230,7 @@ const SparePartStock = () => {
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {loading && parts.length === 0 && <tr><td colSpan={9} className="px-4 py-4"><div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</div></td></tr>}
             {!loading && parts.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{search || category || lowOnly ? 'Tidak ada sparepart yang cocok.' : 'Belum ada sparepart.'}</td></tr>
+              <tr><td colSpan={9} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">{search || category || lowOnly ? 'Tidak ada suku cadang yang cocok.' : 'Belum ada suku cadang.'}</td></tr>
             )}
             {parts.map((p) => (
               <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
@@ -274,7 +275,7 @@ const SparePartStock = () => {
       )}
 
       {editing && (
-        <Modal title={editing === 'new' ? 'Sparepart baru' : 'Ubah sparepart'} onClose={() => setEditing(null)}>
+        <Modal title={editing === 'new' ? 'Suku cadang baru' : 'Ubah suku cadang'} onClose={() => setEditing(null)}>
           <form onSubmit={savePart} className="space-y-4 p-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div><label className={labelCls}>Kode</label><input className={inputCls} value={form.part_number} onChange={set('part_number')} required /></div>
