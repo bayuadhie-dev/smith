@@ -1186,38 +1186,3 @@ def remove_user_role(user_id, role_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-@settings_bp.route('/notifications/test', methods=['POST'])
-@jwt_required()
-@require_super_admin()
-def test_notifications():
-    try:
-        data = request.get_json() or {}
-        notification_type = data.get('type', 'email')
-
-        # Sebelum 2026-11-22 endpoint ini hanya berpura-pura: ia menjawab
-        # "Test email sent successfully" tanpa pernah mengirim apa pun.
-        if notification_type == 'email':
-            from utils.email_service import get_email_service
-            layanan = get_email_service()
-            if not layanan.is_configured():
-                return jsonify({'error': 'Layanan email belum diatur di .env'}), 503
-
-            pengguna = db.session.get(User, int(get_jwt_identity()))
-            if not pengguna or not pengguna.email:
-                return jsonify({'error': 'Akun ini belum punya alamat email'}), 400
-
-            hasil = layanan.send_custom_notification(
-                to=pengguna.email,
-                subject='Email uji - SMITH ERP',
-                title='Email uji',
-                message='Kalau email ini sampai, pengiriman email dari ERP sudah jalan.',
-                box_type='success',
-            )
-            if hasil.get('error'):
-                return jsonify({'error': hasil['error']}), 500
-            return jsonify({'message': f'Email uji dikirim ke {pengguna.email}'}), 200
-
-        return jsonify({'error': 'Jenis pemberitahuan ini belum didukung'}), 501
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500

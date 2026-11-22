@@ -1484,13 +1484,6 @@ export const settingsApi = api.injectEndpoints({
         body: data,
       }),
     }),
-    testNotifications: builder.mutation({
-      query: (data) => ({
-        url: '/settings/notifications/test',
-        method: 'POST',
-        body: data,
-      }),
-    }),
   }),
 })
 
@@ -1757,7 +1750,6 @@ export const {
   useCreateBackupMutation,
   useExportDataMutation,
   useUpdateSessionTimeoutMutation,
-  useTestNotificationsMutation,
 } = settingsApi
 
 export const {

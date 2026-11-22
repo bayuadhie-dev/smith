@@ -18,17 +18,6 @@ interface EmailStatus {
   provider?: string;
 }
 
-interface EmailConfig {
-  provider: string;
-  from_email: string;
-  company_name: string;
-  app_url: string;
-  // Gmail specific
-  gmail_address?: string;
-  gmail_app_password?: string;
-  // Resend specific
-  resend_api_key?: string;
-}
 
 const EmailSettings: React.FC = () => {
   const { t } = useLanguage();
@@ -36,18 +25,6 @@ const EmailSettings: React.FC = () => {
   const [status, setStatus] = useState<EmailStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [testingEmail, setTestingEmail] = useState(false);
-  const [savingConfig, setSavingConfig] = useState(false);
-  
-  const [config, setConfig] = useState<EmailConfig>({
-    provider: 'resend',
-    from_email: '',
-    company_name: '',
-    app_url: '',
-    gmail_address: '',
-    gmail_app_password: '',
-    resend_api_key: ''
-  });
-
   // Load email status
   const loadEmailStatus = async () => {
     try {
@@ -62,21 +39,8 @@ const EmailSettings: React.FC = () => {
     }
   };
 
-  // Load email config
-  const loadEmailConfig = async () => {
-    try {
-      const response = await axiosInstance.get('/api/email/config');
-      if (response.data?.config) {
-        setConfig(prev => ({ ...prev, ...response.data.config }));
-      }
-    } catch (error) {
-      console.error('Failed to load email config:', error);
-    }
-  };
-
   useEffect(() => {
     loadEmailStatus();
-    loadEmailConfig();
   }, []);
 
   // Send test email
@@ -84,27 +48,12 @@ const EmailSettings: React.FC = () => {
     try {
       setTestingEmail(true);
       const response = await axiosInstance.post('/api/email/test');
-      toast.success(response.data.message || 'Test email sent successfully!');
+      toast.success(response.data.message || 'Email uji terkirim.');
     } catch (error: any) {
       console.error('Failed to send test email:', error);
-      toast.error(error.response?.data?.error || 'Failed to send test email');
+      toast.error(error.response?.data?.error || 'Email uji gagal dikirim.');
     } finally {
       setTestingEmail(false);
-    }
-  };
-
-  // Save email config
-  const saveConfig = async () => {
-    try {
-      setSavingConfig(true);
-      await axiosInstance.post('/api/email/config', config);
-      toast.success('Email configuration saved successfully!');
-      await loadEmailStatus();
-    } catch (error: any) {
-      console.error('Failed to save config:', error);
-      toast.error(error.response?.data?.error || 'Failed to save configuration');
-    } finally {
-      setSavingConfig(false);
     }
   };
 
@@ -112,7 +61,7 @@ const EmailSettings: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3">Loading email settings...</span>
+        <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">Memuat pengaturan email...</span>
       </div>
     );
   }
