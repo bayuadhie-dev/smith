@@ -56,7 +56,7 @@ const SEGMENT_WORDS: Record<string, string> = {
   'checklist-ng': 'Temuan NG', assets: 'Aset', depreciation: 'Penyusutan',
   'functional-locations': 'Lokasi Fungsional', products: 'Produk',
   categories: 'Kategori', lifecycle: 'Daur Hidup', list: 'Daftar',
-  rnd: 'R&D', projects: 'Proyek', approvals: 'Persetujuan',
+  rnd: 'R&D', projects: 'Proyek', approvals: 'Persetujuan', imports: 'Impor & Ekspor', spc: 'SPC',
   documents: 'Dokumen', templates: 'Template', generate: 'Buat Dokumen',
   manual: 'Panduan', faq: 'Tanya Jawab', approval: 'Persetujuan',
   waste: 'Limbah', notifications: 'Notifikasi',

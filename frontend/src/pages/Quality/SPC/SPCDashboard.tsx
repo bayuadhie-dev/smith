@@ -19,6 +19,7 @@ import {
   PlusCircleIcon,
 } from '@heroicons/react/24/outline';
 import SPCSampleForm from './SPCSampleForm';
+import { PageHeader, KpiStrip } from '../../../components/ui/PageKit';
 
 // ─── Types ───────────────────────────────────
 interface CapabilityBadgeProps { cpk: number | null; }
@@ -114,74 +115,47 @@ export default function SPCDashboard() {
   // control-chart/capability-table content below is intentionally left
   // as-is - only the header + summary cards are in scope.
   return (
-    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="MUTU · SPC"
+        title="Pengendalian Proses Statistik"
+        subtitle="Peta X-bar R, analisis kapabilitas, dan aturan Western Electric."
+        actions={
+          <button
+            onClick={() => setShowForm(true)}
+            className="fn-press inline-flex items-center gap-2 rounded-lg bg-cta-600 px-4 py-2 text-sm font-medium text-white hover:bg-cta-700"
+          >
+            <PlusCircleIcon className="h-4 w-4" />
+            Input Sampel
+          </button>
+        }
+      />
 
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="fn-label mb-1.5">MUTU · SPC</div>
-          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
-            SPC
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
-            X-bar R Chart · Capability Analysis · Western Electric Rules
-          </p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
-        >
-          <PlusCircleIcon className="h-5 w-5" />
-          Input Sample
-        </button>
-      </div>
-
-      {/* Summary Cards - bento */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-lg"><BeakerIcon className="h-6 w-6" /></div>
-            <div>
-              <p className="text-sm opacity-90">Samples Today</p>
-              <p className="text-2xl font-bold">{dashboard.today_samples ?? 0}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className={`bg-gradient-to-br ${dashboard.today_ooc > 0 ? 'from-orange-500 to-orange-700' : 'from-teal-500 to-teal-600'} rounded-xl p-4 text-white shadow-lg`}>
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-lg"><ExclamationTriangleIcon className="h-6 w-6" /></div>
-            <div>
-              <p className="text-sm opacity-90">Out of Control Today</p>
-              <p className="text-2xl font-bold">{dashboard.today_ooc ?? 0}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-lg"><CheckCircleIcon className="h-6 w-6" /></div>
-            <div>
-              <p className="text-sm opacity-90">Capable Parameters</p>
-              <p className="text-2xl font-bold">
-                {capSummary.filter((c: any) => c.status === 'capable').length}
-                <span className="text-sm opacity-75 font-normal"> / {capSummary.length}</span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          { label: 'Sampel hari ini', value: dashboard.today_samples ?? 0 },
+          {
+            label: 'Di luar kendali hari ini',
+            value: dashboard.today_ooc ?? 0,
+            tone: dashboard.today_ooc > 0 ? 'bad' : 'good',
+          },
+          {
+            label: 'Parameter kapabel',
+            value: `${capSummary.filter((c: any) => c.status === 'capable').length} / ${capSummary.length}`,
+          },
+        ]}
+      />
 
       {/* Capability Summary Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="p-5 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Capability Summary</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Ringkasan Kapabilitas</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                {['Product', 'Parameter', 'Cp', 'Cpk', 'Samples', 'OOC', 'Status', 'Chart'].map(h => (
+                {['Produk', 'Parameter', 'Cp', 'Cpk', 'Sampel', 'OOC', 'Status', 'Peta'].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                     {h}
                   </th>
@@ -194,7 +168,7 @@ export default function SPCDashboard() {
                   <td colSpan={8} className="px-4 py-12 text-center text-gray-400">
                     <ChartBarIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                     <p>Belum ada data SPC</p>
-                    <p className="text-sm mt-1">Input sample pertama untuk mulai monitoring</p>
+                    <p className="text-sm mt-1">Masukkan sampel pertama untuk mulai memantau</p>
                   </td>
                 </tr>
               ) : (

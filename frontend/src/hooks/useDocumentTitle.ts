@@ -95,6 +95,7 @@ const ROUTE_TITLES: Record<string, string> = {
   '/app/ews': 'Peringatan Dini',
   '/app/waste': 'Manajemen Limbah',
   '/app/tv-display': 'Layar TV',
+  '/app/imports': 'Impor & Ekspor Data',
   '/app/master-data': 'Master Data',
   '/app/integrations/accurate': 'Integrasi Accurate',
 }

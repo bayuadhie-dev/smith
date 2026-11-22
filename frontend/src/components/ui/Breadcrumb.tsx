@@ -102,6 +102,8 @@ const routeLabels: Record<string, string> = {
   'rnd': 'R&D',
   'manual': 'Panduan',
   'templates': 'Template',
+  'imports': 'Impor & Ekspor',
+  'spc': 'SPC',
   'search': 'Pencarian',
   'faq': 'Tanya Jawab',
   'dcc': 'Pusat Kendali Dokumen',
