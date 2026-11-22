@@ -177,17 +177,14 @@ export default function NettoDeductionRulesManager() {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <div className="flex items-center gap-2">
-            <ScaleIcon className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
-            <div className="fn-label mb-1.5">PENGATURAN · POTONGAN NETTO</div>
-            <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
-              Manajemen Aturan Potongan Netto
-            </h1>
-          </div>
+          <div className="fn-label mb-1.5">PENGATURAN · POTONGAN NETTO</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
+            Aturan Potongan Netto
+          </h1>
           <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
             Potongan berat tetap per produk atau pola nama, dipakai untuk pembulatan <code className="bg-slate-100 dark:bg-gray-700 px-1 py-0.5 rounded text-indigo-600 dark:text-indigo-300 font-mono">ROUND_HALF_UP</code>.
           </p>
