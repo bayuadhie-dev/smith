@@ -57,7 +57,8 @@ const { data: inventory, isLoading } = useGetInventoryQuery({})
 
   return (
     <div className="space-y-6">
-      <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Inventory</h1>
+      <div className="fn-label mb-1.5">GUDANG · PERSEDIAAN</div>
+      <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Persediaan</h1>
 
       {dashboard?.summary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

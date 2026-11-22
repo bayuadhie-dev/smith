@@ -147,7 +147,8 @@ const MaterialView: React.FC = () => {
             Back to Materials
           </button>
           <div>
-            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{material.name}</h1>
+            <div className="fn-label mb-1.5">GUDANG · MATERIAL</div>
+            <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">{material.name}</h1>
             <p className="text-gray-600 dark:text-gray-300">Material Code: {material.code}</p>
           </div>
         </div>

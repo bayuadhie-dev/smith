@@ -58,10 +58,10 @@ const MaterialsList: React.FC = () => {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
 
   const materialTypes = [
-    { value: '', label: 'All Types' },
-    { value: 'raw_materials', label: 'Raw Materials' },
-    { value: 'chemical_materials', label: 'Chemical Materials' },
-    { value: 'packaging_materials', label: 'Packaging Materials' }
+    { value: '', label: 'Semua jenis' },
+    { value: 'raw_materials', label: 'Bahan baku' },
+    { value: 'chemical_materials', label: 'Bahan kimia' },
+    { value: 'packaging_materials', label: 'Bahan kemas' }
   ];
 
   const fetchMaterials = async () => {
@@ -146,16 +146,13 @@ const MaterialsList: React.FC = () => {
   };
 
   const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'raw_materials':
-        return 'Raw Materials';
-      case 'chemical_materials':
-        return 'Chemical Materials';
-      case 'packaging_materials':
-        return 'Packaging Materials';
-      default:
-        return type;
-    }
+    const nama: Record<string, string> = {
+      raw_materials: 'Bahan baku', chemical_materials: 'Bahan kimia',
+      packaging_materials: 'Bahan kemas', finished_goods: 'Barang jadi',
+      wip: 'Setengah jadi', non_inventory: 'Non-persediaan',
+      consumables: 'Habis pakai', spare_parts: 'Suku cadang',
+    };
+    return nama[type] || (type || '').replace(/_/g, ' ');
   };
 
   // Category group mapping
@@ -225,8 +222,9 @@ const MaterialsList: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Daftar Material</h1>
-          <p className="text-gray-600 dark:text-gray-300">Manage your materials inventory and information</p>
+          <div className="fn-label mb-1.5">GUDANG · MATERIAL</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Daftar Material</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Master data material beserta stoknya</p>
         </div>
         <div className="flex space-x-3 flex-wrap">
           <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
@@ -238,7 +236,7 @@ const MaterialsList: React.FC = () => {
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
           >
             <PlusIcon className="h-4 w-4" />
-            <span>Add Material</span>
+            <span>Material baru</span>
           </button>
         </div>
       </div>
@@ -251,7 +249,7 @@ const MaterialsList: React.FC = () => {
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
                 type="text"
-                placeholder="Search materials by name, code, or description..."
+                placeholder="Cari nama, kode, atau keterangan material..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -289,10 +287,10 @@ const MaterialsList: React.FC = () => {
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('products.bom.material')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Jenis</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Kategori</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">UOM</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Cost/Unit</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Harga satuan</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
@@ -338,7 +336,7 @@ const MaterialsList: React.FC = () => {
                         ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
                         : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                     }`}>
-                      {material.is_active ? 'Active' : 'Inactive'}
+                      {material.is_active ? 'Aktif' : 'Nonaktif'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

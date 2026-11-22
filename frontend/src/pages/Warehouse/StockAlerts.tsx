@@ -80,8 +80,8 @@ const StockAlerts: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
-          <ExclamationTriangleIcon className="h-7 w-7 text-amber-500" />
+        <div className="fn-label mb-1.5">GUDANG · PERINGATAN</div>
+        <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
           Peringatan Stok Minimum
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -92,15 +92,15 @@ const StockAlerts: React.FC = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-          <div className="text-sm text-gray-500 dark:text-gray-400">Total Alert</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Total peringatan</div>
           <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{alerts.length}</div>
         </div>
         <div className="bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 p-4">
-          <div className="text-sm text-red-600 dark:text-red-400">Habis (Out of Stock)</div>
+          <div className="text-sm text-red-600 dark:text-red-400">Stok habis</div>
           <div className="text-2xl font-bold text-red-700 dark:text-red-300 mt-1">{summary.out_of_stock}</div>
         </div>
         <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800 p-4">
-          <div className="text-sm text-amber-600 dark:text-amber-400">Stok Rendah (Low Stock)</div>
+          <div className="text-sm text-amber-600 dark:text-amber-400">Di bawah minimum</div>
           <div className="text-2xl font-bold text-amber-700 dark:text-amber-300 mt-1">{summary.low_stock}</div>
         </div>
       </div>

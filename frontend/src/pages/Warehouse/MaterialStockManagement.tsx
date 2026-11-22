@@ -151,8 +151,9 @@ const MaterialStockManagement: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Material Stock Management</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage material inventory and stock levels</p>
+          <div className="fn-label mb-1.5">GUDANG · STOK MATERIAL</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Kelola Stok Material</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Atur stok material dan batas minimumnya</p>
         </div>
       </div>
 
@@ -209,7 +210,7 @@ const MaterialStockManagement: React.FC = () => {
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
-                    <p className="mt-2">Loading materials...</p>
+                    <p className="mt-2">Memuat material...</p>
                   </td>
                 </tr>
               ) : filteredMaterials.length === 0 ? (

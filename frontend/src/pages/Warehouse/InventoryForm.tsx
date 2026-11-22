@@ -188,11 +188,12 @@ const InventoryForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
-            {isEdit ? 'Edit Inventory Item' : 'Add Inventory Item'}
+          <div className="fn-label mb-1.5">GUDANG · BARIS STOK</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
+            {isEdit ? 'Ubah Baris Stok' : 'Tambah Baris Stok'}
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {isEdit ? 'Update inventory item details' : 'Add new inventory item to warehouse'}
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {isEdit ? 'Perbarui rincian baris stok' : 'Catat baris stok baru di gudang'}
           </p>
         </div>
       </div>

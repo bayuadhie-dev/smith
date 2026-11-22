@@ -171,11 +171,12 @@ const LocationForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
-            {isEdit ? 'Edit Location' : 'Add Location'}
+          <div className="fn-label mb-1.5">GUDANG · LOKASI</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
+            {isEdit ? 'Ubah Lokasi' : 'Tambah Lokasi'}
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {isEdit ? 'Update warehouse location details' : 'Add new location to warehouse zone'}
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {isEdit ? 'Perbarui rincian lokasi penyimpanan' : 'Tambahkan lokasi baru di dalam satu gudang'}
           </p>
         </div>
       </div>

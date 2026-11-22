@@ -9,7 +9,8 @@ const { data: zones } = useGetWarehouseZonesQuery({})
 
   return (
     <div className="space-y-6">
-      <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Lokasi Gudang</h1>
+      <div className="fn-label mb-1.5">GUDANG · LOKASI</div>
+      <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Lokasi Gudang</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {zones?.zones?.map((zone: any) => (

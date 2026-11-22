@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { useGetABCAnalysisQuery } from '../../services/api'
 import { useLanguage } from '../../contexts/LanguageContext';
+import { CategoryBars, Panel } from '../../components/ui/PageKit';
+import { formatRupiah } from '../../utils/currencyUtils';
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -8,7 +10,7 @@ import {
   CubeIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, BarChart, CartesianGrid, XAxis, YAxis, Bar, ScatterChart, Scatter } from 'recharts';
+import { ResponsiveContainer, Tooltip, CartesianGrid, XAxis, YAxis, ScatterChart, Scatter } from 'recharts';
 import { useUrlFilter } from '../../hooks/useUrlState'
 
 export default function ABCAnalysis() {
@@ -102,13 +104,14 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">ABC Analysis</h1>
-          <p className="text-gray-600 dark:text-gray-300">Product classification based on value and consumption patterns</p>
+          <div className="fn-label mb-1.5">GUDANG · ANALISIS ABC</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Analisis ABC</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Pengelompokan barang menurut nilai dan pemakaiannya</p>
         </div>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
             <InformationCircleIcon className="h-5 w-5" />
-            <span>A: High Value | B: Medium Value | C: Low Value</span>
+            <span>A: nilai terbesar · B: menengah · C: kecil</span>
           </div>
         </div>
       </div>
@@ -116,78 +119,51 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
       {/* ABC Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {categorySummary.map((category) => (
-          <div key={category.category} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div key={category.category} className="fn-card p-6">
             <div className="flex items-center justify-between mb-4">
               <div className={`px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(category.category)}`}>
-                Category {category.category}
+                Kelas {category.category}
               </div>
               <CubeIcon className="h-6 w-6 text-gray-400" />
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Products:</span>
+                <span className="fn-label">Barang</span>
                 <span className="font-medium">{category.count}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Total Value:</span>
-                <span className="font-medium">${category.totalValue.toLocaleString()}</span>
+                <span className="fn-label">Total nilai</span>
+                <span className="fn-num font-medium">{formatRupiah(category.totalValue)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Avg Consumption:</span>
-                <span className="font-medium">{category.avgConsumption.toFixed(1)}/month</span>
+                <span className="fn-label">Rata-rata pakai</span>
+                <span className="fn-num font-medium">{category.avgConsumption.toFixed(1)} / bulan</span>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Category Distribution by Count */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Product Distribution by Category</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={categorySummary}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  dataKey="count"
-                  label={({ category, count, percent }) => `${category}: ${count} (${(percent * 100).toFixed(0)}%)`}
-                >
-                  {categorySummary.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value: number) => [value, t('navigation.products')]} />
-              </PieChart>
-            </ResponsiveContainer>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Dulu bagian ini memasang donat dan batang untuk data yang sama. */}
+        <Panel title="Jumlah barang per kelas">
+          <div className="p-4">
+            <CategoryBars items={categorySummary.map((c) => ({ label: `Kelas ${c.category}`, value: c.count }))} unit="barang" />
           </div>
-        </div>
-
-        {/* Category Distribution by Value */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Value Distribution by Category</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={categorySummary}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="category" />
-                <YAxis tickFormatter={(value) => `$${(value/1000).toFixed(0)}K`} />
-                <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Total Value']} />
-                <Bar dataKey="totalValue" fill="#3B82F6" />
-              </BarChart>
-            </ResponsiveContainer>
+        </Panel>
+        <Panel title="Nilai stok per kelas">
+          <div className="p-4">
+            <CategoryBars
+              items={categorySummary.map((c) => ({ label: `Kelas ${c.category}`, value: c.totalValue }))}
+              format={formatRupiah}
+            />
           </div>
-        </div>
+        </Panel>
       </div>
 
       {/* Consumption vs Value Scatter Plot */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Consumption vs Value Analysis</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Pemakaian dibanding nilai</h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart data={classifications}>
@@ -199,16 +175,16 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
               />
               <YAxis 
                 dataKey="average_monthly_consumption" 
-                name="Monthly Consumption"
+                name="Pemakaian per bulan"
               />
               <Tooltip 
                 formatter={(value: number, name: string) => [
-                  name === 'Total Value' ? `$${value.toLocaleString()}` : value.toFixed(1),
+                  name === 'Total nilai' ? formatRupiah(value) : value.toFixed(1),
                   name
                 ]}
                 labelFormatter={(label, payload) => {
                   if (payload && payload[0]) {
-                    return `Product: ${payload[0].payload.product_name}`
+                    return payload[0].payload.product_name
                   }
                   return label
                 }}
@@ -226,9 +202,9 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
       {/* Detailed Classification Table */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Product Classifications</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Daftar klasifikasi</h3>
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            {classifications.length} products classified
+            {classifications.length} barang terklasifikasi
           </div>
         </div>
         

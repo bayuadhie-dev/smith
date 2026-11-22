@@ -156,8 +156,9 @@ const MaterialCreate: React.FC = () => {
             Back to Materials
           </button>
           <div>
-            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Create New Material</h1>
-            <p className="text-gray-600 dark:text-gray-300">Add a new material to your inventory</p>
+            <div className="fn-label mb-1.5">GUDANG · MATERIAL</div>
+            <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Material Baru</h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Tambahkan material ke daftar barang</p>
           </div>
         </div>
         <div className="flex space-x-3">

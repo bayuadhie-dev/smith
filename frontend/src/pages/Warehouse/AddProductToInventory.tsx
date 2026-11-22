@@ -151,7 +151,7 @@ export default function AddProductToInventory() {
           <ArrowLeftIcon className="h-6 w-6" />
         </Link>
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Tambah Produk ke Inventori</h1>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Tambah Produk ke Persediaan</h1>
           <p className="text-gray-600 dark:text-gray-300">Input stok produk jadi ke gudang</p>
         </div>
       </div>

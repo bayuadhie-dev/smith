@@ -340,7 +340,8 @@ const StockInput: React.FC = () => {
               {t('warehouse.back_to_inventory')}
             </Link>
             <div>
-              <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{t('warehouse.stock_input')}</h1>
+              <div className="fn-label mb-1.5">GUDANG · INPUT MATERIAL</div>
+              <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">{t('warehouse.stock_input')}</h1>
               <p className="text-gray-600 mt-1 dark:text-gray-300">{t('warehouse.stock_input_desc')}</p>
             </div>
           </div>
@@ -348,7 +349,7 @@ const StockInput: React.FC = () => {
             {fetchingData ? (
               <div className="flex items-center text-gray-500 dark:text-gray-400">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500 mr-2"></div>
-                <span className="text-sm">Loading data...</span>
+                <span className="text-sm">Memuat data...</span>
               </div>
             ) : (
               <>
@@ -427,7 +428,7 @@ const StockInput: React.FC = () => {
               <div className="flex items-center space-x-4">
                 {/* Item Type Selector */}
                 <div className="flex items-center space-x-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Add:</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Tambah:</label>
                   <select
                     value={selectedItemType}
                     onChange={(e) => setSelectedItemType(e.target.value as 'product' | 'material')}

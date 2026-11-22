@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { CategoryBars, KpiStrip, PageHeader, Panel, QuickLinks } from '../../components/ui/PageKit';
 import {
   ArrowTrendingUpIcon,
   CubeIcon,
@@ -30,6 +30,35 @@ interface DashboardData {
     reference_number: string;
     created_at: string;
   }>;
+}
+
+/** Nama jenis material dalam Bahasa Indonesia. */
+const NAMA_JENIS: Record<string, string> = {
+  'raw materials': 'Bahan baku',
+  'packaging materials': 'Bahan kemas',
+  'chemical materials': 'Bahan kimia',
+  'finished goods': 'Barang jadi',
+  'wip': 'Barang setengah jadi',
+  'non inventory': 'Non-persediaan',
+  'consumables': 'Barang habis pakai',
+  'spare parts': 'Suku cadang',
+};
+
+/**
+ * Satu jenis bisa tersimpan dengan dua ejaan ("Raw Materials" dan
+ * "Raw_Materials") sehingga dulu muncul sebagai dua batang terpisah.
+ * Kuncinya dinormalkan dulu, lalu jumlahnya digabung.
+ */
+function jenisMaterial(rows: Array<{ type: string; count: number; label?: string }>) {
+  const map = new Map<string, { label: string; value: number }>();
+  rows.forEach((r) => {
+    const kunci = (r.type || r.label || '').toString().replace(/_/g, ' ').trim().toLowerCase();
+    const label = NAMA_JENIS[kunci] || (kunci ? kunci.replace(/\b\w/g, (c) => c.toUpperCase()) : 'Tanpa jenis');
+    const ada = map.get(label);
+    if (ada) ada.value += r.count;
+    else map.set(label, { label, value: r.count });
+  });
+  return Array.from(map.values()).sort((a, b) => b.value - a.value);
 }
 
 const MaterialsDashboard: React.FC = () => {
@@ -71,7 +100,6 @@ const MaterialsDashboard: React.FC = () => {
     fetchDashboardData();
   }, []);
 
-  const COLORS = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B'];
 
   const getMovementTypeColor = (type: string) => {
     switch (type) {
@@ -89,18 +117,18 @@ const MaterialsDashboard: React.FC = () => {
   };
 
   const getMovementTypeLabel = (type: string) => {
-    switch (type) {
-      case 'stock_in':
-        return 'Stock In';
-      case 'stock_out':
-        return 'Stock Out';
-      case 'transfer':
-        return 'Transfer';
-      case 'adjustment':
-        return 'Adjustment';
-      default:
-        return type;
-    }
+    // Kunci yang benar-benar ditulis sistem, bukan cuma empat yang dulu
+    // ditebak - sisanya tampil sebagai kode mentah seperti "adjust".
+    const nama: Record<string, string> = {
+      stock_in: 'Stok masuk', stock_out: 'Stok keluar',
+      transfer: 'Pemindahan', transfer_in: 'Terima pemindahan', transfer_out: 'Kirim pemindahan',
+      adjustment: 'Penyesuaian', adjust: 'Penyesuaian',
+      goods_receipt: 'Penerimaan', receive: 'Penerimaan',
+      material_issue: 'Permintaan barang', issue: 'Pengeluaran',
+      production_output: 'Hasil produksi', production_consumption: 'Pemakaian produksi',
+      qc_disposition: 'Keputusan QC', qc_disposition_out: 'Keputusan QC',
+    };
+    return nama[type] || type;
   };
 
   if (loading) {
@@ -119,203 +147,87 @@ const MaterialsDashboard: React.FC = () => {
     );
   }
 
-  // 2026-10-07: Axion bento-grid restyle (tier-2 sub-dashboard). Charts/
-  // table/quick-action details below are intentionally left as-is -
-  // only the header + summary cards are in scope.
   return (
-    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
-      {/* Header */}
-      <div className="flex flex-wrap justify-between items-center gap-3">
-        <div>
-          <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">Dashboard Barang & Material</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Overview of your materials inventory and activities</p>
-        </div>
-        <button
-          onClick={() => navigate('/app/warehouse/materials/list')}
-          className="bg-gradient-to-br from-primary-600 to-primary-700 hover:shadow-lg transition-shadow text-white px-4 py-2 rounded-lg flex items-center space-x-2 text-sm font-medium"
+    <div className="mx-auto max-w-6xl space-y-5 pb-10">
+      <PageHeader
+        eyebrow="GUDANG · BARANG & MATERIAL"
+        title="Dashboard Barang & Material"
+        subtitle="Ringkasan master material dan pergerakannya"
+        actions={
+          <button onClick={() => navigate('/app/warehouse/materials/list')} className="btn-primary">
+            <EyeIcon className="h-4 w-4" />
+            Lihat semua material
+          </button>
+        }
+      />
+
+      <KpiStrip
+        items={[
+          { label: 'Total material', value: dashboardData.summary.total_materials.toLocaleString('id-ID'), hint: 'di master barang' },
+          { label: 'Material aktif', value: dashboardData.summary.active_materials.toLocaleString('id-ID'), hint: 'masih dipakai' },
+          { label: 'Punya stok', value: dashboardData.summary.materials_with_stock.toLocaleString('id-ID'), hint: 'ada isinya di gudang' },
+          { label: 'Nilai persediaan', value: `Rp ${dashboardData.summary.total_inventory_value.toLocaleString('id-ID')}`, hint: 'jumlah stok x harga master' },
+        ]}
+      />
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Dulu halaman ini menggambar data yang sama dua kali - donat dan
+            batang bersebelahan. Satu daftar batang sudah cukup, dan angkanya
+            terbaca langsung. */}
+        <Panel title="Material menurut jenis">
+          <div className="p-4">
+            {(dashboardData.by_type || []).length === 0 ? (
+              <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data.</p>
+            ) : (
+              <CategoryBars items={jenisMaterial(dashboardData.by_type || [])} unit="material" />
+            )}
+          </div>
+        </Panel>
+
+        <Panel
+          title="Mutasi material terbaru"
+          action={<button onClick={() => navigate('/app/warehouse/movements')} className="fn-label hover:underline">Lihat semua</button>}
         >
-          <EyeIcon className="h-4 w-4" />
-          <span>View All Materials</span>
-        </button>
-      </div>
-
-      {/* Summary Cards - bento: Total Materials spans 2 cols (primary metric) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <CubeIcon className="w-5 h-5" />
-            </div>
-            <p className="text-sm opacity-90">Total Materials</p>
-          </div>
-          <p className="text-3xl font-bold">{dashboardData.summary.total_materials.toLocaleString()}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <ArrowTrendingUpIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Active Materials</p>
-          <p className="text-2xl font-bold">{dashboardData.summary.active_materials.toLocaleString()}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <ExclamationTriangleIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">With Stock</p>
-          <p className="text-2xl font-bold">{dashboardData.summary.materials_with_stock.toLocaleString()}</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <ClockIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Inventory Value</p>
-          <p className="text-xl font-bold">Rp {dashboardData.summary.total_inventory_value.toLocaleString('id-ID')}</p>
-        </div>
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Materials by Type - Pie Chart */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Materials by Type</h3>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={dashboardData?.by_type || []}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ label, percent }) => `${label} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {(dashboardData?.by_type || []).map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Materials by Type - Bar Chart */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Material Count by Type</h3>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dashboardData?.by_type || []}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="label" 
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#3B82F6" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Movements */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Material Movements</h3>
-            <button className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 flex items-center space-x-1">
-              <span>View All</span>
-              <ArrowRightIcon className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-        <div className="p-6">
-          {dashboardData.recent_movements.length > 0 ? (
-            <div className="space-y-4">
-              {dashboardData.recent_movements.map((movement) => (
-                <div key={movement.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${getMovementTypeColor(movement.movement_type)}`}>
-                      {getMovementTypeLabel(movement.movement_type)}
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {movement.reference_number}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Quantity: {movement.quantity.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(movement.created_at).toLocaleDateString('id-ID')}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {new Date(movement.created_at).toLocaleTimeString('id-ID')}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+          {dashboardData.recent_movements.length === 0 ? (
+            <p className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+              Belum ada mutasi material.
+            </p>
           ) : (
-            <div className="text-center py-8">
-              <CubeIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No recent movements</h3>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Material movements will appear here when they occur.
-              </p>
-            </div>
+            <ul className="divide-y divide-gray-200/70 dark:divide-gray-700/70">
+              {dashboardData.recent_movements.map((movement) => (
+                <li key={movement.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${getMovementTypeColor(movement.movement_type)}`}>
+                      {getMovementTypeLabel(movement.movement_type)}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="fn-num truncate text-sm font-medium text-gray-900 dark:text-white">
+                        {movement.reference_number || '-'}
+                      </p>
+                      <p className="fn-label truncate">{movement.quantity.toLocaleString('id-ID')} satuan</p>
+                    </div>
+                  </div>
+                  <span className="fn-label shrink-0">
+                    {new Date(movement.created_at).toLocaleDateString('id-ID')}
+                  </span>
+                </li>
+              ))}
+            </ul>
           )}
-        </div>
+        </Panel>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button 
-            onClick={() => navigate('/app/warehouse/materials/new')}
-            className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-left"
-          >
-            <CubeIcon className="h-8 w-8 text-blue-600 mb-2 dark:text-blue-400" />
-            <h4 className="font-medium text-gray-900 dark:text-white">Add New Material</h4>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Create a new material record</p>
-          </button>
-          <button 
-            onClick={() => navigate('/app/warehouse/stock-input')}
-            className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-left"
-          >
-            <ArrowTrendingUpIcon className="h-8 w-8 text-green-600 mb-2 dark:text-green-400" />
-            <h4 className="font-medium text-gray-900 dark:text-white">Stock Input</h4>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Record material stock receipt</p>
-          </button>
-          <button 
-            onClick={() => navigate('/app/warehouse/materials/list?filter=low_stock')}
-            className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-left"
-          >
-            <ExclamationTriangleIcon className="h-8 w-8 text-yellow-600 mb-2 dark:text-yellow-400" />
-            <h4 className="font-medium text-gray-900 dark:text-white">Low Stock Report</h4>
-            <p className="text-sm text-gray-500 dark:text-gray-400">View materials with low stock</p>
-          </button>
-        </div>
-      </div>
+      <QuickLinks
+        title="Pintasan"
+        links={[
+          { to: '/app/warehouse/materials/new', label: 'Material baru' },
+          { to: '/app/warehouse/stock-input', label: 'Input stok material' },
+          { to: '/app/warehouse/materials/list?filter=low_stock', label: 'Material di bawah minimum' },
+          { to: '/app/warehouse/movements', label: 'Mutasi stok' },
+          { to: '/app/warehouse/uom', label: 'Satuan barang' },
+          { to: '/app/warehouse/inventory', label: 'Penambahan bahan baku' },
+        ]}
+      />
     </div>
   );
 };
