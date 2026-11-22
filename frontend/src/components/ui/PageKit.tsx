@@ -162,6 +162,15 @@ export const Segmented = <T extends string>({ value, onChange, options, size = '
   </div>
 )
 
+/** Ukuran huruf angka pahlawan, mengecil kalau teksnya panjang. */
+const ukuranAngka = (value: number, format?: (n: number) => string) => {
+  const teks = format ? format(value) : Math.round(value).toLocaleString('id-ID')
+  if (teks.length > 16) return 'text-[30px]'
+  if (teks.length > 12) return 'text-[38px]'
+  if (teks.length > 9) return 'text-[46px]'
+  return 'text-[56px]'
+}
+
 /**
  * Angka besar yang jadi pusat halaman, beserta perbandingan dan statistik
  * pendampingnya. `right` diisi diagram - lihat RunChart.
@@ -182,9 +191,13 @@ export const HeroStat = ({ label, value, format, delta, note, stats, right, load
       <span className="fn-label">{label}</span>
       {action}
     </div>
-    <div className="grid gap-4 px-5 pb-5 pt-2 lg:grid-cols-[minmax(200px,260px)_1fr]">
-      <div>
-        <div className="text-[56px] font-semibold leading-none tracking-tight text-gray-900 dark:text-white">
+    <div className="grid gap-4 px-5 pb-5 pt-2 lg:grid-cols-[minmax(220px,320px)_1fr]">
+      <div className="min-w-0">
+        {/* Angka rupiah bisa 15 karakter - pada 56px itu melimpah keluar kolom
+            dan menimpa diagram di sebelahnya. Ukurannya mengikuti panjang
+            teks akhir (bukan nilai sementara saat menghitung naik, supaya
+            tidak gonta-ganti ukuran selama animasi). */}
+        <div className={`${ukuranAngka(value, format)} min-w-0 break-words font-semibold leading-none tracking-tight text-gray-900 dark:text-white`}>
           <CountUp value={value} format={format} />
         </div>
         {delta && (
@@ -298,3 +311,42 @@ export const TaskQueue = ({ title = 'Butuh kamu', items, action, footer, empty =
     {footer && <div className="fn-label border-t border-gray-200/70 px-4 py-2.5 dark:border-gray-700/70">{footer}</div>}
   </section>
 )
+
+/**
+ * Perbandingan antar kategori sebagai batang mendatar.
+ *
+ * Pengganti diagram donat/batang untuk data yang cuma 3-6 kategori: angkanya
+ * terbaca langsung (donat memaksa mata menaksir sudut), dan tidak perlu
+ * pustaka diagram sama sekali.
+ */
+export const CategoryBars = ({ items, format, unit }: {
+  items: { label: string; value: number; hint?: ReactNode; tone?: Tone }[]
+  format?: (n: number) => string
+  unit?: string
+}) => {
+  const max = Math.max(1, ...items.map((i) => i.value))
+  const fmt = format || ((n: number) => n.toLocaleString('id-ID'))
+  return (
+    <ul className="space-y-2.5">
+      {items.map((it) => (
+        <li key={it.label}>
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="truncate text-sm text-gray-700 dark:text-gray-200">{it.label}</span>
+            <span className="fn-num shrink-0 text-sm font-medium text-gray-900 dark:text-white">
+              {fmt(it.value)}{unit ? ` ${unit}` : ''}
+            </span>
+          </div>
+          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-gray-200/70 dark:bg-gray-700/70">
+            <div
+              className={`h-full rounded-full ${
+                it.tone === 'bad' ? 'bg-red-500' : it.tone === 'warn' ? 'bg-amber-500' : 'bg-gray-800 dark:bg-gray-300'
+              }`}
+              style={{ width: `${Math.max(2, (it.value / max) * 100)}%` }}
+            />
+          </div>
+          {it.hint && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{it.hint}</p>}
+        </li>
+      ))}
+    </ul>
+  )
+}

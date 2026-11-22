@@ -1489,87 +1489,179 @@ def get_warehouse_dashboard():
         ).scalar()
         total_inventory_value = float(product_value or 0) + float(material_value or 0)
         
-        # Movement summary (last 30 days)
+        # Mutasi dibaca dari inventory_transactions - tabel inventory_movements
+        # tidak pernah terisi (0 baris di produksi), jadi ringkasan lama selalu
+        # nol dan dashboard terlihat seperti gudang yang tidak pernah bergerak.
+        from models.wms_advanced import InventoryTransaction
+        from sqlalchemy import case
+        tujuh_hari = end_date - timedelta(days=7)
+        baris_mutasi = db.session.query(
+            InventoryTransaction.transaction_type,
+            InventoryTransaction.direction,
+            func.count(InventoryTransaction.id),
+            func.coalesce(func.sum(InventoryTransaction.quantity), 0),
+        ).filter(InventoryTransaction.transaction_date >= tujuh_hari).group_by(
+            InventoryTransaction.transaction_type, InventoryTransaction.direction
+        ).all()
+
+        mutasi_7hari = {'receipts': 0, 'issues': 0, 'transfers': 0, 'adjustments': 0}
+        total_in = total_out = 0.0
+        total_movements = 0
+        for jenis, arah, jumlah, qty in baris_mutasi:
+            total_movements += int(jumlah or 0)
+            if arah == 'in':
+                total_in += float(qty or 0)
+            else:
+                total_out += float(qty or 0)
+            j = (jenis or '').lower()
+            if 'receipt' in j or j in ('stock_in', 'transfer_in', 'production_output'):
+                mutasi_7hari['receipts'] += int(jumlah or 0)
+            elif 'issue' in j or j in ('stock_out', 'production_consumption', 'shipping'):
+                mutasi_7hari['issues'] += int(jumlah or 0)
+            elif 'transfer' in j:
+                mutasi_7hari['transfers'] += int(jumlah or 0)
+            else:
+                mutasi_7hari['adjustments'] += int(jumlah or 0)
+
+        class MovementSummary:
+            pass
+        movement_summary = MovementSummary()
+        movement_summary.total_movements = total_movements
+        movement_summary.total_in = total_in
+        movement_summary.total_out = total_out
+
+        # Isi lokasi dibanding kapasitasnya - hanya lokasi yang memang
+        # dibatasi kapasitasnya yang ikut dihitung (kapasitas 0 = tanpa batas).
+        kapasitas_total = db.session.query(
+            func.coalesce(func.sum(WarehouseLocation.capacity), 0)
+        ).filter(WarehouseLocation.is_active == True, WarehouseLocation.capacity > 0).scalar()  # noqa: E712
+        terpakai_total = db.session.query(
+            func.coalesce(func.sum(Inventory.quantity_on_hand), 0)
+        ).join(WarehouseLocation, Inventory.location_id == WarehouseLocation.id).filter(
+            Inventory.is_active == True, WarehouseLocation.capacity > 0  # noqa: E712
+        ).scalar()
+        # None, bukan 0: kalau tidak ada satu pun lokasi yang dibatasi
+        # kapasitasnya, "0%" itu bohong - yang benar "belum diukur".
+        utilisasi_lokasi = (round(float(terpakai_total or 0) / float(kapasitas_total) * 100, 1)
+                            if float(kapasitas_total or 0) > 0 else None)
+
+        # Batch yang kedaluwarsa dalam 30 hari ke depan dan masih ada isinya.
+        hampir_kedaluwarsa = db.session.query(func.count(Inventory.id)).filter(
+            Inventory.is_active == True,  # noqa: E712
+            Inventory.quantity_on_hand > 0,
+            Inventory.expiry_date.isnot(None),
+            Inventory.expiry_date <= (end_date.date() + timedelta(days=30)),
+        ).scalar() or 0
+
+        # Peringatan gudang (tabel yang sama dengan halaman Peringatan).
         try:
-            from sqlalchemy import case
-            movement_summary = db.session.query(
-                func.count(InventoryMovement.id).label('total_movements'),
-                func.sum(case((InventoryMovement.movement_type == 'stock_in', InventoryMovement.quantity), else_=0)).label('total_in'),
-                func.sum(case((InventoryMovement.movement_type == 'stock_out', InventoryMovement.quantity), else_=0)).label('total_out')
-            ).filter(
-                InventoryMovement.movement_date >= start_date
-            ).first()
-        except:
-            # Fallback if movement query fails
-            class MovementSummary:
-                total_movements = 0
-                total_in = 0
-                total_out = 0
-            movement_summary = MovementSummary()
+            from models.warehouse_enhanced import WarehouseAlert
+            peringatan_aktif = WarehouseAlert.query.filter_by(status='active').count()
+            peringatan_kritis = WarehouseAlert.query.filter_by(status='active', severity='critical').count()
+        except Exception:
+            peringatan_aktif = peringatan_kritis = 0
         
-        # Low stock alerts
+        # Stok di bawah minimum. Material ikut dihitung - sebelumnya hanya
+        # produk jadi, padahal yang paling sering kehabisan justru bahan baku.
         try:
             low_stock_items = db.session.query(
-                Product.id,
-                Product.code,
-                Product.name,
-                Inventory.quantity_on_hand,
-                Product.min_stock_level
+                Product.id, Product.code, Product.name,
+                Inventory.quantity_on_hand, Product.min_stock_level
             ).join(Inventory).filter(
-                and_(
-                    Inventory.quantity_on_hand <= Product.min_stock_level,
-                    Product.min_stock_level > 0
-                )
+                and_(Inventory.quantity_on_hand <= Product.min_stock_level,
+                     Product.min_stock_level > 0)
             ).all()
-        except:
+            low_stock_materials = db.session.query(
+                Material.id, Material.code, Material.name,
+                Inventory.quantity_on_hand, Material.min_stock_level
+            ).join(Inventory, Inventory.material_id == Material.id).filter(
+                and_(Inventory.quantity_on_hand <= Material.min_stock_level,
+                     Material.min_stock_level > 0)
+            ).all()
+            low_stock_items = list(low_stock_items) + list(low_stock_materials)
+        except Exception:
             low_stock_items = []
         
-        # ABC Analysis
+        # Analisis ABC: jumlah barang per kelas sekaligus nilainya, supaya
+        # terlihat bahwa kelas A sedikit barang tapi besar nilainya.
+        abc_nilai = {'A': {'count': 0, 'value': 0.0}, 'B': {'count': 0, 'value': 0.0}, 'C': {'count': 0, 'value': 0.0}}
         try:
-            from sqlalchemy import case
-            abc_analysis = db.session.query(
-                func.count(case((Product.abc_category == 'A', 1))).label('category_a'),
-                func.count(case((Product.abc_category == 'B', 1))).label('category_b'),
-                func.count(case((Product.abc_category == 'C', 1))).label('category_c')
-            ).join(Inventory).first()
-        except:
-            # Fallback if ABC analysis fails
-            class ABCAnalysis:
-                category_a = 0
-                category_b = 0
-                category_c = 0
-            abc_analysis = ABCAnalysis()
+            for kelas, jumlah, nilai in db.session.query(
+                Product.abc_category,
+                func.count(func.distinct(Product.id)),
+                func.coalesce(func.sum(Inventory.quantity_on_hand * Product.cost), 0),
+            ).join(Inventory, Inventory.product_id == Product.id).filter(
+                Product.abc_category.isnot(None), Inventory.is_active == True  # noqa: E712
+            ).group_by(Product.abc_category).all():
+                if kelas in abc_nilai:
+                    abc_nilai[kelas] = {'count': int(jumlah or 0), 'value': float(nilai or 0)}
+        except Exception:
+            pass
+
+        class ABCAnalysis:
+            pass
+        abc_analysis = ABCAnalysis()
+        abc_analysis.category_a = abc_nilai['A']['count']
+        abc_analysis.category_b = abc_nilai['B']['count']
+        abc_analysis.category_c = abc_nilai['C']['count']
         
-        # Recent movements
+        # Mutasi terbaru - juga dari inventory_transactions, dan materialnya
+        # ikut (yang paling banyak bergerak di pabrik ini justru bahan baku).
+        mutasi_terbaru = []
         try:
-            recent_movements = db.session.query(
-                InventoryMovement.id,
-                InventoryMovement.movement_type,
-                InventoryMovement.quantity,
-                InventoryMovement.movement_date,
-                Product.code.label('product_code'),
-                Product.name.label('product_name'),
-                WarehouseLocation.location_code
-            ).join(Inventory).join(Product, Inventory.product_id == Product.id).join(WarehouseLocation).order_by(
-                InventoryMovement.movement_date.desc()
-            ).limit(10).all()
-        except:
-            recent_movements = []
-        
-        # Top products by movement
+            nama_lokasi = {l.id: l.location_code for l in WarehouseLocation.query.all()}
+            for t in InventoryTransaction.query.order_by(
+                InventoryTransaction.transaction_date.desc(), InventoryTransaction.id.desc()
+            ).limit(10).all():
+                obj = (db.session.get(Material, t.material_id) if t.material_id
+                       else (db.session.get(Product, t.product_id) if t.product_id else None))
+                mutasi_terbaru.append({
+                    'id': t.id,
+                    'type': t.transaction_type,
+                    'movement_type': t.transaction_type,
+                    'direction': t.direction,
+                    'quantity': float(t.quantity or 0),
+                    'date': t.transaction_date.isoformat() if t.transaction_date else None,
+                    'movement_date': t.transaction_date.isoformat() if t.transaction_date else None,
+                    'product': getattr(obj, 'name', '') or '',
+                    'product_name': getattr(obj, 'name', '') or '',
+                    'product_code': getattr(obj, 'code', '') or '',
+                    'location': nama_lokasi.get(t.to_location_id) or nama_lokasi.get(t.from_location_id) or '-',
+                    'location_code': nama_lokasi.get(t.to_location_id) or nama_lokasi.get(t.from_location_id) or '-',
+                    'batch_number': t.batch_number,
+                })
+        except Exception:
+            mutasi_terbaru = []
+
+        # Barang bernilai tertinggi: nilai stok yang sedang dipegang
+        # (jumlah x harga master), bukan banyaknya mutasi - yang ditanyakan
+        # orang gudang adalah "nilai apa yang menumpuk di sini".
+        barang_teratas = []
         try:
-            top_products = db.session.query(
-                Product.id,
-                Product.code,
-                Product.name,
-                func.sum(InventoryMovement.quantity).label('total_movement')
-            ).join(Inventory).join(InventoryMovement).filter(
-                InventoryMovement.movement_date >= start_date
-            ).group_by(Product.id, Product.code, Product.name).order_by(
-                func.sum(InventoryMovement.quantity).desc()
-            ).limit(10).all()
-        except:
-            top_products = []
+            q_produk = db.session.query(
+                Product.id, Product.code, Product.name,
+                func.sum(Inventory.quantity_on_hand).label('qty'),
+                func.coalesce(func.sum(Inventory.quantity_on_hand * Product.cost), 0).label('nilai'),
+            ).join(Inventory, Inventory.product_id == Product.id).filter(
+                Inventory.is_active == True  # noqa: E712
+            ).group_by(Product.id, Product.code, Product.name)
+            q_material = db.session.query(
+                Material.id, Material.code, Material.name,
+                func.sum(Inventory.quantity_on_hand).label('qty'),
+                func.coalesce(func.sum(Inventory.quantity_on_hand * Material.cost_per_unit), 0).label('nilai'),
+            ).join(Inventory, Inventory.material_id == Material.id).filter(
+                Inventory.is_active == True  # noqa: E712
+            ).group_by(Material.id, Material.code, Material.name)
+            gabungan = list(q_produk.all()) + list(q_material.all())
+            gabungan.sort(key=lambda r: float(r.nilai or 0), reverse=True)
+            barang_teratas = [{
+                'id': r.id, 'code': r.code, 'name': r.name,
+                'quantity': float(r.qty or 0),
+                'value': float(r.nilai or 0),
+                'total_movement': float(r.qty or 0),
+            } for r in gabungan[:10]]
+        except Exception:
+            barang_teratas = []
         
         return jsonify({
             'summary': {
@@ -1580,18 +1672,26 @@ def get_warehouse_dashboard():
                 'total_materials': int(material_inventory.total_items or 0),
                 'total_quantity': float(total_inventory_quantity),
                 'total_value': total_inventory_value,
-                'low_stock_count': len(low_stock_items)
+                'low_stock_count': len(low_stock_items),
+                # Dibaca halaman Dashboard Gudang:
+                'low_stock_items': len(low_stock_items),
+                'expiring_soon': int(hampir_kedaluwarsa),
+                'location_utilization': utilisasi_lokasi,
+                'active_alerts': int(peringatan_aktif),
+                'critical_alerts': int(peringatan_kritis),
             },
             'movements': {
                 'total_movements': int(movement_summary.total_movements or 0),
                 'total_in': float(movement_summary.total_in or 0),
                 'total_out': float(movement_summary.total_out or 0),
-                'net_movement': float((movement_summary.total_in or 0) - (movement_summary.total_out or 0))
+                'net_movement': float((movement_summary.total_in or 0) - (movement_summary.total_out or 0)),
+                **mutasi_7hari,
             },
             'abc_analysis': {
                 'category_a': int(abc_analysis.category_a or 0),
                 'category_b': int(abc_analysis.category_b or 0),
-                'category_c': int(abc_analysis.category_c or 0)
+                'category_c': int(abc_analysis.category_c or 0),
+                'A': abc_nilai['A'], 'B': abc_nilai['B'], 'C': abc_nilai['C'],
             },
             'low_stock_items': [{
                 'id': item.id,
@@ -1600,21 +1700,8 @@ def get_warehouse_dashboard():
                 'current_quantity': float(item.quantity_on_hand),
                 'minimum_stock': float(item.min_stock_level)
             } for item in low_stock_items],
-            'recent_movements': [{
-                'id': movement.id,
-                'movement_type': movement.movement_type,
-                'quantity': float(movement.quantity),
-                'movement_date': movement.movement_date.isoformat(),
-                'product_code': movement.product_code,
-                'product_name': movement.product_name,
-                'location_code': movement.location_code
-            } for movement in recent_movements],
-            'top_products': [{
-                'id': product.id,
-                'code': product.code,
-                'name': product.name,
-                'total_movement': float(product.total_movement)
-            } for product in top_products]
+            'recent_movements': mutasi_terbaru,
+            'top_products': barang_teratas
         }), 200
         
     except Exception as e:
