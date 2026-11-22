@@ -210,6 +210,7 @@ const OpportunityForm = () => {
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
+            <div className="fn-label mb-1.5">PENJUALAN · PELUANG</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">🎯 {isEditMode ? 'Edit Opportunity' : t('sales.new_opportunity')}</h1>
             <p className="text-gray-600 dark:text-gray-300 mt-1">{isEditMode ? 'Update this sales opportunity' : 'Create a new sales opportunity'}</p>
           </div>
@@ -219,7 +220,7 @@ const OpportunityForm = () => {
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="card p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6 dark:text-white">Opportunity Information</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6 dark:text-white">Informasi Peluang</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Opportunity Name */}

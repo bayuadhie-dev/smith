@@ -89,6 +89,7 @@ export default function SalesForecastList() {
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
       <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
         <div>
+          <div className="fn-label mb-1.5">PENJUALAN · PERKIRAAN PENJUALAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
             <ChartBar className="w-6 h-6" /> Sales Forecast
           </h1>

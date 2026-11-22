@@ -494,7 +494,8 @@ const navigate = useNavigate()
     <div className="space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{isEdit ? 'Edit Sales Order' : 'Create Sales Order'}</h1>
+          <div className="fn-label mb-1.5">PENJUALAN · PESANAN PENJUALAN</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{isEdit ? 'Edit Sales Order' : 'Buat pesanan penjualan'}</h1>
           <p className="text-gray-600 dark:text-gray-300">{isEdit ? 'Update an existing sales order' : 'Create a new sales order for customer'}</p>
         </div>
         <button
@@ -516,7 +517,7 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Customer *
               </label>
-              <input type="hidden" {...register('customer_id', { required: 'Customer is required' })} />
+              <input type="hidden" {...register('customer_id', { required: 'Pelanggan wajib dipilih' })} />
               <SearchableSelect
                 options={(customers?.customers || []).map((x: any) => ({ id: x.id, name: `${x.code} - ${x.company_name}` }))}
                 value={watch('customer_id') ? Number(watch('customer_id')) : null}
@@ -602,7 +603,7 @@ const navigate = useNavigate()
           {/* Customer Info Display */}
           {selectedCustomer && (
             <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
-              <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">Customer Information</h4>
+              <h4 className="font-medium text-blue-900 mb-2 dark:text-blue-200">Informasi Pelanggan</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="text-blue-600 dark:text-blue-400">Type:</span>
@@ -1023,7 +1024,7 @@ const navigate = useNavigate()
             className="btn-primary"
             disabled={isLoading}
           >
-            {isLoading ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save Changes' : 'Create Sales Order')}
+            {isLoading ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save Changes' : 'Buat pesanan penjualan')}
           </button>
         </div>
       </form>

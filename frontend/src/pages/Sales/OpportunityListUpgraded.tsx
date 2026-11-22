@@ -179,7 +179,7 @@ const OpportunityListUpgraded: React.FC = () => {
       await axiosInstance.put(`/api/sales/opportunities/${opportunityId}`, {
         stage_id: newStageId
       });
-      toast.success('Opportunity moved successfully');
+      toast.success('Peluang dipindahkan');
       loadOpportunities();
     } catch (error) {
       toast.error('Failed to move opportunity');
@@ -190,7 +190,7 @@ const OpportunityListUpgraded: React.FC = () => {
     if (!(await confirmDialog('Are you sure you want to delete this opportunity?'))) return;
     try {
       await axiosInstance.delete(`/api/sales/opportunities/${id}`);
-      toast.success('Opportunity deleted successfully');
+      toast.success('Peluang dihapus');
       loadOpportunities();
     } catch (error) {
       toast.error('Failed to delete opportunity');
@@ -210,7 +210,7 @@ const OpportunityListUpgraded: React.FC = () => {
   const handleMarkLost = async (id: number) => {
     try {
       await axiosInstance.put(`/api/sales/opportunities/${id}`, { status: 'lost' });
-      toast.success('Opportunity marked as lost');
+      toast.success('Peluang ditandai gagal');
       loadOpportunities();
     } catch (error) {
       toast.error('Failed to update opportunity');
@@ -244,6 +244,7 @@ const OpportunityListUpgraded: React.FC = () => {
       <div className="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-xl shadow-lg p-6 text-white">
         <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
+            <div className="fn-label mb-1.5">PENJUALAN · PELUANG</div>
             <h1 className="text-[28px] font-semibold flex items-center gap-3 tracking-tight leading-tight">
               <FunnelIcon className="h-8 w-8" />
               Peluang Penjualan

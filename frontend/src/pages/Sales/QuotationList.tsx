@@ -103,6 +103,7 @@ const QuotationList = () => {
     <div className="space-y-6 p-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">PENJUALAN · PENAWARAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Penawaran Penjualan</h1>
           <p className="mt-1 text-gray-600 dark:text-gray-300">Kelola penawaran dan proposal untuk pelanggan</p>
         </div>

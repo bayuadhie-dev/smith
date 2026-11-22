@@ -336,8 +336,9 @@ const InvoiceForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">PENJUALAN · FAKTUR PENJUALAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
-            {isEdit ? 'Edit Sales Invoice' : 'New Sales Invoice'}
+            {isEdit ? 'Ubah Faktur Penjualan' : 'Faktur Penjualan Baru'}
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update invoice details and items' : 'Create new sales invoice for customer billing'}
@@ -346,7 +347,7 @@ const InvoiceForm: React.FC = () => {
       </div>
 
       {/* Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="fn-card">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
@@ -392,7 +393,7 @@ const InvoiceForm: React.FC = () => {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="">No Sales Order Reference</option>
+                  <option value="">Tanpa referensi pesanan penjualan</option>
                   {salesOrders.map(so => (
                     <option key={so.id} value={so.id}>
                       {so.so_number} - {so.customer.company_name}
@@ -669,7 +670,7 @@ const InvoiceForm: React.FC = () => {
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="inline h-4 w-4 mr-2" />
-              {loading ? 'Saving...' : isEdit ? 'Update Invoice' : 'Create Invoice'}
+              {loading ? 'Saving...' : isEdit ? 'Simpan faktur' : 'Create Invoice'}
             </button>
           </div>
         </form>

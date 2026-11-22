@@ -235,6 +235,7 @@ const LeadListUpgraded: React.FC = () => {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl shadow-lg p-6 text-white">
         <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
+            <div className="fn-label mb-1.5">PENJUALAN · PROSPEK</div>
             <h1 className="text-[28px] font-semibold flex items-center gap-3 tracking-tight leading-tight">
               <UserGroupIcon className="h-8 w-8" />
               Prospek (Leads)
@@ -264,7 +265,7 @@ const LeadListUpgraded: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">Total Leads</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Total prospek</div>
         </div>
         <div className="bg-blue-50 rounded-lg border border-blue-200 p-4 dark:bg-blue-900/20 dark:border-blue-800">
           <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.new}</div>

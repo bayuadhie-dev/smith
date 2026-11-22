@@ -77,7 +77,7 @@ const SalesDashboard: React.FC = () => {
 
   return (
     <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
-      <PageHeader title="Dashboard Penjualan" subtitle="CRM dan pengelolaan penjualan" />
+      <PageHeader eyebrow="PENJUALAN · RINGKASAN" title="Dashboard Penjualan" subtitle="CRM dan pengelolaan penjualan" />
 
       <KpiStrip
         items={[

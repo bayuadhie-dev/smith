@@ -93,6 +93,7 @@ const CustomerDetails: React.FC = () => {
               <UserIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="ml-4">
+              <div className="fn-label mb-1.5">PENJUALAN · PELANGGAN</div>
               <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{customer.name}</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">Customer ID: {customer.customer_number || customer.id}</p>
             </div>

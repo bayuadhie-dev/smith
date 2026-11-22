@@ -233,7 +233,7 @@ const LeadForm: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Company Information */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="fn-card p-6">
           <div className="flex items-center mb-6">
             <BuildingOfficeIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Company Information</h3>
@@ -326,7 +326,7 @@ const LeadForm: React.FC = () => {
         </div>
 
         {/* Contact Information */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="fn-card p-6">
           <div className="flex items-center mb-6">
             <UserIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Contact Information</h3>
@@ -421,7 +421,7 @@ const LeadForm: React.FC = () => {
         </div>
 
         {/* Address Information */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="fn-card p-6">
           <div className="flex items-center mb-6">
             <MapPinIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Address Information</h3>
@@ -493,7 +493,7 @@ const LeadForm: React.FC = () => {
         </div>
 
         {/* Lead Details */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="fn-card p-6">
           <div className="flex items-center mb-6">
             <StarIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Lead Details</h3>
@@ -617,7 +617,7 @@ const LeadForm: React.FC = () => {
             disabled={submitting}
             className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
           >
-            {submitting ? 'Saving...' : isEditing ? 'Update Lead' : 'Create Lead'}
+            {submitting ? 'Saving...' : isEditing ? 'Simpan prospek' : 'Create Lead'}
           </button>
         </div>
       </form>

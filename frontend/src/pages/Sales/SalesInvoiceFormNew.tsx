@@ -271,6 +271,7 @@ export default function SalesInvoiceFormNew() {
   return (
     <div className="p-6 space-y-6">
       <div>
+        <div className="fn-label mb-1.5">PENJUALAN · FAKTUR PENJUALAN</div>
         <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Faktur Penjualan Baru</h1>
         <p className="text-gray-600 dark:text-gray-300">Isian di bawah sama dengan yang tercetak di dokumen Invoice. Faktur pembelian ada di menu Purchasing.</p>
       </div>
@@ -282,7 +283,7 @@ export default function SalesInvoiceFormNew() {
             <SearchableSelect options={customers.map((c) => ({ id: c.id, code: c.code, name: c.company_name }))} value={customerId} onChange={(v) => { setCustomerId(v); setSoId(null) }} placeholder="Pilih pelanggan" required />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">Sales Order (opsional)</label>
+            <label className="block text-sm font-medium mb-2">Pesanan penjualan (opsional)</label>
             <SearchableSelect options={orders.map((o: any) => ({ id: o.id, code: o.order_number, name: o.customer_name || '' }))} value={soId} onChange={(v) => setSoId(v as any)} placeholder="Tanpa Sales Order" />
           </div>
           <div className="md:col-span-2">

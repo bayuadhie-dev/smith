@@ -74,7 +74,7 @@ const SalesOrderDetails: React.FC = () => {
         <div className="text-red-600 mb-4 dark:text-red-400">
           <DocumentTextIcon className="h-12 w-12 mx-auto" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Sales Order Not Found</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Pesanan penjualan tidak ditemukan</h3>
         <p className="text-gray-500 dark:text-gray-400 mb-4">The sales order you're looking for doesn't exist.</p>
         <Link to="/app/sales/orders" className="btn-primary">
           Back to Sales Orders
@@ -114,6 +114,7 @@ const SalesOrderDetails: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div className="flex items-center flex-wrap justify-between mb-4 gap-3">
           <div>
+            <div className="fn-label mb-1.5">PENJUALAN · PESANAN PENJUALAN</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
               Sales Order: {order.order_number}
             </h1>

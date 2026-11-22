@@ -29,6 +29,7 @@ export default function SalesOrderSourcePicker() {
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
       {mode === 'pick' && (
         <>
+          <div className="fn-label mb-1.5">PENJUALAN · PESANAN PENJUALAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-1 tracking-tight leading-tight">Buat Sales Order</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Pilih sumber data untuk order baru.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -113,7 +114,7 @@ function FromQuotationFlow({ onBack }: { onBack: () => void }) {
   return (
     <div>
       <BackButton onBack={onBack} />
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Pilih Quotation</h2>
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Pilih penawaran</h2>
       <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Hanya quotation berstatus "accepted" yang bisa di-convert.</p>
       {loading ? (
         <div className="space-y-2" role="status" aria-label="Memuat data"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>

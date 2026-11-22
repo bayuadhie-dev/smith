@@ -112,13 +112,14 @@ const [customers, setCustomers] = useState<Customer[]>([])
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
+          <div className="fn-label mb-1.5">PENJUALAN · PELANGGAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pelanggan</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage customer database and relationships</p>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Master data pelanggan beserta kontak dan plafonnya</p>
         </div>
         <div className="flex gap-3">
           <Link to="/app/sales/customers/new" className="btn-primary inline-flex items-center gap-2">
             <PlusIcon className="h-5 w-5" />
-            Add Customer
+            Pelanggan baru
           </Link>
         </div>
       </div>
@@ -131,7 +132,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
               <BuildingOfficeIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Customers</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total pelanggan</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{customers.length}</p>
             </div>
           </div>
@@ -143,7 +144,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
               <ChartBarIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Aktif</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {customers.filter(c => c.is_active).length}
               </p>
@@ -157,7 +158,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
               <BuildingOfficeIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Corporate</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Perusahaan</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {customers.filter(c => c.customer_type === 'corporate').length}
               </p>
@@ -171,7 +172,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
               <BanknotesIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Credit Limit</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total plafon kredit</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 Rp {customers.reduce((sum, c) => sum + (c.credit_limit || 0), 0).toLocaleString()}
               </p>
@@ -184,7 +185,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
       <div className="card p-4">
         <div className="flex items-center gap-4 mb-4">
           <FunnelIcon className="h-5 w-5 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Filters</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Saringan</h3>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -193,7 +194,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
             <div className="relative mt-1">
               <input
                 type="text"
-                placeholder="Company name, code..."
+                placeholder="Nama perusahaan atau kode..."
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
                 className="input pl-10"
@@ -203,13 +204,13 @@ const [customers, setCustomers] = useState<Customer[]>([])
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Customer Type</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Jenis pelanggan</label>
             <select
               value={filters.customer_type}
               onChange={(e) => handleFilterChange('customer_type', e.target.value)}
               className="input mt-1"
             >
-              <option value="">All Types</option>
+              <option value="">Semua jenis</option>
               {customerTypes.map((type) => <option key={type} value={type}>{type}</option>)}
             </select>
           </div>
@@ -222,8 +223,8 @@ const [customers, setCustomers] = useState<Customer[]>([])
               className="input mt-1"
             >
               <option value="">All Status</option>
-              <option value="true">Active</option>
-              <option value="false">Inactive</option>
+              <option value="true">Aktif</option>
+              <option value="false">Nonaktif</option>
             </select>
           </div>
           
@@ -232,7 +233,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
               onClick={clearFilters}
               className="btn-secondary w-full"
             >
-              Clear Filters
+              Bersihkan saringan
             </button>
           </div>
         </div>
@@ -241,7 +242,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
       {/* Customers Table */}
       <div className="card">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Customer Database</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Daftar pelanggan</h3>
         </div>
         
         <div className="overflow-x-auto">
@@ -251,15 +252,15 @@ const [customers, setCustomers] = useState<Customer[]>([])
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Contact Info
+                  Kontak
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Type & Industry
+                  Jenis &amp; industri
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Credit Limit
+                  Plafon kredit
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
@@ -301,7 +302,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
                         </div>
                       )}
                       {!customer.email && !customer.phone && (
-                        <span className="text-gray-400">No contact info</span>
+                        <span className="text-gray-400">Kontak belum diisi</span>
                       )}
                     </div>
                   </td>
@@ -332,7 +333,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
                   
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900 dark:text-white font-medium">
-                      {customer.credit_limit ? `Rp ${customer.credit_limit.toLocaleString()}` : 'No limit'}
+                      {customer.credit_limit ? `Rp ${customer.credit_limit.toLocaleString()}` : 'tanpa batas'}
                     </div>
                     {customer.payment_terms && (
                       <div className="text-xs text-gray-500 dark:text-gray-400">{customer.payment_terms}</div>
@@ -343,7 +344,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
                     <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
                       customer.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                     }`}>
-                      {customer.is_active ? 'Active' : 'Inactive'}
+                      {customer.is_active ? 'Aktif' : 'Nonaktif'}
                     </div>
                   </td>
                   
@@ -413,7 +414,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
             <div className="mt-6">
               <Link to="/app/sales/customers/new" className="btn-primary">
                 <PlusIcon className="h-5 w-5 mr-2" />
-                Add Customer
+                Pelanggan baru
               </Link>
             </div>
           </div>

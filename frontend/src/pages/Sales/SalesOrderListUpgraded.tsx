@@ -166,19 +166,19 @@ const SalesOrderListUpgraded: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-800 rounded-xl shadow-lg p-6 text-white">
+      <div>
         <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
-            <h1 className="text-[28px] font-semibold flex items-center gap-3 tracking-tight leading-tight">
-              <ShoppingCartIcon className="h-8 w-8" />
+            <div className="fn-label mb-1.5">PENJUALAN · PESANAN PENJUALAN</div>
+            <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
               Pesanan Penjualan
             </h1>
-            <p className="text-primary-100 mt-1">Kelola pesanan pelanggan dan pemenuhannya</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Kelola pesanan pelanggan dan pemenuhannya</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <button
               onClick={() => refetch()}
-              className="p-2 bg-white/10 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/20 rounded-lg transition-colors"
+              className="fn-press rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
               title="Muat ulang"
             >
               <ArrowPathIcon className="h-5 w-5" />
@@ -186,22 +186,22 @@ const SalesOrderListUpgraded: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowPoImport(true)}
-              className="inline-flex items-center px-4 py-2 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 transition-colors"
+              className="btn-secondary"
             >
               Impor PO Pelanggan
             </button>
             <Link
               to="/app/imports?kind=sales_order"
-              className="inline-flex items-center px-4 py-2 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 transition-colors"
+              className="btn-secondary"
             >
               Impor
             </Link>
             <Link
               to="/app/sales/orders/new"
-              className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-emerald-600 rounded-lg font-medium hover:bg-emerald-50 transition-colors shadow-md dark:text-emerald-400"
+              className="btn-primary"
             >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Pesanan Baru
+              <PlusIcon className="h-4 w-4" />
+              Pesanan baru
             </Link>
           </div>
         </div>
@@ -209,7 +209,7 @@ const SalesOrderListUpgraded: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+        <div className="fn-card p-4">
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_orders}</div>
           <div className="text-sm text-gray-500 dark:text-gray-400">Total pesanan</div>
         </div>

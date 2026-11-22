@@ -267,8 +267,9 @@ const QuotationForm = () => {
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
+            <div className="fn-label mb-1.5">PENJUALAN · PENAWARAN</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
-              {isEdit ? '✏️ Edit Quotation' : '💼 Create Quotation'}
+              {isEdit ? 'Ubah Penawaran' : 'Penawaran Baru'}
             </h1>
             <p className="text-gray-600 dark:text-gray-300 mt-1">
               {isEdit ? 'Update quotation details' : 'Create a new sales quotation'}
@@ -286,7 +287,7 @@ const QuotationForm = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Customer *
               </label>
-              <input type="hidden" {...register('customer_id', { required: 'Customer is required' })} />
+              <input type="hidden" {...register('customer_id', { required: 'Pelanggan wajib dipilih' })} />
               <SearchableSelect
                 options={(customers || []).map((x: any) => ({ id: x.id, name: `${x.company_name} (${x.code})` }))}
                 value={watch('customer_id') ? Number(watch('customer_id')) : null}
@@ -335,7 +336,7 @@ const QuotationForm = () => {
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800">
               <div className="flex items-center gap-2 mb-3">
                 <InformationCircleIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                <h4 className="font-medium text-blue-900 dark:text-blue-200">Customer Information</h4>
+                <h4 className="font-medium text-blue-900 dark:text-blue-200">Informasi Pelanggan</h4>
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                 <div>
@@ -360,7 +361,7 @@ const QuotationForm = () => {
         {/* Items */}
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Quotation Items</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Rincian Penawaran</h3>
             <button
               type="button"
               onClick={addItem}
@@ -549,7 +550,7 @@ const QuotationForm = () => {
             className="btn-primary"
             disabled={isLoading || !selectedCustomer}
           >
-            {isLoading ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Quotation' : 'Create Quotation')}
+            {isLoading ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Simpan penawaran' : 'Create Quotation')}
           </button>
         </div>
       </form>
