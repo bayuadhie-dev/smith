@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../utils/axiosConfig';
+import { KpiStrip, PageHeader } from '../../components/ui/PageKit';
 import {
   ChartBarIcon,
   CalendarIcon,
@@ -137,24 +138,21 @@ export default function ProductionByProductReport() {
   );
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap justify-between items-center gap-3">
-        <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-3 tracking-tight leading-tight">
-            <ChartBarIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            Laporan Produksi per Produk
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Analisis produksi berdasarkan produk dan periode</p>
-        </div>
-        <button
-          onClick={exportToExcel}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
-        >
-          <DocumentArrowDownIcon className="h-5 w-5" />
-          Export Excel
-        </button>
-      </div>
+    <div className="mx-auto max-w-6xl space-y-4 pb-10">
+      <PageHeader
+        eyebrow="LAPORAN · PRODUKSI PER PRODUK"
+        title="Laporan Produksi per Produk"
+        subtitle="Hasil produksi dikelompokkan per produk dan per periode."
+        actions={
+          <button
+            onClick={exportToExcel}
+            className="fn-press inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600"
+          >
+            <DocumentArrowDownIcon className="h-4 w-4" />
+            Ekspor Excel
+          </button>
+        }
+      />
 
       {/* Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border p-4">
@@ -219,39 +217,30 @@ export default function ProductionByProductReport() {
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
             >
               <ArrowPathIcon className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              Muat ulang
             </button>
           </div>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-          <p className="text-blue-100 text-sm">Total Produksi</p>
-          <p className="text-2xl font-bold">{formatNumber(totals.total_produced)}</p>
-          <p className="text-blue-100 text-xs mt-1">pcs</p>
-        </div>
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-          <p className="text-green-100 text-sm">Produk Baik</p>
-          <p className="text-2xl font-bold">{formatNumber(totals.total_good)}</p>
-          <p className="text-green-100 text-xs mt-1">pcs</p>
-        </div>
-        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white">
-          <p className="text-red-100 text-sm">Produk Reject</p>
-          <p className="text-2xl font-bold">{formatNumber(totals.total_reject)}</p>
-          <p className="text-red-100 text-xs mt-1">pcs</p>
-        </div>
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-          <p className="text-purple-100 text-sm">Reject Rate</p>
-          <p className="text-2xl font-bold">
-            {totals.total_produced > 0
+      <KpiStrip
+        items={[
+          { label: 'Total produksi', value: `${formatNumber(totals.total_produced)} pcs` },
+          { label: 'Produk baik', value: `${formatNumber(totals.total_good)} pcs` },
+          {
+            label: 'Produk tidak lolos',
+            value: `${formatNumber(totals.total_reject)} pcs`,
+            tone: totals.total_reject > 0 ? 'warn' : undefined,
+          },
+          {
+            label: 'Porsi tidak lolos',
+            value: totals.total_produced > 0
               ? formatPercent((totals.total_reject / totals.total_produced) * 100)
-              : '0%'}
-          </p>
-          <p className="text-purple-100 text-xs mt-1">rata-rata</p>
-        </div>
-      </div>
+              : '0%',
+            hint: 'Dibanding total produksi',
+          },
+        ]}
+      />
 
       {/* Data Table */}
       {loading ? (
@@ -272,7 +261,7 @@ export default function ProductionByProductReport() {
                     Periode
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Total Produksi
+                    Total produksi
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Baik
@@ -281,7 +270,7 @@ export default function ProductionByProductReport() {
                     Reject
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Reject Rate
+                    Porsi tidak lolos
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Detail

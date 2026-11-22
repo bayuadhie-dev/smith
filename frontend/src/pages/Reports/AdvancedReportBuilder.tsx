@@ -51,7 +51,7 @@ const AdvancedReportBuilder: React.FC = () => {
   const [dataSources] = useState<DataSource[]>([
     {
       id: 'sales',
-      name: 'Sales Orders',
+      name: 'Pesanan Penjualan',
       table: 'sales_orders',
       fields: ['order_number', 'customer_name', 'order_date', 'total_amount', 'status']
     },
@@ -195,13 +195,14 @@ const AdvancedReportBuilder: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="mx-auto max-w-6xl pb-10">
       <div className="mb-6">
+        <div className="fn-label mb-1.5">LAPORAN · PERANCANG LANJUTAN</div>
         <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-2 tracking-tight leading-tight">
-          Advanced Report Builder
+          Perancang Laporan Lanjutan
         </h1>
         <p className="text-gray-600 dark:text-gray-300">
-          Create custom reports with advanced filtering and visualization options
+          Susun laporan sendiri dengan penyaring dan tampilan yang lebih rinci.
         </p>
       </div>
 
@@ -211,13 +212,13 @@ const AdvancedReportBuilder: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           
           {/* Basic Info */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Report Information</h2>
+          <div className="fn-card p-6">
+            <h2 className="text-lg font-semibold mb-4">Keterangan laporan</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Report Name
+                  Nama laporan
                 </label>
                 <input
                   type="text"
@@ -230,7 +231,7 @@ const AdvancedReportBuilder: React.FC = () => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Chart Type
+                  Jenis grafik
                 </label>
                 <select
                   value={report.chartType}
@@ -259,7 +260,7 @@ const AdvancedReportBuilder: React.FC = () => {
           </div>
 
           {/* Data Sources */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="fn-card p-6">
             <h2 className="text-lg font-semibold mb-4">Data Sources</h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -290,7 +291,7 @@ const AdvancedReportBuilder: React.FC = () => {
           </div>
 
           {/* Fields */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="fn-card p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Report Fields</h2>
               <button
@@ -298,7 +299,7 @@ const AdvancedReportBuilder: React.FC = () => {
                 className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
                 <PlusIcon className="h-4 w-4 mr-1" />
-                Add Field
+                Tambah kolom
               </button>
             </div>
             
@@ -378,7 +379,7 @@ const AdvancedReportBuilder: React.FC = () => {
           </div>
 
           {/* Filters */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="fn-card p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Filters</h2>
               <button
@@ -386,7 +387,7 @@ const AdvancedReportBuilder: React.FC = () => {
                 className="flex items-center px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
               >
                 <FunnelIcon className="h-4 w-4 mr-1" />
-                Add FunnelIcon
+                Tambah penyaring
               </button>
             </div>
             
@@ -429,7 +430,7 @@ const AdvancedReportBuilder: React.FC = () => {
                         type="text"
                         value={filter.value}
                         onChange={(e) => updateFilter(filter.id, { value: e.target.value })}
-                        placeholder="FunnelIcon value"
+                        placeholder="Nilai penyaring"
                         className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm"
                       />
                     </div>
@@ -453,7 +454,7 @@ const AdvancedReportBuilder: React.FC = () => {
         <div className="space-y-6">
           
           {/* Actions */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="fn-card p-6">
             <h2 className="text-lg font-semibold mb-4">{t('common.actions')}</h2>
             
             <div className="space-y-3">
@@ -463,7 +464,7 @@ const AdvancedReportBuilder: React.FC = () => {
                 className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
               >
                 <PlayIcon className="h-4 w-4 mr-2" />
-                {loading ? 'Generating...' : 'Generate Report'}
+                {loading ? 'Menyusun...' : 'Buat laporan'}
               </button>
               
               <button
@@ -472,13 +473,13 @@ const AdvancedReportBuilder: React.FC = () => {
                 className="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
               >
                 <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-                Save Report
+                Simpan laporan
               </button>
             </div>
           </div>
 
           {/* Report Stats */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="fn-card p-6">
             <h2 className="text-lg font-semibold mb-4">Report Summary</h2>
             
             <div className="space-y-3">
@@ -508,7 +509,7 @@ const AdvancedReportBuilder: React.FC = () => {
 
       {/* Report Results */}
       {reportResult && (
-        <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="mt-6 fn-card p-6">
           <h2 className="text-lg font-semibold mb-4">Report Results</h2>
           
           {report.chartType === 'table' ? (

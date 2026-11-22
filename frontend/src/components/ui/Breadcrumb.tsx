@@ -33,6 +33,11 @@ const routeLabels: Record<string, string> = {
   'providers': 'Ekspedisi',
   'tracking': 'Pelacakan',
   'reports': 'Laporan',
+  'scheduler': 'Penjadwalan',
+  'custom': 'Perancang Laporan',
+  'advanced-builder': 'Perancang Lanjutan',
+  'generate': 'Buat Laporan',
+  'production-by-product': 'Produksi per Produk',
   // Aset
   'assets': 'Aset',
   'spare-parts': 'Suku Cadang',

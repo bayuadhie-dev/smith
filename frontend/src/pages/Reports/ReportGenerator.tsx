@@ -31,110 +31,110 @@ interface ReportConfig {
 const reportConfigs: Record<string, ReportConfig> = {
   'sales-summary': {
     id: 'sales-summary',
-    title: 'Sales Summary Report',
-    description: 'Comprehensive sales performance analysis',
+    title: 'Ringkasan Penjualan',
+    description: 'Kinerja penjualan secara menyeluruh',
     dataSource: 'sales',
     fields: ['order_number', 'customer_name', 'total_amount', 'order_date', 'status'],
     filters: [
-      { field: 'order_date', type: 'daterange', label: 'Order Date Range' },
-      { field: 'status', type: 'select', label: 'Order Status', options: ['pending', 'confirmed', 'shipped', 'delivered'] },
-      { field: 'customer_name', type: 'text', label: 'Customer Name' }
+      { field: 'order_date', type: 'daterange', label: 'Rentang tanggal pesanan' },
+      { field: 'status', type: 'select', label: 'Status pesanan', options: ['pending', 'confirmed', 'shipped', 'delivered'] },
+      { field: 'customer_name', type: 'text', label: 'Nama pelanggan' }
     ],
     chartTypes: ['bar', 'line', 'pie']
   },
   'production-efficiency': {
     id: 'production-efficiency',
-    title: 'Production Efficiency Report',
-    description: 'Machine utilization and production metrics',
+    title: 'Efisiensi Produksi',
+    description: 'Pemakaian mesin dan angka produksi',
     dataSource: 'production',
     fields: ['work_order_number', 'machine_name', 'start_date', 'end_date', 'status', 'efficiency'],
     filters: [
-      { field: 'start_date', type: 'daterange', label: 'Production Period' },
-      { field: 'machine_name', type: 'text', label: 'Machine Name' },
+      { field: 'start_date', type: 'daterange', label: 'Periode produksi' },
+      { field: 'machine_name', type: 'text', label: 'Nama mesin' },
       { field: 'status', type: 'select', label: 'Status', options: ['pending', 'in_progress', 'completed'] }
     ],
     chartTypes: ['bar', 'line']
   },
   'inventory-status': {
     id: 'inventory-status',
-    title: 'Inventory Status Report',
-    description: 'Current stock levels and inventory movements',
+    title: 'Status Persediaan',
+    description: 'Tingkat stok terkini dan mutasinya',
     dataSource: 'inventory',
     fields: ['product_name', 'sku', 'current_stock', 'minimum_stock', 'location', 'last_updated'],
     filters: [
-      { field: 'product_name', type: 'text', label: 'Product Name' },
-      { field: 'location', type: 'text', label: 'Location' },
-      { field: 'stock_status', type: 'select', label: 'Stock Status', options: ['in_stock', 'low_stock', 'out_of_stock'] }
+      { field: 'product_name', type: 'text', label: 'Nama produk' },
+      { field: 'location', type: 'text', label: 'Lokasi' },
+      { field: 'stock_status', type: 'select', label: 'Status stok', options: ['in_stock', 'low_stock', 'out_of_stock'] }
     ],
     chartTypes: ['bar', 'pie']
   },
   'financial-summary': {
     id: 'financial-summary',
-    title: 'Financial Summary Report',
-    description: 'Revenue, expenses, profit margins, and cash flow analysis',
+    title: 'Ringkasan Keuangan',
+    description: 'Omzet, beban, marjin, dan arus kas',
     dataSource: 'sales', // Using sales data as proxy for financial data
     fields: ['order_number', 'customer_name', 'total_amount', 'order_date', 'status'],
     filters: [
-      { field: 'order_date', type: 'daterange', label: 'Date Range' },
-      { field: 'status', type: 'select', label: 'Order Status', options: ['pending', 'confirmed', 'shipped', 'delivered'] }
+      { field: 'order_date', type: 'daterange', label: 'Rentang tanggal' },
+      { field: 'status', type: 'select', label: 'Status pesanan', options: ['pending', 'confirmed', 'shipped', 'delivered'] }
     ],
     chartTypes: ['bar', 'line', 'pie']
   },
   'shipping-performance': {
     id: 'shipping-performance',
-    title: 'Shipping Performance Report',
-    description: 'Delivery times, shipping costs, and carrier performance',
+    title: 'Kinerja Pengiriman',
+    description: 'Waktu antar, ongkos kirim, dan kinerja ekspedisi',
     dataSource: 'sales', // Using sales data as proxy for shipping data
     fields: ['order_number', 'customer_name', 'order_date', 'status'],
     filters: [
-      { field: 'order_date', type: 'daterange', label: 'Shipping Date Range' },
-      { field: 'status', type: 'select', label: 'Delivery Status', options: ['shipped', 'delivered', 'pending'] }
+      { field: 'order_date', type: 'daterange', label: 'Rentang tanggal kirim' },
+      { field: 'status', type: 'select', label: 'Status pengantaran', options: ['shipped', 'delivered', 'pending'] }
     ],
     chartTypes: ['bar', 'line']
   },
   'quality-metrics': {
     id: 'quality-metrics',
-    title: 'Quality Metrics Report',
-    description: 'Quality test results and defect analysis',
+    title: 'Angka Kualitas',
+    description: 'Hasil uji mutu dan analisis cacat',
     dataSource: 'quality',
     fields: ['test_number', 'product_name', 'test_date', 'result', 'defect_count'],
     filters: [
-      { field: 'test_date', type: 'daterange', label: 'Test Date Range' },
-      { field: 'result', type: 'select', label: 'Test Result', options: ['pass', 'fail', 'pending'] },
-      { field: 'product_name', type: 'text', label: 'Product Name' }
+      { field: 'test_date', type: 'daterange', label: 'Rentang tanggal uji' },
+      { field: 'result', type: 'select', label: 'Hasil uji', options: ['pass', 'fail', 'pending'] },
+      { field: 'product_name', type: 'text', label: 'Nama produk' }
     ],
     chartTypes: ['bar', 'pie', 'line']
   },
   'waste-management': {
     id: 'waste-management',
-    title: 'Waste Management Report',
-    description: 'Waste disposal tracking and environmental compliance',
+    title: 'Pengelolaan Limbah',
+    description: 'Pencatatan pembuangan limbah dan kepatuhannya',
     dataSource: 'waste',
     fields: ['record_number', 'waste_date', 'category', 'quantity', 'hazard_level', 'disposal_method'],
     filters: [
-      { field: 'waste_date', type: 'daterange', label: 'Disposal Date Range' },
-      { field: 'category', type: 'text', label: 'Waste Category' },
-      { field: 'hazard_level', type: 'select', label: 'Hazard Level', options: ['low', 'medium', 'high', 'hazardous'] }
+      { field: 'waste_date', type: 'daterange', label: 'Rentang tanggal pembuangan' },
+      { field: 'category', type: 'text', label: 'Kategori limbah' },
+      { field: 'hazard_level', type: 'select', label: 'Tingkat bahaya', options: ['low', 'medium', 'high', 'hazardous'] }
     ],
     chartTypes: ['bar', 'pie']
   },
   'maintenance-schedule': {
     id: 'maintenance-schedule',
-    title: 'Maintenance Schedule Report',
-    description: 'Equipment maintenance tracking and scheduling',
+    title: 'Jadwal Perawatan',
+    description: 'Pencatatan dan penjadwalan perawatan mesin',
     dataSource: 'maintenance',
     fields: ['record_number', 'machine_name', 'maintenance_date', 'maintenance_type', 'status', 'cost'],
     filters: [
-      { field: 'maintenance_date', type: 'daterange', label: 'Maintenance Date Range' },
-      { field: 'maintenance_type', type: 'text', label: 'Maintenance Type' },
+      { field: 'maintenance_date', type: 'daterange', label: 'Rentang tanggal perawatan' },
+      { field: 'maintenance_type', type: 'text', label: 'Jenis perawatan' },
       { field: 'status', type: 'select', label: 'Status', options: ['scheduled', 'in_progress', 'completed'] }
     ],
     chartTypes: ['bar', 'line']
   },
   'hr-analytics': {
     id: 'hr-analytics',
-    title: 'HR Analytics Report',
-    description: 'Employee statistics, attendance, and workforce analytics',
+    title: 'Analitik SDM',
+    description: 'Statistik karyawan, kehadiran, dan tenaga kerja',
     dataSource: 'hr',
     fields: ['employee_id', 'name', 'department', 'position', 'status', 'attendance_rate'],
     filters: [
@@ -162,7 +162,7 @@ const reportConfigs: Record<string, ReportConfig> = {
     dataSource: 'maintenance',
     fields: ['machine_name', 'maintenance_type', 'total_cost', 'downtime_hours', 'completion_rate'],
     filters: [
-      { field: 'maintenance_date', type: 'daterange', label: 'Date Range' },
+      { field: 'maintenance_date', type: 'daterange', label: 'Rentang tanggal' },
       { field: 'maintenance_type', type: 'select', label: 'Type', options: ['preventive', 'corrective', 'emergency'] }
     ],
     chartTypes: ['bar', 'pie', 'line']
@@ -178,6 +178,19 @@ const { reportId } = useParams()
   const [filters, setFilters] = useState<Record<string, any>>({})
   const [selectedFields, setSelectedFields] = useState<string[]>([])
   const [chartType, setChartType] = useState('table')
+  const namaKolom: Record<string, string> = {
+    order_number: 'Nomor pesanan', customer_name: 'Nama pelanggan', total_amount: 'Nilai',
+    order_date: 'Tanggal pesanan', status: 'Status', work_order_number: 'Nomor SPK',
+    machine_name: 'Mesin', start_date: 'Mulai', end_date: 'Selesai', efficiency: 'Efisiensi',
+    product_name: 'Produk', product_code: 'Kode produk', quantity: 'Jumlah', location: 'Lokasi',
+    stock_status: 'Status stok', test_date: 'Tanggal uji', result: 'Hasil',
+    waste_date: 'Tanggal limbah', category: 'Kategori', hazard_level: 'Tingkat bahaya',
+    maintenance_date: 'Tanggal perawatan', maintenance_type: 'Jenis perawatan',
+    employee_name: 'Nama karyawan', department: 'Departemen',
+  }
+  const namaGrafik: Record<string, string> = {
+    bar: 'Grafik batang', line: 'Grafik garis', pie: 'Diagram lingkaran', table: 'Tabel',
+  }
   const [dateRange, setDateRange] = useState({
     startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0]
@@ -283,7 +296,7 @@ const { reportId } = useParams()
     }
     
     // Simulate export
-    toast.success(`Exporting report as ${format.toUpperCase()}...`)
+    toast.success(`Laporan diekspor sebagai ${format.toUpperCase()}...`)
     
     if (format === 'csv') {
       const csvContent = [
@@ -318,7 +331,7 @@ const { reportId } = useParams()
             onClick={() => navigate('/app/reports')}
             className="btn-primary mt-4"
           >
-            Back to Reports
+            Kembali ke daftar laporan
           </button>
         </div>
       </div>
@@ -337,7 +350,7 @@ const { reportId } = useParams()
           onClick={() => navigate('/app/reports')}
           className="btn-secondary"
         >
-          ← Back to Reports
+          ← Kembali ke daftar laporan
         </button>
       </div>
 
@@ -386,7 +399,7 @@ const { reportId } = useParams()
                       onChange={(e) => handleFilterChange(filter.field, e.target.value)}
                       className="input text-sm"
                     >
-                      <option value="">All</option>
+                      <option value="">Semua</option>
                       {filter.options?.map((option: string) => (
                         <option key={option} value={option}>
                           {option.charAt(0).toUpperCase() + option.slice(1)}
@@ -400,7 +413,7 @@ const { reportId } = useParams()
                       type="text"
                       value={filters[filter.field] || ''}
                       onChange={(e) => handleFilterChange(filter.field, e.target.value)}
-                      placeholder={`FunnelIcon by ${filter.label.toLowerCase()}`}
+                      placeholder={`Saring menurut ${filter.label.toLowerCase()}`}
                       className="input text-sm"
                     />
                   )}
@@ -411,7 +424,7 @@ const { reportId } = useParams()
 
           {/* Field Selection */}
           <div className="card p-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Select Fields</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Kolom yang ditampilkan</h3>
             <div className="space-y-2">
               {config.fields.map((field) => (
                 <label key={field} className="flex items-center">
@@ -428,7 +441,7 @@ const { reportId } = useParams()
                     className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:text-blue-400"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">
-                    {field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    {namaKolom[field] || field.replace(/_/g, ' ')}
                   </span>
                 </label>
               ))}
@@ -437,7 +450,7 @@ const { reportId } = useParams()
 
           {/* Display Options */}
           <div className="card p-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Display As</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Bentuk tampilan</h3>
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
@@ -463,7 +476,7 @@ const { reportId } = useParams()
                   />
                   <ChartBarIcon className="h-4 w-4 ml-2 mr-1" />
                   <span className="text-sm text-gray-700 dark:text-gray-200">
-                    {type.charAt(0).toUpperCase() + type.slice(1)} Chart
+                    {namaGrafik[type] || type}
                   </span>
                 </label>
               ))}
@@ -476,7 +489,7 @@ const { reportId } = useParams()
             disabled={isGenerating || selectedFields.length === 0}
             className="btn-primary w-full"
           >
-            {isGenerating ? 'Generating...' : 'Generate Report'}
+            {isGenerating ? 'Menyusun...' : 'Buat laporan'}
           </button>
         </div>
 
@@ -484,7 +497,7 @@ const { reportId } = useParams()
         <div className="lg:col-span-3">
           <div className="card p-6">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Report Results</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Hasil laporan</h3>
               
               {reportData.length > 0 && (
                 <div className="flex gap-2 flex-wrap">
@@ -513,7 +526,7 @@ const { reportId } = useParams()
             {reportData.length === 0 ? (
               <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                 <ChartBarIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p>Click "Generate Report" to display results</p>
+                <p>Tekan &quot;Buat laporan&quot; untuk menampilkan hasilnya.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -525,7 +538,7 @@ const { reportId } = useParams()
                           key={field}
                           className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                         >
-                          {field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          {namaKolom[field] || field.replace(/_/g, ' ')}
                         </th>
                       ))}
                     </tr>
@@ -545,7 +558,7 @@ const { reportId } = useParams()
                 
                 {reportData.length > 50 && (
                   <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                    Showing first 50 of {reportData.length} records. Export to view all data.
+                    Menampilkan 50 baris pertama dari {reportData.length}. Ekspor untuk melihat semuanya.
                   </div>
                 )}
               </div>

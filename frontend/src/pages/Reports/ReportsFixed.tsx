@@ -21,7 +21,6 @@ interface ReportCard {
   icon: any
   category: string
   frequency: string
-  lastGenerated?: string
   onClick: () => void
 }
 
@@ -52,29 +51,29 @@ const [selectedCategory, setSelectedCategory] = useState('all')
   const newFeatures: ReportCard[] = [
     {
       id: 'advanced-builder',
-      title: 'Advanced Report Builder',
-      description: 'Create custom reports with advanced filtering and visualization options',
+      title: 'Perancang Laporan Lanjutan',
+      description: 'Susun laporan sendiri dengan penyaring dan tampilan yang lebih rinci',
       icon: Cog6ToothIcon,
       category: 'tools',
-      frequency: 'On-demand',
+      frequency: 'Sesuai permintaan',
       onClick: () => navigate('/app/reports/advanced-builder')
     },
     {
       id: 'scheduled-reports',
-      title: 'Scheduled Reports',
-      description: 'Automate report generation and delivery on schedule',
+      title: 'Laporan Terjadwal',
+      description: 'Laporan dibuat dan dikirim otomatis sesuai jadwal',
       icon: ClockIcon,
       category: 'tools',
-      frequency: 'Automated',
-      onClick: () => navigate('/app/reports/scheduled')
+      frequency: 'Otomatis',
+      onClick: () => navigate('/app/reports/scheduler')
     },
     {
       id: 'executive-dashboard',
-      title: 'Executive Dashboard',
-      description: 'High-level business insights and key performance indicators',
+      title: 'Dashboard Eksekutif',
+      description: 'Gambaran besar bisnis dan indikator kinerja utama',
       icon: ChartBarIcon,
       category: 'executive',
-      frequency: 'Real-time',
+      frequency: 'Langsung',
       onClick: () => navigate('/app/reports/executive')
     }
   ]
@@ -82,42 +81,38 @@ const [selectedCategory, setSelectedCategory] = useState('all')
   const reports: ReportCard[] = [
     {
       id: 'sales-summary',
-      title: 'Sales Summary Report',
-      description: 'Monthly sales performance, top customers, and revenue trends',
+      title: 'Ringkasan Penjualan',
+      description: 'Kinerja penjualan bulanan, pelanggan teratas, dan tren omzet',
       icon: ChartBarIcon,
       category: 'sales',
-      frequency: 'Monthly',
-      lastGenerated: '2025-09-30',
+      frequency: 'Bulanan',
       onClick: () => navigate('/app/reports/generate/sales-summary')
     },
     {
       id: 'production-efficiency',
-      title: 'Production Efficiency Report',
-      description: 'Machine utilization, downtime analysis, and productivity metrics',
+      title: 'Efisiensi Produksi',
+      description: 'Pemakaian mesin, waktu berhenti, dan produktivitas',
       icon: CubeIcon,
       category: 'production',
-      frequency: 'Weekly',
-      lastGenerated: '2025-10-01',
+      frequency: 'Mingguan',
       onClick: () => navigate('/app/reports/generate/production-efficiency')
     },
     {
       id: 'inventory-status',
-      title: 'Inventory Status Report',
-      description: 'Stock levels, reorder points, and inventory valuation',
+      title: 'Status Persediaan',
+      description: 'Tingkat stok, titik pesan ulang, dan nilai persediaan',
       icon: DocumentTextIcon,
       category: 'inventory',
-      frequency: 'Daily',
-      lastGenerated: '2025-10-02',
+      frequency: 'Harian',
       onClick: () => navigate('/app/reports/generate/inventory-status')
     },
     {
       id: 'financial-summary',
-      title: 'Financial Summary Report',
-      description: 'P&L statements, cash flow, and budget variance analysis',
+      title: 'Ringkasan Keuangan',
+      description: 'Laba rugi, arus kas, dan selisih anggaran',
       icon: BanknotesIcon,
       category: 'finance',
-      frequency: 'Monthly',
-      lastGenerated: '2025-09-30',
+      frequency: 'Bulanan',
       onClick: () => navigate('/app/reports/generate/financial-summary')
     },
     {
@@ -126,8 +121,7 @@ const [selectedCategory, setSelectedCategory] = useState('all')
       description: 'Employee performance, attendance, and workforce analytics',
       icon: UsersIcon,
       category: 'hr',
-      frequency: 'Monthly',
-      lastGenerated: '2025-09-30',
+      frequency: 'Bulanan',
       onClick: () => navigate('/app/reports/generate/hr-analytics')
     },
     {
@@ -136,8 +130,7 @@ const [selectedCategory, setSelectedCategory] = useState('all')
       description: 'Quality control results, defect rates, and compliance tracking',
       icon: BeakerIcon,
       category: 'quality',
-      frequency: 'Weekly',
-      lastGenerated: '2025-10-01',
+      frequency: 'Mingguan',
       onClick: () => navigate('/app/reports/generate/quality-metrics')
     },
     {
@@ -146,8 +139,7 @@ const [selectedCategory, setSelectedCategory] = useState('all')
       description: 'Delivery times, shipping costs, and logistics efficiency',
       icon: TruckIcon,
       category: 'shipping',
-      frequency: 'Weekly',
-      lastGenerated: '2025-10-01',
+      frequency: 'Mingguan',
       onClick: () => navigate('/app/reports/generate/shipping-performance')
     },
     {
@@ -156,8 +148,7 @@ const [selectedCategory, setSelectedCategory] = useState('all')
       description: 'Equipment maintenance schedules, costs, and downtime analysis',
       icon: Cog6ToothIcon,
       category: 'maintenance',
-      frequency: 'Monthly',
-      lastGenerated: '2025-09-30',
+      frequency: 'Bulanan',
       onClick: () => navigate('/app/reports/generate/maintenance-summary')
     },
     {
@@ -166,32 +157,38 @@ const [selectedCategory, setSelectedCategory] = useState('all')
       description: 'Employee training completion rates and skill development tracking',
       icon: AcademicCapIcon,
       category: 'hr',
-      frequency: 'Monthly',
-      lastGenerated: '2025-09-30',
+      frequency: 'Bulanan',
       onClick: () => navigate('/app/reports/generate/training-progress')
     },
     {
       id: 'custom-report',
-      title: 'Custom Report Builder',
-      description: 'Build custom reports with your own parameters and filters',
+      title: 'Perancang Laporan Sendiri',
+      description: 'Rakit laporan dengan parameter dan penyaring sendiri',
       icon: Cog6ToothIcon,
       category: 'custom',
-      frequency: 'On Demand',
+      frequency: 'Sesuai permintaan',
       onClick: () => navigate('/app/reports/custom')
     }
   ]
 
+  const namaKategori: Record<string, string> = {
+    sales: 'Penjualan', production: 'Produksi', inventory: 'Persediaan',
+    finance: 'Keuangan', hr: 'SDM', quality: 'Kualitas', shipping: 'Pengiriman',
+    maintenance: 'Pemeliharaan', custom: 'Buatan sendiri', tools: 'Alat',
+    executive: 'Eksekutif',
+  }
+
   const categories = [
-    { id: 'all', label: 'All Reports' },
+    { id: 'all', label: 'Semua laporan' },
     { id: 'sales', label: t('navigation.sales') },
     { id: 'production', label: t('navigation.production') },
-    { id: 'inventory', label: 'Inventory' },
+    { id: 'inventory', label: 'Persediaan' },
     { id: 'finance', label: t('navigation.finance') },
-    { id: 'hr', label: 'Human Resources' },
+    { id: 'hr', label: 'SDM' },
     { id: 'quality', label: t('navigation.quality') },
-    { id: 'shipping', label: 'Shipping' },
+    { id: 'shipping', label: 'Pengiriman' },
     { id: 'maintenance', label: t('navigation.maintenance') },
-    { id: 'custom', label: 'Custom' },
+    { id: 'custom', label: 'Buatan sendiri' },
   ]
 
   const filteredReports = selectedCategory === 'all' 
@@ -200,10 +197,10 @@ const [selectedCategory, setSelectedCategory] = useState('all')
 
   const getFrequencyBadge = (frequency: string) => {
     const badges: Record<string, string> = {
-      'Daily': 'badge-success',
-      'Weekly': 'badge-info', 
-      'Monthly': 'badge-warning',
-      'On Demand': 'badge-gray'
+      'Harian': 'badge-success',
+      'Mingguan': 'badge-info',
+      'Bulanan': 'badge-warning',
+      'Sesuai permintaan': 'badge-gray'
     }
     return badges[frequency] || 'badge-info'
   }
@@ -212,15 +209,16 @@ const [selectedCategory, setSelectedCategory] = useState('all')
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Reports</h1>
-          <p className="text-gray-600 dark:text-gray-300">Generate insights and track performance across all operations</p>
+          <div className="fn-label mb-1.5">LAPORAN · KATALOG</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Laporan</h1>
+          <p className="text-gray-600 dark:text-gray-300">Kumpulan laporan siap pakai untuk setiap modul.</p>
         </div>
         <Link
           to="/app/reports/scheduler"
           className="btn-primary"
         >
           <Cog6ToothIcon className="h-5 w-5 mr-2" />
-          Schedule Reports
+          Atur jadwal laporan
         </Link>
       </div>
 
@@ -245,7 +243,7 @@ const [selectedCategory, setSelectedCategory] = useState('all')
 
       {/* New Features Section */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">🆕 New Report Features</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Alat laporan</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {newFeatures.map((feature) => {
             const IconComponent = feature.icon
@@ -272,8 +270,8 @@ const [selectedCategory, setSelectedCategory] = useState('all')
                 </p>
                 
                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                  <span className="capitalize">{feature.category}</span>
-                  <span className="text-green-600 font-medium dark:text-green-400">Available Now!</span>
+                  <span>{namaKategori[feature.category] || feature.category}</span>
+                  <span className="text-green-600 font-medium dark:text-green-400">Siap dipakai</span>
                 </div>
               </div>
             )
@@ -283,7 +281,7 @@ const [selectedCategory, setSelectedCategory] = useState('all')
 
       {/* Standard Reports Grid */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Standard Reports</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Laporan siap pakai</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredReports.map((report) => {
             const IconComponent = report.icon
@@ -309,23 +307,13 @@ const [selectedCategory, setSelectedCategory] = useState('all')
                   {report.description}
                 </p>
 
-                {report.lastGenerated && (
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Last generated: {new Date(report.lastGenerated).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                  </div>
-                )}
-
                 <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                      {report.category}
+                      {namaKategori[report.category] || report.category}
                     </span>
                     <button className="text-primary-600 hover:text-primary-700 text-sm font-medium dark:text-primary-400">
-                      Generate →
+                      Buka →
                     </button>
                   </div>
                 </div>
@@ -355,7 +343,7 @@ const [selectedCategory, setSelectedCategory] = useState('all')
             to="/app/reports/scheduler"
             className="btn-secondary text-center"
           >
-            Schedule Reports
+            Atur jadwal laporan
           </Link>
           <button 
             onClick={() => window.print()}

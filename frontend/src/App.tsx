@@ -342,7 +342,6 @@ import RemainingStock from './pages/Production/RemainingStock'
 import WIPStock from './pages/Production/WIPStock'
 import Reports from './pages/Reports/ReportsFixed'
 import AdvancedReportBuilder from './pages/Reports/AdvancedReportBuilder'
-import ScheduledReports from './pages/Reports/ScheduledReports'
 import ExecutiveDashboard from './pages/Reports/ExecutiveDashboard'
 import ProductionByProductReport from './pages/Reports/ProductionByProductReport'
 import ProductionMonitoringDashboard from './pages/Executive/ProductionMonitoringDashboard'
@@ -1030,7 +1029,11 @@ function AppChildRoutes() {
                 <Route path="reports" element={<Reports />} />
                 <Route path="imports" element={<ImportCenter />} />
                 <Route path="reports/advanced-builder" element={<AdvancedReportBuilder />} />
-                <Route path="reports/scheduled" element={<ScheduledReports />} />
+                {/* Halaman "Scheduled Reports" yang lama memanggil
+                    /api/reports/scheduled yang tidak pernah ada, jadi semua
+                    tombolnya 404. Penjadwalan yang hidup ada di
+                    /reports/scheduler (2026-11-22). */}
+                <Route path="reports/scheduled" element={<Navigate to="/app/reports/scheduler" replace />} />
                 <Route path="reports/executive" element={<ExecutiveDashboard />} />
                 <Route path="reports/generate/:reportId" element={<ReportGenerator />} />
                 <Route path="reports/custom" element={<CustomReportBuilder />} />

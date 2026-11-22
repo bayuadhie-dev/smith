@@ -241,22 +241,23 @@ const navigate = useNavigate()
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Report Scheduler</h1>
-          <p className="text-gray-600 dark:text-gray-300">Automate report generation and delivery</p>
+          <div className="fn-label mb-1.5">LAPORAN · PENJADWALAN</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Penjadwalan Laporan</h1>
+          <p className="text-gray-600 dark:text-gray-300">Laporan dibuat dan dikirim otomatis sesuai jadwal.</p>
         </div>
         <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => navigate('/app/reports')}
             className="btn-secondary"
           >
-            ← Back to Reports
+            ← Kembali ke daftar laporan
           </button>
           <button
             onClick={() => setShowNewScheduleModal(true)}
             className="btn-primary"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
-            New Schedule
+            Jadwal baru
           </button>
         </div>
       </div>
@@ -269,7 +270,7 @@ const navigate = useNavigate()
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {scheduledReports.length}
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Total Schedules</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total jadwal</div>
             </div>
             <ClockIcon className="h-8 w-8 text-blue-500" />
           </div>
@@ -281,7 +282,7 @@ const navigate = useNavigate()
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {scheduledReports.filter(r => r.isActive).length}
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Active</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Aktif</div>
             </div>
             <PlayIcon className="h-8 w-8 text-green-500" />
           </div>
@@ -293,7 +294,7 @@ const navigate = useNavigate()
               <div className="text-2xl font-bold text-gray-600 dark:text-gray-300">
                 {scheduledReports.filter(r => !r.isActive).length}
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Paused</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Dijeda</div>
             </div>
             <PauseIcon className="h-8 w-8 text-gray-500 dark:text-gray-400" />
           </div>
@@ -305,7 +306,7 @@ const navigate = useNavigate()
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {scheduledReports.reduce((sum, r) => sum + r.recipients.length, 0)}
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Recipients</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Penerima</div>
             </div>
             <EnvelopeIcon className="h-8 w-8 text-blue-500" />
           </div>
@@ -315,21 +316,25 @@ const navigate = useNavigate()
       {/* Scheduled Reports List */}
       <div className="card">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="font-semibold text-gray-900 dark:text-white">Scheduled Reports</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white">Laporan terjadwal</h3>
         </div>
         
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
+                {/* Tiga judul kolom ini kosong sebelum 2026-11-22. */}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Nama laporan
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Frekuensi
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Penerima
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Next Run
+                  Jalan berikutnya
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
@@ -372,7 +377,7 @@ const navigate = useNavigate()
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`badge ${report.isActive ? 'badge-success' : 'badge-gray'}`}>
-                      {report.isActive ? 'Active' : 'Paused'}
+                      {report.isActive ? 'Aktif' : 'Dijeda'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -387,7 +392,7 @@ const navigate = useNavigate()
                       <button
                         onClick={() => toggleReportStatus(report.id)}
                         className={`${report.isActive ? 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400' : 'text-green-600 hover:text-green-900 dark:text-green-400'}`}
-                        title={report.isActive ? 'Pause' : 'Resume'}
+                        title={report.isActive ? 'Jeda' : 'Lanjutkan'}
                       >
                         {report.isActive ? <PauseIcon className="h-4 w-4" /> : <PlayIcon className="h-4 w-4" />}
                       </button>
@@ -439,7 +444,7 @@ const navigate = useNavigate()
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                    Report Type *
+                    Jenis laporan *
                   </label>
                   <select
                     value={newSchedule.reportType}
@@ -457,7 +462,7 @@ const navigate = useNavigate()
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                    Frequency *
+                    Frekuensi *
                   </label>
                   <select
                     value={newSchedule.frequency}
@@ -474,7 +479,7 @@ const navigate = useNavigate()
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                    Time *
+                    Jam *
                   </label>
                   <input
                     type="time"
@@ -542,7 +547,7 @@ const navigate = useNavigate()
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                    Email Recipients *
+                    Penerima email *
                   </label>
                   <button
                     onClick={addRecipient}
@@ -585,7 +590,7 @@ const navigate = useNavigate()
                 onClick={saveSchedule}
                 className="btn-primary"
               >
-                Create Schedule
+                Buat jadwal
               </button>
             </div>
           </div>

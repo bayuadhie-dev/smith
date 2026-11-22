@@ -75,6 +75,12 @@ const ROUTE_TITLES: Record<string, string> = {
   '/app/settings/email': 'Pengaturan Email',
   '/app/settings/kpi-targets': 'Target KPI',
   '/app/settings/factory-layout': 'Denah Pabrik',
+  '/app/reports/scheduler': 'Penjadwalan Laporan',
+  '/app/reports/custom': 'Perancang Laporan',
+  '/app/reports/advanced-builder': 'Perancang Laporan Lanjutan',
+  '/app/reports/executive': 'Dashboard Eksekutif',
+  '/app/reports/production-by-product': 'Produksi per Produk',
+  '/app/reports': 'Laporan',
   '/app/settings': 'Pengaturan',
   '/app/users': 'User Management',
 }

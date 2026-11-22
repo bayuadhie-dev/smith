@@ -241,7 +241,7 @@ const DemandPlanning: React.FC = () => {
               <option value="all">All Categories</option>
               <option value="nonwoven">Nonwoven Fabrics</option>
               <option value="medical">Medical Products</option>
-              <option value="filter">FunnelIcon Media</option>
+              <option value="filter">Media Filter</option>
               <option value="geotextile">Geotextiles</option>
               <option value="raw">Bahan baku</option>
             </select>
@@ -256,7 +256,7 @@ const DemandPlanning: React.FC = () => {
               <option value="all">All Products</option>
               <option value="1">Nonwoven Fabric A</option>
               <option value="2">Medical Mask Material</option>
-              <option value="3">FunnelIcon Media Pro</option>
+              <option value="3">Media Filter Pro</option>
               <option value="4">Geotextile Fabric</option>
               <option value="5">PP Granules</option>
             </select>

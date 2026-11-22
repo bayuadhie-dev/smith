@@ -293,7 +293,7 @@ const ProductDashboardNew: React.FC = () => {
           </button>
           <button className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors text-left">
             <FunnelIcon className="w-6 h-6 text-green-600 mb-2 dark:text-green-400" />
-            <p className="font-medium text-gray-900 dark:text-white">FunnelIcon Produk</p>
+            <p className="font-medium text-gray-900 dark:text-white">Filter Produk</p>
             <p className="text-sm text-gray-600 dark:text-gray-300">Cari dan filter produk</p>
           </button>
           <button className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors text-left">

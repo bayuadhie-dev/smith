@@ -48,13 +48,13 @@ interface CustomReport {
 const dataSources: DataSource[] = [
   {
     id: 'sales',
-    name: 'Sales Orders',
+    name: 'Pesanan Penjualan',
     table: 'sales_orders',
     fields: [
-      { name: 'order_number', type: 'string', label: 'Order Number' },
-      { name: 'customer_name', type: 'string', label: 'Customer Name' },
-      { name: 'total_amount', type: 'number', label: 'Total Amount' },
-      { name: 'order_date', type: 'date', label: 'Order Date' },
+      { name: 'order_number', type: 'string', label: 'Nomor pesanan' },
+      { name: 'customer_name', type: 'string', label: 'Nama pelanggan' },
+      { name: 'total_amount', type: 'number', label: 'Nilai' },
+      { name: 'order_date', type: 'date', label: 'Tanggal pesanan' },
       { name: 'status', type: 'string', label: 'Status' }
       // 'Sales Representative' removed (2026-10-06) - there is no real
       // sales-rep column on SalesOrder, this used to be fabricated data.
@@ -66,12 +66,12 @@ const dataSources: DataSource[] = [
     table: 'work_orders',
     fields: [
       { name: 'work_order_number', type: 'string', label: 'SPK Number' },
-      { name: 'product_name', type: 'string', label: 'Product Name' },
+      { name: 'product_name', type: 'string', label: 'Nama produk' },
       { name: 'quantity', type: 'number', label: 'Quantity' },
-      { name: 'start_date', type: 'date', label: 'Start Date' },
-      { name: 'end_date', type: 'date', label: 'End Date' },
+      { name: 'start_date', type: 'date', label: 'Tanggal mulai' },
+      { name: 'end_date', type: 'date', label: 'Tanggal selesai' },
       { name: 'status', type: 'string', label: 'Status' },
-      { name: 'machine_name', type: 'string', label: 'Machine Name' }
+      { name: 'machine_name', type: 'string', label: 'Nama mesin' }
     ]
   },
   {
@@ -79,22 +79,22 @@ const dataSources: DataSource[] = [
     name: 'Inventory',
     table: 'inventory',
     fields: [
-      { name: 'product_name', type: 'string', label: 'Product Name' },
-      { name: 'product_code', type: 'string', label: 'Product Code' },
-      { name: 'current_stock', type: 'number', label: 'Current Stock' },
-      { name: 'minimum_stock', type: 'number', label: 'Minimum Stock' },
+      { name: 'product_name', type: 'string', label: 'Nama produk' },
+      { name: 'product_code', type: 'string', label: 'Kode produk' },
+      { name: 'current_stock', type: 'number', label: 'Stok saat ini' },
+      { name: 'minimum_stock', type: 'number', label: 'Stok minimum' },
       { name: 'location', type: 'string', label: 'Location' },
-      { name: 'last_updated', type: 'date', label: 'Last Updated' }
+      { name: 'last_updated', type: 'date', label: 'Terakhir diperbarui' }
     ]
   },
   {
     id: 'quality',
-    name: 'Quality Tests',
+    name: 'Uji Kualitas',
     table: 'quality_tests',
     fields: [
-      { name: 'test_number', type: 'string', label: 'Test Number' },
-      { name: 'product_name', type: 'string', label: 'Product Name' },
-      { name: 'test_date', type: 'date', label: 'Test Date' },
+      { name: 'test_number', type: 'string', label: 'Nomor uji' },
+      { name: 'product_name', type: 'string', label: 'Nama produk' },
+      { name: 'test_date', type: 'date', label: 'Tanggal uji' },
       { name: 'result', type: 'string', label: 'Result' }
       // 'Defect Count' and 'Inspector' removed (2026-10-06) - no real
       // columns on QualityTest for either (defects_found is free-text
@@ -121,7 +121,7 @@ const dataSources: DataSource[] = [
     table: 'maintenance_records',
     fields: [
       { name: 'record_number', type: 'string', label: 'Record Number' },
-      { name: 'machine_name', type: 'string', label: 'Machine Name' },
+      { name: 'machine_name', type: 'string', label: 'Nama mesin' },
       { name: 'maintenance_date', type: 'date', label: 'Maintenance Date' },
       { name: 'maintenance_type', type: 'string', label: 'Maintenance Type' },
       { name: 'status', type: 'string', label: 'Status' }
@@ -343,14 +343,15 @@ const navigate = useNavigate()
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Custom Report Builder</h1>
-          <p className="text-gray-600 dark:text-gray-300">Create custom reports with your own data sources and filters</p>
+          <div className="fn-label mb-1.5">LAPORAN · PERANCANG</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Perancang Laporan Sendiri</h1>
+          <p className="text-gray-600 dark:text-gray-300">Rakit laporan dari sumber data dan penyaring pilihanmu sendiri.</p>
         </div>
         <button
           onClick={() => navigate('/app/reports')}
           className="btn-secondary"
         >
-          ← Back to Reports
+          ← Kembali ke daftar laporan
         </button>
       </div>
 
@@ -358,10 +359,10 @@ const navigate = useNavigate()
       <div className="card p-4">
         <div className="flex items-center justify-between">
           {[
-            { step: 1, title: 'Basic Info', icon: Cog6ToothIcon },
-            { step: 2, title: 'Data Sources', icon: TableCellsIcon },
-            { step: 3, title: 'Fields & Filters', icon: FunnelIcon },
-            { step: 4, title: 'Preview & Save', icon: EyeIcon }
+            { step: 1, title: 'Keterangan', icon: Cog6ToothIcon },
+            { step: 2, title: 'Sumber data', icon: TableCellsIcon },
+            { step: 3, title: 'Kolom & penyaring', icon: FunnelIcon },
+            { step: 4, title: 'Pratinjau & simpan', icon: EyeIcon }
           ].map((item, index) => (
             <div key={item.step} className="flex items-center">
               <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
@@ -392,27 +393,27 @@ const navigate = useNavigate()
           {/* Step 1: Basic Info */}
           {step === 1 && (
             <div className="card p-6 space-y-4">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Report Information</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Keterangan laporan</h3>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Report Name *
+                  Nama laporan *
                 </label>
                 <input
                   type="text"
                   value={report.name}
                   onChange={(e) => setReport(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Enter report name"
+                  placeholder="Nama laporan"
                   className="input"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Keterangan</label>
                 <textarea
                   value={report.description}
                   onChange={(e) => setReport(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Describe what this report shows"
+                  placeholder="Jelaskan isi laporannya"
                   rows={3}
                   className="input"
                 />
@@ -420,7 +421,7 @@ const navigate = useNavigate()
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Refresh Interval
+                  Jeda pembaruan
                 </label>
                 <select
                   value={report.refreshInterval}
@@ -440,7 +441,7 @@ const navigate = useNavigate()
           {/* Step 2: Data Sources */}
           {step === 2 && (
             <div className="card p-6 space-y-4">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Select Data Sources</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Pilih sumber data</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {dataSources.map((source) => (
@@ -486,7 +487,7 @@ const navigate = useNavigate()
             <div className="space-y-6">
               {/* Fields Selection */}
               <div className="card p-6">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Select Fields</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Pilih kolom</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -543,13 +544,13 @@ const navigate = useNavigate()
               {/* Filters */}
               <div className="card p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Filters</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Penyaring</h3>
                   <button
                     onClick={addFilter}
                     className="btn-secondary text-sm"
                   >
                     <PlusIcon className="h-4 w-4 mr-1" />
-                    Add FunnelIcon
+                    Tambah penyaring
                   </button>
                 </div>
 
@@ -585,7 +586,7 @@ const navigate = useNavigate()
                         type="text"
                         value={filter.value}
                         onChange={(e) => updateFilter(index, { value: e.target.value })}
-                        placeholder="FunnelIcon value"
+                        placeholder="Nilai penyaring"
                         className="input flex-1"
                       />
 
@@ -607,7 +608,7 @@ const navigate = useNavigate()
             <div className="space-y-6">
               {/* Chart Type Selection */}
               <div className="card p-6">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Display Options</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Tampilan</h3>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {chartTypes.map((type) => (
                     <button
@@ -629,7 +630,7 @@ const navigate = useNavigate()
               {/* Preview */}
               <div className="card p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Preview</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Pratinjau</h3>
                   <button
                     onClick={generatePreview}
                     disabled={isGenerating}
@@ -682,26 +683,26 @@ const navigate = useNavigate()
         <div className="space-y-6">
           {/* Report Summary */}
           <div className="card p-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Report Summary</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Ringkasan laporan</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Name:</span>
-                <span className="font-medium">{report.name || 'Untitled'}</span>
+                <span className="text-gray-600 dark:text-gray-300">Nama:</span>
+                <span className="font-medium">{report.name || 'Belum diberi nama'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Data Sources:</span>
+                <span className="text-gray-600 dark:text-gray-300">Sumber data:</span>
                 <span className="font-medium">{report.dataSources.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Fields:</span>
+                <span className="text-gray-600 dark:text-gray-300">Kolom:</span>
                 <span className="font-medium">{report.fields.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Filters:</span>
+                <span className="text-gray-600 dark:text-gray-300">Penyaring:</span>
                 <span className="font-medium">{report.filters.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Chart Type:</span>
+                <span className="text-gray-600 dark:text-gray-300">Jenis grafik:</span>
                 <span className="font-medium capitalize">{report.chartType}</span>
               </div>
             </div>
@@ -715,7 +716,7 @@ const navigate = useNavigate()
                   onClick={() => setStep(step - 1)}
                   className="btn-secondary w-full"
                 >
-                  ← Previous Step
+                  ← Kembali
                 </button>
               )}
               
@@ -729,7 +730,7 @@ const navigate = useNavigate()
                   }
                   className="btn-primary w-full"
                 >
-                  Next Step →
+                  Lanjut →
                 </button>
               ) : (
                 <button
@@ -737,7 +738,7 @@ const navigate = useNavigate()
                   className="btn-primary w-full"
                 >
                   <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-                  Save Report
+                  Simpan laporan
                 </button>
               )}
             </div>
@@ -749,26 +750,26 @@ const navigate = useNavigate()
             <ul className="text-sm text-blue-800 space-y-1 dark:text-blue-300">
               {step === 1 && (
                 <>
-                  <li>• Choose a descriptive name</li>
-                  <li>• Set appropriate refresh interval</li>
+                  <li>• Beri nama yang jelas</li>
+                  <li>• Atur jeda pembaruan seperlunya</li>
                 </>
               )}
               {step === 2 && (
                 <>
-                  <li>• Select related data sources</li>
-                  <li>• More sources = more complex joins</li>
+                  <li>• Pilih sumber data yang saling berkaitan</li>
+                  <li>• Makin banyak sumber, makin rumit sambungannya</li>
                 </>
               )}
               {step === 3 && (
                 <>
-                  <li>• Use aggregations for summaries</li>
-                  <li>• Add filters to focus data</li>
+                  <li>• Pakai penjumlahan untuk ringkasan</li>
+                  <li>• Tambahkan penyaring supaya datanya fokus</li>
                 </>
               )}
               {step === 4 && (
                 <>
-                  <li>• Preview before saving</li>
-                  <li>• Choose appropriate chart type</li>
+                  <li>• Lihat pratinjau sebelum menyimpan</li>
+                  <li>• Pilih jenis grafik yang sesuai</li>
                 </>
               )}
             </ul>

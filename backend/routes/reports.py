@@ -410,6 +410,14 @@ def dashboard_summary():
         return jsonify({'error': str(e)}), 500
 
 
+# Nama bulan ditulis sendiri supaya laporannya berbahasa Indonesia tanpa
+# bergantung pada locale server (strftime('%B') ikut locale, dan di server
+# hasilnya "October").
+_BULAN = {1: 'Januari', 2: 'Februari', 3: 'Maret', 4: 'April', 5: 'Mei', 6: 'Juni',
+          7: 'Juli', 8: 'Agustus', 9: 'September', 10: 'Oktober', 11: 'November', 12: 'Desember'}
+_BULAN_SINGKAT = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'Mei', 6: 'Jun',
+                  7: 'Jul', 8: 'Agu', 9: 'Sep', 10: 'Okt', 11: 'Nov', 12: 'Des'}
+
 @reports_bp.route('/production-by-product', methods=['GET'])
 @jwt_required()
 @require_permission('reports.view')
@@ -445,8 +453,11 @@ def production_by_product_report():
             Product.name.label('product_name'),
             ProductionRecord.quantity_produced,
             ProductionRecord.quantity_good,
-            ProductionRecord.quantity_reject,
-            ProductionRecord.waste_kg
+            # ProductionRecord tidak punya kolom quantity_reject maupun
+            # waste_kg; yang ada quantity_scrap dan quantity_rework. Sejak
+            # ditulis, laporan ini selalu 500 (2026-11-22).
+            ProductionRecord.quantity_scrap,
+            ProductionRecord.quantity_rework
         ).join(
             WorkOrder, ProductionRecord.work_order_id == WorkOrder.id
         ).outerjoin(
@@ -474,16 +485,17 @@ def production_by_product_report():
             prod_date = record.production_date
             if period_type == 'daily':
                 period_key = prod_date.strftime('%Y-%m-%d')
-                period_label = prod_date.strftime('%d %b %Y')
+                period_label = f'{prod_date.day} {_BULAN_SINGKAT[prod_date.month]} {prod_date.year}'
             elif period_type == 'weekly':
                 # Get week start (Monday)
                 week_start = prod_date - timedelta(days=prod_date.weekday())
                 period_key = week_start.strftime('%Y-W%W')
                 week_end = week_start + timedelta(days=6)
-                period_label = f"{week_start.strftime('%d %b')} - {week_end.strftime('%d %b %Y')}"
+                period_label = (f'{week_start.day} {_BULAN_SINGKAT[week_start.month]} - '
+                                f'{week_end.day} {_BULAN_SINGKAT[week_end.month]} {week_end.year}')
             elif period_type == 'monthly':
                 period_key = prod_date.strftime('%Y-%m')
-                period_label = prod_date.strftime('%B %Y')
+                period_label = f'{_BULAN[prod_date.month]} {prod_date.year}'
             else:  # yearly
                 period_key = prod_date.strftime('%Y')
                 period_label = f"Tahun {prod_date.strftime('%Y')}"
@@ -504,8 +516,8 @@ def production_by_product_report():
             # Add to period totals
             qty_produced = float(record.quantity_produced or 0)
             qty_good = float(record.quantity_good or 0)
-            qty_reject = float(record.quantity_reject or 0)
-            waste = float(record.waste_kg or 0)
+            qty_reject = float(record.quantity_scrap or 0)
+            waste = float(record.quantity_rework or 0)
             
             period['total_produced'] += qty_produced
             period['total_good'] += qty_good
@@ -599,8 +611,8 @@ def export_production_by_product():
             Product.name.label('product_name'),
             func.sum(ProductionRecord.quantity_produced).label('total_produced'),
             func.sum(ProductionRecord.quantity_good).label('total_good'),
-            func.sum(ProductionRecord.quantity_reject).label('total_reject'),
-            func.sum(ProductionRecord.waste_kg).label('total_waste'),
+            func.sum(ProductionRecord.quantity_scrap).label('total_reject'),
+            func.sum(ProductionRecord.quantity_rework).label('total_waste'),
             func.count(func.distinct(ProductionRecord.work_order_id)).label('wo_count')
         ).join(
             WorkOrder, ProductionRecord.work_order_id == WorkOrder.id

@@ -149,16 +149,17 @@ const ExecutiveDashboard: React.FC = () => {
   // metric/alert cards below are intentionally left as-is - only the
   // header + top KPI grid are in scope.
   return (
-    <div className="p-6 space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div className="mx-auto max-w-6xl space-y-4 pb-10">
       {/* Header */}
       <div className="mb-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
+            <div className="fn-label mb-1.5">LAPORAN · EKSEKUTIF</div>
             <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">
-              Executive Dashboard
+              Dashboard Eksekutif
             </h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
-              High-level business insights and key performance indicators
+              Gambaran besar bisnis dan indikator kinerja utama.
             </p>
           </div>
 
@@ -168,10 +169,10 @@ const ExecutiveDashboard: React.FC = () => {
               onChange={(e) => setSelectedPeriod(e.target.value)}
               className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-sm"
             >
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="quarter">This Quarter</option>
-              <option value="year">This Year</option>
+              <option value="week">Minggu ini</option>
+              <option value="month">Bulan ini</option>
+              <option value="quarter">Triwulan ini</option>
+              <option value="year">Tahun ini</option>
             </select>
 
             <button
@@ -189,13 +190,13 @@ const ExecutiveDashboard: React.FC = () => {
         <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-white/20 rounded-lg"><BanknotesIcon className="w-5 h-5" /></div>
-            <p className="text-sm opacity-90">Revenue</p>
+            <p className="text-sm opacity-90">Omzet</p>
           </div>
           <p className="text-3xl font-bold">{formatRupiah(metrics.financial.revenue)}</p>
           <div className="flex items-center mt-1">
             {getTrendIcon(metrics.financial.revenue_growth)}
             <span className="ml-1 text-xs opacity-90">
-              {formatPercentage(Math.abs(metrics.financial.revenue_growth))} vs last period
+              {formatPercentage(Math.abs(metrics.financial.revenue_growth))} dibanding periode lalu
             </span>
           </div>
         </div>
@@ -206,13 +207,13 @@ const ExecutiveDashboard: React.FC = () => {
             <p className="text-sm opacity-90">{t('navigation.production')}</p>
           </div>
           <p className="text-2xl font-bold">{metrics.production.output.toLocaleString()}</p>
-          <p className="text-xs opacity-75 mt-1">Units produced &middot; OEE {formatPercentage(metrics.production.avg_oee)}</p>
+          <p className="text-xs opacity-75 mt-1">Unit diproduksi &middot; OEE {formatPercentage(metrics.production.avg_oee)}</p>
         </div>
 
         <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-white/20 rounded-lg"><ChartBarIcon className="w-5 h-5" /></div>
-            <p className="text-sm opacity-90">Quality Pass Rate</p>
+            <p className="text-sm opacity-90">Kelolosan QC</p>
           </div>
           <p className="text-2xl font-bold">
             {metrics.quality.total_inspections > 0 ? formatPercentage(metrics.quality.pass_rate) : 'Belum tersedia'}
@@ -225,10 +226,10 @@ const ExecutiveDashboard: React.FC = () => {
         <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-2 bg-white/20 rounded-lg"><UsersIcon className="w-5 h-5" /></div>
-            <p className="text-sm opacity-90">Employees</p>
+            <p className="text-sm opacity-90">Karyawan</p>
           </div>
           <p className="text-2xl font-bold">{metrics.hr.active_employees}</p>
-          <p className="text-xs opacity-75 mt-1">Active employees</p>
+          <p className="text-xs opacity-75 mt-1">Karyawan aktif</p>
         </div>
       </div>
 
@@ -237,27 +238,27 @@ const ExecutiveDashboard: React.FC = () => {
         
         {/* Financial Performance */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Financial Performance</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Kinerja keuangan</h3>
           
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Revenue</span>
+              <span className="text-gray-600 dark:text-gray-300">Omzet</span>
               <span className="font-semibold">{formatRupiah(metrics.financial.revenue)}</span>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Cash Collected</span>
+              <span className="text-gray-600 dark:text-gray-300">Kas tertagih</span>
               <span className="font-semibold text-green-600 dark:text-green-400">{formatRupiah(metrics.financial.cash_collected)}</span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Outstanding AR</span>
+              <span className="text-gray-600 dark:text-gray-300">Piutang berjalan</span>
               <span className="font-semibold text-red-600 dark:text-red-400">{formatRupiah(metrics.financial.outstanding_ar)}</span>
             </div>
 
             <div className="border-t pt-4">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-300">Collection Rate</span>
+                <span className="text-gray-600 dark:text-gray-300">Tingkat penagihan</span>
                 <span className="font-semibold">
                   {formatPercentage(metrics.financial.collection_rate)}
                 </span>
@@ -268,28 +269,28 @@ const ExecutiveDashboard: React.FC = () => {
 
         {/* Operational Metrics */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Operational Excellence</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Kinerja operasional</h3>
 
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Avg OEE</span>
+              <span className="text-gray-600 dark:text-gray-300">Rata-rata OEE</span>
               <span className="font-semibold">{formatPercentage(metrics.production.avg_oee)}</span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">WO Completion Rate</span>
+              <span className="text-gray-600 dark:text-gray-300">Penyelesaian SPK</span>
               <span className="font-semibold">{formatPercentage(metrics.production.wo_completion_rate)}</span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Quality Pass Rate</span>
+              <span className="text-gray-600 dark:text-gray-300">Kelolosan QC</span>
               <span className="font-semibold">
                 {metrics.quality.total_inspections > 0 ? formatPercentage(metrics.quality.pass_rate) : 'Belum tersedia'}
               </span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">FG Inventory Value</span>
+              <span className="text-gray-600 dark:text-gray-300">Nilai persediaan barang jadi</span>
               <span className="font-semibold">{formatRupiah(metrics.production.fg_inventory_value)}</span>
             </div>
           </div>
@@ -301,26 +302,26 @@ const ExecutiveDashboard: React.FC = () => {
         
         {/* HR Metrics */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Human Resources</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sumber daya manusia</h3>
           
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Active Employees</span>
+              <span className="text-gray-600 dark:text-gray-300">Karyawan aktif</span>
               <span className="font-semibold">{metrics.hr.active_employees}</span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Attendance Rate</span>
+              <span className="text-gray-600 dark:text-gray-300">Tingkat kehadiran</span>
               <span className="font-semibold text-gray-400 dark:text-gray-500">Belum tersedia</span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Turnover Rate</span>
+              <span className="text-gray-600 dark:text-gray-300">Tingkat keluar-masuk</span>
               <span className="font-semibold text-gray-400 dark:text-gray-500">Belum tersedia</span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Training Completion</span>
+              <span className="text-gray-600 dark:text-gray-300">Pelatihan selesai</span>
               <span className="font-semibold text-gray-400 dark:text-gray-500">Belum tersedia</span>
             </div>
           </div>
@@ -328,21 +329,21 @@ const ExecutiveDashboard: React.FC = () => {
 
         {/* Inventory Metrics */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Inventory Management</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Persediaan</h3>
 
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Total Value</span>
+              <span className="text-gray-600 dark:text-gray-300">Nilai total</span>
               <span className="font-semibold">{formatRupiah(metrics.inventory.total_value)}</span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Low Stock Items</span>
+              <span className="text-gray-600 dark:text-gray-300">Barang stok menipis</span>
               <span className="font-semibold text-red-600 dark:text-red-400">{metrics.inventory.low_stock_items}</span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">Turnover Ratio</span>
+              <span className="text-gray-600 dark:text-gray-300">Perputaran</span>
               <span className="font-semibold text-gray-400 dark:text-gray-500">Belum tersedia</span>
             </div>
 
