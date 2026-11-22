@@ -20,9 +20,9 @@ import {
 } from 'recharts';
 
 const TAB_LABELS = {
-  overview: 'Overview', daily: 'Detail Harian', machineDaily: 'Mesin & Shift', packing_list: 'Packing List', dailySwiper: 'Controller',
-  converting: 'Converting', products: 'Per Produk', machines: 'Per Mesin', downtime: 'Downtime', graph: 'Grafik',
-  fg: 'FG Conversion', shift: 'Per Shift', analytics: 'Analytics',
+  overview: 'Ringkasan', daily: 'Detail Harian', machineDaily: 'Mesin & Shift', packing_list: 'Packing List', dailySwiper: 'Controller Harian',
+  converting: 'Converting', products: 'Per Produk', machines: 'Per Mesin', downtime: 'Berhenti', graph: 'Grafik',
+  fg: 'Konversi FG', shift: 'Per Shift', analytics: 'Analitik',
 } as const;
 type TabId = keyof typeof TAB_LABELS;
 const TAB_IDS = Object.keys(TAB_LABELS) as TabId[];
@@ -387,19 +387,19 @@ const ProductionMonitoringDashboard: React.FC = () => {
   const isOnTrack = displaySummary.achievement_pct >= 80;
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: ChartBarIcon },
+    { id: 'overview', label: 'Ringkasan', icon: ChartBarIcon },
     { id: 'daily', label: 'Detail Harian', icon: ClockIcon },
     { id: 'machineDaily', label: 'Mesin & Shift', icon: DocumentTextIcon },
     { id: 'packing_list', label: 'Packing List', icon: ArchiveBoxIcon },
-    { id: 'dailySwiper', label: 'Controller', icon: CalendarDaysIcon },
+    { id: 'dailySwiper', label: 'Controller Harian', icon: CalendarDaysIcon },
     { id: 'converting', label: 'Converting', icon: CogIcon },
     { id: 'products', label: 'Per Produk', icon: CubeIcon },
     { id: 'machines', label: 'Per Mesin', icon: CogIcon },
-    { id: 'downtime', label: 'Downtime', icon: ExclamationTriangleIcon },
+    { id: 'downtime', label: 'Berhenti', icon: ExclamationTriangleIcon },
     { id: 'graph', label: 'Grafik', icon: PresentationChartLineIcon },
-    { id: 'fg', label: 'FG Conversion', icon: ArrowsRightLeftIcon },
+    { id: 'fg', label: 'Konversi FG', icon: ArrowsRightLeftIcon },
     { id: 'shift', label: 'Per Shift', icon: BoltIcon },
-    { id: 'analytics', label: 'Analytics', icon: BeakerIcon },
+    { id: 'analytics', label: 'Analitik', icon: BeakerIcon },
   ];
 
   const statusColor = isCritical ? 'bg-red-500' : isOnTrack ? 'bg-green-500' : 'bg-yellow-500';
@@ -426,8 +426,8 @@ const ProductionMonitoringDashboard: React.FC = () => {
                 <ChartBarIcon className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-black tracking-tight">Production Monitoring</h1>
-                <p className="text-emerald-100 text-xs font-medium">Executive Dashboard &bull; Real-time Factory Intelligence</p>
+                <h1 className="text-2xl font-black tracking-tight">Monitoring Produksi</h1>
+                <p className="text-emerald-100 text-xs font-medium">Papan pantau pabrik &bull; diperbarui langsung</p>
               </div>
             </div>
             <div className="flex items-center gap-2 mt-3 flex-wrap">
@@ -461,11 +461,11 @@ const ProductionMonitoringDashboard: React.FC = () => {
                 <button onClick={() => { setViewMode('monthly'); setWeekNumber(0); }}
                   className={`px-3 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 ${
                     viewMode === 'monthly' ? 'bg-white text-emerald-700 shadow-md dark:bg-gray-800 dark:text-emerald-300' : 'text-white hover:bg-white/10'
-                  }`}>Monthly</button>
+                  }`}>Bulanan</button>
                 <button onClick={() => { setViewMode('weekly'); setWeekNumber(0); }}
                   className={`px-3 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 ${
                     viewMode === 'weekly' ? 'bg-white text-emerald-700 shadow-md dark:bg-gray-800 dark:text-emerald-300' : 'text-white hover:bg-white/10'
-                  }`}>Weekly</button>
+                  }`}>Mingguan</button>
               </div>
               {viewMode === 'weekly' && period.weeks && (
                 <select value={weekNumber} onChange={e => setWeekNumber(+e.target.value)}
@@ -502,11 +502,11 @@ const ProductionMonitoringDashboard: React.FC = () => {
         <span className="text-gray-500 dark:text-gray-400">|</span>
         <span>WO: <strong>{data.work_orders.completed}/{data.work_orders.total}</strong> selesai</span>
         <span className="text-gray-500 dark:text-gray-400">|</span>
-        <span>Achievement: <strong className={displaySummary.achievement_pct >= 80 ? 'text-green-700 dark:text-green-300' : displaySummary.achievement_pct >= 50 ? 'text-yellow-700 dark:text-yellow-300' : 'text-red-700 dark:text-red-300'}>{displaySummary.achievement_pct}%</strong> dari target</span>
+        <span>Pencapaian: <strong className={displaySummary.achievement_pct >= 80 ? 'text-green-700 dark:text-green-300' : displaySummary.achievement_pct >= 50 ? 'text-yellow-700 dark:text-yellow-300' : 'text-red-700 dark:text-red-300'}>{displaySummary.achievement_pct}%</strong> dari target</span>
         <span className="text-gray-500 dark:text-gray-400">|</span>
         <span>Grade A: <strong className="text-green-700 dark:text-green-300">{displaySummary.total_pcs > 0 ? (((displaySummary.total_pcs - displaySummary.total_grade_b - displaySummary.total_grade_c) / displaySummary.total_pcs) * 100).toFixed(1) : 0}%</strong></span>
         <span className="text-gray-500 dark:text-gray-400">|</span>
-        <span>Downtime: <strong className="text-red-700 dark:text-red-300">{displaySummary.downtime_hours}j</strong></span>
+        <span>Berhenti: <strong className="text-red-700 dark:text-red-300">{displaySummary.downtime_hours}j</strong></span>
         {displaySummary.is_behind && (
           <span className="ml-auto flex items-center gap-1.5 bg-red-600 text-white text-xs px-3 py-1 rounded-full font-bold animate-pulse">
             <ExclamationTriangleIcon className="h-3.5 w-3.5" />
@@ -647,7 +647,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
               </span>
             </div>
             <p className="text-3xl font-black text-gray-900 dark:text-white leading-none">{displaySummary.runtime_hours}<span className="text-lg text-gray-400 font-semibold">j</span></p>
-            <p className="text-xs text-gray-400 mt-0.5 font-medium">Runtime (Planned: {displaySummary.planned_runtime_minutes > 0 ? (displaySummary.planned_runtime_minutes / 60).toFixed(1) : 0}j)</p>
+            <p className="text-xs text-gray-400 mt-0.5 font-medium">Jam jalan (rencana: {displaySummary.planned_runtime_minutes > 0 ? (displaySummary.planned_runtime_minutes / 60).toFixed(1) : 0}j)</p>
             {/* Stacked progress bar */}
             <div className="flex rounded-full h-2 overflow-hidden mt-2 mb-2 bg-gray-100 dark:bg-gray-700">
               {displaySummary.planned_runtime_minutes > 0 ? (<>
@@ -658,15 +658,15 @@ const ProductionMonitoringDashboard: React.FC = () => {
             </div>
             <div className="space-y-0.5 text-[11px]">
               <div className="flex justify-between">
-                <span className="text-emerald-600 font-semibold dark:text-emerald-400">● Runtime</span>
+                <span className="text-emerald-600 font-semibold dark:text-emerald-400">● Jam jalan</span>
                 <span className="text-gray-600 font-semibold dark:text-gray-300">{displaySummary.runtime_hours}j ({displaySummary.planned_runtime_minutes > 0 ? (displaySummary.runtime_minutes / displaySummary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-red-500 font-semibold">● Downtime</span>
+                <span className="text-red-500 font-semibold">● Berhenti</span>
                 <span className="text-gray-600 font-semibold dark:text-gray-300">{displaySummary.downtime_hours}j ({displaySummary.planned_runtime_minutes > 0 ? (displaySummary.downtime_minutes / displaySummary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-amber-500 font-semibold">● Idle</span>
+                <span className="text-amber-500 font-semibold">● Menganggur</span>
                 <span className="text-gray-600 font-semibold dark:text-gray-300">{displaySummary.idle_hours}j ({displaySummary.planned_runtime_minutes > 0 ? (displaySummary.idle_time_minutes / displaySummary.planned_runtime_minutes * 100).toFixed(1) : 0}%)</span>
               </div>
             </div>
@@ -691,7 +691,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
                 autoRefresh ? 'translate-x-5' : 'translate-x-0'
               }`} />
             </div>
-            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Auto-Refresh</span>
+            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Muat ulang otomatis</span>
           </label>
           {autoRefresh && (
             <>
@@ -720,7 +720,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
           className="flex items-center gap-2 px-4 py-1.5 text-sm font-semibold bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow disabled:opacity-60"
         >
           <ArrowDownTrayIcon className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          {isRefreshing ? 'Memuat...' : 'Refresh Sekarang'}
+          {isRefreshing ? 'Memuat...' : 'Muat ulang sekarang'}
         </button>
       </div>
 
@@ -1196,9 +1196,9 @@ const MachineDailyTab: React.FC<{ data: any }> = ({ data }) => {
                 <th className="px-3 py-2 text-right">Total (pcs)</th>
                 <th className="px-3 py-2 text-right">Karton</th>
                 <th className="px-3 py-2 text-left">Produk</th>
-                <th className="px-3 py-2 text-right">Runtime</th>
-                <th className="px-3 py-2 text-right">Downtime</th>
-                <th className="px-3 py-2 text-right">Idle</th>
+                <th className="px-3 py-2 text-right">Jam jalan</th>
+                <th className="px-3 py-2 text-right">Berhenti</th>
+                <th className="px-3 py-2 text-right">Menganggur</th>
               </tr>
             </thead>
             <tbody className="divide-y dark:divide-gray-700">
@@ -1365,7 +1365,7 @@ const OverviewTab: React.FC<{
             <p className="text-lg font-bold text-green-600 dark:text-green-400">{fmtNum(convertingSummary.total_good)} pcs</p>
           </div>
           <div className="text-center p-3 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-800/30">
-            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-semibold">Reject / Scrap</p>
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-semibold">Tidak lolos / terbuang</p>
             <p className="text-lg font-bold text-red-600 dark:text-red-400">{fmtNum(convertingSummary.total_reject)} pcs</p>
           </div>
           <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-100 dark:border-purple-800/30">
@@ -1434,7 +1434,7 @@ const OverviewTab: React.FC<{
         <div className="mt-3 space-y-1.5">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: accentBg }} />
-            <span className="text-[11px] text-gray-600 dark:text-gray-400 w-36 shrink-0">Achievement Produksi</span>
+            <span className="text-[11px] text-gray-600 dark:text-gray-400 w-36 shrink-0">Pencapaian produksi</span>
             <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
               <div className={`h-2 rounded-full ${accentBar}`} style={{ width: `${achievePct}%` }} />
             </div>
@@ -1490,7 +1490,7 @@ const OverviewTab: React.FC<{
           ) : <p className="w-full text-center text-gray-400">No data</p>}
         </div>
         <div className="flex justify-center gap-5 mt-2">
-          {[{ l: 'Runtime', c: '#22C55E' }, { l: 'Downtime', c: '#EF4444' }, { l: 'Idle', c: '#F59E0B' }].map(x => (
+          {[{ l: 'Jam jalan', c: '#22C55E' }, { l: 'Berhenti', c: '#EF4444' }, { l: 'Menganggur', c: '#F59E0B' }].map(x => (
             <div key={x.l} className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: x.c }} /><span className="text-xs text-gray-600 dark:text-gray-300">{x.l}</span></div>
           ))}
         </div>
@@ -1499,7 +1499,7 @@ const OverviewTab: React.FC<{
 
     {/* Runtime / Downtime / Idle per Day */}
     <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
-      <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Runtime / Downtime / Idle Harian (jam)</h3>
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Jam jalan / berhenti / menganggur per hari</h3>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={dailyChartData}>
@@ -1508,9 +1508,9 @@ const OverviewTab: React.FC<{
             <YAxis tick={{ fontSize: 11 }} />
             <Tooltip formatter={(v: number) => `${v} jam`} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Area type="monotone" dataKey="runtime" name="Runtime" stroke="#22C55E" fill="#BBF7D0" />
-            <Area type="monotone" dataKey="downtime" name="Downtime" stroke="#EF4444" fill="#FECACA" />
-            <Area type="monotone" dataKey="idle" name="Idle" stroke="#F59E0B" fill="#FEF08A" />
+            <Area type="monotone" dataKey="runtime" name="Jam jalan" stroke="#22C55E" fill="#BBF7D0" />
+            <Area type="monotone" dataKey="downtime" name="Berhenti" stroke="#EF4444" fill="#FECACA" />
+            <Area type="monotone" dataKey="idle" name="Menganggur" stroke="#F59E0B" fill="#FEF08A" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -1518,7 +1518,7 @@ const OverviewTab: React.FC<{
 
     {/* Product Achievement Summary (top 10) */}
     <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow duration-200 border">
-      <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Achievement per Produk</h3>
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Pencapaian per produk</h3>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -1529,7 +1529,7 @@ const OverviewTab: React.FC<{
               <th className="px-3 py-2 text-right">Aktual (ctn)</th>
               <th className="px-3 py-2 text-right">Gap</th>
               <th className="px-3 py-2 text-right">A / B / C</th>
-              <th className="px-3 py-2 text-right">Achievement</th>
+              <th className="px-3 py-2 text-right">Pencapaian</th>
               <th className="px-3 py-2 text-left">Progress</th>
             </tr>
           </thead>
@@ -1619,7 +1619,7 @@ const DailyTab: React.FC<{
                 <th className="px-2 py-2.5 text-right">Sisa</th>
                 <th className="px-2 py-2.5 text-right text-green-700 dark:text-green-300">RT</th>
                 <th className="px-2 py-2.5 text-right text-red-700 dark:text-red-300">DT</th>
-                <th className="px-2 py-2.5 text-right text-yellow-700 dark:text-yellow-300">Idle</th>
+                <th className="px-2 py-2.5 text-right text-yellow-700 dark:text-yellow-300">Menganggur</th>
               </tr>
             </thead>
             <tbody>
@@ -1897,7 +1897,7 @@ const DailyTab: React.FC<{
                   <th className="px-3 py-2.5 text-left">Tanggal</th>
                   <th className="px-3 py-2.5 text-left">Mesin Aktif</th>
                   <th className="px-2 py-2.5 text-right text-green-700 dark:text-green-300">Grade A (pcs)</th>
-                  <th className="px-2 py-2.5 text-right text-red-700 dark:text-red-300">Reject (pcs)</th>
+                  <th className="px-2 py-2.5 text-right text-red-700 dark:text-red-300">Tidak lolos (pcs)</th>
                   <th className="px-2 py-2.5 text-right">Total Output (pcs)</th>
                   <th className="px-2 py-2.5 text-right">Quality Rate</th>
                 </tr>
@@ -1960,7 +1960,7 @@ const DailyTab: React.FC<{
                                           <th className="px-3 py-2.5">Mesin</th>
                                           <th className="px-3 py-2.5 text-center">Shift</th>
                                           <th className="px-3 py-2.5">Produk</th>
-                                          <th className="px-3 py-2.5 text-right">Target Efisiensi</th>
+                                          <th className="px-3 py-2.5 text-right">Target efisiensi</th>
                                           <th className="px-3 py-2.5 text-right text-green-700 font-bold dark:text-green-300">Grade A (pcs)</th>
                                           <th className="px-3 py-2.5 text-right text-red-700 font-bold dark:text-red-300">Reject (pcs)</th>
                                           <th className="px-3 py-2.5 text-right font-black">Total Output</th>
@@ -2026,7 +2026,7 @@ const DailyTab: React.FC<{
                                           <th className="px-3 py-2.5">Mesin</th>
                                           <th className="px-3 py-2.5">Produk</th>
                                           <th className="px-3 py-2.5 text-center">Shift</th>
-                                          <th className="px-3 py-2.5">Alasan Downtime</th>
+                                          <th className="px-3 py-2.5">Alasan berhenti</th>
                                           <th className="px-3 py-2.5">Kategori</th>
                                           <th className="px-3 py-2.5 text-right">Durasi</th>
                                         </tr>
@@ -2136,7 +2136,7 @@ const ProductsTab: React.FC<{ data: any; viewMode: 'monthly' | 'weekly' }> = ({ 
             </div>
             
             <div className="flex justify-between">
-              <span className="text-slate-600 dark:text-gray-400">Achievement:</span>
+              <span className="text-slate-600 dark:text-gray-400">Pencapaian:</span>
               <span className={`font-semibold ${achievementPct >= 100 ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}`}>
                 {achievementPct}% dari target mingguan
               </span>
@@ -2741,9 +2741,9 @@ const MachinesTab: React.FC<{ data: any }> = ({ data }) => {
                 <th className="px-3 py-2 text-right">Total (pcs)</th>
                 <th className="px-3 py-2 text-right">Karton</th>
                 <th className="px-3 py-2 text-right">Quality</th>
-                <th className="px-3 py-2 text-right">Runtime</th>
-                <th className="px-3 py-2 text-right">Downtime</th>
-                <th className="px-3 py-2 text-right">Idle</th>
+                <th className="px-3 py-2 text-right">Jam jalan</th>
+                <th className="px-3 py-2 text-right">Berhenti</th>
+                <th className="px-3 py-2 text-right">Menganggur</th>
                 <th className="px-3 py-2 text-right">Shifts</th>
               </tr>
             </thead>

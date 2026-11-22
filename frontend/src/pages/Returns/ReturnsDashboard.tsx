@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useGetReturnsQuery, useGetReturnAnalyticsQuery } from '../../services/returnsApi'
 import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
+import { KpiStrip, PageHeader } from '../../components/ui/PageKit'
 export default function ReturnsDashboard() {
     const { t } = useLanguage();
 
@@ -75,218 +76,173 @@ const [page, setPage] = useUrlPage()
     }
   }
 
-  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
-  // #16 of 17). Returns table/detail are intentionally left as-is -
-  // only the header+analytics section is in scope for the bento look.
+  const labelStatus: Record<string, string> = {
+    received: 'Diterima',
+    qc_pending: 'Menunggu QC',
+    qc_approved: 'Lolos QC',
+    qc_rejected: 'Ditolak QC',
+    processed: 'Selesai diproses',
+  };
+
+  const labelQc: Record<string, string> = {
+    pending: 'Menunggu',
+    passed: 'Lolos',
+    approved: 'Lolos',
+    failed: 'Tidak lolos',
+    rejected: 'Tidak lolos',
+  };
+
+  const ringkasan = (analytics as any)?.summary;
+
   return (
-    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">Retur</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Manage customer returns and QC inspections</p>
-        </div>
-        <Link
-          to="/app/returns/new"
-          className="bg-gradient-to-br from-primary-600 to-primary-700 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-shadow flex items-center gap-2 text-sm font-medium"
-        >
-          <PlusIcon className="h-5 w-5" />
-          New Return
-        </Link>
-      </div>
+    <div className="mx-auto max-w-6xl space-y-4 pb-10">
+      <PageHeader
+        eyebrow="PENJUALAN · RETUR"
+        title="Retur Pelanggan"
+        subtitle="Barang yang dikembalikan pelanggan beserta pemeriksaan QC-nya."
+        actions={
+          <Link
+            to="/app/returns/new"
+            className="fn-press inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600"
+          >
+            <PlusIcon className="h-4 w-4" />
+            Retur baru
+          </Link>
+        }
+      />
 
-      {/* Analytics Cards - bento: Total Returns spans 2 cols (primary metric) */}
-      {analytics && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <ArrowPathIcon className="w-5 h-5" />
-                </div>
-                <p className="text-sm opacity-90">Total Returns</p>
-              </div>
-              <p className="text-3xl font-bold">{analytics.summary.total_returns}</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <ClockIcon className="w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-xs opacity-90 mb-1">Pending QC</p>
-              <p className="text-2xl font-bold">{analytics.summary.pending_qc}</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <CheckCircleIcon className="w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-xs opacity-90 mb-1">QC Approved</p>
-              <p className="text-2xl font-bold">{analytics.summary.approved_returns}</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <XCircleIcon className="w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-xs opacity-90 mb-1">QC Rejected</p>
-              <p className="text-2xl font-bold">{analytics.summary.rejected_returns}</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <CheckCircleIcon className="w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-xs opacity-90 mb-1">Approval Rate</p>
-              <p className="text-2xl font-bold">{analytics.summary.qc_approval_rate.toFixed(1)}%</p>
-            </div>
-          </div>
-        </>
+      {ringkasan && (
+        <KpiStrip
+          items={[
+            { label: 'Total retur', value: Number(ringkasan.total_returns || 0).toLocaleString('id-ID'), hint: 'Seluruh periode' },
+            {
+              label: 'Menunggu QC',
+              value: Number(ringkasan.pending_qc || 0).toLocaleString('id-ID'),
+              tone: Number(ringkasan.pending_qc || 0) > 0 ? 'warn' : undefined,
+              hint: 'Belum diperiksa',
+            },
+            { label: 'Lolos QC', value: Number(ringkasan.approved_returns || 0).toLocaleString('id-ID'), hint: 'Bisa diproses' },
+            {
+              label: 'Ditolak QC',
+              value: Number(ringkasan.rejected_returns || 0).toLocaleString('id-ID'),
+              tone: Number(ringkasan.rejected_returns || 0) > 0 ? 'bad' : undefined,
+              hint: 'Tidak bisa dijual lagi',
+            },
+            {
+              label: 'Tingkat kelolosan',
+              // Dikirim gaya Inggris ("0.0"), jadi dikoma-kan supaya terbaca
+              // benar di layar.
+              value: `${Number(ringkasan.qc_approval_rate || 0).toFixed(1).replace('.', ',')}%`,
+              hint: 'Dari retur yang sudah diperiksa',
+            },
+          ]}
+        />
       )}
 
-      {/* Filters and Search */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search returns..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-          
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">All Status</option>
-            <option value="received">Received</option>
-            <option value="qc_pending">QC Pending</option>
-            <option value="qc_approved">QC Approved</option>
-            <option value="qc_rejected">QC Rejected</option>
-            <option value="processed">Processed</option>
-          </select>
-
-          <select
-            value={qcStatusFilter}
-            onChange={(e) => setQcStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">All QC Status</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
-
-          <button
-            onClick={() => refetch()}
-            className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:bg-gray-700 flex items-center gap-2 dark:hover:bg-gray-600"
-          >
-            <ArrowPathIcon className="h-4 w-4" />
-          </button>
+      <div className="fn-card flex flex-col gap-3 p-4 sm:flex-row">
+        <div className="relative flex-1">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Cari nomor retur atau pelanggan..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+          />
         </div>
+
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+        >
+          <option value="">Semua status</option>
+          <option value="received">Diterima</option>
+          <option value="qc_pending">Menunggu QC</option>
+          <option value="qc_approved">Lolos QC</option>
+          <option value="qc_rejected">Ditolak QC</option>
+          <option value="processed">Selesai diproses</option>
+        </select>
+
+        <select
+          value={qcStatusFilter}
+          onChange={(e) => setQcStatusFilter(e.target.value)}
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+        >
+          <option value="">Semua hasil QC</option>
+          <option value="pending">Menunggu</option>
+          <option value="approved">Lolos</option>
+          <option value="rejected">Tidak lolos</option>
+        </select>
+
+        <button
+          onClick={() => refetch()}
+          className="fn-press inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+          title="Muat ulang"
+        >
+          <ArrowPathIcon className="h-4 w-4" />
+          Muat ulang
+        </button>
       </div>
 
-      {/* Returns Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
+      <div className="fn-card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Return Number
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  QC Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
+          <table className="w-full text-sm">
+            <thead>
+              {/* Sebelumnya lima judul kolom ini kosong melompong - sisa
+                  pemindahan ke berkas terjemahan yang tidak pernah selesai. */}
+              <tr className="border-b border-gray-200/70 dark:border-gray-700/70">
+                <th className="fn-label px-4 py-2.5 text-left">Nomor retur</th>
+                <th className="fn-label px-4 py-2.5 text-left">Pelanggan</th>
+                <th className="fn-label px-4 py-2.5 text-left">Tanggal</th>
+                <th className="fn-label px-4 py-2.5 text-left">Alasan</th>
+                <th className="fn-label px-4 py-2.5 text-left">Status</th>
+                <th className="fn-label px-4 py-2.5 text-left">Hasil QC</th>
+                <th className="fn-label px-4 py-2.5 text-right">Jumlah barang</th>
+                <th className="fn-label px-4 py-2.5 text-right">Nilai</th>
+                <th className="fn-label px-4 py-2.5 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="divide-y divide-gray-200/70 dark:divide-gray-700/70">
               {isLoading ? (
-                <tr>
-                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                    Loading returns...
-                  </td>
-                </tr>
+                <tr><td colSpan={9} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">Memuat retur...</td></tr>
               ) : returnsData?.returns.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                    No returns found
-                  </td>
-                </tr>
+                <tr><td colSpan={9} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">Belum ada retur yang cocok dengan penyaringnya.</td></tr>
               ) : (
                 returnsData?.returns.map((returnItem) => (
-                  <tr key={returnItem.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
+                  <tr key={returnItem.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
                         {getStatusIcon(returnItem.status)}
-                        <span className="ml-2 text-sm font-medium text-gray-900 dark:text-white">
-                          {returnItem.return_number}
-                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">{returnItem.return_number}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {returnItem.customer_name}
+                    <td className="px-4 py-3 text-gray-900 dark:text-white">{returnItem.customer_name}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                      {new Date(returnItem.return_date).toLocaleDateString('id-ID')}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(returnItem.return_date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {returnItem.reason}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{returnItem.reason}</td>
+                    <td className="px-4 py-3">
                       <span className={getStatusBadge(returnItem.status)}>
-                        {returnItem.status.replace('_', ' ').toUpperCase()}
+                        {labelStatus[returnItem.status] || returnItem.status.replace(/_/g, ' ')}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3">
                       {returnItem.qc_required ? (
                         <span className={getQCStatusBadge(returnItem.qc_status || 'pending')}>
-                          {(returnItem.qc_status || 'pending').replace('_', ' ').toUpperCase()}
+                          {labelQc[returnItem.qc_status || 'pending'] || returnItem.qc_status}
                         </span>
                       ) : (
-                        <span className="text-gray-400 text-sm">N/A</span>
+                        <span className="text-sm text-gray-400">Tidak perlu QC</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {returnItem.total_items}
+                    <td className="fn-num px-4 py-3 text-right text-gray-900 dark:text-white">{returnItem.total_items}</td>
+                    <td className="fn-num px-4 py-3 text-right text-gray-900 dark:text-white">
+                      Rp {returnItem.total_value.toLocaleString('id-ID')}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      Rp {returnItem.total_value.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link
-                        to={`/app/returns/${returnItem.id}`}
-                        className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400"
-                      >
-                        View Details
+                    <td className="px-4 py-3 text-right">
+                      <Link to={`/app/returns/${returnItem.id}`} className="font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
+                        Rincian
                       </Link>
                     </td>
                   </tr>
@@ -296,46 +252,27 @@ const [page, setPage] = useUrlPage()
           </table>
         </div>
 
-        {/* Pagination */}
         {returnsData && returnsData.pages > 1 && (
-          <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
-            <div className="flex-1 flex justify-between sm:hidden">
+          <div className="flex items-center justify-between gap-3 border-t border-gray-200/70 px-4 py-3 dark:border-gray-700/70">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Halaman <span className="font-medium">{page}</span> dari <span className="font-medium">{returnsData.pages}</span>
+            </p>
+            {/* Dua tombol halaman ini dulu tidak punya tulisan sama sekali. */}
+            <div className="flex gap-2">
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50"
+                className="fn-press rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
               >
+                Sebelumnya
               </button>
               <button
                 onClick={() => setPage(Math.min(returnsData.pages, page + 1))}
                 disabled={page === returnsData.pages}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50"
+                className="fn-press rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
               >
+                Berikutnya
               </button>
-            </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700 dark:text-gray-200">
-                  Showing page <span className="font-medium">{page}</span> of{' '}
-                  <span className="font-medium">{returnsData.pages}</span>
-                </p>
-              </div>
-              <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                  <button
-                    onClick={() => setPage(Math.max(1, page - 1))}
-                    disabled={page === 1}
-                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50"
-                  >
-                  </button>
-                  <button
-                    onClick={() => setPage(Math.min(returnsData.pages, page + 1))}
-                    disabled={page === returnsData.pages}
-                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50"
-                  >
-                  </button>
-                </nav>
-              </div>
             </div>
           </div>
         )}

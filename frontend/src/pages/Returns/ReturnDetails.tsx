@@ -38,6 +38,14 @@ const { id } = useParams<{ id: string }>()
     }
   }
 
+  const labelStatus: Record<string, string> = {
+    received: 'Diterima',
+    qc_pending: 'Menunggu QC',
+    qc_approved: 'Lolos QC',
+    qc_rejected: 'Ditolak QC',
+    processed: 'Selesai diproses',
+  };
+
   const getStatusBadge = (status: string) => {
     const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
     switch (status) {
@@ -128,7 +136,7 @@ const { id } = useParams<{ id: string }>()
   if (!returnData) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Return not found</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Retur tidak ditemukan</h2>
         <p className="text-gray-600 dark:text-gray-300 mt-2">The return you're looking for doesn't exist.</p>
       </div>
     )
@@ -146,16 +154,17 @@ const { id } = useParams<{ id: string }>()
             <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </Link>
           <div>
+            <div className="fn-label mb-1.5">PENJUALAN · RETUR</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
               {getStatusIcon(returnData.status)}
-              Return {returnData.return_number}
+              Retur {returnData.return_number}
             </h1>
-            <p className="text-gray-600 dark:text-gray-300">Customer: {returnData.customer.name}</p>
+            <p className="text-gray-600 dark:text-gray-300">Pelanggan: {returnData.customer.name}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <span className={getStatusBadge(returnData.status)}>
-            {returnData.status.replace('_', ' ').toUpperCase()}
+            {labelStatus[returnData.status] || returnData.status.replace(/_/g, ' ')}
           </span>
           {returnData.qc_required && (
             <span className={getStatusBadge(returnData.qc_status || 'pending')}>
@@ -169,8 +178,8 @@ const { id } = useParams<{ id: string }>()
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           {/* Return Details Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Return Information</h2>
+          <div className="fn-card p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Keterangan retur</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Return Date</label>
@@ -198,8 +207,8 @@ const { id } = useParams<{ id: string }>()
           </div>
 
           {/* Return Items */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Return Items</h2>
+          <div className="fn-card p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Barang yang diretur</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-900">
@@ -209,7 +218,7 @@ const { id } = useParams<{ id: string }>()
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      QC Status
+                      Hasil QC
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     </th>
@@ -308,8 +317,8 @@ const { id } = useParams<{ id: string }>()
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Customer Info */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Customer Information</h3>
+          <div className="fn-card p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Keterangan pelanggan</h3>
             <div className="space-y-2">
               <div>
                 <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Company</label>
@@ -324,8 +333,8 @@ const { id } = useParams<{ id: string }>()
 
           {/* QC Records */}
           {returnData.qc_records.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">QC Records</h3>
+            <div className="fn-card p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Catatan QC</h3>
               <div className="space-y-4">
                 {returnData.qc_records.map((qc) => (
                   <div key={qc.id} className="border-l-4 border-blue-200 pl-4 dark:border-blue-800">
@@ -407,7 +416,7 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
         <div className="mt-3">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">QC Inspection - {item.product_name}</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Pemeriksaan QC - {item.product_name}</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Visual Inspection</label>
@@ -417,9 +426,9 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
                 className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 required
               >
-                <option value="">Select result</option>
-                <option value="pass">Pass</option>
-                <option value="fail">Fail</option>
+                <option value="">Pilih hasil</option>
+                <option value="pass">Lolos</option>
+                <option value="fail">Tidak lolos</option>
               </select>
             </div>
 
@@ -431,10 +440,10 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
                 className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 required
               >
-                <option value="">Select result</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-                <option value="conditional">Conditional</option>
+                <option value="">Pilih hasil</option>
+                <option value="approved">Disetujui</option>
+                <option value="rejected">Ditolak</option>
+                <option value="conditional">Bersyarat</option>
               </select>
             </div>
 
@@ -478,11 +487,11 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
                 onChange={(e) => setFormData({ ...formData, recommendation: e.target.value })}
                 className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
               >
-                <option value="">Select recommendation</option>
-                <option value="rework">Rework</option>
-                <option value="warehouse">Return to Warehouse</option>
-                <option value="scrap">Scrap</option>
-                <option value="waste">Send to Waste</option>
+                <option value="">Pilih rekomendasi</option>
+                <option value="rework">Dikerjakan ulang</option>
+                <option value="warehouse">Kembalikan ke gudang</option>
+                <option value="scrap">Dibuang (scrap)</option>
+                <option value="waste">Kirim ke limbah</option>
               </select>
             </div>
 
@@ -496,7 +505,7 @@ function QCInspectionModal({ item, onSubmit, onClose }: any) {
                 type="submit"
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
-                Submit QC
+                Simpan hasil QC
               </button>
             </div>
           </form>
@@ -526,7 +535,7 @@ function DispositionModal({ item, onSubmit, onClose }: any) {
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
         <div className="mt-3">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Disposition - {item.product_name}</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Penentuan tindak lanjut - {item.product_name}</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Disposition Type</label>
@@ -536,11 +545,11 @@ function DispositionModal({ item, onSubmit, onClose }: any) {
                 className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 required
               >
-                <option value="">Select disposition</option>
-                <option value="rework">Rework</option>
-                <option value="warehouse">Return to Warehouse</option>
-                <option value="waste">Send to Waste</option>
-                <option value="scrap">Scrap</option>
+                <option value="">Pilih tindak lanjut</option>
+                <option value="rework">Dikerjakan ulang</option>
+                <option value="warehouse">Kembalikan ke gudang</option>
+                <option value="waste">Kirim ke limbah</option>
+                <option value="scrap">Dibuang (scrap)</option>
               </select>
             </div>
 
@@ -577,11 +586,11 @@ function DispositionModal({ item, onSubmit, onClose }: any) {
                   onChange={(e) => setFormData({ ...formData, waste_category: e.target.value })}
                   className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                 >
-                  <option value="">Select category</option>
-                  <option value="defective">Defective</option>
-                  <option value="damaged">Damaged</option>
-                  <option value="expired">Expired</option>
-                  <option value="contaminated">Contaminated</option>
+                  <option value="">Pilih kategori</option>
+                  <option value="defective">Cacat</option>
+                  <option value="damaged">Rusak</option>
+                  <option value="expired">Kedaluwarsa</option>
+                  <option value="contaminated">Terkontaminasi</option>
                 </select>
               </div>
             )}
@@ -607,7 +616,7 @@ function DispositionModal({ item, onSubmit, onClose }: any) {
                 type="submit"
                 className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
               >
-                Submit Disposition
+                Simpan tindak lanjut
               </button>
             </div>
           </form>

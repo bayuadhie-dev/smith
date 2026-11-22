@@ -10,6 +10,8 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
+import SearchableSelect from '../../components/SearchableSelect'
+import { useGetCustomersQuery, useGetProductsQuery } from '../../services/api'
 interface ReturnItem {
   id: string
   product_id: number
@@ -26,6 +28,13 @@ export default function CreateReturnForm() {
 
 const navigate = useNavigate()
   const [createReturn, { isLoading }] = useCreateReturnMutation()
+
+  // Formulir ini dulu meminta ID pelanggan dan ID produk sebagai angka mentah -
+  // tidak ada orang gudang yang hafal nomor itu (2026-11-22).
+  const { data: customersData } = useGetCustomersQuery({ per_page: 1000 } as any)
+  const { data: productsData } = useGetProductsQuery({} as any)
+  const customers = ((customersData as any)?.customers || []).map((c: any) => ({ id: c.id, code: c.code, name: c.company_name || c.name || c.code }))
+  const products = ((productsData as any)?.products || []).map((p: any) => ({ id: p.id, code: p.code, name: p.name }))
 
   const [formData, setFormData] = useState({
     customer_id: '',
@@ -102,7 +111,7 @@ const navigate = useNavigate()
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-4 pb-10">
       {/* Header */}
       <div className="flex items-center space-x-4">
         <Link
@@ -112,32 +121,34 @@ const navigate = useNavigate()
           <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </Link>
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Create New Return</h1>
-          <p className="text-gray-600 dark:text-gray-300">Process customer product returns</p>
+          <div className="fn-label mb-1.5">PENJUALAN · RETUR</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Retur Baru</h1>
+          <p className="text-gray-600 dark:text-gray-300">Catat barang yang dikembalikan pelanggan.</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Return Information */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Return Information</h2>
+        <div className="fn-card p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Keterangan retur</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Customer ID *
+                Pelanggan *
               </label>
-              <NumberInput
-                value={formData.customer_id}
-                onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              <SearchableSelect
+                options={customers}
+                value={formData.customer_id ? Number(formData.customer_id) : null}
+                onChange={(v) => setFormData({ ...formData, customer_id: v ? String(v) : '' })}
+                placeholder="Cari nama atau kode pelanggan"
                 required
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Sales Order ID (Optional)
+                ID Pesanan Penjualan (opsional)
               </label>
               <NumberInput
                 value={formData.sales_order_id}
@@ -148,7 +159,7 @@ const navigate = useNavigate()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Return Date *
+                Tanggal retur *
               </label>
               <input
                 type="date"
@@ -161,7 +172,7 @@ const navigate = useNavigate()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Return Reason *
+                Alasan retur *
               </label>
               <select
                 value={formData.reason}
@@ -169,14 +180,14 @@ const navigate = useNavigate()
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               >
-                <option value="">Select reason</option>
-                <option value="defective">Defective Product</option>
-                <option value="damaged">Damaged in Transit</option>
-                <option value="wrong_item">Wrong Item Shipped</option>
-                <option value="quality_issue">Quality Issue</option>
-                <option value="customer_request">Customer Request</option>
-                <option value="warranty_claim">Warranty Claim</option>
-                <option value="other">Other</option>
+                <option value="">Pilih alasan</option>
+                <option value="defective">Produk cacat</option>
+                <option value="damaged">Rusak dalam pengiriman</option>
+                <option value="wrong_item">Barang yang dikirim salah</option>
+                <option value="quality_issue">Masalah kualitas</option>
+                <option value="customer_request">Permintaan pelanggan</option>
+                <option value="warranty_claim">Klaim garansi</option>
+                <option value="other">Lainnya</option>
               </select>
             </div>
 
@@ -187,7 +198,7 @@ const navigate = useNavigate()
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={3}
-                placeholder="Additional details about the return..."
+                placeholder="Keterangan tambahan soal retur ini..."
               />
             </div>
 
@@ -199,23 +210,23 @@ const navigate = useNavigate()
                   onChange={(e) => setFormData({ ...formData, qc_required: e.target.checked })}
                   className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:text-blue-400"
                 />
-                <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">QC Inspection Required</span>
+                <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">Perlu pemeriksaan QC</span>
               </label>
             </div>
           </div>
         </div>
 
         {/* Return Items */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="fn-card p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Return Items</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Barang yang diretur</h2>
             <button
               type="button"
               onClick={addItem}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
             >
               <PlusIcon className="h-4 w-4" />
-              Add Item
+              Tambah barang
             </button>
           </div>
 
@@ -223,7 +234,7 @@ const navigate = useNavigate()
             {items.map((item, index) => (
               <div key={item.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-md font-medium text-gray-900 dark:text-white">Item {index + 1}</h3>
+                  <h3 className="text-md font-medium text-gray-900 dark:text-white">Barang {index + 1}</h3>
                   {items.length > 1 && (
                     <button
                       type="button"
@@ -238,19 +249,24 @@ const navigate = useNavigate()
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Product ID *
+                      Produk *
                     </label>
-                    <NumberInput
-                      value={item.product_id || ''}
-                      onChange={(e) => updateItem(item.id, 'product_id', parseInt(e.target.value) || 0)}
-                      className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    <SearchableSelect
+                      options={products}
+                      value={item.product_id || null}
+                      onChange={(v) => {
+                        const dipilih = products.find((p: any) => p.id === Number(v))
+                        updateItem(item.id, 'product_id', v ? Number(v) : 0)
+                        if (dipilih) updateItem(item.id, 'product_name', dipilih.name)
+                      }}
+                      placeholder="Cari nama atau kode produk"
                       required
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Quantity Returned *
+                      Jumlah diretur *
                     </label>
                     <NumberInput
                       value={item.quantity_returned}
@@ -263,7 +279,7 @@ const navigate = useNavigate()
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Unit Price *
+                      Harga satuan *
                     </label>
                     <NumberInput currency
                       step="0.01"
@@ -276,7 +292,7 @@ const navigate = useNavigate()
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Condition Received *
+                      Kondisi saat diterima *
                     </label>
                     <select
                       value={item.condition_received}
@@ -284,29 +300,29 @@ const navigate = useNavigate()
                       className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     >
-                      <option value="good">Good</option>
-                      <option value="damaged">Damaged</option>
-                      <option value="defective">Defective</option>
-                      <option value="unusable">Unusable</option>
+                      <option value="good">Baik</option>
+                      <option value="damaged">Rusak</option>
+                      <option value="defective">Cacat</option>
+                      <option value="unusable">Tidak bisa dipakai</option>
                     </select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Batch Number
+                      Nomor batch
                     </label>
                     <input
                       type="text"
                       value={item.batch_number || ''}
                       onChange={(e) => updateItem(item.id, 'batch_number', e.target.value)}
                       className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Optional"
+                      placeholder="Opsional"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Total Value
+                      Nilai total
                     </label>
                     <input
                       type="text"
@@ -318,14 +334,14 @@ const navigate = useNavigate()
 
                   <div className="md:col-span-3">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Defect Description
+                      Keterangan kerusakan
                     </label>
                     <textarea
                       value={item.defect_description || ''}
                       onChange={(e) => updateItem(item.id, 'defect_description', e.target.value)}
                       className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       rows={2}
-                      placeholder="Describe any defects or issues..."
+                      placeholder="Jelaskan kerusakan atau masalahnya..."
                     />
                   </div>
                 </div>
@@ -361,7 +377,7 @@ const navigate = useNavigate()
             disabled={isLoading}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
-            {isLoading ? 'Creating...' : 'Create Return'}
+            {isLoading ? 'Menyimpan...' : 'Simpan retur'}
           </button>
         </div>
       </form>

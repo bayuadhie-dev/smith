@@ -100,8 +100,8 @@ const routeLabels: Record<string, string> = {
   // 'products': 'Products', // already defined
   // 'reports': 'Reports', // already defined
   // Others
-  'waste': 'Waste Management',
-  'returns': 'Returns',
+  'waste': 'Manajemen Limbah',
+  'returns': 'Retur',
   'oee': 'OEE Monitoring',
   'tv-display': 'TV Display',
   'documents': 'Documents',
@@ -113,7 +113,8 @@ const routeLabels: Record<string, string> = {
   'details': 'Rincian',
   'list': 'Daftar',
   'executive': 'Eksekutif',
-  'production-monitoring': 'Production Monitoring',
+  'production-monitoring': 'Monitoring Produksi',
+  'factory-layout': 'Denah Pabrik',
   'pre-shift-checklist': 'Pre-Shift Checklist',
   'live-monitoring': 'Patroli Mesin',
   'petty-cash': 'Kas Kecil',

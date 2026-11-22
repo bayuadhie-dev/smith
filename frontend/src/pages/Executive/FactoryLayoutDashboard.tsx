@@ -216,8 +216,8 @@ const FactoryLayoutDashboard: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, border: `1.5px solid ${COLORS.amber}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 12, color: COLORS.amber }}>S</div>
             <div>
-              <div style={{ fontSize: 9, letterSpacing: '0.14em', color: COLORS.textFaint, textTransform: 'uppercase' }}>Internal ERP · Production Monitoring</div>
-              <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 18, fontWeight: 600, margin: 0 }}>Denah Produksi — Blueprint View</h1>
+              <div style={{ fontSize: 9, letterSpacing: '0.14em', color: COLORS.textFaint, textTransform: 'uppercase' }}>ERP Internal · Monitoring Produksi</div>
+              <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 18, fontWeight: 600, margin: 0 }}>Denah Produksi — Tampilan Blueprint</h1>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
