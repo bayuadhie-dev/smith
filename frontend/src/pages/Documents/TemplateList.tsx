@@ -44,12 +44,13 @@ interface VersionRow {
 }
 
 const DOCUMENT_TYPES = [
-  { value: 'spk', label: 'SPK (SPK)' },
-  { value: 'spk_batch', label: 'SPK (Batch)' },
+  { value: 'spk', label: 'SPK' },
+  { value: 'spk_batch', label: 'SPK Batch' },
   { value: 'surat_jalan', label: 'Surat Jalan' },
-  { value: 'invoice', label: 'Invoice' },
-  { value: 'purchase_order', label: 'Purchase Order' },
-  { value: 'faktur', label: 'Faktur' },
+  { value: 'invoice', label: 'Faktur Penjualan' },
+  { value: 'purchase_order', label: 'Pesanan Pembelian' },
+  { value: 'purchase_invoice', label: 'Faktur Pembelian' },
+  { value: 'faktur', label: 'Faktur Pajak' },
   { value: 'kwitansi', label: 'Kwitansi' },
 ];
 

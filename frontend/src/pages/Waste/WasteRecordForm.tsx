@@ -83,10 +83,10 @@ const { id } = useParams()
     try {
       if (isEdit && id) {
         await updateWasteRecord({ id, ...data }).unwrap()
-        toast.success('Waste record updated successfully!')
+        toast.success('Catatan limbah diperbarui')
       } else {
         await createWasteRecord(data).unwrap()
-        toast.success('Waste record created successfully!')
+        toast.success('Catatan limbah tersimpan')
       }
       navigate('/app/waste')
     } catch (error: any) {
@@ -107,10 +107,10 @@ const { id } = useParams()
       <div className="mb-6">
         <div className="fn-label mb-1.5">PRODUKSI · CATATAN SUSUT</div>
         <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
-          {isEdit ? 'Edit Waste Record' : 'Record Waste Disposal'}
+          {isEdit ? 'Ubah Catatan Limbah' : 'Catat Pembuangan Limbah'}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          {isEdit ? 'Update waste disposal record' : 'Create a new waste disposal record'}
+          {isEdit ? 'Perbarui catatan pembuangan limbah ini.' : 'Catat satu pembuangan limbah baru.'}
         </p>
       </div>
 
@@ -389,7 +389,7 @@ const { id } = useParams()
             disabled={isCreating || isUpdating}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isCreating || isUpdating ? 'Saving...' : (isEdit ? 'Update Record' : 'Record Waste')}
+            {isCreating || isUpdating ? 'Menyimpan...' : (isEdit ? 'Simpan Perubahan' : 'Simpan Catatan')}
           </button>
         </div>
       </form>

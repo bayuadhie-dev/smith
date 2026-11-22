@@ -376,7 +376,7 @@ const ManualAdmin: React.FC = () => {
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {stats.popular_articles?.[0]?.views || 0}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Top Views</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Paling dibaca</p>
                 </div>
               </div>
             </div>
@@ -487,7 +487,7 @@ const ManualAdmin: React.FC = () => {
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Judul</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kategori</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Views</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dibaca</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                       </tr>
@@ -509,7 +509,7 @@ const ManualAdmin: React.FC = () => {
                                 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                                 : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
                             }`}>
-                              {article.is_published ? 'Published' : 'Draft'}
+                              {article.is_published ? 'Terbit' : 'Draf'}
                             </span>
                           </td>
                           <td className="px-4 py-3">
@@ -578,7 +578,7 @@ const ManualAdmin: React.FC = () => {
                                 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                                 : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
                             }`}>
-                              {faq.is_published ? 'Published' : 'Draft'}
+                              {faq.is_published ? 'Terbit' : 'Draf'}
                             </span>
                           </td>
                           <td className="px-4 py-3">

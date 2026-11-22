@@ -101,6 +101,7 @@ const routeLabels: Record<string, string> = {
   'rd': 'R&D',
   'rnd': 'R&D',
   'manual': 'Panduan',
+  'templates': 'Template',
   'search': 'Pencarian',
   'faq': 'Tanya Jawab',
   'dcc': 'Pusat Kendali Dokumen',
@@ -162,6 +163,14 @@ const NO_PAGE = new Set([
   '/app/quality/objective', '/app/reports/generate', '/app/warehouse/gudang', '/app/warehouse/item-stock',
 ]);
 
+// Satu kata yang artinya beda tergantung modulnya, mis. "generate" di
+// Laporan vs di Dokumen. Pasangan dua segmen diperiksa lebih dulu.
+const pairLabels: Record<string, string> = {
+  'documents/generate': 'Buat Dokumen',
+  'reports/generate': 'Buat Laporan',
+  'shipping/orders': 'Surat Jalan',
+};
+
 const Breadcrumb = () => {
   const location = useLocation();
   const trailRaw = useTrail();
@@ -178,7 +187,9 @@ const Breadcrumb = () => {
     const isId = /^\d+$/.test(segment);
     
     // Get label from mapping or format the segment
-    let label = routeLabels[segment] || segment.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const pair = index > 0 ? `${pathnames[index - 1]}/${segment}` : '';
+    let label = pairLabels[pair] || routeLabels[segment]
+      || segment.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     
     if (isId) {
       label = `#${segment}`;
