@@ -57,6 +57,8 @@ const SEGMENT_WORDS: Record<string, string> = {
   'functional-locations': 'Lokasi Fungsional', products: 'Produk',
   categories: 'Kategori', lifecycle: 'Daur Hidup', list: 'Daftar',
   rnd: 'R&D', projects: 'Proyek', approvals: 'Persetujuan', imports: 'Impor & Ekspor', spc: 'SPC',
+  'work-center': 'Pusat Kerja', 'job-costs': 'Job Costing', 'wip-analytics': 'Analitik WIP',
+  wip: 'WIP', mrp: 'MRP', converting: 'Converting',
   documents: 'Dokumen', templates: 'Template', generate: 'Buat Dokumen',
   manual: 'Panduan', faq: 'Tanya Jawab', approval: 'Persetujuan',
   waste: 'Limbah', notifications: 'Notifikasi',

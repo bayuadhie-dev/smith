@@ -43,9 +43,9 @@ interface WorkCenterSummary {
 const statusConfig: Record<string, { label: string; badge: string; icon: any }> = {
   running: { label: 'Berjalan', badge: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', icon: PlayIcon },
   active: { label: 'Aktif', badge: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', icon: PlayIcon },
-  idle: { label: 'Idle', badge: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300', icon: PauseIcon },
-  maintenance: { label: 'Maintenance', badge: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', icon: WrenchScrewdriverIcon },
-  breakdown: { label: 'Breakdown', badge: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', icon: ExclamationTriangleIcon },
+  idle: { label: 'Menganggur', badge: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300', icon: PauseIcon },
+  maintenance: { label: 'Perawatan', badge: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300', icon: WrenchScrewdriverIcon },
+  breakdown: { label: 'Rusak', badge: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', icon: ExclamationTriangleIcon },
 }
 
 const getOEEColor = (oee: number | null) => {

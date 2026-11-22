@@ -445,7 +445,7 @@ const WIPDashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Link to="/app/production/wip-batches/new" className="card hover:shadow-lg transition-shadow">
+        <Link to="/app/production/wip-batches/new" data-tab-title="Batch WIP Baru" className="card hover:shadow-lg transition-shadow">
           <div className="card-body text-center">
             <PlayIcon className="h-8 w-8 text-blue-600 mx-auto mb-2 dark:text-blue-400" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Batch WIP Baru</h3>
@@ -453,7 +453,7 @@ const WIPDashboard: React.FC = () => {
           </div>
         </Link>
 
-        <Link to="/app/production/job-costs" className="card hover:shadow-lg transition-shadow">
+        <Link to="/app/production/job-costs" data-tab-title="Job Costing" className="card hover:shadow-lg transition-shadow">
           <div className="card-body text-center">
             <CurrencyDollarIcon className="h-8 w-8 text-green-600 mx-auto mb-2 dark:text-green-400" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Job Costing</h3>
@@ -461,7 +461,7 @@ const WIPDashboard: React.FC = () => {
           </div>
         </Link>
 
-        <Link to="/app/production/wip-analytics" className="card hover:shadow-lg transition-shadow">
+        <Link to="/app/production/wip-analytics" data-tab-title="Analitik WIP" className="card hover:shadow-lg transition-shadow">
           <div className="card-body text-center">
             <ChartBarIcon className="h-8 w-8 text-purple-600 mx-auto mb-2 dark:text-purple-400" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Analitik WIP</h3>
