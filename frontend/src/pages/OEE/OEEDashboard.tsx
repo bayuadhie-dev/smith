@@ -21,6 +21,7 @@ const { data, isLoading } = useGetOEERecordsQuery({})
 
   return (
     <div className="space-y-6">
+      <div className="fn-label mb-1.5">OEE · RINGKASAN</div>
       <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{t('oee.dashboard')}</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

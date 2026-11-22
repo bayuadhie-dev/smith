@@ -151,6 +151,7 @@ const PreShiftChecklistView = () => {
             <ArrowLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
           <ClipboardDocumentCheckIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+          <div className="fn-label mb-1.5 print:hidden">PRODUKSI · CHECKLIST AWAL SHIFT</div>
           <h1 className="text-lg font-bold text-gray-900 dark:text-white">Checklist Awal Shift</h1>
         </div>
         <div className="flex items-center space-x-2 print:hidden flex-wrap">

@@ -78,6 +78,7 @@ const PreShiftChecklistWeekly = () => {
                   <ClipboardDocumentCheckIcon className="w-6 h-6 text-white" />
                 </div>
                 <div>
+                  <div className="fn-label mb-1.5 text-white/70 print:hidden">PRODUKSI · CHECKLIST MINGGUAN</div>
                   <h1 className="text-xl font-bold text-white">Ringkasan Mingguan</h1>
                   <p className="text-indigo-100 text-sm">Pre-Shift Checklist per Mesin per Tanggal</p>
                 </div>

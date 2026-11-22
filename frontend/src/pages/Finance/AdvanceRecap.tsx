@@ -43,6 +43,7 @@ export default function AdvanceRecap() {
     <div className="space-y-4 p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">KEUANGAN · REKAP UANG MUKA</div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Rekap Uang Muka Lainnya</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Uang muka/panjar/deposit yang dicatat dengan nama pemasok atau pelanggan di Pembayaran Kas/Bank. Sisa tidak nol berarti masih menggantung.</p>
         </div>

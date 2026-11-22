@@ -143,6 +143,7 @@ const LiveMonitoringWeekly: React.FC = () => {
                   <SignalIcon className="w-6 h-6 text-white" />
                 </div>
                 <div>
+                  <div className="fn-label mb-1.5 text-white/70 print:hidden">PRODUKSI · PANTAU MINGGUAN</div>
                   <h1 className="text-xl font-bold text-white print:text-lg">Ringkasan Mingguan Pemantauan</h1>
                   <p className="text-emerald-100 text-sm print:text-xs">{getShiftLabel()}</p>
                 </div>

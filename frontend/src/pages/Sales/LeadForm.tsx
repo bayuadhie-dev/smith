@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import PageHeader from '../../components/Layout/PageHeader';
+import { PageHeader } from '../../components/ui/PageKit';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import axiosInstance from '../../utils/axiosConfig';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -226,9 +226,9 @@ const LeadForm: React.FC = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={isEditing ? 'Edit Lead' : 'Add New Lead'}
-        subtitle={isEditing ? 'Update lead information' : 'Capture new lead details'}
-        icon={UserGroupIcon}
+        eyebrow="PENJUALAN · PROSPEK"
+        title={isEditing ? 'Ubah Prospek' : 'Prospek Baru'}
+        subtitle={isEditing ? 'Perbarui keterangan prospek ini.' : 'Catat calon pelanggan baru.'}
       />
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -236,13 +236,13 @@ const LeadForm: React.FC = () => {
         <div className="fn-card p-6">
           <div className="flex items-center mb-6">
             <BuildingOfficeIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Company Information</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Keterangan perusahaan</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Company Name *
+                Nama perusahaan *
               </label>
               <input
                 type="text"
@@ -263,7 +263,7 @@ const LeadForm: React.FC = () => {
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Select Industry</option>
+                <option value="">Pilih industri</option>
                 {industries.map(industry => (
                   <option key={industry.value} value={industry.value}>
                     {industry.label}
@@ -274,7 +274,7 @@ const LeadForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Company Size
+                Ukuran perusahaan
               </label>
               <select
                 name="company_size"
@@ -282,7 +282,7 @@ const LeadForm: React.FC = () => {
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Select Size</option>
+                <option value="">Pilih ukuran</option>
                 {companySizes.map(size => (
                   <option key={size.value} value={size.value}>
                     {size.label}
@@ -293,7 +293,7 @@ const LeadForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Annual Revenue
+                Omzet per tahun
               </label>
               <div className="relative">
                 <BanknotesIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -329,13 +329,13 @@ const LeadForm: React.FC = () => {
         <div className="fn-card p-6">
           <div className="flex items-center mb-6">
             <UserIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Contact Information</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Kontak</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Contact Person *
+                Nama kontak *
               </label>
               <input
                 type="text"
@@ -349,7 +349,7 @@ const LeadForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Job Title
+                Jabatan
               </label>
               <input
                 type="text"
@@ -424,7 +424,7 @@ const LeadForm: React.FC = () => {
         <div className="fn-card p-6">
           <div className="flex items-center mb-6">
             <MapPinIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Address Information</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Alamat</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -454,7 +454,7 @@ const LeadForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                State/Province
+                Provinsi
               </label>
               <input
                 type="text"
@@ -479,7 +479,7 @@ const LeadForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Postal Code
+                Kode pos
               </label>
               <input
                 type="text"
@@ -496,13 +496,13 @@ const LeadForm: React.FC = () => {
         <div className="fn-card p-6">
           <div className="flex items-center mb-6">
             <StarIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Lead Details</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Rincian prospek</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Lead Source
+                Sumber prospek
               </label>
               <select
                 name="lead_source"
@@ -510,7 +510,7 @@ const LeadForm: React.FC = () => {
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Select Source</option>
+                <option value="">Pilih sumber</option>
                 {leadSources.map(source => (
                   <option key={source.value} value={source.value}>
                     {source.label}
@@ -521,7 +521,7 @@ const LeadForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Lead Status
+                Status prospek
               </label>
               <select
                 name="lead_status"
@@ -554,7 +554,7 @@ const LeadForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Purchase Timeline
+                Perkiraan waktu beli
               </label>
               <select
                 name="purchase_timeline"
@@ -562,7 +562,7 @@ const LeadForm: React.FC = () => {
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Select Timeline</option>
+                <option value="">Pilih perkiraan waktu</option>
                 {purchaseTimelines.map(timeline => (
                   <option key={timeline.value} value={timeline.value}>
                     {timeline.label}
@@ -573,7 +573,7 @@ const LeadForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Assigned To
+                Ditangani oleh
               </label>
               <select
                 name="assigned_to"
@@ -581,7 +581,7 @@ const LeadForm: React.FC = () => {
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Select User</option>
+                <option value="">Pilih pengguna</option>
                 {users.map(user => (
                   <option key={user.id} value={user.id}>
                     {user.full_name}
@@ -600,7 +600,7 @@ const LeadForm: React.FC = () => {
               onChange={handleInputChange}
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Additional notes about this lead..."
+              placeholder="Catatan tambahan soal prospek ini..."
             />
           </div>
         </div>

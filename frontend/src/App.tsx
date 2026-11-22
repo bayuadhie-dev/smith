@@ -19,7 +19,6 @@ import ResetPassword from './pages/Auth/ResetPassword'
 import ApprovalEmail from './pages/Public/ApprovalEmail'
 import OAuthCallback from './pages/Auth/OAuthCallback'
 import CompleteProfile from './pages/Auth/CompleteProfile'
-import Dashboard from './pages/Dashboard/Dashboard'
 import DashboardModules from './pages/Dashboard/DashboardModules'
 import GlobalSearchPage from './pages/Search/GlobalSearchPage'
 import ProductList from './pages/Products/ProductList'
@@ -453,7 +452,6 @@ function AppChildRoutes() {
                 <Route index element={<DashboardModules />} />
 
                 {/* Old Dashboard */}
-                <Route path="dashboard-old" element={<Dashboard />} />
 
                 {/* Production Monitoring */}
                 <Route path="executive/production-monitoring" element={<ProductionMonitoringDashboard />} />
