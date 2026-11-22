@@ -119,7 +119,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, role, permission
             <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-                  {role ? 'Edit Role' : 'Create New Role'}
+                  {role ? 'Ubah peran' : 'Peran baru'}
                 </h3>
                 <button
                   type="button"
@@ -229,7 +229,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, role, permission
                                 }}
                                 className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400"
                               >
-                                Select All
+                                Pilih semua
                               </button>
                               <button
                                 type="button"
@@ -242,7 +242,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, role, permission
                                 }}
                                 className="text-xs text-red-600 hover:text-red-800 dark:text-red-400"
                               >
-                                Clear All
+                                Kosongkan
                               </button>
                             </div>
                           </div>
@@ -285,7 +285,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, role, permission
                 disabled={isSubmitting}
                 className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
               >
-                {isSubmitting ? 'Saving...' : (role ? 'Update Role' : 'Create Role')}
+                {isSubmitting ? 'Menyimpan...' : (role ? 'Simpan perubahan' : 'Buat peran')}
               </button>
               <button
                 type="button"

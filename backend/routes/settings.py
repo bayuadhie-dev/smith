@@ -863,7 +863,21 @@ def get_roles():
         roles = Role.query.options(
             joinedload(Role.permissions).joinedload(RolePermission.permission)
         ).all()
-        
+
+        # Jumlah pengguna per peran dihitung sekali dengan satu query. Sebelum
+        # 2026-11-22 baris ini menyusuri r.users lalu membuka ur.user satu per
+        # satu, jadi halaman Manajemen Pengguna menunggu hampir 5 detik hanya
+        # untuk menghitung angka ini.
+        from models import UserRole, User
+        from sqlalchemy import func
+        jumlah_pengguna = dict(
+            db.session.query(UserRole.role_id, func.count(User.id))
+            .join(User, User.id == UserRole.user_id)
+            .filter(User.is_active == True)
+            .group_by(UserRole.role_id)
+            .all()
+        )
+
         return jsonify({
             'roles': [{
                 'id': r.id,
@@ -877,7 +891,7 @@ def get_roles():
                     'description': rp.permission.description,
                     'module': rp.permission.module
                 } for rp in r.permissions if rp.permission] if hasattr(r, 'permissions') else [],
-                'user_count': len([ur for ur in r.users if ur.user.is_active]) if hasattr(r, 'users') else 0
+                'user_count': int(jumlah_pengguna.get(r.id, 0))
             } for r in roles]
         }), 200
     except Exception as e:

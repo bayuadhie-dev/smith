@@ -110,7 +110,7 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
           <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-white">
-                {permission ? 'Edit Permission' : 'Create New Permission'}
+                {permission ? 'Ubah hak akses' : 'Hak akses baru'}
               </h3>
               <button
                 onClick={onClose}
@@ -136,7 +136,7 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
                     onChange={(e) => setFormData({ ...formData, module: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
-                    <option value="">Select Module</option>
+                    <option value="">Pilih modul</option>
                     {modules.map((module) => (
                       <option key={module} value={module}>
                         {module}
@@ -155,7 +155,7 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
                     onChange={(e) => setFormData({ ...formData, action: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
-                    <option value="">Select Action</option>
+                    <option value="">Pilih tindakan</option>
                     {actions.map((action) => (
                       <option key={action} value={action}>
                         {action.charAt(0).toUpperCase() + action.slice(1)}
@@ -201,7 +201,7 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
               {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Description
+                  Keterangan
                 </label>
                 <textarea
                   rows={3}
@@ -222,7 +222,7 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
                   className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 dark:border-gray-600 rounded dark:text-purple-400"
                 />
                 <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700 dark:text-gray-200">
-                  Active (permission is enabled and can be assigned to roles)
+                  Aktif (hak akses ini bisa diberikan ke peran)
                 </label>
               </div>
 
@@ -242,13 +242,13 @@ const PermissionModal: React.FC<PermissionModalProps> = ({
                 onClick={onClose}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
               >
-                Cancel
+                Batal
               </button>
               <button
                 type="submit"
                 className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
               >
-                {permission ? 'Update Permission' : 'Create Permission'}
+                {permission ? 'Simpan perubahan' : 'Buat hak akses'}
               </button>
             </div>
           </form>

@@ -64,13 +64,14 @@ const DAY_NAMES = ['Senin', 'Selasa', 'Rabu', 'Kamis', "Jum'at", 'Sabtu', 'Mingg
 
 const BatchSchedulingSettings: React.FC = () => {
   const [tab, setTab] = useUrlState<'recipes' | 'global' | 'exceptions'>('tab', 'recipes', ['recipes', 'global', 'exceptions']);
-  useBreadcrumbTrail(tab === 'recipes' ? [] : [{ label: ({ global: 'Kalender Global', exceptions: 'Exception (Libur)' } as Record<string, string>)[tab] }]);
+  useBreadcrumbTrail(tab === 'recipes' ? [] : [{ label: ({ global: 'Kalender Global', exceptions: 'Pengecualian (Libur)' } as Record<string, string>)[tab] }]);
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
       <div className="mb-6">
+        <div className="fn-label mb-1.5">PRODUKSI · PENJADWALAN BATCH</div>
         <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
-          <Settings2 className="w-6 h-6" /> Batch Scheduling — Setup Master Data
+          <Settings2 className="w-6 h-6" /> Penjadwalan Batch — Master Data
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Resep produksi (produk+mesin) dan kalender kerja baseline. Setup sekali di awal, jarang diubah.
@@ -83,7 +84,7 @@ const BatchSchedulingSettings: React.FC = () => {
         {([
           ['recipes', 'Resep Produksi'],
           ['global', 'Kalender Global'],
-          ['exceptions', 'Exception (Libur)'],
+          ['exceptions', 'Pengecualian (Libur)'],
         ] as [TabKey, string][]).map(([key, label]) => (
           <button
             key={key}

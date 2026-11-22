@@ -35,13 +35,16 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onDelete, onView }
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-900">
             <tr>
+              {/* Dua judul kolom ini kosong melompong sebelum 2026-11-22. */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Pengguna
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Peran
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Last Login
+                Login terakhir
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
             </tr>
@@ -73,7 +76,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onDelete, onView }
                         key={`user-${user.id}-role-${role.id || role.name || index}`}
                         className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                       >
-                        {role.name || 'Unknown Role'}
+                        {role.name || 'Peran tidak dikenal'}
                       </span>
                     )) : (
                       <span className="text-sm text-gray-500 dark:text-gray-400">No roles assigned</span>
@@ -87,7 +90,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onDelete, onView }
                         ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
                         : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                     }`}>
-                      {user.is_active ? 'Active' : 'Inactive'}
+                      {user.is_active ? 'Aktif' : 'Nonaktif'}
                     </span>
                     {user.is_admin && (
                       <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
@@ -98,7 +101,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onEdit, onDelete, onView }
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {user.last_login 
                     ? new Date(user.last_login).toLocaleDateString()
-                    : 'Never'
+                    : 'Belum pernah'
                   }
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

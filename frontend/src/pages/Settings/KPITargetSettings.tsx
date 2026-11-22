@@ -91,6 +91,18 @@ const KPITargetSettings: React.FC = () => {
     return `${value.toLocaleString()} ${unit}`;
   };
 
+  const namaPeriode: Record<string, string> = {
+    Daily: 'Harian', Weekly: 'Mingguan', Monthly: 'Bulanan',
+    Quarterly: 'Triwulan', Yearly: 'Tahunan',
+    daily: 'Harian', weekly: 'Mingguan', monthly: 'Bulanan', yearly: 'Tahunan',
+  };
+
+  const namaKategori: Record<string, string> = {
+    Financial: 'Keuangan', Inventory: 'Persediaan', Production: 'Produksi',
+    Quality: 'Kualitas', Sales: 'Penjualan', Delivery: 'Pengiriman',
+    Maintenance: 'Perawatan', HR: 'SDM',
+  };
+
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
       'Financial': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
@@ -126,12 +138,13 @@ const KPITargetSettings: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
+          <div className="fn-label mb-1.5">SISTEM · TARGET KPI</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
             <ChartBarIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
-            KPI Target Settings
+            Target KPI
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Kelola target KPI untuk Performance Scorecard
+            Kelola target KPI untuk kartu skor kinerja.
           </p>
         </div>
         <button
@@ -139,7 +152,7 @@ const KPITargetSettings: React.FC = () => {
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           <ArrowPathIcon className="h-4 w-4" />
-          Refresh
+          Muat ulang
         </button>
       </div>
 
@@ -148,9 +161,9 @@ const KPITargetSettings: React.FC = () => {
         <div className="flex items-start gap-3">
           <InformationCircleIcon className="h-5 w-5 text-blue-600 mt-0.5 dark:text-blue-400" />
           <div>
-            <h3 className="font-medium text-blue-900 dark:text-blue-100">Tentang KPI Targets</h3>
+            <h3 className="font-medium text-blue-900 dark:text-blue-100">Tentang target KPI</h3>
             <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-              Target KPI digunakan untuk menghitung Performance Scorecard di Executive Dashboard. 
+              Target KPI dipakai untuk menghitung kartu skor kinerja di dashboard eksekutif. 
               Sesuaikan target dengan kondisi bisnis perusahaan Anda.
             </p>
           </div>
@@ -159,13 +172,13 @@ const KPITargetSettings: React.FC = () => {
 
       {/* KPI Tables by Category */}
       {Object.entries(groupedTargets).map(([category, categoryTargets]) => (
-        <div key={category} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div key={category} className="fn-card overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
               <span className={`px-2 py-1 rounded text-xs font-medium ${getCategoryColor(category)}`}>
-                {category}
+                {namaKategori[category] || category}
               </span>
-              <span>{categoryTargets.length} KPIs</span>
+              <span>{categoryTargets.length} KPI</span>
             </h2>
           </div>
           
@@ -175,10 +188,10 @@ const KPITargetSettings: React.FC = () => {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">KPI</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Target</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Warning (%)</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Critical (%)</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Period</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Peringatan (%)</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kritis (%)</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Periode</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -236,7 +249,7 @@ const KPITargetSettings: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs capitalize">
-                        {target.period_type}
+                        {namaPeriode[target.period_type] || target.period_type}
                       </span>
                     </td>
                     <td className="px-6 py-4">

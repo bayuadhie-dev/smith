@@ -42,7 +42,10 @@ const SEGMENT_WORDS: Record<string, string> = {
   'inventory-by-warehouse': 'Kuantitas per Gudang', 'bank-transfers': 'Transfer Kas/Bank',
   rolls: 'Roll Spunlace',
   'shipping/orders': 'Surat Jalan',
-  'from-qc': 'Dari QC', returns: 'Retur', 'production-monitoring': 'Monitoring Produksi', 'factory-layout': 'Denah Pabrik', request: 'Permintaan', 'parts-requests': 'Permintaan Suku Cadang',
+  'from-qc': 'Dari QC', settings: 'Pengaturan', 'user-roles': 'Pengguna & Peran',
+  'audit-trail': 'Jejak Audit', 'backup-restore': 'Cadangkan & Pulihkan',
+  'system-health': 'Kesehatan Sistem', 'system-config': 'Pengaturan Lanjutan',
+  'account-preferences': 'Preferensi Akun', 'kpi-targets': 'Target KPI', returns: 'Retur', 'production-monitoring': 'Monitoring Produksi', 'factory-layout': 'Denah Pabrik', request: 'Permintaan', 'parts-requests': 'Permintaan Suku Cadang',
   // Judul tab yang kalau tidak dipetakan muncul dalam bahasa Inggris.
   orders: 'Pesanan', tracking: 'Pelacakan', providers: 'Ekspedisi',
   calculator: 'Kalkulator', reports: 'Laporan', records: 'Catatan',

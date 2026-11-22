@@ -169,7 +169,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-semibold text-white">
-                  {user ? 'Edit User' : 'Create New User'}
+                  {user ? 'Ubah pengguna' : 'Pengguna baru'}
                 </h3>
                 <button
                   type="button"
@@ -377,7 +377,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, roles }) =
                 disabled={isSubmitting}
                 className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
               >
-                {isSubmitting ? 'Saving...' : (user ? 'Update User' : 'Create User')}
+                {isSubmitting ? 'Menyimpan...' : (user ? 'Simpan perubahan' : 'Buat pengguna')}
               </button>
               <button
                 type="button"

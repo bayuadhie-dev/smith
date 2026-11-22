@@ -54,7 +54,7 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">System Permissions</h2>
             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-              Permissions are automatically managed by the system based on modules and actions
+              Hak akses dikelola sistem secara otomatis berdasarkan modul dan tindakannya.
             </p>
           </div>
         </div>
@@ -146,11 +146,11 @@ const PermissionTable: React.FC<PermissionTableProps> = ({ permissions }) => {
                       {permission.is_active ? (
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                           <CheckCircleIcon className="h-3 w-3 mr-1" />
-                          Active
+                          Aktif
                         </span>
                       ) : (
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-                          Inactive
+                          Nonaktif
                         </span>
                       )}
                     </div>

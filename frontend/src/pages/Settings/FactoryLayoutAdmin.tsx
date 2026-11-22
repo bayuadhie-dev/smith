@@ -86,7 +86,7 @@ const FactoryLayoutAdmin: React.FC = () => {
   const createWing = () => {
     if (!newWing.name.trim()) return;
     axiosInstance.post('/api/executive/machine-layout/admin/wings', newWing)
-      .then(() => { flash('Wing dibuat'); setNewWing({ name: '', subtitle: '', display_order: 0, wing_x: 40, wing_y: 20, wing_oee_x: 420 }); loadAll(); })
+      .then(() => { flash('Sayap dibuat'); setNewWing({ name: '', subtitle: '', display_order: 0, wing_x: 40, wing_y: 20, wing_oee_x: 420 }); loadAll(); })
       .catch(() => setError('Gagal membuat wing'));
   };
 
@@ -103,7 +103,7 @@ const FactoryLayoutAdmin: React.FC = () => {
     }
     if (!(await confirmDialog(`Hapus wing "${wing.name}"?`))) return;
     axiosInstance.delete(`/api/executive/machine-layout/admin/wings/${wing.id}`)
-      .then(() => { flash('Wing dihapus'); loadAll(); })
+      .then(() => { flash('Sayap dihapus'); loadAll(); })
       .catch(() => setError('Gagal hapus wing'));
   };
 
@@ -163,7 +163,7 @@ const FactoryLayoutAdmin: React.FC = () => {
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 20px' }}>
-      <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>Factory Layout — Admin</h1>
+      <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>Denah Pabrik — Admin</h1>
       <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
         Kelola sayap (wing), penempatan mesin, icon, dan nama alias untuk halaman Denah Produksi.
       </p>
@@ -190,7 +190,7 @@ const FactoryLayoutAdmin: React.FC = () => {
       {tab === 'Wings' && (
         <div>
           <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16 }}>
-            <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>Tambah Wing Baru</h3>
+            <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>Tambah Sayap Baru</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: 8 }}>
               <input style={input} placeholder="Nama (mis. Sayap Alkes)" value={newWing.name} onChange={(e) => setNewWing({ ...newWing, name: e.target.value })} />
               <input style={input} placeholder="Subjudul" value={newWing.subtitle} onChange={(e) => setNewWing({ ...newWing, subtitle: e.target.value })} />

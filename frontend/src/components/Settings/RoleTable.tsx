@@ -48,14 +48,14 @@ const RoleTable: React.FC<RoleTableProps> = ({ roles, onEdit, onDelete }) => {
                 <button
                   onClick={() => onEdit(role)}
                   className="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-50 dark:text-indigo-400"
-                  title="Edit Role"
+                  title="Ubah peran"
                 >
                   <PencilIcon className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => onDelete(role)}
                   className="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50 dark:text-red-400"
-                  title="Delete Role"
+                  title="Hapus peran"
                 >
                   <TrashIcon className="h-4 w-4" />
                 </button>

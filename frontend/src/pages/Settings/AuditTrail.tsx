@@ -113,7 +113,7 @@ const AuditTrail: React.FC = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Failed to export logs:', error);
-      showError('Failed to export audit logs');
+      showError('Jejak audit gagal diekspor.');
     }
   };
 
@@ -134,12 +134,19 @@ const AuditTrail: React.FC = () => {
   };
 
   // Get status badge
+  // Nilai action datang dari backend dalam bahasa Inggris (view/create/...).
+  const namaTindakan = (aksi: string) => ({
+    view: 'Lihat', create: 'Buat', update: 'Ubah', delete: 'Hapus',
+    login: 'Masuk', logout: 'Keluar', export: 'Ekspor', import: 'Impor',
+    approve: 'Setujui', reject: 'Tolak', cancel: 'Batalkan', print: 'Cetak',
+  } as Record<string, string>)[(aksi || '').toLowerCase()] || aksi;
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'success':
         return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">{t('common.success')}</span>;
       case 'failed':
-        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Failed</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Gagal</span>;
       case 'warning':
         return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">Warning</span>;
       default:
@@ -174,11 +181,12 @@ const AuditTrail: React.FC = () => {
       <div className="mb-6">
         <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
+            <div className="fn-label mb-1.5">SISTEM · JEJAK AUDIT</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-2 tracking-tight leading-tight">
-              Audit Trail
+              Jejak Audit
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
-              Track all system activities and changes
+              Catatan semua kegiatan dan perubahan di sistem.
             </p>
           </div>
           
@@ -249,7 +257,7 @@ const AuditTrail: React.FC = () => {
               >
                 <option value="">All Status</option>
                 <option value="success">{t('common.success')}</option>
-                <option value="failed">Failed</option>
+                <option value="failed">Gagal</option>
                 <option value="warning">Warning</option>
               </select>
             </div>
@@ -299,7 +307,7 @@ const AuditTrail: React.FC = () => {
             <DocumentTextIcon className="h-8 w-8 text-blue-500 mr-3" />
             <div>
               <div className="text-2xl font-bold text-gray-900 dark:text-white">{totalLogs.toLocaleString()}</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Total Logs</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total catatan</div>
             </div>
           </div>
         </div>
@@ -311,7 +319,7 @@ const AuditTrail: React.FC = () => {
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {auditLogs.filter(log => log.status === 'success').length}
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Successful</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Berhasil</div>
             </div>
           </div>
         </div>
@@ -323,7 +331,7 @@ const AuditTrail: React.FC = () => {
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {auditLogs.filter(log => log.status === 'failed').length}
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Failed</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Gagal</div>
             </div>
           </div>
         </div>
@@ -335,7 +343,7 @@ const AuditTrail: React.FC = () => {
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {auditLogs.filter(log => log.status === 'warning').length}
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Warnings</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Peringatan</div>
             </div>
           </div>
         </div>
@@ -347,17 +355,22 @@ const AuditTrail: React.FC = () => {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
+                {/* Empat judul kolom ini kosong sebelum 2026-11-22. */}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Waktu
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Pengguna
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Tindakan
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Objek
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  IP Address
+                  Alamat IP
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
@@ -380,7 +393,7 @@ const AuditTrail: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       {getActionIcon(log.action)}
-                      <span className="ml-2 text-sm text-gray-900 dark:text-white capitalize">{log.action}</span>
+                      <span className="ml-2 text-sm text-gray-900 dark:text-white">{namaTindakan(log.action)}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -482,7 +495,7 @@ const AuditTrail: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Aksi</label>
-                    <div className="text-sm text-gray-900 dark:text-white capitalize">{selectedLog.action}</div>
+                    <div className="text-sm text-gray-900 dark:text-white">{namaTindakan(selectedLog.action)}</div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Resource</label>
@@ -493,7 +506,7 @@ const AuditTrail: React.FC = () => {
                     <div>{getStatusBadge(selectedLog.status)}</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">IP Address</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Alamat IP</label>
                     <div className="text-sm text-gray-900 dark:text-white">{selectedLog.ip_address}</div>
                   </div>
                 </div>

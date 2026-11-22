@@ -234,7 +234,7 @@ const BackupRestore: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Completed</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Selesai</span>;
       case 'failed':
         return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Failed</span>;
       case 'in_progress':
@@ -257,11 +257,12 @@ const BackupRestore: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
+        <div className="fn-label mb-1.5">SISTEM · CADANGAN</div>
         <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-2 tracking-tight leading-tight">
-          Backup & Restore
+          Cadangkan & Pulihkan
         </h1>
         <p className="text-gray-600 dark:text-gray-300">
-          Manage system backups and restore points
+          Kelola cadangan sistem dan titik pemulihannya.
         </p>
       </div>
 
@@ -272,7 +273,7 @@ const BackupRestore: React.FC = () => {
           
           {/* Quick Actions */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Aksi cepat</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
@@ -283,12 +284,12 @@ const BackupRestore: React.FC = () => {
                 {backupInProgress ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                    Creating Backup...
+                    Membuat cadangan...
                   </>
                 ) : (
                   <>
                     <CloudArrowUpIcon className="h-5 w-5 mr-2" />
-                    Create Backup Now
+                    Buat cadangan sekarang
                   </>
                 )}
               </button>
@@ -309,26 +310,26 @@ const BackupRestore: React.FC = () => {
                   {uploadInProgress ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                      Uploading...
+                      Mengunggah...
                     </>
                   ) : (
                     <>
                       <ArrowUpTrayIcon className="h-5 w-5 mr-2" />
-                      Upload Backup File
+                      Unggah berkas cadangan
                     </>
                   )}
                 </button>
               </div>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Supported formats: .db (SQLite database), .zip (compressed backup)
+              Format yang diterima: .zip (cadangan terkompres), .sql/.dump (PostgreSQL), .db (SQLite lama)
             </p>
           </div>
 
           {/* Backup History */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Backup History</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Riwayat cadangan</h2>
             </div>
             
             <div className="overflow-x-auto">
@@ -336,7 +337,7 @@ const BackupRestore: React.FC = () => {
                 <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Backup Info
+                      Keterangan cadangan
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       {t('common.size')}
@@ -414,7 +415,7 @@ const BackupRestore: React.FC = () => {
         {/* Backup Settings */}
         <div className="lg:col-span-1">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Backup Settings</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pengaturan cadangan</h2>
             
             <div className="space-y-4">
               <div>
@@ -425,7 +426,7 @@ const BackupRestore: React.FC = () => {
                     onChange={(e) => setSettings({...settings, auto_backup_enabled: e.target.checked})}
                     className="mr-2"
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-200">Enable Automatic Backups</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">Aktifkan cadangan otomatis</span>
                 </label>
               </div>
 
@@ -438,9 +439,9 @@ const BackupRestore: React.FC = () => {
                       onChange={(e) => setSettings({...settings, backup_frequency: e.target.value})}
                       className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
                     >
-                      <option value="daily">Daily</option>
-                      <option value="weekly">Weekly</option>
-                      <option value="monthly">Monthly</option>
+                      <option value="daily">Harian</option>
+                      <option value="weekly">Mingguan</option>
+                      <option value="monthly">Bulanan</option>
                     </select>
                   </div>
 
@@ -457,7 +458,7 @@ const BackupRestore: React.FC = () => {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Retention (days)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Simpan berapa hari</label>
                 <NumberInput
                   value={settings.retention_days}
                   onChange={(e) => setSettings({...settings, retention_days: parseInt(e.target.value)})}
@@ -465,7 +466,7 @@ const BackupRestore: React.FC = () => {
                   min="1"
                   max="365"
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Backups older than this will be automatically deleted</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Cadangan yang lebih tua dari ini dihapus otomatis.</p>
               </div>
 
               <div>
@@ -476,7 +477,7 @@ const BackupRestore: React.FC = () => {
                     onChange={(e) => setSettings({...settings, include_files: e.target.checked})}
                     className="mr-2"
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-200">Include uploaded files</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">Ikut sertakan berkas unggahan</span>
                 </label>
               </div>
 
@@ -488,7 +489,7 @@ const BackupRestore: React.FC = () => {
                     onChange={(e) => setSettings({...settings, compress_backup: e.target.checked})}
                     className="mr-2"
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-200">Compress backups</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">Kompres cadangan</span>
                 </label>
               </div>
 
@@ -497,7 +498,7 @@ const BackupRestore: React.FC = () => {
                 className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
                 <Cog6ToothIcon className="h-4 w-4 mr-2" />
-                Save Settings
+                Simpan pengaturan
               </button>
             </div>
           </div>
@@ -506,14 +507,14 @@ const BackupRestore: React.FC = () => {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6 dark:bg-blue-900/20 dark:border-blue-800">
             <div className="flex items-center">
               <ExclamationTriangleIcon className="h-5 w-5 text-blue-600 mr-2 dark:text-blue-400" />
-              <h3 className="text-sm font-medium text-blue-900 dark:text-blue-200">Backup Information</h3>
+              <h3 className="text-sm font-medium text-blue-900 dark:text-blue-200">Soal cadangan</h3>
             </div>
             <div className="mt-2 text-sm text-blue-800 dark:text-blue-300">
               <ul className="space-y-1">
-                <li>• Backups include all database data</li>
-                <li>• File backups include uploaded documents</li>
-                <li>• Compressed backups save storage space</li>
-                <li>• Always test restore procedures</li>
+                <li>• Cadangan berisi seluruh isi basis data.</li>
+                <li>• Cadangan berkas mencakup dokumen yang diunggah.</li>
+                <li>• Cadangan terkompres lebih hemat tempat.</li>
+                <li>• Selalu uji proses pemulihannya.</li>
                 <li>• Store backups in multiple locations</li>
               </ul>
             </div>

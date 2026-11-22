@@ -46,34 +46,43 @@ const AdvancedSystemConfig: React.FC = () => {
     {
       name: 'general',
       icon: Cog6ToothIcon,
-      description: 'General system settings',
+      description: 'Pengaturan umum sistem',
       configs: configs.filter(c => c.category === 'general')
     },
     {
       name: 'database',
       icon: ServerIcon,
-      description: 'Database configuration',
+      description: 'Pengaturan basis data',
       configs: configs.filter(c => c.category === 'database')
     },
     {
       name: 'security',
       icon: ShieldCheckIcon,
-      description: 'Security and authentication',
+      description: 'Keamanan dan masuk akun',
       configs: configs.filter(c => c.category === 'security')
     },
     {
       name: 'performance',
       icon: ClockIcon,
-      description: 'Performance optimization',
+      description: 'Penyetelan performa',
       configs: configs.filter(c => c.category === 'performance')
     },
     {
       name: 'logging',
       icon: DocumentTextIcon,
-      description: 'Logging and monitoring',
+      description: 'Pencatatan dan pemantauan',
       configs: configs.filter(c => c.category === 'logging')
     }
   ];
+
+  const namaKategori: Record<string, string> = {
+    general: 'Pengaturan umum',
+    database: 'Basis data',
+    security: 'Keamanan',
+    performance: 'Performa',
+    logging: 'Pencatatan',
+    attendance: 'Absensi',
+  };
 
   // Load system configurations
   const loadConfigurations = async () => {
@@ -219,11 +228,12 @@ const AdvancedSystemConfig: React.FC = () => {
 
       {/* Header */}
       <div className="mb-6">
+        <div className="fn-label mb-1.5">SISTEM · PENGATURAN LANJUTAN</div>
         <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-2 tracking-tight leading-tight">
-          Advanced System Configuration
+          Pengaturan Lanjutan Sistem
         </h1>
         <p className="text-gray-600 dark:text-gray-300">
-          Configure advanced system settings and parameters
+          Atur parameter sistem yang jarang disentuh.
         </p>
         
         {requiresRestart && (
@@ -243,7 +253,7 @@ const AdvancedSystemConfig: React.FC = () => {
         {/* Category Sidebar */}
         <div className="lg:col-span-1">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Configuration Categories</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Kelompok pengaturan</h3>
             
             <div className="space-y-2">
               {categories.map((category) => {
@@ -265,8 +275,8 @@ const AdvancedSystemConfig: React.FC = () => {
                   >
                     <IconComponent className="h-5 w-5 mr-3" />
                     <div className="flex-1">
-                      <div className="font-medium capitalize">{category.name}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{category.configs.length} settings</div>
+                      <div className="font-medium">{namaKategori[category.name] || category.name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{category.configs.length} pengaturan</div>
                     </div>
                     {categoryHasChanges && (
                       <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
@@ -290,8 +300,8 @@ const AdvancedSystemConfig: React.FC = () => {
                     <>
                       <selectedCategoryData.icon className="h-6 w-6 text-gray-600 dark:text-gray-300 mr-3" />
                       <div>
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white capitalize">
-                          {selectedCategory} Configuration
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                          {namaKategori[selectedCategory] || selectedCategory}
                         </h2>
                         <p className="text-gray-600 dark:text-gray-300">{selectedCategoryData.description}</p>
                       </div>
@@ -304,7 +314,7 @@ const AdvancedSystemConfig: React.FC = () => {
                     onClick={() => resetToDefaults(selectedCategory)}
                     className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
                   >
-                    Reset to Defaults
+                    Kembalikan ke bawaan
                   </button>
                 </div>
               </div>

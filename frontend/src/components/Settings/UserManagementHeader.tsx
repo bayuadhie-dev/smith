@@ -42,7 +42,7 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
   const tabs = [
     { 
       id: 'pending' as const, 
-      label: 'Pending Approval', 
+      label: 'Menunggu Persetujuan', 
       icon: ClockIcon, 
       count: pendingCount,
       isPending: true,
@@ -50,24 +50,24 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
     },
     { 
       id: 'users' as const, 
-      label: 'Users', 
+      label: 'Pengguna', 
       icon: UsersIcon, 
       count: userCount,
-      description: 'Manage user accounts and access'
+      description: 'Kelola akun dan aksesnya'
     },
     { 
       id: 'roles' as const, 
-      label: 'Roles', 
+      label: 'Peran', 
       icon: ShieldCheckIcon, 
       count: roleCount,
-      description: 'Define user roles and permissions'
+      description: 'Tentukan peran dan hak aksesnya'
     },
     { 
       id: 'permissions' as const, 
-      label: 'Permissions', 
+      label: 'Hak Akses', 
       icon: KeyIcon, 
       count: permissionCount,
-      description: 'System permissions and access control'
+      description: 'Daftar hak akses di sistem'
     }
   ];
 
@@ -79,7 +79,7 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           <PlusIcon className="h-4 w-4 mr-2" />
-          Add User
+          Tambah pengguna
         </button>
       );
     } else if (activeTab === 'roles') {
@@ -89,7 +89,7 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
         >
           <PlusIcon className="h-4 w-4 mr-2" />
-          Add Role
+          Tambah peran
         </button>
       );
     } else if (activeTab === 'permissions') {
@@ -99,7 +99,7 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
         >
           <PlusIcon className="h-4 w-4 mr-2" />
-          Add Permission
+          Tambah hak akses
         </button>
       );
     }
@@ -107,14 +107,15 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+    <div className="fn-card mb-6">
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">User & Role Management</h1>
+            <div className="fn-label mb-1.5">SISTEM · PENGGUNA</div>
+            <h1 className="text-[28px] font-semibold tracking-tight leading-tight text-gray-900 dark:text-white">Pengguna &amp; Peran</h1>
             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-              Manage users, roles, and permissions for your ERP system
+              Kelola pengguna, peran, dan hak akses di sistem ini.
             </p>
           </div>
           {getCreateButton()}
@@ -170,7 +171,7 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 dark:placeholder-gray-500 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder={`Search ${activeTab}...`}
+                  placeholder={activeTab === 'roles' ? 'Cari peran...' : 'Cari pengguna...'}
                 />
               </div>
             </div>
@@ -183,9 +184,9 @@ const UserManagementHeader: React.FC<UserManagementHeaderProps> = ({
                 onChange={(e) => setFilterStatus(e.target.value as 'all' | 'active' | 'inactive')}
                 className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
               >
-                <option value="all">All Status</option>
-                <option value="active">Active Only</option>
-                <option value="inactive">Inactive Only</option>
+                <option value="all">Semua status</option>
+                <option value="active">Hanya aktif</option>
+                <option value="inactive">Hanya nonaktif</option>
               </select>
             </div>
           </div>

@@ -55,7 +55,7 @@ const Settings: React.FC = () => {
 
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useUrlState<string>('tab', 'company', ['company', 'system', 'users', 'security', 'backup', 'notifications', 'email', 'import', 'advanced', 'integration', 'account-preferences']);
-  useBreadcrumbTrail(activeTab === 'company' ? [] : [{ label: ({ 'company': 'Profil Perusahaan', 'system': 'Sistem', 'users': 'Manajemen Pengguna', 'security': 'Keamanan', 'backup': 'Backup & Restore', 'notifications': 'Notifikasi', 'email': 'Email Settings', 'import': 'Import Data', 'advanced': 'Advanced Settings', 'integration': 'Integration', 'account-preferences': 'Preferensi Akun' } as Record<string, string>)[activeTab] }]);
+  useBreadcrumbTrail(activeTab === 'company' ? [] : [{ label: ({ 'company': 'Profil Perusahaan', 'system': 'Sistem', 'users': 'Manajemen Pengguna', 'security': 'Keamanan', 'backup': 'Backup & Restore', 'notifications': 'Notifikasi', 'email': 'Pengaturan Email', 'import': 'Impor Data', 'advanced': 'Pengaturan Lanjutan', 'integration': 'Integrasi', 'account-preferences': 'Preferensi Akun' } as Record<string, string>)[activeTab] }]);
   const [sessionTimeout, setSessionTimeout] = useState(60);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -211,10 +211,10 @@ const Settings: React.FC = () => {
     { id: 'security', name: t('settings.security'), icon: ShieldCheckIcon },
     { id: 'backup', name: t('settings.backup_restore'), icon: DocumentArrowDownIcon },
     { id: 'notifications', name: t('settings.notifications'), icon: BellIcon },
-    { id: 'email', name: 'Email Settings', icon: EnvelopeIcon },
+    { id: 'email', name: 'Pengaturan Email', icon: EnvelopeIcon },
     { id: 'import', name: t('settings.data_import'), icon: DocumentArrowUpIcon },
-    { id: 'advanced', name: 'Advanced Settings', icon: KeyIcon },
-    { id: 'integration', name: 'Integration', icon: LinkIcon },
+    { id: 'advanced', name: 'Pengaturan Lanjutan', icon: KeyIcon },
+    { id: 'integration', name: 'Integrasi', icon: LinkIcon },
     { id: 'account-preferences', name: 'Preferensi Akun', icon: ScaleIcon },
   ];
 
@@ -779,7 +779,7 @@ const Settings: React.FC = () => {
       return (
         <div className="text-center py-8">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
-            <h3 className="text-lg font-medium text-red-800 mb-2 dark:text-red-300">API Connection Error</h3>
+            <h3 className="text-lg font-medium text-red-800 mb-2 dark:text-red-300">Koneksi ke server gagal</h3>
             <p className="text-red-600 mb-4 dark:text-red-400">
               Cannot connect to backend services. Please check:
             </p>
@@ -813,7 +813,7 @@ const Settings: React.FC = () => {
       return (
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-2">Loading settings...</p>
+          <p className="mt-2">Memuat pengaturan...</p>
         </div>
       );
     }
@@ -822,7 +822,7 @@ const Settings: React.FC = () => {
       case 'company':
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Company Information</h3>
+            <h3 className="text-lg font-semibold">Profil Perusahaan</h3>
 
             <div>
               <label className="block text-sm font-medium mb-2">Logo Perusahaan</label>
@@ -859,7 +859,7 @@ const Settings: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium mb-2">Company Name</label>
+                <label className="block text-sm font-medium mb-2">Nama perusahaan</label>
                 <input
                   type="text"
                   value={companySettings.name || ''}
@@ -868,7 +868,7 @@ const Settings: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Tax ID / NPWP</label>
+                <label className="block text-sm font-medium mb-2">NPWP</label>
                 <input
                   type="text"
                   value={companySettings.taxId || ''}
@@ -877,7 +877,7 @@ const Settings: React.FC = () => {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2">Address</label>
+                <label className="block text-sm font-medium mb-2">Alamat</label>
                 <textarea
                   value={companySettings.address || ''}
                   onChange={(e) => handleCompanyChange('address', e.target.value)}
@@ -885,7 +885,7 @@ const Settings: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Phone</label>
+                <label className="block text-sm font-medium mb-2">Telepon</label>
                 <input
                   type="text"
                   value={companySettings.phone || ''}
@@ -903,7 +903,7 @@ const Settings: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Website</label>
+                <label className="block text-sm font-medium mb-2">Situs web</label>
                 <input
                   type="text"
                   value={companySettings.website || ''}
@@ -950,24 +950,24 @@ const Settings: React.FC = () => {
       case 'notifications':
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Notification Settings</h3>
+            <h3 className="text-lg font-semibold">Pengaturan Notifikasi</h3>
             
             {/* In-App Notifications Section */}
             <div className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
                 <div className="flex items-center mb-3">
                   <BellIcon className="h-6 w-6 text-blue-600 mr-2 dark:text-blue-400" />
-                  <h4 className="font-medium text-blue-900 dark:text-blue-200">In-App Notifications</h4>
+                  <h4 className="font-medium text-blue-900 dark:text-blue-200">Notifikasi di dalam aplikasi</h4>
                 </div>
                 <p className="text-sm text-blue-700 mb-4 dark:text-blue-300">
-                  Receive real-time notifications within the application interface
+                  Pemberitahuan muncul langsung di dalam aplikasi.
                 </p>
                 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3 bg-white rounded-lg border dark:bg-gray-800">
                     <div>
-                      <h5 className="font-medium text-gray-900 dark:text-white">System Alerts</h5>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Important system messages and updates</p>
+                      <h5 className="font-medium text-gray-900 dark:text-white">Peringatan sistem</h5>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Pesan penting dan pembaruan sistem.</p>
                     </div>
                     <input
                       type="checkbox"
@@ -979,8 +979,8 @@ const Settings: React.FC = () => {
                   
                   <div className="flex items-center justify-between p-3 bg-white rounded-lg border dark:bg-gray-800">
                     <div>
-                      <h5 className="font-medium text-gray-900 dark:text-white">Task Reminders</h5>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Reminders for pending tasks and deadlines</p>
+                      <h5 className="font-medium text-gray-900 dark:text-white">Pengingat tugas</h5>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Pengingat untuk tugas dan tenggat yang belum selesai.</p>
                     </div>
                     <input
                       type="checkbox"
@@ -992,8 +992,8 @@ const Settings: React.FC = () => {
                   
                   <div className="flex items-center justify-between p-3 bg-white rounded-lg border dark:bg-gray-800">
                     <div>
-                      <h5 className="font-medium text-gray-900 dark:text-white">Inventory Alerts</h5>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Low stock and reorder point notifications</p>
+                      <h5 className="font-medium text-gray-900 dark:text-white">Peringatan persediaan</h5>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Pemberitahuan stok menipis dan titik pesan ulang.</p>
                     </div>
                     <input
                       type="checkbox"
@@ -1005,8 +1005,8 @@ const Settings: React.FC = () => {
                   
                   <div className="flex items-center justify-between p-3 bg-white rounded-lg border dark:bg-gray-800">
                     <div>
-                      <h5 className="font-medium text-gray-900 dark:text-white">Production Updates</h5>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Production status and completion notifications</p>
+                      <h5 className="font-medium text-gray-900 dark:text-white">Kabar produksi</h5>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Status produksi dan pemberitahuan selesai.</p>
                     </div>
                     <input
                       type="checkbox"
@@ -1097,13 +1097,13 @@ const Settings: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Backup & Restore</h3>
+              <h3 className="text-lg font-semibold">Cadangkan &amp; Pulihkan</h3>
               <button
                 onClick={() => navigate('/app/settings/backup-restore')}
                 className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center"
               >
                 <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-                Advanced Backup
+                Cadangan lanjutan
               </button>
             </div>
 
@@ -1118,7 +1118,7 @@ const Settings: React.FC = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+                <div className="fn-card p-4">
                   <h5 className="font-medium text-gray-900 dark:text-white mb-2">✨ New Features:</h5>
                   <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                     <li>• Automated backup scheduling</li>
@@ -1128,7 +1128,7 @@ const Settings: React.FC = () => {
                   </ul>
                 </div>
                 
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+                <div className="fn-card p-4">
                   <h5 className="font-medium text-gray-900 dark:text-white mb-2">🔧 Advanced Options:</h5>
                   <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                     <li>• Retention policy management</li>
@@ -1145,7 +1145,7 @@ const Settings: React.FC = () => {
                   className="inline-flex items-center px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium"
                 >
                   <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
-                  Open Advanced Backup System
+                  Buka sistem cadangan lanjutan
                 </button>
               </div>
             </div>
@@ -1177,7 +1177,7 @@ const Settings: React.FC = () => {
                       onChange={(e) => handleSystemChange('autoBackup', e.target.checked)}
                       className="w-4 h-4 text-primary-600 mr-3 dark:text-primary-400"
                     />
-                    <label>Enable automatic backup</label>
+                    <label>Aktifkan cadangan otomatis</label>
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Configure advanced scheduling in Advanced Backup system.</p>
                 </div>
@@ -1190,13 +1190,13 @@ const Settings: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Email Notification Settings</h3>
+              <h3 className="text-lg font-semibold">Pengaturan Email</h3>
               <button
                 onClick={() => navigate('/app/settings/email')}
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"
               >
                 <EnvelopeIcon className="h-4 w-4 mr-2" />
-                Open Email Settings
+                Buka pengaturan email
               </button>
             </div>
 
@@ -1211,7 +1211,7 @@ const Settings: React.FC = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+                <div className="fn-card p-4">
                   <h5 className="font-medium text-gray-900 dark:text-white mb-2">📧 Supported Providers:</h5>
                   <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                     <li>• Resend (Recommended)</li>
@@ -1220,7 +1220,7 @@ const Settings: React.FC = () => {
                   </ul>
                 </div>
                 
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+                <div className="fn-card p-4">
                   <h5 className="font-medium text-gray-900 dark:text-white mb-2">✉️ Email Templates:</h5>
                   <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                     <li>• Welcome emails</li>
@@ -1237,7 +1237,7 @@ const Settings: React.FC = () => {
                   className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
                 >
                   <EnvelopeIcon className="h-5 w-5 mr-2" />
-                  Configure Email Settings
+                  Atur pengaturan email
                 </button>
               </div>
             </div>
@@ -1245,7 +1245,7 @@ const Settings: React.FC = () => {
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
               <p className="text-sm text-yellow-800 dark:text-yellow-300">
                 <strong>Note:</strong> Email configuration is done in the backend <code className="bg-yellow-100 px-1 rounded dark:bg-yellow-900/30">.env</code> file. 
-                Visit the Email Settings page for detailed setup instructions.
+                Buka halaman Pengaturan Email untuk petunjuk lengkapnya.
               </p>
             </div>
           </div>
@@ -1255,20 +1255,20 @@ const Settings: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">User Management</h3>
+              <h3 className="text-lg font-semibold">Manajemen Pengguna</h3>
               <div className="flex space-x-3 flex-wrap">
                 <button
                   onClick={() => navigate('/app/settings/user-roles')}
                   className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center"
                 >
                   <KeyIcon className="h-4 w-4 mr-2" />
-                  Manage Roles
+                  Kelola peran
                 </button>
                 <button 
                   onClick={openAddUserModal}
                   className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700"
                 >
-                  Add New User
+                  Tambah pengguna
                 </button>
               </div>
             </div>
@@ -1329,9 +1329,9 @@ const Settings: React.FC = () => {
                               <button 
                                 onClick={() => openEditUserModal(user)}
                                 className="text-blue-600 hover:text-blue-800 font-medium dark:text-blue-400"
-                                title="Edit user"
+                                title="Ubah pengguna"
                               >
-                                Edit
+                                Ubah
                               </button>
                               <span className="text-gray-300">|</span>
                               {user.is_active ? (
@@ -1360,7 +1360,7 @@ const Settings: React.FC = () => {
                     ) : (
                       <tr>
                         <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                          No users found
+                          Belum ada pengguna.
                         </td>
                       </tr>
                     )}
@@ -1374,7 +1374,7 @@ const Settings: React.FC = () => {
       case 'security':
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Security Settings</h3>
+            <h3 className="text-lg font-semibold">Pengaturan Keamanan</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
@@ -1415,11 +1415,11 @@ const Settings: React.FC = () => {
       case 'advanced':
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Advanced Settings</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pengaturan Lanjutan</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Centralized Config Editor */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="fn-card p-6">
                 <div className="flex items-center mb-4">
                   <CogIcon className="h-8 w-8 text-teal-600 mr-3 dark:text-teal-400" />
                   <div>
@@ -1434,12 +1434,12 @@ const Settings: React.FC = () => {
                   }}
                   className="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors"
                 >
-                  Configure
+                  Atur
                 </button>
               </div>
 
               {/* System Configuration */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="fn-card p-6">
                 <div className="flex items-center mb-4">
                   <CogIcon className="h-8 w-8 text-blue-600 mr-3 dark:text-blue-400" />
                   <div>
@@ -1451,12 +1451,12 @@ const Settings: React.FC = () => {
                   onClick={() => navigate('/app/settings/system-config')}
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                 >
-                  Configure
+                  Atur
                 </button>
               </div>
 
               {/* Audit Trail */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="fn-card p-6">
                 <div className="flex items-center mb-4">
                   <DocumentTextIcon className="h-8 w-8 text-purple-600 mr-3 dark:text-purple-400" />
                   <div>
@@ -1468,12 +1468,12 @@ const Settings: React.FC = () => {
                   onClick={() => navigate('/app/settings/audit-trail')}
                   className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
                 >
-                  View Logs
+                  Lihat log
                 </button>
               </div>
 
               {/* Enhanced Backup & Restore */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="fn-card p-6">
                 <div className="flex items-center mb-4">
                   <DocumentArrowDownIcon className="h-8 w-8 text-orange-600 mr-3 dark:text-orange-400" />
                   <div>
@@ -1507,11 +1507,11 @@ const Settings: React.FC = () => {
       case 'integration':
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Integration Settings</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pengaturan Integrasi</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* External Connectors */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="fn-card p-6">
                 <div className="flex items-center mb-4">
                   <LinkIcon className="h-8 w-8 text-blue-600 mr-3 dark:text-blue-400" />
                   <div>
@@ -1527,7 +1527,7 @@ const Settings: React.FC = () => {
               </div>
 
               {/* API Gateway */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="fn-card p-6">
                 <div className="flex items-center mb-4">
                   <GlobeAltIcon className="h-8 w-8 text-green-600 mr-3 dark:text-green-400" />
                   <div>
@@ -1543,7 +1543,7 @@ const Settings: React.FC = () => {
               </div>
 
               {/* Data Synchronization */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="fn-card p-6">
                 <div className="flex items-center mb-4">
                   <ArrowPathIcon className="h-8 w-8 text-purple-600 mr-3 dark:text-purple-400" />
                   <div>
@@ -1559,7 +1559,7 @@ const Settings: React.FC = () => {
               </div>
 
               {/* Webhook Management */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+              <div className="fn-card p-6">
                 <div className="flex items-center mb-4">
                   <BoltIcon className="h-8 w-8 text-orange-600 mr-3 dark:text-orange-400" />
                   <div>
@@ -1598,9 +1598,10 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Settings</h1>
+    <div className="mx-auto max-w-6xl pb-10">
+      <div className="mb-6">
+        <div className="fn-label mb-1.5">SISTEM · PENGATURAN</div>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pengaturan</h1>
         <p className="text-gray-600 dark:text-gray-300">{t('settings.subtitle')}</p>
       </div>
 
@@ -1616,9 +1617,9 @@ const Settings: React.FC = () => {
       {/* Loading Overlay */}
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 text-center dark:bg-gray-800">
+          <div className="fn-card p-6 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-            <p className="text-lg">Processing...</p>
+            <p className="text-lg">Memproses...</p>
           </div>
         </div>
       )}
@@ -1649,7 +1650,7 @@ const Settings: React.FC = () => {
 
         {/* Content */}
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-800">
+          <div className="fn-card p-6">
             {renderTabContent()}
             
             <div className="mt-8 pt-6 border-t flex justify-end space-x-4 flex-wrap">

@@ -41,14 +41,14 @@ function fmtUptime(ms?: number) {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { bg: string; text: string; dot: string; label: string }> = {
-    healthy:      { bg: 'bg-green-50 dark:bg-green-900/20',  text: 'text-green-700 dark:text-green-300',  dot: 'bg-green-500',  label: 'Healthy'       },
+    healthy:      { bg: 'bg-green-50 dark:bg-green-900/20',  text: 'text-green-700 dark:text-green-300',  dot: 'bg-green-500',  label: 'Sehat'         },
     ready:        { bg: 'bg-green-50 dark:bg-green-900/20',  text: 'text-green-700 dark:text-green-300',  dot: 'bg-green-500',  label: 'Connected'     },
-    online:       { bg: 'bg-green-50 dark:bg-green-900/20',  text: 'text-green-700 dark:text-green-300',  dot: 'bg-green-500',  label: 'Online'        },
-    warning:      { bg: 'bg-amber-50 dark:bg-amber-900/20',  text: 'text-amber-700 dark:text-amber-300',  dot: 'bg-amber-500',  label: 'Warning'       },
-    error:        { bg: 'bg-red-50 dark:bg-red-900/20',    text: 'text-red-700 dark:text-red-300',    dot: 'bg-red-500',    label: 'Error'         },
+    online:       { bg: 'bg-green-50 dark:bg-green-900/20',  text: 'text-green-700 dark:text-green-300',  dot: 'bg-green-500',  label: 'Hidup'         },
+    warning:      { bg: 'bg-amber-50 dark:bg-amber-900/20',  text: 'text-amber-700 dark:text-amber-300',  dot: 'bg-amber-500',  label: 'Perlu dilihat' },
+    error:        { bg: 'bg-red-50 dark:bg-red-900/20',    text: 'text-red-700 dark:text-red-300',    dot: 'bg-red-500',    label: 'Bermasalah'    },
     stopped:      { bg: 'bg-red-50 dark:bg-red-900/20',    text: 'text-red-700 dark:text-red-300',    dot: 'bg-red-500',    label: 'Stopped'       },
     disconnected: { bg: 'bg-red-50 dark:bg-red-900/20',    text: 'text-red-700 dark:text-red-300',    dot: 'bg-red-500',    label: 'Disconnected'  },
-    not_configured: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-500 dark:text-gray-400',  dot: 'bg-gray-400',  label: 'Not configured'},
+    not_configured: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-500 dark:text-gray-400',  dot: 'bg-gray-400',  label: 'Belum diatur'  },
   };
   const s = map[status] ?? { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-500 dark:text-gray-400', dot: 'bg-gray-400', label: status };
   return (
@@ -173,7 +173,7 @@ function HealthHistorySection({ apiBase }: { apiBase: string }) {
   return (
     <Card className="col-span-full">
       <div className="flex items-center justify-between mb-4">
-        <SectionTitle>Resource Trend</SectionTitle>
+        <SectionTitle>Tren pemakaian</SectionTitle>
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
           {(['24h', '7d', '30d'] as const).map(r => (
             <button
@@ -225,8 +225,8 @@ function HealthHistorySection({ apiBase }: { apiBase: string }) {
           </div>
 
           <div className="mb-6">
-            <StatusUptimeBar points={history.status_series} statusKey="database_status" label="Database Uptime" />
-            <StatusUptimeBar points={history.status_series} statusKey="whatsapp_status" label="WhatsApp Gateway Uptime" />
+            <StatusUptimeBar points={history.status_series} statusKey="database_status" label="Waktu hidup basis data" />
+            <StatusUptimeBar points={history.status_series} statusKey="whatsapp_status" label="Waktu hidup gateway WhatsApp" />
           </div>
 
           {history.slowest_endpoints.length > 0 && (
@@ -290,7 +290,7 @@ export default function SystemHealth() {
       setReconnectMsg(res.data.success ? 'Reconnect triggered — refreshing in 5s…' : `Failed: ${res.data.error}`);
       if (res.data.success) setTimeout(() => fetchHealth(true), 5000);
     } catch {
-      setReconnectMsg('Request failed');
+      setReconnectMsg('Permintaan gagal.');
     } finally {
       setReconnecting(false);
     }
@@ -322,16 +322,17 @@ export default function SystemHealth() {
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex items-start flex-wrap justify-between mb-8 gap-3">
         <div>
+          <div className="fn-label mb-1.5">SISTEM · KESEHATAN</div>
           <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">System health</h1>
+            <h1 className="text-[28px] font-semibold tracking-tight leading-tight text-gray-900 dark:text-gray-100">Kesehatan Sistem</h1>
             <StatusBadge status={overallOk ? 'healthy' : 'warning'} />
           </div>
           <p className="text-sm text-gray-400">
             {data.server}&nbsp;·&nbsp;
-            {lastRefreshed ? `Refreshed ${lastRefreshed.toLocaleTimeString()}` : 'Loading…'}
+            {lastRefreshed ? `Diperbarui ${lastRefreshed.toLocaleTimeString('id-ID')}` : 'Memuat…'}
             &nbsp;·&nbsp;
             <button className="text-blue-500 hover:underline text-sm" onClick={() => setAutoRefresh(v => !v)}>
-              Auto-refresh {autoRefresh ? 'on' : 'off'}
+              Muat ulang otomatis {autoRefresh ? 'aktif' : 'mati'}
             </button>
           </p>
         </div>
@@ -341,16 +342,16 @@ export default function SystemHealth() {
           className="flex items-center gap-2 text-sm px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors"
         >
           <i className={`ti ti-refresh text-base ${refreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
-          Refresh
+          Muat ulang
         </button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         {[
-          { label: 'API server', status: api.status, sub: `Uptime ${api.uptime_human}`, icon: 'ti-server' },
-          { label: 'Database', status: database.status, sub: `${database.size_mb} MB · ${database.table_count} tables`, icon: 'ti-database' },
+          { label: 'Server API', status: api.status, sub: `Hidup ${api.uptime_human}`, icon: 'ti-server' },
+          { label: 'Basis data', status: database.status, sub: `${database.size_mb} MB · ${database.table_count} tabel`, icon: 'ti-database' },
           { label: 'WhatsApp', status: whatsapp.healthy ? 'ready' : whatsapp.status, sub: whatsapp.phone ? fmtPhone(whatsapp.phone) : '—', icon: 'ti-brand-whatsapp' },
-          { label: 'Frontend', status: pm2.processes.find(p => p.name === 'smith-frontend')?.status ?? 'unknown', sub: 'smith-frontend · PM2', icon: 'ti-layout' },
+          { label: 'Tampilan web', status: pm2.processes.find(p => p.name === 'smith-frontend')?.status ?? 'unknown', sub: 'smith-frontend · PM2', icon: 'ti-layout' },
         ].map(({ label, status, sub, icon }) => (
           <Card key={label}>
             <div className="flex items-center gap-2 mb-3">
@@ -365,12 +366,12 @@ export default function SystemHealth() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
         <Card>
-          <SectionTitle>Resource usage</SectionTitle>
+          <SectionTitle>Pemakaian sumber daya</SectionTitle>
           <div className="space-y-4">
             {[
               { icon: 'ti-cpu', label: 'CPU', value: `${resources.cpu_percent}%`, percent: resources.cpu_percent, status: resources.cpu_status },
-              { icon: 'ti-device-desktop-analytics', label: 'Memory', value: `${(resources.memory_used_mb/1024).toFixed(1)} GB / ${(resources.memory_total_mb/1024).toFixed(1)} GB`, percent: resources.memory_percent, status: resources.memory_status },
-              { icon: 'ti-database', label: 'Disk', value: `${resources.disk_used_gb} GB / ${resources.disk_total_gb} GB`, percent: resources.disk_percent, status: resources.disk_status },
+              { icon: 'ti-device-desktop-analytics', label: 'Memori', value: `${(resources.memory_used_mb/1024).toFixed(1)} GB / ${(resources.memory_total_mb/1024).toFixed(1)} GB`, percent: resources.memory_percent, status: resources.memory_status },
+              { icon: 'ti-database', label: 'Penyimpanan', value: `${resources.disk_used_gb} GB / ${resources.disk_total_gb} GB`, percent: resources.disk_percent, status: resources.disk_status },
             ].map(({ icon, label, value, percent, status }) => (
               <div key={label}>
                 <div className="flex items-center justify-between mb-1.5">
@@ -388,11 +389,11 @@ export default function SystemHealth() {
 
         <Card>
           <SectionTitle>Database</SectionTitle>
-          <MetricRow icon="ti-table" label="Tables" value={String(database.table_count)} />
-          <MetricRow icon="ti-file-database" label="Size" value={`${database.size_mb} MB`} />
-          <MetricRow icon="ti-clock" label="Last backup" value={database.last_backup === 'unknown' ? 'No backup found' : database.last_backup} />
-          <MetricRow icon="ti-engine" label="Engine" value={database.engine} />
-          <MetricRow icon="ti-activity" label="Status" value={database.status === 'healthy' ? 'Online' : 'Error'} />
+          <MetricRow icon="ti-table" label="Jumlah tabel" value={String(database.table_count)} />
+          <MetricRow icon="ti-file-database" label="Ukuran" value={`${database.size_mb} MB`} />
+          <MetricRow icon="ti-clock" label="Cadangan terakhir" value={!database.last_backup || database.last_backup === 'unknown' || database.last_backup === 'tidak diketahui' ? 'Belum ada cadangan' : database.last_backup} />
+          <MetricRow icon="ti-engine" label="Mesin basis data" value={database.engine} />
+          <MetricRow icon="ti-activity" label="Status" value={database.status === 'healthy' ? 'Hidup' : 'Bermasalah'} />
         </Card>
       </div>
 
@@ -411,8 +412,8 @@ export default function SystemHealth() {
               className="text-sm px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
             >
               {reconnecting
-                ? <><i className="ti ti-loader-2 animate-spin text-sm" /> Connecting…</>
-                : <><i className="ti ti-refresh text-sm" /> Reconnect</>}
+                ? <><i className="ti ti-loader-2 animate-spin text-sm" /> Menyambungkan…</>
+                : <><i className="ti ti-refresh text-sm" /> Sambungkan ulang</>}
             </button>
           </div>
         </div>
@@ -428,7 +429,7 @@ export default function SystemHealth() {
           {[
             { label: 'Status', value: <StatusBadge status={whatsapp.status} /> },
             { label: 'Nomor aktif', value: fmtPhone(whatsapp.phone) },
-            { label: 'Push name', value: whatsapp.push_name || '—' },
+            { label: 'Nama tampilan', value: whatsapp.push_name || '—' },
             { label: 'Terakhir aktif', value: whatsapp.last_active || '—' },
           ].map(({ label, value }) => (
             <div key={label}>
@@ -459,7 +460,7 @@ export default function SystemHealth() {
               </div>
               <div className="flex items-center gap-6 text-right">
                 <div><p className="text-xs text-gray-400">CPU</p><p className="text-sm font-medium text-gray-900 dark:text-gray-100">{proc.cpu}%</p></div>
-                <div><p className="text-xs text-gray-400">Memory</p><p className="text-sm font-medium text-gray-900 dark:text-gray-100">{proc.memory_mb} MB</p></div>
+                <div><p className="text-xs text-gray-400">Memori</p><p className="text-sm font-medium text-gray-900 dark:text-gray-100">{proc.memory_mb} MB</p></div>
                 <StatusBadge status={proc.status} />
               </div>
             </div>
@@ -468,7 +469,7 @@ export default function SystemHealth() {
       </Card>
 
       <Card>
-        <SectionTitle>Recent errors</SectionTitle>
+        <SectionTitle>Kesalahan terakhir</SectionTitle>
         {recent_errors.length === 0 ? (
           <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
             <i className="ti ti-circle-check text-base" aria-hidden="true" />

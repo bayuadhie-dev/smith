@@ -54,6 +54,7 @@ const AccountPreferences: React.FC = () => {
 
   return (
     <div className="p-6">
+      <div className="fn-label mb-1.5">SISTEM · PREFERENSI AKUN</div>
       <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-6 tracking-tight leading-tight">
         Preferensi Akun
       </h1>
@@ -290,7 +291,7 @@ const BarangJasaTab: React.FC = () => {
       {/* Per-item override section */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-          Override per Item
+          Pengecualian per Item
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           Untuk item yang butuh akun berbeda dari default kategorinya.
@@ -333,7 +334,7 @@ const BarangJasaTab: React.FC = () => {
               disabled={saving}
               className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
             >
-              {saving ? 'Menyimpan...' : 'Simpan Override Item Ini'}
+              {saving ? 'Menyimpan...' : 'Simpan pengecualian item ini'}
             </button>
           </>
         )}

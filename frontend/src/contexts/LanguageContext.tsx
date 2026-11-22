@@ -104,7 +104,7 @@ export const translations = {
     'settings.security': 'Keamanan',
     'settings.backup_restore': 'Backup & Restore',
     'settings.notifications': 'Notifikasi',
-    'settings.data_import': 'Import Database',
+    'settings.data_import': 'Impor Data',
     'settings.system_preferences': 'Preferensi Sistem',
     'settings.language': 'Bahasa',
     'settings.theme': 'Tema',

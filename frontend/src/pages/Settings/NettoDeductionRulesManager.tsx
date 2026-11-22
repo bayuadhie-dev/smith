@@ -188,7 +188,7 @@ export default function NettoDeductionRulesManager() {
             </h1>
           </div>
           <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
-            Konfigurasi potongan berat flat desimal (Netto Deduction Rules) per produk / pattern untuk kalkulasi desimal persis <code className="bg-slate-100 dark:bg-gray-700 px-1 py-0.5 rounded text-indigo-600 dark:text-indigo-300 font-mono">ROUND_HALF_UP</code>.
+            Potongan berat tetap per produk atau pola nama, dipakai untuk pembulatan <code className="bg-slate-100 dark:bg-gray-700 px-1 py-0.5 rounded text-indigo-600 dark:text-indigo-300 font-mono">ROUND_HALF_UP</code>.
           </p>
         </div>
 
@@ -199,7 +199,7 @@ export default function NettoDeductionRulesManager() {
             className="px-4 py-2 text-slate-700 dark:text-gray-200 bg-slate-100 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 rounded-lg flex items-center gap-2 text-sm font-medium transition disabled:opacity-50"
           >
             <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            Muat ulang
           </button>
           <button
             onClick={openAddModal}

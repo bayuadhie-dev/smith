@@ -66,7 +66,16 @@ const ROUTE_TITLES: Record<string, string> = {
   '/app/hr/payroll': 'Payroll',
   '/app/finance/bank-transfers': 'Transfer Kas/Bank',
   '/app/production/rolls': 'Roll Spunlace',
-  '/app/settings': 'Settings',
+  '/app/settings/user-roles': 'Pengguna & Peran',
+  '/app/settings/audit-trail': 'Jejak Audit',
+  '/app/settings/backup-restore': 'Cadangkan & Pulihkan',
+  '/app/settings/system-health': 'Kesehatan Sistem',
+  '/app/settings/system-config': 'Pengaturan Lanjutan',
+  '/app/settings/account-preferences': 'Preferensi Akun',
+  '/app/settings/email': 'Pengaturan Email',
+  '/app/settings/kpi-targets': 'Target KPI',
+  '/app/settings/factory-layout': 'Denah Pabrik',
+  '/app/settings': 'Pengaturan',
   '/app/users': 'User Management',
 }
 

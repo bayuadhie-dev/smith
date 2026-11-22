@@ -1099,30 +1099,45 @@ def system_health():
         from models import db as _db
         from sqlalchemy import text, inspect as sa_inspect
         _db.session.execute(text('SELECT 1'))
-        db_uri = str(_db.engine.url)
-        db_path = db_uri.replace('sqlite:///', '')
-        if not db_path.startswith('/'):
-            db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'instance', db_path))
-        db_size_mb = round(os.path.getsize(db_path) / 1024 / 1024, 1) if os.path.exists(db_path) else None
+        # Sejak pindah ke PostgreSQL blok ini masih menghitung seperti SQLite:
+        # ukurannya dicari dari berkas .db yang tidak ada lagi (jadi "null MB")
+        # dan mesinnya ditulis "SQLite" apa adanya (2026-11-22).
+        nama_driver = (_db.engine.url.drivername or '').lower()
+        if 'postgres' in nama_driver:
+            mesin = 'PostgreSQL'
+            db_size_mb = round(
+                (_db.session.execute(text('SELECT pg_database_size(current_database())')).scalar() or 0)
+                / 1024 / 1024, 1)
+        elif 'sqlite' in nama_driver:
+            mesin = 'SQLite'
+            db_path = str(_db.engine.url).replace('sqlite:///', '')
+            if not db_path.startswith('/'):
+                db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'instance', db_path))
+            db_size_mb = round(os.path.getsize(db_path) / 1024 / 1024, 1) if os.path.exists(db_path) else None
+        else:
+            mesin = _db.engine.url.drivername or 'tidak diketahui'
+            db_size_mb = None
+
         table_count = len(sa_inspect(_db.engine).get_table_names())
-        backup_dir = backup_dir = os.path.expanduser('~/backups')
+        backup_dir = os.path.expanduser('~/backups')
         backup_age = None
         if os.path.isdir(backup_dir):
+            # Cadangan PostgreSQL berupa .sql/.dump/.gz, bukan .db lagi.
             backups = sorted([
                 os.path.getmtime(os.path.join(backup_dir, f))
                 for f in os.listdir(backup_dir)
-                if f.endswith('.db') and f.startswith('erp_database')
+                if f.endswith(('.db', '.sql', '.dump', '.gz', '.zip'))
             ], reverse=True)
             if backups:
                 age = int(time.time() - backups[0])
                 h, m2 = divmod(age // 60, 60)
-                backup_age = f"{h}h {m2}m ago" if h else f"{m2}m ago"
+                backup_age = f"{h}j {m2}m lalu" if h else f"{m2}m lalu"
         result['database'] = {
             'status': 'healthy',
             'size_mb': db_size_mb,
             'table_count': table_count,
-            'last_backup': backup_age or 'unknown',
-            'engine': 'SQLite',
+            'last_backup': backup_age or 'tidak diketahui',
+            'engine': mesin,
         }
     except Exception as e:
         result['database'] = {'status': 'error', 'error': str(e)}
