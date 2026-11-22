@@ -61,9 +61,10 @@ const CUSTOM_PROPS = [
 // generic "replace underscore, capitalize each word" so it's never literally
 // "Purchase_order" on screen.
 const GROUP_LABELS: Record<string, string> = {
-  company: 'Company', spk: 'SPK (SPK)', spk_batch: 'SPK (Batch)',
-  surat_jalan: 'Surat Jalan', invoice: 'Invoice', purchase_order: 'Purchase Order',
-  kwitansi: 'Kwitansi', faktur: 'Faktur',
+  company: 'Perusahaan', spk: 'SPK', spk_batch: 'SPK Batch',
+  surat_jalan: 'Surat Jalan', invoice: 'Faktur Penjualan',
+  purchase_order: 'Pesanan Pembelian', purchase_invoice: 'Faktur Pembelian',
+  kwitansi: 'Kwitansi', faktur: 'Faktur Pajak',
 };
 const formatGroupLabel = (group: string) =>
   GROUP_LABELS[group] || group.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
