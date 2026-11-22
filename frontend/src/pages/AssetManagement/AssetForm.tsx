@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { PageHeader } from '../../components/ui/PageKit';
 import { ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
 
@@ -164,28 +165,25 @@ const AssetForm: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 p-6">
-      {/* Header */}
-      <div className="mb-6 flex items-center gap-4">
-        <button
-          onClick={() => navigate(isEdit ? `/app/assets/${id}` : '/app/assets/list')}
-          className="p-2 hover:bg-slate-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
-        >
-          <ArrowLeftIcon className="h-5 w-5 text-slate-600 dark:text-gray-400" />
-        </button>
-        <div>
-          <h1 className="text-[28px] font-semibold text-slate-800 dark:text-white tracking-tight leading-tight">
-            {isEdit ? 'Edit Aset' : 'Tambah Aset Baru'}
-          </h1>
-          <p className="text-slate-500 dark:text-gray-400 mt-1">
-            {isEdit ? 'Update informasi aset' : 'Daftarkan aset baru ke sistem'}
-          </p>
-        </div>
-      </div>
+    <div className="mx-auto max-w-4xl space-y-4 pb-10">
+      <PageHeader
+        eyebrow={isEdit ? 'ASET · UBAH' : 'ASET · BARU'}
+        title={isEdit ? 'Ubah Aset' : 'Tambah Aset'}
+        subtitle={isEdit ? 'Perbarui keterangan aset ini.' : 'Daftarkan aset baru ke sistem.'}
+        actions={
+          <button
+            onClick={() => navigate(isEdit ? `/app/assets/${id}` : '/app/assets/list')}
+            className="fn-press inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+            Batal
+          </button>
+        }
+      />
 
-      <form onSubmit={handleSubmit} className="max-w-4xl">
+      <form onSubmit={handleSubmit}>
         {/* Basic Information */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6 mb-6">
+        <div className="fn-card p-6 mb-4">
           <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Informasi Dasar</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
@@ -213,12 +211,12 @@ const AssetForm: React.FC = () => {
                 required
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
-                <option value="machinery">Machinery</option>
-                <option value="building">Building</option>
-                <option value="vehicle">Vehicle</option>
-                <option value="IT_equipment">IT Equipment</option>
-                <option value="furniture">Furniture</option>
-                <option value="land">Land</option>
+                <option value="machinery">Mesin</option>
+                <option value="building">Bangunan</option>
+                <option value="vehicle">Kendaraan</option>
+                <option value="IT_equipment">Perangkat TI</option>
+                <option value="furniture">Perabot</option>
+                <option value="land">Tanah</option>
               </select>
             </div>
 
@@ -232,13 +230,13 @@ const AssetForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
-                <option value="planning">Planning</option>
-                <option value="procured">Procured</option>
-                <option value="installed">Installed</option>
-                <option value="active">Active</option>
-                <option value="maintenance">Maintenance</option>
-                <option value="idle">Idle</option>
-                <option value="retired">Retired</option>
+                <option value="planning">Rencana</option>
+                <option value="procured">Sudah dibeli</option>
+                <option value="installed">Terpasang</option>
+                <option value="active">Aktif</option>
+                <option value="maintenance">Perawatan</option>
+                <option value="idle">Menganggur</option>
+                <option value="retired">Tidak dipakai</option>
               </select>
             </div>
 
@@ -270,7 +268,7 @@ const AssetForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
-                Functional Location (Terstruktur)
+                Lokasi fungsional (terstruktur)
               </label>
               <select
                 name="functional_location_id"
@@ -285,7 +283,7 @@ const AssetForm: React.FC = () => {
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">Opsional - hierarki Plant/Building/Line, dikelola di Master Data Functional Location.</p>
+              <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">Opsional - susunan pabrik/gedung/lini, dikelola di halaman Lokasi Fungsional.</p>
             </div>
 
             <div className="md:col-span-2">
@@ -304,7 +302,7 @@ const AssetForm: React.FC = () => {
         </div>
 
         {/* Procurement */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6 mb-6">
+        <div className="fn-card p-6 mb-4">
           <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Pengadaan</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -339,7 +337,7 @@ const AssetForm: React.FC = () => {
         </div>
 
         {/* Depreciation */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6 mb-6">
+        <div className="fn-card p-6 mb-4">
           <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Penyusutan</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -352,8 +350,8 @@ const AssetForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
-                <option value="straight_line">Straight Line</option>
-                <option value="declining_balance">Declining Balance</option>
+                <option value="straight_line">Garis lurus</option>
+                <option value="declining_balance">Saldo menurun</option>
               </select>
             </div>
 
@@ -399,8 +397,8 @@ const AssetForm: React.FC = () => {
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="">Ikuti metode komersial</option>
-                  <option value="straight_line">Straight Line</option>
-                  <option value="declining_balance">Declining Balance</option>
+                  <option value="straight_line">Garis lurus</option>
+                  <option value="declining_balance">Saldo menurun</option>
                 </select>
               </div>
               <div>
@@ -419,7 +417,7 @@ const AssetForm: React.FC = () => {
         </div>
 
         {/* Production Machine */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6 mb-6">
+        <div className="fn-card p-6 mb-4">
           <div className="flex items-center gap-3 mb-4">
             <input
               type="checkbox"

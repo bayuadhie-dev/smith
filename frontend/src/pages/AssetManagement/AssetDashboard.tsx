@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { CategoryBars, KpiStrip, PageHeader, Panel, QuickLinks, StatusPill } from '../../components/ui/PageKit';
 import {
   BuildingOfficeIcon,
   CogIcon,
@@ -103,224 +104,148 @@ const AssetDashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-600"></div>
+        <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">Memuat data aset...</span>
       </div>
     );
   }
 
-  // 2026-10-07: Axion bento-grid restyle (tier-1 module landing page,
-  // #15 of 17). Sub-pages (Asset list, Depreciation, Spare Parts, etc)
-  // are intentionally left as-is - only this landing dashboard is in scope.
+  const labelTipe: Record<string, string> = {
+    machinery: 'Mesin',
+    building: 'Bangunan',
+    vehicle: 'Kendaraan',
+    IT_equipment: 'Perangkat TI',
+    it_equipment: 'Perangkat TI',
+    equipment: 'Peralatan',
+    furniture: 'Perabot',
+    land: 'Tanah',
+  };
+
+  const totals = summary?.totals;
+  const penyusutan = totals?.total_depreciation || 0;
+  const perolehan = totals?.total_acquisition_cost || 0;
+  const jatuhTempo = (maintenanceDue?.overdue.length || 0) + (maintenanceDue?.due_soon.length || 0);
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 space-y-4">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug flex items-center gap-2 tracking-tight">
-            <BuildingOfficeIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
-            Dashboard Aset
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
-            Manajemen Siklus Hidup Aset Terpadu
-          </p>
-        </div>
-        <button
-          onClick={() => navigate('/app/assets/new')}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
+    <div className="mx-auto max-w-6xl space-y-4 pb-10">
+      <PageHeader
+        eyebrow="ASET · RINGKASAN"
+        title="Dashboard Aset"
+        subtitle="Nilai aset perusahaan, penyusutannya, dan perawatan yang sudah dekat."
+        actions={
+          <button
+            onClick={() => navigate('/app/assets/new')}
+            className="fn-press inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600"
+          >
+            <PlusIcon className="h-4 w-4" />
+            Tambah aset
+          </button>
+        }
+      />
+
+      <KpiStrip
+        items={[
+          {
+            label: 'Total aset',
+            value: (totals?.total_assets || 0).toLocaleString('id-ID'),
+            hint: 'Belum termasuk aset yang dilepas',
+            to: '/app/assets/list',
+          },
+          {
+            label: 'Nilai perolehan',
+            value: formatCurrency(perolehan),
+            hint: 'Harga beli seluruh aset',
+          },
+          {
+            label: 'Akumulasi penyusutan',
+            value: formatCurrency(penyusutan),
+            // Rp 0 di sini bukan berarti asetnya baru - lebih sering
+            // penyusutan bulanannya memang belum pernah dijalankan.
+            hint: penyusutan > 0 ? 'Sudah dibebankan' : 'Penyusutan belum pernah dihitung',
+            tone: penyusutan > 0 ? undefined : 'warn',
+            to: '/app/assets/depreciation',
+          },
+          {
+            label: 'Nilai buku bersih',
+            value: formatCurrency(totals?.total_net_book_value || 0),
+            hint: 'Perolehan dikurangi penyusutan',
+          },
+        ]}
+      />
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Panel title="Aset per kategori">
+          <div className="p-4">
+            {!summary?.by_type.length ? (
+              <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada aset terdaftar.</p>
+            ) : (
+              <CategoryBars
+                items={summary.by_type.map((item) => ({
+                  label: labelTipe[item.asset_type] || item.asset_type.replace(/_/g, ' '),
+                  value: Number(item.total_cost || 0),
+                  hint: `${item.count} aset · nilai buku ${formatCurrency(item.total_cost - item.total_depreciation)}`,
+                }))}
+                format={formatCurrency}
+              />
+            )}
+          </div>
+        </Panel>
+
+        <Panel
+          title="Perawatan jatuh tempo"
+          action={jatuhTempo > 0 ? <span className="fn-label">{jatuhTempo} aset</span> : undefined}
         >
-          <PlusIcon className="h-5 w-5" />
-          Tambah Aset
-        </button>
-      </div>
-
-      {/* Summary Cards - bento: Total Aset spans 2 cols (primary metric) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <ChartBarIcon className="w-5 h-5" />
-            </div>
-            <p className="text-sm opacity-90">Total Aset</p>
-          </div>
-          <p className="text-3xl font-bold">{summary?.totals.total_assets || 0}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <CurrencyDollarIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Nilai Perolehan</p>
-          <p className="text-2xl font-bold">{formatCurrency(summary?.totals.total_acquisition_cost || 0)}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <ArrowTrendingDownIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Akumulasi Penyusutan</p>
-          <p className="text-2xl font-bold">{formatCurrency(summary?.totals.total_depreciation || 0)}</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <ArrowTrendingUpIcon className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Nilai Buku Bersih</p>
-          <p className="text-2xl font-bold">{formatCurrency(summary?.totals.total_net_book_value || 0)}</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Assets by Type */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
-            Aset per Kategori
-          </h2>
-          <div className="space-y-4">
-            {summary?.by_type.map((item) => (
-              <div key={item.asset_type} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-gray-700/50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="text-blue-600 dark:text-blue-400">
-                    {getAssetTypeIcon(item.asset_type)}
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-800 dark:text-white capitalize">
-                      {item.asset_type.replace('_', ' ')}
-                    </p>
-                    <p className="text-sm text-slate-500 dark:text-gray-400">
-                      {item.count} aset
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-slate-800 dark:text-white">
-                    {formatCurrency(item.total_cost)}
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-gray-400">
-                    NBV: {formatCurrency(item.total_cost - item.total_depreciation)}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Maintenance Alerts */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-            <WrenchScrewdriverIcon className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-            Maintenance Alert
-          </h2>
-          
-          {/* Overdue */}
-          {maintenanceDue && maintenanceDue.overdue.length > 0 && (
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-red-600 dark:text-red-400 mb-2 flex items-center gap-1">
-                <ExclamationTriangleIcon className="h-4 w-4" />
-                Overdue ({maintenanceDue.overdue.length})
-              </h3>
-              <div className="space-y-2">
-                {maintenanceDue.overdue.slice(0, 3).map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => navigate(`/app/assets/${item.id}`)}
-                    className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-                  >
-                    <p className="font-medium text-slate-800 dark:text-white text-sm">
-                      {item.asset_code} - {item.asset_name}
-                    </p>
-                    <p className="text-xs text-red-600 dark:text-red-400">
-                      Terlambat {item.days_overdue} hari
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Due Soon */}
-          {maintenanceDue && maintenanceDue.due_soon.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium text-orange-600 dark:text-orange-400 mb-2">
-                Jatuh Tempo (30 Hari) ({maintenanceDue.due_soon.length})
-              </h3>
-              <div className="space-y-2">
-                {maintenanceDue.due_soon.slice(0, 3).map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => navigate(`/app/assets/${item.id}`)}
-                    className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors"
-                  >
-                    <p className="font-medium text-slate-800 dark:text-white text-sm">
-                      {item.asset_code} - {item.asset_name}
-                    </p>
-                    <p className="text-xs text-orange-600 dark:text-orange-400">
-                      {item.days_until_due} hari lagi
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {maintenanceDue && maintenanceDue.overdue.length === 0 && maintenanceDue.due_soon.length === 0 && (
-            <p className="text-center text-slate-500 dark:text-gray-400 py-8">
-              Semua maintenance up-to-date ✓
+          {jatuhTempo === 0 ? (
+            <p className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+              Tidak ada perawatan yang jatuh tempo 30 hari ke depan.
             </p>
+          ) : (
+            <ul className="divide-y divide-gray-200/70 dark:divide-gray-700/70">
+              {maintenanceDue?.overdue.slice(0, 4).map((item) => (
+                <li key={`o-${item.id}`}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/app/assets/${item.id}`)}
+                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/40"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-gray-900 dark:text-white">{item.asset_name}</p>
+                      <p className="fn-label mt-0.5">{item.asset_code}</p>
+                    </div>
+                    <StatusPill tone="bad">Telat {item.days_overdue} hari</StatusPill>
+                  </button>
+                </li>
+              ))}
+              {maintenanceDue?.due_soon.slice(0, 4).map((item) => (
+                <li key={`s-${item.id}`}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/app/assets/${item.id}`)}
+                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/40"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-gray-900 dark:text-white">{item.asset_name}</p>
+                      <p className="fn-label mt-0.5">{item.asset_code}</p>
+                    </div>
+                    <StatusPill tone="warn">{item.days_until_due} hari lagi</StatusPill>
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
-        </div>
+        </Panel>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <button
-          onClick={() => navigate('/app/assets/list')}
-          className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 text-left"
-        >
-          <div className="bg-gradient-to-br from-primary-600 to-primary-700 p-2.5 rounded-xl inline-flex mb-3">
-            <ChartBarIcon className="h-6 w-6 text-white" />
-          </div>
-          <h3 className="font-semibold text-slate-800 dark:text-white">Daftar Aset</h3>
-          <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
-            Lihat semua aset dan detailnya
-          </p>
-        </button>
-
-        <button
-          onClick={() => navigate('/app/assets/depreciation')}
-          className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 text-left"
-        >
-          <div className="bg-gradient-to-br from-teal-500 to-teal-600 p-2.5 rounded-xl inline-flex mb-3">
-            <CurrencyDollarIcon className="h-6 w-6 text-white" />
-          </div>
-          <h3 className="font-semibold text-slate-800 dark:text-white">Laporan Penyusutan</h3>
-          <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
-            Jadwal dan laporan depreciation
-          </p>
-        </button>
-
-        <button
-          onClick={() => navigate('/app/assets/spare-parts')}
-          className="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 text-left"
-        >
-          <div className="bg-gradient-to-br from-cta-500 to-cta-700 p-2.5 rounded-xl inline-flex mb-3">
-            <WrenchScrewdriverIcon className="h-6 w-6 text-white" />
-          </div>
-          <h3 className="font-semibold text-slate-800 dark:text-white">Suku Cadang</h3>
-          <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
-            Inventaris spare parts & MRO
-          </p>
-        </button>
-      </div>
+      <QuickLinks
+        links={[
+          { to: '/app/assets/list', label: 'Daftar aset' },
+          { to: '/app/assets/new', label: 'Tambah aset' },
+          { to: '/app/assets/depreciation', label: 'Laporan penyusutan' },
+          { to: '/app/assets/spare-parts', label: 'Suku cadang' },
+          { to: '/app/assets/functional-locations', label: 'Lokasi fungsional' },
+        ]}
+      />
     </div>
   );
 };

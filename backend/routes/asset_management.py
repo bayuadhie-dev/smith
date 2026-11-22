@@ -566,8 +566,13 @@ def calculate_batch_depreciation():
             ).first()
 
             if not existing:
-                # Update accumulated depreciation
-                monthly_dep = asset.monthly_depreciation
+                # Penyusutan tidak boleh melewati nilai yang bisa disusutkan
+                # (harga perolehan dikurangi nilai sisa). Tanpa batas ini, aset
+                # yang masa manfaatnya sudah habis tetap dibebani tiap bulan
+                # sampai nilai bukunya minus (2026-11-22).
+                tersisa = (float(asset.purchase_cost or 0) - float(asset.salvage_value or 0)
+                           - float(asset.accumulated_depreciation or 0))
+                monthly_dep = max(0.0, min(float(asset.monthly_depreciation or 0), tersisa))
                 asset.accumulated_depreciation = float(asset.accumulated_depreciation or 0) + monthly_dep
                 asset.last_depreciation_date = current_month
 
@@ -780,6 +785,9 @@ def get_asset_summary():
             func.sum(Asset.accumulated_depreciation).label('total_depreciation')
         ).filter(Asset.status != 'disposed').first()
         
+        perolehan = float(totals[1]) if totals and totals[1] else 0.0
+        susut = float(totals[2]) if totals and totals[2] else 0.0
+
         return jsonify({
             'by_type': [{
                 'asset_type': t[0],
@@ -791,14 +799,116 @@ def get_asset_summary():
                 'status': s[0],
                 'count': s[1]
             } for s in by_status],
+            # Nilai buku bersih dulu ikut jadi 0 begitu akumulasi penyusutannya
+            # 0 (dianggap "kosong" oleh `and`), jadi dashboard memajang Rp 0
+            # padahal asetnya puluhan miliar (2026-11-22).
             'totals': {
-                'total_assets': totals[0] if totals else 0,
-                'total_acquisition_cost': float(totals[1]) if totals and totals[1] else 0,
-                'total_depreciation': float(totals[2]) if totals and totals[2] else 0,
-                'total_net_book_value': (float(totals[1]) - float(totals[2])) if totals and totals[1] and totals[2] else 0,
+                'total_assets': (totals[0] or 0) if totals else 0,
+                'total_acquisition_cost': perolehan,
+                'total_depreciation': susut,
+                'total_net_book_value': perolehan - susut,
             }
         }), 200
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@asset_bp.route('/reports/depreciation', methods=['GET'])
+@jwt_required()
+@require_permission('maintenance.view')
+def get_depreciation_report():
+    """Laporan penyusutan per aset untuk satu bulan.
+
+    Halaman Laporan Penyusutan sebelumnya hanya berisi tombol "Hitung
+    Penyusutan" dan tiga kartu penjelasan - tidak ada satu pun angka yang
+    dilaporkan (2026-11-22). Endpoint ini mengirim isinya: beban bulanan,
+    akumulasi, nilai buku, dan apakah bulan itu sudah dibukukan.
+
+    'bulan_tertinggal' memperlihatkan berapa bulan penyusutan yang belum
+    pernah dihitung sejak aset dibeli - itu yang bikin akumulasi 0 padahal
+    asetnya sudah bertahun-tahun dipakai.
+    """
+    try:
+        periode = request.args.get('period')  # YYYY-MM
+        hari_ini = get_local_today()
+        if periode:
+            try:
+                th, bl = periode.split('-')
+                awal_bulan = date(int(th), int(bl), 1)
+            except (ValueError, TypeError):
+                return jsonify({'error': 'Format periode harus YYYY-MM'}), 400
+        else:
+            awal_bulan = hari_ini.replace(day=1)
+
+        assets = Asset.query.filter(Asset.status != 'disposed').order_by(Asset.asset_code).all()
+        ids = [a.id for a in assets]
+
+        jadwal = {}
+        if ids:
+            for s in DepreciationSchedule.query.filter(
+                DepreciationSchedule.asset_id.in_(ids),
+                DepreciationSchedule.period_date == awal_bulan,
+                DepreciationSchedule.book_type == 'commercial'
+            ).all():
+                jadwal[s.asset_id] = s
+
+        baris = []
+        for a in assets:
+            s = jadwal.get(a.id)
+            perolehan = float(a.purchase_cost or 0)
+            akumulasi = float(a.accumulated_depreciation or 0)
+            sisa_nilai = float(a.salvage_value or 0)
+            dapat_disusutkan = max(0.0, perolehan - sisa_nilai)
+
+            # Berapa bulan sejak aset mulai disusutkan (tanggal pembelian atau
+            # instalasi) sampai periode laporan.
+            mulai = a.purchase_date or a.installation_date
+            bulan_berjalan = 0
+            if mulai:
+                bulan_berjalan = max(0, (awal_bulan.year - mulai.year) * 12 + (awal_bulan.month - mulai.month))
+                if a.useful_life_years:
+                    bulan_berjalan = min(bulan_berjalan, a.useful_life_years * 12)
+
+            bulanan = float(a.monthly_depreciation or 0)
+            sudah_dihitung = int(akumulasi / bulanan) if bulanan > 0 else 0
+            tertinggal = max(0, bulan_berjalan - sudah_dihitung) if bulanan > 0 else 0
+
+            baris.append({
+                'id': a.id,
+                'asset_code': a.asset_code,
+                'asset_name': a.asset_name,
+                'asset_type': a.asset_type,
+                'category': a.category,
+                'purchase_date': a.purchase_date.isoformat() if a.purchase_date else None,
+                'purchase_cost': perolehan,
+                'salvage_value': sisa_nilai,
+                'depreciation_method': a.depreciation_method,
+                'useful_life_years': a.useful_life_years,
+                'monthly_depreciation': bulanan,
+                'accumulated_depreciation': akumulasi,
+                'net_book_value': a.net_book_value,
+                'fully_depreciated': dapat_disusutkan > 0 and akumulasi >= dapat_disusutkan,
+                'posted_this_period': bool(s and s.is_posted),
+                'amount_this_period': float(s.depreciation_amount) if s else 0.0,
+                'months_behind': tertinggal,
+            })
+
+        return jsonify({
+            'period': awal_bulan.isoformat(),
+            'assets': baris,
+            'totals': {
+                'count': len(baris),
+                'purchase_cost': sum(b['purchase_cost'] for b in baris),
+                'accumulated_depreciation': sum(b['accumulated_depreciation'] for b in baris),
+                'net_book_value': sum(b['net_book_value'] for b in baris),
+                'monthly_depreciation': sum(b['monthly_depreciation'] for b in baris),
+                'posted_this_period': sum(1 for b in baris if b['posted_this_period']),
+                'never_depreciated': sum(1 for b in baris if b['accumulated_depreciation'] == 0 and b['monthly_depreciation'] > 0),
+            }
+        }), 200
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 

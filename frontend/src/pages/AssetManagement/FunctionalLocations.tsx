@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MapPinIcon, PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
+import { PageHeader } from '../../components/ui/PageKit';
 import { confirmDialog } from '../../components/ui';
 
 interface FunctionalLocation {
@@ -73,10 +74,10 @@ export default function FunctionalLocations() {
     try {
       if (editing) {
         await axiosInstance.put(`/api/assets/functional-locations/${editing.id}`, payload);
-        toast.success('Functional location diupdate');
+        toast.success('Lokasi fungsional diperbarui.');
       } else {
         await axiosInstance.post('/api/assets/functional-locations', payload);
-        toast.success('Functional location ditambahkan');
+        toast.success('Lokasi fungsional ditambahkan.');
       }
       setShowModal(false);
       fetchLocations();
@@ -89,7 +90,7 @@ export default function FunctionalLocations() {
     if (!(await confirmDialog(`Hapus lokasi ${l.name}?`))) return;
     try {
       await axiosInstance.delete(`/api/assets/functional-locations/${l.id}`);
-      toast.success('Dihapus');
+      toast.success('Lokasi dihapus.');
       fetchLocations();
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Gagal menghapus');
@@ -116,22 +117,27 @@ export default function FunctionalLocations() {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center flex-wrap justify-between gap-3">
-        <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Functional Location</h1>
-          <p className="text-gray-600 dark:text-gray-300">Hierarki Plant &rarr; Building &rarr; Line untuk penempatan aset/mesin.</p>
-        </div>
-        <button onClick={() => openAdd()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          <PlusIcon className="h-5 w-5" /> Tambah Lokasi
-        </button>
-      </div>
+    <div className="mx-auto max-w-6xl space-y-4 pb-10">
+      <PageHeader
+        eyebrow="ASET · LOKASI FUNGSIONAL"
+        title="Lokasi Fungsional"
+        subtitle="Susunan pabrik &rarr; gedung &rarr; lini untuk menempatkan aset dan mesin."
+        actions={
+          <button
+            onClick={() => openAdd()}
+            className="fn-press inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600"
+          >
+            <PlusIcon className="h-4 w-4" />
+            Tambah lokasi
+          </button>
+        }
+      />
 
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+      <div className="fn-card p-4">
         {isLoading ? (
           <div className="text-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div></div>
         ) : topLevelLocations.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">Belum ada functional location terdaftar.</div>
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">Belum ada lokasi fungsional terdaftar.</div>
         ) : (
           topLevelLocations.map((loc) => renderNode(loc, 0))
         )}
@@ -140,7 +146,7 @@ export default function FunctionalLocations() {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">{editing ? 'Edit Lokasi' : 'Tambah Lokasi'}</h3>
+            <h3 className="text-lg font-semibold mb-4">{editing ? 'Ubah lokasi' : 'Tambah lokasi'}</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Kode</label>
@@ -152,12 +158,12 @@ export default function FunctionalLocations() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Tipe</label>
-                <input type="text" value={form.location_type} onChange={(e) => setForm({ ...form, location_type: e.target.value })} className="w-full border rounded-lg px-3 py-2" placeholder="plant / building / line" />
+                <input type="text" value={form.location_type} onChange={(e) => setForm({ ...form, location_type: e.target.value })} className="w-full border rounded-lg px-3 py-2" placeholder="pabrik / gedung / lini" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Induk Lokasi</label>
                 <select value={form.parent_location_id} onChange={(e) => setForm({ ...form, parent_location_id: e.target.value })} className="w-full border rounded-lg px-3 py-2">
-                  <option value="">Tidak ada (top-level)</option>
+                  <option value="">Tidak ada (tingkat atas)</option>
                   {locations.filter((l) => l.id !== editing?.id).map((l) => (
                     <option key={l.id} value={l.id}>{l.name}</option>
                   ))}

@@ -20,6 +20,11 @@ const routeLabels: Record<string, string> = {
   'lifecycle': 'Daur Hidup',
   'calculator': 'Kalkulator Nonwoven',
   'analytics': 'Analitik',
+  // Aset
+  'assets': 'Aset',
+  'spare-parts': 'Suku Cadang',
+  'functional-locations': 'Lokasi Fungsional',
+  'depreciation': 'Penyusutan',
   // Warehouse
   'warehouse': 'Inventory',
   'inventory': 'Inventory',

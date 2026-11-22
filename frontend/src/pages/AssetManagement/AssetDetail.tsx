@@ -4,6 +4,7 @@ import axiosInstance from '../../utils/axiosConfig';
 import { useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
 import { toast } from 'react-hot-toast';
+import { PageHeader, Segmented, StatusPill, type Tone } from '../../components/ui/PageKit';
 import {
   ArrowLeftIcon,
   PencilIcon,
@@ -84,7 +85,7 @@ const AssetDetail: React.FC = () => {
   const [scheduleBook, setScheduleBook] = useState<'commercial' | 'fiscal'>('commercial');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useUrlState<'overview' | 'depreciation' | 'maintenance'>('tab', 'overview', ['overview', 'depreciation', 'maintenance']);
-  useBreadcrumbTrail(activeTab === 'overview' ? [] : [{ label: { depreciation: 'Penyusutan', maintenance: 'Maintenance' }[activeTab] }]);
+  useBreadcrumbTrail(activeTab === 'overview' ? [] : [{ label: { depreciation: 'Penyusutan', maintenance: 'Perawatan' }[activeTab] }]);
 
   useEffect(() => {
     fetchAssetDetail();
@@ -128,6 +129,27 @@ const AssetDetail: React.FC = () => {
     });
   };
 
+  const labelTipe: Record<string, string> = {
+    machinery: 'Mesin',
+    building: 'Bangunan',
+    vehicle: 'Kendaraan',
+    IT_equipment: 'Perangkat TI',
+    it_equipment: 'Perangkat TI',
+    equipment: 'Peralatan',
+    furniture: 'Perabot',
+  };
+
+  const labelStatus: Record<string, string> = {
+    active: 'Aktif',
+    maintenance: 'Perawatan',
+    idle: 'Menganggur',
+    retired: 'Tidak dipakai',
+    disposed: 'Dilepas',
+  };
+
+  const toneStatus = (status: string): Tone =>
+    status === 'active' ? 'ok' : status === 'maintenance' ? 'warn' : status === 'retired' || status === 'disposed' ? 'bad' : 'muted';
+
   const getStatusBadge = (status: string) => {
     const colors: Record<string, string> = {
       active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
@@ -148,7 +170,7 @@ const AssetDetail: React.FC = () => {
 
   if (!asset) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 p-6">
+      <div className="mx-auto max-w-6xl space-y-4 pb-10">
         <div className="text-center py-12">
           <p className="text-slate-500 dark:text-gray-400">Aset tidak ditemukan</p>
         </div>
@@ -157,72 +179,41 @@ const AssetDetail: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 p-6">
-      {/* Header */}
-      <div className="mb-6 flex items-center flex-wrap justify-between gap-3">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate('/app/assets/list')}
-            className="p-2 hover:bg-slate-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <ArrowLeftIcon className="h-5 w-5 text-slate-600 dark:text-gray-400" />
-          </button>
-          <div>
-            <h1 className="text-[28px] font-semibold text-slate-800 dark:text-white tracking-tight leading-tight">
-              {asset.asset_code}
-            </h1>
-            <p className="text-slate-500 dark:text-gray-400 mt-1">{asset.asset_name}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className={`px-4 py-2 rounded-lg font-medium ${getStatusBadge(asset.status)}`}>
-            {asset.status}
-          </span>
-          <button
-            onClick={() => navigate(`/app/assets/${id}/edit`)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <PencilIcon className="h-5 w-5" />
-            Edit
-          </button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-6xl space-y-4 pb-10">
+      <PageHeader
+        eyebrow="ASET · RINCIAN"
+        title={asset.asset_code}
+        subtitle={asset.asset_name}
+        actions={
+          <>
+            <button
+              onClick={() => navigate('/app/assets/list')}
+              className="fn-press inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+              Daftar aset
+            </button>
+            <StatusPill tone={toneStatus(asset.status)}>{labelStatus[asset.status] || asset.status}</StatusPill>
+            <button
+              onClick={() => navigate(`/app/assets/${id}/edit`)}
+              className="fn-press inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600"
+            >
+              <PencilIcon className="h-4 w-4" />
+              Ubah
+            </button>
+          </>
+        }
+      />
 
-      {/* Tabs */}
-      <div className="mb-6 border-b border-slate-200 dark:border-gray-700">
-        <div className="flex gap-6 flex-wrap">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`pb-3 px-1 border-b-2 transition-colors ${
-              activeTab === 'overview'
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-300'
-            }`}
-          >
-            Overview
-          </button>
-          <button
-            onClick={() => setActiveTab('depreciation')}
-            className={`pb-3 px-1 border-b-2 transition-colors ${
-              activeTab === 'depreciation'
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-300'
-            }`}
-          >
-            Penyusutan
-          </button>
-          <button
-            onClick={() => setActiveTab('maintenance')}
-            className={`pb-3 px-1 border-b-2 transition-colors ${
-              activeTab === 'maintenance'
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-300'
-            }`}
-          >
-            Maintenance
-          </button>
-        </div>
-      </div>
+      <Segmented
+        value={activeTab}
+        onChange={(v) => setActiveTab(v)}
+        options={[
+          { value: 'overview', label: 'Ringkasan' },
+          { value: 'depreciation', label: 'Penyusutan' },
+          { value: 'maintenance', label: 'Perawatan' },
+        ]}
+      />
 
       {/* Overview Tab */}
       {activeTab === 'overview' && (
@@ -230,13 +221,13 @@ const AssetDetail: React.FC = () => {
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Info */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6">
+            <div className="fn-card p-6">
               <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Informasi Dasar</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-slate-500 dark:text-gray-400">Tipe Aset</p>
                   <p className="font-medium text-slate-800 dark:text-white capitalize">
-                    {asset.asset_type.replace('_', ' ')}
+                    {labelTipe[asset.asset_type] || asset.asset_type.replace(/_/g, ' ')}
                   </p>
                 </div>
                 <div>
@@ -283,7 +274,7 @@ const AssetDetail: React.FC = () => {
             </div>
 
             {/* Procurement Info */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6">
+            <div className="fn-card p-6">
               <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Pengadaan</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -306,7 +297,7 @@ const AssetDetail: React.FC = () => {
                       Aktif s/d {formatDate(asset.warranty_end_date)}
                     </p>
                   ) : (
-                    <p className="font-medium text-slate-500 dark:text-gray-400">Expired</p>
+                    <p className="font-medium text-slate-500 dark:text-gray-400">Sudah habis</p>
                   )}
                 </div>
               </div>
@@ -316,27 +307,26 @@ const AssetDetail: React.FC = () => {
           {/* Right Column - Financial Summary */}
           <div className="space-y-6">
             {/* Financial Cards */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
-              <div className="flex items-center gap-2 mb-2">
-                <CurrencyDollarIcon className="h-5 w-5" />
-                <p className="text-sm opacity-90">Nilai Buku Bersih</p>
-              </div>
-              <p className="text-3xl font-bold">{formatCurrency(asset.net_book_value)}</p>
-              <div className="mt-4 pt-4 border-t border-white/20">
-                <div className="flex justify-between text-sm">
-                  <span className="opacity-90">Akumulasi Penyusutan</span>
-                  <span className="font-semibold">{formatCurrency(asset.accumulated_depreciation)}</span>
-                </div>
+            <div className="fn-card p-6">
+              <p className="fn-label">Nilai buku bersih</p>
+              <p className="fn-num mt-1 text-3xl font-semibold text-gray-900 dark:text-white">
+                {formatCurrency(asset.net_book_value)}
+              </p>
+              <div className="mt-4 flex justify-between border-t border-gray-200/70 pt-3 text-sm dark:border-gray-700/70">
+                <span className="text-gray-500 dark:text-gray-400">Akumulasi penyusutan</span>
+                <span className="fn-num font-semibold text-gray-900 dark:text-white">
+                  {formatCurrency(asset.accumulated_depreciation)}
+                </span>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6">
+            <div className="fn-card p-6">
               <h3 className="font-semibold text-slate-800 dark:text-white mb-4">Penyusutan</h3>
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-slate-500 dark:text-gray-400">Metode</p>
-                  <p className="font-medium text-slate-800 dark:text-white capitalize">
-                    {asset.depreciation_method.replace('_', ' ')}
+                  <p className="font-medium text-slate-800 dark:text-white">
+                    {{ straight_line: 'Garis lurus', declining_balance: 'Saldo menurun' }[asset.depreciation_method] || asset.depreciation_method}
                   </p>
                 </div>
                 <div>
@@ -355,10 +345,10 @@ const AssetDetail: React.FC = () => {
             </div>
 
             {/* Maintenance Summary */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-6">
+            <div className="fn-card p-6">
               <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
                 <WrenchScrewdriverIcon className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                Maintenance
+                Perawatan
               </h3>
               <div className="space-y-3">
                 <div>
@@ -385,7 +375,7 @@ const AssetDetail: React.FC = () => {
 
       {/* Depreciation Tab */}
       {activeTab === 'depreciation' && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden">
+        <div className="fn-card overflow-hidden">
           <div className="p-6 border-b border-slate-200 dark:border-gray-700 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-800 dark:text-white">Jadwal Penyusutan</h2>
             {asset.has_fiscal_schedule && (
@@ -440,25 +430,33 @@ const AssetDetail: React.FC = () => {
                       {item.is_posted ? (
                         <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
                           <CheckCircleIcon className="h-4 w-4" />
-                          Posted
+                          Dibukukan
                         </span>
                       ) : (
-                        <span className="text-xs text-slate-400">Pending</span>
+                        <span className="text-xs text-slate-400">Belum dibukukan</span>
                       )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            {/* Jadwal penyusutan dibuat saat asetnya disimpan; aset lama hasil
+                impor sering belum punya satu baris pun. Lebih baik mengaku
+                daripada memajang tabel kosong tanpa penjelasan. */}
+            {depreciationSchedule.length === 0 && (
+              <p className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                Jadwal penyusutan aset ini belum pernah dibuat.
+              </p>
+            )}
           </div>
         </div>
       )}
 
       {/* Maintenance Tab */}
       {activeTab === 'maintenance' && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden">
+        <div className="fn-card overflow-hidden">
           <div className="p-6 border-b border-slate-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-slate-800 dark:text-white">Riwayat Maintenance</h2>
+            <h2 className="text-lg font-semibold text-slate-800 dark:text-white">Riwayat perawatan</h2>
           </div>
           {maintenanceHistory.length === 0 ? (
             <div className="p-12 text-center text-slate-500 dark:text-gray-400">
