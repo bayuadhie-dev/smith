@@ -149,7 +149,8 @@ export default function WIPStock() {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between mb-6 gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">WIP Stock</h1>
+          <div className="fn-label mb-1.5">PRODUKSI · STOK WIP</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Stok WIP</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Work In Progress - Stok hasil produksi sebelum packing</p>
         </div>
         <Link

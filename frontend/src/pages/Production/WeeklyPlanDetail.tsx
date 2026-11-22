@@ -263,6 +263,7 @@ const WeeklyPlanDetail: React.FC = () => {
           <ArrowLeftIcon className="h-5 w-5" />
         </button>
         <div className="flex-1">
+          <div className="fn-label mb-1.5">PRODUKSI · JADWAL MINGGUAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
             <CalendarDaysIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
             {plan.plan_number}

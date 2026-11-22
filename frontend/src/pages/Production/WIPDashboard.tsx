@@ -13,21 +13,8 @@ import {
 
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
-import { 
-  ResponsiveContainer, 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area
-} from 'recharts';
+import { CategoryBars, Panel } from '../../components/ui/PageKit';
+import RunChart from '../../components/charts/RunChart';
 
 interface WIPBatch {
   id: number;
@@ -211,7 +198,7 @@ const WIPDashboard: React.FC = () => {
         <div className="text-red-600 mb-4 dark:text-red-400">
           <ExclamationTriangleIcon className="h-12 w-12 mx-auto" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Error Loading Dashboard</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Dashboard gagal dimuat</h3>
         <p className="text-gray-500 dark:text-gray-400 mb-4">{error}</p>
         <button onClick={fetchDashboardData} className="btn-primary">
         </button>
@@ -224,8 +211,9 @@ const WIPDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">WIP Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-300">Work in Progress Monitoring & Job Costing</p>
+          <div className="fn-label mb-1.5">PRODUKSI · WIP</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Dashboard WIP</h1>
+          <p className="text-gray-600 dark:text-gray-300">Pemantauan barang setengah jadi dan biayanya</p>
         </div>
         
         {/* Date Range FunnelIcon */}
@@ -258,7 +246,7 @@ const WIPDashboard: React.FC = () => {
             <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
               <div className="flex items-center gap-2 mb-2">
                 <div className="p-2 bg-white/20 rounded-lg"><CurrencyDollarIcon className="w-5 h-5" /></div>
-                <p className="text-sm opacity-90">Total WIP Value</p>
+                <p className="text-sm opacity-90">Total nilai WIP</p>
               </div>
               <p className="text-3xl font-bold">{formatCurrency(dashboardData.summary.total_wip_value)}</p>
             </div>
@@ -267,19 +255,21 @@ const WIPDashboard: React.FC = () => {
               <div className="flex items-center gap-2 mb-2">
                 <div className="p-2 bg-white/20 rounded-lg"><ChartBarIcon className="w-5 h-5" /></div>
               </div>
-              <p className="text-xs opacity-90 mb-1">Active Batches</p>
+              <p className="text-xs opacity-90 mb-1">Batch berjalan</p>
               <p className="text-2xl font-bold">{dashboardData.summary.active_batches}</p>
-              <p className="text-xs opacity-75 mt-1">of {dashboardData.summary.total_batches} total</p>
+              <p className="text-xs opacity-75 mt-1">dari {dashboardData.summary.total_batches} batch</p>
             </div>
 
             <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
               <div className="flex items-center gap-2 mb-2">
                 <div className="p-2 bg-white/20 rounded-lg"><CheckCircleIcon className="w-5 h-5" /></div>
               </div>
-              <p className="text-xs opacity-90 mb-1">Completed Batches</p>
+              <p className="text-xs opacity-90 mb-1">Batch selesai</p>
               <p className="text-2xl font-bold">{dashboardData.summary.completed_batches}</p>
               <p className="text-xs opacity-75 mt-1">
-                {((dashboardData.summary.completed_batches / dashboardData.summary.total_batches) * 100).toFixed(1)}% completion rate
+                {dashboardData.summary.total_batches > 0
+                  ? `${((dashboardData.summary.completed_batches / dashboardData.summary.total_batches) * 100).toFixed(1)}% dari seluruh batch`
+                  : 'belum ada batch'}
               </p>
             </div>
           </div>
@@ -289,100 +279,71 @@ const WIPDashboard: React.FC = () => {
               <div className="flex items-center gap-2 mb-2">
                 <div className="p-2 bg-white/20 rounded-lg"><ExclamationTriangleIcon className="w-5 h-5" /></div>
               </div>
-              <p className="text-xs opacity-90 mb-1">Bottlenecks</p>
+              <p className="text-xs opacity-90 mb-1">Hambatan</p>
               <p className="text-2xl font-bold">{bottleneckData?.total_bottlenecks || 0}</p>
-              <p className="text-xs opacity-75 mt-1">stages need attention</p>
+              <p className="text-xs opacity-75 mt-1">tahap perlu diperiksa</p>
             </div>
           </div>
         </>
       )}
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Stage Distribution */}
-        <div className="card">
-          <div className="card-header">
-            <h3 className="text-lg font-medium">WIP by Production Stage</h3>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Panel title="WIP per tahap produksi">
+          <div className="p-4">
+            {stageDistributionData.length === 0 ? (
+              <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada batch WIP.</p>
+            ) : (
+              <CategoryBars items={stageDistributionData.map((d: any) => ({ label: d.stage, value: d.count }))} unit="batch" />
+            )}
           </div>
-          <div className="card-body">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={stageDistributionData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="stage" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="count" fill="#3B82F6" name="Batch Count" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        </Panel>
 
-        {/* Cost Breakdown */}
-        <div className="card">
-          <div className="card-header">
-            <h3 className="text-lg font-medium">Cost Breakdown</h3>
+        <Panel title="Rincian biaya WIP">
+          <div className="p-4">
+            {costBreakdownData.length === 0 ? (
+              <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada biaya tercatat.</p>
+            ) : (
+              <CategoryBars
+                items={costBreakdownData.map((d: any) => ({ label: d.name, value: d.value }))}
+                format={(n: number) => formatCurrency(n)}
+              />
+            )}
           </div>
-          <div className="card-body">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={costBreakdownData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {costBreakdownData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        </Panel>
       </div>
 
-      {/* WIP Trend */}
       {dashboardData && dashboardData.wip_trend.length > 0 && (
-        <div className="card">
-          <div className="card-header">
-            <h3 className="text-lg font-medium">WIP Value Trend (Last 7 Days)</h3>
+        <Panel title="Nilai WIP 7 hari terakhir">
+          <div className="px-4 pb-3 pt-1">
+            <RunChart
+              values={dashboardData.wip_trend.map((t: any) => Number(t.wip_value || 0))}
+              axis={dashboardData.wip_trend.length
+                ? Array.from(new Set([0, Math.floor(dashboardData.wip_trend.length / 2), dashboardData.wip_trend.length - 1]))
+                    .map((i: number) => String(dashboardData.wip_trend[i]?.date || '').slice(5))
+                : []}
+              height={200}
+              unit="rupiah"
+            />
           </div>
-          <div className="card-body">
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={dashboardData.wip_trend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                <Area type="monotone" dataKey="wip_value" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.3} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        </Panel>
       )}
 
       {/* Bottleneck Analysis */}
       {bottleneckData && bottleneckData.bottleneck_analysis.length > 0 && (
         <div className="card">
           <div className="card-header">
-            <h3 className="text-lg font-medium">Bottleneck Analysis</h3>
+            <h3 className="text-lg font-medium">Analisis hambatan</h3>
           </div>
           <div className="card-body">
             <div className="overflow-x-auto">
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Production Stage</th>
-                    <th>Batch Count</th>
-                    <th>WIP Value</th>
-                    <th>Avg Qty in Process</th>
-                    <th>Severity</th>
+                    <th>Tahap produksi</th>
+                    <th>Jumlah batch</th>
+                    <th>Nilai WIP</th>
+                    <th>Rata-rata jumlah diproses</th>
+                    <th>Tingkat</th>
                     <th>{t('common.status')}</th>
                   </tr>
                 </thead>
@@ -439,7 +400,7 @@ const WIPDashboard: React.FC = () => {
                     <th>{t('production.product')}</th>
                     <th>Current Stage</th>
                     <th>Progress</th>
-                    <th>WIP Value</th>
+                    <th>Nilai WIP</th>
                     <th>{t('common.status')}</th>
                     <th>{t('common.actions')}</th>
                   </tr>

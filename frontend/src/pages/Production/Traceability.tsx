@@ -116,7 +116,8 @@ const [batchNumber, setBatchNumber] = useState('')
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Traceability</h1>
+          <div className="fn-label mb-1.5">PRODUKSI · PENELUSURAN</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Penelusuran Produk</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Track SPK and production history</p>
         </div>
       </div>
@@ -250,7 +251,7 @@ const [batchNumber, setBatchNumber] = useState('')
                   <ChartBarIcon className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Produced</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total hasil produksi</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{getTotalProduced().toLocaleString()}</p>
                 </div>
               </div>

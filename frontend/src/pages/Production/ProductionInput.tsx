@@ -418,6 +418,7 @@ const ProductionInput: React.FC = () => {
     <div className="space-y-6 p-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">PRODUKSI · INPUT PRODUKSI</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-3 tracking-tight leading-tight">
             <Factory className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Input Produksi Shift

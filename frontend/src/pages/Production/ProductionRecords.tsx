@@ -135,7 +135,8 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Production Records</h1>
+          <div className="fn-label mb-1.5">PRODUKSI · CATATAN PRODUKSI</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Catatan Produksi</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Track daily production output and quality metrics</p>
         </div>
         <div className="flex gap-3 flex-wrap">
@@ -156,7 +157,7 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
               <ChartBarIcon className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Produced</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total hasil produksi</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{getTotalProduced().toLocaleString()}</p>
             </div>
           </div>
@@ -267,7 +268,7 @@ const [records, setRecords] = useState<ProductionRecord[]>([])
       {/* Records Table */}
       <div className="card">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Production Records</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Catatan Produksi</h3>
         </div>
         
         <div className="overflow-x-auto">

@@ -166,6 +166,7 @@ const WeeklyController: React.FC = () => {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between mb-6 gap-3">
         <div>
+          <div className="fn-label mb-1.5">PRODUKSI · KONTROL MINGGUAN</div>
           <h1 className="text-[28px] font-semibold text-slate-800 dark:text-slate-100 tracking-tight leading-tight">Controller Mingguan</h1>
           <p className="text-slate-500 dark:text-slate-400">Ringkasan efisiensi mingguan per mesin</p>
         </div>

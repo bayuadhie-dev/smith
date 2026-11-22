@@ -184,7 +184,8 @@ const PreShiftChecklistForm = () => {
                   <ClipboardDocumentCheckIcon className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-[28px] font-semibold text-white tracking-tight leading-tight">Form Pre-Shift Checklist</h1>
+                  <div className="fn-label mb-1.5">PRODUKSI · CHECKLIST AWAL SHIFT</div>
+                  <h1 className="text-[28px] font-semibold text-white tracking-tight leading-tight">Form Checklist Awal Shift</h1>
                   <p className="text-primary-100 text-sm mt-1">Isi checklist sebelum memulai produksi</p>
                 </div>
               </div>

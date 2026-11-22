@@ -126,7 +126,7 @@ const LiveMonitoringView: React.FC = () => {
                 <ArrowLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
               </button>
               <SignalIcon className="w-6 h-6 text-emerald-600 print:w-5 print:h-5 dark:text-emerald-400" />
-              <h1 className="text-lg font-bold text-gray-900 dark:text-white print:text-base">Live Monitoring Check</h1>
+              <h1 className="text-lg font-bold text-gray-900 dark:text-white print:text-base">Pemeriksaan Pemantauan Langsung</h1>
             </div>
             <div className="flex items-center space-x-2 print:hidden flex-wrap">
               <button 

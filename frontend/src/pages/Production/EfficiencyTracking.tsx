@@ -141,7 +141,8 @@ const [machines, setMachines] = useState<Machine[]>([])
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Efficiency Tracking</h1>
+          <div className="fn-label mb-1.5">PRODUKSI · EFISIENSI</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pemantauan Efisiensi</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Monitor OEE, downtime and performance metrics</p>
         </div>
       </div>
@@ -232,7 +233,7 @@ const [machines, setMachines] = useState<Machine[]>([])
             <div className="card p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Availability</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Ketersediaan</p>
                   <p className={`text-2xl font-bold ${getEfficiencyColor(efficiencyData.availability.availability_rate, 'availability')}`}>
                     {efficiencyData.availability.availability_rate}%
                   </p>
@@ -283,7 +284,7 @@ const [machines, setMachines] = useState<Machine[]>([])
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Production Metrics</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-300">Total Produced</span>
+                  <span className="text-gray-600 dark:text-gray-300">Total hasil produksi</span>
                   <span className="font-semibold text-gray-900 dark:text-white">
                     {efficiencyData.production.total_produced.toLocaleString()} units
                   </span>
@@ -366,7 +367,7 @@ const [machines, setMachines] = useState<Machine[]>([])
                 <div className="text-2xl font-bold text-blue-600 mb-1 dark:text-blue-400">
                   {efficiencyData.availability.availability_rate}%
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">Availability</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Ketersediaan</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   = Runtime / Planned Time
                 </div>

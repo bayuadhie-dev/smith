@@ -209,8 +209,9 @@ const QualityCheckForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">PRODUKSI · PEMERIKSAAN MUTU</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
-            {isEdit ? 'Edit Quality Inspection' : 'New Quality Inspection'}
+            {isEdit ? 'Ubah Pemeriksaan Mutu' : 'Pemeriksaan Mutu Baru'}
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update quality inspection details' : 'Record new quality inspection and results'}
@@ -219,7 +220,7 @@ const QualityCheckForm: React.FC = () => {
       </div>
 
       {/* Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="fn-card">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">

@@ -257,8 +257,9 @@ const ProductionPlanningForm: React.FC = () => {
   return (
     <div className="p-6">
       <div className="mb-6">
+        <div className="fn-label mb-1.5">PRODUKSI · PERENCANAAN</div>
         <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
-          {isEditMode ? 'Edit Production Plan' : 'Create Production Plan'}
+          {isEditMode ? 'Ubah Rencana Produksi' : 'Buat Rencana Produksi'}
         </h1>
         <p className="text-gray-600 dark:text-gray-300">Master Production Schedule (MPS)</p>
       </div>
@@ -269,7 +270,7 @@ const ProductionPlanningForm: React.FC = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <form onSubmit={handleSubmit} className="fn-card p-6">
         {/* Basic Information */}
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h2>

@@ -262,7 +262,8 @@ const BatchPlanning: React.FC = () => {
     <div className="p-4 md:p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Batch Planning</h1>
+          <div className="fn-label mb-1.5">PRODUKSI · RENCANA BATCH</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Rencana Batch</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Usulan jadwal batch produksi — hasil Generate/Re-plan, review lalu Approve.</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">

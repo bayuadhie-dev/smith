@@ -292,6 +292,7 @@ const ProductionApprovalDetail: React.FC = () => {
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
+            <div className="fn-label mb-1.5">PRODUKSI · PERSETUJUAN</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{approval.approval_number}</h1>
             <p className="text-gray-600 dark:text-gray-300">Approval Produksi - {approval.wo_number}</p>
           </div>
@@ -452,7 +453,7 @@ const ProductionApprovalDetail: React.FC = () => {
               <p className="text-2xl font-bold text-red-800 dark:text-red-300">{approval.quantity_reject.toLocaleString()}</p>
             </div>
             <div className="bg-blue-50 p-4 rounded-lg dark:bg-blue-900/20">
-              <p className="text-sm text-blue-600 dark:text-blue-400">Total Produced</p>
+              <p className="text-sm text-blue-600 dark:text-blue-400">Total hasil produksi</p>
               <p className="text-2xl font-bold text-blue-800 dark:text-blue-300">{approval.quantity_produced.toLocaleString()}</p>
             </div>
             <div className="bg-purple-50 p-4 rounded-lg dark:bg-purple-900/20">

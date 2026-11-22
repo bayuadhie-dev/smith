@@ -107,7 +107,8 @@ const PreShiftChecklist = () => {
                   <ClipboardDocumentCheckIcon className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-[28px] font-semibold text-white tracking-tight leading-tight">Pre-Shift Checklist</h1>
+                  <div className="fn-label mb-1.5">PRODUKSI · CHECKLIST AWAL SHIFT</div>
+                  <h1 className="text-[28px] font-semibold text-white tracking-tight leading-tight">Checklist Awal Shift</h1>
                   <p className="text-primary-100 text-sm mt-1">Checklist kondisi mesin dan man power sebelum produksi</p>
                 </div>
               </div>
@@ -160,7 +161,7 @@ const PreShiftChecklist = () => {
                   className="flex items-center space-x-2 px-3 py-2 bg-white/20 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/30 rounded-lg text-white text-sm font-medium transition-colors"
                 >
                   <TableCellsIcon className="w-5 h-5" />
-                  <span>Summary Mingguan</span>
+                  <span>Ringkasan Mingguan</span>
                 </button>
               </div>
             </div>

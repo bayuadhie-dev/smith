@@ -199,7 +199,8 @@ export default function WorkCenterDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Work Center</h1>
+          <div className="fn-label mb-1.5">PRODUKSI · WORK CENTER</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pusat Kerja</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">
             Ringkasan status mesin dan downtime harian
           </p>

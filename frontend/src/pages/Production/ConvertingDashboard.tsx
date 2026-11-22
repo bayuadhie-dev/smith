@@ -363,7 +363,8 @@ const ConvertingDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">Converting Dashboard</h1>
+          <div className="fn-label mb-1.5">PRODUKSI · CONVERTING</div>
+          <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">Dashboard Converting</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Monitor produksi mesin converting</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">

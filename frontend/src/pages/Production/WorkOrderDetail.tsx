@@ -279,6 +279,7 @@ export default function WorkOrderDetail() {
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
+            <div className="fn-label mb-1.5">PRODUKSI · SPK</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Detail SPK</h1>
             <p className="text-gray-600 dark:text-gray-300">{workOrder.wo_number}</p>
           </div>

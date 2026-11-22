@@ -133,8 +133,9 @@ const navigate = useNavigate()
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
+            <div className="fn-label mb-1.5">PRODUKSI · MESIN</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
-              {isEdit ? '🔧 Edit Machine' : '🏭 Add Machine'}
+              {isEdit ? 'Ubah Mesin' : 'Mesin Baru'}
             </h1>
             <p className="text-gray-600 dark:text-gray-300 mt-1">
               {isEdit ? 'Update machine information' : 'Add a new machine to production'}

@@ -110,6 +110,7 @@ const ProductionDashboard = () => {
   return (
     <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       <PageHeader
+        eyebrow="PRODUKSI · RINGKASAN"
         title="Dashboard Produksi"
         subtitle="Pantau dan kelola operasi produksi"
         actions={

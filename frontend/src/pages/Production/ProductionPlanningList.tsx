@@ -183,6 +183,7 @@ const ProductionPlanningList: React.FC = () => {
       <div className="mb-6">
         <div className="flex flex-wrap justify-between items-center gap-3">
           <div>
+            <div className="fn-label mb-1.5">PRODUKSI · PERENCANAAN</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Perencanaan Produksi</h1>
             <p className="text-gray-600 dark:text-gray-300">Jadwal Induk Produksi (MPS)</p>
           </div>

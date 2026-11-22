@@ -226,6 +226,7 @@ export default function RemainingStock() {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">PRODUKSI · SISA BAHAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
             <ArchiveBoxIcon className="h-7 w-7 text-orange-600 dark:text-orange-400" />
             Sisa Order

@@ -108,6 +108,7 @@ export default function RollList() {
     <div className="space-y-6 p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">PRODUKSI · ROLL SPUNLACE</div>
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-[28px] tracking-tight leading-tight">Roll Spunlace</h1>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
             Catat roll yang keluar dari mesin spunlace: nomor, berat, dan grade-nya.

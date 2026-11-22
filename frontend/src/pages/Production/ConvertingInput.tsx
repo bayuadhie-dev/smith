@@ -380,6 +380,7 @@ export default function ConvertingInput() {
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => navigate('/app/production/converting')} className="p-2 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg"><ArrowLeftIcon className="h-5 w-5" /></button>
         <div>
+          <div className="fn-label mb-1.5">PRODUKSI · CONVERTING</div>
           <h1 className="text-[28px] font-semibold text-slate-800 dark:text-slate-100 tracking-tight leading-tight">Input Produksi Converting</h1>
           {machine && <p className="text-sm text-slate-500 dark:text-slate-400">{machine.name} ({machine.code})</p>}
         </div>

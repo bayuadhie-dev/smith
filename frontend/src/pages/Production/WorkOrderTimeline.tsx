@@ -259,6 +259,7 @@ export default function WorkOrderTimeline() {
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
+            <div className="fn-label mb-1.5">PRODUKSI · SPK</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
               <ClockIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               Timeline Produksi
@@ -302,7 +303,7 @@ export default function WorkOrderTimeline() {
       </div>
 
       {/* Timeline */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="fn-card p-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Riwayat Produksi</h2>
         
         {timeline.length === 0 ? (

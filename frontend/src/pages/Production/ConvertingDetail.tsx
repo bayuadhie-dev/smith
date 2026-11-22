@@ -156,6 +156,7 @@ export default function ConvertingDetail() {
       <div className="flex items-center gap-3">
         <button onClick={() => navigate('/app/production/converting')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg" aria-label="Kembali"><ArrowLeftIcon className="h-5 w-5" /></button>
         <div>
+          <div className="fn-label mb-1.5">PRODUKSI · CONVERTING</div>
           <h1 className="text-[28px] font-semibold text-slate-900 dark:text-white tracking-tight leading-tight">Detail Produksi {TYPE_LABEL[type] || type}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {p.machine?.name} ({p.machine?.code}) · {new Date(p.production_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} · Shift {p.shift}

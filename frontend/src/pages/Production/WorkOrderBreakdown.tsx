@@ -220,6 +220,7 @@ export default function WorkOrderBreakdown() {
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
+            <div className="fn-label mb-1.5">PRODUKSI · SPK</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
               <ChartBarIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
               Breakdown Analysis
@@ -266,7 +267,7 @@ export default function WorkOrderBreakdown() {
       </div>
 
       {/* Category Breakdown */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="fn-card p-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Breakdown by Category</h2>
         
         {categories.length === 0 ? (
@@ -355,7 +356,7 @@ export default function WorkOrderBreakdown() {
       </div>
 
       {/* Visual Chart */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="fn-card p-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Distribusi Downtime</h2>
         
         {totalCategoryDowntime > 0 ? (

@@ -132,6 +132,7 @@ const ProductChangeover: React.FC = () => {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="mb-6">
+        <div className="fn-label mb-1.5">PRODUKSI · GANTI PRODUK</div>
         <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
           <ArrowPathIcon className="h-7 w-7 text-orange-500" />
           Product Changeover

@@ -128,6 +128,7 @@ const LiveMonitoringDashboard: React.FC = () => {
       <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-2xl p-5 text-white shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
+            <div className="fn-label mb-1.5">PRODUKSI · PEMANTAUAN LANGSUNG</div>
             <h1 className="text-[28px] font-semibold flex items-center gap-2 tracking-tight leading-tight">
               <SignalIcon className="h-7 w-7" /> Live Monitoring
             </h1>

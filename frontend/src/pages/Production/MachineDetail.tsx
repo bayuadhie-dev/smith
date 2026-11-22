@@ -267,6 +267,7 @@ const MachineDetail: React.FC = () => {
             <ArrowLeftIcon className="w-5 h-5" />
           </button>
           <div>
+            <div className="fn-label mb-1.5">PRODUKSI · MESIN</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{machine.name}</h1>
             <p className="text-gray-500 dark:text-gray-400">{machine.code} • {machine.machine_type}</p>
           </div>
@@ -315,7 +316,7 @@ const MachineDetail: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Machine Info */}
           <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
-            <h3 className="text-lg font-semibold mb-4">Machine Information</h3>
+            <h3 className="text-lg font-semibold mb-4">Informasi mesin</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
                 <CogIcon className="w-5 h-5 text-gray-400" />
@@ -370,7 +371,7 @@ const MachineDetail: React.FC = () => {
           {/* Quick Stats */}
           <div className="space-y-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Average OEE (30 days)</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Rata-rata OEE (30 hari)</h3>
               <div className="flex items-end gap-2">
                 <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">{avgOEE}%</span>
               </div>
@@ -384,14 +385,14 @@ const MachineDetail: React.FC = () => {
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Availability</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Ketersediaan</h3>
               <div className="flex items-end gap-2">
                 <span className="text-3xl font-bold text-green-600 dark:text-green-400">{machine.availability || 100}%</span>
               </div>
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Total Downtime (30 days)</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Total downtime (30 hari)</h3>
               <div className="flex items-end gap-2">
                 <span className="text-3xl font-bold text-red-600 dark:text-red-400">{Math.round(totalDowntime / 60)}h</span>
                 <span className="text-gray-500 dark:text-gray-400 mb-1">{totalDowntime % 60}m</span>

@@ -502,7 +502,7 @@ const MBFReportPage: React.FC = () => {
                 <div className="mx-auto w-14 h-14 bg-white dark:bg-gray-800/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md border border-white/30 shadow-inner">
                    <DocumentPlusIcon className="h-7 w-7 text-white" />
                 </div>
-                <h2 className="text-2xl font-black uppercase tracking-tight">New Report</h2>
+                <h2 className="text-2xl font-black uppercase tracking-tight">Laporan Baru</h2>
                 <p className="text-blue-100 text-[10px] font-bold uppercase tracking-[0.2em] mt-2 opacity-80">Initialize Production Period</p>
               </div>
            </div>

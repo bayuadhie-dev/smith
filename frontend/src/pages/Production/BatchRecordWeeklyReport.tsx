@@ -81,7 +81,8 @@ export default function BatchRecordWeeklyReport() {
       {/* Header - hidden on print */}
       <div className="flex items-center flex-wrap justify-between print:hidden gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Laporan Mingguan Batch Report</h1>
+          <div className="fn-label mb-1.5">PRODUKSI · CATATAN BETS</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Laporan Mingguan Batch</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Ringkasan Catatan Pengolahan Bets (GMP) per minggu</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -135,7 +136,7 @@ export default function BatchRecordWeeklyReport() {
 
       {/* Print-only header */}
       <div className="hidden print:block text-center border-b-2 border-gray-900 pb-3 mb-4">
-        <h2 className="text-lg font-bold uppercase tracking-wide">Laporan Mingguan Batch Report</h2>
+        <h2 className="text-lg font-bold uppercase tracking-wide">Laporan Mingguan Batch</h2>
         <p className="text-xs text-gray-500 dark:text-gray-400">{fmtDateLabel(weekStart)} &ndash; {fmtDateLabel(weekEnd)}</p>
       </div>
 

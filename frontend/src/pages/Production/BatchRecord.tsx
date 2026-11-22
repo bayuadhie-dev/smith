@@ -51,7 +51,8 @@ export default function BatchRecord() {
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg" title="Kembali">
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Catatan Pengolahan Bets</h1>
+          <div className="fn-label mb-1.5">PRODUKSI · CATATAN BETS</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Catatan Pengolahan Bets</h1>
         </div>
         <button
           onClick={() => window.print()}

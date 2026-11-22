@@ -120,6 +120,7 @@ const MBFReportList: React.FC = () => {
       {/* Header */}
       <div className="mb-6 flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">PRODUKSI · LAPORAN MBF</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
             Laporan MBF
           </h1>

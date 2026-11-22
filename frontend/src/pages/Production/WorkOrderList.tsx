@@ -232,8 +232,9 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
+          <div className="fn-label mb-1.5">PRODUKSI · SPK</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">SPK</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage production SPK and schedules</p>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Surat perintah kerja produksi dan jadwalnya</p>
         </div>
         <div className="flex gap-3 items-center flex-wrap">
           {/* View Mode Toggle */}
@@ -318,7 +319,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
             <ChartBarIcon className="h-4 w-4 text-white" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Total Produced</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Total hasil produksi</p>
             <p className="text-xl font-bold text-gray-900 dark:text-white">{summary.total_produced.toLocaleString()}</p>
             <p className="text-xs text-purple-500">Klik detail →</p>
           </div>

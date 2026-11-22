@@ -107,6 +107,7 @@ const [machines, setMachines] = useState<Machine[]>([])
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
+          <div className="fn-label mb-1.5">PRODUKSI · MESIN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Data Mesin</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Monitor and manage production machines</p>
         </div>
@@ -225,7 +226,7 @@ const [machines, setMachines] = useState<Machine[]>([])
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{machine.availability}%</div>
-                  <div className="text-xs text-gray-600 dark:text-gray-300">Availability</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-300">Ketersediaan</div>
                 </div>
               </div>
 

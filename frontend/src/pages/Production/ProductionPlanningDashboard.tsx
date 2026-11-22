@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { CategoryBars, Panel } from '../../components/ui/PageKit';
 import { Calendar, Package, TrendingUp, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 
 interface DashboardData {
@@ -105,8 +105,9 @@ const ProductionPlanningDashboard: React.FC = () => {
       <div className="mb-2">
         <div className="flex flex-wrap justify-between items-center gap-3">
           <div>
-            <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">Production Planning Dashboard</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Master Production Schedule (MPS) Overview</p>
+            <div className="fn-label mb-1.5">PRODUKSI · PERENCANAAN</div>
+            <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">Dashboard Perencanaan Produksi</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Ringkasan jadwal induk produksi (MPS)</p>
           </div>
           <button
             onClick={() => navigate('/app/production/planning')}
@@ -152,10 +153,10 @@ const ProductionPlanningDashboard: React.FC = () => {
             <div className="p-2 bg-white/20 rounded-lg">
               <Package size={18} />
             </div>
-            <p className="text-sm opacity-90">Total Planned</p>
+            <p className="text-sm opacity-90">Total direncanakan</p>
           </div>
           <p className="text-3xl font-bold">{dashboardData.summary.total_planned.toLocaleString()}</p>
-          <p className="text-xs opacity-75 mt-1">Units planned for production</p>
+          <p className="text-xs opacity-75 mt-1">satuan yang direncanakan</p>
         </div>
 
         <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
@@ -163,10 +164,10 @@ const ProductionPlanningDashboard: React.FC = () => {
             <div className="p-2 bg-white/20 rounded-lg">
               <CheckCircle size={18} />
             </div>
-            <p className="text-sm opacity-90">Total Actual</p>
+            <p className="text-sm opacity-90">Total terealisasi</p>
           </div>
           <p className="text-3xl font-bold">{dashboardData.summary.total_actual.toLocaleString()}</p>
-          <p className="text-xs opacity-75 mt-1">Units actually produced</p>
+          <p className="text-xs opacity-75 mt-1">satuan yang benar-benar dibuat</p>
         </div>
 
         <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
@@ -174,59 +175,39 @@ const ProductionPlanningDashboard: React.FC = () => {
             <div className="p-2 bg-white/20 rounded-lg">
               <TrendingUp size={18} />
             </div>
-            <p className="text-sm opacity-90">Completion Rate</p>
+            <p className="text-sm opacity-90">Tingkat penyelesaian</p>
           </div>
           <p className="text-3xl font-bold">{dashboardData.summary.completion_rate.toFixed(1)}%</p>
-          <p className="text-xs opacity-75 mt-1">Overall plan completion</p>
+          <p className="text-xs opacity-75 mt-1">dari seluruh rencana</p>
         </div>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* Status Distribution */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Plans by Status</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={statusData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {statusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Panel title="Rencana menurut status">
+          <div className="p-4">
+            {statusData.length === 0 ? (
+              <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada rencana.</p>
+            ) : (
+              <CategoryBars items={statusData.map((d: any) => ({ label: d.name, value: d.value }))} unit="rencana" />
+            )}
+          </div>
+        </Panel>
 
-        {/* Priority Distribution */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Plans by Priority</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={priorityData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="value" fill="#3B82F6" name="Count" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <Panel title="Rencana menurut prioritas">
+          <div className="p-4">
+            {priorityData.length === 0 ? (
+              <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada rencana.</p>
+            ) : (
+              <CategoryBars items={priorityData.map((d: any) => ({ label: d.name, value: d.value }))} unit="rencana" />
+            )}
+          </div>
+        </Panel>
       </div>
 
       {/* Upcoming Plans */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Upcoming Production Plans</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Rencana produksi mendatang</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

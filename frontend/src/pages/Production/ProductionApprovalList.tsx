@@ -269,7 +269,8 @@ const ProductionApprovalList: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Approval Produksi</h1>
+          <div className="fn-label mb-1.5">PRODUKSI · PERSETUJUAN</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Persetujuan Produksi</h1>
           <p className="text-gray-600 dark:text-gray-300">Approval Manager Produksi sebelum forward ke Finance</p>
         </div>
         <button
