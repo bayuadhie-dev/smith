@@ -166,10 +166,12 @@ const AttendanceCalendar: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
-          <Calendar className="h-6 w-6" />
-          Kalender Kehadiran
-        </h1>
+        <div>
+          <div className="fn-label mb-1.5">SDM · ABSENSI</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
+            Kalender Kehadiran
+          </h1>
+        </div>
         <div className="flex items-center gap-2">
           <button
             onClick={goToToday}

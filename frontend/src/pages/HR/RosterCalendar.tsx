@@ -30,7 +30,8 @@ export default function RosterCalendar() {
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Employee Roster</h1>
+          <div className="fn-label mb-1.5">SDM · ROSTER</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Roster Karyawan</h1>
           <p className="text-gray-600 dark:text-gray-300">View and manage employee shift schedules</p>
         </div>
         <div className="flex gap-2 flex-wrap">

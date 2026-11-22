@@ -561,6 +561,7 @@ const FingerprintAttendance = () => {
   return (
     <div className="space-y-4 p-6">
       <PageHeader
+        eyebrow="SDM · ABSENSI SIDIK JARI"
         title="Log Absensi"
         subtitle="Kehadiran dari mesin fingerprint: masuk, pulang, terlambat, dan selisih jam kerja"
         actions={

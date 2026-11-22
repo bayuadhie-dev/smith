@@ -60,7 +60,10 @@ const navigate = useNavigate()
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Penilaian Kinerja</h1>
+        <div>
+          <div className="fn-label mb-1.5">SDM · PENILAIAN KINERJA</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Penilaian Kinerja</h1>
+        </div>
         <div className="flex gap-2 flex-wrap">
           <button 
             onClick={() => navigate('/app/reports?module=appraisal')}
@@ -115,7 +118,7 @@ const navigate = useNavigate()
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Cycle Name</th>
+                      <th>Nama siklus</th>
                       <th>Type</th>
                       <th>Period</th>
                       <th>Deadlines</th>
@@ -220,7 +223,7 @@ const navigate = useNavigate()
                   onChange={(e) => setSelectedStatus(e.target.value)}
                   className="input"
                 >
-                  <option value="">All Status</option>
+                  <option value="">Semua status</option>
                   <option value="draft">Draft</option>
                   <option value="self_review">Self Review</option>
                   <option value="manager_review">Manager Review</option>
@@ -242,8 +245,8 @@ const navigate = useNavigate()
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Appraisal Number</th>
-                      <th>Employee</th>
+                      <th>Nomor penilaian</th>
+                      <th>Karyawan</th>
                       <th>Cycle</th>
                       <th>Reviewer</th>
                       <th>Self Review</th>

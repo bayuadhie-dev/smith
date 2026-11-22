@@ -82,21 +82,24 @@ const navigate = useNavigate()
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Attendance Management</h1>
+        <div>
+          <div className="fn-label mb-1.5">SDM · ABSENSI</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Kelola Absensi</h1>
+        </div>
         <div className="flex gap-2 flex-wrap">
           <button 
-            onClick={() => showInfo('Bulk Mark Attendance feature - Coming Soon!')}
+            onClick={() => showInfo('Penandaan absensi massal belum tersedia')}
             className="btn-outline inline-flex items-center gap-2"
           >
             <UserGroupIcon className="h-5 w-5" />
-            Bulk Mark
+            Tandai massal
           </button>
           <button 
             onClick={() => navigate('/app/reports?module=attendance')}
             className="btn-primary inline-flex items-center gap-2"
           >
             <CalendarIcon className="h-5 w-5" />
-            Generate Report
+            Buat laporan
           </button>
         </div>
       </div>

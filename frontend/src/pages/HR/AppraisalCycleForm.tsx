@@ -64,7 +64,8 @@ const navigate = useNavigate()
           <ArrowLeftIcon className="h-4 w-4" />
           Back to Appraisal
         </button>
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">New Appraisal Cycle</h1>
+        <div className="fn-label mb-1.5">SDM · PENILAIAN KINERJA</div>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Siklus Penilaian Baru</h1>
       </div>
 
       <div className="card">

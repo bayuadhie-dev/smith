@@ -69,6 +69,7 @@ const FaceAdmin: React.FC = () => {
             <Camera className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
+            <div className="fn-label mb-1.5">SDM · ABSENSI WAJAH</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Kelola Data Wajah</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">Kelola data wajah terdaftar untuk absensi</p>
           </div>

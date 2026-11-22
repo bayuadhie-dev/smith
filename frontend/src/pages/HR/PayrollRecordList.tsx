@@ -275,7 +275,7 @@ export default function PayrollRecordList() {
 </head><body>
 <div class="slip">
   <div class="header">
-    <h1>SLIP GAJI KARYAWAN</h1>
+    <h1>Slip Gaji Karyawan</h1>
     <p>Periode: ${period?.period_name || '-'}</p>
     <p>${period ? new Date(period.start_date).toLocaleDateString('id-ID') + ' - ' + new Date(period.end_date).toLocaleDateString('id-ID') : ''}</p>
   </div>
@@ -391,6 +391,7 @@ export default function PayrollRecordList() {
             <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
           <div>
+            <div className="fn-label mb-1.5">SDM · PENGGAJIAN</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
               {period?.period_name || 'Payroll Records'}
             </h1>
@@ -585,7 +586,7 @@ export default function PayrollRecordList() {
               <div className="payslip">
                 {/* Company Header */}
                 <div className="header text-center border-b-2 border-blue-800 pb-4 mb-6">
-                  <h1 className="text-[28px] font-semibold text-blue-800 dark:text-blue-300 tracking-tight leading-tight">SLIP GAJI KARYAWAN</h1>
+                  <h1 className="text-[28px] font-semibold text-blue-800 dark:text-blue-300 tracking-tight leading-tight">Slip Gaji Karyawan</h1>
                   <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
                     Periode: {period?.period_name || '-'}
                   </p>

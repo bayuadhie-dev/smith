@@ -170,6 +170,7 @@ export default function HRDashboard() {
   return (
     <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       <PageHeader
+        eyebrow="SDM · RINGKASAN"
         title="Dashboard SDM"
         subtitle="Kelola sumber daya manusia perusahaan"
         actions={
@@ -243,7 +244,7 @@ export default function HRDashboard() {
               </div>
             ))}
             {(!attendanceData?.attendances || attendanceData.attendances.length === 0) && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No attendance records for today</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">Belum ada absensi hari ini</p>
             )}
           </div>
         </div>
@@ -258,9 +259,9 @@ export default function HRDashboard() {
                 <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 mt-0.5 dark:text-yellow-400" />
                 <div>
                   <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
-                    {pendingLeaves} leave request{pendingLeaves > 1 ? 's' : ''} pending approval
+                    {pendingLeaves} pengajuan cuti menunggu persetujuan
                   </p>
-                  <p className="text-xs text-yellow-700 dark:text-yellow-300">Review and approve employee leave requests</p>
+                  <p className="text-xs text-yellow-700 dark:text-yellow-300">Periksa dan setujui pengajuan cuti karyawan</p>
                 </div>
               </div>
             )}

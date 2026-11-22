@@ -1086,6 +1086,7 @@ export default function WorkRosterWeekly() {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">SDM · ROSTER</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Roster Kerja Mingguan</h1>
           <p className="text-gray-600 dark:text-gray-300">Pengaturan jadwal kerja produksi per minggu</p>
         </div>

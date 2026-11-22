@@ -201,6 +201,7 @@ const AttendanceSchedules = () => {
   return (
     <div className="space-y-4 p-6">
       <PageHeader
+        eyebrow="SDM · ABSENSI"
         title="Jadwal Kerja Absensi"
         subtitle="Jam kerja per kelompok. Dipakai untuk menghitung target jam, terlambat, dan pulang cepat dari fingerprint."
         actions={canEdit ? <button onClick={openNew} className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Jadwal baru</button> : undefined}

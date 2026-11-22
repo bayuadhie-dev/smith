@@ -60,8 +60,10 @@ const [scope] = useUrlState<'all' | 'sales' | 'purchase'>('scope', 'all', ['all'
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <div className="fn-label mb-1.5">FINANCE · FAKTUR</div>
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{title}</h1>
+        <div>
+          <div className="fn-label mb-1.5">FINANCE · FAKTUR</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{title}</h1>
+        </div>
         {type !== 'purchase' && (
           <Link to="/app/finance/invoices/new" className="btn-primary inline-flex items-center gap-2">
             <PlusIcon className="h-5 w-5" />

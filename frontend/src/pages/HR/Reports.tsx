@@ -141,6 +141,7 @@ export default function Reports() {
     <div className="space-y-6">
       {/* Header */}
       <div>
+        <div className="fn-label mb-1.5">SDM · LAPORAN</div>
         <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Laporan HR</h1>
         <p className="text-gray-600 dark:text-gray-300">Generate dan export laporan HR</p>
       </div>

@@ -68,7 +68,10 @@ const navigate = useNavigate()
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pelatihan</h1>
+        <div>
+          <div className="fn-label mb-1.5">SDM · PELATIHAN</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pelatihan</h1>
+        </div>
         <div className="flex gap-2 flex-wrap">
           <button 
             onClick={() => navigate('/app/reports?module=training')}
@@ -136,7 +139,7 @@ const navigate = useNavigate()
                   onChange={(e) => setSelectedStatus(e.target.value)}
                   className="input"
                 >
-                  <option value="">All Status</option>
+                  <option value="">Semua status</option>
                   <option value="scheduled">Scheduled</option>
                   <option value="ongoing">Ongoing</option>
                   <option value="completed">Completed</option>
@@ -167,8 +170,8 @@ const navigate = useNavigate()
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Session Code</th>
-                      <th>Session Name</th>
+                      <th>Kode sesi</th>
+                      <th>Nama sesi</th>
                       <th>Program</th>
                       <th>Schedule</th>
                       <th>Location</th>
@@ -262,7 +265,7 @@ const navigate = useNavigate()
                   onChange={(e) => setSelectedType(e.target.value)}
                   className="input"
                 >
-                  <option value="">All Types</option>
+                  <option value="">Semua jenis</option>
                   <option value="internal">Internal</option>
                   <option value="external">External</option>
                   <option value="online">Online</option>
@@ -294,8 +297,8 @@ const navigate = useNavigate()
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Program Code</th>
-                      <th>Program Name</th>
+                      <th>Kode program</th>
+                      <th>Nama program</th>
                       <th>{t('products.bom.category')}</th>
                       <th>Type</th>
                       <th>Duration</th>
@@ -359,7 +362,7 @@ const navigate = useNavigate()
                   onChange={(e) => setSelectedStatus(e.target.value)}
                   className="input"
                 >
-                  <option value="">All Status</option>
+                  <option value="">Semua status</option>
                   <option value="pending">Pending</option>
                   <option value="approved">Approved</option>
                   <option value="rejected">Rejected</option>
@@ -392,11 +395,11 @@ const navigate = useNavigate()
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Request Number</th>
-                      <th>Employee</th>
+                      <th>Nomor pengajuan</th>
+                      <th>Karyawan</th>
                       <th>Requested Training</th>
                       <th>Justification</th>
-                      <th>Preferred Date</th>
+                      <th>Tanggal diinginkan</th>
                       <th>Estimated Cost</th>
                       <th>Priority</th>
                       <th>{t('common.status')}</th>

@@ -471,6 +471,7 @@ const RosterManagementComplete: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
+        <div className="fn-label mb-1.5">SDM · ROSTER</div>
         <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-2 tracking-tight leading-tight">
           HR Roster Management - Complete
         </h1>

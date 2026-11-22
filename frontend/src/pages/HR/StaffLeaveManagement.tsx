@@ -287,6 +287,7 @@ const StaffLeaveManagement: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
         <div>
+          <div className="fn-label mb-1.5">SDM · CUTI</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
             <FileText className="h-6 w-6" />
             Pengajuan Izin/Cuti Staff

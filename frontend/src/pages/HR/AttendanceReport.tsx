@@ -179,6 +179,7 @@ const AttendanceReport: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
+          <div className="fn-label mb-1.5">SDM · ABSENSI</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Laporan Absensi</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Rekap kehadiran karyawan</p>
         </div>

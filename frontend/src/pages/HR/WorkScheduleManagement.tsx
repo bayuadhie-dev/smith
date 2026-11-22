@@ -144,10 +144,12 @@ const WorkScheduleManagement: React.FC = () => {
   return (
     <div className="p-6">
       <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
-          <Clock className="h-6 w-6" />
-          Jadwal Kerja Staff Kantor
-        </h1>
+        <div>
+          <div className="fn-label mb-1.5">SDM · JADWAL KERJA</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
+            Jadwal Kerja Staff Kantor
+          </h1>
+        </div>
         <button
           onClick={openCreate}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg"

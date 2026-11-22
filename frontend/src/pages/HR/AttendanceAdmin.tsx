@@ -68,7 +68,10 @@ const AttendanceAdmin: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Kelola Absensi</h1>
+        <div>
+          <div className="fn-label mb-1.5">SDM · ABSENSI</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Kelola Absensi</h1>
+        </div>
       </div>
 
       {/* Search */}

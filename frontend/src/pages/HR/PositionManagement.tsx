@@ -74,6 +74,7 @@ export default function PositionManagement() {
     <div className="space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">SDM · JABATAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Master Data Jabatan</h1>
           <p className="text-gray-600 dark:text-gray-300">Kelola daftar jabatan resmi perusahaan - dipakai sebagai pilihan &quot;Jabatan (Terstruktur)&quot; di form karyawan.</p>
         </div>

@@ -149,6 +149,7 @@ const FingerprintMapping = () => {
   return (
     <div className="space-y-4 p-6">
       <PageHeader
+        eyebrow="SDM · ABSENSI SIDIK JARI"
         title="Pemetaan Fingerprint"
         subtitle="Cocokkan ID di mesin absensi dengan karyawan. Pemetaan ini dipakai untuk menarik absensi ke gaji."
         actions={canEdit ? (

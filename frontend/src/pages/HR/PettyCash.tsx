@@ -302,7 +302,7 @@ export default function PettyCash() {
   return (
     <FundContext.Provider value={fund.id}>
       <div className="space-y-5 p-6">
-        <PageHeader title="Kas Kecil" subtitle={`${fund.name}. Pemegang kas: ${fund.custodian_name || 'belum diatur'}. Penyetuju: ${fund.approver_name || 'belum diatur'}.${fund.cash_account_name ? ` Akun kas: ${fund.cash_account_name}.` : ''}`} />
+        <PageHeader eyebrow="SDM · KAS KECIL" title="Kas Kecil" subtitle={`${fund.name}. Pemegang kas: ${fund.custodian_name || 'belum diatur'}. Penyetuju: ${fund.approver_name || 'belum diatur'}.${fund.cash_account_name ? ` Akun kas: ${fund.cash_account_name}.` : ''}`} />
         {funds.length > 1 && (
           <div className="flex items-center gap-2 text-sm">
             <label className="text-gray-500 dark:text-gray-400" htmlFor="pc-fund">Kas kecil</label>
