@@ -8,7 +8,12 @@ import {
   MagnifyingGlassIcon,
   CheckCircleIcon,
   DocumentDuplicateIcon,
-  ClipboardDocumentListIcon
+  ClipboardDocumentListIcon,
+  TruckIcon,
+  WrenchScrewdriverIcon,
+  BanknotesIcon,
+  ShoppingCartIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 import { useUrlFilter } from '../../hooks/useUrlState'
 import { PageHeader } from '../../components/ui/PageKit';
@@ -37,64 +42,64 @@ const documentTypes = [
   { 
     value: 'surat_jalan', 
     label: 'Surat Jalan', 
-    icon: '📦',
-    description: 'Delivery document for shipped goods',
+    Icon: TruckIcon,
+    description: 'Dokumen pengantar barang kiriman.',
     referenceType: 'sales_order',
-    referenceLabel: 'Sales Order',
+    referenceLabel: 'Pesanan Penjualan',
     color: 'blue'
   },
   { 
     value: 'spk', 
     label: 'Surat Perintah Kerja', 
-    icon: '🔧',
-    description: 'Work instruction for production',
+    Icon: WrenchScrewdriverIcon,
+    description: 'Perintah kerja untuk produksi.',
     referenceType: 'work_order',
     referenceLabel: 'SPK',
     color: 'orange'
   },
   { 
     value: 'invoice', 
-    label: 'Invoice', 
-    icon: '💰',
-    description: 'Billing document for customers',
+    label: 'Faktur Penjualan', 
+    Icon: BanknotesIcon,
+    description: 'Tagihan untuk pelanggan.',
     referenceType: 'sales_order',
-    referenceLabel: 'Sales Order',
+    referenceLabel: 'Pesanan Penjualan',
     color: 'green'
   },
   { 
     value: 'purchase_order', 
-    label: 'Purchase Order', 
-    icon: '🛒',
-    description: 'Order document for suppliers',
+    label: 'Pesanan Pembelian', 
+    Icon: ShoppingCartIcon,
+    description: 'Pesanan untuk pemasok.',
     referenceType: 'purchase_order',
-    referenceLabel: 'Purchase Order',
+    referenceLabel: 'Pesanan Pembelian',
     color: 'purple'
   },
   { 
     value: 'delivery_note', 
-    label: 'Delivery Note', 
-    icon: '🚚',
-    description: 'Shipping confirmation document',
+    label: 'Nota Pengiriman', 
+    Icon: ClipboardDocumentListIcon,
+    description: 'Konfirmasi pengiriman.',
     referenceType: 'shipping_order',
-    referenceLabel: 'Shipping Order',
+    referenceLabel: 'Surat Jalan',
     color: 'teal'
   },
   { 
     value: 'work_order', 
-    label: 'SPK Document', 
-    icon: '⚙️',
-    description: 'Production SPK details',
+    label: 'SPK Produksi', 
+    Icon: Cog6ToothIcon,
+    description: 'Rincian SPK produksi.',
     referenceType: 'work_order',
     referenceLabel: 'SPK',
     color: 'yellow'
   },
   { 
     value: 'quotation', 
-    label: 'Quotation', 
-    icon: '📋',
-    description: 'Price quotation for customers',
+    label: 'Penawaran', 
+    Icon: DocumentTextIcon,
+    description: 'Penawaran harga untuk pelanggan.',
     referenceType: 'quotation',
-    referenceLabel: 'Quotation',
+    referenceLabel: 'Penawaran',
     color: 'indigo'
   }
 ];
@@ -274,7 +279,7 @@ export default function DocumentGeneratorUpgraded() {
 
   const renderStep1 = () => (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Step 1: Select Document Type</h2>
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Langkah 1: pilih jenis dokumen</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {documentTypes.map((type) => (
           <button
@@ -283,17 +288,17 @@ export default function DocumentGeneratorUpgraded() {
               setSelectedType(type.value);
               setStep(2);
             }}
-            className={`p-5 rounded-xl border-2 text-left transition-all hover:shadow-md ${
+            className={`fn-press rounded-xl border p-5 text-left transition-colors ${
               selectedType === type.value
-                ? `border-${type.color}-500 bg-${type.color}-50 shadow-md`
-                : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
+                ? 'border-cta-500 bg-cta-50 dark:bg-cta-500/10'
+                : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'
             }`}
           >
-            <span className="text-3xl block mb-3">{type.icon}</span>
+            <type.Icon className="mb-3 h-7 w-7 text-gray-400" />
             <h3 className="font-semibold text-gray-900 dark:text-white">{type.label}</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{type.description}</p>
             <p className="text-xs text-gray-400 mt-2">
-              Reference: {type.referenceLabel}
+              Acuan: {type.referenceLabel}
             </p>
           </button>
         ))}
@@ -305,7 +310,7 @@ export default function DocumentGeneratorUpgraded() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Step 2: Select {selectedTypeConfig?.referenceLabel} (Optional)
+          Langkah 2: pilih {selectedTypeConfig?.referenceLabel} (opsional)
         </h2>
         <button
           onClick={() => setStep(3)}
@@ -335,7 +340,7 @@ export default function DocumentGeneratorUpgraded() {
       ) : filteredReferences.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 dark:bg-gray-900 rounded-xl">
           <ClipboardDocumentListIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-500 dark:text-gray-400">No {selectedTypeConfig?.referenceLabel} found</p>
+          <p className="text-gray-500 dark:text-gray-400">{selectedTypeConfig?.referenceLabel} tidak ditemukan</p>
           <button
             onClick={() => setStep(3)}
             className="mt-4 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400"
@@ -390,7 +395,7 @@ export default function DocumentGeneratorUpgraded() {
 
   const renderStep3 = () => (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Step 3: Configure Document</h2>
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Langkah 3: atur dokumen</h2>
 
       {/* Selected Reference Info */}
       {selectedReference && (
@@ -404,7 +409,7 @@ export default function DocumentGeneratorUpgraded() {
       {/* Template Selection */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-          Select Template
+          Pilih template
         </label>
         {templates.length === 0 ? (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
@@ -504,7 +509,7 @@ export default function DocumentGeneratorUpgraded() {
           ) : (
             <>
               <DocumentTextIcon className="h-5 w-5 mr-2" />
-              Generate Document
+              Buat dokumen
             </>
           )}
         </button>
