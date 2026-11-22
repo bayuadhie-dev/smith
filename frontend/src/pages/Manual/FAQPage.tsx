@@ -108,7 +108,7 @@ const FAQPage: React.FC = () => {
             <div>
               <div className="fn-label mb-1.5">BANTUAN · TANYA JAWAB</div>
               <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
-                FAQ
+                Tanya Jawab
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
                 Temukan jawaban untuk pertanyaan yang sering diajukan
