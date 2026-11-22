@@ -632,7 +632,7 @@ export default function EditProductionRecord() {
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Data Produksi</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Edit Data Produksi</h1>
           <p className="text-gray-600 dark:text-gray-300">{workOrder.wo_number} - {workOrder.product_name}</p>
         </div>
       </div>

@@ -358,7 +358,7 @@ const navigate = useNavigate()
     <div className="space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{isEdit ? 'Edit Purchase Order' : 'Create Purchase Order'}</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{isEdit ? 'Edit Purchase Order' : 'Create Purchase Order'}</h1>
           <p className="text-gray-600 dark:text-gray-300">
             {isEdit
               ? (hasGrn ? 'Item dan supplier terkunci karena sudah ada Penerimaan Barang (GRN)' : 'Update this purchase order')

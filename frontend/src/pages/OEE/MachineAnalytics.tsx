@@ -97,7 +97,7 @@ const { machineId } = useParams<{ machineId: string }>()
             <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{machine.name} Analytics</h1>
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{machine.name} Analytics</h1>
             <p className="text-gray-600 dark:text-gray-300">{machine.code} - {machine.type}</p>
           </div>
         </div>

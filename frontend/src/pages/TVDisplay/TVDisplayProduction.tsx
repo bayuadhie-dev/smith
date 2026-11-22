@@ -58,7 +58,7 @@ export default function TVDisplayProduction() {
         <div className="flex flex-wrap justify-between items-center gap-3">
           <div className="flex items-center gap-4">
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            <h1 className="text-[28px] font-semibold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent tracking-tight leading-tight">
               🏭 Production Floor Monitor
             </h1>
           </div>

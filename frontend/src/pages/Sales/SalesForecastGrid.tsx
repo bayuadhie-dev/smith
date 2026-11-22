@@ -581,7 +581,7 @@ export default function SalesForecastGrid() {
           <button onClick={() => navigate('/app/sales/forecasts')} className="text-sm text-blue-600 dark:text-blue-400 hover:underline mb-1">
             &larr; Semua Forecast
           </button>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
             {header.name}
           </h1>
         </div>

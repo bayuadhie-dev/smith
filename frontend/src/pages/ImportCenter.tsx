@@ -171,7 +171,7 @@ const ImportCenter: React.FC = () => {
   return (
     <div className="mx-auto max-w-7xl space-y-4 p-4">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pusat Impor &amp; Ekspor Data</h1>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pusat Impor &amp; Ekspor Data</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">Masukkan banyak transaksi atau data master sekaligus dari Excel (.xlsx) atau CSV (selalu diperiksa dulu, baru disimpan), atau unduh datanya ke Excel dengan format yang sama dengan template impor.</p>
       </div>
 

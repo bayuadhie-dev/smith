@@ -58,7 +58,7 @@ export default function QualityAnalytics() {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Quality Analytics</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Quality Analytics</h1>
           <p className="text-gray-600 dark:text-gray-300">Comprehensive quality metrics and trend analysis</p>
         </div>
       </div>

@@ -89,7 +89,7 @@ const PickListPage: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 dark:text-white">
+          <h1 className="text-[28px] font-semibold text-gray-900 flex items-center gap-2 dark:text-white tracking-tight leading-tight">
             <ClipboardDocumentListIcon className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
             Pick List
           </h1>

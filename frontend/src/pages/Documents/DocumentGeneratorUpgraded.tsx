@@ -529,7 +529,7 @@ export default function DocumentGeneratorUpgraded() {
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-3">
+            <h1 className="text-[28px] font-semibold flex items-center gap-3 tracking-tight leading-tight">
               <DocumentTextIcon className="h-8 w-8" />
               Generate Document
             </h1>

@@ -159,7 +159,7 @@ const [status, setStatus] = useUrlFilter<string>('status', '')
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pesanan Pembelian</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pesanan Pembelian</h1>
           <p className="text-gray-600 dark:text-gray-300">Kelola pesanan pembelian dan alur persetujuan</p>
         </div>
         <div className="flex space-x-3 flex-wrap">

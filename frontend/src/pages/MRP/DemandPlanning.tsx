@@ -194,7 +194,7 @@ const DemandPlanning: React.FC = () => {
             Back to MRP Dashboard
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Demand Planning</h1>
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Demand Planning</h1>
             <p className="text-gray-600 mt-1 dark:text-gray-300">Forecast demand and plan production requirements</p>
           </div>
         </div>

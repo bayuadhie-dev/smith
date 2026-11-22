@@ -40,7 +40,7 @@ export default function QuoteList() {
     <div className="space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Penawaran Pemasok</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Penawaran Pemasok</h1>
           <p className="text-gray-600 dark:text-gray-300">Kelola penawaran dan harga dari pemasok</p>
         </div>
         <Link to="/app/purchasing/quotes/new" className="btn-primary">

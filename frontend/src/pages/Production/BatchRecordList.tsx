@@ -45,7 +45,7 @@ export default function BatchRecordList() {
     <div className="space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Laporan Batch</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Laporan Batch</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Catatan Pengolahan Bets (GMP) per batch produksi</p>
         </div>
         <Link

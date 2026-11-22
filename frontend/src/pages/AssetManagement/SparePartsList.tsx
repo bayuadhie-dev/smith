@@ -64,7 +64,7 @@ const SparePartsList: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+        <h1 className="text-[28px] font-semibold text-slate-800 dark:text-white flex items-center gap-3 tracking-tight leading-tight">
           <WrenchScrewdriverIcon className="h-8 w-8 text-orange-600 dark:text-orange-400" />
           Suku Cadang
         </h1>

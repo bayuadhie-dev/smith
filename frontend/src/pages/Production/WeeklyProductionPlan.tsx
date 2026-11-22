@@ -513,7 +513,7 @@ const WeeklyProductionPlan: React.FC = () => {
                 <CalendarDaysIcon className="h-8 w-8 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white tracking-wide">Jadwal Produksi Mingguan</h1>
+                <h1 className="text-[28px] font-semibold text-white tracking-wide leading-tight">Jadwal Produksi Mingguan</h1>
                 <p className="text-blue-100 text-sm">Jadwal Produksi Mingguan - PPIC</p>
               </div>
             </div>

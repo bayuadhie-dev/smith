@@ -150,7 +150,7 @@ const MaterialIssueList: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-start mb-6 gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Permintaan Barang</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Permintaan Barang</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Kelola pengeluaran material untuk produksi</p>
         </div>
         <div className="flex gap-2 flex-wrap">

@@ -54,7 +54,7 @@ export default function GRNList() {
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Penerimaan Barang (GRN)</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Penerimaan Barang (GRN)</h1>
           <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-400">Penerimaan barang + QC Inspection</p>
         </div>
         <Link

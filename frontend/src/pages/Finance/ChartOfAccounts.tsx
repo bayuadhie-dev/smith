@@ -326,7 +326,7 @@ const [accounts, setAccounts] = useState<Account[]>([])
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Chart of Accounts</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Chart of Accounts</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Manage your accounting structure and account balances</p>
         </div>
         <div className="flex gap-3">

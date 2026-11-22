@@ -65,7 +65,7 @@ const navigate = useNavigate()
           <ArrowLeftIcon className="h-4 w-4" />
           Back to Payroll
         </button>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create Payroll Period</h1>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Create Payroll Period</h1>
       </div>
 
       <div className="card">

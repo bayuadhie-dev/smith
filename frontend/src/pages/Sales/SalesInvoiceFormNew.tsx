@@ -271,7 +271,7 @@ export default function SalesInvoiceFormNew() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Faktur Penjualan Baru</h1>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Faktur Penjualan Baru</h1>
         <p className="text-gray-600 dark:text-gray-300">Isian di bawah sama dengan yang tercetak di dokumen Invoice. Faktur pembelian ada di menu Purchasing.</p>
       </div>
       <form onSubmit={submit} className="space-y-6">

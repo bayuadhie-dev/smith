@@ -104,7 +104,7 @@ export default function BankTransferForm() {
   return (
     <div className="p-4 space-y-6 sm:p-6">
       <div>
-        <h1 className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
+        <h1 className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white sm:text-[28px] tracking-tight leading-tight">
           <ArrowsRightLeftIcon className="h-6 w-6" aria-hidden="true" />
           Transfer Kas/Bank Baru
         </h1>

@@ -120,7 +120,7 @@ const MBFReportList: React.FC = () => {
       {/* Header */}
       <div className="mb-6 flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
             Laporan MBF
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">

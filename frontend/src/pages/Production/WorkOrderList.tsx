@@ -232,7 +232,7 @@ const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">SPK</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">SPK</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Manage production SPK and schedules</p>
         </div>
         <div className="flex gap-3 items-center flex-wrap">

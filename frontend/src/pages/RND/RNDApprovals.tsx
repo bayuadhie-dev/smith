@@ -104,7 +104,7 @@ const RNDApprovals: React.FC = () => {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Approval</h1>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Approval</h1>
         <p className="text-gray-500 dark:text-gray-400">Permintaan persetujuan tahap proyek R&D</p>
       </div>
 

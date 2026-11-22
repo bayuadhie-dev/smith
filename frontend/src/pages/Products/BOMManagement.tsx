@@ -367,7 +367,7 @@ const BOMManagement: React.FC = () => {
             Back to Dashboard
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('products.bom.title')}</h1>
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{t('products.bom.title')}</h1>
             <p className="text-gray-600 mt-1 dark:text-gray-300">{t('products.bom.description')}</p>
             <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
               <p className="text-sm text-blue-800 dark:text-blue-300">

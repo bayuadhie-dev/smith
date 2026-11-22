@@ -244,7 +244,7 @@ const DailyController: React.FC<DailyControllerProps> = ({
       {/* Header - Hidden in embedded mode */}
       {!embedded && (
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+          <h1 className="text-[28px] font-semibold text-slate-800 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
             <ChartBarIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
             Controller Harian
           </h1>

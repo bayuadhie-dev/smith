@@ -185,7 +185,7 @@ export default function CompleteProfile() {
               <CubeIcon className="w-10 h-10 text-white" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Lengkapi Profil Anda</h1>
+          <h1 className="text-[28px] font-semibold text-white mb-2 tracking-tight leading-tight">Lengkapi Profil Anda</h1>
           <p className="text-blue-200">
             Selamat datang! Silakan lengkapi informasi profil Anda untuk melanjutkan.
           </p>

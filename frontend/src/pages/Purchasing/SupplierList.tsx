@@ -68,7 +68,7 @@ const [search, setSearch] = useUrlFilter<string>('cari', '')
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pemasok</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pemasok</h1>
           <p className="text-gray-600 dark:text-gray-300">Manage your supplier database and relationships</p>
         </div>
         <Link

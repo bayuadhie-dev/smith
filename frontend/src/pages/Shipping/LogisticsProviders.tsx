@@ -122,7 +122,7 @@ export default function LogisticsProviders() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Kelola Provider Logistik</h1>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Kelola Provider Logistik</h1>
         <div className="flex items-center gap-4 flex-wrap">
           <button
             onClick={() => navigate('/app/shipping')}

@@ -274,7 +274,7 @@ const MaterialIssueDetail: React.FC = () => {
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{issue.issue_number}</h1>
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{issue.issue_number}</h1>
             <p className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
               Detail Pengeluaran Material
               <span className="px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">

@@ -76,7 +76,7 @@ const BreakdownSummary: React.FC = () => {
             >
               <ArrowLeftIcon className="h-5 w-5" />
             </Link>
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Machine Breakdown Impact</h1>
+            <h1 className="text-[28px] font-semibold text-slate-800 dark:text-slate-100 tracking-tight leading-tight">Machine Breakdown Impact</h1>
           </div>
           <p className="text-slate-500 dark:text-slate-400">SPK affected by machine breakdowns</p>
         </div>

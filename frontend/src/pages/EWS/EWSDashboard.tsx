@@ -60,7 +60,7 @@ export default function EWSDashboard() {
   return (
     <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">
+        <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">
           Early Warning System — Risiko Downtime
         </h1>
         <select

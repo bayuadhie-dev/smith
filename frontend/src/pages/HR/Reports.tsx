@@ -141,7 +141,7 @@ export default function Reports() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Laporan HR</h1>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Laporan HR</h1>
         <p className="text-gray-600 dark:text-gray-300">Generate dan export laporan HR</p>
       </div>
 

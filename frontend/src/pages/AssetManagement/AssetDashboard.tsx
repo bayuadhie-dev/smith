@@ -117,7 +117,7 @@ const AssetDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug flex items-center gap-2">
+          <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug flex items-center gap-2 tracking-tight">
             <BuildingOfficeIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
             Dashboard Aset
           </h1>

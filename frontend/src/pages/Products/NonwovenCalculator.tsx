@@ -104,7 +104,7 @@ const NonwovenCalculator: React.FC = () => {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Nonwoven Manufacturing Calculator</h1>
+      <h1 className="text-[28px] font-semibold tracking-tight leading-tight">Nonwoven Manufacturing Calculator</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Calculator Type Selection */}

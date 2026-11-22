@@ -391,7 +391,7 @@ export default function GRNForm() {
       <div className="flex items-center gap-3">
         <Link to="/app/purchasing/grn" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><ArrowLeftIcon className="h-5 w-5" /></Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{isEdit ? `Koreksi GRN ${grnNumber}` : 'Penerimaan Barang (GRN)'}</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{isEdit ? `Koreksi GRN ${grnNumber}` : 'Penerimaan Barang (GRN)'}</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {isEdit ? 'Data pengiriman, lot, tanggal, dan catatan bisa diubah (juga setelah disetujui). Jumlah dan gudang terkunci setelah disetujui atau difaktur.' : 'Pilih pemasok, lalu ambil dari PO atau tambahkan barang manual. Stok bertambah saat disimpan; jasa tidak perlu gudang.'}
           </p>

@@ -64,7 +64,7 @@ const navigate = useNavigate()
           <ArrowLeftIcon className="h-4 w-4" />
           Back to Appraisal
         </button>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">New Appraisal Cycle</h1>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">New Appraisal Cycle</h1>
       </div>
 
       <div className="card">

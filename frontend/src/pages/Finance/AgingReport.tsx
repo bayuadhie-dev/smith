@@ -65,7 +65,7 @@ const AgingReport: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-2">
         <ClockIcon className="w-6 h-6 text-green-700 dark:text-green-300" />
-        <h1 className="text-2xl font-bold">Umur Piutang &amp; Hutang</h1>
+        <h1 className="text-[28px] font-semibold tracking-tight leading-tight">Umur Piutang &amp; Hutang</h1>
       </div>
       <p className="text-gray-500 text-sm dark:text-gray-400">
         Sisa tagihan yang belum lunas dikelompokkan menurut keterlambatan dari jatuh tempo, dalam Rupiah (faktur valas

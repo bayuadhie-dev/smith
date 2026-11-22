@@ -126,7 +126,7 @@ const CreditMemoList: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-2">
         <ReceiptRefundIcon className="w-6 h-6 text-primary-700 dark:text-primary-300" />
-        <h1 className="text-2xl font-bold">Nota Kredit Customer</h1>
+        <h1 className="text-[28px] font-semibold tracking-tight leading-tight">Nota Kredit Customer</h1>
       </div>
       <p className="text-gray-500 text-sm dark:text-gray-400">
         Kredit dari retur penjualan yang belum terpakai (melebihi sisa faktur atau tidak terhubung ke faktur). Pakai untuk mengurangi

@@ -119,7 +119,7 @@ export default function FunctionalLocations() {
     <div className="space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Functional Location</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Functional Location</h1>
           <p className="text-gray-600 dark:text-gray-300">Hierarki Plant &rarr; Building &rarr; Line untuk penempatan aset/mesin.</p>
         </div>
         <button onClick={() => openAdd()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">

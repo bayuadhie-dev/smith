@@ -102,7 +102,7 @@ const [warehouseId, setWarehouseId] = useState<number | undefined>()
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">ABC Analysis</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">ABC Analysis</h1>
           <p className="text-gray-600 dark:text-gray-300">Product classification based on value and consumption patterns</p>
         </div>
         <div className="flex items-center space-x-4">

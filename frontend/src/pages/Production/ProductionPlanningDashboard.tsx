@@ -105,7 +105,7 @@ const ProductionPlanningDashboard: React.FC = () => {
       <div className="mb-2">
         <div className="flex flex-wrap justify-between items-center gap-3">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Production Planning Dashboard</h1>
+            <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">Production Planning Dashboard</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Master Production Schedule (MPS) Overview</p>
           </div>
           <button

@@ -81,7 +81,7 @@ export default function BatchRecordWeeklyReport() {
       {/* Header - hidden on print */}
       <div className="flex items-center flex-wrap justify-between print:hidden gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Laporan Mingguan Batch Report</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Laporan Mingguan Batch Report</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Ringkasan Catatan Pengolahan Bets (GMP) per minggu</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">

@@ -476,7 +476,7 @@ const navigate = useNavigate()
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
               {isEdit ? '✏️ Edit SPK' : '📋 Create SPK'}
             </h1>
             <p className="text-gray-600 dark:text-gray-300 mt-1">

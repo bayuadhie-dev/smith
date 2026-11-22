@@ -244,7 +244,7 @@ const OpportunityListUpgraded: React.FC = () => {
       <div className="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-xl shadow-lg p-6 text-white">
         <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-3">
+            <h1 className="text-[28px] font-semibold flex items-center gap-3 tracking-tight leading-tight">
               <FunnelIcon className="h-8 w-8" />
               Peluang Penjualan
             </h1>

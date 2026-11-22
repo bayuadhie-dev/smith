@@ -21,7 +21,7 @@ const { data, isLoading } = useGetOEERecordsQuery({})
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('oee.dashboard')}</h1>
+      <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{t('oee.dashboard')}</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="card p-6">

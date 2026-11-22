@@ -105,7 +105,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ type, source }) => {
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div className="flex items-center gap-2">
           <BanknotesIcon className="w-6 h-6 text-primary-700 dark:text-primary-300" />
-          <h1 className="text-2xl font-bold">{title}</h1>
+          <h1 className="text-[28px] font-semibold tracking-tight leading-tight">{title}</h1>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
         <Link

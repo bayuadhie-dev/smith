@@ -130,7 +130,7 @@ const StockByWODetail: React.FC = () => {
           <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{wo.wo_number}</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{wo.wo_number}</h1>
           <p className="text-gray-500 dark:text-gray-400">{wo.product_name} ({wo.product_code})</p>
         </div>
         <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[wo.status] || 'bg-gray-100 dark:bg-gray-700'} dark:bg-gray-700`}>

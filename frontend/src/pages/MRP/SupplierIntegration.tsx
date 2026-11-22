@@ -149,7 +149,7 @@ const SupplierIntegration: React.FC = () => {
             Back to MRP Dashboard
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Supplier Integration</h1>
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Supplier Integration</h1>
             <p className="text-gray-600 mt-1 dark:text-gray-300">Manage supplier relationships and capacity planning</p>
           </div>
         </div>

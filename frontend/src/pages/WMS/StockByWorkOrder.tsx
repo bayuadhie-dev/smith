@@ -73,7 +73,7 @@ const StockByWorkOrder: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 dark:text-white">
+        <h1 className="text-[28px] font-semibold text-gray-900 flex items-center gap-2 dark:text-white tracking-tight leading-tight">
           <DocumentTextIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
           Stok per SPK
         </h1>

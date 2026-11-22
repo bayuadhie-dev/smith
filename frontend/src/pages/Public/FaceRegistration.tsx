@@ -175,7 +175,7 @@ const FaceRegistration: React.FC = () => {
           <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <UserPlus className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Registrasi Wajah</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Registrasi Wajah</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">{companyName}</p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
             Daftarkan wajah Anda untuk absensi otomatis

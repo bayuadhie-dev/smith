@@ -170,7 +170,7 @@ const ExpenseList: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Klaim Karyawan</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Klaim Karyawan</h1>
           <p className="text-gray-600 dark:text-gray-300">Nota biaya yang diajukan karyawan</p>
         </div>
         {hasPermission('expense.create') && (

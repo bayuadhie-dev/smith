@@ -62,7 +62,7 @@ export default function PRList() {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Permintaan Pembelian (PR)</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Permintaan Pembelian (PR)</h1>
           <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-400">
             Permintaan pembelian dari departemen, {tools.total} total
           </p>

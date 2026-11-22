@@ -35,7 +35,7 @@ export default function ProductList() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('products.title')}</h1>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{t('products.title')}</h1>
         <Link to="/products/new" className="btn-primary inline-flex items-center gap-2">
           <PlusIcon className="h-5 w-5" />
           {t('products.add_new')}

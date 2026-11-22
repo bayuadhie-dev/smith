@@ -126,7 +126,7 @@ const KPITargetSettings: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
             <ChartBarIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
             KPI Target Settings
           </h1>

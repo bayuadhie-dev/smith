@@ -155,7 +155,7 @@ const AttendanceReconciliation: React.FC = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-6">
+      <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-6 tracking-tight leading-tight">
         <ClipboardCheck className="h-6 w-6" />
         Koreksi &amp; Rekonsiliasi Absensi
       </h1>

@@ -137,7 +137,7 @@ export default function GlobalSearchPage() {
             <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
             Kembali ke Dashboard
           </button>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">Pencarian</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white sm:text-[28px] tracking-tight leading-tight">Pencarian</h1>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 sm:text-base">Cari dokumen dan data di seluruh modul.</p>
         </div>
 

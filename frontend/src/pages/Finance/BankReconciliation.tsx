@@ -146,7 +146,7 @@ export default function BankReconciliation() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Bank Reconciliation</h1>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Bank Reconciliation</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
           Cocokkan mutasi rekening bank dengan jurnal (Accounting Entry) yang sudah tercatat di sistem.
         </p>

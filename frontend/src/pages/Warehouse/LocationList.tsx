@@ -166,7 +166,7 @@ const LocationList: React.FC = () => {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gudang & Lokasi</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Gudang & Lokasi</h1>
           <p className="text-gray-600 dark:text-gray-300">Manage warehouse storage locations and zones</p>
         </div>
         <Link

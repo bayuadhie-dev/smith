@@ -167,7 +167,7 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard.title')}</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{t('dashboard.title')}</h1>
           <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mt-1 flex items-center gap-1.5">
             <span>✨</span>
             <span>{dailyGreeting || `${t('dashboard.welcome')} ${companyName}`}</span>

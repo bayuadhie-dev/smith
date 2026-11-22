@@ -43,7 +43,7 @@ const MRP: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Material Requirements Planning (MRP)</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Material Requirements Planning (MRP)</h1>
           <p className="text-gray-600 dark:text-gray-300">Integrated planning based on Sales Orders & Forecasts</p>
         </div>
         <div className="flex gap-3">

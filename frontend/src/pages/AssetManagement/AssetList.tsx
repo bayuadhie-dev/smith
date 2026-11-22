@@ -84,7 +84,7 @@ const AssetList: React.FC = () => {
       {/* Header */}
       <div className="mb-6 flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Daftar Aset</h1>
+          <h1 className="text-[28px] font-semibold text-slate-800 dark:text-white tracking-tight leading-tight">Daftar Aset</h1>
           <p className="text-slate-500 dark:text-gray-400 mt-1">
             Kelola semua aset perusahaan
           </p>

@@ -168,7 +168,7 @@ const AssetDetail: React.FC = () => {
             <ArrowLeftIcon className="h-5 w-5 text-slate-600 dark:text-gray-400" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-white">
+            <h1 className="text-[28px] font-semibold text-slate-800 dark:text-white tracking-tight leading-tight">
               {asset.asset_code}
             </h1>
             <p className="text-slate-500 dark:text-gray-400 mt-1">{asset.asset_name}</p>

@@ -137,7 +137,7 @@ export default function AdjustmentDetail() {
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
               <ScaleIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
               {adj.adjustment_number}
             </h1>

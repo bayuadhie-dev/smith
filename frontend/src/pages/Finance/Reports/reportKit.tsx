@@ -130,7 +130,7 @@ export function ReportShell({ title, subtitle, icon, backTo, backLabel, actions,
               <ArrowLeftIcon className="h-4 w-4" /> {backLabel || 'Pusat Laporan'}
             </button>
           )}
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">{icon}{title}</h1>
+          <h1 className="flex items-center gap-2 text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{icon}{title}</h1>
           {subtitle && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
         </div>
         <div className="print-hide flex flex-wrap items-center gap-2">{actions}</div>

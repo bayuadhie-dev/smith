@@ -391,7 +391,7 @@ export default function PayrollRecordList() {
             <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
               {period?.period_name || 'Payroll Records'}
             </h1>
             {period && (
@@ -585,7 +585,7 @@ export default function PayrollRecordList() {
               <div className="payslip">
                 {/* Company Header */}
                 <div className="header text-center border-b-2 border-blue-800 pb-4 mb-6">
-                  <h1 className="text-2xl font-bold text-blue-800 dark:text-blue-300">SLIP GAJI KARYAWAN</h1>
+                  <h1 className="text-[28px] font-semibold text-blue-800 dark:text-blue-300 tracking-tight leading-tight">SLIP GAJI KARYAWAN</h1>
                   <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
                     Periode: {period?.period_name || '-'}
                   </p>

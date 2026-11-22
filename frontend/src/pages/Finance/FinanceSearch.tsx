@@ -69,7 +69,7 @@ const FinanceSearch: React.FC = () => {
   return (
     <div className="space-y-4 p-1">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pencarian Transaksi</h1>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pencarian Transaksi</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">Cari faktur, penerimaan, pembayaran, nota kredit, jurnal, dan akun dalam satu tempat.</p>
       </div>
 

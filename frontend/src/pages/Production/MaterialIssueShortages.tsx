@@ -97,7 +97,7 @@ const MaterialIssueShortages: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
             <ExclamationTriangleIcon className="h-7 w-7 text-orange-600 dark:text-orange-400" />
             Laporan Kekurangan Material
           </h1>

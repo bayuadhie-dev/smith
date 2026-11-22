@@ -83,7 +83,7 @@ const TransactionDetail: React.FC = () => {
           <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 dark:text-white">
+          <h1 className="text-[28px] font-semibold text-gray-900 flex items-center gap-2 dark:text-white tracking-tight leading-tight">
             <DocumentTextIcon className="h-7 w-7 text-purple-600 dark:text-purple-400" />
             Detail Transaksi
           </h1>

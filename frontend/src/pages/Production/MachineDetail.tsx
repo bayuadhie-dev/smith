@@ -267,7 +267,7 @@ const MachineDetail: React.FC = () => {
             <ArrowLeftIcon className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{machine.name}</h1>
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{machine.name}</h1>
             <p className="text-gray-500 dark:text-gray-400">{machine.code} • {machine.machine_type}</p>
           </div>
         </div>

@@ -130,7 +130,7 @@ export default function OutsourcingVendorList() {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Vendor Outsourcing</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Vendor Outsourcing</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Kelola vendor/perusahaan outsourcing</p>
         </div>
         <button

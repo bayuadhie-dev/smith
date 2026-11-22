@@ -221,7 +221,7 @@ const RNDProjectDetail: React.FC = () => {
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{project.project_number}</h1>
+              <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{project.project_number}</h1>
               {project.is_locked && (
                 <span title="Proyek terkunci"><Lock className="w-5 h-5 text-gray-500 dark:text-gray-400" /></span>
               )}

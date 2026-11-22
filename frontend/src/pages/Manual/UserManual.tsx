@@ -413,7 +413,7 @@ const UserManual: React.FC = () => {
 
           {/* Article Header */}
           <div className="mb-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
-            <h1 className="text-3xl font-bold mb-4">
+            <h1 className="text-[28px] font-semibold mb-4 tracking-tight leading-tight">
               {currentArticle.title}
             </h1>
             {currentArticle.summary && (

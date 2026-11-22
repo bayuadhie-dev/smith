@@ -81,7 +81,7 @@ const SalesInvoiceDetail: React.FC = () => {
         &larr; Kembali
       </button>
 
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{data.invoice_number}</h1>
+      <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-1 tracking-tight leading-tight">{data.invoice_number}</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{data.work_order_number ? `WO: ${data.work_order_number}` : '\u00A0'}</p>
 <div className="mb-4"><DocActions docType="sales_invoice" docId={data.id} number={data.invoice_number} listPath="/app/finance/invoices" /></div>
 

@@ -101,7 +101,7 @@ const ExpenseDetail: React.FC = () => {
         &larr; Kembali
       </button>
 
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{data.expense_number}</h1>
+      <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-1 tracking-tight leading-tight">{data.expense_number}</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{data.employee_name}</p>
 
       {data.required_manager_id && (

@@ -220,7 +220,7 @@ export default function WorkOrderBreakdown() {
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
               <ChartBarIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
               Breakdown Analysis
             </h1>

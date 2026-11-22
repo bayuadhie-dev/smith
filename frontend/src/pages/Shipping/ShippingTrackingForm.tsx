@@ -257,7 +257,7 @@ const ShippingTrackingForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
             {isEdit ? 'Edit Tracking Event' : 'Add Tracking Event'}
           </h1>
           {shippingOrder && (

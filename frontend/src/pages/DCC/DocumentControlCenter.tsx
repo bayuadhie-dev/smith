@@ -2249,7 +2249,7 @@ const DocumentControlCenter = () => {
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Document Control Center</h1>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Document Control Center</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Centralized DCC</p>
       </div>
 

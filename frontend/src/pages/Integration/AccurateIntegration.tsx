@@ -476,7 +476,7 @@ export default function AccurateIntegration() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
             <ArrowsRightLeftIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             Integrasi Accurate Online API
           </h1>

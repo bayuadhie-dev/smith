@@ -80,7 +80,7 @@ const StockAlerts: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
           <ExclamationTriangleIcon className="h-7 w-7 text-amber-500" />
           Peringatan Stok Minimum
         </h1>

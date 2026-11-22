@@ -141,7 +141,7 @@ export default function ProductionByProductReport() {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-3 tracking-tight leading-tight">
             <ChartBarIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             Laporan Produksi per Produk
           </h1>

@@ -29,7 +29,7 @@ export default function SalesOrderSourcePicker() {
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
       {mode === 'pick' && (
         <>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Buat Sales Order</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-1 tracking-tight leading-tight">Buat Sales Order</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Pilih sumber data untuk order baru.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <SourceCard

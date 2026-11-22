@@ -241,7 +241,7 @@ const navigate = useNavigate()
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Report Scheduler</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Report Scheduler</h1>
           <p className="text-gray-600 dark:text-gray-300">Automate report generation and delivery</p>
         </div>
         <div className="flex gap-3 flex-wrap">

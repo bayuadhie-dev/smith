@@ -256,7 +256,7 @@ export default function TemplateList() {
               <ArrowLeftIcon className="h-5 w-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold flex items-center gap-3">
+              <h1 className="text-[28px] font-semibold flex items-center gap-3 tracking-tight leading-tight">
                 <DocumentDuplicateIcon className="h-8 w-8" />
                 Print Template Designer
               </h1>

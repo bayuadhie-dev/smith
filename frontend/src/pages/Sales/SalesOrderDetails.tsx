@@ -114,7 +114,7 @@ const SalesOrderDetails: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div className="flex items-center flex-wrap justify-between mb-4 gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
               Sales Order: {order.order_number}
             </h1>
             <p className="text-gray-600 dark:text-gray-300">Customer: {order.customer?.company_name || order.customer_name}</p>

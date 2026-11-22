@@ -640,7 +640,7 @@ const PublicAttendance: React.FC = () => {
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center text-white mb-6">
-          <h1 className="text-3xl font-bold mb-2">Sistem Absensi</h1>
+          <h1 className="text-[28px] font-semibold mb-2 tracking-tight leading-tight">Sistem Absensi</h1>
           <p className="text-blue-100">{companyName || 'Loading...'}</p>
           <div className="mt-4 flex items-center justify-center gap-4 text-blue-100">
             <div className="flex items-center gap-2">

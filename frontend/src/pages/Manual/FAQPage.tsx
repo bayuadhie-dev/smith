@@ -106,7 +106,7 @@ const FAQPage: React.FC = () => {
               <QuestionMarkCircleIcon className="h-10 w-10 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
                 FAQ
               </h1>
               <p className="text-gray-600 dark:text-gray-400">

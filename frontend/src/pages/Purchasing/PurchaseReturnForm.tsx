@@ -169,7 +169,7 @@ export default function PurchaseReturnForm() {
           <ArrowLeftIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Buat Retur Pembelian</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Buat Retur Pembelian</h1>
           <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-400">Pilih Purchase Invoice, lalu item yang mau diretur</p>
         </div>
       </div>

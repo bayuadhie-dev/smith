@@ -137,7 +137,7 @@ export default function PaymentDetail() {
     <div className="space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{payment.payment_number}</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{payment.payment_number}</h1>
 <div className="my-2"><DocActions docType="payment" docId={payment.id} number={payment.payment_number} listPath="/app/finance/pembayaran" /></div>
           <p className="text-gray-600 dark:text-gray-300">
             {isReceipt ? 'Penerimaan dari Pelanggan (AR)' : 'Pembayaran ke Supplier (AP)'}

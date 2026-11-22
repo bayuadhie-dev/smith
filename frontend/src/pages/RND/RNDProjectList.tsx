@@ -112,7 +112,7 @@ const RNDProjectList: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Proyek R&D</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Proyek R&D</h1>
           <p className="text-gray-500 dark:text-gray-400">Kelola proyek penelitian dan pengembangan</p>
         </div>
         <Link

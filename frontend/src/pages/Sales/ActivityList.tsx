@@ -149,7 +149,7 @@ const ActivityList = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('sales.activity_list')}</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{t('sales.activity_list')}</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Track all sales activities and follow-ups</p>
         </div>
         <div className="flex gap-3 flex-wrap">

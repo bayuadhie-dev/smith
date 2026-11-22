@@ -112,7 +112,7 @@ const [customers, setCustomers] = useState<Customer[]>([])
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Pelanggan</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pelanggan</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Manage customer database and relationships</p>
         </div>
         <div className="flex gap-3">

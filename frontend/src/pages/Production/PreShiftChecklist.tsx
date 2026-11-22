@@ -107,7 +107,7 @@ const PreShiftChecklist = () => {
                   <ClipboardDocumentCheckIcon className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-white">Pre-Shift Checklist</h1>
+                  <h1 className="text-[28px] font-semibold text-white tracking-tight leading-tight">Pre-Shift Checklist</h1>
                   <p className="text-primary-100 text-sm mt-1">Checklist kondisi mesin dan man power sebelum produksi</p>
                 </div>
               </div>

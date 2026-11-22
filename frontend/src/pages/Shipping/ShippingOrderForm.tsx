@@ -130,7 +130,7 @@ export default function ShippingOrderForm() {
   if (id) {
     return (
       <div className="p-6 max-w-2xl space-y-3">
-        <h1 className="text-2xl font-bold">Surat Jalan tidak dapat diubah</h1>
+        <h1 className="text-[28px] font-semibold tracking-tight leading-tight">Surat Jalan tidak dapat diubah</h1>
         <p className="text-gray-600 dark:text-gray-300">Stok sudah terpotong saat surat jalan dibuat. Untuk koreksi, batalkan surat jalan lalu buat yang baru.</p>
         <Link to={`/app/shipping/orders/${id}`} className="btn-primary inline-block">Kembali ke detail</Link>
       </div>
@@ -193,7 +193,7 @@ export default function ShippingOrderForm() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Surat Jalan Baru</h1>
+        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Surat Jalan Baru</h1>
         <p className="text-gray-600 dark:text-gray-300">Isian di bawah sama dengan yang tercetak di dokumen Surat Jalan. Stok terpotong otomatis (FIFO) saat disimpan.</p>
       </div>
       <form onSubmit={submit} className="space-y-6">

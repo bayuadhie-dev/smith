@@ -346,7 +346,7 @@ export default function WorkRosterComplete() {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Work Roster</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Work Roster</h1>
           <p className="text-gray-600 dark:text-gray-300">Pengaturan jadwal kerja produksi</p>
         </div>
         <div className="flex gap-2 flex-wrap">

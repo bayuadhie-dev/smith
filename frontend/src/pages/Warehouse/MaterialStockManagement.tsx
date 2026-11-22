@@ -151,7 +151,7 @@ const MaterialStockManagement: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Material Stock Management</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Material Stock Management</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">Manage material inventory and stock levels</p>
         </div>
       </div>

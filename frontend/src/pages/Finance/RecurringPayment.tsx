@@ -146,7 +146,7 @@ const RecurringPayment: React.FC = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Tagihan Rutin</h1>
+      <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-2 tracking-tight leading-tight">Tagihan Rutin</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
         WiFi, listrik, air, dan tagihan bulanan lainnya. Setiap pembayaran yang dicatat otomatis membuat
         jurnal (Debit Beban Operasional / Kredit Kas).

@@ -175,7 +175,7 @@ const ProductDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-snug">Dashboard Produk</h1>
+          <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">Dashboard Produk</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Comprehensive overview of your product portfolio</p>
         </div>
         <div className="flex gap-2 flex-wrap">

@@ -316,7 +316,7 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
             {mode === 'bahan-baku' ? 'Penambahan Bahan Baku' : 'Barang per Gudang'}
           </h1>
           <p className="text-gray-600 dark:text-gray-300">

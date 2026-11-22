@@ -251,7 +251,7 @@ const StaffLeaveRequest: React.FC = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-full mb-4">
             <FileText className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Pengajuan Izin / Cuti</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pengajuan Izin / Cuti</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-2">Staff {companyName || 'Loading...'}</p>
         </div>
 

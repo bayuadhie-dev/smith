@@ -206,7 +206,7 @@ const WIPBatchList: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Batch WIP</h1>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Batch WIP</h1>
           <p className="text-gray-600 dark:text-gray-300">Pelacakan dan pengelolaan batch barang dalam proses (WIP)</p>
         </div>
         <Link to="/app/production/wip-batches/new" className="btn-primary inline-flex items-center gap-2">

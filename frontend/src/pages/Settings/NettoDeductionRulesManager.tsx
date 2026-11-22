@@ -183,7 +183,7 @@ export default function NettoDeductionRulesManager() {
         <div>
           <div className="flex items-center gap-2">
             <ScaleIcon className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h1 className="text-[28px] font-semibold text-slate-900 dark:text-white tracking-tight leading-tight">
               Manajemen Aturan Potongan Netto
             </h1>
           </div>
