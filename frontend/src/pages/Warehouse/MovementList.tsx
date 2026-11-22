@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { PageHeader } from '../../components/ui/PageKit'
 import { useLanguage } from '../../contexts/LanguageContext';
 import { showError } from '../../components/ui';
 import { useUrlFilter, useUrlState, useUrlPage } from '../../hooks/useUrlState';
@@ -56,14 +57,27 @@ const MovementList: React.FC = () => {
   const itemsPerPage = 20;
 
   const movementTypes = [
-    { value: 'stock_in', label: 'Stock In', color: 'text-green-600 dark:text-green-400', icon: ArrowDownTrayIcon },
-    { value: 'stock_out', label: 'Stock Out', color: 'text-red-600 dark:text-red-400', icon: ArrowUpTrayIcon },
-    { value: 'receive', label: 'Receive', color: 'text-green-600 dark:text-green-400', icon: ArrowDownTrayIcon },
-    { value: 'issue', label: 'Issue', color: 'text-red-600 dark:text-red-400', icon: ArrowUpTrayIcon },
-    { value: 'transfer', label: 'Transfer', color: 'text-blue-600 dark:text-blue-400', icon: ArrowUpDown },
-    { value: 'adjust', label: 'Adjustment', color: 'text-purple-600 dark:text-purple-400', icon: DocumentTextIcon },
-    { value: 'production_receipt', label: 'Produksi Masuk', color: 'text-emerald-600 dark:text-emerald-400', icon: CubeIcon }
+    { value: 'stock_in', label: 'Stok masuk', color: 'text-green-600 dark:text-green-400', icon: ArrowDownTrayIcon },
+    { value: 'stock_out', label: 'Stok keluar', color: 'text-red-600 dark:text-red-400', icon: ArrowUpTrayIcon },
+    { value: 'receive', label: 'Penerimaan', color: 'text-green-600 dark:text-green-400', icon: ArrowDownTrayIcon },
+    { value: 'goods_receipt', label: 'Penerimaan barang', color: 'text-green-600 dark:text-green-400', icon: ArrowDownTrayIcon },
+    { value: 'issue', label: 'Pengeluaran', color: 'text-red-600 dark:text-red-400', icon: ArrowUpTrayIcon },
+    { value: 'material_issue', label: 'Permintaan barang', color: 'text-red-600 dark:text-red-400', icon: ArrowUpTrayIcon },
+    { value: 'transfer', label: 'Pemindahan', color: 'text-blue-600 dark:text-blue-400', icon: ArrowUpDown },
+    { value: 'transfer_in', label: 'Terima pemindahan', color: 'text-blue-600 dark:text-blue-400', icon: ArrowUpDown },
+    { value: 'transfer_out', label: 'Kirim pemindahan', color: 'text-blue-600 dark:text-blue-400', icon: ArrowUpDown },
+    { value: 'adjust', label: 'Penyesuaian', color: 'text-purple-600 dark:text-purple-400', icon: DocumentTextIcon },
+    { value: 'adjustment', label: 'Penyesuaian', color: 'text-purple-600 dark:text-purple-400', icon: DocumentTextIcon },
+    { value: 'qc_disposition', label: 'Keputusan QC', color: 'text-amber-600 dark:text-amber-400', icon: DocumentTextIcon },
+    { value: 'qc_disposition_out', label: 'Keputusan QC (keluar)', color: 'text-amber-600 dark:text-amber-400', icon: DocumentTextIcon },
+    { value: 'production_receipt', label: 'Hasil produksi', color: 'text-emerald-600 dark:text-emerald-400', icon: CubeIcon },
+    { value: 'production_output', label: 'Hasil produksi', color: 'text-emerald-600 dark:text-emerald-400', icon: CubeIcon },
+    { value: 'production_consumption', label: 'Pemakaian produksi', color: 'text-red-600 dark:text-red-400', icon: CubeIcon },
   ];
+
+  const LABEL_STATUS: Record<string, string> = {
+    pending: 'Menunggu', confirmed: 'Dikonfirmasi', completed: 'Selesai', cancelled: 'Dibatalkan',
+  };
 
   const statusOptions = [
     'pending',
@@ -203,30 +217,26 @@ const MovementList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center flex-wrap justify-between gap-3">
-        <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pemindahan Barang</h1>
-          <p className="text-gray-600 dark:text-gray-300">Riwayat semua pergerakan dan transaksi persediaan</p>
-        </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <button
-            onClick={exportMovements}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-          >
-            <ArrowDownTrayIcon className="inline h-4 w-4 mr-2" />{t('common.export')}</button>
-          <Link
-            to="/app/warehouse/movements/new"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            <Plus className="inline h-4 w-4 mr-2" />
-            Pergerakan Baru
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="GUDANG · MUTASI"
+        title="Pemindahan Barang"
+        subtitle="Riwayat semua pergerakan dan transaksi persediaan"
+        actions={
+          <>
+            <button onClick={exportMovements} className="btn-secondary">
+              <ArrowDownTrayIcon className="h-4 w-4" />
+              Ekspor
+            </button>
+            <Link to="/app/warehouse/movements/new" className="btn-primary">
+              <Plus className="h-4 w-4" />
+              Pergerakan baru
+            </Link>
+          </>
+        }
+      />
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <div className="fn-card p-4">
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -244,7 +254,7 @@ const MovementList: React.FC = () => {
             onChange={(e) => setFilterType(e.target.value)}
             className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">All Types</option>
+            <option value="">Semua jenis</option>
             {movementTypes.map(type => (
               <option key={type.value} value={type.value}>
                 {type.label}
@@ -257,10 +267,10 @@ const MovementList: React.FC = () => {
             onChange={(e) => setFilterStatus(e.target.value)}
             className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">All Status</option>
+            <option value="">Semua status</option>
             {statusOptions.map(status => (
               <option key={status} value={status}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+                {LABEL_STATUS[status] || status}
               </option>
             ))}
           </select>
@@ -289,7 +299,7 @@ const MovementList: React.FC = () => {
             </button>
             <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
               <FunnelIcon className="h-4 w-4" />
-              {movements.length} results
+              {movements.length} baris
             </div>
           </div>
         </div>
@@ -414,7 +424,7 @@ const MovementList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(movement.status)}`}>
-                          {movement.status.charAt(0).toUpperCase() + movement.status.slice(1)}
+                          {LABEL_STATUS[movement.status] || movement.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

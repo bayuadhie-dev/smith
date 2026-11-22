@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { PageHeader } from '../../components/ui/PageKit';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { confirmDialog, showError } from '../../components/ui';
 import {
@@ -163,29 +164,26 @@ const LocationList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center flex-wrap justify-between gap-3">
-        <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Gudang & Lokasi</h1>
-          <p className="text-gray-600 dark:text-gray-300">Manage warehouse storage locations and zones</p>
-        </div>
-        <Link
-          to="/app/warehouse/locations/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          <PlusIcon className="inline h-4 w-4 mr-2" />
-          Add Location
-        </Link>
-      </div>
+      <PageHeader
+        eyebrow="GUDANG · LOKASI"
+        title="Lokasi Gudang"
+        subtitle="Rak, level, dan posisi penyimpanan di tiap gudang"
+        actions={
+          <Link to="/app/warehouse/locations/new" className="btn-primary">
+            <PlusIcon className="h-4 w-4" />
+            Tambah lokasi
+          </Link>
+        }
+      />
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <div className="fn-card p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search locations..."
+              placeholder="Cari kode lokasi..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -197,7 +195,7 @@ const LocationList: React.FC = () => {
             onChange={(e) => setFilterZone(e.target.value)}
             className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">All Zones</option>
+            <option value="">Semua gudang</option>
             {zones.map(zone => (
               <option key={zone.id} value={zone.code}>
                 {zone.code} - {zone.name}
@@ -210,7 +208,7 @@ const LocationList: React.FC = () => {
             onChange={(e) => setFilterType(e.target.value)}
             className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">All Types</option>
+            <option value="">Semua jenis</option>
             {locationTypes.map(type => (
               <option key={type} value={type}>
                 {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -221,7 +219,7 @@ const LocationList: React.FC = () => {
           <div className="flex items-center gap-2">
             <FunnelIcon className="h-4 w-4 text-gray-400" />
             <span className="text-sm text-gray-600 dark:text-gray-300">
-              {filteredLocations.length} of {locations.length} locations
+              {filteredLocations.length} dari {locations.length} lokasi
             </span>
           </div>
         </div>
@@ -274,28 +272,28 @@ const LocationList: React.FC = () => {
               <div className="flex items-center gap-2 mb-3">
                 <BuildingOfficeIcon className="h-4 w-4 text-gray-400" />
                 <span className="text-sm text-gray-600 dark:text-gray-300">
-                  Zone: {location.zone_code} - {location.zone_name}
+                  {location.zone_name || location.zone_code || 'Tanpa gudang'}
                 </span>
               </div>
 
               {/* Type Badge */}
               <div className="mb-4">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(location.location_type || '')}`}>
-                  {(location.location_type || 'unknown').charAt(0).toUpperCase() + (location.location_type || 'unknown').slice(1)}
+                  {location.location_type || 'Jenis belum diisi'}
                 </span>
               </div>
 
               {/* Capacity Info */}
               <div className="space-y-2 mb-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">Capacity:</span>
+                  <span className="fn-label">Kapasitas</span>
                   <span className="text-sm font-medium">
                     {/* kapasitas 0 = tidak dibatasi, bukan "tidak muat apa-apa" */}
                     {!location.capacity ? 'Tidak dibatasi' : `${location.capacity.toLocaleString('id-ID')} ${location.capacity_uom || ''}`}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">Utilization:</span>
+                  <span className="fn-label">Terpakai</span>
                   {/* Tanpa kapasitas, persentase pemakaian tidak punya arti - jangan
                       tampilkan 0,0% seolah gudangnya kosong melompong. */}
                   {location.current_utilization === null || location.current_utilization === undefined ? (
@@ -325,7 +323,7 @@ const LocationList: React.FC = () => {
               {/* Actions */}
               <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Created: {location.created_at ? new Date(location.created_at).toLocaleDateString() : '-'}
+                  Dibuat {location.created_at ? new Date(location.created_at).toLocaleDateString('id-ID') : '-'}
                 </span>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Link

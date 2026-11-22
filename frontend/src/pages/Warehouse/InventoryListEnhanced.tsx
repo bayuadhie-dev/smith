@@ -17,6 +17,7 @@ import axiosInstance from '../../utils/axiosConfig'
 import { showError } from '../../components/ui'
 import { useUrlFilter, useUrlPage } from '../../hooks/useUrlState'
 import ItemStockModal from '../../components/Warehouse/ItemStockModal'
+import { KpiStrip, PageHeader } from '../../components/ui/PageKit'
 
 interface InventoryItem {
   id: number
@@ -313,74 +314,41 @@ export default function InventoryListEnhanced({ mode = 'per-gudang' }: Inventory
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center flex-wrap justify-between gap-3">
-        <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
-            {mode === 'bahan-baku' ? 'Penambahan Bahan Baku' : 'Barang per Gudang'}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {mode === 'bahan-baku' ? 'Kelola stok bahan baku' : 'Kelola stok produk dan bahan baku per lokasi gudang'}
-          </p>
-        </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <button
-            onClick={handleExport}
-            className="btn-secondary inline-flex items-center gap-2"
-          >
-            <ArrowDownTrayIcon className="h-5 w-5" />
-            Export
-          </button>
-          <Link to="/app/warehouse/stock-input" className="btn-secondary inline-flex items-center gap-2">
-            <BeakerIcon className="h-5 w-5" />
-            Input Material
-          </Link>
-          <Link to="/app/warehouse/inventory/add-product" className="btn-primary inline-flex items-center gap-2">
-            <PlusIcon className="h-5 w-5" />
-            Tambah Produk
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow={mode === 'bahan-baku' ? 'GUDANG · BAHAN BAKU' : 'GUDANG · BARANG PER GUDANG'}
+        title={mode === 'bahan-baku' ? 'Penambahan Bahan Baku' : 'Barang per Gudang'}
+        subtitle={mode === 'bahan-baku' ? 'Kelola stok bahan baku' : 'Kelola stok produk dan bahan baku per lokasi gudang'}
+        actions={
+          <>
+            <button onClick={handleExport} className="btn-secondary">
+              <ArrowDownTrayIcon className="h-4 w-4" />
+              Ekspor
+            </button>
+            <Link to="/app/warehouse/stock-input" className="btn-secondary">
+              <BeakerIcon className="h-4 w-4" />
+              Input material
+            </Link>
+            <Link to="/app/warehouse/inventory/add-product" className="btn-primary">
+              <PlusIcon className="h-4 w-4" />
+              Tambah produk
+            </Link>
+          </>
+        }
+      />
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="card p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Total Produk</p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{summary.total_products}</p>
-            </div>
-            <CubeIcon className="h-10 w-10 text-blue-200" />
-          </div>
-        </div>
-        <div className="card p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Total Material</p>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{summary.total_materials}</p>
-            </div>
-            <BeakerIcon className="h-10 w-10 text-purple-200" />
-          </div>
-        </div>
-        <div className="card p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Total Kuantitas</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{summary.total_quantity.toLocaleString()}</p>
-            </div>
-            <MapPinIcon className="h-10 w-10 text-green-200" />
-          </div>
-        </div>
-        <div className="card p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Stok Rendah</p>
-              <p className="text-2xl font-bold text-red-600 dark:text-red-400">{summary.low_stock_count}</p>
-            </div>
-            <ExclamationTriangleIcon className="h-10 w-10 text-red-200" />
-          </div>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          { label: 'Produk', value: summary.total_products, hint: 'punya baris stok' },
+          { label: 'Material', value: summary.total_materials, hint: 'punya baris stok' },
+          { label: 'Jumlah stok', value: Math.round(summary.total_quantity).toLocaleString('id-ID'), hint: 'seluruh satuan digabung' },
+          {
+            label: 'Stok rendah',
+            value: summary.low_stock_count,
+            tone: summary.low_stock_count > 0 ? 'warn' : null,
+            hint: 'di bawah stok minimum',
+          },
+        ]}
+      />
 
       {/* Search and Filters */}
       <div className="card p-4">
