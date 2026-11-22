@@ -12,6 +12,7 @@ import {
   ExclamationTriangleIcon,
   UsersIcon
 } from '@heroicons/react/24/outline';
+import { KpiStrip } from '../../components/ui/PageKit';
 
 // Field names match the real backend response from GET /api/executive/overview
 // (routes/executive_dashboard.py get_executive_overview) - the previous
@@ -185,53 +186,33 @@ const ExecutiveDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Key Metrics Grid - bento: Revenue spans 2 cols (primary metric) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg"><BanknotesIcon className="w-5 h-5" /></div>
-            <p className="text-sm opacity-90">Omzet</p>
-          </div>
-          <p className="text-3xl font-bold">{formatRupiah(metrics.financial.revenue)}</p>
-          <div className="flex items-center mt-1">
-            {getTrendIcon(metrics.financial.revenue_growth)}
-            <span className="ml-1 text-xs opacity-90">
-              {formatPercentage(Math.abs(metrics.financial.revenue_growth))} dibanding periode lalu
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg"><CogIcon className="w-5 h-5" /></div>
-            <p className="text-sm opacity-90">{t('navigation.production')}</p>
-          </div>
-          <p className="text-2xl font-bold">{metrics.production.output.toLocaleString()}</p>
-          <p className="text-xs opacity-75 mt-1">Unit diproduksi &middot; OEE {formatPercentage(metrics.production.avg_oee)}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg"><ChartBarIcon className="w-5 h-5" /></div>
-            <p className="text-sm opacity-90">Kelolosan QC</p>
-          </div>
-          <p className="text-2xl font-bold">
-            {metrics.quality.total_inspections > 0 ? formatPercentage(metrics.quality.pass_rate) : 'Belum tersedia'}
-          </p>
-          <p className="text-xs opacity-75 mt-1">{metrics.quality.total_inspections} inspeksi periode ini</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg"><UsersIcon className="w-5 h-5" /></div>
-            <p className="text-sm opacity-90">Karyawan</p>
-          </div>
-          <p className="text-2xl font-bold">{metrics.hr.active_employees}</p>
-          <p className="text-xs opacity-75 mt-1">Karyawan aktif</p>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          {
+            label: 'Omzet',
+            value: formatRupiah(metrics.financial.revenue),
+            hint: `${formatPercentage(Math.abs(metrics.financial.revenue_growth))} dibanding periode lalu`,
+            tone: metrics.financial.revenue_growth < 0 ? 'warn' : null,
+          },
+          {
+            label: t('navigation.production'),
+            value: metrics.production.output.toLocaleString('id-ID'),
+            hint: `unit diproduksi \u00b7 OEE ${formatPercentage(metrics.production.avg_oee)}`,
+          },
+          {
+            label: 'Kelolosan QC',
+            value: metrics.quality.total_inspections > 0
+              ? formatPercentage(metrics.quality.pass_rate)
+              : 'Belum tersedia',
+            hint: `${metrics.quality.total_inspections} inspeksi periode ini`,
+          },
+          {
+            label: 'Karyawan',
+            value: metrics.hr.active_employees,
+            hint: 'karyawan aktif',
+          },
+        ]}
+      />
 
       {/* Detailed Metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

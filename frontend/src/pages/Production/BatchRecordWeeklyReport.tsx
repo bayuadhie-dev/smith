@@ -2,6 +2,7 @@ import { Fragment, useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
 import { ArrowPathIcon, PrinterIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { KpiStrip } from '../../components/ui/PageKit';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:        { label: 'Draft',        color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
@@ -94,7 +95,7 @@ export default function BatchRecordWeeklyReport() {
           </Link>
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
+            className="fn-press inline-flex items-center gap-2 rounded-lg bg-cta-600 px-4 py-2 text-sm font-medium text-white hover:bg-cta-700"
           >
             <PrinterIcon className="h-4 w-4" /> Cetak / PDF
           </button>
@@ -148,27 +149,25 @@ export default function BatchRecordWeeklyReport() {
         <div className="text-center py-16 text-gray-500 dark:text-gray-400">Gagal memuat laporan minggu ini.</div>
       ) : (
         <>
-          {/* Summary bento cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 print:grid-cols-4 print:gap-2">
-            <div className="xl:col-span-2 print:col-span-1 bg-gradient-to-br from-primary-600 to-primary-700 rounded-2xl shadow-md p-5 text-white print:shadow-none print:border print:border-gray-300 print:text-gray-900 print:bg-none">
-              <p className="text-sm text-white/80 print:text-gray-500">Total Batch Minggu Ini</p>
-              <p className="text-3xl font-black mt-1">{summary.total_batches}</p>
-              <p className="text-xs text-white/70 print:text-gray-500 mt-1">{summary.batches_closed} ditutup &bull; {summary.batches_open} belum ditutup</p>
-            </div>
-            <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl shadow-md p-5 text-white print:shadow-none print:border print:border-gray-300 print:text-gray-900 print:bg-none">
-              <p className="text-sm text-white/80 print:text-gray-500">Realisasi vs Rencana</p>
-              <p className="text-2xl font-black mt-1">{summary.total_realized_qty.toLocaleString('id-ID')}</p>
-              <p className="text-xs text-white/70 print:text-gray-500 mt-1">dari {summary.total_planned_qty.toLocaleString('id-ID')} rencana</p>
-            </div>
-            <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-2xl shadow-md p-5 text-white print:shadow-none print:border print:border-gray-300 print:text-gray-900 print:bg-none">
-              <p className="text-sm text-white/80 print:text-gray-500">Yield Minggu Ini</p>
-              <p className="text-2xl font-black mt-1">{summary.yield_percent != null ? `${summary.yield_percent}%` : '-'}</p>
-            </div>
-            <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-2xl shadow-md p-5 text-white print:shadow-none print:border print:border-gray-300 print:text-gray-900 print:bg-none">
-              <p className="text-sm text-white/80 print:text-gray-500">Total Reject</p>
-              <p className="text-2xl font-black mt-1">{summary.total_reject.toLocaleString('id-ID')}</p>
-            </div>
-          </div>
+          <KpiStrip
+            items={[
+              {
+                label: 'Total batch minggu ini',
+                value: summary.total_batches,
+                hint: `${summary.batches_closed} ditutup \u00b7 ${summary.batches_open} belum ditutup`,
+              },
+              {
+                label: 'Realisasi vs rencana',
+                value: summary.total_realized_qty.toLocaleString('id-ID'),
+                hint: `dari ${summary.total_planned_qty.toLocaleString('id-ID')} rencana`,
+              },
+              {
+                label: 'Yield minggu ini',
+                value: summary.yield_percent != null ? `${summary.yield_percent}%` : '-',
+              },
+              { label: 'Total reject', value: summary.total_reject.toLocaleString('id-ID') },
+            ]}
+          />
 
           {/* Batch table */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden print:shadow-none print:border print:border-gray-300">

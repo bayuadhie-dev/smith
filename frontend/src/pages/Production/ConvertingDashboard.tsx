@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
 import { fmtQty, unitFor } from './convertingUnits'
+import { PageHeader } from '../../components/ui/PageKit';
 
 interface ShiftData {
   id: number;
@@ -351,38 +352,41 @@ const ConvertingDashboard: React.FC = () => {
   };
   const renderTotals = (field: 'total_output' | 'total_good' | 'total_reject') => {
     const list = totalsByUnit(field);
-    if (list.length === 0) return <p className="text-2xl font-bold">0</p>;
-    return list.map(([u, v]) => <p key={u} className="text-2xl font-bold leading-tight">{fmtQty(v)} <span className="text-sm font-normal opacity-80">{u}</span></p>);
+    if (list.length === 0) return <p className="fn-num text-2xl font-semibold">0</p>;
+    return list.map(([u, v]) => (
+      <p key={u} className="fn-num text-2xl font-semibold leading-tight">
+        {fmtQty(v)} <span className="text-sm font-normal text-gray-500 dark:text-gray-400">{u}</span>
+      </p>
+    ));
   };
 
   // 2026-10-07: Axion bento-grid restyle (tier-2 sub-dashboard). Machine
   // list/detail sections below are intentionally left as-is - only the
   // header + summary cards are in scope.
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <div>
-          <div className="fn-label mb-1.5">PRODUKSI · CONVERTING</div>
-          <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">Dashboard Converting</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Monitor produksi mesin converting</p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => navigate('/app/production/converting/input')}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
-          >
-            <PlusIcon className="h-5 w-5" />
-            Input Produksi
-          </button>
-          <button
-            onClick={fetchData}
-            className="p-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600"
-          >
-            <ArrowPathIcon className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="PRODUKSI · CONVERTING"
+        title="Converting"
+        subtitle="Pantau produksi mesin converting."
+        actions={
+          <>
+            <button
+              onClick={() => navigate('/app/production/converting/input')}
+              className="fn-press inline-flex items-center gap-2 rounded-lg bg-cta-600 px-4 py-2 text-sm font-medium text-white hover:bg-cta-700"
+            >
+              <PlusIcon className="h-4 w-4" />
+              Input Produksi
+            </button>
+            <button
+              onClick={fetchData}
+              className="fn-press rounded-lg border border-gray-200 p-2 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+          </>
+        }
+      />
 
       {/* Date Navigation */}
       <div className="flex items-center justify-center gap-4 mb-6 flex-wrap">
@@ -400,31 +404,26 @@ const ConvertingDashboard: React.FC = () => {
         </button>
       </div>
 
-      {/* Summary Cards - bento */}
       {summary && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-          <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
-            <p className="text-sm opacity-90">Total Mesin</p>
-            <p className="text-2xl font-bold">{summary.total_machines}</p>
-            <p className="text-xs opacity-75">{summary.active_machines} aktif</p>
-          </div>
-          <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-            <p className="text-sm opacity-90">Total Output</p>
-            {renderTotals('total_output')}
-          </div>
-          <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
-            <p className="text-sm opacity-90">Grade A</p>
-            {renderTotals('total_good')}
-          </div>
-          <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
-            <p className="text-sm opacity-90">Reject</p>
-            {renderTotals('total_reject')}
-          </div>
-          <div className={`bg-gradient-to-br ${summary.quality_rate >= 95 ? 'from-emerald-500 to-emerald-600' : 'from-amber-500 to-amber-600'} rounded-xl p-4 text-white shadow-lg`}>
-            <p className="text-sm opacity-90">Quality Rate</p>
-            <p className="text-2xl font-bold">{summary.quality_rate}%</p>
-          </div>
-        </div>
+        <section className="fn-card grid grid-cols-2 overflow-hidden lg:grid-flow-col lg:auto-cols-fr">
+          {[
+            { label: 'Total mesin', body: <><p className="fn-num text-2xl font-semibold">{summary.total_machines}</p><p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{summary.active_machines} aktif</p></> },
+            { label: 'Total output', body: renderTotals('total_output') },
+            { label: 'Grade A', body: renderTotals('total_good') },
+            { label: 'Reject', body: renderTotals('total_reject') },
+            {
+              label: 'Tingkat mutu',
+              body: summary.quality_rate === null || summary.quality_rate === undefined
+                ? <p className="text-sm text-gray-400">belum ada produksi</p>
+                : <p className={`fn-num text-2xl font-semibold ${summary.quality_rate >= 95 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>{summary.quality_rate}%</p>,
+            },
+          ].map((k) => (
+            <div key={k.label} className="border-b border-gray-100 p-4 last:border-b-0 dark:border-gray-800 lg:border-b-0 lg:border-r lg:last:border-r-0">
+              <div className="fn-label mb-1.5">{k.label}</div>
+              {k.body}
+            </div>
+          ))}
+        </section>
       )}
 
       {/* Loading */}
@@ -463,7 +462,7 @@ const ConvertingDashboard: React.FC = () => {
                       </span>
                     ) : (
                       <span className="px-3 py-1 rounded-full text-sm bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                        No Data
+                        Belum ada data
                       </span>
                     )}
                   </div>

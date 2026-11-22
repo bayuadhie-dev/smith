@@ -51,7 +51,7 @@ export default function BatchRecordList() {
         </div>
         <Link
           to="/app/production/batches/weekly-report"
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-cta-600 text-white rounded-lg hover:bg-cta-700 text-sm font-medium"
         >
           <CalendarDaysIcon className="h-4 w-4" /> Laporan Mingguan
         </Link>

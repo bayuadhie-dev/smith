@@ -717,7 +717,7 @@ const ProductionMonitoringDashboard: React.FC = () => {
         <button
           onClick={async () => { setIsRefreshing(true); await fetchData(); setIsRefreshing(false); }}
           disabled={isRefreshing}
-          className="flex items-center gap-2 px-4 py-1.5 text-sm font-semibold bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow disabled:opacity-60"
+          className="flex items-center gap-2 px-4 py-1.5 text-sm font-semibold bg-cta-600 text-white rounded-lg hover:bg-cta-700 disabled:opacity-60"
         >
           <ArrowDownTrayIcon className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           {isRefreshing ? 'Memuat...' : 'Muat ulang sekarang'}

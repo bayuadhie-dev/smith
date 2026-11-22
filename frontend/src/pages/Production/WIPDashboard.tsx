@@ -13,7 +13,7 @@ import {
 
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
-import { CategoryBars, Panel } from '../../components/ui/PageKit';
+import { CategoryBars, KpiStrip, Panel } from '../../components/ui/PageKit';
 import RunChart from '../../components/charts/RunChart';
 
 interface WIPBatch {
@@ -241,50 +241,29 @@ const WIPDashboard: React.FC = () => {
 
       {/* KPI Cards - bento: Total WIP Value spans 2 cols (primary metric) */}
       {dashboardData && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-white/20 rounded-lg"><CurrencyDollarIcon className="w-5 h-5" /></div>
-                <p className="text-sm opacity-90">Total nilai WIP</p>
-              </div>
-              <p className="text-3xl font-bold">{formatCurrency(dashboardData.summary.total_wip_value)}</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-white/20 rounded-lg"><ChartBarIcon className="w-5 h-5" /></div>
-              </div>
-              <p className="text-xs opacity-90 mb-1">Batch berjalan</p>
-              <p className="text-2xl font-bold">{dashboardData.summary.active_batches}</p>
-              <p className="text-xs opacity-75 mt-1">dari {dashboardData.summary.total_batches} batch</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-white/20 rounded-lg"><CheckCircleIcon className="w-5 h-5" /></div>
-              </div>
-              <p className="text-xs opacity-90 mb-1">Batch selesai</p>
-              <p className="text-2xl font-bold">{dashboardData.summary.completed_batches}</p>
-              <p className="text-xs opacity-75 mt-1">
-                {dashboardData.summary.total_batches > 0
-                  ? `${((dashboardData.summary.completed_batches / dashboardData.summary.total_batches) * 100).toFixed(1)}% dari seluruh batch`
-                  : 'belum ada batch'}
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-white/20 rounded-lg"><ExclamationTriangleIcon className="w-5 h-5" /></div>
-              </div>
-              <p className="text-xs opacity-90 mb-1">Hambatan</p>
-              <p className="text-2xl font-bold">{bottleneckData?.total_bottlenecks || 0}</p>
-              <p className="text-xs opacity-75 mt-1">tahap perlu diperiksa</p>
-            </div>
-          </div>
-        </>
+        <KpiStrip
+          items={[
+            { label: 'Total nilai WIP', value: formatCurrency(dashboardData.summary.total_wip_value) },
+            {
+              label: 'Batch berjalan',
+              value: dashboardData.summary.active_batches,
+              hint: `dari ${dashboardData.summary.total_batches} batch`,
+            },
+            {
+              label: 'Batch selesai',
+              value: dashboardData.summary.completed_batches,
+              hint: dashboardData.summary.total_batches > 0
+                ? `${((dashboardData.summary.completed_batches / dashboardData.summary.total_batches) * 100).toFixed(1)}% dari seluruh batch`
+                : undefined,
+            },
+            {
+              label: 'Hambatan',
+              value: bottleneckData?.total_bottlenecks || 0,
+              hint: 'tahap perlu diperiksa',
+              tone: (bottleneckData?.total_bottlenecks || 0) > 0 ? 'warn' : null,
+            },
+          ]}
+        />
       )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

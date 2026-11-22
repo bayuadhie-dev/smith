@@ -574,7 +574,9 @@ def get_converting_dashboard():
                 'total_output': total_output,
                 'total_good': total_good,
                 'total_reject': total_reject,
-                'quality_rate': round((total_good / total_output) * 100, 2) if total_output > 0 else 100
+                # Tanpa output, tingkat mutu tidak ada angkanya. Dulu ditulis 100,
+                # jadi hari yang mesinnya belum jalan tampak sempurna.
+                'quality_rate': round((total_good / total_output) * 100, 2) if total_output > 0 else None
             }
         }), 200
     except Exception as e:
@@ -787,7 +789,7 @@ def get_converting_monthly_summary():
                 'total_output': total_output,
                 'total_good': total_good,
                 'total_reject': total_reject,
-                'quality_rate': round((total_good / total_output) * 100, 2) if total_output > 0 else 100,
+                'quality_rate': round((total_good / total_output) * 100, 2) if total_output > 0 else None,
                 'total_downtime': period_total_downtime,
                 'downtime_breakdown': period_downtime
             },

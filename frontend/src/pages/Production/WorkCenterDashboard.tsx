@@ -11,6 +11,7 @@ import {
 import axiosInstance from '../../utils/axiosConfig'
 import LoadingSpinner from '../../components/Common/LoadingSpinner'
 import { DetailSkeleton } from '../../components/ui/Skeleton'
+import { KpiStrip } from '../../components/ui/PageKit'
 
 interface DowntimeBreakdown {
   mesin: number
@@ -218,32 +219,14 @@ export default function WorkCenterDashboard() {
         </div>
       </div>
 
-      {/* Summary cards - bento: OEE Rata-rata spans 2 cols (primary metric) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
-          <p className="text-sm opacity-90">OEE Rata-rata</p>
-          <p className="mt-1 text-3xl font-bold">
-            {machinesWithData.length ? `${avgOEE.toFixed(1)}%` : '-'}
-          </p>
-        </div>
-        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-          <p className="text-xs opacity-90">Mesin Berjalan</p>
-          <p className="mt-1 text-2xl font-bold">{runningCount} / {machines.length}</p>
-        </div>
-        <div className={`bg-gradient-to-br ${breakdownCount > 0 ? 'from-orange-500 to-orange-700' : 'from-violet-500 to-violet-600'} rounded-xl p-4 text-white shadow-lg`}>
-          <p className="text-xs opacity-90">Breakdown Aktif</p>
-          <p className="mt-1 text-2xl font-bold">{breakdownCount}</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white shadow-lg">
-          <p className="text-xs opacity-90">Total Downtime</p>
-          <p className="mt-1 text-2xl font-bold">
-            {totalDowntime} <span className="text-base font-normal">mnt</span>
-          </p>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          { label: 'OEE rata-rata', value: machinesWithData.length ? `${avgOEE.toFixed(1)}%` : '-' },
+          { label: 'Mesin berjalan', value: `${runningCount} / ${machines.length}` },
+          { label: 'Breakdown aktif', value: breakdownCount, tone: breakdownCount > 0 ? 'bad' : 'good' },
+          { label: 'Total downtime', value: `${totalDowntime} mnt` },
+        ]}
+      />
 
       {/* Machine list */}
       <div className="card">

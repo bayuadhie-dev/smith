@@ -5,6 +5,7 @@ import axiosInstance from '../../utils/axiosConfig'
 import { showError } from '../../components/ui/Toast'
 import { fmtQty, unitFor } from './convertingUnits'
 import { DetailSkeleton } from '../../components/ui/Skeleton'
+import { KpiStrip } from '../../components/ui/PageKit'
 
 const TYPE_LABEL: Record<string, string> = {
   perforating: 'Perforating', slitting: 'Slitting', laminasi: 'Laminasi Kain', bagmaker: 'Bagmaker', folding: 'Folding', cutting: 'Cutting',
@@ -164,23 +165,19 @@ export default function ConvertingDetail() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow">
-          <p className="text-sm opacity-90">Grade A</p><p className="text-2xl font-bold">{fmtQty(p.grade_a)}</p><p className="text-xs opacity-75">{unit}</p>
-        </div>
-        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow">
-          <p className="text-sm opacity-90">Grade B / Reject</p><p className="text-2xl font-bold">{fmtQty(p.grade_b)}</p><p className="text-xs opacity-75">{unit}</p>
-        </div>
-        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white shadow">
-          <p className="text-sm opacity-90">Loss</p><p className="text-2xl font-bold">{fmtQty(p.loss_kg)}</p><p className="text-xs opacity-75">kg</p>
-        </div>
-        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow">
-          <p className="text-sm opacity-90">Efisiensi</p><p className="text-2xl font-bold">{fmtQty(p.efficiency_rate)}%</p><p className="text-xs opacity-75">target {p.machine?.target_efficiency ?? '-'}%</p>
-        </div>
-        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-4 text-white shadow">
-          <p className="text-sm opacity-90">Downtime</p><p className="text-2xl font-bold">{fmtQty(p.downtime_minutes)}</p><p className="text-xs opacity-75">menit</p>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          { label: `Grade A (${unit})`, value: fmtQty(p.grade_a) },
+          { label: `Grade B / reject (${unit})`, value: fmtQty(p.grade_b) },
+          { label: 'Loss (kg)', value: fmtQty(p.loss_kg) },
+          {
+            label: 'Efisiensi',
+            value: `${fmtQty(p.efficiency_rate)}%`,
+            hint: `target ${p.machine?.target_efficiency ?? '-'}%`,
+          },
+          { label: 'Downtime (menit)', value: fmtQty(p.downtime_minutes) },
+        ]}
+      />
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
         <KV label="Produk" value={p.product_name} />

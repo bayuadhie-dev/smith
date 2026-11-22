@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
-import { CategoryBars, Panel } from '../../components/ui/PageKit';
+import { CategoryBars, KpiStrip, PageHeader, Panel } from '../../components/ui/PageKit';
 import { Calendar, Package, TrendingUp, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 
 interface DashboardData {
@@ -100,23 +100,20 @@ const ProductionPlanningDashboard: React.FC = () => {
   // Filters/charts/table are intentionally left as-is - only the
   // header + summary cards are in scope for the bento treatment.
   return (
-    <div className="p-6 space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      {/* Header */}
-      <div className="mb-2">
-        <div className="flex flex-wrap justify-between items-center gap-3">
-          <div>
-            <div className="fn-label mb-1.5">PRODUKSI · PERENCANAAN</div>
-            <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">Dashboard Perencanaan Produksi</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Ringkasan jadwal induk produksi (MPS)</p>
-          </div>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="PRODUKSI · PERENCANAAN"
+        title="Perencanaan Produksi"
+        subtitle="Ringkasan jadwal induk produksi (MPS)."
+        actions={
           <button
             onClick={() => navigate('/app/production/planning')}
-            className="px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
+            className="fn-press inline-flex items-center gap-2 rounded-lg bg-cta-600 px-4 py-2 text-sm font-medium text-white hover:bg-cta-700"
           >
-            View All Plans
+            Lihat semua rencana
           </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Date Range Filter */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4">
@@ -146,41 +143,25 @@ const ProductionPlanningDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Summary Cards - bento: Total Planned spans 2 cols (primary metric) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <div className="xl:col-span-1 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <Package size={18} />
-            </div>
-            <p className="text-sm opacity-90">Total direncanakan</p>
-          </div>
-          <p className="text-3xl font-bold">{dashboardData.summary.total_planned.toLocaleString()}</p>
-          <p className="text-xs opacity-75 mt-1">satuan yang direncanakan</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <CheckCircle size={18} />
-            </div>
-            <p className="text-sm opacity-90">Total terealisasi</p>
-          </div>
-          <p className="text-3xl font-bold">{dashboardData.summary.total_actual.toLocaleString()}</p>
-          <p className="text-xs opacity-75 mt-1">satuan yang benar-benar dibuat</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <TrendingUp size={18} />
-            </div>
-            <p className="text-sm opacity-90">Tingkat penyelesaian</p>
-          </div>
-          <p className="text-3xl font-bold">{dashboardData.summary.completion_rate.toFixed(1)}%</p>
-          <p className="text-xs opacity-75 mt-1">dari seluruh rencana</p>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          {
+            label: 'Total direncanakan',
+            value: dashboardData.summary.total_planned.toLocaleString('id-ID'),
+            hint: 'satuan yang direncanakan',
+          },
+          {
+            label: 'Total terealisasi',
+            value: dashboardData.summary.total_actual.toLocaleString('id-ID'),
+            hint: 'satuan yang benar-benar dibuat',
+          },
+          {
+            label: 'Tingkat penyelesaian',
+            value: `${dashboardData.summary.completion_rate.toFixed(1)}%`,
+            hint: 'dari seluruh rencana',
+          },
+        ]}
+      />
 
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
         <Panel title="Rencana menurut status">
