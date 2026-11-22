@@ -1277,10 +1277,10 @@ const Settings: React.FC = () => {
             <div className="bg-purple-50 dark:bg-purple-900 border border-purple-200 dark:border-purple-700 rounded-lg p-4">
               <div className="flex items-center">
                 <KeyIcon className="h-5 w-5 text-purple-600 mr-2 dark:text-purple-400" />
-                <h4 className="text-sm font-medium text-purple-900 dark:text-purple-100">Advanced Role Management</h4>
+                <h4 className="text-sm font-medium text-purple-900 dark:text-purple-100">Pengaturan peran lengkap</h4>
               </div>
               <p className="text-sm text-purple-800 dark:text-purple-200 mt-1">
-                For detailed role and permission management, use the <button onClick={() => navigate('/app/settings/user-roles')} className="underline font-medium hover:text-purple-600">Advanced Role Management</button> system.
+                Untuk mengatur peran dan hak akses secara rinci, buka <button onClick={() => navigate('/app/settings/user-roles')} className="underline font-medium hover:text-purple-600">halaman Pengguna &amp; Peran</button>.
               </p>
             </div>
             <div className="bg-white border rounded-lg overflow-hidden dark:bg-gray-800">
@@ -1290,7 +1290,7 @@ const Settings: React.FC = () => {
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">{t('common.name')}</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Email</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Role</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Peran</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">{t('common.status')}</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">{t('common.actions')}</th>
                     </tr>
@@ -1321,7 +1321,7 @@ const Settings: React.FC = () => {
                                 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
                                 : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                             }`}>
-                              {user.is_active ? 'Active' : 'Inactive'}
+                              {user.is_active ? 'Aktif' : 'Nonaktif'}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm">
@@ -1378,18 +1378,18 @@ const Settings: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
-                  <h4 className="font-medium">Session Timeout</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Automatically log out after inactivity</p>
+                  <h4 className="font-medium">Batas waktu sesi</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Keluar otomatis kalau tidak ada aktivitas.</p>
                 </div>
                 <select 
                   className="border rounded-lg px-3 py-2"
                   value={sessionTimeout}
                   onChange={(e) => handleSessionTimeoutUpdate(parseInt(e.target.value))}
                 >
-                  <option value="15">15 minutes</option>
-                  <option value="30">30 minutes</option>
-                  <option value="60">1 hour</option>
-                  <option value="240">4 hours</option>
+                  <option value="15">15 menit</option>
+                  <option value="30">30 menit</option>
+                  <option value="60">1 jam</option>
+                  <option value="240">4 jam</option>
                 </select>
               </div>
             </div>
@@ -1423,14 +1423,18 @@ const Settings: React.FC = () => {
                 <div className="flex items-center mb-4">
                   <CogIcon className="h-8 w-8 text-teal-600 mr-3 dark:text-teal-400" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">Centralized Config Editor</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Manage all module configurations</p>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">Editor Konfigurasi Terpusat</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Atur konfigurasi semua modul.</p>
                   </div>
                 </div>
                 <button
                   onClick={() => {
+                    // Editor konfigurasi disajikan backend di /api/config/,
+                    // bukan /configedit/ di sisi frontend - alamat lama selalu
+                    // berakhir di halaman "tidak ditemukan" (2026-11-22).
                     const token = localStorage.getItem('token') || '';
-                    window.open(`/configedit/?token=${token}`, '_blank');
+                    const dasar = axiosInstance.defaults.baseURL || '';
+                    window.open(`${dasar}/api/config/?token=${token}`, '_blank');
                   }}
                   className="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors"
                 >
@@ -1443,8 +1447,8 @@ const Settings: React.FC = () => {
                 <div className="flex items-center mb-4">
                   <CogIcon className="h-8 w-8 text-blue-600 mr-3 dark:text-blue-400" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">System Configuration</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Advanced system settings</p>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">Konfigurasi Sistem</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Parameter sistem tingkat lanjut.</p>
                   </div>
                 </div>
                 <button
@@ -1460,8 +1464,8 @@ const Settings: React.FC = () => {
                 <div className="flex items-center mb-4">
                   <DocumentTextIcon className="h-8 w-8 text-purple-600 mr-3 dark:text-purple-400" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">Audit Trail</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Track system changes</p>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">Jejak Audit</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Catatan perubahan di sistem.</p>
                   </div>
                 </div>
                 <button
@@ -1477,8 +1481,8 @@ const Settings: React.FC = () => {
                 <div className="flex items-center mb-4">
                   <DocumentArrowDownIcon className="h-8 w-8 text-orange-600 mr-3 dark:text-orange-400" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">Enhanced Backup & Restore</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Advanced backup management</p>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">Cadangkan &amp; Pulihkan</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Kelola cadangan basis data.</p>
                   </div>
                 </div>
                 <button
@@ -1508,90 +1512,40 @@ const Settings: React.FC = () => {
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pengaturan Integrasi</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* External Connectors */}
-              <div className="fn-card p-6">
-                <div className="flex items-center mb-4">
-                  <LinkIcon className="h-8 w-8 text-blue-600 mr-3 dark:text-blue-400" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">External Connectors</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Connect external systems</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => navigate('/app/integration/connectors')}
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                </button>
-              </div>
 
-              {/* API Gateway */}
-              <div className="fn-card p-6">
-                <div className="flex items-center mb-4">
-                  <GlobeAltIcon className="h-8 w-8 text-green-600 mr-3 dark:text-green-400" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">API Gateway</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Manage API endpoints</p>
-                  </div>
+            {/* Sebelum 2026-11-22 bagian ini memajang empat kartu (External
+                Connectors, API Gateway, Data Sync, Webhooks) dengan tombol
+                tanpa tulisan yang mengarah ke rute yang tidak pernah ada -
+                semuanya berujung di halaman "tidak ditemukan". Yang benar-benar
+                tersambung cuma Accurate. */}
+            <div className="fn-card p-6">
+              <div className="flex items-start gap-3">
+                <LinkIcon className="h-8 w-8 shrink-0 text-blue-600 dark:text-blue-400" />
+                <div className="min-w-0">
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Accurate Online</h4>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    Satu-satunya sistem luar yang tersambung ke ERP ini.
+                  </p>
+                  <button
+                    onClick={() => navigate('/app/integration/accurate')}
+                    className="fn-press mt-3 inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600"
+                  >
+                    Buka pengaturan Accurate
+                  </button>
                 </div>
-                <button
-                  onClick={() => navigate('/app/integration/api-gateway')}
-                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                >
-                </button>
-              </div>
-
-              {/* Data Synchronization */}
-              <div className="fn-card p-6">
-                <div className="flex items-center mb-4">
-                  <ArrowPathIcon className="h-8 w-8 text-purple-600 mr-3 dark:text-purple-400" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">Data Sync</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Synchronize data</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => navigate('/app/integration/data-sync')}
-                  className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-                >
-                </button>
-              </div>
-
-              {/* Webhook Management */}
-              <div className="fn-card p-6">
-                <div className="flex items-center mb-4">
-                  <BoltIcon className="h-8 w-8 text-orange-600 mr-3 dark:text-orange-400" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">Webhooks</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Event notifications</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => navigate('/app/integration/webhooks')}
-                  className="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
-                >
-                </button>
               </div>
             </div>
 
-            {/* Info Panel */}
-            <div className="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-green-900 dark:text-green-100 mb-2">🔗 Integration Information:</h4>
-              <ul className="text-sm text-green-800 dark:text-green-200 space-y-1 list-disc list-inside">
-                <li>External Connectors: Connect and manage external system integrations</li>
-                <li>API Gateway: Control API access and manage endpoint configurations</li>
-                <li>Data Synchronization: Monitor and manage data sync between systems</li>
-                <li>Webhooks: Set up event-driven notifications and integrations</li>
-              </ul>
-            </div>
+            <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+              Penghubung lain (API gateway, webhook, sinkronisasi data) belum tersedia di sistem ini.
+            </p>
           </div>
         );
 
       default:
         return (
           <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400">Select a tab to view settings</p>
+            <p className="text-gray-500 dark:text-gray-400">Pilih salah satu bagian di sebelah kiri.</p>
           </div>
         );
     }

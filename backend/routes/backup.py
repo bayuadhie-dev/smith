@@ -11,14 +11,16 @@ from models import db
 from datetime import datetime
 import os
 import shutil
+import subprocess
 import zipfile
 import tempfile
+from urllib.parse import urlparse, unquote
 from utils.timezone import get_local_now, get_local_today
 
 backup_bp = Blueprint('backup', __name__)
 
 def get_db_path():
-    """Get the actual database path from app config"""
+    """Berkas basis data, hanya ada kalau mesinnya SQLite."""
     db_uri = current_app.config.get('SQLALCHEMY_DATABASE_URI', '')
     if db_uri.startswith('sqlite:///'):
         db_path = db_uri.replace('sqlite:///', '')
@@ -27,6 +29,59 @@ def get_db_path():
             db_path = os.path.join(current_app.instance_path, db_path)
         return db_path
     return None
+
+
+def _pakai_postgres():
+    uri = current_app.config.get('SQLALCHEMY_DATABASE_URI', '')
+    return uri.startswith('postgres')
+
+
+def _catat_cadangan(metadata, filename, file_size, description, user_id):
+    """Simpan satu baris riwayat cadangan lalu jawab ke layar."""
+    catatan = {
+        'id': len(metadata.get('backups', [])) + 1,
+        'filename': filename,
+        'size': file_size,
+        'created_at': get_local_now().isoformat(),
+        'backup_type': 'manual',
+        'status': 'completed',
+        'description': description or f'Cadangan manual oleh pengguna {user_id}',
+        'created_by': user_id,
+    }
+    metadata.setdefault('backups', []).append(catatan)
+    save_backup_metadata(metadata)
+    return jsonify({'message': 'Cadangan berhasil dibuat', 'backup': catatan}), 201
+
+
+def _dump_postgres(tujuan):
+    """Tulis cadangan PostgreSQL ke `tujuan` memakai pg_dump.
+
+    Sebelum 2026-11-22 tombol "Buat cadangan sekarang" selalu menjawab
+    "Database file not found": seluruh modul ini mencari berkas .db di disk,
+    padahal basis datanya sudah PostgreSQL sejak lama. Riwayat cadangan yang
+    terlihat di layar semuanya peninggalan zaman SQLite.
+    """
+    uri = current_app.config.get('SQLALCHEMY_DATABASE_URI', '')
+    u = urlparse(uri)
+    lingkungan = dict(os.environ)
+    if u.password:
+        lingkungan['PGPASSWORD'] = unquote(u.password)
+
+    perintah = ['pg_dump', '--no-owner', '--no-privileges', '-Fc',
+                '-d', (u.path or '/').lstrip('/')]
+    if u.hostname:
+        perintah += ['-h', u.hostname]
+    if u.port:
+        perintah += ['-p', str(u.port)]
+    if u.username:
+        perintah += ['-U', unquote(u.username)]
+
+    with open(tujuan, 'wb') as f:
+        proses = subprocess.run(perintah, stdout=f, stderr=subprocess.PIPE,
+                                env=lingkungan, timeout=1800)
+    if proses.returncode != 0:
+        pesan = (proses.stderr or b'').decode('utf-8', 'replace').strip()
+        raise RuntimeError(pesan or 'pg_dump gagal tanpa pesan')
 
 def get_backup_dir():
     """Get backup directory path"""
@@ -99,18 +154,32 @@ def create_backup():
         data = request.get_json() or {}
         description = data.get('description', '')
         
-        db_path = get_db_path()
-        if not db_path or not os.path.exists(db_path):
-            return jsonify({'error': 'Database file not found'}), 404
-        
         backup_dir = get_backup_dir()
         timestamp = get_local_now().strftime('%Y-%m-%d_%H-%M-%S')
-        
+
         # Load settings
         metadata = load_backup_metadata()
         settings = metadata.get('settings', {})
         compress = settings.get('compress_backup', True)
-        
+
+        if _pakai_postgres():
+            filename = f'backup_{timestamp}.dump'
+            backup_path = os.path.join(backup_dir, filename)
+            try:
+                _dump_postgres(backup_path)
+            except FileNotFoundError:
+                return jsonify({'error': 'pg_dump tidak ditemukan di server ini'}), 500
+            except Exception as e:
+                if os.path.exists(backup_path):
+                    os.remove(backup_path)
+                return jsonify({'error': f'Cadangan gagal dibuat: {e}'}), 500
+            file_size = os.path.getsize(backup_path)
+            return _catat_cadangan(metadata, filename, file_size, description, user_id)
+
+        db_path = get_db_path()
+        if not db_path or not os.path.exists(db_path):
+            return jsonify({'error': 'Berkas basis data tidak ditemukan'}), 404
+
         if compress:
             filename = f'backup_{timestamp}.zip'
             backup_path = os.path.join(backup_dir, filename)
@@ -182,9 +251,18 @@ def restore_backup(backup_id):
         if not os.path.exists(backup_path):
             return jsonify({'error': 'Backup file not found'}), 404
         
+        if _pakai_postgres():
+            # Memulihkan PostgreSQL berarti menimpa seluruh basis data lewat
+            # pg_restore dan harus dilakukan dengan aplikasi berhenti. Daripada
+            # pura-pura berhasil, layar diberi tahu apa adanya (2026-11-22).
+            return jsonify({
+                'error': ('Pemulihan PostgreSQL tidak bisa dijalankan dari layar ini. '
+                          f"Unduh berkasnya lalu jalankan: pg_restore --clean --if-exists -d <nama_db> {backup['filename']}")
+            }), 501
+
         db_path = get_db_path()
         if not db_path:
-            return jsonify({'error': 'Database path not configured'}), 500
+            return jsonify({'error': 'Letak basis data tidak diketahui'}), 500
         
         # Create a backup of current database before restore
         pre_restore_backup = os.path.join(backup_dir, f'pre_restore_{get_local_now().strftime("%Y%m%d_%H%M%S")}.db')
