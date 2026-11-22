@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import RunChart from '../../components/charts/RunChart';
 import { ExclamationTriangleIcon, BellIcon } from '@heroicons/react/24/outline';
 import { PageHeader, KpiStrip, QuickLinks, Panel } from '../../components/ui/PageKit';
 import axiosInstance from '../../utils/axiosConfig';
@@ -138,6 +138,7 @@ export default function QualityDashboardEnhanced() {
   return (
     <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       <PageHeader
+        eyebrow="MUTU · RINGKASAN"
         title="Dashboard Mutu"
         subtitle={`Pemantauan mutu${dashboardData ? ` · diperbarui ${new Date(dashboardData.last_updated).toLocaleTimeString('id-ID')}` : ''}`}
         actions={
@@ -205,22 +206,14 @@ export default function QualityDashboardEnhanced() {
 
       {dashboardData?.trends.pass_rate && dashboardData.trends.pass_rate.length > 0 && (
         <Panel title="Tren tingkat lolos, 7 hari terakhir">
-          <div className="h-64 p-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={dashboardData.trends.pass_rate}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="date"
-                  tickFormatter={(value) => new Date(value).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
-                />
-                <YAxis domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
-                <Tooltip
-                  formatter={(value: number) => [`${value}%`, 'Tingkat lolos']}
-                  labelFormatter={(label) => new Date(label).toLocaleDateString('id-ID')}
-                />
-                <Line type="monotone" dataKey="pass_rate" stroke="#10B981" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+          <div className="px-4 pb-3 pt-1">
+            <RunChart
+              values={dashboardData.trends.pass_rate.map((t: any) => Number(t.pass_rate || 0))}
+              axis={Array.from(new Set([0, Math.floor(dashboardData.trends.pass_rate.length / 2), dashboardData.trends.pass_rate.length - 1]))
+                .map((i: number) => new Date(dashboardData!.trends.pass_rate[i].date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }))}
+              height={200}
+              unit="%"
+            />
           </div>
         </Panel>
       )}

@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useGetQualityAnalyticsQuery, useGetProductsQuery } from '../../services/api';
 import SearchableSelect from '../../components/SearchableSelect';
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area
-} from 'recharts';
+import { Panel } from '../../components/ui/PageKit';
+import RunChart from '../../components/charts/RunChart';
 import {
   ArrowTrendingDownIcon,
   ArrowTrendingUpIcon,
@@ -27,14 +25,12 @@ export default function QualityAnalytics() {
   const analytics = analyticsData?.analytics || [];
   const summary = analyticsData?.summary || {};
 
-  // Use real data from API or empty array if no data
+  const sumbuTanggal = analytics.length
+    ? Array.from(new Set([0, Math.floor(analytics.length / 2), analytics.length - 1]))
+        .map((i: number) => String((analytics[i] as any)?.date || '').slice(5))
+        .filter(Boolean)
+    : []
 
-  // Default data for charts when no real data available
-  const defaultDefectData = analytics.length > 0 ? [] : [
-    { name: 'No Data', value: 100, color: '#E5E7EB' }
-  ];
-
-  const defaultCostData = analytics.length > 0 ? analytics : [];
 
   const getTrendIcon = (trend: string) => {
     if (trend === 'improving') {
@@ -58,8 +54,9 @@ export default function QualityAnalytics() {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Quality Analytics</h1>
-          <p className="text-gray-600 dark:text-gray-300">Comprehensive quality metrics and trend analysis</p>
+          <div className="fn-label mb-1.5">MUTU · ANALITIK MUTU</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Analitik Mutu</h1>
+          <p className="text-gray-600 dark:text-gray-300">Ukuran mutu dan pergerakannya dari waktu ke waktu</p>
         </div>
       </div>
 
@@ -73,9 +70,9 @@ export default function QualityAnalytics() {
               onChange={(e) => setPeriod(e.target.value)}
               className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
+              <option value="daily">Harian</option>
+              <option value="weekly">Mingguan</option>
+              <option value="monthly">Bulanan</option>
             </select>
           </div>
 
@@ -85,7 +82,7 @@ export default function QualityAnalytics() {
               options={(productsData?.products || []).map((p: any) => ({ id: p.id, code: p.code, name: p.name }))}
               value={productId ?? null}
               onChange={(value) => setProductId(value ? Number(value) : undefined)}
-              placeholder="All Products"
+              placeholder="Semua produk"
             />
           </div>
         </div>
@@ -96,7 +93,7 @@ export default function QualityAnalytics() {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Overall Pass Rate</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Tingkat kelulusan</p>
               <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {summary.overall_pass_rate ? `${summary.overall_pass_rate}%` : 'No Data'}
               </p>
@@ -111,20 +108,20 @@ export default function QualityAnalytics() {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Inspections</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total pemeriksaan</p>
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {summary.total_inspected || 0}
               </p>
             </div>
             <ChartBarIcon className="h-8 w-8 text-blue-500" />
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">This period</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">periode ini</p>
         </div>
 
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Defect Rate</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Tingkat cacat</p>
               <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                 {summary.defect_rate ? `${summary.defect_rate}%` : 'No Data'}
               </p>
@@ -139,7 +136,7 @@ export default function QualityAnalytics() {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Cost of Quality</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Biaya mutu</p>
               <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                 {summary.cost_of_quality ? `$${summary.cost_of_quality}` : 'No Data'}
               </p>
@@ -152,105 +149,82 @@ export default function QualityAnalytics() {
         </div>
       </div>
 
-      {/* Charts Row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pass Rate Trend */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pass Rate Trend</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={analytics}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis domain={[90, 100]} tickFormatter={(value) => `${value}%`} />
-                <Tooltip formatter={(value: number) => [`${value}%`, 'Pass Rate']} />
-                <Area 
-                  type="monotone" 
-                  dataKey="pass_rate" 
-                  stroke="#10B981" 
-                  fill="#10B981" 
-                  fillOpacity={0.2}
-                  strokeWidth={2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+      {/* Empat panel di sini dulu menggambar kolom yang tidak pernah dikirim
+          API: sebaran jenis cacat tanpa sumber data sama sekali, biaya mutu
+          dari kolom prevention/appraisal/internal_failure/external_failure
+          yang tidak ada (dan bersatuan dolar), serta volume inspeksi yang
+          membaca `inspections` padahal API mengirim `total_inspected`.
+          Sekarang semuanya memakai kolom yang benar-benar ada. */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Panel title="Tingkat kelulusan">
+          <div className="px-4 pb-3 pt-1">
+            {analytics.length === 0 ? (
+              <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data mutu.</p>
+            ) : (
+              <RunChart
+                values={analytics.map((a: any) => Number(a.pass_rate || 0))}
+                axis={sumbuTanggal}
+                height={200}
+                unit="%"
+              />
+            )}
           </div>
-        </div>
+        </Panel>
 
-        {/* Defect Distribution */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Defect Type Distribution</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={defaultDefectData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  dataKey="value"
-                  label={({ name, percent }) => analytics.length > 0 ? `${name} ${(percent * 100).toFixed(0)}%` : 'No Data Available'}
-                >
-                  {defaultDefectData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+        <Panel title="Kepadatan cacat">
+          <div className="px-4 pb-3 pt-1">
+            {analytics.length === 0 ? (
+              <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data cacat.</p>
+            ) : (
+              <RunChart
+                values={analytics.map((a: any) => Number(a.defect_density || 0))}
+                axis={sumbuTanggal}
+                height={200}
+                unit="per satuan"
+              />
+            )}
           </div>
-        </div>
-      </div>
+        </Panel>
 
-      {/* Charts Row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Cost of Quality */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cost of Quality Breakdown</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={defaultCostData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis tickFormatter={(value) => `$${value/1000}K`} />
-                <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, '']} />
-                <Bar dataKey="prevention" stackId="a" fill="#10B981" name="Prevention" />
-                <Bar dataKey="appraisal" stackId="a" fill="#3B82F6" name="Appraisal" />
-                <Bar dataKey="internal_failure" stackId="a" fill="#F59E0B" name="Internal Failure" />
-                <Bar dataKey="external_failure" stackId="a" fill="#EF4444" name="External Failure" />
-              </BarChart>
-            </ResponsiveContainer>
+        <Panel title="Biaya mutu buruk">
+          <div className="px-4 pb-3 pt-1">
+            {analytics.length === 0 ? (
+              <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada biaya tercatat.</p>
+            ) : (
+              <RunChart
+                values={analytics.map((a: any) => Number(a.cost_of_poor_quality || 0))}
+                axis={sumbuTanggal}
+                height={200}
+                unit="rupiah"
+              />
+            )}
           </div>
-        </div>
+        </Panel>
 
-        {/* Inspection Volume */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Inspection Volume</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={analytics}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line 
-                  type="monotone" 
-                  dataKey="inspections" 
-                  stroke="#8B5CF6" 
-                  strokeWidth={2}
-                  dot={{ fill: '#8B5CF6' }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+        <Panel title="Jumlah diperiksa dibanding diproduksi">
+          <div className="px-4 pb-3 pt-1">
+            {analytics.length === 0 ? (
+              <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada inspeksi.</p>
+            ) : (
+              <RunChart
+                values={analytics.map((a: any) => Number(a.total_inspected || 0))}
+                axis={sumbuTanggal}
+                rows={[
+                  { label: 'Diproduksi', values: analytics.map((a: any) => Number(a.total_production || 0)) },
+                  { label: 'Diperiksa', values: analytics.map((a: any) => Number(a.total_inspected || 0)) },
+                ]}
+                height={200}
+                unit="satuan"
+              />
+            )}
           </div>
-        </div>
+        </Panel>
       </div>
 
       {/* Quality Metrics Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="fn-card">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Detailed Quality Metrics</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Rincian ukuran mutu</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -279,8 +253,8 @@ export default function QualityAnalytics() {
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                     <ChartBarIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p>No quality metrics data available</p>
-                    <p className="text-sm">Data will appear here once quality inspections are recorded</p>
+                    <p>Belum ada data mutu</p>
+                    <p className="text-sm">Angka muncul setelah ada pemeriksaan mutu yang tercatat</p>
                   </td>
                 </tr>
               ) : (

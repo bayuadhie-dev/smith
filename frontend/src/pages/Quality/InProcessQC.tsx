@@ -250,6 +250,7 @@ export default function InProcessQC() {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">MUTU · QC PROSES</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
             <CogIcon className="w-7 h-7 text-purple-600 dark:text-purple-400" />
             QC Dalam Proses (IPQC)

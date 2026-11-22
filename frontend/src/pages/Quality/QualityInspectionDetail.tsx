@@ -99,7 +99,7 @@ export default function QualityInspectionDetail() {
 
   if (error || !inspection) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="fn-card p-6">
         <p className="text-red-600 dark:text-red-400">{error || 'Inspeksi tidak ditemukan'}</p>
         <button onClick={() => navigate(-1)} className="mt-4 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
           Kembali
@@ -112,6 +112,7 @@ export default function QualityInspectionDetail() {
     <div className="space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">MUTU · PEMERIKSAAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{inspection.inspection_number}</h1>
           <p className="text-gray-600 dark:text-gray-300 capitalize">
             Inspeksi {inspection.inspection_type?.replace('_', ' ')}
@@ -130,7 +131,7 @@ export default function QualityInspectionDetail() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="fn-card p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400">Produk</p>
@@ -183,7 +184,7 @@ export default function QualityInspectionDetail() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="fn-card p-6">
         <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Disposisi Gudang</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div>

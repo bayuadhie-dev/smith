@@ -187,6 +187,7 @@ const DowntimeAnalysis: React.FC = () => {
               <ArrowLeftIcon className="h-5 w-5 text-slate-600 dark:text-slate-300" />
             </button>
             <div>
+              <div className="fn-label mb-1.5">MUTU · ANALISIS DOWNTIME</div>
               <h1 className="text-[28px] font-semibold text-slate-800 flex items-center gap-2 dark:text-slate-100 tracking-tight leading-tight">
                 <ChartBarIcon className="h-7 w-7 text-amber-500" />
                 Analisa Downtime & Root Cause

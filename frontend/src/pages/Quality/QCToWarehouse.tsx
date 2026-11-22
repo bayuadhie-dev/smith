@@ -272,7 +272,8 @@ export default function QCToWarehouse() {
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Transfer QC ke Warehouse</h1>
+            <div className="fn-label mb-1.5">MUTU · SERAH TERIMA KE GUDANG</div>
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Serah Terima QC ke Gudang</h1>
             <p className="text-gray-600 dark:text-gray-300">Transfer produk yang sudah lulus QC ke gudang barang jadi</p>
           </div>
         </div>

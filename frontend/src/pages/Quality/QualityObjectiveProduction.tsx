@@ -164,6 +164,7 @@ const QualityObjectiveProduction: React.FC = () => {
       <div className="mb-6">
         <div className="flex items-center flex-wrap justify-between gap-3">
           <div>
+            <div className="fn-label mb-1.5">MUTU · SASARAN MUTU</div>
             <h1 className="text-[28px] font-semibold text-slate-800 flex items-center gap-2 dark:text-slate-100 tracking-tight leading-tight">
               <TrophyIcon className="h-7 w-7 text-amber-500" />
               Quality Objective - Produksi

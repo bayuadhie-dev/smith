@@ -105,7 +105,8 @@ export default function QualityAlerts() {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Quality Alerts</h1>
+          <div className="fn-label mb-1.5">MUTU · PERINGATAN MUTU</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Peringatan Mutu</h1>
           <p className="text-gray-600 dark:text-gray-300">Monitor and manage quality issues and alerts</p>
         </div>
         <div className="flex items-center gap-4">
@@ -170,7 +171,7 @@ export default function QualityAlerts() {
           </div>
         ) : (
           filteredAlerts.map((alert) => (
-            <div key={alert.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div key={alert.id} className="fn-card p-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">

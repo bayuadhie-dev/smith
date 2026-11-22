@@ -95,7 +95,8 @@ const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Quality Audits</h1>
+          <div className="fn-label mb-1.5">MUTU · AUDIT MUTU</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Audit Mutu</h1>
           <p className="text-gray-600 dark:text-gray-300">Plan, conduct, and track quality audits</p>
         </div>
         <button
@@ -192,7 +193,7 @@ const [statusFilter, setStatusFilter] = useUrlFilter<string>('status', '')
       </div>
 
       {/* Audits List */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="fn-card">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Audit Schedule</h3>
         </div>

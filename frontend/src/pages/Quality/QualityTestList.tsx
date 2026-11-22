@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useGetQualityDashboardQuery, useGetQualityAlertsQuery, useAcknowledgeQualityAlertMutation } from '../../services/api';
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Panel } from '../../components/ui/PageKit';
+import RunChart from '../../components/charts/RunChart';
 import {
   AcademicCapIcon,
   ArrowTrendingUpIcon,
@@ -124,7 +125,8 @@ export default function QualityTestList() {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Quality Management Dashboard</h1>
+          <div className="fn-label mb-1.5">MUTU · UJI MUTU</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Dashboard Mutu</h1>
           <p className="text-gray-600 dark:text-gray-300">Enhanced quality analytics and monitoring</p>
         </div>
         <div className="flex items-center gap-4 flex-wrap">
@@ -226,46 +228,36 @@ export default function QualityTestList() {
         </div>
       </div>
 
-      {/* Pass Rate Trend Chart */}
       {dashboardData?.trends.pass_rate && dashboardData.trends.pass_rate.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pass Rate Trend (Last 7 Days)</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={dashboardData.trends.pass_rate}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="date" 
-                  tickFormatter={(value) => new Date(value).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}
-                />
-                <YAxis domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
-                <Tooltip 
-                  formatter={(value: number) => [`${value}%`, 'Pass Rate']}
-                  labelFormatter={(label) => new Date(label).toLocaleDateString('id-ID')}
-                />
-                <Line type="monotone" dataKey="pass_rate" stroke="#10B981" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+        <Panel title="Tingkat kelulusan 7 hari terakhir">
+          <div className="px-4 pb-3 pt-1">
+            <RunChart
+              values={dashboardData.trends.pass_rate.map((t: any) => Number(t.pass_rate || 0))}
+              axis={Array.from(new Set([0, Math.floor(dashboardData.trends.pass_rate.length / 2), dashboardData.trends.pass_rate.length - 1]))
+                .map((i: number) => new Date(dashboardData!.trends.pass_rate[i].date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }))}
+              height={200}
+              unit="%"
+            />
           </div>
-        </div>
+        </Panel>
       )}
 
       {/* Machine Performance */}
       {dashboardData?.machine_performance && dashboardData.machine_performance.length > 0 && (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Machine Quality Performance</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Mutu per mesin</h3>
           <div className="space-y-4">
             {dashboardData.machine_performance.map((machine, index) => (
               <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div>
                   <h4 className="font-medium text-gray-900 dark:text-white">{machine.machine}</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{machine.total_inspections} inspections</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{machine.total_inspections} pemeriksaan</p>
                 </div>
                 <div className="text-right">
                   <p className={`text-lg font-semibold ${getPassRateColor(machine.pass_rate)}`}>
                     {machine.pass_rate}%
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Pass Rate</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">tingkat kelulusan</p>
                 </div>
               </div>
             ))}
@@ -291,7 +283,7 @@ export default function QualityTestList() {
               {dashboardData?.summary.active_alerts || 0}
             </span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Quality Alerts</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Peringatan Mutu</h3>
           <p className="text-sm text-gray-600 dark:text-gray-300">Manage quality alerts and issues</p>
         </Link>
 
@@ -309,7 +301,7 @@ export default function QualityTestList() {
             <AcademicCapIcon className="h-8 w-8 text-green-500" />
             <ArrowTrendingUpIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:text-gray-300" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Quality Audits</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Audit Mutu</h3>
           <p className="text-sm text-gray-600 dark:text-gray-300">Audit planning and management</p>
         </Link>
       </div>

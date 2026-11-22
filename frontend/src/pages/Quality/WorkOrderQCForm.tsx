@@ -373,6 +373,7 @@ export default function WorkOrderQCForm() {
             <ArrowLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
           <div>
+            <div className="fn-label mb-1.5">MUTU · QC SPK</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
               <ClipboardDocumentCheckIcon className="w-7 h-7 text-blue-600 dark:text-blue-400" />
               QC Inspection

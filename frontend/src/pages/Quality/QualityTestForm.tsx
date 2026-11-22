@@ -186,7 +186,8 @@ const navigate = useNavigate()
     <div className="space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Create Quality Test</h1>
+          <div className="fn-label mb-1.5">MUTU · UJI MUTU</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Uji Mutu Baru</h1>
           <p className="text-gray-600 dark:text-gray-300">Perform quality control testing and record results</p>
         </div>
         <button
