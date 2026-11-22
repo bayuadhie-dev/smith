@@ -9,41 +9,42 @@ import {
   TruckIcon,
   UsersIcon
 } from '@heroicons/react/24/outline';
+import { PageHeader } from '../../components/ui/PageKit';
 const TVDisplaySelector: React.FC = () => {
   const { t } = useLanguage();
 
   const displayOptions = [
     {
-      title: 'Production Floor',
-      description: 'Monitor mesin produksi, SPK, dan progress real-time',
+      title: 'Lantai Produksi',
+      description: 'Pantau mesin produksi, SPK, dan kemajuan pengerjaan.',
       icon: CogIcon,
       href: '/tv/production',
       color: 'blue',
-      features: ['SPK Aktif', 'Status Mesin', 'Progress Produksi', 'Target vs Actual']
+      features: ['SPK aktif', 'Status mesin', 'Kemajuan produksi', 'Target vs realisasi']
     },
     {
-      title: 'Shipping Department',
-      description: 'Track pengiriman, status driver, dan delivery schedule',
+      title: 'Pengiriman',
+      description: 'Lacak pengiriman, status sopir, dan jadwal antar.',
       icon: TruckIcon,
       href: '/tv/shipping',
       color: 'green',
-      features: ['Shipment Aktif', 'Status Driver', 'Tracking Number', 'Delivery Schedule']
+      features: ['Pengiriman aktif', 'Status sopir', 'Nomor resi', 'Jadwal antar']
     },
     {
-      title: 'Employee Roster',
-      description: 'Jadwal karyawan per mesin per shift untuk minggu ini',
+      title: 'Jadwal Karyawan',
+      description: 'Jadwal karyawan per mesin per shift untuk minggu ini.',
       icon: UsersIcon,
       href: '/tv/roster',
       color: 'purple',
-      features: ['Roster Mingguan', 'Assignment Mesin', 'Shift Schedule', 'Employee Status']
+      features: ['Jadwal mingguan', 'Penempatan mesin', 'Jadwal shift', 'Status karyawan']
     },
     {
-      title: 'Dashboard Overview',
-      description: 'Overview keseluruhan operasional pabrik dan KPI',
+      title: 'Ringkasan Pabrik',
+      description: 'Gambaran menyeluruh operasional pabrik dan KPI.',
       icon: ChartBarIcon,
       href: '/tv/overview',
       color: 'yellow',
-      features: ['Production KPI', 'Shipping Summary', 'Quality Metrics', 'OEE Overview']
+      features: ['KPI produksi', 'Ringkasan pengiriman', 'Ukuran mutu', 'Ringkasan OEE']
     }
   ];
 
@@ -75,19 +76,15 @@ const TVDisplaySelector: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-800 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <ComputerDesktopIcon className="h-16 w-16 text-primary-600 mx-auto mb-4 dark:text-primary-400" />
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            TV Display System
-          </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Pilih tampilan yang ingin ditampilkan di layar TV untuk monitoring real-time operasional pabrik
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <PageHeader
+          eyebrow="LAYAR TV"
+          title="Layar TV Pabrik"
+          subtitle="Pilih tampilan yang akan dipasang di layar TV untuk pemantauan operasional."
+        />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           {displayOptions.map((option) => {
             const Icon = option.icon;
             const colors = colorClasses[option.color as keyof typeof colorClasses];
@@ -96,7 +93,7 @@ const TVDisplaySelector: React.FC = () => {
               <Link
                 key={option.title}
                 to={option.href}
-                className={`block p-8 bg-white rounded-xl shadow-lg dark:bg-gray-800 ${colors.border} border-2 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group`}
+                className="fn-card fn-press group block p-6"
               >
                 <div className="flex items-center justify-between mb-6">
                   <div className={`p-3 ${colors.bg} rounded-lg`}>
@@ -105,18 +102,16 @@ const TVDisplaySelector: React.FC = () => {
                   <ArrowRightIcon className="h-6 w-6 text-gray-400 group-hover:text-gray-600 dark:text-gray-300 transition-colors" />
                 </div>
                 
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
                   {option.title}
                 </h3>
                 
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                <p className="mb-5 text-sm text-gray-500 dark:text-gray-400">
                   {option.description}
                 </p>
 
                 <div className="space-y-2">
-                  <h4 className={`font-semibold ${colors.text} mb-3`}>
-                    Fitur Utama:
-                  </h4>
+                  <h4 className="fn-label mb-3">Isi tampilan</h4>
                   <ul className="space-y-2">
                     {option.features.map((feature, index) => (
                       <li key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-300">
@@ -129,7 +124,7 @@ const TVDisplaySelector: React.FC = () => {
 
                 <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className={`inline-flex items-center text-sm font-medium ${colors.text} group-hover:${colors.text}`}>
-                    Buka Display
+                    Buka tampilan
                     <ArrowRightIcon className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
@@ -138,16 +133,16 @@ const TVDisplaySelector: React.FC = () => {
           })}
         </div>
 
-        <div className="mt-12 text-center">
-          <div className="fn-card p-6 max-w-2xl mx-auto">
+        <div className="mt-6">
+          <div className="fn-card p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-              💡 Tips Penggunaan TV Display
+              Tips pemakaian layar TV
             </h3>
             <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-2 text-left">
-              <li>• Gunakan mode fullscreen browser untuk pengalaman terbaik</li>
-              <li>• Data akan ter-refresh otomatis setiap 10-30 detik</li>
-              <li>• Optimal untuk layar TV 32" ke atas dengan resolusi 1080p+</li>
-              <li>• Tekan F11 untuk mode fullscreen atau klik tombol fullscreen</li>
+              <li>Pakai mode layar penuh pada peramban.</li>
+              <li>Data dimuat ulang otomatis setiap 10-30 detik.</li>
+              <li>Paling enak dilihat di TV 32 inci ke atas, resolusi 1080p.</li>
+              <li>Tekan F11 untuk layar penuh, atau klik tombolnya.</li>
             </ul>
           </div>
         </div>

@@ -43,7 +43,7 @@ export default function TVDisplayProduction() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       <div className="text-center">
         <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-400 border-t-transparent mx-auto mb-4"></div>
-        <p className="text-white text-xl">Loading Production Data...</p>
+        <p className="text-white text-xl">Memuat data produksi...</p>
       </div>
     </div>
   )
@@ -58,8 +58,8 @@ export default function TVDisplayProduction() {
         <div className="flex flex-wrap justify-between items-center gap-3">
           <div className="flex items-center gap-4">
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <h1 className="text-[28px] font-semibold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent tracking-tight leading-tight">
-              🏭 Production Floor Monitor
+            <h1 className="text-[28px] font-semibold tracking-tight leading-tight text-white">
+              Lantai Produksi
             </h1>
           </div>
           <div className="text-right">
@@ -79,44 +79,44 @@ export default function TVDisplayProduction() {
           <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-2xl shadow-xl border border-blue-400/30">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-200 text-sm uppercase tracking-wider">Produksi Hari Ini</p>
+                <p className="text-blue-200 text-sm uppercase tracking-wider">Produksi hari ini</p>
                 <p className="text-4xl font-bold mt-2">{formatNumber(data.today_production || 0)}</p>
                 <p className="text-blue-300 text-sm mt-1">pcs</p>
               </div>
-              <div className="text-6xl opacity-30">📦</div>
             </div>
           </div>
           
           <div className="bg-gradient-to-br from-green-600 to-green-800 p-6 rounded-2xl shadow-xl border border-green-400/30">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-200 text-sm uppercase tracking-wider">SPK Aktif</p>
+                <p className="text-green-200 text-sm uppercase tracking-wider">SPK aktif</p>
                 <p className="text-4xl font-bold mt-2">{data.active_work_orders?.length || 0}</p>
                 <p className="text-green-300 text-sm mt-1">sedang berjalan</p>
               </div>
-              <div className="text-6xl opacity-30">📋</div>
             </div>
           </div>
           
           <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-6 rounded-2xl shadow-xl border border-purple-400/30">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-purple-200 text-sm uppercase tracking-wider">Mesin Running</p>
+                <p className="text-purple-200 text-sm uppercase tracking-wider">Mesin jalan</p>
                 <p className="text-4xl font-bold mt-2">{runningMachines} / {totalMachines}</p>
                 <p className="text-purple-300 text-sm mt-1">mesin aktif</p>
               </div>
-              <div className="text-6xl opacity-30">⚙️</div>
             </div>
           </div>
           
           <div className="bg-gradient-to-br from-cyan-600 to-cyan-800 p-6 rounded-2xl shadow-xl border border-cyan-400/30">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-cyan-200 text-sm uppercase tracking-wider">Quality Rate</p>
-                <p className="text-4xl font-bold mt-2">{data.quality_rate?.toFixed(1) || 96}%</p>
-                <p className="text-cyan-300 text-sm mt-1">good products</p>
+                <p className="text-cyan-200 text-sm uppercase tracking-wider">Tingkat mutu</p>
+                <p className="text-4xl font-bold mt-2">
+                  {typeof data.quality_rate === 'number' ? `${data.quality_rate.toFixed(1)}%` : '-'}
+                </p>
+                <p className="text-cyan-300 text-sm mt-1">
+                  {typeof data.quality_rate === 'number' ? 'hasil bagus hari ini' : 'belum ada produksi hari ini'}
+                </p>
               </div>
-              <div className="text-6xl opacity-30">✅</div>
             </div>
           </div>
         </div>
@@ -125,14 +125,13 @@ export default function TVDisplayProduction() {
         <div className="bg-black/30 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600/50 to-purple-600/50 px-6 py-4 border-b border-white/10">
             <h2 className="text-2xl font-bold flex items-center gap-3">
-              <span className="animate-pulse">🔄</span> SPK Aktif
+              SPK Aktif
             </h2>
           </div>
           
           <div className="p-4 space-y-3 max-h-[calc(100vh-420px)] overflow-y-auto">
             {data.active_work_orders?.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
-                <p className="text-6xl mb-4">📭</p>
                 <p className="text-xl">Tidak ada SPK aktif saat ini</p>
               </div>
             ) : (
@@ -145,12 +144,12 @@ export default function TVDisplayProduction() {
                       <div className="flex items-center gap-3">
                         <span className="bg-blue-600 text-xs px-3 py-1 rounded-full font-bold">{wo.wo_number}</span>
                         <span className="bg-green-600/50 text-xs px-2 py-1 rounded-full">
-                          {wo.status === 'in_progress' ? '🔄 In Progress' : wo.status}
+                          {wo.status === 'in_progress' ? 'Sedang dikerjakan' : wo.status}
                         </span>
                       </div>
                       <h3 className="text-xl font-semibold mt-2">{wo.product_name}</h3>
                       <p className="text-gray-400 text-sm mt-1">
-                        🏭 {wo.machine || 'Belum ditentukan'} • 👤 {wo.operator || 'Operator'}
+                        {wo.machine || 'Mesin belum ditentukan'}
                       </p>
                     </div>
                     <div className="text-right">
@@ -185,7 +184,7 @@ export default function TVDisplayProduction() {
       {/* Footer */}
       <div className="fixed bottom-0 left-0 right-0 bg-black/50 backdrop-blur-sm border-t border-white/10 px-8 py-2">
         <div className="flex justify-between items-center text-sm text-gray-400">
-          <p>Auto-refresh setiap 10 detik</p>
+          <p>Dimuat ulang tiap 10 detik</p>
           <p>{companyName} - ERP System</p>
         </div>
       </div>

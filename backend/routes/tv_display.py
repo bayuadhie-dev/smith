@@ -168,13 +168,24 @@ def get_production_display():
         # Machine status
         machines = Machine.query.filter_by(is_active=True).all()
 
-        # Today's production
+        # Today's production + tingkat mutu hari ini.
+        # Layar TV dulu menampilkan 96% tetap karena nilainya tidak pernah
+        # dikirim dari sini; sekarang dihitung dari catatan produksi hari
+        # ini, dan None kalau memang belum ada produksi.
         today = get_local_now().date()
-        today_production = db.session.query(
-            func.sum(ProductionRecord.quantity_produced)
+        hasil = db.session.query(
+            func.sum(ProductionRecord.quantity_produced),
+            func.sum(ProductionRecord.quantity_scrap),
+            func.sum(ProductionRecord.quantity_rework),
         ).filter(
             func.date(ProductionRecord.production_date) == today
-        ).scalar() or 0
+        ).first()
+
+        today_production = float(hasil[0] or 0)
+        scrap = float(hasil[1] or 0)
+        rework = float(hasil[2] or 0)
+        total_olahan = today_production + scrap + rework
+        quality_rate = round(today_production / total_olahan * 100, 1) if total_olahan else None
 
         return jsonify({
             'type': 'production',
@@ -194,7 +205,10 @@ def get_production_display():
                 'status': m.status,
                 'efficiency': float(m.efficiency or 0)
             } for m in machines],
-            'today_production': float(today_production)
+            'today_production': today_production,
+            'today_scrap': scrap,
+            'today_rework': rework,
+            'quality_rate': quality_rate
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500

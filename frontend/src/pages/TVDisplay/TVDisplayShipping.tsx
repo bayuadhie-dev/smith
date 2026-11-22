@@ -42,7 +42,7 @@ export default function TVDisplayShipping() {
       <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
         <div className="text-center">
           <TruckIcon className="h-16 w-16 mx-auto mb-4 animate-pulse" />
-          <p className="text-2xl">Loading Shipping Data...</p>
+          <p className="text-2xl">Memuat data pengiriman...</p>
         </div>
       </div>
     )
@@ -86,8 +86,8 @@ export default function TVDisplayShipping() {
       <div className="max-w-7xl mx-auto">
         {/* Header with Time */}
         <div className="flex flex-wrap justify-between items-center mb-8 gap-3">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
-            📦 Shipping 
+          <h1 className="text-5xl font-bold text-white">
+            Pengiriman
           </h1>
           <div className="text-right">
             <p className="text-2xl font-mono">{currentTime.toLocaleTimeString('id-ID')}</p>
@@ -105,7 +105,7 @@ export default function TVDisplayShipping() {
           <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg mb-2">Total Orders</h3>
+                <h3 className="text-lg mb-2">Total pesanan</h3>
                 <p className="text-4xl font-bold">{processedData.total_shipments}</p>
               </div>
               <TruckIcon className="h-12 w-12 opacity-80" />
@@ -115,7 +115,7 @@ export default function TVDisplayShipping() {
           <div className="bg-gradient-to-br from-yellow-600 to-yellow-700 p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg mb-2">Preparing</h3>
+                <h3 className="text-lg mb-2">Disiapkan</h3>
                 <p className="text-4xl font-bold">{processedData.preparing_count}</p>
               </div>
               <ClockIcon className="h-12 w-12 opacity-80" />
@@ -125,7 +125,7 @@ export default function TVDisplayShipping() {
           <div className="bg-gradient-to-br from-orange-600 to-orange-700 p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg mb-2">Packed</h3>
+                <h3 className="text-lg mb-2">Sudah dikemas</h3>
                 <p className="text-4xl font-bold">{processedData.packed_count}</p>
               </div>
               <ExclamationTriangleIcon className="h-12 w-12 opacity-80" />
@@ -135,7 +135,7 @@ export default function TVDisplayShipping() {
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg mb-2">In Transit</h3>
+                <h3 className="text-lg mb-2">Dalam perjalanan</h3>
                 <p className="text-4xl font-bold">{processedData.shipped_count}</p>
               </div>
               <TruckIcon className="h-12 w-12 opacity-80" />
@@ -145,7 +145,7 @@ export default function TVDisplayShipping() {
           <div className="bg-gradient-to-br from-green-600 to-green-700 p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg mb-2">Delivered</h3>
+                <h3 className="text-lg mb-2">Terkirim</h3>
                 <p className="text-4xl font-bold">{processedData.delivered_count}</p>
               </div>
               <CheckCircleIcon className="h-12 w-12 opacity-80" />
@@ -157,7 +157,7 @@ export default function TVDisplayShipping() {
         <div className="space-y-4">
           <h2 className="text-3xl font-semibold mb-6 flex items-center gap-3">
             <MapPinIcon className="h-8 w-8" />
-            Active Shipments
+            Pengiriman aktif
           </h2>
           
           <div className="grid grid-cols-2 gap-6">
@@ -168,7 +168,7 @@ export default function TVDisplayShipping() {
                     <h3 className="text-xl font-semibold text-blue-400">{shipment.shipping_number}</h3>
                     <p className="text-gray-300 text-lg">{shipment.customer_name}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                      📅 {new Date(shipment.shipping_date).toLocaleDateString('id-ID')}
+                      Kirim {new Date(shipment.shipping_date).toLocaleDateString('id-ID')}
                     </p>
                   </div>
                   <div className="text-right">
@@ -178,7 +178,7 @@ export default function TVDisplayShipping() {
                     </span>
                     {shipment.tracking_number && (
                       <p className="text-sm text-gray-400 mt-2">
-                        🔍 {shipment.tracking_number}
+                        Resi {shipment.tracking_number}
                       </p>
                     )}
                   </div>
@@ -203,14 +203,14 @@ export default function TVDisplayShipping() {
           {processedData.active_shipments?.length === 0 && (
             <div className="text-center py-12">
               <TruckIcon className="h-16 w-16 text-gray-600 dark:text-gray-300 mx-auto mb-4" />
-              <p className="text-xl text-gray-400">No active shipments at the moment</p>
+              <p className="text-xl text-gray-400">Belum ada pengiriman aktif</p>
             </div>
           )}
         </div>
         
         {/* Footer */}
         <div className="mt-8 text-center text-gray-500 dark:text-gray-400">
-          <p>🔄 Auto-refresh every 10 seconds | Last updated: {new Date().toLocaleTimeString('id-ID')}</p>
+          <p>Dimuat ulang tiap 10 detik &middot; terakhir {currentTime.toLocaleTimeString('id-ID')}</p>
         </div>
       </div>
     </div>

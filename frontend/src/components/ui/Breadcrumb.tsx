@@ -120,7 +120,7 @@ const routeLabels: Record<string, string> = {
   'waste': 'Manajemen Limbah',
   'returns': 'Retur',
   'oee': 'OEE',
-  'tv-display': 'TV Display',
+  'tv-display': 'Layar TV',
   'documents': 'Dokumen',
   'settings': 'Pengaturan',
   'user-roles': 'Pengguna & Peran',

@@ -34,6 +34,16 @@ interface RosterData {
   };
 }
 
+// Nilai mentah kolom machine_type di basis data.
+const JENIS_MESIN: Record<string, string> = {
+  manufacturing: 'Produksi',
+  spunlace_machine: 'Mesin spunlace',
+  slitting_machine: 'Mesin slitting',
+  packing_machine: 'Mesin packing',
+  oven_machine: 'Mesin oven',
+  converting_machine: 'Mesin converting',
+};
+
 const TVDisplayRoster: React.FC = () => {
   const { t } = useLanguage();
 
@@ -64,25 +74,53 @@ const TVDisplayRoster: React.FC = () => {
     };
   }, []);
 
+  // Shift yang sedang berjalan dibaca dari jadwal roster itu sendiri, bukan
+  // ditulis tetap "Shift 1". Shift malam yang melewati tengah malam ikut
+  // terhitung (jam mulai lebih besar daripada jam selesai).
   const getCurrentShift = () => {
-    // For now, return a mock current shift since backend doesn't provide this info
-    return {
-      name: 'Shift 1',
-      start_time: '07:00',
-      end_time: '15:00'
+    const mesin = data?.roster_data?.machines;
+    if (!mesin) return null;
+
+    const unik = new Map<string, { name: string; start_time: string; end_time: string }>();
+    Object.values(mesin).forEach((m) =>
+      Object.values(m.shifts || {}).forEach((sh) => {
+        if (sh.start_time && sh.end_time) {
+          unik.set(`${sh.start_time}-${sh.end_time}`, {
+            name: sh.shift_name,
+            start_time: sh.start_time,
+            end_time: sh.end_time,
+          });
+        }
+      }),
+    );
+
+    const menit = (jam: string) => {
+      const [h, m] = jam.split(':').map(Number);
+      return h * 60 + (m || 0);
     };
+    const sekarang = currentTime.getHours() * 60 + currentTime.getMinutes();
+
+    for (const sh of unik.values()) {
+      const mulai = menit(sh.start_time);
+      const selesai = menit(sh.end_time);
+      const cocok = mulai <= selesai
+        ? sekarang >= mulai && sekarang < selesai
+        : sekarang >= mulai || sekarang < selesai;
+      if (cocok) return sh;
+    }
+    return null;
   };
 
   const getMachineStatus = (status: string) => {
     switch (status) {
       case 'running':
-        return { color: 'bg-green-500', label: 'RUNNING' };
+        return { color: 'bg-green-500', label: 'JALAN' };
       case 'stopped':
-        return { color: 'bg-red-500', label: 'STOPPED' };
+        return { color: 'bg-red-500', label: 'BERHENTI' };
       case 'maintenance':
-        return { color: 'bg-yellow-500', label: 'MAINTENANCE' };
+        return { color: 'bg-yellow-500', label: 'PERAWATAN' };
       default:
-        return { color: 'bg-gray-500', label: 'UNKNOWN' };
+        return { color: 'bg-gray-500', label: 'TIDAK DIKETAHUI' };
     }
   };
 
@@ -92,7 +130,7 @@ const TVDisplayRoster: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-xl">Loading Roster Data...</p>
+          <p className="text-xl">Memuat jadwal karyawan...</p>
         </div>
       </div>
     );
@@ -106,8 +144,8 @@ const TVDisplayRoster: React.FC = () => {
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center mb-8 gap-3">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Employee Roster - Production Floor</h1>
-            <p className="text-xl text-gray-400">Employee Roster</p>
+            <h1 className="text-4xl font-bold mb-2">Jadwal Karyawan</h1>
+            <p className="text-xl text-gray-400">Penempatan operator per mesin</p>
           </div>
           <div className="text-right">
             <div className="text-3xl font-mono font-bold">
@@ -123,7 +161,7 @@ const TVDisplayRoster: React.FC = () => {
             </div>
             {currentShift && (
               <div className="mt-2 px-4 py-2 bg-blue-600 rounded-lg">
-                <span className="font-semibold">Shift: {currentShift.name}</span>
+                <span className="font-semibold">Shift berjalan: {currentShift.name}</span>
                 <br />
                 <span className="text-sm">{currentShift.start_time} - {currentShift.end_time}</span>
               </div>
@@ -134,23 +172,23 @@ const TVDisplayRoster: React.FC = () => {
         {/* Current Shift Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-blue-600 p-6 rounded-lg">
-            <h3 className="text-xl mb-2">Total Machines</h3>
+            <h3 className="text-xl mb-2">Total mesin</h3>
             <p className="text-4xl font-bold">{data.summary?.total_machines || 0}</p>
           </div>
           <div className="bg-green-600 p-6 rounded-lg">
-            <h3 className="text-xl mb-2">With Assignments</h3>
+            <h3 className="text-xl mb-2">Sudah ada penempatan</h3>
             <p className="text-4xl font-bold">
               {data.summary?.machines_with_assignments || 0}
             </p>
           </div>
           <div className="bg-purple-600 p-6 rounded-lg">
-            <h3 className="text-xl mb-2">Total Assignments</h3>
+            <h3 className="text-xl mb-2">Total penempatan</h3>
             <p className="text-4xl font-bold">
               {data.summary?.total_assignments || 0}
             </p>
           </div>
           <div className="bg-yellow-600 p-6 rounded-lg">
-            <h3 className="text-xl mb-2">Unassigned</h3>
+            <h3 className="text-xl mb-2">Tanpa penempatan</h3>
             <p className="text-4xl font-bold">
               {(data.summary?.total_machines || 0) - (data.summary?.machines_with_assignments || 0)}
             </p>
@@ -159,7 +197,7 @@ const TVDisplayRoster: React.FC = () => {
 
         {/* Machine Status Table */}
         <div className="bg-gray-800 rounded-lg p-6">
-          <h2 className="text-2xl font-semibold mb-6">Machine Status & Assignments</h2>
+          <h2 className="text-2xl font-semibold mb-6">Status mesin &amp; penempatan</h2>
           
           <div className="overflow-x-auto">
             <table className="w-full text-left">
@@ -167,8 +205,8 @@ const TVDisplayRoster: React.FC = () => {
                 <tr className="border-b border-gray-700">
                   <th className="py-4 px-4 font-semibold">{t('production.machine')}</th>
                   <th className="py-4 px-4 font-semibold">{t('common.status')}</th>
-                  <th className="py-4 px-4 font-semibold">Type</th>
-                  <th className="py-4 px-4 font-semibold">Current Assignments</th>
+                  <th className="py-4 px-4 font-semibold">Jenis</th>
+                  <th className="py-4 px-4 font-semibold">Penempatan sekarang</th>
                 </tr>
               </thead>
               <tbody>
@@ -193,7 +231,7 @@ const TVDisplayRoster: React.FC = () => {
                       </td>
                       <td className="py-4 px-4">
                         <span className="text-sm text-gray-300 capitalize">
-                          {machine.machine_type.replace('_', ' ')}
+                          {JENIS_MESIN[machine.machine_type] || machine.machine_type.replace(/_/g, ' ')}
                         </span>
                       </td>
                       <td className="py-4 px-4">
@@ -215,7 +253,7 @@ const TVDisplayRoster: React.FC = () => {
                           </div>
                         ) : (
                           <div className="bg-red-900 bg-opacity-30 rounded-lg p-2 text-center">
-                            <span className="text-red-400 text-sm">No Assignments</span>
+                            <span className="text-red-400 text-sm">Belum ada penempatan</span>
                           </div>
                         )}
                       </td>
@@ -232,11 +270,11 @@ const TVDisplayRoster: React.FC = () => {
           <div className="bg-gray-800 rounded-lg p-4 flex space-x-6">
             <div className="flex items-center">
               <div className="w-4 h-4 bg-green-500 rounded mr-2"></div>
-              <span className="text-sm">Running</span>
+              <span className="text-sm">Jalan</span>
             </div>
             <div className="flex items-center">
               <div className="w-4 h-4 bg-red-500 rounded mr-2"></div>
-              <span className="text-sm">Stopped</span>
+              <span className="text-sm">Berhenti</span>
             </div>
             <div className="flex items-center">
               <div className="w-4 h-4 bg-yellow-500 rounded mr-2"></div>
@@ -244,11 +282,11 @@ const TVDisplayRoster: React.FC = () => {
             </div>
             <div className="flex items-center">
               <div className="w-4 h-4 bg-gray-700 rounded mr-2"></div>
-              <span className="text-sm">Has Assignment</span>
+              <span className="text-sm">Ada penempatan</span>
             </div>
             <div className="flex items-center">
               <div className="w-4 h-4 bg-red-900 bg-opacity-30 rounded mr-2"></div>
-              <span className="text-sm">No Assignment</span>
+              <span className="text-sm">Belum ada penempatan</span>
             </div>
           </div>
         </div>
