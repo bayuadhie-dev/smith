@@ -164,7 +164,10 @@ const NO_PAGE = new Set([
 
 const Breadcrumb = () => {
   const location = useLocation();
-  const trail = useTrail();
+  const trailRaw = useTrail();
+  // Halaman di tab workspace yang tersembunyi tetap hidup. Rantai drill-down
+  // miliknya tidak boleh ikut muncul di breadcrumb halaman lain.
+  const trail = trailRaw && trailRaw.pathname === location.pathname ? trailRaw : null;
   const pathnames = location.pathname.split('/').filter((x) => x);
 
   // Generate breadcrumb items

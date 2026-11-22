@@ -5,6 +5,7 @@ import { confirmDialog } from '../../components/ui';
 import NumberInput from '../../components/ui/NumberInput'
 import { useUrlState } from '../../hooks/useUrlState';
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail';
+import { PageHeader, Segmented } from '../../components/ui/PageKit';
 
 interface MachineOption {
   id: number;
@@ -155,41 +156,32 @@ const FactoryLayoutAdmin: React.FC = () => {
 
   if (loading) return <div style={{ padding: 40 }}><LoadingSpinner /></div>;
 
-  const th: React.CSSProperties = { textAlign: 'left', padding: '8px 10px', fontSize: 11, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid #e5e7eb' };
-  const td: React.CSSProperties = { padding: '8px 10px', fontSize: 13, borderBottom: '1px solid #f3f4f6' };
-  const input: React.CSSProperties = { border: '1px solid #d1d5db', borderRadius: 4, padding: '5px 8px', fontSize: 13, width: '100%' };
-  const btn: React.CSSProperties = { background: '#2563eb', color: 'white', border: 'none', borderRadius: 4, padding: '6px 12px', fontSize: 12, cursor: 'pointer' };
-  const btnDanger: React.CSSProperties = { ...btn, background: '#dc2626' };
+  const th: React.CSSProperties = { textAlign: 'left', padding: '10px 12px', fontSize: 10, fontFamily: 'ui-monospace, monospace', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.09em', borderBottom: '1px solid #e5e7eb' };
+  const td: React.CSSProperties = { padding: '8px 12px', fontSize: 13, borderBottom: '1px solid #f3f4f6' };
+  const input: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 10, padding: '7px 10px', fontSize: 13, width: '100%' };
+  const btn: React.CSSProperties = { background: '#2563eb', color: 'white', border: 'none', borderRadius: 999, padding: '7px 14px', fontSize: 13, fontWeight: 500, cursor: 'pointer' };
+  const btnDanger: React.CSSProperties = { ...btn, background: 'transparent', color: '#dc2626', border: '1px solid #fecaca' };
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 20px' }}>
-      <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>Denah Pabrik — Admin</h1>
-      <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
-        Kelola sayap (wing), penempatan mesin, icon, dan nama alias untuk halaman Denah Produksi.
-      </p>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="PENGATURAN · DENAH PABRIK"
+        title="Denah Pabrik"
+        subtitle="Kelola sayap, penempatan mesin, ikon, dan nama alias yang dipakai halaman Denah Produksi."
+      />
 
       {error && <div style={{ background: '#fef2f2', color: '#dc2626', padding: '10px 14px', borderRadius: 6, marginBottom: 12, fontSize: 13 }}>{error}</div>}
       {message && <div style={{ background: '#f0fdf4', color: '#16a34a', padding: '10px 14px', borderRadius: 6, marginBottom: 12, fontSize: 13 }}>{message}</div>}
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid #e5e7eb' }}>
-        {TABS.map((t) => (
-          <div
-            key={t}
-            onClick={() => setTab(t)}
-            style={{
-              padding: '8px 16px', fontSize: 13, cursor: 'pointer',
-              borderBottom: tab === t ? '2px solid #2563eb' : '2px solid transparent',
-              color: tab === t ? '#2563eb' : '#6b7280', fontWeight: tab === t ? 600 : 400,
-            }}
-          >
-            {t}
-          </div>
-        ))}
-      </div>
+      <Segmented<(typeof TABS)[number]>
+        value={tab}
+        onChange={setTab}
+        options={TABS.map((t) => ({ value: t, label: t }))}
+      />
 
       {tab === 'Wings' && (
         <div>
-          <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16 }}>
+          <div className="fn-card mb-4 p-4">
             <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>Tambah Sayap Baru</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: 8 }}>
               <input style={input} placeholder="Nama (mis. Sayap Alkes)" value={newWing.name} onChange={(e) => setNewWing({ ...newWing, name: e.target.value })} />
@@ -199,7 +191,7 @@ const FactoryLayoutAdmin: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="fn-card overflow-x-auto p-2">
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
@@ -231,7 +223,7 @@ const FactoryLayoutAdmin: React.FC = () => {
 
       {tab === 'Mesin & Icon' && (
         <div>
-          <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16 }}>
+          <div className="fn-card mb-4 p-4">
             <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>Tambahkan Mesin ke Denah</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr auto', gap: 8 }}>
               <select style={input} value={newNode.machine_id} onChange={(e) => setNewNode({ ...newNode, machine_id: Number(e.target.value) })}>
@@ -304,7 +296,7 @@ const FactoryLayoutAdmin: React.FC = () => {
           <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 12 }}>
             Alias hanya memengaruhi tampilan di Denah Produksi. Nama asli mesin di modul lain (Daily Controller, dsb) tidak berubah.
           </p>
-          <div className="overflow-x-auto">
+          <div className="fn-card overflow-x-auto p-2">
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>

@@ -15,6 +15,8 @@ export interface TrailItem {
 
 interface TrailState {
   owner: string
+  /** Rute pemilik rantai. Breadcrumb mengabaikan rantai dari rute lain. */
+  pathname: string
   root: () => void
   items: TrailItem[]
 }
@@ -66,7 +68,7 @@ export function useBreadcrumbTrail(input: TrailCrumb[] | null) {
       label: c.label,
       go: i < crumbs.length - 1 && c.search !== undefined ? () => navigate({ pathname, search: c.search }) : undefined,
     }))
-    api.set({ owner, root: () => navigate({ pathname, search: '' }), items })
+    api.set({ owner, pathname, root: () => navigate({ pathname, search: '' }), items })
     return () => api.clear(owner)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, active, owner, pathname, input === null])
