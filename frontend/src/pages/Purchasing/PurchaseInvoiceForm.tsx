@@ -304,6 +304,7 @@ export default function PurchaseInvoiceForm() {
       <div className="flex items-center gap-3">
         <Link to="/app/purchasing/invoices" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><ArrowLeftIcon className="h-5 w-5" /></Link>
         <div>
+          <div className="fn-label mb-1.5">PEMBELIAN · FAKTUR PEMBELIAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{editId ? `Ubah Faktur ${editInv?.invoice_number || ""}` : "Buat Faktur Pembelian"}</h1>
           {editId && <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">Saat disimpan, faktur lama dibatalkan (jurnal dibalik) dan diganti faktur baru dengan nomor yang sama. Faktur yang sudah dibayar atau dialokasikan uang muka tidak bisa diubah. Baris di luar PO perlu dipilih ulang akunnya.</p>}
           <p className="text-sm text-gray-500 dark:text-gray-400">Tagihan pemasok atas PO. Jurnal hutang diposting otomatis dan faktur ikut pencocokan 3 arah.</p>

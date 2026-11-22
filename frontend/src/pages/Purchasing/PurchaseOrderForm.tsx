@@ -358,6 +358,7 @@ const navigate = useNavigate()
     <div className="space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">PEMBELIAN · PESANAN PEMBELIAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{isEdit ? 'Edit Purchase Order' : 'Create Purchase Order'}</h1>
           <p className="text-gray-600 dark:text-gray-300">
             {isEdit
@@ -414,7 +415,7 @@ const navigate = useNavigate()
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Supplier *
               </label>
-              <input type="hidden" {...register('supplier_id', { required: 'Supplier is required' })} />
+              <input type="hidden" {...register('supplier_id', { required: 'Pemasok wajib dipilih' })} />
               <SearchableSelect
                 options={(suppliers?.suppliers || []).map((sp: any) => ({ id: sp.id, name: `${sp.code} - ${sp.company_name}${sp.supplier_type ? ' [' + sp.supplier_type + (sp.supplier_subtype ? ' - ' + sp.supplier_subtype : '') + ']' : ''}` }))}
                 value={watch('supplier_id') ? Number(watch('supplier_id')) : null}
@@ -571,7 +572,7 @@ const navigate = useNavigate()
                 {...register('notes')}
                 rows={3}
                 className="input-field"
-                placeholder="Additional notes or special instructions..."
+                placeholder="Catatan tambahan atau instruksi khusus..."
               />
             </div>
           </div>

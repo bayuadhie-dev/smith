@@ -22,7 +22,7 @@ import { PageHeader, KpiStrip, QuickLinks } from '../../components/ui/PageKit';
 import { formatRupiah } from '../../utils/currencyUtils';
 
 const PURCHASING_TAB_LABELS: Record<string, string> = {
-  suppliers: 'Supplier', 'purchase-orders': 'Pesanan Pembelian', quotes: 'Penawaran & RFQ', contracts: 'Kontrak', 'price-comparison': 'Analisis Harga',
+  suppliers: 'Pemasok', 'purchase-orders': 'Pesanan Pembelian', quotes: 'Penawaran & RFQ', contracts: 'Kontrak', 'price-comparison': 'Analisis Harga',
 }
 
 export default function Purchasing() {
@@ -48,7 +48,7 @@ export default function Purchasing() {
           id: `po-${po.id}`,
           type: 'po_created',
           title: `PO ${po.po_number}`,
-          description: po.supplier?.name || 'Supplier',
+          description: po.supplier?.name || 'Pemasok tidak tercatat',
           time: po.created_at ? new Date(po.created_at).toLocaleDateString('id-ID') : '-',
           icon: DocumentTextIcon,
           color: 'text-blue-600 dark:text-blue-400'
@@ -63,7 +63,7 @@ export default function Purchasing() {
           id: `sup-${supplier.id}`,
           type: 'supplier_added',
           title: supplier.name,
-          description: supplier.contact_person || 'Supplier baru',
+          description: supplier.contact_person || 'Pemasok baru',
           time: supplier.created_at ? new Date(supplier.created_at).toLocaleDateString('id-ID') : '-',
           icon: BuildingOfficeIcon,
           color: 'text-green-600 dark:text-green-400'
@@ -88,7 +88,7 @@ export default function Purchasing() {
             type: 'purchase_order',
             title: po.po_number,
             description: `Pesanan pembelian - ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(po.total_amount || 0)}`,
-            supplier: po.supplier?.name || 'Supplier',
+            supplier: po.supplier?.name || 'Pemasok tidak tercatat',
             amount: po.total_amount || 0,
             priority: po.priority || 'normal'
           });
@@ -100,7 +100,7 @@ export default function Purchasing() {
 
   const tabs = [
     { id: 'overview', name: 'Ringkasan', icon: ChartBarIcon },
-    { id: 'suppliers', name: 'Supplier', icon: BuildingOfficeIcon },
+    { id: 'suppliers', name: 'Pemasok', icon: BuildingOfficeIcon },
     { id: 'purchase-orders', name: 'Pesanan Pembelian', icon: DocumentTextIcon },
     { id: 'quotes', name: 'Penawaran & RFQ', icon: BanknotesIcon },
     { id: 'contracts', name: 'Kontrak', icon: ClipboardDocumentListIcon },
@@ -109,7 +109,7 @@ export default function Purchasing() {
 
   const stats = [
     {
-      name: 'Supplier aktif',
+      name: 'Pemasok aktif',
       value: suppliersData?.total || 0,
       icon: UsersIcon,
       gradient: 'from-primary-600 to-primary-700',
@@ -145,12 +145,13 @@ export default function Purchasing() {
   return (
     <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
       <PageHeader
+        eyebrow="PEMBELIAN · RINGKASAN"
         title="Dashboard Pembelian"
         subtitle="Pemasok, permintaan, pesanan, dan kontrak pembelian"
         actions={
           <>
             <Link to="/app/purchasing/price-comparison" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Analisis Harga</Link>
-            <Link to="/app/purchasing/suppliers/new" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Tambah Supplier</Link>
+            <Link to="/app/purchasing/suppliers/new" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Tambah pemasok</Link>
             <Link to="/app/purchasing/purchase-orders/new" className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">Buat PO</Link>
           </>
         }
@@ -188,7 +189,7 @@ export default function Purchasing() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Aktivitas terbaru */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="fn-card">
               <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Aktivitas terbaru</h3>
               </div>
@@ -214,7 +215,7 @@ export default function Purchasing() {
             </div>
 
             {/* Menunggu persetujuan */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="fn-card">
               <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Menunggu persetujuan</h3>
               </div>
@@ -237,7 +238,7 @@ export default function Purchasing() {
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           item.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
                         }`}>
-                          {item.priority}
+                          {item.priority === 'high' ? 'Mendesak' : 'Biasa'}
                         </span>
                       </div>
                     </div>
@@ -258,7 +259,7 @@ export default function Purchasing() {
           <QuickLinks
             title="Pintasan"
             links={[
-              { to: '/app/purchasing/suppliers/new', label: 'Tambah supplier' },
+              { to: '/app/purchasing/suppliers/new', label: 'Tambah pemasok' },
               { to: '/app/purchasing/rfqs/new', label: 'Buat RFQ' },
               { to: '/app/purchasing/contracts/new', label: 'Kontrak baru' },
               { to: '/app/purchasing/requisitions/new', label: 'Buat permintaan pembelian (PR)' },
@@ -270,7 +271,7 @@ export default function Purchasing() {
 
       {/* Other tab contents would be rendered here based on activeTab */}
       {activeTab === 'suppliers' && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div className="fn-card p-6">
           <div className="text-center">
             <BuildingOfficeIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Pengelolaan supplier</h3>
@@ -290,7 +291,7 @@ export default function Purchasing() {
       )}
 
       {activeTab === 'purchase-orders' && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div className="fn-card p-6">
           <div className="text-center">
             <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Pengelolaan pesanan pembelian</h3>
@@ -310,7 +311,7 @@ export default function Purchasing() {
       )}
 
       {activeTab === 'contracts' && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div className="fn-card p-6">
           <div className="text-center">
             <ClipboardDocumentListIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Pengelolaan kontrak</h3>
@@ -330,7 +331,7 @@ export default function Purchasing() {
       )}
 
       {activeTab === 'price-comparison' && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div className="fn-card p-6">
           <div className="text-center">
             <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Analisis harga</h3>

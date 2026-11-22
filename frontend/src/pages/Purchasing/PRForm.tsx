@@ -301,7 +301,8 @@ export default function PRForm() {
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+            <div className="fn-label mb-1.5">PEMBELIAN · PERMINTAAN PEMBELIAN</div>
+            <h1 className="fn-num text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
               {isNew ? 'Buat Purchase Requisition' : pr?.pr_number}
             </h1>
             {pr && (

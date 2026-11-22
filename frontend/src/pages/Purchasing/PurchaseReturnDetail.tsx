@@ -103,6 +103,7 @@ export default function PurchaseReturnDetail() {
           <ArrowLeftIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
         </button>
         <div className="flex-1">
+          <div className="fn-label mb-1.5">PEMBELIAN · RETUR PEMBELIAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{ret.return_number}</h1>
           <p className="text-sm text-gray-500 mt-0.5 dark:text-gray-400">
             Retur pembelian dari invoice {ret.invoice_number || '—'} — {ret.supplier_name || '—'}

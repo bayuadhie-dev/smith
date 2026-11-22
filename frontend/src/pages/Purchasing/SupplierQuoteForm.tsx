@@ -307,8 +307,9 @@ const SupplierQuoteForm: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">PEMBELIAN · PENAWARAN PEMASOK</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
-            {isEdit ? 'Edit Supplier Quote' : 'New Supplier Quote'}
+            {isEdit ? 'Ubah Penawaran Pemasok' : 'Penawaran Pemasok Baru'}
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update quote details and pricing' : 'Create supplier quotation with pricing details'}
@@ -316,7 +317,7 @@ const SupplierQuoteForm: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="fn-card">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
@@ -356,7 +357,7 @@ const SupplierQuoteForm: React.FC = () => {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="">No RFQ Reference</option>
+                  <option value="">Tanpa referensi RFQ</option>
                   {rfqs.map(rfq => (
                     <option key={rfq.id} value={rfq.id}>
                       {rfq.rfq_number} - {rfq.title}

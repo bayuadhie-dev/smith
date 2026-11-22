@@ -61,7 +61,8 @@ export default function InvoiceMatching() {
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Faktur Pembelian {inv.invoice_number}</h1>
+            <div className="fn-label mb-1.5">PEMBELIAN · FAKTUR PEMBELIAN</div>
+            <h1 className="fn-num text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Faktur Pembelian {inv.invoice_number}</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">{inv.supplier_name || '-'} · tanpa PO{inv.grn_id ? <> · <Link className="text-blue-600 hover:underline dark:text-blue-400" to={`/app/purchasing/grn/${inv.grn_id}`}>lihat GRN</Link></> : null} · pencocokan 3 arah tidak berlaku tanpa PO</p>
           </div>
           <div className="flex items-center gap-2">

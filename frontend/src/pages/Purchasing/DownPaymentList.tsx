@@ -52,7 +52,7 @@ export default function DownPaymentList() {
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
   return (
     <div className="space-y-4 p-6">
-      <PageHeader title="Uang Muka Pembelian" subtitle="Pembayaran di muka ke pemasok, dialokasikan ke faktur pembelian"
+      <PageHeader eyebrow="PEMBELIAN · UANG MUKA" title="Uang Muka Pembelian" subtitle="Pembayaran di muka ke pemasok, dialokasikan ke faktur pembelian"
         actions={<Link to="/app/purchasing/down-payments/new" className="rounded-md bg-primary-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-800">Uang muka baru</Link>} />
       <KpiStrip items={[
         { label: 'Jumlah dokumen aktif', value: summary.count.toLocaleString('id-ID') },

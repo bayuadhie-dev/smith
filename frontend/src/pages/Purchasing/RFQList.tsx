@@ -37,6 +37,7 @@ export default function RFQList() {
     <div className="space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">PEMBELIAN · PERMINTAAN PENAWARAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Permintaan Penawaran (RFQ)</h1>
           <p className="text-gray-600 dark:text-gray-300">Kelola RFQ dan kumpulkan penawaran pemasok</p>
         </div>

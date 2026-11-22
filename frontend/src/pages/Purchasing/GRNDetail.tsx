@@ -172,7 +172,8 @@ export default function GRNDetail() {
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">{grn.grn_number}</h1>
+            <div className="fn-label mb-1.5">PEMBELIAN · PENERIMAAN BARANG</div>
+            <h1 className="fn-num text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">{grn.grn_number}</h1>
 <div className="my-2"><DocActions docType="grn" docId={grn.id} number={grn.grn_number} listPath="/app/purchasing/grn" /></div>
             <div className="flex items-center gap-2 mt-0.5">
               <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusCfg.color}`}>
@@ -259,7 +260,7 @@ export default function GRNDetail() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { label: 'No. PO', value: grn.po_id ? <Link to={`/app/purchasing/purchase-orders/${grn.po_id}`} className="text-blue-600 hover:underline dark:text-blue-400">{grn.po_number}</Link> : 'Tanpa PO' },
-          { label: 'Supplier', value: grn.supplier_name },
+          { label: 'Pemasok', value: grn.supplier_name },
           { label: 'Tgl Terima', value: grn.receipt_date ? new Date(grn.receipt_date).toLocaleDateString('id-ID') : '—' },
           { label: 'Diterima oleh', value: grn.received_by_name || '—' },
         ].map(({ label, value }) => (

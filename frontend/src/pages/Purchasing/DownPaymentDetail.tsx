@@ -49,7 +49,7 @@ export default function DownPaymentDetail() {
   const th = 'px-4 py-2.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400'
   return (
     <div className="space-y-4 p-6">
-      <PageHeader title={dp.dp_number} subtitle={`${dp.supplier_name}${dp.po_number ? ' · PO ' + dp.po_number : ''} · ${fmtDate(dp.dp_date)}`}
+      <PageHeader eyebrow="PEMBELIAN · UANG MUKA" title={dp.dp_number} subtitle={`${dp.supplier_name}${dp.po_number ? ' · PO ' + dp.po_number : ''} · ${fmtDate(dp.dp_date)}`}
         actions={<>
           <Link to="/app/purchasing/down-payments" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Kembali</Link>
           {canApprove && dp.status === 'posted' && (

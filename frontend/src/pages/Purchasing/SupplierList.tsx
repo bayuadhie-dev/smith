@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGetSuppliersQuery, useGetSupplierTypesQuery, useDeleteSupplierMutation, useGetAllSupplierScorecardsQuery } from '../../services/api'
 import toast from 'react-hot-toast'
+import { formatRupiah } from '../../utils/currencyUtils';
 import { confirmDialog } from '../../components/ui'
 import {
   EyeIcon,
@@ -49,7 +50,7 @@ const [search, setSearch] = useUrlFilter<string>('cari', '')
     if (await confirmDialog(`Are you sure you want to delete supplier "${name}"?`)) {
       try {
         await deleteSupplier(id).unwrap()
-        toast.success('Supplier deleted successfully')
+        toast.success('Pemasok dihapus')
         refetch()
       } catch (error: any) {
         toast.error(error?.data?.error || 'Failed to delete supplier')
@@ -68,20 +69,21 @@ const [search, setSearch] = useUrlFilter<string>('cari', '')
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
+          <div className="fn-label mb-1.5">PEMBELIAN · PEMASOK</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Pemasok</h1>
-          <p className="text-gray-600 dark:text-gray-300">Manage your supplier database and relationships</p>
+          <p className="text-gray-600 dark:text-gray-300">Master data pemasok beserta kontak dan syarat pembayarannya</p>
         </div>
         <Link
           to="/app/purchasing/suppliers/new"
           className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
         >
           <PlusIcon className="h-5 w-5" />
-          Add New Supplier
+          Pemasok baru
         </Link>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div className="fn-card p-6">
         <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{t('common.search')}</label>
@@ -91,7 +93,7 @@ const [search, setSearch] = useUrlFilter<string>('cari', '')
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name, code, or contact..."
+                placeholder="Cari nama, kode, atau kontak pemasok..."
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -99,14 +101,14 @@ const [search, setSearch] = useUrlFilter<string>('cari', '')
           
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Supplier Type
+              Jenis pemasok
             </label>
             <select
               value={supplierType}
               onChange={(e) => setSupplierType(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">All Types</option>
+              <option value="">Semua jenis</option>
               {(supplierTypesData?.types || []).map((tp: string) => (
                 <option key={tp} value={tp}>{tp}</option>
               ))}
@@ -120,9 +122,9 @@ const [search, setSearch] = useUrlFilter<string>('cari', '')
               onChange={(e) => setStatus(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option value="">Semua status</option>
+              <option value="active">Aktif</option>
+              <option value="inactive">Nonaktif</option>
             </select>
           </div>
           
@@ -143,10 +145,10 @@ const [search, setSearch] = useUrlFilter<string>('cari', '')
           <p className="text-gray-500 dark:text-gray-400 mt-2">Loading suppliers...</p>
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="fn-card">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              Suppliers ({data?.total || 0})
+              Pemasok ({data?.total || 0})
             </h3>
           </div>
           
@@ -155,16 +157,16 @@ const [search, setSearch] = useUrlFilter<string>('cari', '')
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Supplier Info
+                    Pemasok
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Contact Details
+                    Kontak
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Business Info
+                    Syarat dagang
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Rating & Status
+                    Penilaian &amp; status
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
                 </tr>
@@ -201,10 +203,10 @@ const [search, setSearch] = useUrlFilter<string>('cari', '')
                           {supplier.supplier_type || 'General'}{supplier.supplier_subtype ? ' - ' + supplier.supplier_subtype : ''}
                         </span>
                         <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          Payment: {supplier.payment_terms === '0' ? 'C.O.D' : `${supplier.payment_terms || '30'} days`}
+                          Termin: {supplier.payment_terms === '0' ? 'tunai (C.O.D)' : `${supplier.payment_terms || '30'} hari`}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          Credit: ${supplier.credit_limit?.toLocaleString() || '0'}
+                          Plafon: {formatRupiah(Number(supplier.credit_limit || 0))}
                         </div>
                       </div>
                     </td>
@@ -216,7 +218,7 @@ const [search, setSearch] = useUrlFilter<string>('cari', '')
                           supplier.rating === 'C' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
                           'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
                         }`}>
-                          Rating: {supplier.rating || 'Unrated'}
+                          Nilai: {supplier.rating || 'belum dinilai'}
                         </span>
                         {(() => {
                           const sc = scorecardBySupplierId.get(supplier.id) as any;

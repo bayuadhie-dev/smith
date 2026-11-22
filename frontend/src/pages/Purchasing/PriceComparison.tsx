@@ -54,13 +54,14 @@ export default function PriceComparison() {
     <div className="space-y-6">
       {/* Header */}
       <div>
+        <div className="fn-label mb-1.5">PEMBELIAN · PERBANDINGAN HARGA</div>
         <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Perbandingan Harga</h1>
         <p className="text-gray-600 dark:text-gray-300">Compare supplier prices and analyze market trends</p>
       </div>
 
       {/* Search Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Search Product Prices</h2>
+      <div className="fn-card p-6">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Cari harga barang</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
@@ -106,7 +107,7 @@ export default function PriceComparison() {
       {comparisonData && (
         <div className="space-y-6">
           {/* Price Analysis Summary */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="fn-card p-6">
             <div className="flex items-center gap-2 mb-4">
               <ChartBarIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               <h2 className="text-lg font-medium text-gray-900 dark:text-white">Price Analysis</h2>
@@ -148,7 +149,7 @@ export default function PriceComparison() {
               
               <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-100">Suppliers</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-100">Pemasok</span>
                 </div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
                   {comparisonData.analysis.suppliers_count || 0}
@@ -159,7 +160,7 @@ export default function PriceComparison() {
 
           {/* Recent Quotes */}
           {comparisonData.recent_quotes && comparisonData.recent_quotes.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="fn-card">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent Quotes</h3>
               </div>
@@ -230,7 +231,7 @@ export default function PriceComparison() {
 
           {/* Price History */}
           {comparisonData.price_history && comparisonData.price_history.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="fn-card">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2">
                   <CalendarIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
@@ -296,7 +297,7 @@ export default function PriceComparison() {
       {!comparisonData && !isLoading && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
           <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No comparison data</h3>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Belum ada data pembanding</h3>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Select a product and click "Compare Prices" to see price analysis.</p>
         </div>
       )}

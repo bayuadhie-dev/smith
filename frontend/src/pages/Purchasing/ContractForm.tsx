@@ -143,8 +143,9 @@ export default function ContractForm() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="fn-label mb-1.5">PEMBELIAN · KONTRAK</div>
       <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white mb-1 tracking-tight leading-tight">
-        {isEdit ? 'Edit Kontrak Supplier' : 'Kontrak Supplier Baru'}
+        {isEdit ? 'Ubah Kontrak Pemasok' : 'Kontrak Pemasok Baru'}
       </h1>
       {locked && (
         <p className="text-sm text-red-600 mb-4 dark:text-red-400">

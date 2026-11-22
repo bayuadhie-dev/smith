@@ -105,7 +105,8 @@ export default function PODetail() {
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">{po.po_number}</h1>
+            <div className="fn-label mb-1.5">PEMBELIAN · PESANAN PEMBELIAN</div>
+            <h1 className="fn-num text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">{po.po_number}</h1>
 <div className="my-2"><DocActions docType="purchase_order" docId={po.id} number={po.po_number} listPath="/app/purchasing/purchase-orders" /></div>
             <div className="flex items-center gap-2 mt-0.5">
               <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusCfg?.color}`}>{statusCfg?.label}</span>

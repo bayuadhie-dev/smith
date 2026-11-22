@@ -125,6 +125,7 @@ const { id } = useParams()
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-6">
+        <div className="fn-label mb-1.5">PEMBELIAN · PEMASOK</div>
         <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
           {isEdit ? 'Ubah Pemasok' : 'Pemasok Baru'}
         </h1>
@@ -134,7 +135,7 @@ const { id } = useParams()
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="fn-card p-6">
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Informasi Dasar</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -221,7 +222,7 @@ const { id } = useParams()
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="fn-card p-6">
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Alamat</h2>
           
           <div className="space-y-4">
@@ -296,7 +297,7 @@ const { id } = useParams()
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="fn-card p-6">
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Informasi Bisnis</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

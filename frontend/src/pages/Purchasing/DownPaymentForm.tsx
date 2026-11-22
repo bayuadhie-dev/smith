@@ -70,7 +70,7 @@ export default function DownPaymentForm() {
 
   return (
     <div className="space-y-4 p-6">
-      <PageHeader title="Uang Muka Pembelian Baru" subtitle="Bayar di muka ke pemasok. Setelah faktur terbit, uang muka dialokasikan ke faktur."
+      <PageHeader eyebrow="PEMBELIAN · UANG MUKA" title="Uang Muka Pembelian Baru" subtitle="Bayar di muka ke pemasok. Setelah faktur terbit, uang muka dialokasikan ke faktur."
         actions={<Link to="/app/purchasing/down-payments" className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">Batal</Link>} />
       {error && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">{error}</div>}
       <form onSubmit={submit} className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
