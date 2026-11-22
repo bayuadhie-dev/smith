@@ -14,12 +14,12 @@ const routeLabels: Record<string, string> = {
   'app': 'Home',
   'dashboard': 'Dashboard',
   // Products
-  'products': 'Products',
+  'products': 'Produk',
   'bom': 'Bill of Materials',
-  'categories': 'Categories',
-  'lifecycle': 'Lifecycle',
-  'calculator': 'Cost Calculator',
-  'analytics': 'Analytics',
+  'categories': 'Kategori',
+  'lifecycle': 'Daur Hidup',
+  'calculator': 'Kalkulator Nonwoven',
+  'analytics': 'Analitik',
   // Warehouse
   'warehouse': 'Inventory',
   'inventory': 'Inventory',

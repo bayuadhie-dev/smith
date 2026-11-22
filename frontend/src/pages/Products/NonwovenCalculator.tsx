@@ -45,7 +45,7 @@ const NonwovenCalculator: React.FC = () => {
       const result = await response.json();
       showSuccess(`GSM: ${result.gsm}`);
     } catch (error) {
-      showError('Error calculating GSM');
+      showError('GSM gagal dihitung.');
     }
   };
 
@@ -61,9 +61,9 @@ const NonwovenCalculator: React.FC = () => {
         })
       });
       const result = await response.json();
-      showSuccess(`Weight per sheet: ${result.weight_per_sheet_g} grams`);
+      showSuccess(`Berat per lembar: ${result.weight_per_sheet_g} gram`);
     } catch (error) {
-      showError('Error calculating sheet weight');
+      showError('Berat lembar gagal dihitung.');
     }
   };
 
@@ -78,9 +78,9 @@ const NonwovenCalculator: React.FC = () => {
         })
       });
       const result = await response.json();
-      showSuccess(`Packaging Structure: ${result.packaging_ratio}`);
+      showSuccess(`Struktur kemasan: ${result.packaging_ratio}`);
     } catch (error) {
-      showError('Error calculating packaging');
+      showError('Struktur kemasan gagal dihitung.');
     }
   };
 
@@ -96,26 +96,27 @@ const NonwovenCalculator: React.FC = () => {
         })
       });
       const result = await response.json();
-      showSuccess(`Converted: ${result.converted_value} ${result.to_uom}`);
+      showSuccess(`Hasil konversi: ${result.converted_value} ${result.to_uom}`);
     } catch (error) {
-      showError('Error converting UOM');
+      showError('Satuan gagal dikonversi.');
     }
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-[28px] font-semibold tracking-tight leading-tight">Nonwoven Manufacturing Calculator</h1>
+    <div className="mx-auto max-w-6xl space-y-4 pb-10">
+      <div className="fn-label mb-1.5">PRODUK · KALKULATOR NONWOVEN</div>
+      <h1 className="text-[28px] font-semibold tracking-tight leading-tight">Kalkulator Nonwoven</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Calculator Type Selection */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Calculator Type</h2>
+        <div className="fn-card p-6">
+          <h2 className="text-xl font-semibold mb-4">Jenis kalkulator</h2>
           <div className="space-y-2">
             {[
-              { value: 'gsm', label: 'GSM Calculator' },
-              { value: 'sheet-weight', label: 'Sheet Weight Calculator' },
-              { value: 'packaging', label: 'Packaging Calculator' },
-              { value: 'uom', label: 'UOM Converter' }
+              { value: 'gsm', label: 'Hitung GSM' },
+              { value: 'sheet-weight', label: 'Hitung berat lembar' },
+              { value: 'packaging', label: 'Hitung kemasan' },
+              { value: 'uom', label: 'Konversi satuan' }
             ].map((type) => (
               <label key={type.value} className="flex items-center">
                 <input
@@ -132,43 +133,43 @@ const NonwovenCalculator: React.FC = () => {
         </div>
 
         {/* Calculator Interface */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <div className="fn-card p-6">
           {calculatorType === 'gsm' && (
             <div>
-              <h2 className="text-xl font-semibold mb-4">GSM Calculator</h2>
+              <h2 className="text-xl font-semibold mb-4">Hitung GSM</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Width (cm)</label>
+                  <label className="block text-sm font-medium mb-1">Lebar (cm)</label>
                   <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={gsmInputs.width_cm}
                     onChange={(e) => setGsmInputs({...gsmInputs, width_cm: e.target.value})}
-                    placeholder="Enter width in cm"
+                    placeholder="Lebar dalam cm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Length (m)</label>
+                  <label className="block text-sm font-medium mb-1">Panjang (m)</label>
                   <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={gsmInputs.length_m}
                     onChange={(e) => setGsmInputs({...gsmInputs, length_m: e.target.value})}
-                    placeholder="Enter length in meters"
+                    placeholder="Panjang dalam meter"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Weight (g)</label>
+                  <label className="block text-sm font-medium mb-1">Berat (g)</label>
                   <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={gsmInputs.weight_g}
                     onChange={(e) => setGsmInputs({...gsmInputs, weight_g: e.target.value})}
-                    placeholder="Enter weight in grams"
+                    placeholder="Berat dalam gram"
                   />
                 </div>
                 <button
                   onClick={handleGsmCalculate}
                   className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
                 >
-                  Calculate GSM
+                  Hitung GSM
                 </button>
               </div>
             </div>
@@ -176,7 +177,7 @@ const NonwovenCalculator: React.FC = () => {
 
           {calculatorType === 'sheet-weight' && (
             <div>
-              <h2 className="text-xl font-semibold mb-4">Sheet Weight Calculator</h2>
+              <h2 className="text-xl font-semibold mb-4">Hitung berat lembar</h2>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">GSM</label>
@@ -184,32 +185,32 @@ const NonwovenCalculator: React.FC = () => {
                     className="w-full border rounded px-3 py-2"
                     value={sheetWeightInputs.gsm}
                     onChange={(e) => setSheetWeightInputs({...sheetWeightInputs, gsm: e.target.value})}
-                    placeholder="Enter GSM value"
+                    placeholder="Nilai GSM"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Width (cm)</label>
+                  <label className="block text-sm font-medium mb-1">Lebar (cm)</label>
                   <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={sheetWeightInputs.width_cm}
                     onChange={(e) => setSheetWeightInputs({...sheetWeightInputs, width_cm: e.target.value})}
-                    placeholder="Enter width in cm"
+                    placeholder="Lebar dalam cm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Length (cm)</label>
+                  <label className="block text-sm font-medium mb-1">Panjang (cm)</label>
                   <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={sheetWeightInputs.length_cm}
                     onChange={(e) => setSheetWeightInputs({...sheetWeightInputs, length_cm: e.target.value})}
-                    placeholder="Enter length in cm"
+                    placeholder="Panjang dalam cm"
                   />
                 </div>
                 <button
                   onClick={handleSheetWeightCalculate}
                   className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
                 >
-                  Calculate Sheet Weight
+                  Hitung berat lembar
                 </button>
               </div>
             </div>
@@ -217,31 +218,31 @@ const NonwovenCalculator: React.FC = () => {
 
           {calculatorType === 'packaging' && (
             <div>
-              <h2 className="text-xl font-semibold mb-4">Packaging Calculator</h2>
+              <h2 className="text-xl font-semibold mb-4">Hitung kemasan</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Sheets per Pack</label>
+                  <label className="block text-sm font-medium mb-1">Lembar per pak</label>
                   <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={packagingInputs.sheets_per_pack}
                     onChange={(e) => setPackagingInputs({...packagingInputs, sheets_per_pack: e.target.value})}
-                    placeholder="Enter sheets per pack"
+                    placeholder="Lembar per pak"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Packs per Karton</label>
+                  <label className="block text-sm font-medium mb-1">Pak per karton</label>
                   <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={packagingInputs.packs_per_karton}
                     onChange={(e) => setPackagingInputs({...packagingInputs, packs_per_karton: e.target.value})}
-                    placeholder="Enter packs per karton"
+                    placeholder="Pak per karton"
                   />
                 </div>
                 <button
                   onClick={handlePackagingCalculate}
                   className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
                 >
-                  Calculate Packaging Structure
+                  Hitung struktur kemasan
                 </button>
               </div>
             </div>
@@ -249,20 +250,20 @@ const NonwovenCalculator: React.FC = () => {
 
           {calculatorType === 'uom' && (
             <div>
-              <h2 className="text-xl font-semibold mb-4">UOM Converter</h2>
+              <h2 className="text-xl font-semibold mb-4">Konversi satuan</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Value</label>
+                  <label className="block text-sm font-medium mb-1">Nilai</label>
                   <NumberInput
                     className="w-full border rounded px-3 py-2"
                     value={uomInputs.value}
                     onChange={(e) => setUomInputs({...uomInputs, value: e.target.value})}
-                    placeholder="Enter value to convert"
+                    placeholder="Nilai yang mau dikonversi"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-sm font-medium mb-1">From UOM</label>
+                    <label className="block text-sm font-medium mb-1">Dari satuan</label>
                     <select
                       className="w-full border rounded px-3 py-1"
                       value={uomInputs.from_uom}
@@ -281,7 +282,7 @@ const NonwovenCalculator: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">To UOM</label>
+                    <label className="block text-sm font-medium mb-1">Ke satuan</label>
                     <select
                       className="w-full border rounded px-3 py-1"
                       value={uomInputs.to_uom}
@@ -304,7 +305,7 @@ const NonwovenCalculator: React.FC = () => {
                   onClick={handleUomConvert}
                   className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
                 >
-                  Convert UOM
+                  Konversi satuan
                 </button>
               </div>
             </div>
@@ -313,8 +314,8 @@ const NonwovenCalculator: React.FC = () => {
       </div>
 
       {/* Categories Reference */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">Nonwoven Categories Reference</h2>
+      <div className="fn-card p-6">
+        <h2 className="text-xl font-semibold mb-4">Acuan kategori nonwoven</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { name: 'Wet Tissue', gsm_range: [40, 80], width_range: [10, 30], length_range: [15, 25] },
@@ -324,14 +325,14 @@ const NonwovenCalculator: React.FC = () => {
             { name: 'Paper Towel', gsm_range: [20, 45], width_range: [20, 35], length_range: [20, 35] },
             { name: 'Facial Tissue', gsm_range: [12, 20], width_range: [15, 25], length_range: [18, 22] },
             { name: 'Baby Wipes', gsm_range: [45, 80], width_range: [15, 25], length_range: [18, 25] },
-            { name: 'Other', gsm_range: [10, 100], width_range: [5, 50], length_range: [5, 50] }
+            { name: 'Lainnya', gsm_range: [10, 100], width_range: [5, 50], length_range: [5, 50] }
           ].map((category: any, index: number) => (
             <div key={index} className="p-3 border rounded">
               <h3 className="font-medium">{category.name}</h3>
               <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                 <p>GSM: {category.gsm_range[0]}-{category.gsm_range[1]}</p>
-                <p>Width: {category.width_range[0]}-{category.width_range[1]} cm</p>
-                <p>Length: {category.length_range[0]}-{category.length_range[1]} cm</p>
+                <p>Lebar: {category.width_range[0]}-{category.width_range[1]} cm</p>
+                <p>Panjang: {category.length_range[0]}-{category.length_range[1]} cm</p>
               </div>
             </div>
           ))}

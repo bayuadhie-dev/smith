@@ -10,6 +10,7 @@ from models.bom_history import BOMHistory, BOMImportLog
 from utils import generate_number
 from utils.i18n import success_response, error_response
 from datetime import datetime, date
+from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy import or_, desc
 from utils.timezone import get_local_now, get_local_today
 
@@ -27,8 +28,19 @@ def get_boms():
         product_id = request.args.get('product_id', type=int)
         is_active = request.args.get('is_active', type=str)
         
-        # Build query
-        query = BillOfMaterials.query
+        # Produk dan nama pembuat/penyetuju ikut diambil sekalian: tanpa ini
+        # tiap baris menembak empat query sendiri, dan daftar 500 BOM butuh
+        # hampir satu menit (2026-11-22).
+        query = BillOfMaterials.query.options(
+            joinedload(BillOfMaterials.product),
+            joinedload(BillOfMaterials.created_by_user),
+            joinedload(BillOfMaterials.approved_by_user),
+            # BOMItem.total_cost melihat harga bahan/produknya, jadi dua
+            # relasi itu ikut dimuat - kalau tidak, 1700 baris BOM berarti
+            # 3400 query tambahan.
+            selectinload(BillOfMaterials.items).selectinload(BOMItem.material),
+            selectinload(BillOfMaterials.items).selectinload(BOMItem.product)
+        )
         
         # Filter by product
         if product_id:

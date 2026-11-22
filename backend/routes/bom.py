@@ -14,13 +14,22 @@ from sqlalchemy import func, desc, and_
 from utils.timezone import get_local_now, get_local_today
 
 def get_product_name_from_new(product_code):
-    """Get updated product name from ProductNew model"""
+    """Nama produk menurut skema baru.
+
+    ProductNew sekarang cuma alias dari Product (lihat
+    models/product_excel_schema.py), jadi pencarian ulang lewat kode hanya
+    mengembalikan nama yang sama sambil menambah satu query per baris.
+    Dipertahankan supaya pemanggil lama tidak rusak, tapi daftar BOM tidak
+    memakainya lagi - itu yang bikin /api/boms makan puluhan detik.
+    """
     if not product_code:
         return None
     product_new = ProductNew.query.filter_by(code=product_code).first()
     if product_new:
         return product_new.name
     return None
+
+from sqlalchemy.orm import joinedload, selectinload
 
 bom_bp = Blueprint('bom', __name__)
 
@@ -50,7 +59,17 @@ def get_boms():
         is_active = _parse_bool_arg('is_active')
         search = request.args.get('search', '')
 
-        query = BillOfMaterials.query.join(Product)
+        # Tanpa joinedload, tiap baris menembak query sendiri untuk produk
+        # dan pembuatnya.
+        query = BillOfMaterials.query.join(Product).options(
+            joinedload(BillOfMaterials.product),
+            joinedload(BillOfMaterials.created_by_user),
+            # BOMItem.total_cost melihat harga bahan/produknya, jadi dua
+            # relasi itu ikut dimuat - kalau tidak, 1700 baris BOM berarti
+            # 3400 query tambahan.
+            selectinload(BillOfMaterials.items).selectinload(BOMItem.material),
+            selectinload(BillOfMaterials.items).selectinload(BOMItem.product)
+        )
         
         if product_id:
             query = query.filter(BillOfMaterials.product_id == product_id)
@@ -73,7 +92,7 @@ def get_boms():
                     'id': bom.id,
                     'bom_number': bom.bom_number,
                     'product_id': bom.product_id,
-                    'product_name': get_product_name_from_new(bom.product.code) or (bom.product.name if bom.product else None),
+                    'product_name': bom.product.name if bom.product else None,
                     'product_code': bom.product.code if bom.product else None,
                     'version': bom.version,
                     'is_active': bom.is_active,
@@ -100,7 +119,7 @@ def get_boms():
                 'id': bom.id,
                 'bom_number': bom.bom_number,
                 'product_id': bom.product_id,
-                'product_name': get_product_name_from_new(bom.product.code) or (bom.product.name if bom.product else None),
+                'product_name': bom.product.name if bom.product else None,
                 'product_code': bom.product.code if bom.product else None,
                 'version': bom.version,
                 'is_active': bom.is_active,

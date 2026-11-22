@@ -222,8 +222,8 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* Basic Information */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+          <div className="fn-card p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <CubeIcon className="w-5 h-5 mr-2" />
               Informasi Dasar
             </h3>
@@ -262,8 +262,8 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
           </div>
 
           {/* Specifications */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+          <div className="fn-card p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <Settings className="w-5 h-5 mr-2" />
               Spesifikasi Teknis
             </h3>
@@ -312,8 +312,8 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
           </div>
 
           {/* Packaging */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+          <div className="fn-card p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <CubeIcon className="w-5 h-5 mr-2" />
               Kemasan & Batch
             </h3>
@@ -361,8 +361,8 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
           </div>
 
           {/* Material Composition */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+          <div className="fn-card p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <ChartBarIcon className="w-5 h-5 mr-2" />
               Komposisi Material
             </h3>
@@ -395,8 +395,8 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
           </div>
 
           {/* Production Process */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+          <div className="fn-card p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <Settings className="w-5 h-5 mr-2" />
               Proses Produksi
             </h3>
@@ -419,8 +419,8 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
           </div>
 
           {/* Material Requirements */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+          <div className="fn-card p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <DocumentTextIcon className="w-5 h-5 mr-2" />
               Kebutuhan Material
             </h3>
@@ -453,8 +453,8 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
           </div>
 
           {/* Roll Information */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+          <div className="fn-card p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <CubeIcon className="w-5 h-5 mr-2" />
               Informasi Roll
             </h3>
@@ -483,8 +483,8 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
           </div>
 
           {/* Mixing Process */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+          <div className="fn-card p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <Settings className="w-5 h-5 mr-2" />
               Proses Mixing
             </h3>
@@ -510,9 +510,9 @@ const ProductDetailNew: React.FC<ProductDetailNewProps> = ({ productId, onEdit, 
       )}
 
       {activeTab === 'versions' && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="fn-card">
           <div className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Riwayat Perubahan Versi</h3>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Riwayat Perubahan Versi</h3>
             {versions.length === 0 ? (
               <p className="text-gray-600 dark:text-gray-300">Belum ada riwayat perubahan versi</p>
             ) : (

@@ -11,6 +11,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
+import { PageHeader } from '../../components/ui/PageKit';
 import { formatRupiah } from '../../utils/currencyUtils';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { confirmDialog, showError, showSuccess } from '../../components/ui';
@@ -355,38 +356,37 @@ const BOMManagement: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap justify-between items-center gap-3">
-        <div className="flex items-center space-x-4">
-          <Link
-            to="/app/products/dashboard"
-            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
-          >
-            <ArrowLeftIcon className="h-5 w-5 mr-2" />
-            Back to Dashboard
-          </Link>
-          <div>
-            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{t('products.bom.title')}</h1>
-            <p className="text-gray-600 mt-1 dark:text-gray-300">{t('products.bom.description')}</p>
-            <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
-              <p className="text-sm text-blue-800 dark:text-blue-300">
-                <strong>💡 Tip:</strong> {t('products.bom.tip')}
-              </p>
-            </div>
-          </div>
-        </div>
-        <Link
-          to="/app/products/boms/new"
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          {t('common.create')} BOM
-        </Link>
-      </div>
+    <div className="mx-auto max-w-6xl space-y-4 pb-10">
+      <PageHeader
+        eyebrow="PRODUK · BOM"
+        title={t('products.bom.title')}
+        subtitle={t('products.bom.description')}
+        actions={
+          <>
+            <Link
+              to="/app/products/dashboard"
+              className="fn-press inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+              Kembali ke dashboard
+            </Link>
+            <Link
+              to="/app/products/boms/new"
+              className="fn-press inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600"
+            >
+              <PlusIcon className="h-4 w-4" />
+              Buat BOM
+            </Link>
+          </>
+        }
+      />
+
+      <p className="fn-card px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+        {t('products.bom.tip')}
+      </p>
 
       {/* Search */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="fn-card p-6">
         <div className="relative">
           <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
@@ -402,7 +402,7 @@ const BOMManagement: React.FC = () => {
       {/* BOM List */}
       <div className="space-y-4">
         {filteredBOMs.map((bom) => (
-          <div key={bom.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div key={bom.id} className="fn-card p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center">
                 <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900/30">
@@ -421,7 +421,7 @@ const BOMManagement: React.FC = () => {
                     ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
                     : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                 }`}>
-                  {bom.is_active ? 'Active' : 'Inactive'}
+                  {bom.is_active ? 'Aktif' : 'Nonaktif'}
                 </span>
                 <div className="flex space-x-1 flex-wrap">
                   <Link
@@ -483,7 +483,7 @@ const BOMManagement: React.FC = () => {
                   {loadingItems.has(bom.id) ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <span className="ml-3 text-gray-600 dark:text-gray-300">Loading materials...</span>
+                      <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">Memuat bahan...</span>
                     </div>
                   ) : (
                     <table className="w-full text-sm">
@@ -523,14 +523,14 @@ const BOMManagement: React.FC = () => {
                                 <button
                                   onClick={() => openItemModal(bom, item)}
                                   className="p-1 text-gray-400 hover:text-blue-600"
-                                  title="Edit item"
+                                  title="Ubah baris"
                                 >
                                   <PencilIcon className="h-3 w-3" />
                                 </button>
                                 <button
                                   onClick={() => deleteItem(bom.id, item.id)}
                                   className="p-1 text-gray-400 hover:text-red-600"
-                                  title="Remove item"
+                                  title="Hapus baris"
                                 >
                                   <TrashIcon className="h-3 w-3" />
                                 </button>
@@ -586,7 +586,7 @@ const BOMManagement: React.FC = () => {
                     options={products}
                     value={bomForm.product_id || null}
                     onChange={(value) => setBomForm({...bomForm, product_id: Number(value)})}
-                    placeholder="Select Product"
+                    placeholder="Pilih produk"
                     className="mt-1 w-full"
                     disabled={!!selectedBOM}
                   />
@@ -611,7 +611,7 @@ const BOMManagement: React.FC = () => {
                       onChange={(e) => setBomForm({...bomForm, is_active: e.target.checked})}
                       className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:text-blue-400"
                     />
-                    <span className="text-sm text-gray-700 dark:text-gray-200">Active BOM</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-200">BOM aktif</span>
                   </label>
                 </div>
               </div>
@@ -651,7 +651,7 @@ const BOMManagement: React.FC = () => {
                     onChange={(e) => setItemForm({...itemForm, material_id: parseInt(e.target.value)})}
                     className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value={0}>Select Material</option>
+                    <option value={0}>Pilih bahan</option>
                     {materials.map((material) => (
                       <option key={material.id} value={material.id}>
                         {material.name} ({material.code}) - {formatRupiah(material.unit_cost)}/{material.unit}
@@ -667,18 +667,18 @@ const BOMManagement: React.FC = () => {
                     value={itemForm.quantity}
                     onChange={(e) => setItemForm({...itemForm, quantity: parseFloat(e.target.value) || 0})}
                     className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter quantity"
+                    placeholder="Jumlah"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Waste Percentage</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Persentase susut</label>
                   <NumberInput
                     step="0.1"
                     value={itemForm.scrap_percent}
                     onChange={(e) => setItemForm({...itemForm, scrap_percent: parseFloat(e.target.value) || 0})}
                     className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter waste percentage"
+                    placeholder="Persentase susut"
                   />
                 </div>
 
@@ -689,13 +689,13 @@ const BOMManagement: React.FC = () => {
                     onChange={(e) => setItemForm({...itemForm, notes: e.target.value})}
                     className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     rows={2}
-                    placeholder="Optional notes"
+                    placeholder="Catatan (opsional)"
                   />
                 </div>
 
                 {itemForm.material_id > 0 && itemForm.quantity > 0 && (
                   <div className="bg-blue-50 rounded-lg p-3 dark:bg-blue-900/20">
-                    <div className="text-sm text-blue-600 dark:text-blue-400">Estimated Cost</div>
+                    <div className="text-sm text-blue-600 dark:text-blue-400">Perkiraan biaya</div>
                     <div className="text-lg font-semibold text-blue-900 dark:text-blue-200">
                       {formatRupiah(calculateItemCost())}
                     </div>
@@ -713,7 +713,7 @@ const BOMManagement: React.FC = () => {
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                   disabled={itemForm.material_id === 0 || itemForm.quantity <= 0}
                 >
-                  {editingItem ? 'Update Material' : 'Add Material'}
+                  {editingItem ? 'Simpan bahan' : 'Tambah bahan'}
                 </button>
               </div>
             </div>

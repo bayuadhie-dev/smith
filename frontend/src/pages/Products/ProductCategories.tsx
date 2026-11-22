@@ -159,25 +159,25 @@ const ProductCategories: React.FC = () => {
 
       closeModal();
       await loadCategories();
-      showSuccess(`Category ${editingCategory ? 'updated' : 'created'} successfully!`);
+      showSuccess(editingCategory ? 'Kategori diperbarui.' : 'Kategori dibuat.');
     } catch (error) {
       console.error('Failed to save category:', error);
-      showError('Failed to save category');
+      showError('Kategori gagal disimpan.');
     }
   };
 
   const deleteCategory = async (categoryId: number) => {
-    if (!(await confirmDialog('Are you sure you want to delete this category? This action cannot be undone.'))) {
+    if (!(await confirmDialog('Hapus kategori ini? Tindakan ini tidak bisa dibatalkan.'))) {
       return;
     }
 
     try {
       await axiosInstance.delete(`/api/products/categories/${categoryId}`);
       await loadCategories();
-      showSuccess('Category deleted successfully!');
+      showSuccess('Kategori dihapus.');
     } catch (error) {
       console.error('Failed to delete category:', error);
-      showError('Failed to delete category. It may have associated products.');
+      showError('Kategori gagal dihapus. Mungkin masih dipakai produk.');
     }
   };
 
@@ -201,7 +201,7 @@ const ProductCategories: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3">Loading categories...</span>
+        <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">Memuat kategori...</span>
       </div>
     );
   }
@@ -216,11 +216,12 @@ const ProductCategories: React.FC = () => {
             className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
-            Back to Dashboard
+            Kembali ke dashboard
           </Link>
           <div>
+            <div className="fn-label mb-1.5">PRODUK · KATEGORI</div>
             <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Kategori Produk</h1>
-            <p className="text-gray-600 mt-1 dark:text-gray-300">Organize and manage your product categories</p>
+            <p className="text-gray-600 mt-1 dark:text-gray-300">Susun dan kelola kategori produk.</p>
           </div>
         </div>
         <button
@@ -228,19 +229,19 @@ const ProductCategories: React.FC = () => {
           className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           <PlusIcon className="h-5 w-5 mr-2" />
-          Add Category
+          Tambah kategori
         </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="fn-card p-6">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex-1 min-w-64">
             <div className="relative">
               <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search categories..."
+                placeholder="Cari kategori..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -255,9 +256,9 @@ const ProductCategories: React.FC = () => {
               onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
               className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option value="all">Semua status</option>
+              <option value="active">Aktif</option>
+              <option value="inactive">Nonaktif</option>
             </select>
           </div>
         </div>
@@ -285,7 +286,7 @@ const ProductCategories: React.FC = () => {
                     ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
                     : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                 }`}>
-                  {category.is_active ? 'Active' : 'Inactive'}
+                  {category.is_active ? 'Aktif' : 'Nonaktif'}
                 </span>
               </div>
             </div>
@@ -294,11 +295,11 @@ const ProductCategories: React.FC = () => {
 
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-300">Products:</span>
+                <span className="text-gray-600 dark:text-gray-300">Produk:</span>
                 <span className="font-medium text-gray-900 dark:text-white">{formatNumber(category.product_count)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-300">Total Value:</span>
+                <span className="text-gray-600 dark:text-gray-300">Nilai total:</span>
                 <span className="font-medium text-gray-900 dark:text-white">{formatRupiah(category.total_value)}</span>
               </div>
             </div>
@@ -319,7 +320,7 @@ const ProductCategories: React.FC = () => {
                 onClick={() => deleteCategory(category.id)}
                 className="flex items-center justify-center px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300"
                 disabled={category.product_count > 0}
-                title={category.product_count > 0 ? 'Cannot delete category with products' : 'Delete category'}
+                title={category.product_count > 0 ? 'Kategori yang masih punya produk tidak bisa dihapus' : 'Hapus kategori'}
               >
                 <TrashIcon className="h-4 w-4" />
               </button>
@@ -332,14 +333,14 @@ const ProductCategories: React.FC = () => {
         <div className="text-center py-12">
           <TagIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            {loadError ? 'Failed to load categories' : 'No categories found'}
+            {loadError ? 'Kategori gagal dimuat' : 'Belum ada kategori'}
           </h3>
           <p className="text-gray-600 mb-4 dark:text-gray-300">
             {loadError
-              ? 'Could not reach the server. Please try again.'
+              ? 'Server tidak bisa dihubungi. Coba lagi.'
               : searchTerm || statusFilter !== 'all'
-              ? 'Try adjusting your search or filters'
-              : 'Get started by creating your first product category'
+              ? 'Coba ubah kata pencarian atau penyaringnya.'
+              : 'Mulai dengan membuat kategori produk pertama.'
             }
           </p>
           {!searchTerm && statusFilter === 'all' && (
@@ -348,7 +349,7 @@ const ProductCategories: React.FC = () => {
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
-              Add Category
+              Tambah kategori
             </button>
           )}
         </div>
@@ -360,18 +361,18 @@ const ProductCategories: React.FC = () => {
           <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                {editingCategory ? 'Edit Category' : 'Add New Category'}
+                {editingCategory ? 'Ubah kategori' : 'Tambah kategori baru'}
               </h3>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Category Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Nama kategori</label>
                   <input
                     type="text"
                     value={categoryForm.name}
                     onChange={(e) => setCategoryForm({...categoryForm, name: e.target.value})}
                     className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter category name"
+                    placeholder="Nama kategori"
                   />
                 </div>
 
@@ -382,18 +383,18 @@ const ProductCategories: React.FC = () => {
                     onChange={(e) => setCategoryForm({...categoryForm, description: e.target.value})}
                     className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     rows={3}
-                    placeholder="Enter category description"
+                    placeholder="Keterangan kategori"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Parent Category</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Kategori induk</label>
                   <select
                     value={categoryForm.parent_id || ''}
                     onChange={(e) => setCategoryForm({...categoryForm, parent_id: e.target.value ? parseInt(e.target.value) : null})}
                     className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="">No Parent (Top Level)</option>
+                    <option value="">Tanpa induk (tingkat atas)</option>
                     {getParentCategories().map((parent) => (
                       <option key={parent.id} value={parent.id}>
                         {parent.name}
@@ -425,7 +426,7 @@ const ProductCategories: React.FC = () => {
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                   disabled={!categoryForm.name.trim()}
                 >
-                  {editingCategory ? 'Update Category' : 'Create Category'}
+                  {editingCategory ? 'Simpan perubahan' : 'Buat kategori'}
                 </button>
               </div>
             </div>

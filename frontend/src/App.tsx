@@ -484,6 +484,10 @@ function AppChildRoutes() {
                 <Route path="products/boms/:id/edit" element={<BOMForm />} />
                 <Route path="products/:id" element={<ProductFormNewWrapper />} />
                 <Route path="products/lifecycle" element={<ProductLifecycle />} />
+                {/* Kalkulator nonwoven sudah lama ada tapi tidak pernah
+                    dipasang rutenya - halamannya tidak bisa dibuka sama sekali.
+                    Pintasannya ada di dashboard produk. */}
+                <Route path="products/calculator" element={<NonwovenCalculator />} />
                 <Route path="products/new" element={<ProductFormNewWrapper />} />
                 <Route path="products/:id/edit" element={<ProductFormNewWrapper />} />
                 <Route path="products/:kode_produk/versions" element={<ProductVersionHistory />} />

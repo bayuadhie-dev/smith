@@ -506,8 +506,9 @@ const BOMForm: React.FC = () => {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">PRODUK · BOM</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
-            {isEdit ? 'Edit Bill of Materials' : 'New Bill of Materials'}
+            {isEdit ? 'Ubah BOM' : 'BOM Baru'}
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
             {isEdit ? 'Update BOM structure and components' : 'Create new BOM for product manufacturing'}
@@ -516,7 +517,7 @@ const BOMForm: React.FC = () => {
       </div>
 
       {/* Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="fn-card">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">
@@ -565,7 +566,7 @@ const BOMForm: React.FC = () => {
                       batch_size: product?.pack_per_carton || prev.batch_size
                     }));
                   }}
-                  placeholder="Select Product"
+                  placeholder="Pilih produk"
                   className="w-full"
                 />
                 {selectedProduct && (
@@ -701,15 +702,15 @@ const BOMForm: React.FC = () => {
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <Plus className="inline h-4 w-4 mr-2" />
-                Add Component
+                Tambah komponen
               </button>
             </div>
 
             {formData.items.length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <CubeIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <p>No components added yet</p>
-                <p className="text-sm">Click "Add Component" to start building your BOM</p>
+                <p>Belum ada komponen.</p>
+                <p className="text-sm">Klik &quot;Tambah komponen&quot; untuk mulai menyusun BOM.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -771,7 +772,7 @@ const BOMForm: React.FC = () => {
                               options={products}
                               value={item.product_id}
                               onChange={(value) => updateBOMItem(index, 'product_id', value)}
-                              placeholder="Select Product"
+                              placeholder="Pilih produk"
                               className="w-64"
                             />
                           ) : (
@@ -779,7 +780,7 @@ const BOMForm: React.FC = () => {
                               options={materials}
                               value={item.material_id}
                               onChange={(value) => updateBOMItem(index, 'material_id', value)}
-                              placeholder="Select Material"
+                              placeholder="Pilih bahan"
                               className="w-64"
                             />
                           )}
@@ -827,7 +828,7 @@ const BOMForm: React.FC = () => {
                         <td className="px-2 py-3 text-xs text-gray-900 dark:text-white font-medium">
                           <div 
                             className="px-2 py-1 bg-gray-50 dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700"
-                            title="Unit cost from material master data (read-only)"
+                            title="Harga satuan dari master bahan (tidak bisa diubah di sini)"
                           >
                             Rp {item.unit_cost.toLocaleString('id-ID')}
                           </div>
@@ -874,37 +875,37 @@ const BOMForm: React.FC = () => {
               <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 dark:border-blue-800">
                 <h4 className="font-semibold text-blue-900 mb-4 flex items-center dark:text-blue-200">
                   <CubeIcon className="h-5 w-5 mr-2" />
-                  BOM Cost Analysis
+                  Analisis biaya BOM
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                   <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
-                    <span className="text-gray-600 dark:text-gray-300 text-sm">Total Components</span>
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">Jumlah komponen</span>
                     <div className="font-bold text-lg text-gray-900 dark:text-white">{getTotalItems()}</div>
                   </div>
                   <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
-                    <span className="text-gray-600 dark:text-gray-300 text-sm">Critical Items</span>
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">Bahan kritis</span>
                     <div className="font-bold text-lg text-red-600 dark:text-red-400">{getCriticalItems()}</div>
                   </div>
                   <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
-                    <span className="text-gray-600 dark:text-gray-300 text-sm">Batch Size</span>
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">Ukuran batch</span>
                     <div className="font-bold text-lg text-gray-900 dark:text-white">{formData.batch_size} {formData.batch_uom}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">= {(formData.batch_size * formData.pack_per_carton).toFixed(0)} packs</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">= {(formData.batch_size * formData.pack_per_carton).toFixed(0)} pak</div>
                   </div>
                   <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
-                    <span className="text-gray-600 dark:text-gray-300 text-sm">Total Material Cost</span>
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">Total biaya bahan</span>
                     <div className="font-bold text-lg text-green-600 dark:text-green-400">Rp {getTotalCost().toLocaleString('id-ID')}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">For {formData.batch_size} carton(s)</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Untuk {formData.batch_size} karton</div>
                   </div>
                   <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border-2 border-yellow-300">
-                    <span className="text-gray-600 dark:text-gray-300 text-sm">HPP per Carton</span>
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">HPP per karton</span>
                     <div className="font-bold text-xl text-yellow-600 dark:text-yellow-400">Rp {getHPP().toLocaleString('id-ID')}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Cost per carton ({formData.pack_per_carton} packs)</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Biaya per karton ({formData.pack_per_carton} pak)</div>
                   </div>
                 </div>
                 
                 {/* Material Cost Breakdown */}
                 <div className="mt-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-                  <h5 className="font-medium text-gray-900 dark:text-white mb-3">Material Cost Breakdown</h5>
+                  <h5 className="font-medium text-gray-900 dark:text-white mb-3">Rincian biaya bahan</h5>
                   <div className="space-y-2">
                     {formData.items.map((item, index) => (
                       <div key={index} className="flex justify-between items-center py-1 border-b border-gray-100 last:border-b-0 dark:border-gray-800">
@@ -947,7 +948,7 @@ const BOMForm: React.FC = () => {
               onChange={handleInputChange}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter any additional notes about this BOM..."
+              placeholder="Catatan tambahan untuk BOM ini..."
             />
           </div>
 

@@ -262,7 +262,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+      <div className="fn-card p-4">
         <form onSubmit={handleSearch} className="space-y-4">
           <div className="flex space-x-4">
             <div className="flex-1">
@@ -305,7 +305,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Process</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Proses</label>
                 <select
                   value={filters.process}
                   onChange={(e) => handleFilterChange('process', e.target.value)}
@@ -356,7 +356,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
       </div>
 
       {/* Products Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+      <div className="fn-card overflow-hidden">
         {loading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -382,19 +382,19 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
                       Spesifikasi
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Packaging
+                      Kemasan
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Material
+                      Bahan
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Process
+                      Proses
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Status
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Actions
+                      Aksi
                     </th>
                   </tr>
                 ) : (
@@ -499,7 +499,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
                   </tr>
                 )}
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-gray-200/70 dark:divide-gray-700/70">
                 {products.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                     {viewMode === 'compact' ? (
@@ -685,7 +685,7 @@ const ProductListNew: React.FC<ProductListNewProps> = ({ onEdit, onView, onAdd, 
 
         {/* Pagination */}
         {!loading && products.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
+          <div className="flex items-center justify-between border-t border-gray-200/70 px-4 py-3 dark:border-gray-700/70 sm:px-6">
             <div className="flex-1 flex justify-between sm:hidden">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}

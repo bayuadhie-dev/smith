@@ -4,6 +4,7 @@ from utils.auth_decorators import require_permission
 from models import db, Product, ProductCategory, ProductSpecification, ProductPackaging, Material, Inventory, SalesOrder
 from utils.i18n import success_response, error_response, get_message
 from sqlalchemy import or_, func
+from sqlalchemy.orm import joinedload
 from utils.calculations import (
     calculate_gsm, calculate_sheet_weight, validate_nonwoven_specs,
     calculate_packaging_structure, convert_uom, NONWOVEN_CATEGORIES
@@ -164,7 +165,13 @@ def get_products():
         except Exception as cache_error:
             print(f"Redis cache error (using fallback): {cache_error}")
         
-        query = Product.query
+        # Kategori dan kemasan ikut diambil sekalian - kalau malas-muat,
+        # 1000 produk berarti 2000 query tambahan dan daftarnya tidak pernah
+        # sempat tampil (2026-11-22).
+        query = Product.query.options(
+            joinedload(Product.category),
+            joinedload(Product.packaging)
+        )
         
         if search:
             query = query.filter(or_(
@@ -884,27 +891,53 @@ def delete_category(category_id):
 @jwt_required()
 @require_permission('products.view')
 def get_dashboard_kpis():
-    """Get product dashboard KPIs"""
+    """Angka ringkas dashboard produk.
+
+    Sampai 2026-11 nilai persediaan dan peringatan stok di sini masih
+    hardcoded 0. Sekarang dihitung dari tabel inventory. Peringatan stok
+    hanya dihitung untuk produk yang ambang minimumnya memang diisi -
+    tanpa ambang, 'stok habis' tidak berarti apa-apa untuk ratusan baris
+    master data yang belum pernah diproduksi.
+    """
     try:
-        # Calculate real KPIs from database
         total_products = Product.query.count()
         active_products = Product.query.filter_by(is_active=True).count()
         inactive_products = total_products - active_products
-        
-        # Count categories
+
         total_categories = ProductCategory.query.count()
-        
-        # Calculate stock alerts (simplified for now)
-        low_stock_products = 0
-        out_of_stock_products = 0
-        
-        # Calculate total value (simplified for now)
-        total_value = 0
-        
+
+        # Stok per produk (hanya baris inventory yang masih aktif).
+        stok = db.session.query(
+            Inventory.product_id.label('product_id'),
+            func.coalesce(func.sum(Inventory.quantity_on_hand), 0).label('qty')
+        ).filter(
+            Inventory.product_id.isnot(None),
+            Inventory.is_active == True
+        ).group_by(Inventory.product_id).subquery()
+
+        ambang = db.session.query(
+            Product.id,
+            Product.min_stock_level,
+            func.coalesce(stok.c.qty, 0).label('qty')
+        ).outerjoin(stok, stok.c.product_id == Product.id).filter(
+            Product.is_active == True,
+            func.coalesce(Product.min_stock_level, 0) > 0
+        ).all()
+
+        low_stock_products = sum(1 for _, minimum, qty in ambang if 0 < float(qty) <= float(minimum))
+        out_of_stock_products = sum(1 for _, _minimum, qty in ambang if float(qty) <= 0)
+
+        # Nilai persediaan produk jadi: stok x harga pokok.
+        total_value = db.session.query(
+            func.coalesce(func.sum(Inventory.quantity_on_hand * func.coalesce(Product.cost, 0)), 0)
+        ).join(Product, Product.id == Inventory.product_id).filter(
+            Inventory.is_active == True
+        ).scalar() or 0
+
         avg_price = db.session.query(func.avg(Product.price)).filter(
             Product.is_active == True
         ).scalar() or 0
-        
+
         kpis = {
             'total_products': total_products,
             'active_products': active_products,
@@ -912,12 +945,16 @@ def get_dashboard_kpis():
             'total_categories': total_categories,
             'low_stock_products': low_stock_products,
             'out_of_stock_products': out_of_stock_products,
+            # Berapa produk yang punya ambang minimum - supaya layar bisa
+            # jujur bilang "belum diisi" ketika angkanya 0 karena tidak ada
+            # ambang, bukan karena stok aman.
+            'products_with_threshold': len(ambang),
             'total_value': float(total_value),
             'avg_price': float(avg_price)
         }
-        
+
         return jsonify({'kpis': kpis}), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -925,29 +962,45 @@ def get_dashboard_kpis():
 @jwt_required()
 @require_permission('products.view')
 def get_top_products():
-    """Get top selling products"""
+    """Produk paling laku 12 bulan terakhir, dari baris pesanan penjualan.
+
+    Pesanan draft dan batal tidak dihitung - sama seperti laporan omzet.
+    """
     try:
-        # Get real top selling products from sales orders
+        from models.sales import SalesOrderItem
+        from datetime import timedelta
+
+        sejak = get_local_now() - timedelta(days=365)
+
+        baris = db.session.query(
+            Product.name.label('nama'),
+            Product.cost.label('cost'),
+            func.coalesce(func.sum(SalesOrderItem.quantity), 0).label('qty'),
+            func.coalesce(func.sum(SalesOrderItem.total_price), 0).label('nilai')
+        ).join(SalesOrder, SalesOrder.id == SalesOrderItem.order_id
+        ).join(Product, Product.id == SalesOrderItem.product_id
+        ).filter(
+            SalesOrder.order_date >= sejak,
+            func.lower(func.coalesce(SalesOrder.status, '')).notin_(['draft', 'cancelled', 'canceled'])
+        ).group_by(Product.id, Product.name, Product.cost
+        ).order_by(func.sum(SalesOrderItem.total_price).desc()).limit(10).all()
+
         products = []
-        
-        # Get products with sales data (simplified for now)
-        # Note: This requires proper SalesOrderItem model relationship
-        # For now, return empty until proper relationship is established
-        top_products = []
-        
-        for product_name, sales_qty, sales_value in top_products:
-            # Calculate profit margin (simplified)
-            profit_margin = 20.0  # Default margin, can be enhanced with cost data
-            
+        for nama, cost, qty, nilai in baris:
+            nilai = float(nilai or 0)
+            qty = float(qty or 0)
+            # Margin hanya dihitung kalau harga pokoknya memang ada.
+            hpp = float(cost or 0) * qty
+            margin = round((nilai - hpp) / nilai * 100, 1) if nilai > 0 and hpp > 0 else None
             products.append({
-                'product_name': product_name,
-                'sales_qty': int(sales_qty or 0),
-                'sales_value': float(sales_value or 0),
-                'profit_margin': profit_margin
+                'product_name': nama,
+                'sales_qty': qty,
+                'sales_value': nilai,
+                'profit_margin': margin
             })
-        
+
         return jsonify({'products': products}), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -955,28 +1008,33 @@ def get_top_products():
 @jwt_required()
 @require_permission('products.view')
 def get_dashboard_categories():
-    """Get category distribution for dashboard"""
+    """Sebaran produk per kategori, berikut nilai persediaannya."""
     try:
-        # Get real category distribution from database
-        categories = []
-        
-        # Get category data (simplified for now)
-        category_data = db.session.query(
+        stok = db.session.query(
+            Inventory.product_id.label('product_id'),
+            func.coalesce(func.sum(Inventory.quantity_on_hand), 0).label('qty')
+        ).filter(
+            Inventory.product_id.isnot(None),
+            Inventory.is_active == True
+        ).group_by(Inventory.product_id).subquery()
+
+        baris = db.session.query(
             ProductCategory.name,
-            func.count(Product.id).label('product_count')
-        ).outerjoin(Product).group_by(
-            ProductCategory.id, ProductCategory.name
-        ).all()
-        
-        for category_name, product_count in category_data:
-            categories.append({
-                'category': category_name or 'Uncategorized',
-                'product_count': int(product_count or 0),
-                'total_value': 0  # Simplified for now
-            })
-        
+            func.count(Product.id).label('jumlah'),
+            func.coalesce(func.sum(func.coalesce(stok.c.qty, 0) * func.coalesce(Product.cost, 0)), 0).label('nilai')
+        ).outerjoin(Product, Product.category_id == ProductCategory.id
+        ).outerjoin(stok, stok.c.product_id == Product.id
+        ).group_by(ProductCategory.id, ProductCategory.name
+        ).order_by(func.count(Product.id).desc()).all()
+
+        categories = [{
+            'category': nama or 'Tanpa kategori',
+            'product_count': int(jumlah or 0),
+            'total_value': float(nilai or 0)
+        } for nama, jumlah, nilai in baris]
+
         return jsonify({'categories': categories}), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -984,28 +1042,38 @@ def get_dashboard_categories():
 @jwt_required()
 @require_permission('products.view')
 def get_stock_alerts():
-    """Get stock alerts for dashboard"""
+    """Produk yang stoknya di bawah ambang minimumnya sendiri."""
     try:
-        # Get real stock alerts from database
-        alerts = []
-        
-        # Get products with low stock or out of stock (simplified for now)
-        stock_alerts = []
-        
-        for product_id, product_name, min_stock, current_stock, last_updated in stock_alerts:
-            status = 'out_of_stock' if current_stock == 0 else 'low_stock'
-            
-            alerts.append({
-                'id': product_id,
-                'product_name': product_name,
-                'current_stock': int(current_stock),
-                'min_stock': int(min_stock or 0),
-                'status': status,
-                'last_updated': last_updated.isoformat() if last_updated else None
-            })
-        
+        stok = db.session.query(
+            Inventory.product_id.label('product_id'),
+            func.coalesce(func.sum(Inventory.quantity_on_hand), 0).label('qty'),
+            func.max(Inventory.updated_at).label('terakhir')
+        ).filter(
+            Inventory.product_id.isnot(None),
+            Inventory.is_active == True
+        ).group_by(Inventory.product_id).subquery()
+
+        baris = db.session.query(
+            Product.id, Product.name, Product.min_stock_level,
+            func.coalesce(stok.c.qty, 0).label('qty'),
+            stok.c.terakhir
+        ).outerjoin(stok, stok.c.product_id == Product.id).filter(
+            Product.is_active == True,
+            func.coalesce(Product.min_stock_level, 0) > 0,
+            func.coalesce(stok.c.qty, 0) <= Product.min_stock_level
+        ).order_by(func.coalesce(stok.c.qty, 0).asc()).limit(20).all()
+
+        alerts = [{
+            'id': pid,
+            'product_name': nama,
+            'current_stock': float(qty or 0),
+            'min_stock': float(minimum or 0),
+            'status': 'out_of_stock' if float(qty or 0) <= 0 else 'low_stock',
+            'last_updated': terakhir.isoformat() if terakhir else None
+        } for pid, nama, minimum, qty, terakhir in baris]
+
         return jsonify({'alerts': alerts}), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1013,13 +1081,52 @@ def get_stock_alerts():
 @jwt_required()
 @require_permission('products.view')
 def get_dashboard_trends():
-    """Get product trends for dashboard"""
+    """Pergerakan 12 bulan: produk baru didaftarkan dan volume penjualannya.
+
+    'Produk dihentikan' tidak dilaporkan karena tanggal penonaktifan tidak
+    disimpan - menebaknya dari updated_at akan salah.
+    """
     try:
-        # Return empty trends - to be implemented when product lifecycle tracking is needed
-        trends = []
-        
+        from models.sales import SalesOrderItem
+        from datetime import timedelta
+
+        sejak = (get_local_now() - timedelta(days=365)).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        # extract() jalan di Postgres maupun SQLite (harness tes); to_char
+        # hanya ada di Postgres dan bikin endpoint ini 500 di tes.
+        th_produk = func.extract('year', Product.created_at)
+        bl_produk = func.extract('month', Product.created_at)
+        bulan_baru = {f'{int(th):04d}-{int(bl):02d}': n for th, bl, n in db.session.query(
+            th_produk, bl_produk, func.count(Product.id)
+        ).filter(Product.created_at >= sejak).group_by(th_produk, bl_produk).all()}
+
+        th_jual = func.extract('year', SalesOrder.order_date)
+        bl_jual = func.extract('month', SalesOrder.order_date)
+        bulan_jual = {f'{int(th):04d}-{int(bl):02d}': q for th, bl, q in db.session.query(
+            th_jual, bl_jual, func.coalesce(func.sum(SalesOrderItem.quantity), 0)
+        ).join(SalesOrderItem, SalesOrderItem.order_id == SalesOrder.id
+        ).filter(
+            SalesOrder.order_date >= sejak,
+            func.lower(func.coalesce(SalesOrder.status, '')).notin_(['draft', 'cancelled', 'canceled'])
+        ).group_by(th_jual, bl_jual).all()}
+
+        # Bulan kosong tetap ditampilkan supaya garis waktunya tidak melompat.
+        kunci = []
+        th, bl = sejak.year, sejak.month
+        for _ in range(13):
+            kunci.append(f'{th:04d}-{bl:02d}')
+            bl += 1
+            if bl > 12:
+                bl, th = 1, th + 1
+
+        trends = [{
+            'month': k,
+            'new_products': int(bulan_baru.get(k, 0)),
+            'sales_volume': float(bulan_jual.get(k, 0))
+        } for k in kunci]
+
         return jsonify({'trends': trends}), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1027,114 +1134,153 @@ def get_dashboard_trends():
 # LIFECYCLE ENDPOINTS
 # ===============================
 
+def _tahap_daur_hidup(jumlah_spk, diproduksi, hari_sejak_spk_pertama, ada_kegiatan_baru):
+    """Tahap daur hidup produk, ditebak dari kegiatan produksinya.
+
+    Ini aturan ambang, bukan data yang disimpan: ERP belum mencatat riwayat
+    tahap per produk. Dipakai sama persis di semua endpoint daur hidup supaya
+    satu produk tidak muncul di dua tahap berbeda antar layar.
+    """
+    if jumlah_spk > 0 and not ada_kegiatan_baru and hari_sejak_spk_pertama > 180:
+        return 'decline'
+    if jumlah_spk >= 10 and diproduksi > 50000:
+        return 'maturity'
+    if jumlah_spk >= 5 or diproduksi > 10000:
+        return 'growth'
+    return 'introduction'
+
+
+def _kumpulkan_daur_hidup(start_date):
+    """Angka produksi per produk untuk satu rentang, sekali jalan.
+
+    Sebelum 2026-11-22 setiap endpoint daur hidup menyusuri produk satu per
+    satu dan menembak 3-4 query per produk; halaman Daur Hidup Produk bahkan
+    tidak pernah selesai memuat (axios menyerah di detik ke-10) sehingga
+    layarnya kosong padahal datanya ada.
+    """
+    from models.production import WorkOrder
+    from datetime import timedelta
+    from sqlalchemy import func
+
+    sekarang = get_local_now()
+    panjang = sekarang - start_date
+    sebelumnya = start_date - panjang
+
+    agregat = db.session.query(
+        WorkOrder.product_id,
+        func.count(WorkOrder.id),
+        func.coalesce(func.sum(WorkOrder.quantity_produced), 0),
+        func.coalesce(func.sum(WorkOrder.quantity), 0)
+    ).filter(
+        WorkOrder.created_at >= start_date,
+        WorkOrder.product_id.isnot(None)
+    ).group_by(WorkOrder.product_id).all()
+
+    data = {pid: {
+        'jumlah_spk': int(n or 0),
+        'diproduksi': float(produced or 0),
+        'direncanakan': float(planned or 0),
+    } for pid, n, produced, planned in agregat}
+
+    if not data:
+        return {}
+
+    ids = list(data)
+
+    pertama = dict(db.session.query(
+        WorkOrder.product_id, func.min(WorkOrder.created_at)
+    ).filter(WorkOrder.product_id.in_(ids)).group_by(WorkOrder.product_id).all())
+
+    baru = dict(db.session.query(
+        WorkOrder.product_id, func.count(WorkOrder.id)
+    ).filter(
+        WorkOrder.product_id.in_(ids),
+        WorkOrder.created_at >= sekarang - timedelta(days=60)
+    ).group_by(WorkOrder.product_id).all())
+
+    lalu = dict(db.session.query(
+        WorkOrder.product_id, func.coalesce(func.sum(WorkOrder.quantity_produced), 0)
+    ).filter(
+        WorkOrder.product_id.in_(ids),
+        WorkOrder.created_at >= sebelumnya,
+        WorkOrder.created_at < start_date
+    ).group_by(WorkOrder.product_id).all())
+
+    for pid, d in data.items():
+        spk_pertama = pertama.get(pid)
+        d['spk_pertama'] = spk_pertama
+        d['umur_hari'] = (sekarang - spk_pertama).days if spk_pertama else 0
+        d['kegiatan_baru'] = int(baru.get(pid, 0)) > 0
+        d['diproduksi_lalu'] = float(lalu.get(pid, 0) or 0)
+        d['tahap'] = _tahap_daur_hidup(d['jumlah_spk'], d['diproduksi'], d['umur_hari'], d['kegiatan_baru'])
+
+    return data
+
+
 @products_bp.route('/lifecycle/products', methods=['GET'])
 @jwt_required()
 @require_permission('products.view')
 def get_lifecycle_products():
-    """Get products with lifecycle stage based on ACTUAL production activity only"""
+    """Daftar produk berikut tahap daur hidupnya, dari kegiatan produksi nyata.
+
+    Dibersihkan 2026-11-22: total_revenue dulu diisi qty produksi x harga
+    karangan Rp15.000/unit, growth_rate dipatok per tahap (15/8/-5/25%), dan
+    roi/profit_margin sebenarnya cuma persentase penyelesaian SPK yang diberi
+    nama lain. Sekarang pendapatan diambil dari faktur penjualan nyata dan
+    pertumbuhan dibandingkan dengan periode sebelumnya yang sama panjang;
+    kalau tidak ada pembandingnya, nilainya null - bukan angka tebakan.
+    """
     try:
-        from models import ProductNew
-        from models.production import WorkOrder, ShiftProduction
-        from datetime import datetime, timedelta
+        from models.finance import Invoice, InvoiceItem
+        from datetime import timedelta
         from sqlalchemy import func
-        
+
         period = request.args.get('period', '6months')
-        
-        end_date = get_local_now()
-        if period == '3months':
-            start_date = end_date - timedelta(days=90)
-        elif period == '6months':
-            start_date = end_date - timedelta(days=180)
-        elif period == '1year':
-            start_date = end_date - timedelta(days=365)
-        else:
-            start_date = end_date - timedelta(days=730)
-        
-        # Only get products that have work orders (actual production activity)
-        products_with_wo = db.session.query(
-            WorkOrder.product_id
-        ).filter(
-            WorkOrder.created_at >= start_date
-        ).distinct().all()
-        
-        product_ids_with_wo = [p[0] for p in products_with_wo]
-        
-        if not product_ids_with_wo:
+        hari = {'3months': 90, '6months': 180, '1year': 365}.get(period, 730)
+        start_date = get_local_now() - timedelta(days=hari)
+
+        data = _kumpulkan_daur_hidup(start_date)
+        if not data:
             return jsonify({'products': []}), 200
-        
-        # Get product info from Product table (linked to WorkOrder)
-        from models.product import Product
-        products = Product.query.filter(Product.id.in_(product_ids_with_wo)).all()
-        
-        lifecycle_products = []
-        for product in products:
-            # Get work orders count and production
-            work_orders = WorkOrder.query.filter(
-                WorkOrder.product_id == product.id,
-                WorkOrder.created_at >= start_date
-            ).all()
-            
-            wo_count = len(work_orders)
-            total_produced = sum(float(wo.quantity_produced or 0) for wo in work_orders)
-            total_planned = sum(float(wo.quantity or 0) for wo in work_orders)
-            
-            # Get first WO date as "launch" for lifecycle tracking
-            first_wo = WorkOrder.query.filter(
-                WorkOrder.product_id == product.id
-            ).order_by(WorkOrder.created_at.asc()).first()
-            
-            first_wo_date = first_wo.created_at if first_wo else get_local_now()
-            days_since_first_wo = (get_local_now() - first_wo_date).days
-            
-            # Determine lifecycle stage based on production activity
-            if wo_count >= 10 and total_produced > 50000:
-                stage = 'maturity'
-                stage_duration = max(90, days_since_first_wo)
-            elif wo_count >= 5 or total_produced > 10000:
-                stage = 'growth'
-                stage_duration = min(days_since_first_wo, 180)
-            elif wo_count >= 1:
-                stage = 'introduction'
-                stage_duration = days_since_first_wo
-            else:
-                stage = 'introduction'
-                stage_duration = 0
-            
-            # Check for decline - no recent WO
-            recent_wo = WorkOrder.query.filter(
-                WorkOrder.product_id == product.id,
-                WorkOrder.created_at >= (get_local_now() - timedelta(days=60))
-            ).count()
-            
-            if wo_count > 0 and recent_wo == 0 and days_since_first_wo > 180:
-                stage = 'decline'
-                stage_duration = days_since_first_wo - 180
-            
-            completion_rate = round((total_produced / total_planned * 100), 1) if total_planned > 0 else 0
-            
-            lifecycle_products.append({
+
+        ids = list(data)
+        total_produksi = sum(d['diproduksi'] for d in data.values()) or 1
+
+        omzet = dict(db.session.query(
+            InvoiceItem.product_id, func.coalesce(func.sum(InvoiceItem.total_amount), 0)
+        ).join(Invoice, InvoiceItem.invoice_id == Invoice.id).filter(
+            InvoiceItem.product_id.in_(ids),
+            Invoice.invoice_type == 'sales',
+            Invoice.status.notin_(['draft', 'cancelled']),
+            Invoice.invoice_date >= start_date.date()
+        ).group_by(InvoiceItem.product_id).all())
+
+        hasil = []
+        for product in Product.query.filter(Product.id.in_(ids)).all():
+            d = data[product.id]
+            lalu = d['diproduksi_lalu']
+            hasil.append({
                 'product_id': product.id,
                 'product_name': product.name,
                 'product_code': product.code,
-                'category': product.category or 'General',
-                'launch_date': first_wo_date.isoformat() if first_wo_date else None,
-                'current_stage': stage,
-                'stage_duration': stage_duration,
-                'total_sales': int(total_produced),
-                'total_revenue': int(total_produced) * 15000,
-                'profit_margin': completion_rate,
-                'market_share': round(total_produced / max(1, sum(float(wo.quantity_produced or 0) for wo in WorkOrder.query.filter(WorkOrder.created_at >= start_date).all())) * 100, 2),
-                'growth_rate': 15.0 if stage == 'growth' else (8.0 if stage == 'maturity' else (-5.0 if stage == 'decline' else 25.0)),
-                'roi': completion_rate,
-                'work_order_count': wo_count,
-                'last_updated': get_local_now().isoformat()
+                'category': product.spunlace or 'Tanpa kategori',
+                'launch_date': d['spk_pertama'].isoformat() if d['spk_pertama'] else None,
+                'current_stage': d['tahap'],
+                'stage_duration': d['umur_hari'],
+                'total_produced': int(d['diproduksi']),
+                'total_planned': int(d['direncanakan']),
+                'completion_rate': round(d['diproduksi'] / d['direncanakan'] * 100, 1) if d['direncanakan'] > 0 else None,
+                'total_revenue': float(omzet.get(product.id, 0) or 0),
+                # Pangsa dihitung terhadap seluruh produksi pada rentang ini.
+                'production_share': round(d['diproduksi'] / total_produksi * 100, 2),
+                'growth_rate': round((d['diproduksi'] - lalu) / lalu * 100, 1) if lalu > 0 else None,
+                'work_order_count': d['jumlah_spk'],
+                'recent_activity': d['kegiatan_baru'],
             })
-        
-        # Sort by total produced descending
-        lifecycle_products.sort(key=lambda x: x['total_sales'], reverse=True)
-        
-        return jsonify({'products': lifecycle_products}), 200
-        
+
+        hasil.sort(key=lambda x: x['total_produced'], reverse=True)
+        return jsonify({'products': hasil}), 200
+
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -1144,84 +1290,42 @@ def get_lifecycle_products():
 @jwt_required()
 @require_permission('products.view')
 def get_lifecycle_stage_metrics():
-    """Get metrics per lifecycle stage - only for products with actual production"""
+    """Ringkasan per tahap daur hidup.
+
+    Dibersihkan 2026-11-22: avg_duration dulu selalu 120 hari dan success_rate
+    selalu 85%/60% - dua angka karangan. Sekarang lama tahap adalah rata-rata
+    umur sejak SPK pertama, dan yang dulu disebut "success rate" diganti
+    rata-rata penyelesaian SPK yang memang bisa dihitung.
+    """
     try:
-        from models.product import Product
-        from models.production import WorkOrder
-        from datetime import datetime, timedelta
-        from sqlalchemy import func
-        
+        from datetime import timedelta
+
         period = request.args.get('period', '6months')
-        
-        end_date = get_local_now()
-        if period == '3months':
-            start_date = end_date - timedelta(days=90)
-        elif period == '6months':
-            start_date = end_date - timedelta(days=180)
-        else:
-            start_date = end_date - timedelta(days=365)
-        
-        # Only get products that have work orders
-        products_with_wo = db.session.query(
-            WorkOrder.product_id
-        ).filter(
-            WorkOrder.created_at >= start_date
-        ).distinct().all()
-        
-        product_ids = [p[0] for p in products_with_wo]
-        
-        stages = {
-            'Introduction': {'count': 0, 'revenue': 0},
-            'Growth': {'count': 0, 'revenue': 0},
-            'Maturity': {'count': 0, 'revenue': 0},
-            'Decline': {'count': 0, 'revenue': 0}
-        }
-        
-        for product_id in product_ids:
-            work_orders = WorkOrder.query.filter(
-                WorkOrder.product_id == product_id,
-                WorkOrder.created_at >= start_date
-            ).all()
-            
-            wo_count = len(work_orders)
-            total_produced = sum(float(wo.quantity_produced or 0) for wo in work_orders)
-            
-            first_wo = WorkOrder.query.filter(
-                WorkOrder.product_id == product_id
-            ).order_by(WorkOrder.created_at.asc()).first()
-            
-            days_since_first = (get_local_now() - first_wo.created_at).days if first_wo else 0
-            
-            # Check for recent activity
-            recent_wo = WorkOrder.query.filter(
-                WorkOrder.product_id == product_id,
-                WorkOrder.created_at >= (get_local_now() - timedelta(days=60))
-            ).count()
-            
-            if wo_count >= 10 and total_produced > 50000:
-                stage = 'Maturity'
-            elif wo_count >= 5 or total_produced > 10000:
-                stage = 'Growth'
-            elif wo_count > 0 and recent_wo == 0 and days_since_first > 180:
-                stage = 'Decline'
-            else:
-                stage = 'Introduction'
-            
-            stages[stage]['count'] += 1
-            stages[stage]['revenue'] += int(total_produced) * 15000
-        
-        metrics = []
-        for stage_name, data in stages.items():
-            metrics.append({
-                'stage': stage_name,
-                'product_count': data['count'],
-                'total_revenue': data['revenue'],
-                'avg_duration': 120,
-                'success_rate': 85.0 if stage_name in ['Maturity', 'Growth'] else 60.0
-            })
-        
+        hari = {'3months': 90, '6months': 180, '1year': 365}.get(period, 730)
+        start_date = get_local_now() - timedelta(days=hari)
+
+        data = _kumpulkan_daur_hidup(start_date)
+
+        nama = {'introduction': 'Introduction', 'growth': 'Growth', 'maturity': 'Maturity', 'decline': 'Decline'}
+        ringkas = {k: {'count': 0, 'produced': 0.0, 'planned': 0.0, 'umur': []} for k in nama}
+
+        for d in data.values():
+            r = ringkas[d['tahap']]
+            r['count'] += 1
+            r['produced'] += d['diproduksi']
+            r['planned'] += d['direncanakan']
+            r['umur'].append(d['umur_hari'])
+
+        metrics = [{
+            'stage': nama[k],
+            'product_count': r['count'],
+            'total_produced': int(r['produced']),
+            'avg_duration': int(sum(r['umur']) / len(r['umur'])) if r['umur'] else 0,
+            'avg_completion': round(r['produced'] / r['planned'] * 100, 1) if r['planned'] > 0 else None,
+        } for k, r in ringkas.items()]
+
         return jsonify({'metrics': metrics}), 200
-        
+
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -1231,27 +1335,72 @@ def get_lifecycle_stage_metrics():
 @jwt_required()
 @require_permission('products.view')
 def get_lifecycle_timeline():
-    """Get lifecycle timeline data"""
+    """Kegiatan produksi per bulan: berapa produk yang jalan dan berapa yang baru.
+
+    Dibersihkan 2026-11-22: isi endpoint ini dulu angka karangan murni
+    (introduction = 2 + i, growth = 5 + i, dan seterusnya) - grafiknya
+    menggambar pola yang tidak pernah terjadi. ERP belum menyimpan riwayat
+    tahap per bulan, jadi yang dilaporkan sekarang hal yang memang tercatat:
+    jumlah produk yang berproduksi tiap bulan, berapa di antaranya baru
+    pertama kali, dan total kuantitas produksinya.
+    """
     try:
-        from models import ProductNew
-        from datetime import datetime, timedelta
-        
-        # Generate timeline for last 6 months
+        from models.production import WorkOrder
+        from datetime import timedelta
+        from sqlalchemy import func
+
+        period = request.args.get('period', '6months')
+        hari = {'3months': 90, '6months': 180, '1year': 365}.get(period, 730)
+        start_date = (get_local_now() - timedelta(days=hari)).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        th = func.extract('year', WorkOrder.created_at)
+        bl = func.extract('month', WorkOrder.created_at)
+        baris = db.session.query(
+            th, bl,
+            func.count(func.distinct(WorkOrder.product_id)),
+            func.coalesce(func.sum(WorkOrder.quantity_produced), 0),
+            func.count(WorkOrder.id)
+        ).filter(
+            WorkOrder.created_at >= start_date,
+            WorkOrder.product_id.isnot(None)
+        ).group_by(th, bl).all()
+        per_bulan = {f'{int(y):04d}-{int(m):02d}': (int(n or 0), float(q or 0), int(spk or 0))
+                     for y, m, n, q, spk in baris}
+
+        # Produk yang SPK pertamanya jatuh di bulan itu.
+        pertama = db.session.query(
+            WorkOrder.product_id, func.min(WorkOrder.created_at)
+        ).filter(WorkOrder.product_id.isnot(None)).group_by(WorkOrder.product_id).all()
+        baru_per_bulan = {}
+        for _pid, tanggal in pertama:
+            if tanggal and tanggal >= start_date:
+                k = tanggal.strftime('%Y-%m')
+                baru_per_bulan[k] = baru_per_bulan.get(k, 0) + 1
+
+        kunci = []
+        th, bl = start_date.year, start_date.month
+        while (th, bl) <= (get_local_now().year, get_local_now().month):
+            kunci.append(f'{th:04d}-{bl:02d}')
+            bl += 1
+            if bl > 12:
+                bl, th = 1, th + 1
+
         timeline = []
-        for i in range(6):
-            month_date = get_local_now() - timedelta(days=30 * (5 - i))
+        for k in kunci:
+            produk_aktif, produksi, jumlah_spk = per_bulan.get(k, (0, 0.0, 0))
             timeline.append({
-                'date': month_date.strftime('%Y-%m'),
-                'introduction': 2 + i,
-                'growth': 5 + i,
-                'maturity': 10 + i * 2,
-                'decline': max(0, 3 - i),
-                'discontinued': 1
+                'date': k,
+                'active_products': produk_aktif,
+                'new_products': baru_per_bulan.get(k, 0),
+                'work_orders': jumlah_spk,
+                'produced': produksi,
             })
-        
+
         return jsonify({'timeline': timeline}), 200
-        
+
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @products_bp.route('/lifecycle/transitions', methods=['GET'])
@@ -1276,134 +1425,122 @@ def get_lifecycle_transitions():
 @jwt_required()
 @require_permission('products.view')
 def get_analytics_performance():
-    """Get product performance analytics from work orders, production, and
-    real sales.
+    """Kinerja produk: produksi, penjualan nyata, dan perputaran stok.
 
-    Bug fixed 2026-10-07 (found live: this endpoint's response was crashing
-    the ENTIRE Product Analytics page to a blank white screen in production
-    - ErrorBoundary caught `TypeError: Cannot read properties of undefined
-    (reading 'toFixed')` at ProductAnalytics.tsx, because the frontend's
-    `ProductPerformance` interface expects sales_value/profit_margin/
-    growth_rate/stock_turnover/last_sale_date, but this endpoint only ever
-    returned production-centric fields (total_produced/quality_rate/
-    completion_rate/etc) - a pure frontend/backend contract mismatch, not
-    related to the fabricated-ratio bugs found elsewhere this same sweep.
-    Now returns both: the original production fields are kept, plus the
-    fields the frontend actually reads, computed from real sales Invoice
-    data where possible. profit_margin is left at 0 (no reliable per-unit
-    standard cost exists in this schema yet, same honest stance as
-    /analytics/profitability) rather than guessing a number.
+    Bug diperbaiki 2026-10-07: respons endpoint ini membuat halaman Product
+    Analytics blank karena field yang dibaca frontend (sales_value,
+    profit_margin, growth_rate, stock_turnover, last_sale_date) tidak pernah
+    dikirim. Field itu sekarang ada, dihitung dari Invoice penjualan nyata.
+    profit_margin sengaja 0 - skema ini belum punya harga pokok per unit yang
+    bisa dipercaya, dan menebaknya lebih buruk daripada mengaku belum ada.
+
+    Bug diperbaiki 2026-11-22: versi sebelumnya menyusuri 700+ produk satu per
+    satu dan menembak 2-5 query per produk ke database yang ada di server lain
+    - halamannya tidak pernah selesai memuat. Sekarang semuanya dihitung dengan
+    agregat berkelompok, jumlah query tetap walau produknya bertambah.
     """
     try:
         from models.production import WorkOrder, ShiftProduction
-        from models import ProductNew, Inventory
         from models.finance import Invoice, InvoiceItem
-        from datetime import datetime, timedelta
+        from datetime import timedelta
         from sqlalchemy import func
 
         period = request.args.get('period', '3months')
         category = request.args.get('category', 'all')
 
-        # Calculate date range
         end_date = get_local_now()
-        if period == '1month':
-            days = 30
-        elif period == '3months':
-            days = 90
-        elif period == '6months':
-            days = 180
-        else:
-            days = 365
+        days = {'1month': 30, '3months': 90, '6months': 180}.get(period, 365)
         start_date = end_date - timedelta(days=days)
         prev_period_start = start_date - timedelta(days=days)
 
-        # Get products with production data
-        products = ProductNew.query.filter(ProductNew.is_active == True).all()
+        # Produksi per produk.
+        wo_rows = db.session.query(
+            WorkOrder.product_id,
+            func.count(WorkOrder.id),
+            func.coalesce(func.sum(WorkOrder.quantity_produced), 0),
+            func.coalesce(func.sum(WorkOrder.quantity), 0)
+        ).filter(WorkOrder.created_at >= start_date).group_by(WorkOrder.product_id).all()
+        wo_map = {pid: (int(jml), float(produced or 0), float(planned or 0))
+                  for pid, jml, produced, planned in wo_rows if pid}
+
+        if not wo_map:
+            return jsonify({'products': []}), 200
+
+        ids = list(wo_map.keys())
+
+        sp_rows = db.session.query(
+            ShiftProduction.product_id,
+            func.coalesce(func.sum(ShiftProduction.good_quantity), 0),
+            func.coalesce(func.sum(ShiftProduction.reject_quantity), 0)
+        ).filter(
+            ShiftProduction.product_id.in_(ids),
+            ShiftProduction.production_date >= start_date.date()
+        ).group_by(ShiftProduction.product_id).all()
+        sp_map = {pid: (float(good or 0), float(reject or 0)) for pid, good, reject in sp_rows}
+
+        def penjualan(sejak, sampai=None):
+            q = db.session.query(
+                InvoiceItem.product_id,
+                func.coalesce(func.sum(InvoiceItem.quantity), 0),
+                func.coalesce(func.sum(InvoiceItem.total_amount), 0),
+                func.max(Invoice.invoice_date)
+            ).join(Invoice, InvoiceItem.invoice_id == Invoice.id).filter(
+                InvoiceItem.product_id.in_(ids),
+                Invoice.invoice_type == 'sales',
+                Invoice.status.notin_(['draft', 'cancelled']),
+                Invoice.invoice_date >= sejak
+            )
+            if sampai is not None:
+                q = q.filter(Invoice.invoice_date < sampai)
+            return {pid: (float(qty or 0), float(nilai or 0), terakhir)
+                    for pid, qty, nilai, terakhir in q.group_by(InvoiceItem.product_id).all()}
+
+        jual_kini = penjualan(start_date.date())
+        jual_lalu = penjualan(prev_period_start.date(), start_date.date())
+
+        stok_rows = db.session.query(
+            Inventory.product_id,
+            func.coalesce(func.sum(Inventory.quantity_on_hand), 0)
+        ).filter(Inventory.product_id.in_(ids)).group_by(Inventory.product_id).all()
+        stok_map = {pid: float(qty or 0) for pid, qty in stok_rows}
+
+        produk_q = Product.query.filter(Product.id.in_(ids))
+        if category and category != 'all':
+            produk_q = produk_q.filter(Product.spunlace == category)
 
         performance = []
-        for product in products:
-            # Get work orders for this product
-            work_orders = WorkOrder.query.filter(
-                WorkOrder.product_id == product.id,
-                WorkOrder.created_at >= start_date
-            ).all()
+        for product in produk_q.all():
+            jml_wo, total_produced, total_planned = wo_map.get(product.id, (0, 0.0, 0.0))
+            total_good, total_reject = sp_map.get(product.id, (0.0, 0.0))
+            sales_qty, sales_value, last_sale = jual_kini.get(product.id, (0.0, 0.0, None))
+            _, prev_value, _ = jual_lalu.get(product.id, (0.0, 0.0, None))
+            current_stock = stok_map.get(product.id, 0.0)
 
-            total_produced = sum(wo.quantity_produced or 0 for wo in work_orders)
-            total_planned = sum(wo.quantity or 0 for wo in work_orders)
+            performance.append({
+                'product_id': product.id,
+                'product_name': product.name,
+                'product_code': product.code,
+                'category': product.spunlace or 'General',
+                'total_produced': int(total_produced),
+                'total_planned': int(total_planned),
+                'total_good': int(total_good),
+                'total_reject': int(total_reject),
+                'quality_rate': round(total_good / total_produced * 100, 2) if total_produced > 0 else 0,
+                'work_order_count': jml_wo,
+                'completion_rate': round(total_produced / total_planned * 100, 2) if total_planned > 0 else 0,
+                'sales_qty': sales_qty,
+                'sales_value': sales_value,
+                'profit_margin': 0,  # belum bisa dihitung - lihat docstring
+                'growth_rate': round((sales_value - prev_value) / prev_value * 100, 2) if prev_value > 0 else 0,
+                # Perputaran stok memakai stok saat ini, bukan rata-rata
+                # periode: pendekatan nyata, tapi bukan rasio buku teks.
+                'stock_turnover': round(sales_qty / current_stock, 2) if current_stock > 0 else 0,
+                'last_sale_date': last_sale.isoformat() if last_sale else None,
+            })
 
-            # Get shift production data
-            shift_prods = ShiftProduction.query.filter(
-                ShiftProduction.product_id == product.id,
-                ShiftProduction.production_date >= start_date.date()
-            ).all()
-
-            total_good = sum(sp.good_quantity or 0 for sp in shift_prods)
-            total_reject = sum(sp.reject_quantity or 0 for sp in shift_prods)
-
-            if total_produced > 0 or len(work_orders) > 0:
-                # Real sales figures for this product (current period)
-                sales_row = db.session.query(
-                    func.sum(InvoiceItem.quantity).label('qty'),
-                    func.sum(InvoiceItem.total_amount).label('value'),
-                    func.max(Invoice.invoice_date).label('last_sale')
-                ).join(Invoice, InvoiceItem.invoice_id == Invoice.id).filter(
-                    InvoiceItem.product_id == product.id,
-                    Invoice.invoice_type == 'sales',
-                    Invoice.status.notin_(['draft', 'cancelled']),
-                    Invoice.invoice_date >= start_date.date()
-                ).first()
-                sales_qty = float(sales_row.qty or 0) if sales_row else 0
-                sales_value = float(sales_row.value or 0) if sales_row else 0
-                last_sale_date = sales_row.last_sale.isoformat() if sales_row and sales_row.last_sale else None
-
-                # Real growth rate: this period's sales value vs the
-                # immediately preceding period of the same length
-                prev_sales_value = float(db.session.query(
-                    func.sum(InvoiceItem.total_amount)
-                ).join(Invoice, InvoiceItem.invoice_id == Invoice.id).filter(
-                    InvoiceItem.product_id == product.id,
-                    Invoice.invoice_type == 'sales',
-                    Invoice.status.notin_(['draft', 'cancelled']),
-                    Invoice.invoice_date >= prev_period_start.date(),
-                    Invoice.invoice_date < start_date.date()
-                ).scalar() or 0)
-                growth_rate = round((sales_value - prev_sales_value) / prev_sales_value * 100, 2) if prev_sales_value > 0 else 0
-
-                # Stock turnover approximation: sales qty this period over
-                # current on-hand inventory for this product. Uses current
-                # (not period-average) inventory - a reasonable real proxy,
-                # not a fabricated number, but not a textbook average-
-                # inventory turnover ratio either.
-                current_stock = float(db.session.query(
-                    func.sum(Inventory.quantity_on_hand)
-                ).filter(Inventory.product_id == product.id).scalar() or 0)
-                stock_turnover = round(sales_qty / current_stock, 2) if current_stock > 0 else 0
-
-                performance.append({
-                    'product_id': product.id,
-                    'product_name': product.name,
-                    'product_code': product.code,
-                    'category': product.spunlace or 'General',
-                    'total_produced': int(total_produced),
-                    'total_planned': int(total_planned),
-                    'total_good': int(total_good),
-                    'total_reject': int(total_reject),
-                    'quality_rate': round((total_good / total_produced * 100), 2) if total_produced > 0 else 0,
-                    'work_order_count': len(work_orders),
-                    'completion_rate': round((total_produced / total_planned * 100), 2) if total_planned > 0 else 0,
-                    'sales_qty': sales_qty,
-                    'sales_value': sales_value,
-                    'profit_margin': 0,  # not yet computable - see docstring above
-                    'growth_rate': growth_rate,
-                    'stock_turnover': stock_turnover,
-                    'last_sale_date': last_sale_date,
-                })
-
-        # Sort by total produced descending
         performance.sort(key=lambda x: x['total_produced'], reverse=True)
-
         return jsonify({'products': performance[:20]}), 200
-        
+
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -1476,13 +1613,32 @@ def get_analytics_timeline():
         ).all()
         sales_by_date = {row.invoice_date: float(row.total_sales or 0) for row in sales_rows}
 
+        # Kuantitas terjual - sebelumnya 'sales_qty' diisi kuantitas PRODUKSI,
+        # jadi layar menyebut hasil pabrik sebagai penjualan (2026-11-22).
+        qty_rows = db.session.query(
+            Invoice.invoice_date,
+            func.sum(InvoiceItem.quantity).label('qty')
+        ).join(
+            InvoiceItem, InvoiceItem.invoice_id == Invoice.id
+        ).filter(
+            Invoice.invoice_type == 'sales',
+            Invoice.status.notin_(['draft', 'cancelled']),
+            Invoice.invoice_date >= start_date.date()
+        ).group_by(Invoice.invoice_date).all()
+        qty_by_date = {row.invoice_date: float(row.qty or 0) for row in qty_rows}
+
+        tanggal = sorted(set([r.production_date for r in daily_data if r.production_date])
+                         | set(sales_by_date) | set(qty_by_date))
+        produksi_by_date = {r.production_date: int(r.total_qty or 0) for r in daily_data}
+
         timeline = []
-        for row in daily_data:
+        for d in tanggal:
             timeline.append({
-                'date': row.production_date.isoformat() if row.production_date else None,
-                'sales_qty': int(row.total_qty or 0),
-                'sales_value': sales_by_date.get(row.production_date, 0),
-                'profit': 0  # not yet computable - see docstring above
+                'date': d.isoformat(),
+                'production_qty': produksi_by_date.get(d, 0),
+                'sales_qty': qty_by_date.get(d, 0),
+                'sales_value': sales_by_date.get(d, 0),
+                'profit': 0  # belum bisa dihitung - lihat docstring
             })
 
         return jsonify({'timeline': timeline}), 200
@@ -1496,86 +1652,64 @@ def get_analytics_timeline():
 @jwt_required()
 @require_permission('products.view')
 def get_analytics_categories():
-    """Get category performance from products and real sales.
+    """Kinerja per kategori produk (kolom spunlace).
 
-    Bug fixed 2026-10-07 (same fabricated-data sweep as get_analytics_timeline()
-    above): total_sales used to be production_qty * a flat invented
-    Rp15,000/unit price, and avg_margin was a single hardcoded 22.5%
-    applied identically to every category regardless of its real
-    product mix. total_sales now sums real InvoiceItem.total_amount for
-    that category's products. avg_margin left at 0 - no reliable
-    per-unit standard cost exists yet in this schema (same honest stance
-    as /analytics/profitability's empty response) rather than guessing a
-    second fake number.
+    Bug diperbaiki 2026-10-07: total_sales dulu ditebak dari qty produksi x
+    harga karangan Rp15.000/unit dan avg_margin dipatok 22,5% untuk semua
+    kategori. Sekarang penjualan dijumlahkan dari Invoice nyata; avg_margin
+    tetap 0 karena harga pokok per unit belum ada di skema ini.
+
+    Bug diperbaiki 2026-11-22: kategori kosong jadi beberapa baris
+    "Uncategorized" sekaligus (null, string kosong, dan spasi dihitung
+    terpisah), dan produksi/penjualannya selalu 0 karena perbandingan
+    `spunlace == None` tidak pernah cocok di SQL. Sekarang semuanya
+    dinormalkan jadi satu kelompok "Tanpa kategori", dan angkanya dihitung
+    sekaligus - bukan dua query per kategori.
     """
     try:
-        from models import ProductNew
         from models.production import WorkOrder
         from models.finance import Invoice, InvoiceItem
-        from datetime import datetime, timedelta
+        from datetime import timedelta
         from sqlalchemy import func
 
         period = request.args.get('period', '3months')
+        hari = {'1month': 30, '3months': 90, '6months': 180}.get(period, 180)
+        start_date = get_local_now() - timedelta(days=hari)
 
-        end_date = get_local_now()
-        if period == '1month':
-            start_date = end_date - timedelta(days=30)
-        elif period == '3months':
-            start_date = end_date - timedelta(days=90)
-        else:
-            start_date = end_date - timedelta(days=180)
+        kategori = func.coalesce(func.nullif(func.trim(Product.spunlace), ''), 'Tanpa kategori')
 
-        # Get products grouped by category
-        category_stats = db.session.query(
-            ProductNew.spunlace,
-            func.count(ProductNew.id).label('total_products')
+        jumlah = dict(db.session.query(kategori, func.count(Product.id)).filter(
+            Product.is_active == True
+        ).group_by(kategori).all())
+
+        produksi = dict(db.session.query(
+            kategori, func.coalesce(func.sum(WorkOrder.quantity_produced), 0)
+        ).join(Product, WorkOrder.product_id == Product.id
+        ).filter(WorkOrder.created_at >= start_date).group_by(kategori).all())
+
+        penjualan = dict(db.session.query(
+            kategori, func.coalesce(func.sum(InvoiceItem.total_amount), 0)
+        ).join(InvoiceItem, InvoiceItem.product_id == Product.id
+        ).join(Invoice, InvoiceItem.invoice_id == Invoice.id
         ).filter(
-            ProductNew.is_active == True
-        ).group_by(
-            ProductNew.spunlace
-        ).all()
+            Invoice.invoice_type == 'sales',
+            Invoice.status.notin_(['draft', 'cancelled']),
+            Invoice.invoice_date >= start_date.date()
+        ).group_by(kategori).all())
 
-        categories = []
-        for cat_name, product_count in category_stats:
-            cat_display = cat_name or 'Uncategorized'
+        categories = [{
+            'category': nama,
+            'total_products': int(n or 0),
+            'total_produced': int(produksi.get(nama, 0) or 0),
+            'total_sales': float(penjualan.get(nama, 0) or 0),
+            'avg_margin': 0,  # belum bisa dihitung - lihat docstring
+            'growth_rate': 0  # butuh data historis
+        } for nama, n in jumlah.items()]
 
-            # Get work order stats for this category
-            wo_stats = db.session.query(
-                func.sum(WorkOrder.quantity_produced).label('total_produced')
-            ).join(
-                ProductNew, WorkOrder.product_id == ProductNew.id
-            ).filter(
-                ProductNew.spunlace == cat_name,
-                WorkOrder.created_at >= start_date
-            ).first()
-
-            total_produced = int(wo_stats.total_produced or 0) if wo_stats else 0
-
-            sales_stats = db.session.query(
-                func.sum(InvoiceItem.total_amount).label('total_sales')
-            ).join(
-                Invoice, InvoiceItem.invoice_id == Invoice.id
-            ).join(
-                ProductNew, InvoiceItem.product_id == ProductNew.id
-            ).filter(
-                ProductNew.spunlace == cat_name,
-                Invoice.invoice_type == 'sales',
-                Invoice.status.notin_(['draft', 'cancelled']),
-                Invoice.invoice_date >= start_date.date()
-            ).first()
-            total_sales = float(sales_stats.total_sales or 0) if sales_stats else 0
-
-            categories.append({
-                'category': cat_display,
-                'total_products': product_count,
-                'total_produced': total_produced,
-                'total_sales': total_sales,
-                'avg_margin': 0,  # not yet computable - see docstring above
-                'growth_rate': 0  # Would need historical data
-            })
+        categories.sort(key=lambda c: (c['total_sales'], c['total_produced'], c['total_products']), reverse=True)
 
         return jsonify({'categories': categories}), 200
-        
+
     except Exception as e:
         import traceback
         traceback.print_exc()

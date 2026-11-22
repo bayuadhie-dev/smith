@@ -18,10 +18,8 @@ import {
   SparklesIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline';
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell
-} from 'recharts';
+import { CategoryBars, PageHeader, Panel } from '../../components/ui/PageKit';
+import RunChart from '../../components/charts/RunChart';
 import { useUrlFilter } from '../../hooks/useUrlState'
 
 interface ProductLifecycleData {
@@ -31,31 +29,31 @@ interface ProductLifecycleData {
   category: string;
   launch_date: string;
   current_stage: 'introduction' | 'growth' | 'maturity' | 'decline' | 'discontinued';
-  stage_duration: number; // days in current stage
-  total_sales: number;
+  stage_duration: number; // hari sejak SPK pertama
+  total_produced: number;
+  total_planned: number;
+  completion_rate: number | null;
   total_revenue: number;
-  profit_margin: number;
-  market_share: number;
-  growth_rate: number;
-  roi: number;
-  last_updated: string;
+  production_share: number;
+  growth_rate: number | null;
+  work_order_count: number;
+  recent_activity: boolean;
 }
 
 interface StageMetrics {
   stage: string;
   product_count: number;
-  total_revenue: number;
+  total_produced: number;
   avg_duration: number;
-  success_rate: number;
+  avg_completion: number | null;
 }
 
 interface LifecycleTimeline {
   date: string;
-  introduction: number;
-  growth: number;
-  maturity: number;
-  decline: number;
-  discontinued: number;
+  active_products: number;
+  new_products: number;
+  work_orders: number;
+  produced: number;
 }
 
 interface ProductTransition {
@@ -163,9 +161,9 @@ const ProductLifecycle: React.FC = () => {
 
   const formatDuration = (days: number | string | null | undefined) => {
     const d = Number(days) || 0;
-    if (d < 30) return `${d} days`;
-    if (d < 365) return `${Math.round(d / 30)} months`;
-    return `${Math.round(d / 365)} years`;
+    if (d < 30) return `${d} hari`;
+    if (d < 365) return `${Math.round(d / 30)} bulan`;
+    return `${Math.round(d / 365)} tahun`;
   };
 
   const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
@@ -174,283 +172,261 @@ const ProductLifecycle: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3">Loading lifecycle data...</span>
+        <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">Memuat data daur hidup...</span>
       </div>
     );
   }
 
-  return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap justify-between items-center gap-3">
-        <div className="flex items-center space-x-4">
-          <Link
-            to="/app/products/dashboard"
-            className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
-          >
-            <ArrowLeftIcon className="h-5 w-5 mr-2" />
-            Back to Dashboard
-          </Link>
-          <div>
-            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Lifecycle Produk</h1>
-            <p className="text-gray-600 mt-1 dark:text-gray-300">Track product performance across lifecycle stages</p>
-          </div>
-        </div>
-        <div className="flex space-x-3">
-          <select
-            value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
-          >
-            <option value="3months">Last 3 Months</option>
-            <option value="6months">Last 6 Months</option>
-            <option value="1year">Last Year</option>
-            <option value="2years">Last 2 Years</option>
-          </select>
-        </div>
-      </div>
+  const namaTahap: Record<string, string> = {
+    introduction: 'Perkenalan',
+    growth: 'Tumbuh',
+    maturity: 'Matang',
+    decline: 'Menurun',
+    discontinued: 'Dihentikan',
+  };
 
-      {/* Stage Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {stageMetrics.map((metric, index) => (
-          <div key={metric.stage} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className={`p-2 rounded-lg ${getStageColor(metric.stage.toLowerCase())}`}>
+  // Pilihan kategori diambil dari data, bukan daftar tetap yang tidak pernah
+  // cocok dengan isi database.
+  const daftarKategori = Array.from(new Set(products.map((p) => p.category).filter(Boolean))).sort();
+
+  return (
+    <div className="mx-auto max-w-6xl space-y-4 pb-10">
+      <PageHeader
+        eyebrow="PRODUK · DAUR HIDUP"
+        title="Daur Hidup Produk"
+        subtitle="Tahap tiap produk ditebak dari kegiatan produksinya: jumlah SPK, kuantitas, dan kapan terakhir dibuat."
+        actions={
+          <>
+            <Link
+              to="/app/products/dashboard"
+              className="fn-press inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+              Kembali ke dashboard
+            </Link>
+            <select
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="rounded-full border border-gray-300 px-4 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+            >
+              <option value="3months">3 bulan terakhir</option>
+              <option value="6months">6 bulan terakhir</option>
+              <option value="1year">1 tahun terakhir</option>
+              <option value="2years">2 tahun terakhir</option>
+            </select>
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {stageMetrics.map((metric) => (
+          <div key={metric.stage} className="fn-card p-4">
+            <div className="flex items-center justify-between">
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-semibold ${getStageColor(metric.stage.toLowerCase())}`}>
                 {getStageIcon(metric.stage.toLowerCase())}
+                {namaTahap[metric.stage.toLowerCase()] || metric.stage}
+              </span>
+              <span className="fn-num text-2xl font-semibold text-gray-900 dark:text-white">{metric.product_count}</span>
+            </div>
+            <dl className="mt-3 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex justify-between gap-2">
+                <dt>Diproduksi</dt>
+                <dd className="fn-num text-gray-700 dark:text-gray-200">{formatNumber(metric.total_produced)}</dd>
               </div>
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">{metric.product_count}</span>
-            </div>
-            <h3 className="font-medium text-gray-900 dark:text-white">{metric.stage}</h3>
-            <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-300">
-              <div>Revenue: {formatRupiah(metric.total_revenue)}</div>
-              <div>Avg Duration: {formatDuration(metric.avg_duration)}</div>
-              <div>Success Rate: {formatPercent(metric.success_rate)}</div>
-            </div>
+              <div className="flex justify-between gap-2">
+                <dt>Rata-rata umur</dt>
+                <dd className="text-gray-700 dark:text-gray-200">{formatDuration(metric.avg_duration)}</dd>
+              </div>
+              <div className="flex justify-between gap-2">
+                <dt>Penyelesaian SPK</dt>
+                <dd className="fn-num text-gray-700 dark:text-gray-200">
+                  {metric.avg_completion === null || metric.avg_completion === undefined ? '-' : formatPercent(metric.avg_completion)}
+                </dd>
+              </div>
+            </dl>
           </div>
         ))}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Lifecycle Timeline */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Lifecycle Timeline</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={timeline}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Area type="monotone" dataKey="introduction" stackId="1" stroke="#3B82F6" fill="#3B82F6" />
-              <Area type="monotone" dataKey="growth" stackId="1" stroke="#10B981" fill="#10B981" />
-              <Area type="monotone" dataKey="maturity" stackId="1" stroke="#F59E0B" fill="#F59E0B" />
-              <Area type="monotone" dataKey="decline" stackId="1" stroke="#EF4444" fill="#EF4444" />
-              <Area type="monotone" dataKey="discontinued" stackId="1" stroke="#8B5CF6" fill="#8B5CF6" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Sebelumnya panel ini menggambar lima garis tahap daur hidup yang
+            isinya angka karangan backend. ERP belum menyimpan riwayat tahap
+            per bulan, jadi yang ditampilkan kegiatan produksi yang memang
+            tercatat. */}
+        <Panel title="Kegiatan produksi per bulan">
+          <div className="px-4 pb-3 pt-1">
+            {timeline.length === 0 ? (
+              <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada kegiatan produksi pada rentang ini.</p>
+            ) : (
+              <RunChart
+                values={timeline.map((t) => Number(t.produced || 0))}
+                axis={Array.from(new Set([0, Math.floor(timeline.length / 2), timeline.length - 1]))
+                  .map((i: number) => String(timeline[i]?.date || '').slice(2))
+                  .filter(Boolean)}
+                rows={[
+                  { label: 'Produk berproduksi', values: timeline.map((t) => Number(t.active_products || 0)) },
+                  { label: 'Pertama kali produksi', values: timeline.map((t) => Number(t.new_products || 0)) },
+                  { label: 'Jumlah SPK', values: timeline.map((t) => Number(t.work_orders || 0)) },
+                ]}
+                height={220}
+                unit="satuan"
+              />
+            )}
+          </div>
+        </Panel>
 
-        {/* Stage Distribution */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Stage Distribution</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={stageMetrics}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ stage, product_count }) => `${stage} (${product_count})`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="product_count"
-              >
-                {stageMetrics.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        <Panel title="Sebaran tahap">
+          <div className="p-4">
+            {stageMetrics.every((m) => !m.product_count) ? (
+              <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada produk terklasifikasi.</p>
+            ) : (
+              <CategoryBars
+                items={stageMetrics.map((m) => ({
+                  label: namaTahap[m.stage.toLowerCase()] || m.stage,
+                  value: Number(m.product_count || 0),
+                  hint: `${formatNumber(m.total_produced)} satuan diproduksi`,
+                }))}
+                unit="produk"
+              />
+            )}
+          </div>
+        </Panel>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex-1 min-w-64">
-            <div className="relative">
-              <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <FunnelIcon className="h-5 w-5 text-gray-400" />
-            <select
-              value={stageFilter}
-              onChange={(e) => setStageFilter(e.target.value)}
-              className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
-            >
-              <option value="all">All Stages</option>
-              <option value="introduction">Introduction</option>
-              <option value="growth">Growth</option>
-              <option value="maturity">Maturity</option>
-              <option value="decline">Decline</option>
-              <option value="discontinued">Discontinued</option>
-            </select>
-          </div>
-          
+      {/* Penyaring */}
+      <div className="fn-card flex flex-wrap items-center gap-3 p-4">
+        <div className="relative min-w-64 flex-1">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Cari produk..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <FunnelIcon className="h-5 w-5 text-gray-400" />
           <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
+            value={stageFilter}
+            onChange={(e) => setStageFilter(e.target.value)}
+            className="rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
           >
-            <option value="all">All Categories</option>
-            <option value="Nonwoven Fabrics">Nonwoven Fabrics</option>
-            <option value="Medical Products">Medical Products</option>
-            <option value="FunnelIcon Media">FunnelIcon Media</option>
-            <option value="Geotextiles">Geotextiles</option>
+            <option value="all">Semua tahap</option>
+            <option value="introduction">Perkenalan</option>
+            <option value="growth">Tumbuh</option>
+            <option value="maturity">Matang</option>
+            <option value="decline">Menurun</option>
           </select>
         </div>
+
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+        >
+          <option value="all">Semua kategori</option>
+          {daftarKategori.map((k) => (
+            <option key={k} value={k}>{k}</option>
+          ))}
+        </select>
       </div>
 
-      {/* Products Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Product Lifecycle Status</h3>
-          <div className="text-sm text-gray-600 dark:text-gray-300">
-            Showing {filteredProducts.length} of {products.length} products
-          </div>
+      {/* Tabel produk */}
+      <div className="fn-card p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Tahap tiap produk</h3>
+          <div className="fn-label">{filteredProducts.length} dari {products.length} produk</div>
         </div>
-        
+
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('production.product')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Growth Rate
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Market Share
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-200/70 dark:border-gray-700/70">
+                <th className="fn-label px-3 py-2 text-left">Produk</th>
+                <th className="fn-label px-3 py-2 text-left">Tahap</th>
+                <th className="fn-label px-3 py-2 text-right">Umur sejak SPK pertama</th>
+                <th className="fn-label px-3 py-2 text-right">Diproduksi</th>
+                <th className="fn-label px-3 py-2 text-right">SPK</th>
+                <th className="fn-label px-3 py-2 text-right">Dibanding periode lalu</th>
+                <th className="fn-label px-3 py-2 text-right">Pangsa produksi</th>
+                <th className="fn-label px-3 py-2 text-right">Omzet</th>
+                <th className="fn-label px-3 py-2 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="divide-y divide-gray-200/70 dark:divide-gray-700/70">
               {filteredProducts.map((product) => (
-                <tr key={product.product_id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="font-medium text-gray-900 dark:text-white">{product.product_name}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">{product.product_code}</div>
-                      <div className="text-xs text-gray-400">{product.category}</div>
-                    </div>
+                <tr key={product.product_id} className="hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                  <td className="px-3 py-2.5">
+                    <div className="font-medium text-gray-900 dark:text-white">{product.product_name}</div>
+                    <div className="fn-label mt-0.5">{product.product_code} · {product.category}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getStageColor(product.current_stage)}`}>
+                  <td className="px-3 py-2.5">
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold ${getStageColor(product.current_stage)}`}>
                       {getStageIcon(product.current_stage)}
-                      <span className="ml-1 capitalize">{product.current_stage}</span>
+                      {namaTahap[product.current_stage] || product.current_stage}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {formatDuration(product.stage_duration)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {formatRupiah(product.total_revenue)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      {product.growth_rate >= 0 ? (
-                        <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
-                      ) : (
-                        <ArrowTrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
-                      )}
-                      <span className={`text-sm font-medium ${
-                        product.growth_rate >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {formatPercent(Math.abs(product.growth_rate))}
+                  <td className="px-3 py-2.5 text-right text-gray-600 dark:text-gray-300">{formatDuration(product.stage_duration)}</td>
+                  <td className="fn-num px-3 py-2.5 text-right text-gray-900 dark:text-white">{formatNumber(product.total_produced)}</td>
+                  <td className="fn-num px-3 py-2.5 text-right text-gray-600 dark:text-gray-300">{formatNumber(product.work_order_count)}</td>
+                  <td className="fn-num px-3 py-2.5 text-right">
+                    {/* null = tidak ada produksi di periode sebelumnya, jadi
+                        tidak ada yang bisa dibandingkan. */}
+                    {product.growth_rate === null || product.growth_rate === undefined ? (
+                      <span className="text-gray-400">-</span>
+                    ) : (
+                      <span className={product.growth_rate >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                        {product.growth_rate >= 0 ? '+' : '-'}{formatPercent(Math.abs(product.growth_rate))}
                       </span>
-                    </div>
+                    )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {formatPercent(product.market_share)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`text-sm font-medium ${
-                      product.roi >= 100 ? 'text-green-600 dark:text-green-400' :
-                      product.roi >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
-                    }`}>
-                      {formatPercent(product.roi)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="fn-num px-3 py-2.5 text-right text-gray-600 dark:text-gray-300">{formatPercent(product.production_share)}</td>
+                  <td className="fn-num px-3 py-2.5 text-right text-gray-900 dark:text-white">{formatRupiah(product.total_revenue)}</td>
+                  <td className="px-3 py-2.5 text-right">
                     <Link
                       to={`/app/products-v2?view=detail&code=${product.product_code}`}
-                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400"
+                      className="inline-flex text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                       title="Lihat detail produk"
                     >
-                      <EyeIcon className="h-5 w-5" />
+                      <EyeIcon className="h-4 w-4" />
                     </Link>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          {filteredProducts.length === 0 && (
+            <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+              {products.length === 0
+                ? 'Belum ada produk dengan kegiatan produksi pada rentang ini.'
+                : 'Tidak ada produk yang cocok dengan pencarian atau penyaring.'}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Recent Transitions */}
+      {/* Perpindahan tahap - ERP belum menyimpan riwayatnya, jadi bagian ini
+          hanya muncul kalau backend benar-benar mengirim isinya. */}
       {transitions.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Stage Transitions</h3>
-          <div className="space-y-4">
+        <div className="fn-card p-4">
+          <h3 className="mb-3 text-base font-semibold text-gray-900 dark:text-white">Perpindahan tahap terakhir</h3>
+          <ul className="divide-y divide-gray-200/70 dark:divide-gray-700/70">
             {transitions.map((transition, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                <div className="flex-1">
+              <li key={index} className="flex items-center justify-between gap-3 py-3">
+                <div className="min-w-0">
                   <div className="font-medium text-gray-900 dark:text-white">{transition.product_name}</div>
-                  <div className="text-sm text-gray-600 mt-1 dark:text-gray-300">
-                    Moved from <span className="font-medium capitalize">{transition.from_stage}</span> to{' '}
-                    <span className="font-medium capitalize">{transition.to_stage}</span>
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{transition.reason}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-600 dark:text-gray-300">
-                    {new Date(transition.transition_date).toLocaleDateString()}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Impact: {transition.impact_score}/10
+                  <div className="fn-label mt-0.5">
+                    {namaTahap[transition.from_stage] || transition.from_stage} &rarr; {namaTahap[transition.to_stage] || transition.to_stage}
                   </div>
                 </div>
-              </div>
+                <div className="fn-label shrink-0">
+                  {new Date(transition.transition_date).toLocaleDateString('id-ID')}
+                </div>
+              </li>
             ))}
-          </div>
-        </div>
-      )}
-
-      {filteredProducts.length === 0 && (
-        <div className="text-center py-12">
-          <ChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No products found</h3>
-          <p className="text-gray-600 dark:text-gray-300">
-            Try adjusting your search or filter criteria
-          </p>
+          </ul>
         </div>
       )}
     </div>

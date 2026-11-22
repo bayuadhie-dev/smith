@@ -97,7 +97,7 @@ const ProductDashboardNew: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <div className="fn-card p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Produk</p>
@@ -109,7 +109,7 @@ const ProductDashboardNew: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <div className="fn-card p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Produk Aktif</p>
@@ -124,7 +124,7 @@ const ProductDashboardNew: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <div className="fn-card p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Produk Tidak Aktif</p>
@@ -139,7 +139,7 @@ const ProductDashboardNew: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <div className="fn-card p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Jenis Spunlace</p>
@@ -155,8 +155,8 @@ const ProductDashboardNew: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Spunlace Distribution */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+        <div className="fn-card p-6">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
             <ChartPieIcon className="w-5 h-5 mr-2" />
             Distribusi Jenis Spunlace
           </h3>
@@ -190,8 +190,8 @@ const ProductDashboardNew: React.FC = () => {
         </div>
 
         {/* Process Distribution */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+        <div className="fn-card p-6">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
             <ArrowTrendingUpIcon className="w-5 h-5 mr-2" />
             Distribusi Process Produksi
           </h3>
@@ -228,9 +228,9 @@ const ProductDashboardNew: React.FC = () => {
       </div>
 
       {/* Recent Products */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+      <div className="fn-card">
         <div className="p-6">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Produk Terbaru</h3>
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Produk Terbaru</h3>
           {stats?.recent_products?.length === 0 ? (
             <p className="text-gray-600 dark:text-gray-300 text-center py-4">Tidak ada produk baru</p>
           ) : (
@@ -250,7 +250,7 @@ const ProductDashboardNew: React.FC = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="divide-y divide-gray-200/70 dark:divide-gray-700/70">
                   {stats?.recent_products?.map((product) => (
                     <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
@@ -283,8 +283,8 @@ const ProductDashboardNew: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Aksi Cepat</h3>
+      <div className="fn-card p-6">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Aksi Cepat</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors text-left">
             <CubeIcon className="w-6 h-6 text-blue-600 mb-2 dark:text-blue-400" />

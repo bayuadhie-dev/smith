@@ -346,7 +346,10 @@ export default function RunChart({
 
   const n = values.length || 1
   const hoverValue = hover ? values[hover.i] : null
-  const kosong = values.length === 0 || values.every((v) => !v)
+  // Deret utama boleh nol asalkan salah satu baris punggungan masih berisi -
+  // kalau tidak, grafik ini mengaku kosong padahal datanya ada.
+  const kosong = (values.length === 0 || values.every((v) => !v))
+    && (!rows || rows.length === 0 || rows.every((r) => r.values.every((v) => !v)))
 
   return (
     <div className={`relative ${className}`}>

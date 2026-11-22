@@ -35,6 +35,7 @@ export default function ProductList() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
+        <div className="fn-label mb-1.5">PRODUK · PRODUK</div>
         <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{t('products.title')}</h1>
         <Link to="/products/new" className="btn-primary inline-flex items-center gap-2">
           <PlusIcon className="h-5 w-5" />
@@ -45,7 +46,7 @@ export default function ProductList() {
       <div className="card p-4">
         <input
           type="text"
-          placeholder="Search products..."
+          placeholder="Cari produk..."
           className="input-field"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -63,9 +64,9 @@ export default function ProductList() {
                   <th>{t('common.code')}</th>
                   <th>{t('common.name')}</th>
                   <th>{t('products.bom.category')}</th>
-                  <th>UOM</th>
+                  <th>Satuan</th>
                   <th>{t('common.price')}</th>
-                  <th>Material Type</th>
+                  <th>Jenis bahan</th>
                   <th>{t('common.status')}</th>
                   <th>{t('common.actions')}</th>
                 </tr>

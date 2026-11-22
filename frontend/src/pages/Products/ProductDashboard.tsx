@@ -1,18 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import {
-  ChartBarIcon,
-  PlusIcon,
-  CubeIcon,
-  TagIcon,
-  ExclamationTriangleIcon,
-  BanknotesIcon,
-  ListBulletIcon
-} from '@heroicons/react/24/outline';
+import { CategoryBars, KpiStrip, PageHeader, Panel, QuickLinks, StatusPill } from '../../components/ui/PageKit';
+import RunChart from '../../components/charts/RunChart';
+import { ChartBarIcon, PlusIcon } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
-import { useLanguage } from '../../contexts/LanguageContext';
 interface ProductKPIs {
   total_products?: number;
   active_products?: number;
@@ -22,6 +14,7 @@ interface ProductKPIs {
   out_of_stock_products?: number;
   total_value?: number;
   avg_price?: number;
+  products_with_threshold?: number;
 }
 
 interface ProductSalesData {
@@ -49,13 +42,10 @@ interface StockAlert {
 interface TrendData {
   month: string;
   new_products: number;
-  discontinued: number;
   sales_volume: number;
 }
 
 const ProductDashboard: React.FC = () => {
-  const { t } = useLanguage();
-
   const [kpis, setKpis] = useState<ProductKPIs>({
     total_products: 0,
     active_products: 0,
@@ -148,243 +138,169 @@ const ProductDashboard: React.FC = () => {
     return new Intl.NumberFormat('id-ID').format(num);
   };
 
-  const getStockStatusColor = (status: string) => {
-    switch (status) {
-      case 'out_of_stock': return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
-      case 'low_stock': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
-      default: return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
-    }
-  };
-
-  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-        <span className="ml-3">Loading product dashboard...</span>
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-600"></div>
+        <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">Memuat dashboard produk...</span>
       </div>
     );
   }
 
-  // 2026-10-07: Axion bento-grid restyle (tier-2 sub-dashboard). Charts/
-  // alerts tables below are intentionally left as-is - only the header +
-  // KPI cards are in scope.
+  const peringatan = (kpis.low_stock_products ?? 0) + (kpis.out_of_stock_products ?? 0);
+
   return (
-    <div className="p-6 space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      {/* Header */}
-      <div className="flex flex-wrap justify-between items-center gap-3">
-        <div>
-          <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">Dashboard Produk</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Comprehensive overview of your product portfolio</p>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <Link
-            to="/app/products/analytics"
-            className="flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
-          >
-            <ChartBarIcon className="h-5 w-5" />
-          </Link>
-          <Link
-            to="/app/products/new"
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-shadow text-sm font-medium"
-          >
-            <PlusIcon className="h-5 w-5" />
-            Add Product
-          </Link>
-        </div>
-      </div>
-
-      {/* KPI Cards - bento: Total Products spans 2 cols (primary metric) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg"><CubeIcon className="w-5 h-5" /></div>
-            <p className="text-sm opacity-90">Total Products</p>
-          </div>
-          <p className="text-3xl font-bold">{formatNumber(kpis.total_products ?? 0)}</p>
-          <p className="text-xs opacity-75 mt-1">
-            {formatNumber(kpis.active_products ?? 0)} Active &middot; {formatNumber(kpis.inactive_products ?? 0)} Inactive
-          </p>
-        </div>
-
-        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg"><TagIcon className="w-5 h-5" /></div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Categories</p>
-          <p className="text-2xl font-bold">{formatNumber(kpis.total_categories ?? 0)}</p>
-          <Link to="/app/products/categories" className="text-xs underline opacity-90 hover:opacity-100">
-            Manage Categories →
-          </Link>
-        </div>
-
-        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg"><ExclamationTriangleIcon className="w-5 h-5" /></div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Stock Alerts</p>
-          <p className="text-2xl font-bold">{formatNumber((kpis.low_stock_products ?? 0) + (kpis.out_of_stock_products ?? 0))}</p>
-          <p className="text-xs opacity-75 mt-1">
-            {formatNumber(kpis.low_stock_products ?? 0)} Low &middot; {formatNumber(kpis.out_of_stock_products ?? 0)} Out
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white shadow-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg"><BanknotesIcon className="w-5 h-5" /></div>
-          </div>
-          <p className="text-xs opacity-90 mb-1">Portfolio Value</p>
-          <p className="text-xl font-bold">{formatRupiah(kpis.total_value ?? 0)}</p>
-          <p className="text-xs opacity-75 mt-1">Avg Price: {formatRupiah(kpis.avg_price ?? 0)}</p>
-        </div>
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Products Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Selling Products</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={topProducts}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="product_name" angle={-45} textAnchor="end" height={80} />
-              <YAxis />
-              <Tooltip formatter={(value, name) => [
-                name === 'sales_value' ? formatRupiah(value as number) : formatNumber(value as number),
-                name === 'sales_value' ? 'Sales Value' : t('common.quantity')
-              ]} />
-              <Bar dataKey="sales_qty" fill="#3B82F6" name="sales_qty" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Category Distribution */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Products by Category</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={categoryData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ category, product_count }) => `${category} (${product_count})`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="product_count"
-              >
-                {categoryData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Bottom Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Stock Alerts */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Stock Alerts</h3>
-            <Link to="/app/warehouse/inventory" className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">
-              View All →
+    <div className="mx-auto max-w-6xl space-y-4 pb-10">
+      <PageHeader
+        eyebrow="PRODUK · RINGKASAN"
+        title="Dashboard Produk"
+        subtitle="Ringkasan portofolio produk: jumlah, nilai, dan pergerakannya."
+        actions={
+          <>
+            <Link
+              to="/app/products/analytics"
+              className="fn-press inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <ChartBarIcon className="h-4 w-4" />
+              Analitik
             </Link>
-          </div>
-          <div className="space-y-3">
-            {stockAlerts.map((alert) => (
-              <div key={alert.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900 dark:text-white">{alert.product_name}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Stock: {alert.current_stock} / Min: {alert.min_stock}
-                  </p>
-                </div>
-                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStockStatusColor(alert.status)}`}>
-                  {alert.status === 'out_of_stock' ? 'Out of Stock' : 'Low Stock'}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+            <Link
+              to="/app/products/new"
+              className="fn-press inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600"
+            >
+              <PlusIcon className="h-4 w-4" />
+              Tambah produk
+            </Link>
+          </>
+        }
+      />
 
-        {/* Product Trends */}
-        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Product Trends</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="new_products" stroke="#10B981" strokeWidth={2} name="New Products" />
-              <Line type="monotone" dataKey="discontinued" stroke="#EF4444" strokeWidth={2} name="Discontinued" />
-              <Line type="monotone" dataKey="sales_volume" stroke="#3B82F6" strokeWidth={2} name="Sales Volume" />
-            </LineChart>
-          </ResponsiveContainer>
+      <KpiStrip
+        items={[
+          {
+            label: 'Total produk',
+            value: formatNumber(kpis.total_products ?? 0),
+            hint: `${formatNumber(kpis.active_products ?? 0)} aktif · ${formatNumber(kpis.inactive_products ?? 0)} nonaktif`,
+            to: '/app/products/list',
+          },
+          {
+            label: 'Kategori',
+            value: formatNumber(kpis.total_categories ?? 0),
+            hint: 'Kelola kategori produk',
+            to: '/app/products/categories',
+          },
+          {
+            label: 'Peringatan stok',
+            value: formatNumber(peringatan),
+            tone: peringatan > 0 ? 'warn' : undefined,
+            // Tanpa ambang minimum, angka 0 bukan berarti stok aman - jadi
+            // layar menyebut apa adanya.
+            hint: (kpis.products_with_threshold ?? 0) === 0
+              ? 'Ambang stok minimum belum diisi'
+              : `${formatNumber(kpis.low_stock_products ?? 0)} menipis · ${formatNumber(kpis.out_of_stock_products ?? 0)} habis`,
+            to: '/app/warehouse/inventory',
+          },
+          {
+            label: 'Nilai portofolio',
+            value: formatRupiah(kpis.total_value ?? 0),
+            hint: `Harga rata-rata ${formatRupiah(kpis.avg_price ?? 0)}`,
+          },
+        ]}
+      />
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Panel title="Produk paling laku">
+          <div className="p-4">
+            {topProducts.length === 0 ? (
+              <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada penjualan tercatat.</p>
+            ) : (
+              <CategoryBars
+                items={topProducts.map((p: any) => ({ label: p.product_name, value: Number(p.sales_qty || 0) }))}
+                format={formatNumber}
+                unit="satuan"
+              />
+            )}
+          </div>
+        </Panel>
+
+        <Panel title="Produk menurut kategori">
+          <div className="p-4">
+            {categoryData.length === 0 ? (
+              <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada kategori.</p>
+            ) : (
+              <CategoryBars
+                items={categoryData.map((c: any) => ({ label: c.category, value: Number(c.product_count || 0) }))}
+                unit="produk"
+              />
+            )}
+          </div>
+        </Panel>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <Panel
+          title="Peringatan stok"
+          action={<Link to="/app/warehouse/inventory" className="fn-label hover:underline">Lihat semua</Link>}
+        >
+          {stockAlerts.length === 0 ? (
+            <p className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+              {(kpis.products_with_threshold ?? 0) === 0
+                ? 'Belum ada produk yang ambang stok minimumnya diisi, jadi tidak ada yang bisa diperingatkan.'
+                : 'Tidak ada stok yang perlu diperhatikan.'}
+            </p>
+          ) : (
+            <ul className="divide-y divide-gray-200/70 dark:divide-gray-700/70">
+              {stockAlerts.map((alert) => (
+                <li key={alert.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-gray-900 dark:text-white">{alert.product_name}</p>
+                    <p className="fn-label mt-0.5">
+                      Stok {formatNumber(alert.current_stock)} / minimum {formatNumber(alert.min_stock)}
+                    </p>
+                  </div>
+                  <StatusPill tone={alert.status === 'out_of_stock' ? 'bad' : 'warn'}>
+                    {alert.status === 'out_of_stock' ? 'Habis' : 'Menipis'}
+                  </StatusPill>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
+
+        <div className="lg:col-span-2">
+          <Panel title="Pergerakan produk">
+            <div className="px-4 pb-3 pt-1">
+              {trendData.length === 0 ? (
+                <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data.</p>
+              ) : (
+                <RunChart
+                  values={trendData.map((t: any) => Number(t.new_products || 0))}
+                  axis={Array.from(new Set([0, Math.floor(trendData.length / 2), trendData.length - 1]))
+                    .map((i: number) => String((trendData[i] as any)?.month || ''))
+                    .filter(Boolean)}
+                  rows={[
+                    { label: 'Produk baru', values: trendData.map((t: any) => Number(t.new_products || 0)) },
+                    { label: 'Volume jual', values: trendData.map((t: any) => Number(t.sales_volume || 0)) },
+                  ]}
+                  height={200}
+                />
+              )}
+            </div>
+          </Panel>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <Link
-            to="/app/products/list"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors"
-          >
-            <div className="text-center">
-              <ListBulletIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Product List</span>
-            </div>
-          </Link>
-          
-          <Link
-            to="/app/products/new"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-          >
-            <div className="text-center">
-              <PlusIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Add Product</span>
-            </div>
-          </Link>
-          
-          <Link
-            to="/app/products/categories"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
-          >
-            <div className="text-center">
-              <TagIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Manage Categories</span>
-            </div>
-          </Link>
-          
-          <Link
-            to="/app/products/bom"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
-          >
-            <div className="text-center">
-              <CubeIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('products.bom.title')}</span>
-            </div>
-          </Link>
-          
-          <Link
-            to="/app/products/analytics"
-            className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
-          >
-            <div className="text-center">
-              <ChartBarIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Analytics</span>
-            </div>
-          </Link>
-        </div>
-      </div>
+      <QuickLinks
+        links={[
+          { to: '/app/products/list', label: 'Daftar produk' },
+          { to: '/app/products/new', label: 'Tambah produk' },
+          { to: '/app/products/categories', label: 'Kategori produk' },
+          { to: '/app/products/bom', label: 'BOM (Bill of Materials)' },
+          { to: '/app/products/analytics', label: 'Analitik produk' },
+          { to: '/app/products/lifecycle', label: 'Daur hidup produk' },
+          { to: '/app/products/calculator', label: 'Kalkulator nonwoven' },
+        ]}
+      />
     </div>
   );
 };
