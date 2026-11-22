@@ -74,6 +74,15 @@ const META_LABEL: Record<string, string> = {
   priority: 'Prioritas', department: 'Departemen', type: 'Jenis',
 }
 
+// Nilai status yang datang apa adanya dari basis data.
+const NILAI_LABEL: Record<string, string> = {
+  active: 'Aktif', inactive: 'Nonaktif', draft: 'Draf', approved: 'Disetujui',
+  rejected: 'Ditolak', pending: 'Menunggu', completed: 'Selesai',
+  cancelled: 'Dibatalkan', open: 'Terbuka', closed: 'Tutup',
+  in_progress: 'Dikerjakan', paid: 'Lunas', unpaid: 'Belum dibayar',
+  high: 'Tinggi', medium: 'Sedang', low: 'Rendah',
+}
+
 export default function GlobalSearchPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -289,12 +298,12 @@ export default function GlobalSearchPage() {
                             </span>
                           </span>
                           {r.subtitle && <span className="mt-0.5 block truncate text-sm text-gray-600 dark:text-gray-300">{r.subtitle}</span>}
-                          {r.description && <span className="mt-0.5 block line-clamp-2 text-sm text-gray-500 dark:text-gray-400">{r.description}</span>}
+                          {r.description && <span className="mt-0.5 line-clamp-2 text-sm text-gray-500 dark:text-gray-400">{r.description}</span>}
                           {meta.length > 0 && (
                             <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
                               {meta.map(([k, v]) => (
                                 <span key={k} className="text-xs text-gray-500 dark:text-gray-400">
-                                  <span className="font-medium">{META_LABEL[k] || k}:</span> {String(v)}
+                                  <span className="font-medium">{META_LABEL[k] || k}:</span> {NILAI_LABEL[String(v)] || String(v)}
                                 </span>
                               ))}
                             </span>

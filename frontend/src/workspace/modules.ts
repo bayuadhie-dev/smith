@@ -59,7 +59,7 @@ const SEGMENT_WORDS: Record<string, string> = {
   rnd: 'R&D', projects: 'Proyek', approvals: 'Persetujuan',
   documents: 'Dokumen', templates: 'Template', generate: 'Buat Dokumen',
   manual: 'Panduan', faq: 'Tanya Jawab', approval: 'Persetujuan',
-  waste: 'Susut', materials: 'Bahan', notifications: 'Notifikasi',
+  waste: 'Limbah', notifications: 'Notifikasi',
   profile: 'Profil', search: 'Pencarian', ews: 'Peringatan Dini',
 }
 

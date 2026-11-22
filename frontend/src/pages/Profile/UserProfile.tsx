@@ -299,7 +299,7 @@ const UserProfile: React.FC = () => {
             )}
 
             {/* Name & Role */}
-            <div className="mt-20">
+            <div className="mt-14">
               <div className="flex items-center gap-3">
                 {isEditing ? (
                   <input

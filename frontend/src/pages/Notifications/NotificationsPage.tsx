@@ -3,6 +3,7 @@ import { BellIcon, CheckIcon, TrashIcon, FunnelIcon } from '@heroicons/react/24/
 import axiosInstance from '../../utils/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { PageHeader } from '../../components/ui/PageKit';
 
 interface Notification {
   id: number;
@@ -100,6 +101,10 @@ const NotificationsPage: React.FC = () => {
     }
   };
 
+  const PRIORITAS_LABEL: Record<string, string> = {
+    high: 'Penting', urgent: 'Mendesak', medium: 'Sedang', normal: 'Biasa', low: 'Rendah',
+  };
+
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'urgent': return 'bg-red-500 text-white';
@@ -138,29 +143,23 @@ const NotificationsPage: React.FC = () => {
     : notifications;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center flex-wrap justify-between mb-6 gap-3">
-        <div className="flex items-center gap-3">
-          <BellIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-          <div>
-            <div className="fn-label mb-1.5">NOTIFIKASI</div>
-            <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Notifikasi</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {unreadCount > 0 ? `${unreadCount} belum dibaca` : 'Semua sudah dibaca'}
-            </p>
-          </div>
-        </div>
-        {unreadCount > 0 && (
-          <button
-            onClick={markAllAsRead}
-            className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            <CheckIcon className="h-4 w-4" />
-            Tandai Semua Dibaca
-          </button>
-        )}
-      </div>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <PageHeader
+        eyebrow="NOTIFIKASI"
+        title="Notifikasi"
+        subtitle={unreadCount > 0 ? `${unreadCount} belum dibaca` : 'Semua sudah dibaca'}
+        actions={
+          unreadCount > 0 ? (
+            <button
+              onClick={markAllAsRead}
+              className="fn-press inline-flex items-center gap-2 rounded-lg bg-cta-600 px-4 py-2 text-sm font-medium text-white hover:bg-cta-700"
+            >
+              <CheckIcon className="h-4 w-4" />
+              Tandai semua dibaca
+            </button>
+          ) : undefined
+        }
+      />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
@@ -233,7 +232,7 @@ const NotificationsPage: React.FC = () => {
                     </h3>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <span className={`px-2 py-0.5 text-xs font-medium rounded ${getPriorityBadge(notification.priority)}`}>
-                        {notification.priority}
+                        {PRIORITAS_LABEL[notification.priority] || notification.priority}
                       </span>
                       {!notification.is_read && (
                         <span className="w-2 h-2 bg-blue-600 rounded-full"></span>

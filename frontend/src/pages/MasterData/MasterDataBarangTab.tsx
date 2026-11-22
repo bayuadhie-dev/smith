@@ -62,6 +62,23 @@ const AKUN_FIELDS: { key: string; label: string }[] = [
   { key: 'akun_beban_id', label: 'Beban' },
 ];
 
+const SUMBER_LABEL: Record<string, string> = {
+  product: 'Produk',
+  material: 'Material',
+};
+
+// Nilai mentah dari kolom material_type di basis data.
+const JENIS_LABEL: Record<string, string> = {
+  raw_materials: 'Bahan baku',
+  packaging: 'Bahan kemas',
+  wip: 'Barang setengah jadi',
+  chemicals: 'Bahan kimia',
+  finished_goods: 'Barang jadi',
+  non_inventory: 'Non-persediaan',
+  spare_parts: 'Suku cadang',
+};
+
+
 export default function MasterDataBarangTab() {
   // Pencarian, saringan jenis, dan halaman disimpan di URL supaya kembali ke
   // tempat yang sama kalau halaman ter-refresh atau tautannya dibagikan.
@@ -309,10 +326,10 @@ export default function MasterDataBarangTab() {
                     <td>{row.name}</td>
                     <td>
                       <span className={`badge ${row.source === 'product' ? 'badge-info' : 'badge-warning'}`}>
-                        {row.source}
+                        {SUMBER_LABEL[row.source] || row.source}
                       </span>
                     </td>
-                    <td>{row.material_type}</td>
+                    <td>{JENIS_LABEL[row.material_type] || row.material_type || '-'}</td>
                     <td>{row.primary_uom}</td>
                     <td>{row.kelompok || '-'}</td>
                     <td>{row.ppn_code || '-'}</td>

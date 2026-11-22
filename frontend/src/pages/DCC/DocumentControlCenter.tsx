@@ -6,6 +6,7 @@ import NumberInput from '../../components/ui/NumberInput'
 import { useBreadcrumbTrail } from '../../components/ui/BreadcrumbTrail'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { PageHeader, KpiStrip } from '../../components/ui/PageKit';
 
 // ============================================================
 // TypeScript Interfaces
@@ -188,18 +189,18 @@ const downloadFile = async (url: string, filename: string) => {
 // Status badges
 const StatusBadge = ({ status }: { status: string }) => {
   const config: Record<string, { bg: string; text: string; label: string }> = {
-    draft: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-700 dark:text-gray-200', label: 'Draft' },
-    reviewing: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300', label: 'Reviewing' },
-    pending_approval: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-300', label: 'Pending Approval' },
-    active: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300', label: 'Active' },
-    obsolete: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300', label: 'Obsolete' },
-    open: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300', label: 'Open' },
-    investigation: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300', label: 'Investigation' },
-    action_progress: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-300', label: 'In Progress' },
-    verifying: { bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-700 dark:text-cyan-300', label: 'Verifying' },
-    closed: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300', label: 'Closed' },
-    cancelled: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-500 dark:text-gray-400', label: 'Cancelled' },
-    published: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300', label: 'Published' },
+    draft: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-700 dark:text-gray-200', label: 'Draf' },
+    reviewing: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300', label: 'Ditinjau' },
+    pending_approval: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-300', label: 'Menunggu persetujuan' },
+    active: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300', label: 'Aktif' },
+    obsolete: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300', label: 'Kedaluwarsa' },
+    open: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300', label: 'Terbuka' },
+    investigation: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300', label: 'Investigasi' },
+    action_progress: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-300', label: 'Dikerjakan' },
+    verifying: { bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-700 dark:text-cyan-300', label: 'Verifikasi' },
+    closed: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300', label: 'Selesai' },
+    cancelled: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-500 dark:text-gray-400', label: 'Dibatalkan' },
+    published: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300', label: 'Terbit' },
   };
   const c = config[status] || { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-700 dark:text-gray-200', label: status };
   return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${c.bg} ${c.text}`}>{c.label}</span>;
@@ -2237,7 +2238,7 @@ const DocumentControlCenter = () => {
   const tabs = [
     { key: 'dashboard', label: 'Dashboard', icon: BarChart3, color: 'text-blue-600 dark:text-blue-400' },
     { key: 'documents', label: 'Daftar Induk Dokumen', icon: FileText, color: 'text-indigo-600 dark:text-indigo-400' },
-    { key: 'change_notice', label: 'Change Notice', icon: Edit, color: 'text-cyan-600 dark:text-cyan-400' },
+    { key: 'change_notice', label: 'Usulan Perubahan', icon: Edit, color: 'text-cyan-600 dark:text-cyan-400' },
     { key: 'review', label: 'Kaji Ulang', icon: BookOpen, color: 'text-teal-600 dark:text-teal-400' },
     { key: 'quality_records', label: 'Rekaman Mutu', icon: Archive, color: 'text-purple-600 dark:text-purple-400' },
     { key: 'capa', label: 'CAPA', icon: AlertTriangle, color: 'text-orange-600 dark:text-orange-400' },
@@ -2246,16 +2247,15 @@ const DocumentControlCenter = () => {
   ];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="fn-label mb-1.5">DOKUMEN · PUSAT KENDALI</div>
-        <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Document Control Center</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Centralized DCC</p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="DOKUMEN · PUSAT KENDALI"
+        title="Pusat Kendali Dokumen"
+        subtitle="Daftar induk, rekaman mutu, CAPA, dan pemusnahan dokumen."
+      />
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 mb-6 overflow-x-auto">
+      <div className="-mx-1 flex gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
         {tabs.map(tab => {
           const Icon = tab.icon;
           return (
@@ -2271,25 +2271,16 @@ const DocumentControlCenter = () => {
       {/* Dashboard */}
       {activeTab === 'dashboard' && stats && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              { label: 'Total Dokumen', value: stats.statistics.total_documents, icon: FileText, color: 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300' },
-              { label: 'CAPA Open', value: stats.statistics.capa_open, icon: AlertTriangle, color: 'bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300' },
-              { label: 'CAPA Closed', value: stats.statistics.capa_closed, icon: CheckCircle, color: 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' },
-              { label: 'CAPA Overdue', value: stats.statistics.capa_overdue, icon: Clock, color: 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300' },
-              { label: 'Memo', value: stats.statistics.total_memos, icon: Mail, color: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300' },
-              { label: 'Pemusnahan', value: stats.statistics.total_destructions, icon: Trash2, color: 'bg-gray-50 text-gray-700 dark:bg-gray-900 dark:text-gray-200' },
-            ].map((s, i) => {
-              const Icon = s.icon;
-              return (
-                <div key={i} className={`rounded-xl p-4 ${s.color}`}>
-                  <Icon className="w-5 h-5 mb-2" />
-                  <p className="text-2xl font-bold">{s.value}</p>
-                  <p className="text-xs mt-1 opacity-80">{s.label}</p>
-                </div>
-              );
-            })}
-          </div>
+          <KpiStrip
+            items={[
+              { label: 'Total dokumen', value: stats.statistics.total_documents },
+              { label: 'CAPA terbuka', value: stats.statistics.capa_open, tone: stats.statistics.capa_open > 0 ? 'warn' : null },
+              { label: 'CAPA selesai', value: stats.statistics.capa_closed, tone: 'good' },
+              { label: 'CAPA lewat tempo', value: stats.statistics.capa_overdue, tone: stats.statistics.capa_overdue > 0 ? 'bad' : null },
+              { label: 'Memo', value: stats.statistics.total_memos },
+              { label: 'Pemusnahan', value: stats.statistics.total_destructions },
+            ]}
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {stats.recent_capa?.length > 0 && (

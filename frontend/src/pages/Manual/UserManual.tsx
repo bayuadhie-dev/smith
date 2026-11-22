@@ -254,8 +254,8 @@ const UserManual: React.FC = () => {
 
   // Render sidebar
   const renderSidebar = () => (
-    <div className={`${sidebarOpen ? 'w-72' : 'w-0'} transition-all duration-300 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0`}>
-      <div className="h-full overflow-y-auto p-4">
+    <div className={`${sidebarOpen ? 'w-72' : 'w-0'} flex-shrink-0 overflow-hidden transition-all duration-300`}>
+      <div className="fn-card sticky top-4 max-h-[calc(100vh-7rem)] overflow-y-auto p-4">
         {/* Search */}
         <div className="relative mb-6">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -569,7 +569,7 @@ const UserManual: React.FC = () => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-gray-50 dark:bg-gray-900">
+    <div className="flex items-start gap-6">
       {/* Mobile sidebar toggle */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -586,7 +586,7 @@ const UserManual: React.FC = () => {
       {renderSidebar()}
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+      <div className="min-w-0 flex-1">
         {renderArticleContent()}
       </div>
     </div>

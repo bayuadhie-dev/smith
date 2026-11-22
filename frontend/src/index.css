@@ -163,6 +163,13 @@ html[data-company='fengsheng']:not(.dark) .bg-white {
 }
 
 @layer components {
+  /* Dasar tombol tanpa warna - dipakai halaman yang menempelkan warna
+     sendiri lewat class (contoh: "btn bg-amber-600 text-white").
+     Tanpa kelas ini tombol-tombol itu tampil sebagai teks polos. */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 active:scale-[0.985];
   }

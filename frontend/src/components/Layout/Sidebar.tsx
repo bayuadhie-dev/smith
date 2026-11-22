@@ -569,7 +569,7 @@ function SidebarContent({ collapsed = false, onToggleCollapse }: { collapsed?: b
             { name: 'Persetujuan R&D', href: '/app/rnd/approvals', icon: CheckCircleIcon },
           ]
         },
-        { name: 'Manajemen Waste', href: '/app/waste', icon: TrashIcon, permission: 'waste' },
+        { name: 'Manajemen Limbah', href: '/app/waste', icon: TrashIcon, permission: 'waste' },
         { name: 'Monitoring OEE', description: 'Overall Equipment Effectiveness', href: '/app/oee', icon: ChartBarIcon, permission: 'oee' },
         { name: 'Peringatan Dini (EWS)', href: '/app/ews', icon: ExclamationTriangleIcon, permission: 'oee' },
       ]

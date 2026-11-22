@@ -481,7 +481,7 @@ export default function AccurateIntegration() {
             Integrasi Accurate Online API
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Triple-Layer Safe Integration: Dry-Run Simulation, Staging Isolation, & Stock Approval Queue
+            Tiga lapis pengaman: simulasi dry-run, pemisahan staging, dan antrean persetujuan stok.
           </p>
         </div>
 
@@ -699,7 +699,7 @@ export default function AccurateIntegration() {
                     className="btn bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-2"
                   >
                     <ArrowsRightLeftIcon className="w-4 h-4" />
-                    Connect via OAuth Login Accurate
+                    Hubungkan lewat OAuth
                   </a>
                 )}
               </div>
@@ -709,7 +709,7 @@ export default function AccurateIntegration() {
           {/* Bulk Master Data Import - for a fresh/empty SMITH database */}
           <div className="card p-6 space-y-3 border-2 border-amber-400 dark:border-amber-600">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-              ⚡ Import Massal Data Master (untuk database baru/kosong)
+              Import Massal Data Master (untuk database baru/kosong)
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Tarik SEMUA Item, Vendor, Customer, dan GL Account dari Accurate lalu buat langsung sebagai record baru di SMITH — tanpa perlu mapping manual satu-satu.
@@ -746,7 +746,7 @@ export default function AccurateIntegration() {
             <div className="space-y-3 text-xs text-gray-600 dark:text-gray-300">
               <div>
                 <span className="font-semibold text-gray-900 dark:text-white block mb-1">1. OAuth Redirect / Callback URL:</span>
-                <p className="text-gray-500 dark:text-gray-400 mb-1">Salin URL ini dan tempel di menu **Aplikasi OAuth → Redirect URI** di portal Developer Accurate (`open.accurate.id`):</p>
+                <p className="text-gray-500 dark:text-gray-400 mb-1">Salin URL ini dan tempel di menu <span className="font-medium">Aplikasi OAuth &rarr; Redirect URI</span> di portal Developer Accurate (<span className="font-mono">open.accurate.id</span>):</p>
                 <div className="p-2 bg-white dark:bg-slate-900 rounded border border-gray-200 dark:border-gray-700 font-mono text-[11px] select-all break-all text-blue-600 dark:text-blue-400">
                   {callbackUrl}
                 </div>
@@ -761,7 +761,7 @@ export default function AccurateIntegration() {
               </div>
 
               <div className="pt-2 border-t border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 space-y-1">
-                <p>💡 **Tips:** Setelah menyimpan Client ID & Client Secret di sebelah kiri, klik tombol **Connect via OAuth Login Accurate** untuk langsung menghubungkan akun.</p>
+                <p><span className="font-medium text-gray-700 dark:text-gray-200">Tips:</span> setelah menyimpan Client ID &amp; Client Secret di sebelah kiri, klik tombol <span className="font-medium">Hubungkan lewat OAuth</span> untuk langsung menghubungkan akun.</p>
               </div>
             </div>
           </div>

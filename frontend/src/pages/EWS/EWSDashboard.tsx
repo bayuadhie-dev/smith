@@ -119,7 +119,7 @@ export default function EWSDashboard() {
         </select>
         <NumberInput
           className="input"
-          placeholder="Filter Machine ID"
+          placeholder="Saring nomor mesin"
           value={machineFilter}
           onChange={(e) => setMachineFilter(e.target.value)}
         />

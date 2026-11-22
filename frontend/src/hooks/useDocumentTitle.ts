@@ -93,6 +93,8 @@ const ROUTE_TITLES: Record<string, string> = {
   '/app/profile': 'Profil',
   '/app/search': 'Pencarian',
   '/app/ews': 'Peringatan Dini',
+  '/app/waste': 'Manajemen Limbah',
+  '/app/master-data': 'Master Data',
   '/app/integrations/accurate': 'Integrasi Accurate',
 }
 

@@ -1,18 +1,13 @@
 import React from 'react'
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns'
-import {
-  DocumentTextIcon,
-  ExclamationTriangleIcon,
-  PlusIcon,
-  TrashIcon,
-  BuildingOffice2Icon
-} from '@heroicons/react/24/outline';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import { useGetWasteRecordsQuery } from '../../services/api'
 import { useListTools, type ListColumn } from '../../hooks/useListTools'
 import { ListToolbar, SortTh } from '../../components/ui/ListTools'
 
 import { TableSkeleton } from '../../components/ui/Skeleton'
+import { PageHeader, KpiStrip } from '../../components/ui/PageKit'
 const STATUS_LABEL: Record<string, string> = { recorded: 'Tercatat', collected: 'Dikumpulkan', disposed: 'Dimusnahkan' }
 const HAZARD_LABEL: Record<string, string> = { none: 'Tidak ada', low: 'Rendah', medium: 'Sedang', high: 'Tinggi' }
 const STATUS_BADGE: Record<string, string> = { recorded: 'badge-warning', collected: 'badge-info', disposed: 'badge-success' }
@@ -43,57 +38,27 @@ export default function WasteRecordList() {
   const productionRejectCount = records.filter((r: any) => r.source === 'production').length
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-wrap justify-between items-center gap-3">
-        <div>
-          <div className="fn-label mb-1.5">PRODUKSI · DAFTAR SUSUT</div>
-          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Manajemen Limbah</h1>
-          <p className="text-gray-600 dark:text-gray-300">Catat dan kelola pembuangan limbah produksi</p>
-        </div>
-        <Link to="/app/waste/new" className="btn-primary">
-          <PlusIcon className="mr-1.5 h-5 w-5" />
-          Catat Limbah
-        </Link>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="PRODUKSI · LIMBAH"
+        title="Manajemen Limbah"
+        subtitle="Catat dan kelola pembuangan limbah produksi."
+        actions={
+          <Link to="/app/waste/new" className="btn-primary">
+            <PlusIcon className="mr-1.5 h-5 w-5" />
+            Catat Limbah
+          </Link>
+        }
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="card p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{records.length}</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Total Catatan</div>
-            </div>
-            <DocumentTextIcon className="h-8 w-8 text-gray-400" />
-          </div>
-        </div>
-        <div className="card p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-2xl font-bold text-primary-700 dark:text-primary-300">{totalQuantity.toLocaleString('id-ID')}</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Total Jumlah</div>
-            </div>
-            <TrashIcon className="h-8 w-8 text-primary-400" />
-          </div>
-        </div>
-        <div className="card p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{productionRejectCount}</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Reject Produksi</div>
-            </div>
-            <BuildingOffice2Icon className="h-8 w-8 text-orange-400" />
-          </div>
-        </div>
-        <div className="card p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{highHazardCount}</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Bahaya Tinggi</div>
-            </div>
-            <ExclamationTriangleIcon className="h-8 w-8 text-red-400" />
-          </div>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          { label: 'Total catatan', value: records.length },
+          { label: 'Total jumlah', value: totalQuantity.toLocaleString('id-ID') },
+          { label: 'Reject produksi', value: productionRejectCount },
+          { label: 'Bahaya tinggi', value: highHazardCount, tone: highHazardCount > 0 ? 'bad' : null },
+        ]}
+      />
 
       <div className="card p-6">
         <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Kategori Limbah</h3>
