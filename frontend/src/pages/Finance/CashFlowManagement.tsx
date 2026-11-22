@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import axiosInstance from '../../utils/axiosConfig';
-import { formatRupiah } from '../../utils/currencyUtils';
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  AreaChart, Area, BarChart, Bar
-} from 'recharts';
+import { formatRupiah } from '../../utils/currencyUtils';
+import { Panel } from '../../components/ui/PageKit';
+import RunChart from '../../components/charts/RunChart';
 import {
   ArrowTrendingDownIcon,
   ArrowTrendingUpIcon,
@@ -82,12 +80,20 @@ const CashFlowManagement: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3">Loading cash flow data...</span>
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-600"></div>
+        <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">Memuat data arus kas...</span>
       </div>
     );
   }
+
+  const periodeAxis = forecast.length
+    ? Array.from(new Set([0, Math.floor(forecast.length / 2), forecast.length - 1]))
+        .map((i: number) => String((forecast[i] as any)?.period || '')
+          .replace(/^Week\s*/i, 'Minggu ')
+          .replace(/^Month\s*/i, 'Bulan '))
+        .filter(Boolean)
+    : []
 
   return (
     <div className="p-6 space-y-6">
@@ -96,7 +102,7 @@ const CashFlowManagement: React.FC = () => {
         <div>
           <div className="fn-label mb-1.5">FINANCE · ARUS KAS</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Arus Kas</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Cash flow tracking and forecasting</p>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Pelacakan dan perkiraan arus kas</p>
         </div>
         <div className="flex space-x-3">
           <select
@@ -104,12 +110,12 @@ const CashFlowManagement: React.FC = () => {
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value as 'weekly' | 'monthly')}
           >
-            <option value="weekly">Weekly View</option>
+            <option value="weekly">Per minggu</option>
             <option value="monthly">Monthly View</option>
           </select>
           <button className="btn-secondary">
             <CalendarIcon className="h-4 w-4 mr-2" />
-            Export Report
+            Ekspor laporan
           </button>
         </div>
       </div>
@@ -123,7 +129,7 @@ const CashFlowManagement: React.FC = () => {
                 <ArrowTrendingUpIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Operating CF</p>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Kas dari operasi</p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">{formatShortCurrency(analysis.operating_cash_flow)}</p>
               </div>
             </div>
@@ -135,7 +141,7 @@ const CashFlowManagement: React.FC = () => {
                 <ArrowTrendingDownIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Investing CF</p>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Kas dari investasi</p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">{formatShortCurrency(analysis.investing_cash_flow)}</p>
               </div>
             </div>
@@ -147,7 +153,7 @@ const CashFlowManagement: React.FC = () => {
                 <BanknotesIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Financing CF</p>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Kas dari pendanaan</p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">{formatShortCurrency(analysis.financing_cash_flow)}</p>
               </div>
             </div>
@@ -159,7 +165,7 @@ const CashFlowManagement: React.FC = () => {
                 <CurrencyDollarIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Net Cash Flow</p>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Arus kas bersih</p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">{formatShortCurrency(analysis.net_cash_flow)}</p>
               </div>
             </div>
@@ -171,7 +177,7 @@ const CashFlowManagement: React.FC = () => {
                 <ClockIcon className="h-5 w-5 text-orange-600 dark:text-orange-400" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Days Sales Outstanding</p>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Rata-rata umur piutang</p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">{analysis.days_sales_outstanding != null ? `${analysis.days_sales_outstanding} days` : '-'}</p>
               </div>
             </div>
@@ -183,7 +189,7 @@ const CashFlowManagement: React.FC = () => {
                 <ChartBarIcon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Free Cash Flow</p>
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Arus kas bebas</p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">{formatShortCurrency(analysis.free_cash_flow)}</p>
               </div>
             </div>
@@ -191,70 +197,70 @@ const CashFlowManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Cash Flow Forecast Chart */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cash Flow Forecast</h3>
-        <ResponsiveContainer width="100%" height={400}>
-          <AreaChart data={forecast}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="period" />
-            <YAxis tickFormatter={(value) => formatShortCurrency(value)} />
-            <Tooltip formatter={(value, name) => [
-              formatRupiah(value as number),
-              name === 'cash_in' ? 'Cash In' :
-              name === 'cash_out' ? 'Cash Out' :
-              name === 'closing_balance' ? 'Closing Balance' : 'Opening Balance'
-            ]} />
-            <Area type="monotone" dataKey="cash_in" stackId="1" stroke="#10B981" fill="#10B981" fillOpacity={0.6} />
-            <Area type="monotone" dataKey="cash_out" stackId="2" stroke="#EF4444" fill="#EF4444" fillOpacity={0.6} />
-            <Line type="monotone" dataKey="closing_balance" stroke="#3B82F6" strokeWidth={3} />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Cash Flow Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Cash In vs Cash Out */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cash In vs Cash Out</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={forecast}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="period" />
-              <YAxis tickFormatter={(value) => formatShortCurrency(value)} />
-              <Tooltip formatter={(value, name) => [
-                formatRupiah(value as number),
-                name === 'cash_in' ? 'Cash In' : 'Cash Out'
-              ]} />
-              <Bar dataKey="cash_in" fill="#10B981" name="Cash In" />
-              <Bar dataKey="cash_out" fill="#EF4444" name="Cash Out" />
-            </BarChart>
-          </ResponsiveContainer>
+      <Panel title="Perkiraan arus kas">
+        <div className="px-4 pb-3 pt-1">
+          {forecast.length === 0 ? (
+            <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data perkiraan.</p>
+          ) : (
+            <RunChart
+              values={forecast.map((f: any) => Number(f.closing_balance || 0))}
+              axis={periodeAxis}
+              rows={[
+                { label: 'Kas masuk', values: forecast.map((f: any) => Number(f.cash_in || 0)) },
+                { label: 'Kas keluar', values: forecast.map((f: any) => Number(f.cash_out || 0)) },
+                { label: 'Saldo akhir', values: forecast.map((f: any) => Number(f.closing_balance || 0)) },
+              ]}
+              height={220}
+              unit="rupiah"
+            />
+          )}
         </div>
+      </Panel>
 
-        {/* Balance Trend */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cash Balance Trend</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={forecast}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="period" />
-              <YAxis tickFormatter={(value) => formatShortCurrency(value)} />
-              <Tooltip formatter={(value, name) => [
-                formatRupiah(value as number),
-                name === 'opening_balance' ? 'Opening Balance' : 'Closing Balance'
-              ]} />
-              <Line type="monotone" dataKey="opening_balance" stroke="#8B5CF6" strokeWidth={2} name="Opening Balance" />
-              <Line type="monotone" dataKey="closing_balance" stroke="#3B82F6" strokeWidth={3} name="Closing Balance" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Panel title="Kas masuk dibanding kas keluar">
+          <div className="px-4 pb-3 pt-1">
+            {forecast.length === 0 ? (
+              <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data.</p>
+            ) : (
+              <RunChart
+                values={forecast.map((f: any) => Number(f.cash_in || 0))}
+                axis={periodeAxis}
+                rows={[
+                  { label: 'Kas masuk', values: forecast.map((f: any) => Number(f.cash_in || 0)) },
+                  { label: 'Kas keluar', values: forecast.map((f: any) => Number(f.cash_out || 0)) },
+                ]}
+                height={190}
+                unit="rupiah"
+              />
+            )}
+          </div>
+        </Panel>
+
+        <Panel title="Pergerakan saldo kas">
+          <div className="px-4 pb-3 pt-1">
+            {forecast.length === 0 ? (
+              <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data.</p>
+            ) : (
+              <RunChart
+                values={forecast.map((f: any) => Number(f.closing_balance || 0))}
+                axis={periodeAxis}
+                rows={[
+                  { label: 'Saldo awal', values: forecast.map((f: any) => Number(f.opening_balance || 0)) },
+                  { label: 'Saldo akhir', values: forecast.map((f: any) => Number(f.closing_balance || 0)) },
+                ]}
+                height={190}
+                unit="rupiah"
+              />
+            )}
+          </div>
+        </Panel>
       </div>
 
       {/* Detailed Forecast Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Detailed Cash Flow Forecast</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Rincian perkiraan arus kas</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -348,7 +354,7 @@ const CashFlowManagement: React.FC = () => {
               <CurrencyDollarIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Net Cash Flow</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Arus kas bersih</p>
               <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
                 {formatRupiah(forecast.reduce((sum, f) => sum + (f.cash_in - f.cash_out), 0))}
               </p>

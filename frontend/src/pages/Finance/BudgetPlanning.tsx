@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
+import { CategoryBars, Panel } from '../../components/ui/PageKit';
 import { useLanguage } from '../../contexts/LanguageContext';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  LineChart, Line, PieChart, Pie, Cell
-} from 'recharts';
 import {
   ArrowTrendingDownIcon,
   ArrowTrendingUpIcon,
@@ -188,7 +185,7 @@ const BudgetPlanning: React.FC = () => {
         <div>
           <div className="fn-label mb-1.5">FINANCE · ANGGARAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Perencanaan Anggaran</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">Budget planning and variance analysis</p>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Rencana anggaran dan selisihnya terhadap realisasi</p>
         </div>
         <div className="flex space-x-3 flex-wrap">
           <button 
@@ -196,14 +193,14 @@ const BudgetPlanning: React.FC = () => {
             className="btn-secondary"
           >
             <ChartBarIcon className="h-4 w-4 mr-2" />
-            Generate Report
+            Buat laporan
           </button>
           <button 
             onClick={() => setShowAddModal(true)}
             className="btn-primary"
           >
             <PlusIcon className="h-4 w-4 mr-2" />
-            Create Budget
+            Buat anggaran
           </button>
         </div>
       </div>
@@ -219,25 +216,25 @@ const BudgetPlanning: React.FC = () => {
             
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Budget:</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Anggaran</span>
                 <span className="text-sm font-medium">{formatRupiah(budget.total_budget)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Actual:</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Realisasi</span>
                 <span className="text-sm font-medium">{formatRupiah(budget.total_actual)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-300" title="Dipesan oleh PO yang sudah disetujui tapi belum di-invoice">Committed (PO):</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300" title="Dipesan oleh PO yang sudah disetujui tapi belum di-invoice">Terikat PO</span>
                 <span className="text-sm font-medium text-amber-600 dark:text-amber-400">{formatRupiah(budget.total_committed || 0)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Available:</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Sisa</span>
                 <span className={`text-sm font-medium ${(budget.total_available ?? budget.total_budget) < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                   {formatRupiah(budget.total_available ?? budget.total_budget)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Variance:</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Selisih</span>
                 <div className="flex items-center">
                   {budget.variance_percent > 0 ? (
                     <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
@@ -270,53 +267,51 @@ const BudgetPlanning: React.FC = () => {
         ))}
       </div>
 
-      {/* Variance Analysis Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Budget vs Actual</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={varianceAnalysis}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="category" angle={-45} textAnchor="end" height={80} />
-              <YAxis tickFormatter={(value) => Math.abs(value) >= 1000000000 ? `${(value / 1000000000).toFixed(1)} M` : `${(value / 1000000).toFixed(0)} jt`} />
-              <Tooltip formatter={(value, name) => [
-                formatRupiah(value as number),
-                name === 'budget' ? 'Budget' : 'Actual'
-              ]} />
-              <Bar dataKey="budget" fill="#3B82F6" name="Budget" />
-              <Bar dataKey="actual" fill="#10B981" name="Actual" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Panel title="Anggaran dibanding realisasi">
+          <div className="p-4">
+            {varianceAnalysis.length === 0 ? (
+              <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data anggaran.</p>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <p className="fn-label mb-2">Anggaran</p>
+                  <CategoryBars items={varianceAnalysis.map((v) => ({ label: v.category, value: v.budget }))} format={formatRupiah} />
+                </div>
+                <div>
+                  <p className="fn-label mb-2">Realisasi</p>
+                  <CategoryBars items={varianceAnalysis.map((v) => ({ label: v.category, value: v.actual }))} format={formatRupiah} />
+                </div>
+              </div>
+            )}
+          </div>
+        </Panel>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Variance Distribution</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={varianceAnalysis.map(item => ({ ...item, absVariance: Math.abs(item.variance) }))}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ category, variance_percent }) => `${category}: ${variance_percent.toFixed(1)}%`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="absVariance"
-              >
-                {varianceAnalysis.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => [formatRupiah(value as number), 'Variance']} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        <Panel title="Selisih per kategori">
+          <div className="p-4">
+            {varianceAnalysis.length === 0 ? (
+              <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data.</p>
+            ) : (
+              <CategoryBars
+                items={varianceAnalysis.map((v) => ({
+                  label: v.category,
+                  value: Math.abs(v.variance),
+                  tone: v.actual > v.budget ? 'bad' : undefined,
+                  hint: v.actual > v.budget
+                    ? `realisasi melampaui anggaran ${Math.abs(v.variance_percent).toFixed(1)}%`
+                    : `masih di bawah anggaran ${Math.abs(v.variance_percent).toFixed(1)}%`,
+                }))}
+                format={formatRupiah}
+              />
+            )}
+          </div>
+        </Panel>
       </div>
 
       {/* Detailed Variance Analysis */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Detailed Variance Analysis</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Rincian selisih anggaran</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -659,7 +654,7 @@ const BudgetPlanning: React.FC = () => {
                   type="submit" 
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
-                  Create Budget
+                  Buat anggaran
                 </button>
               </div>
             </form>

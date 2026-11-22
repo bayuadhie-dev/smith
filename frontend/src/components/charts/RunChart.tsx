@@ -113,7 +113,9 @@ export default function RunChart({
   const wrapRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef(0)
-  const [innerMode, setInnerMode] = useState<ChartMode>('dots')
+  // Beberapa bucket saja (mis. 4 minggu) terlihat aneh sebagai kolom titik -
+  // batang lebih terbaca. Deret panjang tetap mulai dari titik.
+  const [innerMode, setInnerMode] = useState<ChartMode>(values.length <= 12 ? 'bars' : 'dots')
   const mode = modeProp ?? innerMode
   const setMode = (m: ChartMode) => { onModeChange ? onModeChange(m) : setInnerMode(m) }
   const [hover, setHover] = useState<{ x: number; i: number } | null>(null)
@@ -169,6 +171,9 @@ export default function RunChart({
         const x = x0 + (axis.length === 1 ? 0.5 : i / (axis.length - 1)) * plotW
         ctx.fillStyle = pal.soft
         ctx.globalAlpha = alpha * 0.75
+        // Label pertama dan terakhir dirapatkan ke tepinya, kalau tidak
+        // setengah hurufnya terpotong keluar kanvas.
+        ctx.textAlign = i === 0 ? 'left' : i === axis.length - 1 ? 'right' : 'center'
         ctx.fillText(label, x, H - 8)
         ctx.fillStyle = pal.grid
         ctx.fillRect(x - 0.5, baseY + 6, 1, 3)
@@ -211,7 +216,9 @@ export default function RunChart({
       ctx.clearRect(0, 0, W, H)
       drawAxis(clamp(t * 3))
       const step = plotW / n
-      const bw = Math.max(2, step * 0.58)
+      // Dengan sedikit bucket, 58% dari langkah menghasilkan balok selebar
+      // telapak tangan - dibatasi supaya tetap terbaca sebagai diagram.
+      const bw = Math.min(56, Math.max(2, step * 0.58))
       const d = Math.min(3.5, bw * 0.4)
       for (let i = 0; i < n; i++) {
         const future = i >= cut
