@@ -37,7 +37,7 @@ export default function StockTransferDetail() {
   const n = (v: number) => v.toLocaleString('id-ID', { maximumFractionDigits: 4 })
   return (
     <div className="space-y-4 p-6">
-      <PageHeader title={t.transfer_number} subtitle={`${t.from_label} ke ${t.to_label}${t.source_number ? ` · dari ${t.source_number}` : ''}`}
+      <PageHeader eyebrow="GUDANG · PEMINDAHAN" title={t.transfer_number} subtitle={`${t.from_label} ke ${t.to_label}${t.source_number ? ` · dari ${t.source_number}` : ''}`}
         actions={
           <div className="flex items-center gap-2 flex-wrap">
             <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${st.cls}`}>{st.label}</span>

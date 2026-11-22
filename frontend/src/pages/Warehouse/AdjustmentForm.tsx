@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { PageHeader } from '../../components/ui/PageKit'
 import { useDraftState, useClearTabDrafts } from '../../workspace/drafts'
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -171,14 +172,13 @@ const AdjustmentForm: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Buat Penyesuaian Stok</h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          Draft akan dibuat dulu, lalu bisa diajukan untuk persetujuan dari halaman detail
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="GUDANG · PENYESUAIAN"
+        title="Buat Penyesuaian Stok"
+        subtitle="Draft dibuat dulu, lalu diajukan untuk persetujuan dari halaman detail"
+      />
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="fn-card">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800">

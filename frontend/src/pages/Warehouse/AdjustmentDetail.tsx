@@ -137,11 +137,11 @@ export default function AdjustmentDetail() {
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
-              <ScaleIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+            <div className="fn-label mb-1.5">GUDANG · PENYESUAIAN</div>
+            <h1 className="fn-num text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
               {adj.adjustment_number}
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">Detail Penyesuaian Stok</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Rincian penyesuaian stok</p>
           </div>
         </div>
         <span className={`px-3 py-1 rounded-full text-sm font-medium ${st.color}`}>{st.label}</span>

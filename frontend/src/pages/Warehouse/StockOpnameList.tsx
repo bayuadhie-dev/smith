@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { PageHeader } from '../../components/ui/PageKit'
 import axiosInstance from '../../utils/axiosConfig';
 import { useListTools, type ListColumn } from '../../hooks/useListTools';
 import { ListToolbar, SortTh } from '../../components/ui/ListTools';
@@ -153,27 +154,19 @@ export default function StockOpnameList({ mode = 'perintah' }: StockOpnameListPr
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center flex-wrap justify-between gap-3">
-        <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
-            <ClipboardDocumentCheckIcon className="h-8 w-8 text-primary-600 dark:text-primary-400" />
-            {mode === 'hasil' ? 'Hasil Opname' : 'Perintah Stok Opname'}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {mode === 'hasil' ? 'Lihat hasil dan selisih stok opname yang sudah selesai' : 'Kelola penghitungan fisik inventory'}
-          </p>
-        </div>
-        {mode !== 'hasil' && (
-          <Link
-            to="/app/warehouse/stock-opname/new"
-            className="flex items-center gap-2 px-4 py-2 bg-cta-600 text-white rounded-lg hover:bg-cta-700"
-          >
-            <PlusIcon className="h-5 w-5" />
-            Buat Perintah Opname
+      <PageHeader
+        eyebrow={mode === 'hasil' ? 'GUDANG · HASIL OPNAME' : 'GUDANG · PERINTAH OPNAME'}
+        title={mode === 'hasil' ? 'Hasil Opname' : 'Perintah Stok Opname'}
+        subtitle={mode === 'hasil'
+          ? 'Hasil dan selisih stok opname yang sudah selesai'
+          : 'Penghitungan fisik stok dan tindak lanjutnya'}
+        actions={mode !== 'hasil' ? (
+          <Link to="/app/warehouse/stock-opname/new" className="btn-primary">
+            <PlusIcon className="h-4 w-4" />
+            Buat perintah opname
           </Link>
-        )}
-      </div>
+        ) : undefined}
+      />
 
       <ListToolbar tools={tools} placeholder="Cari nomor opname, zona, pembuat" extra={
         <select

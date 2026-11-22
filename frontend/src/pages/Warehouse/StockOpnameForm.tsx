@@ -99,16 +99,16 @@ export default function StockOpnameForm() {
           <ArrowLeftIcon className="h-5 w-5" />
         </button>
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
-            <ClipboardDocumentCheckIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+          <div className="fn-label mb-1.5">GUDANG · PERINTAH OPNAME</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
             Buat Perintah Stok Opname
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">Buat perintah penghitungan fisik inventory</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Perintah penghitungan fisik stok di satu gudang</p>
         </div>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="fn-card space-y-6 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Zone */}
           <div>

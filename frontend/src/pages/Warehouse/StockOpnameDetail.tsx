@@ -1,4 +1,5 @@
-import RiwayatPanel from '../../components/RiwayatPanel'
+import RiwayatPanel from '../../components/RiwayatPanel'
+import { KpiStrip } from '../../components/ui/PageKit'
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -291,12 +292,12 @@ export default function StockOpnameDetail() {
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
-              <ClipboardDocumentCheckIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+            <div className="fn-label mb-1.5">GUDANG · STOK OPNAME</div>
+            <h1 className="fn-num text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
               {order.opname_number}
             </h1>
-            <p className="text-gray-600 dark:text-gray-300">
-              {order.zone_name} • Jadwal: {formatDate(order.scheduled_date)}
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {order.zone_name} · jadwal {formatDate(order.scheduled_date)}
             </p>
           </div>
         </div>
@@ -305,29 +306,14 @@ export default function StockOpnameDetail() {
         </span>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Total Item</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{order.total_items}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Sudah Dihitung</p>
-          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{order.counted_items}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Item Selisih</p>
-          <p className={`text-2xl font-bold ${order.variance_items > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-            {order.variance_items}
-          </p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Nilai Selisih</p>
-          <p className={`text-xl font-bold ${order.total_variance_value !== 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-            {formatCurrency(order.total_variance_value)}
-          </p>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          { label: 'Total barang', value: order.total_items, hint: 'masuk daftar hitung' },
+          { label: 'Sudah dihitung', value: order.counted_items, hint: `sisa ${Math.max(0, order.total_items - order.counted_items)}` },
+          { label: 'Barang selisih', value: order.variance_items, tone: order.variance_items > 0 ? 'bad' : 'good', hint: 'fisik beda dari catatan' },
+          { label: 'Nilai selisih', value: formatCurrency(order.total_variance_value), tone: order.total_variance_value !== 0 ? 'bad' : 'good', hint: 'dampak ke nilai stok' },
+        ]}
+      />
 
       {/* Progress Bar */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">

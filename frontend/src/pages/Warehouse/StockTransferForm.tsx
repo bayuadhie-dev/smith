@@ -62,8 +62,8 @@ export default function StockTransferForm() {
   const lbl = 'mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400'
   return (
     <div className="space-y-4 p-6">
-      <PageHeader title="Pemindahan Barang Baru" subtitle="Pilih sumbernya dulu. Barang jadi (FG) wajib dari Packing List sebagai dokumen serah terima produksi ke gudang" />
-      <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+      <PageHeader eyebrow="GUDANG · PEMINDAHAN" title="Pemindahan Barang Baru" subtitle="Pilih sumbernya dulu. Barang jadi (FG) wajib dari Packing List sebagai dokumen serah terima produksi ke gudang" />
+      <div className="fn-card space-y-4 p-4">
         <div className="grid gap-3 md:grid-cols-2">
           <div>
             <label className={lbl}>Ambil dari</label>

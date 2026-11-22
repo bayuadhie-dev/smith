@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PageHeader } from '../../components/ui/PageKit'
 import axiosInstance from '../../utils/axiosConfig';
 import { toast } from 'react-hot-toast';
 import {
@@ -83,23 +84,16 @@ const AdjustmentList: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center flex-wrap justify-between gap-3">
-        <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
-            <ScaleIcon className="h-7 w-7 text-orange-600 dark:text-orange-400" />
-            Penyesuaian Stok
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Koreksi jumlah atau nilai stok, dengan posting jurnal otomatis setelah disetujui
-          </p>
-        </div>
-        <button
-          onClick={() => navigate('/app/warehouse/adjustments/new')}
-          className="flex items-center gap-2 px-4 py-2 bg-cta-600 text-white rounded-lg hover:bg-cta-700"
-        >
-          <PlusIcon className="h-5 w-5" /> Buat Penyesuaian
-        </button>
-      </div>
+      <PageHeader
+        eyebrow="GUDANG · PENYESUAIAN"
+        title="Penyesuaian Stok"
+        subtitle="Koreksi jumlah atau nilai stok, dengan jurnal otomatis setelah disetujui"
+        actions={
+          <button onClick={() => navigate('/app/warehouse/adjustments/new')} className="btn-primary">
+            <PlusIcon className="h-4 w-4" /> Buat penyesuaian
+          </button>
+        }
+      />
 
       <ListToolbar tools={tools} placeholder="Cari nomor, item, lokasi, alasan" extra={
         <select

@@ -52,8 +52,8 @@ export default function ReceiptsList() {
   const fmtDate = (d: string | null) => (d ? new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-')
   return (
     <div className="space-y-4 p-6">
-      <PageHeader title="Penerimaan Barang" subtitle="Barang masuk gudang, dari GRN pemasok atau dari pemindahan antar gudang"
-        actions={<Link to="/app/purchasing/grn/new" className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800">GRN baru</Link>} />
+      <PageHeader eyebrow="GUDANG · PENERIMAAN" title="Penerimaan Barang" subtitle="Barang masuk gudang, dari GRN pemasok atau dari pemindahan antar gudang"
+        actions={<Link to="/app/purchasing/grn/new" className="btn-primary">Penerimaan baru</Link>} />
       <ListToolbar tools={tools} placeholder="Cari nomor, PO, atau pemasok" extra={
         <select value={origin} onChange={(e) => setOrigin(e.target.value)} className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white">
           <option value="">Semua asal</option><option value="grn">Asal GRN</option><option value="transfer">Asal Pemindahan</option>
