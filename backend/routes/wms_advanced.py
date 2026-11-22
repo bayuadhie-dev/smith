@@ -1387,7 +1387,7 @@ def submit_transfer_for_approval(sto_id):
             action_by=user_id,
             old_status='draft',
             new_status='pending_review',
-            notes=f'Stock Transfer {sto.transfer_number} submitted for review'
+            notes=f'Transfer stok {sto.transfer_number} diajukan untuk ditinjau'
         )
         db.session.add(history)
 
@@ -1987,7 +1987,7 @@ def submit_adjustment_for_approval(id):
             action_by=user_id,
             old_status='pending',
             new_status='pending_review',
-            notes=f'Inventory Adjustment {adj.adjustment_number} submitted for review'
+            notes=f'Penyesuaian stok {adj.adjustment_number} diajukan untuk ditinjau'
         )
         db.session.add(history)
 

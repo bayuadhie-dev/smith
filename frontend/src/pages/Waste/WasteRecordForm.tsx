@@ -117,12 +117,12 @@ const { id } = useParams()
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Basic Information */}
         <div className="fn-card p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Basic Information</h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Keterangan dasar</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Waste Date *
+                Tanggal limbah *
               </label>
               <input
                 type="date"
@@ -136,18 +136,18 @@ const { id } = useParams()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Waste Category *
+                Kategori limbah *
               </label>
               <select
                 {...register('category', { required: 'Category is required' })}
                 className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="production_waste">Production Waste</option>
-                <option value="packaging_waste">Packaging Waste</option>
-                <option value="chemical_waste">Chemical Waste</option>
-                <option value="general_waste">General Waste</option>
-                <option value="recyclable">Recyclable</option>
-                <option value="hazardous">Hazardous Waste</option>
+                <option value="production_waste">Limbah produksi</option>
+                <option value="packaging_waste">Limbah kemasan</option>
+                <option value="chemical_waste">Limbah kimia</option>
+                <option value="general_waste">Limbah umum</option>
+                <option value="recyclable">Bisa didaur ulang</option>
+                <option value="hazardous">Limbah berbahaya</option>
               </select>
               {errors.category && (
                 <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
@@ -156,19 +156,19 @@ const { id } = useParams()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Source Department *
+                Departemen asal *
               </label>
               <select
                 {...register('source_department', { required: 'Source department is required' })}
                 className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Select Department</option>
+                <option value="">Pilih departemen</option>
                 <option value="production">{t('navigation.production')}</option>
-                <option value="quality_control">Quality Control</option>
+                <option value="quality_control">Pengendalian mutu</option>
                 <option value="warehouse">{t('navigation.warehouse')}</option>
                 <option value="maintenance">{t('navigation.maintenance')}</option>
-                <option value="office">Office</option>
-                <option value="cafeteria">Cafeteria</option>
+                <option value="office">Kantor</option>
+                <option value="cafeteria">Kantin</option>
               </select>
               {errors.source_department && (
                 <p className="text-red-500 text-sm mt-1">{errors.source_department.message}</p>
@@ -177,12 +177,12 @@ const { id } = useParams()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Waste Type *
+                Jenis limbah *
               </label>
               <input
                 type="text"
                 {...register('waste_type', { required: 'Waste type is required' })}
-                placeholder="e.g., Nonwoven scraps, Chemical containers"
+                placeholder="mis. potongan nonwoven, wadah bahan kimia"
                 className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               {errors.waste_type && (
@@ -194,12 +194,12 @@ const { id } = useParams()
 
         {/* Quantity and Weight */}
         <div className="fn-card p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Quantity and Weight</h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Jumlah dan berat</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Quantity *
+                Jumlah *
               </label>
               <NumberInput
                 step="0.01"
@@ -216,7 +216,7 @@ const { id } = useParams()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Unit of Measure
+                Satuan
               </label>
               <select
                 {...register('uom')}
@@ -226,24 +226,24 @@ const { id } = useParams()
                 <option value="ton">Ton</option>
                 <option value="liter">Liter</option>
                 <option value="m3">Cubic Meter (m³)</option>
-                <option value="pcs">Pieces</option>
-                <option value="bag">Bags</option>
-                <option value="drum">Drums</option>
+                <option value="pcs">Buah</option>
+                <option value="bag">Karung</option>
+                <option value="drum">Drum</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Hazard Level *
+                Tingkat bahaya *
               </label>
               <select
                 {...register('hazard_level', { required: 'Hazard level is required' })}
                 className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="low">Low Risk</option>
-                <option value="medium">Medium Risk</option>
-                <option value="high">High Risk</option>
-                <option value="hazardous">Hazardous</option>
+                <option value="low">Risiko rendah</option>
+                <option value="medium">Risiko sedang</option>
+                <option value="high">Risiko tinggi</option>
+                <option value="hazardous">Berbahaya</option>
               </select>
               {errors.hazard_level && (
                 <p className="text-red-500 text-sm mt-1">{errors.hazard_level.message}</p>
@@ -264,8 +264,8 @@ const { id } = useParams()
                     Important: High Hazard Waste
                   </h3>
                   <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
-                    High hazard waste requires special disposal procedures and regulatory compliance. 
-                    Ensure proper documentation and certified disposal methods.
+                    Limbah bahaya tinggi butuh prosedur pembuangan khusus dan izin resmi.
+                    Pastikan dokumennya lengkap dan jasa pembuangannya bersertifikat.
                   </p>
                 </div>
               </div>
@@ -275,25 +275,25 @@ const { id } = useParams()
 
         {/* Disposal Method and Location */}
         <div className="fn-card p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Disposal Method and Location</h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Cara dan lokasi pembuangan</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Disposal Method *
+                Cara pembuangan *
               </label>
               <select
                 {...register('disposal_method', { required: 'Disposal method is required' })}
                 className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Select Method</option>
-                <option value="landfill">Landfill</option>
-                <option value="incineration">Incineration</option>
-                <option value="recycling">Recycling</option>
-                <option value="composting">Composting</option>
-                <option value="chemical_treatment">Chemical Treatment</option>
-                <option value="third_party">Third Party Disposal</option>
-                <option value="reuse">Reuse</option>
+                <option value="">Pilih cara pembuangan</option>
+                <option value="landfill">Ditimbun</option>
+                <option value="incineration">Dibakar</option>
+                <option value="recycling">Daur ulang</option>
+                <option value="composting">Dikomposkan</option>
+                <option value="chemical_treatment">Diolah kimia</option>
+                <option value="third_party">Pihak ketiga</option>
+                <option value="reuse">Dipakai ulang</option>
               </select>
               {errors.disposal_method && (
                 <p className="text-red-500 text-sm mt-1">{errors.disposal_method.message}</p>
@@ -302,19 +302,19 @@ const { id } = useParams()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Disposal Location
+                Lokasi pembuangan
               </label>
               <input
                 type="text"
                 {...register('disposal_location')}
-                placeholder="Location or facility name"
+                placeholder="Nama lokasi atau fasilitas"
                 className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Cost Estimation (Rp)
+                Perkiraan biaya (Rp)
               </label>
               <NumberInput currency
                 step="0.01"
@@ -325,12 +325,12 @@ const { id } = useParams()
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Responsible Person
+                Penanggung jawab
               </label>
               <input
                 type="text"
                 {...register('responsible_person')}
-                placeholder="Person responsible for disposal"
+                placeholder="Nama penanggung jawab pembuangan"
                 className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -339,7 +339,7 @@ const { id } = useParams()
 
         {/* Regulatory Compliance */}
         <div className="fn-card p-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Regulatory Compliance</h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Kepatuhan aturan</h2>
           
           <div className="space-y-4">
             <div className="flex items-center">
@@ -349,18 +349,18 @@ const { id } = useParams()
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:border-gray-600 dark:text-blue-400"
               />
               <label className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                Disposal complies with environmental regulations
+                Pembuangan sesuai aturan lingkungan
               </label>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Disposal Certificate Number
+                Nomor sertifikat pembuangan
               </label>
               <input
                 type="text"
                 {...register('disposal_certificate')}
-                placeholder="Certificate or permit number (if applicable)"
+                placeholder="Nomor sertifikat atau izin (bila ada)"
                 className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -371,7 +371,7 @@ const { id } = useParams()
               <textarea
                 {...register('notes')}
                 rows={4}
-                placeholder="Additional notes, special handling requirements, or observations..."
+                placeholder="Catatan tambahan, penanganan khusus, atau pengamatan..."
                 className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>

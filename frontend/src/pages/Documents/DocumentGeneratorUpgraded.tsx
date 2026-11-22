@@ -395,7 +395,7 @@ export default function DocumentGeneratorUpgraded() {
       {/* Selected Reference Info */}
       {selectedReference && (
         <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 dark:bg-indigo-900/20 dark:border-indigo-800">
-          <p className="text-sm text-indigo-600 font-medium mb-1 dark:text-indigo-400">Reference Document</p>
+          <p className="text-sm text-indigo-600 font-medium mb-1 dark:text-indigo-400">Dokumen acuan</p>
           <p className="font-semibold text-indigo-900 dark:text-indigo-200">{selectedReference.number}</p>
           <p className="text-sm text-indigo-700 dark:text-indigo-300">{selectedReference.title || selectedReference.customer}</p>
         </div>

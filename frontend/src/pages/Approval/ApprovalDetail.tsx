@@ -11,6 +11,8 @@ import {
 } from '@heroicons/react/24/outline';
 import NumberInput from '../../components/ui/NumberInput'
 import { store } from '../../store'
+import { PageHeader, StatusPill } from '../../components/ui/PageKit';
+import type { Tone } from '../../components/ui/PageKit';
 
 interface WorkflowDetail {
   id: number;
@@ -52,6 +54,29 @@ interface JournalLine {
   description: string;
 }
 
+const STATUS_LABEL: Record<string, string> = {
+  pending_review: 'Menunggu tinjauan',
+  pending_approval: 'Menunggu persetujuan',
+  approved: 'Disetujui',
+  rejected: 'Ditolak',
+};
+
+const STATUS_TONE: Record<string, Tone> = {
+  pending_review: 'warn', pending_approval: 'info', approved: 'ok', rejected: 'bad',
+};
+
+const AKSI_LABEL: Record<string, string> = {
+  submit: 'Diajukan', review: 'Ditinjau', approve: 'Disetujui',
+  reject: 'Ditolak', cancel: 'Dibatalkan',
+};
+
+const TIPE_LABEL: Record<string, string> = {
+  sales_order: 'Pesanan Penjualan', purchase_order: 'Pesanan Pembelian',
+  production: 'Produksi', inventory_adjustment: 'Penyesuaian Stok',
+  stock_transfer: 'Transfer Stok', stock_opname: 'Stok Opname',
+  expense: 'Biaya', payment: 'Pembayaran',
+};
+
 export default function ApprovalDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -86,7 +111,7 @@ export default function ApprovalDetail() {
       }
     } catch (error) {
       console.error('Error loading workflow:', error);
-      toast.error('Failed to load workflow details');
+      toast.error('Gagal memuat rincian dokumen');
     } finally {
       setLoading(false);
     }
@@ -106,7 +131,7 @@ export default function ApprovalDetail() {
       }
 
       await axiosInstance.post(`/api/approval/workflows/${id}/review`, payload);
-      toast.success('Workflow reviewed successfully');
+      toast.success('Tinjauan tersimpan');
       loadWorkflowDetail();
       setNotes('');
       setIsEditing(false);
@@ -120,7 +145,7 @@ export default function ApprovalDetail() {
       await axiosInstance.post(`/api/approval/workflows/${id}/approve`, {
         notes
       });
-      toast.success('Workflow approved and journal entry created');
+      toast.success('Dokumen disetujui dan jurnal dibuat');
       navigate('/app/approval');
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to approve workflow');
@@ -129,7 +154,7 @@ export default function ApprovalDetail() {
 
   const handleReject = async () => {
     if (!rejectionReason.trim()) {
-      toast.error('Please provide rejection reason');
+      toast.error('Tulis dulu alasan penolakannya');
       return;
     }
 
@@ -137,7 +162,7 @@ export default function ApprovalDetail() {
       await axiosInstance.post(`/api/approval/workflows/${id}/reject`, {
         reason: rejectionReason
       });
-      toast.success('Workflow rejected');
+      toast.success('Dokumen ditolak');
       navigate('/app/approval');
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to reject workflow');
@@ -167,65 +192,58 @@ export default function ApprovalDetail() {
   }
 
   if (!workflow) {
-    return <div className="text-center py-12">Workflow not found</div>;
+    return <div className="text-center py-12">Dokumen tidak ditemukan</div>;
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center flex-wrap justify-between gap-3">
-        <div>
-          <div className="fn-label mb-1.5">PERSETUJUAN · RINCIAN</div>
-          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
-            Approval Workflow Detail
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">{workflow.transaction_number}</p>
-        </div>
-        <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
-          workflow.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
-          workflow.status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
-          workflow.status === 'pending_approval' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
-          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-        }`}>
-          {workflow.status.replace('_', ' ').toUpperCase()}
-        </span>
-      </div>
+      <PageHeader
+        eyebrow="PERSETUJUAN · RINCIAN"
+        title={workflow.transaction_number}
+        subtitle={TIPE_LABEL[workflow.transaction_type] || workflow.transaction_type}
+        actions={
+          <StatusPill tone={STATUS_TONE[workflow.status] || 'muted'}>
+            {STATUS_LABEL[workflow.status] || workflow.status}
+          </StatusPill>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Workflow Info */}
           <div className="fn-card p-6">
-            <h2 className="text-lg font-semibold mb-4">Workflow Information</h2>
+            <h2 className="text-lg font-semibold mb-4">Keterangan dokumen</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Transaction Type</p>
-                <p className="font-medium">{workflow.transaction_type}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Jenis transaksi</p>
+                <p className="font-medium">{TIPE_LABEL[workflow.transaction_type] || workflow.transaction_type}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Transaction Number</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Nomor transaksi</p>
                 <p className="font-medium">{workflow.transaction_number}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Submitted By</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Diajukan oleh</p>
                 <p className="font-medium">{workflow.submitted_by}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Submitted At</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Waktu pengajuan</p>
                 <p className="font-medium">
-                  {new Date(workflow.submitted_at).toLocaleString()}
+                  {new Date(workflow.submitted_at).toLocaleString('id-ID')}
                 </p>
               </div>
               {workflow.reviewer && (
                 <>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Reviewed By</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Ditinjau oleh</p>
                     <p className="font-medium">{workflow.reviewer}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Reviewed At</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Waktu tinjauan</p>
                     <p className="font-medium">
-                      {workflow.reviewed_at ? new Date(workflow.reviewed_at).toLocaleString() : '-'}
+                      {workflow.reviewed_at ? new Date(workflow.reviewed_at).toLocaleString('id-ID') : '-'}
                     </p>
                   </div>
                 </>
@@ -233,13 +251,13 @@ export default function ApprovalDetail() {
               {workflow.approver && (
                 <>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Approved By</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Disetujui oleh</p>
                     <p className="font-medium">{workflow.approver}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Approved At</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Waktu persetujuan</p>
                     <p className="font-medium">
-                      {workflow.approved_at ? new Date(workflow.approved_at).toLocaleString() : '-'}
+                      {workflow.approved_at ? new Date(workflow.approved_at).toLocaleString('id-ID') : '-'}
                     </p>
                   </div>
                 </>
@@ -251,7 +269,7 @@ export default function ApprovalDetail() {
           {journalLines.length > 0 && (
             <div className="fn-card p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Journal Entry</h2>
+                <h2 className="text-lg font-semibold">Jurnal</h2>
                 {canReview() && !isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
@@ -266,7 +284,7 @@ export default function ApprovalDetail() {
                     onClick={() => setIsEditing(false)}
                     className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
                   >
-                    Cancel Edit
+                    Batal ubah
                   </button>
                 )}
               </div>
@@ -276,16 +294,16 @@ export default function ApprovalDetail() {
                   <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                        Account
+                        Akun
                       </th>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                        Description
+                        Keterangan
                       </th>
                       <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Debit
                       </th>
                       <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                        Credit
+                        Kredit
                       </th>
                     </tr>
                   </thead>
@@ -315,7 +333,7 @@ export default function ApprovalDetail() {
                               className="w-full px-2 py-1 border rounded text-right"
                             />
                           ) : (
-                            line.debit.toLocaleString()
+                            line.debit.toLocaleString('id-ID')
                           )}
                         </td>
                         <td className="px-4 py-2 text-sm text-right">
@@ -326,7 +344,7 @@ export default function ApprovalDetail() {
                               className="w-full px-2 py-1 border rounded text-right"
                             />
                           ) : (
-                            line.credit.toLocaleString()
+                            line.credit.toLocaleString('id-ID')
                           )}
                         </td>
                       </tr>
@@ -334,10 +352,10 @@ export default function ApprovalDetail() {
                     <tr className="bg-gray-50 dark:bg-gray-900 font-semibold">
                       <td colSpan={2} className="px-4 py-2 text-sm text-right">Total:</td>
                       <td className="px-4 py-2 text-sm text-right">
-                        {journalLines.reduce((sum, line) => sum + line.debit, 0).toLocaleString()}
+                        {journalLines.reduce((sum, line) => sum + line.debit, 0).toLocaleString('id-ID')}
                       </td>
                       <td className="px-4 py-2 text-sm text-right">
-                        {journalLines.reduce((sum, line) => sum + line.credit, 0).toLocaleString()}
+                        {journalLines.reduce((sum, line) => sum + line.credit, 0).toLocaleString('id-ID')}
                       </td>
                     </tr>
                   </tbody>
@@ -356,14 +374,14 @@ export default function ApprovalDetail() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    Notes
+                    Catatan
                   </label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={4}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Add your notes here..."
+                    placeholder="Tulis catatan di sini..."
                   />
                 </div>
 
@@ -374,7 +392,7 @@ export default function ApprovalDetail() {
                       className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                     >
                       <CheckCircleIcon className="h-5 w-5" />
-                      <span>Submit for Approval</span>
+                      <span>Ajukan persetujuan</span>
                     </button>
                   )}
                   
@@ -384,7 +402,7 @@ export default function ApprovalDetail() {
                       className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
                     >
                       <CheckCircleIcon className="h-5 w-5" />
-                      <span>Approve & Create Journal Entry</span>
+                      <span>Setujui &amp; buat jurnal</span>
                     </button>
                   )}
                   
@@ -399,7 +417,7 @@ export default function ApprovalDetail() {
                     className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
                   >
                     <XCircleIcon className="h-5 w-5" />
-                    <span>Reject</span>
+                    <span>Tolak</span>
                   </button>
                 </div>
               </div>
@@ -410,7 +428,7 @@ export default function ApprovalDetail() {
         {/* Sidebar - History */}
         <div className="space-y-6">
           <div className="fn-card p-6">
-            <h2 className="text-lg font-semibold mb-4">Workflow History</h2>
+            <h2 className="text-lg font-semibold mb-4">Riwayat</h2>
             <div className="space-y-4">
               {history.map((item) => (
                 <div key={item.id} className="border-l-4 border-blue-500 pl-4">
@@ -418,13 +436,13 @@ export default function ApprovalDetail() {
                     <ClockIcon className="h-5 w-5 text-gray-400 mt-0.5" />
                     <div className="flex-1">
                       <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {item.action.toUpperCase()}
+                        {AKSI_LABEL[item.action] || item.action}
                       </p>
                       <p className="text-xs text-gray-600 dark:text-gray-300">
-                        by {item.action_by}
+                        oleh {item.action_by}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {new Date(item.action_at).toLocaleString()}
+                        {new Date(item.action_at).toLocaleString('id-ID')}
                       </p>
                       {item.notes && (
                         <p className="text-sm text-gray-700 dark:text-gray-200 mt-1">

@@ -105,7 +105,7 @@ const RNDApprovals: React.FC = () => {
       {/* Header */}
       <div>
         <div className="fn-label mb-1.5">R&D · PERSETUJUAN</div>
-        <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Approval</h1>
+        <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Persetujuan R&amp;D</h1>
         <p className="text-gray-500 dark:text-gray-400">Permintaan persetujuan tahap proyek R&D</p>
       </div>
 
@@ -114,7 +114,7 @@ const RNDApprovals: React.FC = () => {
         <div className="fn-card p-12 text-center">
           <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Tidak ada permintaan pending</h3>
-          <p className="text-gray-500 dark:text-gray-400">Semua permintaan approval telah diproses</p>
+          <p className="text-gray-500 dark:text-gray-400">Semua permintaan sudah diproses</p>
         </div>
       ) : (
         <div className="space-y-4">

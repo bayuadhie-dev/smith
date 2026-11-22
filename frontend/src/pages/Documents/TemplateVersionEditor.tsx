@@ -551,7 +551,7 @@ const TemplateVersionEditor: React.FC = () => {
           )}
 
           <div>
-            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2 dark:text-gray-400">Field Library</h4>
+            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2 dark:text-gray-400">Daftar Kolom</h4>
             {Object.entries(fieldLibrary).map(([group, fields]) => (
               <div key={group} className="mb-3">
                 <div className="text-[11px] font-medium text-gray-400 mb-1">{formatGroupLabel(group)}</div>

@@ -2417,7 +2417,7 @@ def submit_for_approval(po_id):
             action_by=user_id,
             old_status='draft',
             new_status='pending_review',
-            notes=f'Purchase Order {po.po_number} submitted for review'
+            notes=f'Pesanan pembelian {po.po_number} diajukan untuk ditinjau'
         )
         db.session.add(history)
 

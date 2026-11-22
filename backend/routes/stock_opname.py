@@ -548,7 +548,7 @@ def submit_opname_for_approval(id):
             action_by=user_id,
             old_status='completed',
             new_status='pending_review',
-            notes=f'Stock Opname {order.opname_number} submitted for review'
+            notes=f'Stok opname {order.opname_number} diajukan untuk ditinjau'
         )
         db.session.add(history)
 

@@ -87,6 +87,14 @@ const stageLabels: Record<string, string> = {
   'CANCELLED': 'Dibatalkan'
 };
 
+const priorityLabels: Record<string, string> = {
+  'low': 'Rendah', 'medium': 'Sedang', 'high': 'Tinggi', 'critical': 'Kritis',
+};
+
+const typeLabels: Record<string, string> = {
+  'new_product': 'Produk Baru', 'improvement': 'Perbaikan', 'cost_reduction': 'Reduksi Biaya',
+};
+
 const stageColors: Record<string, string> = {
   'LAB_SCALE': 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300',
   'PILOT_SCALE': 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300',
@@ -246,7 +254,7 @@ const RNDProjectDetail: React.FC = () => {
                 className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
               >
                 <Send className="w-4 h-4" />
-                Request Approval
+                Ajukan Persetujuan
               </button>
             </>
           )}
@@ -304,7 +312,7 @@ const RNDProjectDetail: React.FC = () => {
       <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="flex gap-4">
           {[
-            { id: 'overview', label: 'Overview' },
+            { id: 'overview', label: 'Ringkasan' },
             { id: 'formulas', label: `Formula (${project.formulas.length})` },
             { id: 'experiments', label: 'Eksperimen' }
           ].map((tab) => (
@@ -332,18 +340,18 @@ const RNDProjectDetail: React.FC = () => {
             <dl className="space-y-3">
               <div className="flex justify-between">
                 <dt className="text-gray-500 dark:text-gray-400">Tipe Proyek</dt>
-                <dd className="font-medium">{project.project_type}</dd>
+                <dd className="font-medium">{typeLabels[project.project_type] || project.project_type}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-gray-500 dark:text-gray-400">Prioritas</dt>
-                <dd className="font-medium">{project.priority}</dd>
+                <dd className="font-medium">{priorityLabels[project.priority] || project.priority}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-gray-500 dark:text-gray-400">Target Produk</dt>
                 <dd className="font-medium">{project.target_product_name || '-'}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-gray-500 dark:text-gray-400">Project Leader</dt>
+                <dt className="text-gray-500 dark:text-gray-400">Penanggung jawab</dt>
                 <dd className="font-medium">{project.project_leader_name || '-'}</dd>
               </div>
               <div className="flex justify-between">
@@ -533,7 +541,7 @@ const RNDProjectDetail: React.FC = () => {
       {showApprovalModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">Request Approval</h3>
+            <h3 className="text-lg font-semibold mb-4">Ajukan Persetujuan</h3>
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
