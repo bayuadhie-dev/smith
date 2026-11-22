@@ -24,6 +24,7 @@ import toast from 'react-hot-toast';
 import { useLanguage } from '../../contexts/LanguageContext';
 import NotificationPreferences from '../../components/NotificationPreferences';
 import InterfacePreferences from './InterfacePreferences'
+import { PageHeader } from '../../components/ui/PageKit';
 
 interface UserProfileData {
   id: number;
@@ -224,21 +225,26 @@ const UserProfile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6"
-        >
-          <ArrowLeftIcon className="h-5 w-5 mr-2" />
-          Kembali
-        </button>
+    <div className="space-y-6">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <PageHeader
+          eyebrow="AKUN · PROFIL"
+          title={isOwnProfile ? 'Profil Saya' : 'Profil Pengguna'}
+          subtitle={profile.position || profile.department || undefined}
+          actions={
+            <button
+              onClick={() => navigate(-1)}
+              className="fn-press inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              <ArrowLeftIcon className="h-4 w-4" /> Kembali
+            </button>
+          }
+        />
 
         {/* Profile Header Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden mb-6">
+        <div className="fn-card overflow-hidden mb-6">
           {/* Cover */}
-          <div className="h-32 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600"></div>
+          <div className="h-24 bg-gray-100 dark:bg-gray-800"></div>
           
           {/* Profile Info */}
           <div className="relative px-6 pb-6">
@@ -305,7 +311,7 @@ const UserProfile: React.FC = () => {
                     placeholder="Nama Lengkap"
                   />
                 ) : (
-                  <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
+                  <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
                     {profile.full_name}
                   </h1>
                 )}
@@ -346,7 +352,7 @@ const UserProfile: React.FC = () => {
         </div>
 
         {/* Bio Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+        <div className="fn-card p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
             <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
             Tentang Saya
@@ -370,7 +376,7 @@ const UserProfile: React.FC = () => {
         {/* Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Contact Info */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="fn-card p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <UserCircleIcon className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
               Informasi Kontak
@@ -407,7 +413,7 @@ const UserProfile: React.FC = () => {
           </div>
 
           {/* Work Info */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="fn-card p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <BriefcaseIcon className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
               Informasi Pekerjaan
@@ -467,7 +473,7 @@ const UserProfile: React.FC = () => {
           </div>
 
           {/* Account Info */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="fn-card p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <ShieldCheckIcon className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
               Informasi Akun
@@ -498,7 +504,7 @@ const UserProfile: React.FC = () => {
           {isOwnProfile && <InterfacePreferences />}
 
           {/* Activity Info */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="fn-card p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <ClockIcon className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
               Aktivitas

@@ -148,6 +148,35 @@ def user_has_any_role(user, role_names):
     return bool(user_roles & {r.lower() for r in role_names})
 
 
+REVIEWER_ROLES = ['production_manager', 'warehouse_manager']
+APPROVER_ROLES = ['finance', 'accounting', 'finance_manager']
+
+
+def my_task_filter(user, current_user_id):
+    """Kondisi "tugas saya": dokumen yang memang masih menunggu orang ini.
+
+    Hanya yang belum selesai. Yang sudah disetujui/ditolak bukan tugas lagi,
+    walaupun orang ini yang dulu meninjaunya. Dokumen yang sudah dipegang
+    orang lain juga tidak dihitung.
+    """
+    clauses = []
+    if user_has_any_role(user, REVIEWER_ROLES):
+        clauses.append(and_(
+            ApprovalWorkflow.status == 'pending_review',
+            or_(ApprovalWorkflow.reviewer_id == None,  # noqa: E711
+                ApprovalWorkflow.reviewer_id == current_user_id),
+        ))
+    if user_has_any_role(user, APPROVER_ROLES):
+        clauses.append(and_(
+            ApprovalWorkflow.status == 'pending_approval',
+            or_(ApprovalWorkflow.approver_id == None,  # noqa: E711
+                ApprovalWorkflow.approver_id == current_user_id),
+        ))
+    if not clauses:
+        return None
+    return or_(*clauses) if len(clauses) > 1 else clauses[0]
+
+
 def user_can_act_on(user, workflow, step):
     """Check whether ``user`` is allowed to review/approve ``workflow``.
 
@@ -220,21 +249,12 @@ def get_workflows():
         
         # Filter by user's tasks
         if my_tasks:
-            # Show workflows where user is reviewer or approver based on current step
-            if user_has_any_role(user, ['production_manager', 'warehouse_manager']):
-                query = query.filter(
-                    or_(
-                        and_(ApprovalWorkflow.status == 'pending_review', ApprovalWorkflow.reviewer_id == None),
-                        ApprovalWorkflow.reviewer_id == current_user_id
-                    )
-                )
-            elif user_has_any_role(user, ['finance', 'accounting', 'finance_manager']):
-                query = query.filter(
-                    or_(
-                        and_(ApprovalWorkflow.status == 'pending_approval', ApprovalWorkflow.approver_id == None),
-                        ApprovalWorkflow.approver_id == current_user_id
-                    )
-                )
+            cond = my_task_filter(user, current_user_id)
+            if cond is None:
+                # Tanpa peran peninjau/penyetuju tidak ada tugas - jangan
+                # diam-diam menampilkan semua dokumen.
+                return jsonify({'workflows': []}), 200
+            query = query.filter(cond)
         
         workflows = query.order_by(ApprovalWorkflow.created_at.desc()).all()
         
@@ -751,11 +771,8 @@ def get_dashboard():
         rejected = ApprovalWorkflow.query.filter_by(status='rejected').count()
         
         # My pending tasks
-        my_pending = 0
-        if user_has_any_role(user, ['production_manager', 'warehouse_manager']):
-            my_pending = ApprovalWorkflow.query.filter_by(status='pending_review').count()
-        elif user_has_any_role(user, ['finance', 'accounting', 'finance_manager']):
-            my_pending = ApprovalWorkflow.query.filter_by(status='pending_approval').count()
+        my_cond = my_task_filter(user, current_user_id)
+        my_pending = ApprovalWorkflow.query.filter(my_cond).count() if my_cond is not None else 0
         
         return jsonify({
             'statistics': {

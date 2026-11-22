@@ -85,7 +85,7 @@ const routeLabels: Record<string, string> = {
   'budget': 'Budget',
   'cash-flow': 'Cash Flow',
   'wip-ledger': 'WIP Ledger',
-  'approval': 'Approvals',
+  'approval': 'Persetujuan',
   // HR
   'hr': 'Human Resources',
   'employees': 'Employees',
@@ -99,8 +99,10 @@ const routeLabels: Record<string, string> = {
   'request': 'Permintaan',
   // R&D
   'rd': 'R&D',
-  'projects': 'Projects',
-  'experiments': 'Experiments',
+  'rnd': 'R&D',
+  'approvals': 'Persetujuan',
+  'projects': 'Proyek',
+  'experiments': 'Eksperimen',
   // 'materials': 'Materials', // already defined
   // 'products': 'Products', // already defined
   // 'reports': 'Reports', // already defined
@@ -109,7 +111,7 @@ const routeLabels: Record<string, string> = {
   'returns': 'Retur',
   'oee': 'OEE Monitoring',
   'tv-display': 'TV Display',
-  'documents': 'Documents',
+  'documents': 'Dokumen',
   'settings': 'Pengaturan',
   'user-roles': 'Pengguna & Peran',
   'audit-trail': 'Jejak Audit',

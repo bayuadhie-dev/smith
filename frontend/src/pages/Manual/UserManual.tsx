@@ -400,7 +400,7 @@ const UserManual: React.FC = () => {
       return (
         <div className="max-w-4xl mx-auto">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm mb-6 bg-white dark:bg-gray-800 px-4 py-3 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+          <nav className="fn-card flex items-center gap-2 text-sm mb-6 px-4 py-3">
             <button onClick={() => navigate('/app/manual')} className="text-blue-600 hover:text-blue-700 flex items-center gap-1 font-medium dark:text-blue-400">
               <HomeIcon className="h-4 w-4" />
               Manual
@@ -412,32 +412,31 @@ const UserManual: React.FC = () => {
           </nav>
 
           {/* Article Header */}
-          <div className="mb-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
-            <h1 className="text-[28px] font-semibold mb-4 tracking-tight leading-tight">
+          <div className="mb-8">
+            <div className="fn-label mb-1.5">BANTUAN · PANDUAN PENGGUNA</div>
+            <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
               {currentArticle.title}
             </h1>
             {currentArticle.summary && (
-              <p className="text-lg text-blue-100 mb-6">
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {currentArticle.summary}
               </p>
             )}
-            <div className="flex items-center gap-6 text-sm text-blue-200">
-              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-full">
+            <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+              <span className="flex items-center gap-1.5">
                 <EyeIcon className="h-4 w-4" />
-                {currentArticle.view_count} views
+                <span className="fn-num">{currentArticle.view_count}</span> kali dibaca
               </span>
-              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-full">
+              <span className="flex items-center gap-1.5">
                 <ClockIcon className="h-4 w-4" />
                 {new Date(currentArticle.updated_at).toLocaleDateString('id-ID')}
               </span>
-              {currentArticle.author && (
-                <span className="bg-white/10 px-3 py-1.5 rounded-full">Oleh: {currentArticle.author}</span>
-              )}
+              {currentArticle.author && <span>Oleh {currentArticle.author}</span>}
             </div>
           </div>
 
           {/* Article Content */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-100 dark:border-gray-700">
+          <div className="fn-card p-8">
             <div className="manual-content">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {currentArticle.content || ''}
@@ -452,40 +451,31 @@ const UserManual: React.FC = () => {
     return (
       <div className="max-w-6xl mx-auto">
         {/* Hero Section */}
-        <div className="text-center mb-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 rounded-3xl p-12 text-white shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full opacity-10">
-            <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl dark:bg-gray-800"></div>
-            <div className="absolute bottom-10 right-10 w-40 h-40 bg-white rounded-full blur-3xl dark:bg-gray-800"></div>
-            <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white rounded-full blur-2xl dark:bg-gray-800"></div>
-          </div>
-          <div className="relative z-10">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-2xl mb-6 backdrop-blur-sm shadow-lg">
-              <BookOpenIcon className="h-10 w-10 text-white" />
-            </div>
-            <h1 className="text-4xl font-extrabold mb-4">
-              Dokumentasi
-            </h1>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-              Dokumentasi lengkap untuk sistem ERP {companyName}
-            </p>
-            <div className="mt-6 flex items-center justify-center gap-4 text-sm">
-              <span className="bg-white/20 px-4 py-2 rounded-full">{categories.length} Kategori</span>
-              <span className="bg-white/20 px-4 py-2 rounded-full">{articles.length} Artikel</span>
-              <span className="bg-white/20 px-4 py-2 rounded-full">{faqs.length} FAQ</span>
-            </div>
+        <div className="mb-8">
+          <div className="fn-label mb-1.5">BANTUAN · PANDUAN PENGGUNA</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
+            Dokumentasi
+          </h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Dokumentasi lengkap untuk sistem ERP {companyName}.
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-4 fn-label">
+            <span><span className="fn-num">{categories.length}</span> kategori</span>
+            <span><span className="fn-num">{articles.length}</span> artikel</span>
+            <span><span className="fn-num">{faqs.length}</span> tanya jawab</span>
           </div>
         </div>
 
         {/* Quick Search */}
-        <div className="max-w-2xl mx-auto mb-12 -mt-6 relative z-20">
+        <div className="mb-8">
           <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-5 top-1/2 transform -translate-y-1/2 h-6 w-6 text-blue-500" />
+            <MagnifyingGlassIcon className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Cari panduan, tutorial, atau FAQ..."
+              placeholder="Cari panduan, tutorial, atau tanya jawab..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-14 pr-6 py-5 bg-white border-2 border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 text-lg shadow-xl transition-all dark:bg-gray-800 dark:border-gray-800"
+              className="input w-full pl-11"
             />
           </div>
         </div>
@@ -501,7 +491,7 @@ const UserManual: React.FC = () => {
                   setSelectedCategory(category);
                   toggleCategory(category.id);
                 }}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-left hover:shadow-xl transition-shadow border border-gray-200 dark:border-gray-700"
+                className="fn-card p-6 text-left hover:shadow-xl transition-shadow"
               >
                 <div className="flex items-center gap-4 mb-4">
                   <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
@@ -537,7 +527,7 @@ const UserManual: React.FC = () => {
               {faqs.slice(0, 5).map(faq => (
                 <div
                   key={faq.id}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700"
+                  className="fn-card"
                 >
                   <button
                     onClick={() => toggleFaq(faq.id)}

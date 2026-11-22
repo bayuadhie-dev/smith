@@ -476,8 +476,8 @@ export default function AccurateIntegration() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
-            <ArrowsRightLeftIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+          <div className="fn-label mb-1.5">INTEGRASI · ACCURATE</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
             Integrasi Accurate Online API
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -486,7 +486,7 @@ export default function AccurateIntegration() {
         </div>
 
         {/* Dry-Run Toggle Badge */}
-        <div className="flex items-center gap-3 bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="fn-card flex items-center gap-3 p-3">
           <ShieldCheckIcon className={`w-6 h-6 ${config?.is_dry_run ? 'text-amber-500' : 'text-green-500'}`} />
           <div>
             <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Mode Sistem</div>
@@ -1422,7 +1422,7 @@ export default function AccurateIntegration() {
               onClick={() => setDetailModal(null)}
             >
               <div
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+                className="fn-card shadow-xl max-w-3xl w-full max-h-[85vh] overflow-hidden flex flex-col"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
@@ -1706,7 +1706,7 @@ export default function AccurateIntegration() {
               onClick={() => setBomItemDrillNo(null)}
             >
               <div
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+                className="fn-card shadow-xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
@@ -1813,7 +1813,7 @@ export default function AccurateIntegration() {
       {/* TAB 6: Cek EJO */}
       {activeTab === 'ejo' && (
         <div className="space-y-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="fn-card p-4">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">Kroscek Hasil Produksi via Nomor EJO</h3>
@@ -1839,7 +1839,7 @@ export default function AccurateIntegration() {
                 onChange={(e) => setEjoNumber(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleCheckEjo() }}
                 placeholder="EJO/26/08/018-5 S-1"
-                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm"
+                className="fn-card flex-1 px-3 py-2 dark:border-gray-600 text-gray-900 dark:text-white text-sm"
               />
               <button
                 onClick={handleCheckEjo}
@@ -1851,7 +1851,7 @@ export default function AccurateIntegration() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="fn-card p-4">
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-semibold text-gray-900 dark:text-white">
                 Daftar Perintah Kerja Terbaru ({(woCacheResp?.data || []).length})
@@ -1870,7 +1870,7 @@ export default function AccurateIntegration() {
               value={ejoListSearch}
               onChange={(e) => setEjoListSearch(e.target.value)}
               placeholder="Cari nomor EJO atau nama item..."
-              className="w-full mb-2 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm"
+              className="fn-card w-full mb-2 px-3 py-1.5 dark:border-gray-600 text-gray-900 dark:text-white text-sm"
             />
             {fetchingWoCache ? (
               <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
@@ -1917,7 +1917,7 @@ export default function AccurateIntegration() {
               onClick={() => setEjoModalOpen(false)}
             >
               <div
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+                className="fn-card shadow-xl max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
@@ -1947,7 +1947,7 @@ export default function AccurateIntegration() {
 
           {ejoResult && ejoResult.found && (
             <>
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+              <div className="fn-card p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Ringkasan</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                   <SummaryField label="Nomor EJO" value={ejoResult.summary.number} />
@@ -1970,7 +1970,7 @@ export default function AccurateIntegration() {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+              <div className="fn-card p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Histori Tahap Gudang</h4>
                 <div className="space-y-2">
                   {ejoResult.process_history.map((h: any, idx: number) => (
@@ -1991,7 +1991,7 @@ export default function AccurateIntegration() {
               </div>
 
               {ejoResult.finished_good_slips && ejoResult.finished_good_slips.length > 0 && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                <div className="fn-card p-4">
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
                     EJO Penyelesaian ({ejoResult.finished_good_slips.length})
                   </h4>
@@ -2021,7 +2021,7 @@ export default function AccurateIntegration() {
                 </div>
               )}
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+              <div className="fn-card p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
                   Rincian Bahan Bertingkat (Barang Jadi &rarr; WIP &rarr; Mixing)
                 </h4>
@@ -2032,7 +2032,7 @@ export default function AccurateIntegration() {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+              <div className="fn-card p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Perbandingan dengan Internal ERP</h4>
                 {!ejoResult.smith_match && (
                   <div className="space-y-3">
@@ -2151,7 +2151,7 @@ export default function AccurateIntegration() {
       {/* TAB 7: Gudang EPD/FG */}
       {activeTab === 'warehouse' && (
         <div className="space-y-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="fn-card p-4">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">Stok Resmi Accurate (PM/EPD/FG)</h3>
@@ -2173,7 +2173,7 @@ export default function AccurateIntegration() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {(['pm', 'epd', 'fg'] as const).map((loc) => (
-              <div key={loc} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+              <div key={loc} className="fn-card p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
                   Gudang {loc.toUpperCase()} ({(snapshotSummaryResp?.data?.[loc] || []).length})
                 </h4>
@@ -2206,7 +2206,7 @@ export default function AccurateIntegration() {
               onClick={() => setSnapshotDetailQuery(null)}
             >
               <div
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
+                className="fn-card shadow-xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
@@ -2252,7 +2252,7 @@ export default function AccurateIntegration() {
             </div>
           )}
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="fn-card p-4">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">Stok Gudang EPD dan FG (dari Histori EJO)</h3>
@@ -2273,7 +2273,7 @@ export default function AccurateIntegration() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+            <div className="fn-card p-4">
               <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Gudang EPD</h4>
               {fetchingWarehouseStock ? (
                 <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
@@ -2295,7 +2295,7 @@ export default function AccurateIntegration() {
               )}
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+            <div className="fn-card p-4">
               <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Gudang FG</h4>
               {fetchingWarehouseStock ? (
                 <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
@@ -2384,7 +2384,7 @@ export default function AccurateIntegration() {
               onClick={() => setStockDetailQuery(null)}
             >
               <div
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+                className="fn-card shadow-xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
@@ -2432,7 +2432,7 @@ export default function AccurateIntegration() {
       {/* TAB 8: Histori Transfer Gudang */}
       {activeTab === 'transfer' && (
         <div className="space-y-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="fn-card p-4">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">Histori Transfer Gudang</h3>
@@ -2467,7 +2467,7 @@ export default function AccurateIntegration() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="fn-card p-4">
             {fetchingTransferList ? (
               <div className="space-y-2" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-full" />)}</div>
             ) : (transferListResp?.data || []).length === 0 ? (
@@ -2533,7 +2533,7 @@ export default function AccurateIntegration() {
               onClick={() => setTransferDetailId(null)}
             >
               <div
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+                className="fn-card shadow-xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">

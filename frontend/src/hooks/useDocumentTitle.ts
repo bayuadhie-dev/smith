@@ -82,7 +82,18 @@ const ROUTE_TITLES: Record<string, string> = {
   '/app/reports/production-by-product': 'Produksi per Produk',
   '/app/reports': 'Laporan',
   '/app/settings': 'Pengaturan',
-  '/app/users': 'User Management',
+  '/app/users': 'Manajemen Pengguna',
+  '/app/rnd': 'R&D',
+  '/app/documents': 'Dokumen',
+  '/app/approval': 'Persetujuan',
+  '/app/manual': 'Panduan',
+  '/app/faq': 'Tanya Jawab',
+  '/app/dcc': 'Pusat Kendali Dokumen',
+  '/app/notifications': 'Notifikasi',
+  '/app/profile': 'Profil',
+  '/app/search': 'Pencarian',
+  '/app/ews': 'Peringatan Dini',
+  '/app/integrations/accurate': 'Integrasi Accurate',
 }
 
 const getPageTitle = (pathname: string): string => {

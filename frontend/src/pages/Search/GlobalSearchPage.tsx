@@ -127,7 +127,7 @@ export default function GlobalSearchPage() {
   const clearQuery = () => { setQuery(''); setResults([]) }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 dark:bg-gray-900 sm:py-8">
+    <div className="space-y-6">
       <div className="mx-auto w-full max-w-5xl px-4 sm:px-6">
         <div className="mb-6 sm:mb-8">
           <button
@@ -137,7 +137,8 @@ export default function GlobalSearchPage() {
             <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
             Kembali ke Dashboard
           </button>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white sm:text-[28px] tracking-tight leading-tight">Pencarian</h1>
+          <div className="fn-label mb-1.5">PENCARIAN</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Pencarian</h1>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 sm:text-base">Cari dokumen dan data di seluruh modul.</p>
         </div>
 

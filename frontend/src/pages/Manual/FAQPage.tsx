@@ -89,7 +89,7 @@ const FAQPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 lg:p-8">
+    <div className="space-y-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -106,7 +106,8 @@ const FAQPage: React.FC = () => {
               <QuestionMarkCircleIcon className="h-10 w-10 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
+              <div className="fn-label mb-1.5">BANTUAN · TANYA JAWAB</div>
+              <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
                 FAQ
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
@@ -117,7 +118,7 @@ const FAQPage: React.FC = () => {
         </div>
 
         {/* Search & Filter */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 mb-6">
+        <div className="fn-card p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -162,7 +163,7 @@ const FAQPage: React.FC = () => {
                   {categoryFaqs.map(faq => (
                     <div
                       key={faq.id}
-                      className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 overflow-hidden"
+                      className="fn-card overflow-hidden"
                     >
                       <button
                         onClick={() => toggleFaq(faq.id)}

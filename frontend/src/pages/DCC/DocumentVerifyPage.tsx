@@ -21,7 +21,7 @@ const DocumentVerifyPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 max-w-md w-full text-center">
+      <div className="fn-card p-8 max-w-md w-full text-center">
         {result?.valid ? (
           <>
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-green-900/30">

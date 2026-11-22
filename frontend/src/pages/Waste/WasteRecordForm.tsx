@@ -105,7 +105,8 @@ const { id } = useParams()
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
+        <div className="fn-label mb-1.5">PRODUKSI · CATATAN SUSUT</div>
+        <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
           {isEdit ? 'Edit Waste Record' : 'Record Waste Disposal'}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
@@ -115,7 +116,7 @@ const { id } = useParams()
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Basic Information */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="fn-card p-6">
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Basic Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -126,7 +127,7 @@ const { id } = useParams()
               <input
                 type="date"
                 {...register('waste_date', { required: 'Waste date is required' })}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               {errors.waste_date && (
                 <p className="text-red-500 text-sm mt-1">{errors.waste_date.message}</p>
@@ -139,7 +140,7 @@ const { id } = useParams()
               </label>
               <select
                 {...register('category', { required: 'Category is required' })}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="production_waste">Production Waste</option>
                 <option value="packaging_waste">Packaging Waste</option>
@@ -159,7 +160,7 @@ const { id } = useParams()
               </label>
               <select
                 {...register('source_department', { required: 'Source department is required' })}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select Department</option>
                 <option value="production">{t('navigation.production')}</option>
@@ -182,7 +183,7 @@ const { id } = useParams()
                 type="text"
                 {...register('waste_type', { required: 'Waste type is required' })}
                 placeholder="e.g., Nonwoven scraps, Chemical containers"
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               {errors.waste_type && (
                 <p className="text-red-500 text-sm mt-1">{errors.waste_type.message}</p>
@@ -192,7 +193,7 @@ const { id } = useParams()
         </div>
 
         {/* Quantity and Weight */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="fn-card p-6">
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Quantity and Weight</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -206,7 +207,7 @@ const { id } = useParams()
                   required: 'Quantity is required',
                   min: { value: 0.01, message: 'Quantity must be greater than 0' }
                 })}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               {errors.quantity && (
                 <p className="text-red-500 text-sm mt-1">{errors.quantity.message}</p>
@@ -219,7 +220,7 @@ const { id } = useParams()
               </label>
               <select
                 {...register('uom')}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="kg">Kilogram (kg)</option>
                 <option value="ton">Ton</option>
@@ -237,7 +238,7 @@ const { id } = useParams()
               </label>
               <select
                 {...register('hazard_level', { required: 'Hazard level is required' })}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="low">Low Risk</option>
                 <option value="medium">Medium Risk</option>
@@ -273,7 +274,7 @@ const { id } = useParams()
         </div>
 
         {/* Disposal Method and Location */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="fn-card p-6">
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Disposal Method and Location</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -283,7 +284,7 @@ const { id } = useParams()
               </label>
               <select
                 {...register('disposal_method', { required: 'Disposal method is required' })}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select Method</option>
                 <option value="landfill">Landfill</option>
@@ -307,7 +308,7 @@ const { id } = useParams()
                 type="text"
                 {...register('disposal_location')}
                 placeholder="Location or facility name"
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
@@ -318,7 +319,7 @@ const { id } = useParams()
               <NumberInput currency
                 step="0.01"
                 {...register('cost_estimation', { valueAsNumber: true })}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
@@ -330,14 +331,14 @@ const { id } = useParams()
                 type="text"
                 {...register('responsible_person')}
                 placeholder="Person responsible for disposal"
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
         </div>
 
         {/* Regulatory Compliance */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="fn-card p-6">
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Regulatory Compliance</h2>
           
           <div className="space-y-4">
@@ -360,7 +361,7 @@ const { id } = useParams()
                 type="text"
                 {...register('disposal_certificate')}
                 placeholder="Certificate or permit number (if applicable)"
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
@@ -371,7 +372,7 @@ const { id } = useParams()
                 {...register('notes')}
                 rows={4}
                 placeholder="Additional notes, special handling requirements, or observations..."
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="fn-card w-full dark:border-gray-600 px-3 py-2 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>

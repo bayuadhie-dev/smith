@@ -11,6 +11,7 @@ import {
   ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline';
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { PageHeader } from '../../components/ui/PageKit';
 
 interface Template {
   id: number;
@@ -514,8 +515,11 @@ export default function DocumentGeneratorUpgraded() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-xl shadow-lg p-6 text-white">
-        <div className="flex items-center gap-4">
+      <PageHeader
+        eyebrow="DOKUMEN · PEMBUAT"
+        title="Buat Dokumen"
+        subtitle="Susun dokumen baru dari template."
+        actions={
           <button
             onClick={() => {
               if (step > 1) {
@@ -524,27 +528,20 @@ export default function DocumentGeneratorUpgraded() {
                 navigate('/app/documents');
               }
             }}
-            className="p-2 hover:bg-white dark:hover:bg-gray-700 dark:bg-gray-800/10 rounded-lg transition-colors"
+            className="fn-press inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           >
-            <ArrowLeftIcon className="h-5 w-5" />
+            <ArrowLeftIcon className="h-4 w-4" /> {step > 1 ? 'Kembali' : 'Keluar'}
           </button>
-          <div>
-            <h1 className="text-[28px] font-semibold flex items-center gap-3 tracking-tight leading-tight">
-              <DocumentTextIcon className="h-8 w-8" />
-              Generate Document
-            </h1>
-            <p className="text-indigo-100 mt-1">Create new document from template</p>
-          </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Progress Steps */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <div className="fn-card p-4">
         <div className="flex items-center justify-between">
           {[
-            { num: 1, label: 'Document Type' },
-            { num: 2, label: 'Select Reference' },
-            { num: 3, label: 'Configure & Generate' }
+            { num: 1, label: 'Jenis Dokumen' },
+            { num: 2, label: 'Pilih Acuan' },
+            { num: 3, label: 'Atur & Buat' }
           ].map((s, idx) => (
             <React.Fragment key={s.num}>
               <button
@@ -577,7 +574,7 @@ export default function DocumentGeneratorUpgraded() {
       </div>
 
       {/* Step Content */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div className="fn-card p-6">
         {step === 1 && renderStep1()}
         {step === 2 && renderStep2()}
         {step === 3 && renderStep3()}

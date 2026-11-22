@@ -139,7 +139,7 @@ const TVDisplaySelector: React.FC = () => {
         </div>
 
         <div className="mt-12 text-center">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md max-w-2xl mx-auto">
+          <div className="fn-card p-6 max-w-2xl mx-auto">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
               💡 Tips Penggunaan TV Display
             </h3>

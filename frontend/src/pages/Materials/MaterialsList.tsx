@@ -130,7 +130,8 @@ const MaterialsList: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Materials Management</h1>
+          <div className="fn-label mb-1.5">BAHAN · DAFTAR</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Materials Management</h1>
           <p className="text-gray-600 dark:text-gray-300">Manage your materials inventory and information</p>
         </div>
         <div className="flex space-x-3 flex-wrap">
@@ -146,7 +147,7 @@ const MaterialsList: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border">
+      <div className="fn-card p-4">
         <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
           <div className="flex-1">
             <div className="relative">
@@ -185,7 +186,7 @@ const MaterialsList: React.FC = () => {
       </div>
 
       {/* Materials Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border overflow-hidden">
+      <div className="fn-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">

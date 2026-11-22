@@ -100,7 +100,7 @@ export default function MasterDataRecipeTab() {
         dipakai Batch Scheduling untuk memecah target SPK jadi batch-batch nyata.
       </p>
 
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+      <div className="fn-card p-4">
         <h3 className="font-semibold mb-3">{editingId ? 'Edit Resep' : 'Tambah Resep'}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
           <SearchableSelect

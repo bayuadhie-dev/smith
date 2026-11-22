@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { PageHeader } from '../../components/ui/PageKit'
 
 interface Template {
   id: number;
@@ -249,30 +250,23 @@ export default function TemplateList() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-xl shadow-lg p-6 text-white">
-        <div className="flex items-center flex-wrap justify-between gap-3">
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/app/documents')} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-              <ArrowLeftIcon className="h-5 w-5" />
+      <PageHeader
+        eyebrow="DOKUMEN · TEMPLATE"
+        title="Perancang Template Cetak"
+        subtitle="Kelola desain cetak dokumen (SPK, Invoice, Surat Jalan, dst)."
+        actions={
+          <>
+            <button onClick={() => navigate('/app/documents')} className="fn-press inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+              <ArrowLeftIcon className="h-4 w-4" /> Kembali
             </button>
-            <div>
-              <h1 className="text-[28px] font-semibold flex items-center gap-3 tracking-tight leading-tight">
-                <DocumentDuplicateIcon className="h-8 w-8" />
-                Print Template Designer
-              </h1>
-              <p className="text-purple-100 mt-1">Kelola desain cetak dokumen (SPK, Invoice, Surat Jalan, dst)</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center px-4 py-2 bg-white text-purple-600 rounded-lg font-medium hover:bg-purple-50 transition-colors shadow-md dark:bg-gray-800 dark:text-purple-400"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" /> Template Baru
-          </button>
-        </div>
-      </div>
+            <button onClick={() => setShowCreateModal(true)} className="fn-press inline-flex items-center gap-2 rounded-lg bg-cta-600 px-4 py-2 text-sm font-medium text-white hover:bg-cta-700">
+              <PlusIcon className="h-4 w-4" /> Template Baru
+            </button>
+          </>
+        }
+      />
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <div className="fn-card p-4">
         <div className="flex flex-wrap gap-2">
           <button onClick={() => setTypeFilter('')} className={`px-4 py-2 rounded-lg font-medium transition-colors ${typeFilter === '' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
             Semua Tipe
@@ -287,7 +281,7 @@ export default function TemplateList() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {templates.length === 0 ? (
-          <div className="col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="fn-card col-span-full text-center py-12">
             <DocumentDuplicateIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
             <p className="text-gray-500 dark:text-gray-400 mb-4">Belum ada template</p>
             <button onClick={() => setShowCreateModal(true)} className="inline-flex items-center text-indigo-600 hover:text-indigo-800 dark:text-indigo-400">
@@ -296,10 +290,10 @@ export default function TemplateList() {
           </div>
         ) : (
           templates.map((template) => (
-            <div key={template.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
+            <div key={template.id} className="fn-card overflow-hidden hover:shadow-md transition-shadow">
               <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-6 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-start justify-between">
-                  <div className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+                  <div className="fn-card p-3">
                     <DocumentTextIcon className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
                   </div>
                   <div className="flex items-center gap-2">
@@ -401,17 +395,17 @@ export default function TemplateList() {
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Nama Template</label>
                 <input value={form.template_name} onChange={(e) => setForm({ ...form, template_name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm" placeholder="mis. SPK Batch - Versi Baru" />
+                  className="fn-card w-full px-3 py-2 dark:border-gray-600 text-sm" placeholder="mis. SPK Batch - Versi Baru" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Kode Template (unik)</label>
                 <input value={form.template_code} onChange={(e) => setForm({ ...form, template_code: e.target.value.toUpperCase().replace(/\s+/g, '_') })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm" placeholder="mis. SPK_BATCH_V2" />
+                  className="fn-card w-full px-3 py-2 dark:border-gray-600 text-sm" placeholder="mis. SPK_BATCH_V2" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Tipe Dokumen</label>
                 <select value={form.document_type} onChange={(e) => setForm({ ...form, document_type: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm">
+                  className="fn-card w-full px-3 py-2 dark:border-gray-600 text-sm">
                   {DOCUMENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
               </div>
@@ -420,7 +414,7 @@ export default function TemplateList() {
                 <select
                   value={form.access_scope}
                   onChange={(e) => setForm({ ...form, access_scope: e.target.value as 'all' | 'role', access_role_ids: [] })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm"
+                  className="fn-card w-full px-3 py-2 dark:border-gray-600 text-sm"
                 >
                   <option value="all">Semua User</option>
                   <option value="role">Role Tertentu</option>
@@ -468,7 +462,7 @@ export default function TemplateList() {
               <select
                 value={accessDraft.access_scope}
                 onChange={(e) => setAccessDraft({ access_scope: e.target.value as 'all' | 'role', access_role_ids: [] })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm"
+                className="fn-card w-full px-3 py-2 dark:border-gray-600 text-sm"
               >
                 <option value="all">Semua User</option>
                 <option value="role">Role Tertentu</option>

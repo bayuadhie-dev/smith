@@ -175,7 +175,8 @@ export default function ApprovalDetail() {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
+          <div className="fn-label mb-1.5">PERSETUJUAN · RINCIAN</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
             Approval Workflow Detail
           </h1>
           <p className="text-gray-600 dark:text-gray-300">{workflow.transaction_number}</p>
@@ -194,7 +195,7 @@ export default function ApprovalDetail() {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Workflow Info */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div className="fn-card p-6">
             <h2 className="text-lg font-semibold mb-4">Workflow Information</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -248,7 +249,7 @@ export default function ApprovalDetail() {
 
           {/* Journal Entry */}
           {journalLines.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div className="fn-card p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Journal Entry</h2>
                 {canReview() && !isEditing && (
@@ -347,7 +348,7 @@ export default function ApprovalDetail() {
 
           {/* Action Buttons */}
           {(canReview() || canApprove()) && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div className="fn-card p-6">
               <h2 className="text-lg font-semibold mb-4">
                 {canReview() ? 'Review Workflow' : 'Approve Workflow'}
               </h2>
@@ -408,7 +409,7 @@ export default function ApprovalDetail() {
 
         {/* Sidebar - History */}
         <div className="space-y-6">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div className="fn-card p-6">
             <h2 className="text-lg font-semibold mb-4">Workflow History</h2>
             <div className="space-y-4">
               {history.map((item) => (

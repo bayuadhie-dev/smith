@@ -10,6 +10,8 @@ import {
   ChartBarIcon
 } from '@heroicons/react/24/outline';
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { PageHeader, KpiStrip, Segmented, StatusPill } from '../../components/ui/PageKit';
+import type { Tone } from '../../components/ui/PageKit';
 
 interface ApprovalStats {
   pending_review: number;
@@ -73,31 +75,30 @@ export default function ApprovalDashboard() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending_review':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-      case 'pending_approval':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-      case 'approved':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-      case 'rejected':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100';
-    }
+  const STATUS_LABEL: Record<string, string> = {
+    pending_review: 'Menunggu tinjauan',
+    pending_approval: 'Menunggu persetujuan',
+    approved: 'Disetujui',
+    rejected: 'Ditolak',
+  };
+
+  const STATUS_TONE: Record<string, Tone> = {
+    pending_review: 'warn',
+    pending_approval: 'info',
+    approved: 'ok',
+    rejected: 'bad',
   };
 
   const getTransactionTypeLabel = (type: string) => {
     const labels: { [key: string]: string } = {
-      sales_order: 'Sales Order',
-      purchase_order: 'Purchase Order',
-      production: 'Production',
-      inventory_adjustment: 'Inventory Adjustment',
+      sales_order: 'Pesanan Penjualan',
+      purchase_order: 'Pesanan Pembelian',
+      production: 'Produksi',
+      inventory_adjustment: 'Penyesuaian Stok',
       stock_transfer: 'Transfer Stok',
       stock_opname: 'Stok Opname',
-      expense: 'Expense',
-      payment: 'Payment'
+      expense: 'Biaya',
+      payment: 'Pembayaran'
     };
     return labels[type] || type;
   };
@@ -114,116 +115,61 @@ export default function ApprovalDashboard() {
   // #12 of 17). Sub-pages (workflow detail) are intentionally left
   // as-is - only this landing dashboard is in scope.
   return (
-    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">Approval</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Manage transaction approvals with review and approval process</p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="PERSETUJUAN · RINGKASAN"
+        title="Persetujuan Transaksi"
+        subtitle="Dokumen yang menunggu tinjauan dan persetujuan."
+      />
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl shadow-lg p-5 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm opacity-90">Pending Review</p>
-              <p className="text-3xl font-bold mt-2">{stats.pending_review}</p>
-            </div>
-            <ClockIcon className="h-10 w-10 opacity-75" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg p-5 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm opacity-90">Pending Approval</p>
-              <p className="text-3xl font-bold mt-2">{stats.pending_approval}</p>
-            </div>
-            <DocumentTextIcon className="h-10 w-10 opacity-75" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl shadow-lg p-5 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm opacity-90">Approved</p>
-              <p className="text-3xl font-bold mt-2">{stats.approved}</p>
-            </div>
-            <CheckCircleIcon className="h-10 w-10 opacity-75" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-5 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm opacity-90">Rejected</p>
-              <p className="text-3xl font-bold mt-2">{stats.rejected}</p>
-            </div>
-            <XCircleIcon className="h-10 w-10 opacity-75" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl shadow-lg p-5 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm opacity-90">My Pending Tasks</p>
-              <p className="text-3xl font-bold mt-2">{stats.my_pending}</p>
-            </div>
-            <UserGroupIcon className="h-10 w-10 opacity-75" />
-          </div>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          { label: 'Menunggu tinjauan', value: stats.pending_review, tone: stats.pending_review > 0 ? 'warn' : null },
+          { label: 'Menunggu persetujuan', value: stats.pending_approval, tone: stats.pending_approval > 0 ? 'warn' : null },
+          { label: 'Disetujui', value: stats.approved, tone: 'good' },
+          { label: 'Ditolak', value: stats.rejected, tone: stats.rejected > 0 ? 'bad' : null },
+          { label: 'Tugas saya', value: stats.my_pending },
+        ]}
+      />
 
       {/* Filter Tabs */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4">
-        <div className="flex flex-wrap gap-2">
-          {[
-            { id: 'my_tasks', label: `My Tasks (${stats.my_pending})` },
-            { id: 'pending_review', label: 'Pending Review' },
-            { id: 'pending_approval', label: 'Pending Approval' },
-            { id: 'all', label: 'All Workflows' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setFilter(tab.id)}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-                filter === tab.id
-                  ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <Segmented
+        value={filter}
+        onChange={setFilter}
+        options={[
+          { value: 'my_tasks', label: `Tugas saya (${stats.my_pending})` },
+          { value: 'pending_review', label: 'Menunggu tinjauan' },
+          { value: 'pending_approval', label: 'Menunggu persetujuan' },
+          { value: 'all', label: 'Semua' },
+        ]}
+      />
 
       {/* Workflows List */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
+      <div className="fn-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Transaction
+                  Transaksi
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Type
+                  Jenis
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Submitted By
+                  Diajukan oleh
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Reviewer
+                  Peninjau
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Approver
+                  Penyetuju
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Actions
+                  Aksi
                 </th>
               </tr>
             </thead>
@@ -232,7 +178,7 @@ export default function ApprovalDashboard() {
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                     <ChartBarIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <p>No workflows found</p>
+                    <p>Belum ada dokumen yang perlu disetujui</p>
                   </td>
                 </tr>
               ) : (
@@ -243,7 +189,7 @@ export default function ApprovalDashboard() {
                         {workflow.transaction_number}
                       </div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(workflow.submitted_at).toLocaleDateString()}
+                        {new Date(workflow.submitted_at).toLocaleDateString('id-ID')}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -252,9 +198,9 @@ export default function ApprovalDashboard() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(workflow.status)}`}>
-                        {workflow.status.replace('_', ' ').toUpperCase()}
-                      </span>
+                      <StatusPill tone={STATUS_TONE[workflow.status] || 'muted'}>
+                        {STATUS_LABEL[workflow.status] || workflow.status}
+                      </StatusPill>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {workflow.submitted_by}
@@ -270,7 +216,7 @@ export default function ApprovalDashboard() {
                         to={`/app/approval/${workflow.id}`}
                         className="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400"
                       >
-                        View Details
+                        Lihat rincian
                       </Link>
                     </td>
                   </tr>

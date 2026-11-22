@@ -112,7 +112,8 @@ const RNDProjectList: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Proyek R&D</h1>
+          <div className="fn-label mb-1.5">R&D · PROYEK</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Proyek R&D</h1>
           <p className="text-gray-500 dark:text-gray-400">Kelola proyek penelitian dan pengembangan</p>
         </div>
         <Link
@@ -125,7 +126,7 @@ const RNDProjectList: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-800">
+      <div className="fn-card p-4">
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[200px]">
             <div className="relative">
@@ -166,7 +167,7 @@ const RNDProjectList: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 overflow-hidden dark:border-gray-800">
+      <div className="fn-card overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>

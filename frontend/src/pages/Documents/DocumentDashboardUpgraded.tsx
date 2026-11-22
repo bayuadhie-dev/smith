@@ -23,9 +23,17 @@ import {
   CalendarIcon,
   EllipsisVerticalIcon,
   DocumentArrowDownIcon,
-  TableCellsIcon
+  TableCellsIcon,
+  TruckIcon,
+  WrenchScrewdriverIcon,
+  BanknotesIcon,
+  ShoppingCartIcon,
+  ClipboardDocumentListIcon,
+  Cog6ToothIcon,
+  ReceiptPercentIcon
 } from '@heroicons/react/24/outline';
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { PageHeader, KpiStrip } from '../../components/ui/PageKit';
 
 interface Document {
   id: number;
@@ -60,16 +68,32 @@ interface DashboardStats {
   recent_activity: Array<{ action: string; document: string; date: string }>;
 }
 
+const STATUS_LABEL: Record<string, string> = {
+  draft: 'Draf', generated: 'Dibuat', printed: 'Dicetak', sent: 'Dikirim', approved: 'Disetujui',
+};
+
+// Jenis yang bisa dibuat dari tombol "Buat cepat".
 const documentTypes = [
-  { value: 'surat_jalan', label: 'Surat Jalan', icon: '📦', color: 'blue' },
-  { value: 'spk', label: 'Surat Perintah Kerja', icon: '🔧', color: 'orange' },
-  { value: 'invoice', label: 'Invoice', icon: '💰', color: 'green' },
-  { value: 'purchase_order', label: 'Purchase Order', icon: '🛒', color: 'purple' },
-  { value: 'delivery_note', label: 'Delivery Note', icon: '🚚', color: 'teal' },
-  { value: 'work_order', label: 'SPK', icon: '⚙️', color: 'yellow' },
-  { value: 'quotation', label: 'Quotation', icon: '📋', color: 'indigo' },
-  { value: 'receipt', label: 'Receipt', icon: '🧾', color: 'pink' }
+  { value: 'surat_jalan', label: 'Surat Jalan', Icon: TruckIcon },
+  { value: 'spk', label: 'Surat Perintah Kerja', Icon: WrenchScrewdriverIcon },
+  { value: 'invoice', label: 'Faktur', Icon: BanknotesIcon },
+  { value: 'purchase_order', label: 'Pesanan Pembelian', Icon: ShoppingCartIcon },
+  { value: 'delivery_note', label: 'Nota Pengiriman', Icon: ClipboardDocumentListIcon },
+  { value: 'work_order', label: 'SPK Produksi', Icon: Cog6ToothIcon },
+  { value: 'quotation', label: 'Penawaran', Icon: DocumentTextIcon },
+  { value: 'receipt', label: 'Kuitansi', Icon: ReceiptPercentIcon }
 ];
+
+// Jenis lain yang hanya muncul di daftar (dibuat otomatis oleh modul lain),
+// supaya kolom Jenis tidak menampilkan nama mentah seperti "purchase_invoice".
+const extraTypes = [
+  { value: 'spk_batch', label: 'SPK Batch', Icon: Cog6ToothIcon },
+  { value: 'purchase_invoice', label: 'Faktur Pembelian', Icon: BanknotesIcon },
+  { value: 'kwitansi', label: 'Kuitansi', Icon: ReceiptPercentIcon },
+  { value: 'three_way_match', label: 'Three-way Match', Icon: ClipboardDocumentListIcon },
+];
+
+const allTypes = [...documentTypes, ...extraTypes];
 
 export default function DocumentDashboardUpgraded() {
   const navigate = useNavigate();
@@ -258,7 +282,7 @@ export default function DocumentDashboardUpgraded() {
   };
 
   const getDocumentTypeConfig = (type: string) => {
-    return documentTypes.find(t => t.value === type) || { label: type, icon: '📄', color: 'gray' };
+    return allTypes.find(t => t.value === type) || { value: type, label: type, Icon: DocumentTextIcon };
   };
 
   if (loading && documents.length === 0) {
@@ -270,118 +294,73 @@ export default function DocumentDashboardUpgraded() {
   }
 
   return (
-    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
-      {/* Header */}
-      <div className="flex items-center flex-wrap justify-between gap-3">
-        <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-3 tracking-tight leading-tight">
-            <DocumentTextIcon className="h-7 w-7 text-primary-600 dark:text-primary-400" />
-            Dokumen
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Generate, manage, and track all business documents</p>
-        </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <button
-            onClick={loadData}
-            className="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            title="Refresh"
-          >
-            <ArrowPathIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-          </button>
-          <Link
-            to="/app/documents/templates"
-            className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-700 dark:text-gray-200"
-          >
-            <DocumentDuplicateIcon className="h-5 w-5 mr-2" />
-            Templates
-          </Link>
-          <Link
-            to="/app/documents/generate"
-            className="inline-flex items-center px-4 py-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg font-medium hover:shadow-lg transition-shadow"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Generate Document
-          </Link>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="DOKUMEN · RINGKASAN"
+        title="Dokumen"
+        subtitle="Buat, kelola, dan lacak dokumen bisnis."
+        actions={
+          <>
+            <button
+              onClick={loadData}
+              className="fn-press rounded-lg border border-gray-200 p-2 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+              title="Muat ulang"
+            >
+              <ArrowPathIcon className="h-4 w-4" />
+            </button>
+            <Link
+              to="/app/documents/templates"
+              className="fn-press inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              <DocumentDuplicateIcon className="h-4 w-4" />
+              Template
+            </Link>
+            <Link
+              to="/app/documents/generate"
+              className="fn-press inline-flex items-center gap-2 rounded-lg bg-cta-600 px-4 py-2 text-sm font-medium text-white hover:bg-cta-700"
+            >
+              <PlusIcon className="h-4 w-4" />
+              Buat dokumen
+            </Link>
+          </>
+        }
+      />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-white/80">Total Documents</p>
-              <p className="text-3xl font-bold mt-1">{stats.total_documents}</p>
-            </div>
-            <div className="p-2 bg-white/20 rounded-lg">
-              <DocumentTextIcon className="h-6 w-6" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-white/80">Templates</p>
-              <p className="text-3xl font-bold mt-1">{stats.total_templates}</p>
-            </div>
-            <div className="p-2 bg-white/20 rounded-lg">
-              <DocumentDuplicateIcon className="h-6 w-6" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-white/80">Today</p>
-              <p className="text-3xl font-bold mt-1">{stats.documents_today || 0}</p>
-            </div>
-            <div className="p-2 bg-white/20 rounded-lg">
-              <CalendarIcon className="h-6 w-6" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-white/80">This Month</p>
-              <p className="text-3xl font-bold mt-1">{stats.documents_this_month || 0}</p>
-            </div>
-            <div className="p-2 bg-white/20 rounded-lg">
-              <ChartBarIcon className="h-6 w-6" />
-            </div>
-          </div>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          { label: 'Total dokumen', value: stats.total_documents },
+          { label: 'Template', value: stats.total_templates, to: '/app/documents/templates' },
+          { label: 'Hari ini', value: stats.documents_today || 0 },
+          { label: 'Bulan ini', value: stats.documents_this_month || 0 },
+        ]}
+      />
 
       {/* Quick Generate Cards */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Generate</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-          {documentTypes.map((type) => (
+      <div className="fn-card hover:shadow-lg transition-shadow duration-200 p-6">
+        <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-white">Buat cepat</h2>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-8">
+          {documentTypes.map(({ value, label, Icon }) => (
             <button
-              key={type.value}
-              onClick={() => navigate(`/app/documents/generate?type=${type.value}`)}
-              className={`p-4 rounded-xl border-2 border-gray-200 hover:border- dark:border-gray-700 ${type.color}-400 hover:bg-${type.color}-50 transition-all text-center group`}
+              key={value}
+              onClick={() => navigate(`/app/documents/generate?type=${value}`)}
+              className="fn-press rounded-xl border border-gray-200 p-4 text-center hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
             >
-              <span className="text-2xl block mb-2">{type.icon}</span>
-              <span className="text-xs font-medium text-gray-700 group-hover:text-gray-900 dark:text-white">{type.label}</span>
+              <Icon className="mx-auto mb-2 h-6 w-6 text-gray-400" />
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-200">{label}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 dark:border-gray-700 p-4">
+      <div className="fn-card hover:shadow-lg transition-shadow duration-200 p-4">
         <div className="flex flex-col lg:flex-row lg:items-center gap-4">
           {/* Search */}
           <div className="relative flex-1">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by document number, title, reference..."
+              placeholder="Cari nomor dokumen, judul, atau acuan..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -394,10 +373,10 @@ export default function DocumentDashboardUpgraded() {
             onChange={(e) => setTypeFilter(e.target.value)}
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="">All Types</option>
+            <option value="">Semua jenis</option>
             {documentTypes.map(type => (
               <option key={type.value} value={type.value}>
-                {type.icon} {type.label}
+                {type.label}
               </option>
             ))}
           </select>
@@ -408,12 +387,12 @@ export default function DocumentDashboardUpgraded() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="">All Status</option>
-            <option value="draft">Draft</option>
-            <option value="generated">Generated</option>
-            <option value="printed">Printed</option>
-            <option value="sent">Sent</option>
-            <option value="approved">Approved</option>
+            <option value="">Semua status</option>
+            <option value="draft">Draf</option>
+            <option value="generated">Dibuat</option>
+            <option value="printed">Dicetak</option>
+            <option value="sent">Dikirim</option>
+            <option value="approved">Disetujui</option>
           </select>
 
           {/* Date Filter */}
@@ -422,11 +401,11 @@ export default function DocumentDashboardUpgraded() {
             onChange={(e) => setDateFilter(e.target.value)}
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="">All Time</option>
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="year">This Year</option>
+            <option value="">Semua waktu</option>
+            <option value="today">Hari ini</option>
+            <option value="week">Minggu ini</option>
+            <option value="month">Bulan ini</option>
+            <option value="year">Tahun ini</option>
           </select>
 
           {/* View Toggle */}
@@ -469,7 +448,7 @@ export default function DocumentDashboardUpgraded() {
 
       {/* Documents Table View */}
       {viewMode === 'table' && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="fn-card hover:shadow-lg transition-shadow duration-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
@@ -487,13 +466,13 @@ export default function DocumentDashboardUpgraded() {
                       className="rounded border-gray-300 dark:border-gray-600"
                     />
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Document</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Reference</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dokumen</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jenis</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Acuan</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Prints</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Cetak</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -540,8 +519,8 @@ export default function DocumentDashboardUpgraded() {
                           </div>
                         </td>
                         <td className="px-4 py-4">
-                          <span className="inline-flex items-center gap-1 text-sm">
-                            <span>{typeConfig.icon}</span>
+                          <span className="inline-flex items-center gap-1.5 text-sm">
+                            <typeConfig.Icon className="h-4 w-4 text-gray-400" />
                             {typeConfig.label}
                           </span>
                         </td>
@@ -554,7 +533,7 @@ export default function DocumentDashboardUpgraded() {
                         <td className="px-4 py-4">
                           <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusConfig.bgColor} ${statusConfig.color}`}>
                             <StatusIcon className="h-3.5 w-3.5" />
-                            {doc.status}
+                            {STATUS_LABEL[doc.status] || doc.status}
                           </span>
                         </td>
                         <td className="px-4 py-4">
@@ -641,7 +620,7 @@ export default function DocumentDashboardUpgraded() {
       {viewMode === 'grid' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredDocuments.length === 0 ? (
-            <div className="col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <div className="fn-card col-span-full text-center py-12">
               <DocumentTextIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
               <p className="text-gray-500 dark:text-gray-400">No documents found</p>
             </div>
@@ -654,13 +633,13 @@ export default function DocumentDashboardUpgraded() {
               return (
                 <div
                   key={doc.id}
-                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 dark:border-gray-700 p-5 hover:shadow-md transition-shadow"
+                  className="fn-card hover:shadow-lg transition-shadow duration-200 p-5 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <span className="text-3xl">{typeConfig.icon}</span>
+                    <typeConfig.Icon className="h-7 w-7 text-gray-400" />
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${statusConfig.bgColor} ${statusConfig.color}`}>
                       <StatusIcon className="h-3 w-3" />
-                      {doc.status}
+                      {STATUS_LABEL[doc.status] || doc.status}
                     </span>
                   </div>
                   

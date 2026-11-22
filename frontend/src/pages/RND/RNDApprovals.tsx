@@ -104,13 +104,14 @@ const RNDApprovals: React.FC = () => {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Approval</h1>
+        <div className="fn-label mb-1.5">R&D · PERSETUJUAN</div>
+        <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Approval</h1>
         <p className="text-gray-500 dark:text-gray-400">Permintaan persetujuan tahap proyek R&D</p>
       </div>
 
       {/* Approvals List */}
       {approvals.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 border border-gray-100 text-center dark:border-gray-800">
+        <div className="fn-card p-12 text-center">
           <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Tidak ada permintaan pending</h3>
           <p className="text-gray-500 dark:text-gray-400">Semua permintaan approval telah diproses</p>
@@ -120,7 +121,7 @@ const RNDApprovals: React.FC = () => {
           {approvals.map((approval) => (
             <div
               key={approval.id}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-800"
+              className="fn-card p-6"
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1">

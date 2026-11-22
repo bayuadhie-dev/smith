@@ -220,8 +220,9 @@ const RNDProjectDetail: React.FC = () => {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
+            <div className="fn-label mb-1.5">R&D · RINCIAN PROYEK</div>
             <div className="flex items-center gap-2">
-              <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{project.project_number}</h1>
+              <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">{project.project_number}</h1>
               {project.is_locked && (
                 <span title="Proyek terkunci"><Lock className="w-5 h-5 text-gray-500 dark:text-gray-400" /></span>
               )}
@@ -262,7 +263,7 @@ const RNDProjectDetail: React.FC = () => {
       </div>
 
       {/* Stage Progress */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-800">
+      <div className="fn-card p-6">
         <h2 className="text-lg font-semibold mb-4">Progress Tahap</h2>
         <div className="flex items-center justify-between">
           {['LAB_SCALE', 'PILOT_SCALE', 'VALIDATION', 'COMPLETION'].map((stage, index) => (
@@ -326,7 +327,7 @@ const RNDProjectDetail: React.FC = () => {
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Project Info */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-800">
+          <div className="fn-card p-6">
             <h3 className="text-lg font-semibold mb-4">Informasi Proyek</h3>
             <dl className="space-y-3">
               <div className="flex justify-between">
@@ -367,7 +368,7 @@ const RNDProjectDetail: React.FC = () => {
           </div>
 
           {/* Selected Formula */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-800">
+          <div className="fn-card p-6">
             <h3 className="text-lg font-semibold mb-4">Formula Terpilih</h3>
             {project.selected_formula ? (
               <div className="p-4 bg-green-50 border border-green-200 rounded-lg dark:bg-green-900/20 dark:border-green-800">
@@ -413,7 +414,7 @@ const RNDProjectDetail: React.FC = () => {
           )}
 
           {project.formulas.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 border border-gray-100 text-center dark:border-gray-800">
+            <div className="fn-card p-8 text-center">
               <FlaskConical className="w-12 h-12 text-gray-300 mx-auto mb-2" />
               <p className="text-gray-500 dark:text-gray-400">Belum ada formula</p>
             </div>
@@ -521,7 +522,7 @@ const RNDProjectDetail: React.FC = () => {
       )}
 
       {activeTab === 'experiments' && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-800">
+        <div className="fn-card p-6">
           <p className="text-gray-500 dark:text-gray-400 text-center py-8">
             Pilih formula untuk melihat eksperimen
           </p>

@@ -56,6 +56,11 @@ const SEGMENT_WORDS: Record<string, string> = {
   'checklist-ng': 'Temuan NG', assets: 'Aset', depreciation: 'Penyusutan',
   'functional-locations': 'Lokasi Fungsional', products: 'Produk',
   categories: 'Kategori', lifecycle: 'Daur Hidup', list: 'Daftar',
+  rnd: 'R&D', projects: 'Proyek', approvals: 'Persetujuan',
+  documents: 'Dokumen', templates: 'Template', generate: 'Buat Dokumen',
+  manual: 'Panduan', faq: 'Tanya Jawab', approval: 'Persetujuan',
+  waste: 'Susut', materials: 'Bahan', notifications: 'Notifikasi',
+  profile: 'Profil', search: 'Pencarian', ews: 'Peringatan Dini',
 }
 
 // Fallback tab title when nothing was clicked (e.g. a deep link): "penerimaan-penjualan" -> "Penerimaan Penjualan".

@@ -301,7 +301,7 @@ const ManualAdmin: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="space-y-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center flex-wrap justify-between mb-6 gap-3">
@@ -313,7 +313,8 @@ const ManualAdmin: React.FC = () => {
               <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
             </button>
             <div>
-              <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">
+              <div className="fn-label mb-1.5">BANTUAN · KELOLA PANDUAN</div>
+              <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">
                 Kelola Manual
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
@@ -333,7 +334,7 @@ const ManualAdmin: React.FC = () => {
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+            <div className="fn-card p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
                   <FolderIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -344,7 +345,7 @@ const ManualAdmin: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+            <div className="fn-card p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
                   <DocumentTextIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -355,7 +356,7 @@ const ManualAdmin: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+            <div className="fn-card p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
                   <QuestionMarkCircleIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
@@ -366,7 +367,7 @@ const ManualAdmin: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+            <div className="fn-card p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
                   <ChartBarIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
@@ -383,7 +384,7 @@ const ManualAdmin: React.FC = () => {
         )}
 
         {/* Tabs */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow mb-6">
+        <div className="fn-card mb-6">
           <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="flex -mb-px">
               {[
@@ -612,7 +613,7 @@ const ManualAdmin: React.FC = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen p-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setModalType(null)}></div>
-            <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="fn-card relative shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {editingItem ? 'Edit Kategori' : 'Tambah Kategori'}
@@ -687,7 +688,7 @@ const ManualAdmin: React.FC = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen p-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setModalType(null)}></div>
-            <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="fn-card relative shadow-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {editingItem ? 'Edit Artikel' : 'Tambah Artikel'}
@@ -786,7 +787,7 @@ const ManualAdmin: React.FC = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen p-4">
             <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setModalType(null)}></div>
-            <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="fn-card relative shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {editingItem ? 'Edit FAQ' : 'Tambah FAQ'}

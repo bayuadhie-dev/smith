@@ -46,7 +46,8 @@ export default function WasteRecordList() {
     <div className="p-6 space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Manajemen Limbah</h1>
+          <div className="fn-label mb-1.5">PRODUKSI · DAFTAR SUSUT</div>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Manajemen Limbah</h1>
           <p className="text-gray-600 dark:text-gray-300">Catat dan kelola pembuangan limbah produksi</p>
         </div>
         <Link to="/app/waste/new" className="btn-primary">

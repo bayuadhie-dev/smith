@@ -333,7 +333,7 @@ const DocumentListTab = () => {
       {/* Create Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+          <div className="fn-card p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Tambah Dokumen Baru</h3>
             <div className="space-y-3">
               <div>
@@ -421,7 +421,7 @@ const DocumentListTab = () => {
       {selectedDoc && <DocumentDetailModal docId={selectedDoc} onClose={() => { setSelectedDoc(null); loadDocs(); }} />}
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
+      <div className="fn-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-900 border-b">
@@ -615,7 +615,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="fn-card shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white dark:bg-gray-800 border-b px-6 py-4 flex items-center justify-between z-10">
           <div>
             <h3 className="text-lg font-semibold">{doc.document_number}</h3>
@@ -846,7 +846,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
         {/* Revision Form Modal */}
         {showRevisionForm && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[85vh] overflow-y-auto">
+            <div className="fn-card p-6 w-full max-w-lg shadow-xl max-h-[85vh] overflow-y-auto">
               <h3 className="text-lg font-semibold mb-1">Buat Revisi Baru</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Revisi baru berdasarkan Change Notice yang telah disetujui</p>
 
@@ -943,7 +943,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
         {/* Password Signing Dialog */}
         {passwordDialog && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="fn-card p-6 w-full max-w-sm shadow-xl max-h-[90vh] overflow-y-auto">
               <div className="text-center mb-4">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 dark:bg-blue-900/30">
                   <Edit className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -981,7 +981,7 @@ const DocumentDetailModal = ({ docId, onClose }: { docId: number; onClose: () =>
         {/* Distribution Form Modal */}
         {showDistForm && (
           <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[60] p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="fn-card p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
               <h3 className="text-lg font-semibold mb-3">Distribusi Dokumen ke Departemen</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Pilih departemen penerima salinan terkendali (Controlled Copy)</p>
               <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -1097,7 +1097,7 @@ const CapaTab = () => {
       {/* Create CAPA Form */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+          <div className="fn-card p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Buat CAPA Baru</h3>
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1167,7 +1167,7 @@ const CapaTab = () => {
       {selectedCapa && <CapaDetailModal capaId={selectedCapa} onClose={() => { setSelectedCapa(null); loadCapas(); }} />}
 
       {/* List */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
+      <div className="fn-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-900 border-b">
@@ -1267,7 +1267,7 @@ const CapaDetailModal = ({ capaId, onClose }: { capaId: number; onClose: () => v
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+      <div className="fn-card shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white dark:bg-gray-800 border-b px-6 py-4 flex items-center justify-between z-10">
           <div>
             <div className="flex items-center gap-3">
@@ -1504,7 +1504,7 @@ const MemoTab = () => {
 
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+          <div className="fn-card p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Buat Memo Internal Baru</h3>
             <div className="space-y-3">
               <div>
@@ -1537,7 +1537,7 @@ const MemoTab = () => {
         {loading ? <div className="space-y-3 py-4" role="status" aria-label="Memuat data">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-16 w-full" />)}</div> :
           memos.length === 0 ? <p className="text-center py-8 text-gray-400">Belum ada memo</p> :
             memos.map(m => (
-              <div key={m.id} className="bg-white dark:bg-gray-800 rounded-xl border p-4 hover:shadow-sm transition-shadow">
+              <div key={m.id} className="fn-card p-4 hover:shadow-sm transition-shadow">
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">
@@ -1565,7 +1565,7 @@ const MemoTab = () => {
       {/* Publish Memo Dialog */}
       {publishMemoId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
+          <div className="fn-card p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-2">Publish Memo</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Pilih departemen tujuan distribusi memo</p>
             <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -1646,7 +1646,7 @@ const DestructionTab = () => {
 
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+          <div className="fn-card p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Berita Acara Pemusnahan Dokumen</h3>
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1706,7 +1706,7 @@ const DestructionTab = () => {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
+      <div className="fn-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-900 border-b">
@@ -1804,7 +1804,7 @@ const QualityRecordsTab = () => {
 
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+          <div className="fn-card p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Tambah Rekaman Mutu</h3>
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1853,7 +1853,7 @@ const QualityRecordsTab = () => {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
+      <div className="fn-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-900 border-b">
@@ -1960,7 +1960,7 @@ const ChangeNoticeTab = () => {
       {/* Create Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+          <div className="fn-card p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Ajukan Perubahan Dokumen</h3>
             <div className="space-y-3">
               <div>
@@ -2001,7 +2001,7 @@ const ChangeNoticeTab = () => {
 
       {/* Notices list */}
       {selectedDocId && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
+        <div className="fn-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 dark:bg-gray-900 border-b">
@@ -2114,7 +2114,7 @@ const DocumentReviewTab = () => {
       {/* Create Review Form */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+          <div className="fn-card p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Form Kaji Ulang Dokumen</h3>
             <div className="space-y-3">
               <div>
@@ -2162,7 +2162,7 @@ const DocumentReviewTab = () => {
 
       {/* Review history */}
       {selectedDocId && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
+        <div className="fn-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 dark:bg-gray-900 border-b">
@@ -2249,7 +2249,8 @@ const DocumentControlCenter = () => {
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Document Control Center</h1>
+        <div className="fn-label mb-1.5">DOKUMEN · PUSAT KENDALI</div>
+        <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Document Control Center</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Centralized DCC</p>
       </div>
 
@@ -2292,7 +2293,7 @@ const DocumentControlCenter = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {stats.recent_capa?.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
+              <div className="fn-card p-4">
                 <h3 className="font-semibold mb-3">CAPA Terbaru</h3>
                 <div className="space-y-2">
                   {stats.recent_capa.map((c: any) => (
@@ -2310,7 +2311,7 @@ const DocumentControlCenter = () => {
             )}
 
             {expiringDocs.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl border p-4 border-yellow-200 dark:border-yellow-800">
+              <div className="fn-card p-4 border-yellow-200 dark:border-yellow-800">
                 <h3 className="font-semibold mb-3 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" /> Dokumen Mendekati Expired
                 </h3>

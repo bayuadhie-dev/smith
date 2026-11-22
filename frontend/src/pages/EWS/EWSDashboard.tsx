@@ -10,6 +10,7 @@ import { format, subDays } from 'date-fns'
 import NumberInput from '../../components/ui/NumberInput'
 import { DetailSkeleton, Skeleton } from '../../components/ui/Skeleton'
 import { useUrlFilter } from '../../hooks/useUrlState'
+import { PageHeader, KpiStrip } from '../../components/ui/PageKit'
 
 export default function EWSDashboard() {
   const { t } = useLanguage()
@@ -58,53 +59,33 @@ export default function EWSDashboard() {
   // #13 of 17). Filters/table/modal below are intentionally left as-is -
   // only the summary row is in scope for the bento treatment.
   return (
-    <div className="space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">
-          Early Warning System — Risiko Downtime
-        </h1>
-        <select
-          className="input"
-          value={periodDays}
-          onChange={(e) => setPeriodDays(Number(e.target.value))}
-        >
-          <option value={7}>7 hari terakhir</option>
-          <option value={30}>30 hari terakhir</option>
-          <option value={90}>90 hari terakhir</option>
-          <option value={365}>1 tahun terakhir</option>
-        </select>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="PERINGATAN DINI"
+        title="Risiko Downtime Mesin"
+        subtitle="Skor risiko harian dari model peringatan dini."
+        actions={
+          <select
+            className="input"
+            value={periodDays}
+            onChange={(e) => setPeriodDays(Number(e.target.value))}
+          >
+            <option value={7}>7 hari terakhir</option>
+            <option value={30}>30 hari terakhir</option>
+            <option value={90}>90 hari terakhir</option>
+            <option value={365}>1 tahun terakhir</option>
+          </select>
+        }
+      />
 
-      {/* Summary cards - bento: Total Discore spans 2 cols (primary metric) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-4 text-white shadow-lg">
-          <p className="text-sm opacity-90">Total Discore ({periodDays} hari)</p>
-          <p className="mt-1 text-3xl font-bold">
-            {summaryLoading ? '...' : summaryData?.total_scored ?? 0}
-          </p>
-        </div>
-        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white shadow-lg">
-          <p className="text-xs opacity-90">Status BAHAYA</p>
-          <p className="mt-1 text-2xl font-bold">
-            {summaryLoading ? '...' : summaryData?.bahaya ?? 0}
-          </p>
-        </div>
-        <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl p-4 text-white shadow-lg">
-          <p className="text-xs opacity-90">Status AMAN</p>
-          <p className="mt-1 text-2xl font-bold">
-            {summaryLoading ? '...' : summaryData?.aman ?? 0}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-cta-500 to-cta-700 rounded-xl p-4 text-white shadow-lg">
-          <p className="text-xs opacity-90">Rasio Bahaya</p>
-          <p className="mt-1 text-2xl font-bold">
-            {summaryLoading ? '...' : `${summaryData?.bahaya_rate ?? 0}%`}
-          </p>
-        </div>
-      </div>
+      <KpiStrip
+        items={[
+          { label: `Total discore (${periodDays} hari)`, value: summaryLoading ? '...' : summaryData?.total_scored ?? 0 },
+          { label: 'Status bahaya', value: summaryLoading ? '...' : summaryData?.bahaya ?? 0, tone: (summaryData?.bahaya ?? 0) > 0 ? 'bad' : null },
+          { label: 'Status aman', value: summaryLoading ? '...' : summaryData?.aman ?? 0, tone: 'good' },
+          { label: 'Rasio bahaya', value: summaryLoading ? '...' : `${summaryData?.bahaya_rate ?? 0}%` },
+        ]}
+      />
 
       {/* Per-machine breakdown */}
       {summaryData?.per_machine && summaryData.per_machine.length > 0 && (

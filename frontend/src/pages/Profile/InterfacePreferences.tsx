@@ -14,7 +14,7 @@ export default function InterfacePreferences() {
   }
 
   return (
-    <div className="rounded-xl bg-white p-6 shadow-lg dark:bg-gray-800">
+    <div className="fn-card p-6">
       <h2 className="mb-4 flex items-center text-lg font-semibold text-gray-900 dark:text-white">
         <SparklesIcon className="mr-2 h-5 w-5 text-primary-600 dark:text-primary-400" />
         Tampilan

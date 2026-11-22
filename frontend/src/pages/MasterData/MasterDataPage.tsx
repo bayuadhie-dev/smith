@@ -21,7 +21,8 @@ export default function MasterDataPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Master Data</h1>
+        <div className="fn-label mb-1.5">MASTER DATA</div>
+        <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Master Data</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Pusat data master yang dipakai lintas modul — barang dan akun perkiraan.
         </p>
