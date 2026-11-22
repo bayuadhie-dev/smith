@@ -38,14 +38,17 @@ def send_test_email():
         email_service = get_email_service()
         
         if not email_service.is_configured():
-            return jsonify({'error': 'Email service not configured. Set RESEND_API_KEY in .env'}), 503
+            return jsonify({'error': 'Layanan email belum diatur di berkas .env'}), 503
         
+        # Semua templat email lain sudah berbahasa Indonesia; hanya email uji
+        # ini yang tertinggal dalam bahasa Inggris (2026-11-22).
         result = email_service.send_custom_notification(
             to=user.email,
-            subject='Test Email - ERP System',
-            title='🧪 Test Email',
-            message='This is a test email from your ERP system. If you received this, email notifications are working correctly!',
-            button_text='Go to Dashboard',
+            subject=f'Email uji - {email_service.company_name}',
+            title='Email uji',
+            message=('Email ini dikirim dari ERP untuk menguji pengiriman. '
+                     'Kalau email ini sampai, pengiriman email sudah berjalan normal.'),
+            button_text='Buka dashboard',
             button_url=email_service.app_url + '/app/dashboard',
             box_type='success'
         )
@@ -54,7 +57,7 @@ def send_test_email():
             return jsonify({'error': result['error']}), 500
         
         return jsonify({
-            'message': f'Test email sent to {user.email}',
+            'message': f'Email uji dikirim ke {user.email}',
             'email_id': result.get('id')
         }), 200
         
