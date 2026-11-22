@@ -92,9 +92,14 @@ export default function WarehouseDashboardEnhanced() {
             value={summary.total_value || 0}
             format={formatRupiah}
             loading={dashboardLoading}
-            note="Jumlah stok dikalikan harga di master barang."
+            note={
+              (summary.total_value || 0) === 0 && (summary.total_quantity || 0) > 0
+                ? 'Harga di master barang masih kosong, jadi nilainya belum bisa dihitung - padahal stoknya ada.'
+                : 'Jumlah stok dikalikan harga di master barang.'
+            }
             stats={[
-              { label: 'Total produk', value: (summary.total_products || 0).toLocaleString('id-ID') },
+              { label: 'Jumlah stok', value: Math.round(summary.total_quantity || 0).toLocaleString('id-ID') },
+              { label: 'Baris stok', value: (summary.total_items || 0).toLocaleString('id-ID') },
               {
                 label: 'Pemakaian lokasi',
                 // null = tidak ada lokasi yang dibatasi kapasitasnya
@@ -102,7 +107,6 @@ export default function WarehouseDashboardEnhanced() {
                   ? 'belum diukur'
                   : `${summary.location_utilization}%`,
               },
-              { label: 'Total lokasi', value: (summary.total_locations || locations.length || 0).toLocaleString('id-ID') },
             ]}
             right={
               <div className="pt-1">

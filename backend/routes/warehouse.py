@@ -1653,7 +1653,10 @@ def get_warehouse_dashboard():
                 Inventory.is_active == True  # noqa: E712
             ).group_by(Material.id, Material.code, Material.name)
             gabungan = list(q_produk.all()) + list(q_material.all())
-            gabungan.sort(key=lambda r: float(r.nilai or 0), reverse=True)
+            # Kalau harga di master masih kosong, semua nilainya nol dan
+            # urutan "paling bernilai" jadi acak - jatuh ke jumlah stok.
+            ada_nilai = any(float(r.nilai or 0) > 0 for r in gabungan)
+            gabungan.sort(key=lambda r: float(r.nilai or 0) if ada_nilai else float(r.qty or 0), reverse=True)
             barang_teratas = [{
                 'id': r.id, 'code': r.code, 'name': r.name,
                 'quantity': float(r.qty or 0),
