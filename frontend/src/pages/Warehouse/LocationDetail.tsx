@@ -229,9 +229,10 @@ const LocationDetail: React.FC = () => {
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{location.location_code}</h1>
-            <p className="text-gray-600 dark:text-gray-300">
-              Zone: {location.zone_code} - {location.zone_name}
+            <div className="fn-label mb-1.5">GUDANG · LOKASI</div>
+            <h1 className="fn-num text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">{location.location_code}</h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {location.zone_name}{location.zone_code ? ` · ${location.zone_code}` : ''}
             </p>
           </div>
         </div>

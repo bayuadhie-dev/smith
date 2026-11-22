@@ -1,16 +1,9 @@
 import React, { useState } from 'react'
 import { useGetWarehouseAnalyticsQuery } from '../../services/api'
 import { useLanguage } from '../../contexts/LanguageContext';
-import {
-  ArrowTrendingDownIcon,
-  ArrowTrendingUpIcon,
-  ChartBarIcon,
-  ClockIcon,
-  CubeIcon
-} from '@heroicons/react/24/outline';
-import {
-  AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
-} from 'recharts';
+import { KpiStrip, PageHeader, Panel, Segmented, StatusPill } from '../../components/ui/PageKit'
+import RunChart from '../../components/charts/RunChart'
+import { formatRupiah } from '../../utils/currencyUtils'
 import { useUrlFilter } from '../../hooks/useUrlState'
 export default function WarehouseAnalytics() {
     const { t } = useLanguage();
@@ -26,303 +19,145 @@ const [period, setPeriod] = useUrlFilter<string>('periode', 'monthly')
   const analytics = analyticsData?.analytics || []
   const summary = analyticsData?.summary || {}
 
-  const getTrendIcon = (trend: string) => {
-    if (trend === 'improving') {
-      return <ArrowTrendingUpIcon className="h-5 w-5 text-green-500" />
-    } else if (trend === 'declining') {
-      return <ArrowTrendingDownIcon className="h-5 w-5 text-red-500" />
-    }
-    return <div className="h-5 w-5 bg-gray-300 rounded-full dark:bg-gray-600"></div>
-  }
-
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-primary-600"></div>
       </div>
     )
   }
 
+  const sumbu = analytics.length
+    ? [analytics[0].date, analytics[Math.floor(analytics.length / 2)]?.date, analytics[analytics.length - 1].date]
+        .filter(Boolean)
+        .map((d: string) => String(d).slice(5))
+    : []
+
+  const deret = (kunci: string) => analytics.map((a: any) => Number(a[kunci] || 0))
+
+  const diagram: { judul: string; kunci: string; satuan: string }[] = [
+    { judul: 'Perputaran persediaan', kunci: 'inventory_turnover', satuan: 'kali' },
+    { judul: 'Pemakaian kapasitas', kunci: 'storage_utilization', satuan: '%' },
+    { judul: 'Nilai persediaan', kunci: 'total_value', satuan: 'rupiah' },
+    { judul: 'Jumlah barang', kunci: 'total_products', satuan: 'barang' },
+    { judul: 'Kejadian stok habis', kunci: 'stockout_incidents', satuan: 'kejadian' },
+    { judul: 'Barang kedaluwarsa', kunci: 'expired_products', satuan: 'barang' },
+  ]
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center flex-wrap justify-between gap-3">
-        <div>
-          <div className="fn-label mb-1.5">GUDANG · ANALITIK</div>
-          <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-gray-900 dark:text-white">Analitik Gudang</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Pola pergerakan stok dan ukuran kinerja gudang</p>
-        </div>
-        <div className="flex space-x-4">
-          <select
+    <div className="mx-auto max-w-6xl space-y-5 pb-10">
+      <PageHeader
+        eyebrow="GUDANG · ANALITIK"
+        title="Analitik Gudang"
+        subtitle="Pola pergerakan stok dan ukuran kinerja gudang"
+        actions={
+          <Segmented
             value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-          </select>
-        </div>
-      </div>
+            onChange={setPeriod}
+            options={[
+              { value: 'daily', label: 'Harian' },
+              { value: 'weekly', label: 'Mingguan' },
+              { value: 'monthly', label: 'Bulanan' },
+            ]}
+          />
+        }
+      />
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Inventory Turnover</p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {summary.current_turnover ? `${summary.current_turnover}x` : 'No Data'}
-              </p>
-            </div>
-            {getTrendIcon('improving')}
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Current period</p>
-        </div>
+      <KpiStrip
+        items={[
+          {
+            label: 'Perputaran persediaan',
+            value: summary.current_turnover ? `${summary.current_turnover}x` : 'belum ada data',
+            hint: 'periode berjalan',
+          },
+          {
+            label: 'Pemakaian kapasitas',
+            value: summary.current_utilization ? `${summary.current_utilization}%` : 'belum ada data',
+            hint: `rata-rata ${summary.avg_utilization?.toFixed(1) || 0}%`,
+          },
+          {
+            label: 'Persediaan cukup untuk',
+            value: summary.current_days_supply ? `${summary.current_days_supply} hari` : 'belum ada data',
+            hint: 'pada laju pemakaian sekarang',
+          },
+          {
+            label: 'Kejadian stok habis',
+            value: summary.total_stockouts || 0,
+            tone: (summary.total_stockouts || 0) > 0 ? 'bad' : null,
+            hint: 'pada periode ini',
+          },
+        ]}
+      />
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Storage Utilization</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {summary.current_utilization ? `${summary.current_utilization}%` : 'No Data'}
-              </p>
-            </div>
-            <CubeIcon className="h-8 w-8 text-green-500" />
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Average: {summary.avg_utilization?.toFixed(1) || 0}%</p>
+      {analytics.length === 0 ? (
+        <Panel title="Grafik">
+          <p className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+            Belum ada data analitik. Angka muncul setelah ada pergerakan gudang yang tercatat.
+          </p>
+        </Panel>
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {diagram.map((d) => (
+            <Panel key={d.kunci} title={d.judul}>
+              <div className="px-4 pb-3 pt-1">
+                <RunChart values={deret(d.kunci)} axis={sumbu} height={170} unit={d.satuan} />
+              </div>
+            </Panel>
+          ))}
         </div>
+      )}
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Days of Supply</p>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                {summary.current_days_supply ? `${summary.current_days_supply}` : 'No Data'}
-              </p>
-            </div>
-            <ClockIcon className="h-8 w-8 text-purple-500" />
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Current inventory level</p>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Stockout Incidents</p>
-              <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                {summary.total_stockouts || 0}
-              </p>
-            </div>
-            {getTrendIcon('declining')}
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">This period</p>
-        </div>
-      </div>
-
-      {/* Charts Row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Inventory Turnover Trend */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Inventory Turnover Trend</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={analytics}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip formatter={(value: number) => [`${value}x`, 'Turnover']} />
-                <Area 
-                  type="monotone" 
-                  dataKey="inventory_turnover" 
-                  stroke="#3B82F6" 
-                  fill="#3B82F6" 
-                  fillOpacity={0.2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Storage Utilization */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Storage Utilization</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={analytics}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
-                <Tooltip formatter={(value: number) => [`${value}%`, 'Utilization']} />
-                <Line 
-                  type="monotone" 
-                  dataKey="storage_utilization" 
-                  stroke="#10B981" 
-                  strokeWidth={2}
-                  dot={{ fill: '#10B981' }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Charts Row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Inventory Value Trend */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Inventory Value Trend</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={analytics}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis tickFormatter={(value) => `$${(value/1000).toFixed(0)}K`} />
-                <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Value']} />
-                <Area 
-                  type="monotone" 
-                  dataKey="total_value" 
-                  stroke="#8B5CF6" 
-                  fill="#8B5CF6" 
-                  fillOpacity={0.2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Product Count Trend */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Product Count Trend</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analytics}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="total_products" fill="#F59E0B" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Performance Issues */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Stockout Analysis */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Stockout Incidents</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analytics}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="stockout_incidents" fill="#EF4444" name="Stockouts" />
-                <Bar dataKey="overstock_incidents" fill="#F59E0B" name="Overstocks" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Expired Products */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Expired Products</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={analytics}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip formatter={(value: number) => [value, t('navigation.products')]} />
-                <Area 
-                  type="monotone" 
-                  dataKey="expired_products" 
-                  stroke="#DC2626" 
-                  fill="#DC2626" 
-                  fillOpacity={0.2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Detailed Metrics Table */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Detailed Analytics</h3>
+      <Panel title="Rincian per periode">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.date')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('navigation.products')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Total Value
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Days Supply
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                </th>
+          <table className="min-w-full">
+            <thead>
+              <tr className="border-b border-gray-200/70 dark:border-gray-700/70">
+                <th className="fn-label px-4 py-2.5 text-left">Tanggal</th>
+                <th className="fn-label px-4 py-2.5 text-right">Barang</th>
+                <th className="fn-label px-4 py-2.5 text-right">Nilai</th>
+                <th className="fn-label px-4 py-2.5 text-right">Perputaran</th>
+                <th className="fn-label px-4 py-2.5 text-right">Kapasitas</th>
+                <th className="fn-label px-4 py-2.5 text-right">Cukup untuk</th>
+                <th className="fn-label px-4 py-2.5 text-left">Catatan</th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="divide-y divide-gray-200/70 dark:divide-gray-700/70">
               {analytics.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                    <ChartBarIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p>No analytics data available</p>
-                    <p className="text-sm">Data will appear here once warehouse operations are recorded</p>
+                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                    Belum ada data.
                   </td>
                 </tr>
               ) : (
-                analytics.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                      {item.date}
+                analytics.map((item: any, index: number) => (
+                  <tr key={index}>
+                    <td className="fn-num px-4 py-2.5 text-sm text-gray-900 dark:text-white">{item.date}</td>
+                    <td className="fn-num px-4 py-2.5 text-right text-sm text-gray-900 dark:text-white">
+                      {(item.total_products || 0).toLocaleString('id-ID')}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {item.total_products || 0}
+                    {/* Rupiah, bukan dolar. */}
+                    <td className="fn-num px-4 py-2.5 text-right text-sm text-gray-900 dark:text-white">
+                      {formatRupiah(item.total_value || 0)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      ${(item.total_value || 0).toLocaleString()}
+                    <td className={`fn-num px-4 py-2.5 text-right text-sm font-medium ${item.inventory_turnover >= 4 ? 'text-emerald-700 dark:text-emerald-400' : item.inventory_turnover >= 2 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}`}>
+                      {item.inventory_turnover || 0}x
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      <span className={`font-medium ${item.inventory_turnover >= 4 ? 'text-green-600 dark:text-green-400' : item.inventory_turnover >= 2 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {item.inventory_turnover || 0}x
-                      </span>
+                    <td className={`fn-num px-4 py-2.5 text-right text-sm font-medium ${item.storage_utilization >= 80 ? 'text-red-600 dark:text-red-400' : item.storage_utilization >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
+                      {item.storage_utilization || 0}%
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      <span className={`font-medium ${item.storage_utilization >= 80 ? 'text-red-600 dark:text-red-400' : item.storage_utilization >= 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'}`}>
-                        {item.storage_utilization || 0}%
-                      </span>
+                    <td className="fn-num px-4 py-2.5 text-right text-sm text-gray-900 dark:text-white">
+                      {item.days_of_supply || 0} hari
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {item.days_of_supply || 0} days
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      <div className="flex space-x-2">
+                    <td className="px-4 py-2.5">
+                      <div className="flex flex-wrap gap-1.5">
                         {item.stockout_incidents > 0 && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
-                            {item.stockout_incidents} stockouts
-                          </span>
+                          <StatusPill tone="bad">{item.stockout_incidents} kali habis</StatusPill>
                         )}
                         {item.overstock_incidents > 0 && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
-                            {item.overstock_incidents} overstocks
-                          </span>
+                          <StatusPill tone="warn">{item.overstock_incidents} kali menumpuk</StatusPill>
                         )}
                         {item.expired_products > 0 && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300">
-                            {item.expired_products} expired
-                          </span>
+                          <StatusPill tone="warn">{item.expired_products} kedaluwarsa</StatusPill>
                         )}
                       </div>
                     </td>
@@ -332,7 +167,7 @@ const [period, setPeriod] = useUrlFilter<string>('periode', 'monthly')
             </tbody>
           </table>
         </div>
-      </div>
+      </Panel>
     </div>
   )
 }

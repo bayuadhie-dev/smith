@@ -23,7 +23,7 @@ export default function ZoneStockPage() {
   const n = (v: number) => v.toLocaleString('id-ID', { maximumFractionDigits: 4 })
   return (
     <div className="space-y-4 p-6">
-      <PageHeader title={d.zone.name} subtitle={`${d.zone.code} · ${d.items.length} jenis barang · ${d.locations.length} lokasi`} />
+      <PageHeader eyebrow="GUDANG · ISI GUDANG" title={d.zone.name} subtitle={`${d.zone.code} · ${d.items.length} jenis barang · ${d.locations.length} lokasi`} />
       <Panel title="Lokasi stok">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
