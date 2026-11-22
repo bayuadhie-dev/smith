@@ -513,11 +513,21 @@ def get_wip_dashboard():
                 'rejection_rate': rejection_rate
             })
         
-        # Cost Breakdown
-        cost_breakdown = db.session.query(
+        # Rincian biaya. Dulu seluruh entri ikut dijumlahkan tanpa melihat
+        # rentang tanggal yang dipilih, sehingga angkanya tidak nyambung
+        # dengan total WIP di sebelahnya - total ikut rentang, rinciannya
+        # tidak.
+        cost_query = db.session.query(
             JobCostEntry.cost_type,
             func.sum(JobCostEntry.total_cost).label('total_cost')
-        ).filter(JobCostEntry.status == 'active').group_by(JobCostEntry.cost_type).all()
+        ).filter(JobCostEntry.status == 'active')
+
+        if date_from_dt:
+            cost_query = cost_query.filter(JobCostEntry.cost_date >= date_from_dt)
+        if date_to_dt:
+            cost_query = cost_query.filter(JobCostEntry.cost_date < date_to_dt + timedelta(days=1))
+
+        cost_breakdown = cost_query.group_by(JobCostEntry.cost_type).all()
         
         cost_data = {cost_type: float(total_cost) for cost_type, total_cost in cost_breakdown}
         

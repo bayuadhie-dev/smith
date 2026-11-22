@@ -178,8 +178,13 @@ const WIPDashboard: React.FC = () => {
     value: data.value
   })) : [];
 
+  const BIAYA_LABEL: Record<string, string> = {
+    labor: 'Tenaga kerja', material: 'Material', overhead: 'Overhead',
+    machine: 'Mesin', energy: 'Energi',
+  };
+
   const costBreakdownData = dashboardData ? Object.entries(dashboardData.cost_breakdown).map(([type, value]) => ({
-    name: type.replace('_', ' ').toUpperCase(),
+    name: BIAYA_LABEL[type] || type.replace(/_/g, ' '),
     value: value
   })) : [];
 
@@ -219,7 +224,7 @@ const WIPDashboard: React.FC = () => {
         {/* Date Range FunnelIcon */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">From:</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Dari</label>
             <input
               type="date"
               value={dateRange.from}
@@ -228,7 +233,7 @@ const WIPDashboard: React.FC = () => {
             />
           </div>
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">To:</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Sampai</label>
             <input
               type="date"
               value={dateRange.to}
@@ -432,7 +437,7 @@ const WIPDashboard: React.FC = () => {
             <div className="text-center py-8">
               <ChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Active WIP Batches</h3>
-              <p className="text-gray-500 dark:text-gray-400">No work in progress batches found for the selected date range.</p>
+              <p className="text-gray-500 dark:text-gray-400">Tidak ada batch WIP pada rentang tanggal ini.</p>
             </div>
           )}
         </div>
@@ -443,8 +448,8 @@ const WIPDashboard: React.FC = () => {
         <Link to="/app/production/wip-batches/new" className="card hover:shadow-lg transition-shadow">
           <div className="card-body text-center">
             <PlayIcon className="h-8 w-8 text-blue-600 mx-auto mb-2 dark:text-blue-400" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Start New WIP Batch</h3>
-            <p className="text-gray-500 dark:text-gray-400">Create WIP batch from SPK</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Batch WIP Baru</h3>
+            <p className="text-gray-500 dark:text-gray-400">Buat batch WIP dari SPK</p>
           </div>
         </Link>
 
@@ -452,15 +457,15 @@ const WIPDashboard: React.FC = () => {
           <div className="card-body text-center">
             <CurrencyDollarIcon className="h-8 w-8 text-green-600 mx-auto mb-2 dark:text-green-400" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Job Costing</h3>
-            <p className="text-gray-500 dark:text-gray-400">Track production costs</p>
+            <p className="text-gray-500 dark:text-gray-400">Pantau biaya produksi</p>
           </div>
         </Link>
 
         <Link to="/app/production/wip-analytics" className="card hover:shadow-lg transition-shadow">
           <div className="card-body text-center">
             <ChartBarIcon className="h-8 w-8 text-purple-600 mx-auto mb-2 dark:text-purple-400" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">WIP Analytics</h3>
-            <p className="text-gray-500 dark:text-gray-400">Advanced WIP analysis</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Analitik WIP</h3>
+            <p className="text-gray-500 dark:text-gray-400">Analisis WIP lanjutan</p>
           </div>
         </Link>
       </div>
