@@ -143,6 +143,7 @@ export default function WhatIfSimulation() {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
+          <div className="fn-label mb-1.5">MRP · SIMULASI</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
             <BeakerIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />
             MRP What-If Simulation
@@ -163,7 +164,7 @@ export default function WhatIfSimulation() {
         {/* Scenario Configuration */}
         <div className="lg:col-span-1 space-y-6">
           {/* Planning Period */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="fn-card p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <ClockIcon className="h-5 w-5" />
               Planning Period
@@ -186,7 +187,7 @@ export default function WhatIfSimulation() {
           </div>
 
           {/* Template Scenarios */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="fn-card p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Quick Templates
             </h3>
@@ -223,7 +224,7 @@ export default function WhatIfSimulation() {
           </div>
 
           {/* Custom Scenario */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="fn-card p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Custom Scenario
             </h3>
@@ -299,7 +300,7 @@ export default function WhatIfSimulation() {
           </div>
 
           {/* Current Scenarios */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="fn-card p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Scenarios ({scenarios.length})
             </h3>
@@ -340,7 +341,7 @@ export default function WhatIfSimulation() {
           {simulationResults.length > 0 ? (
             <>
               {/* Results Summary */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <div className="fn-card p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <ChartBarIcon className="h-5 w-5" />
                   Simulation Results Summary
@@ -383,7 +384,7 @@ export default function WhatIfSimulation() {
               </div>
 
               {/* Detailed Comparison */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <div className="fn-card p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <ArrowsRightLeftIcon className="h-5 w-5" />
                   Scenario Comparison
@@ -456,7 +457,7 @@ export default function WhatIfSimulation() {
               </div>
 
               {/* Insights & Recommendations */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <div className="fn-card p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <ExclamationTriangleIcon className="h-5 w-5" />
                   Insights & Recommendations

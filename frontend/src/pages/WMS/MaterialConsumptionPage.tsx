@@ -75,6 +75,7 @@ const MaterialConsumptionPage: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
+        <div className="fn-label mb-1.5">WMS · KONSUMSI MATERIAL</div>
         <h1 className="text-[28px] font-semibold text-gray-900 flex items-center gap-2 dark:text-white tracking-tight leading-tight">
           <CubeIcon className="h-7 w-7 text-purple-600 dark:text-purple-400" />
           Konsumsi Material
@@ -104,10 +105,10 @@ const MaterialConsumptionPage: React.FC = () => {
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm dark:border-gray-600"
             >
               <option value="">Semua Status</option>
-              <option value="planned">Planned</option>
+              <option value="planned">Rencana</option>
               <option value="partial">Partial</option>
               <option value="issued">Issued</option>
-              <option value="completed">Completed</option>
+              <option value="completed">Selesai</option>
             </select>
           </div>
         </div>
@@ -131,9 +132,9 @@ const MaterialConsumptionPage: React.FC = () => {
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Material</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">WO ID</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Planned</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Actual</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Variance</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Rencana</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Realisasi</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Selisih</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Batch / Lokasi</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Dikeluarkan Oleh</th>

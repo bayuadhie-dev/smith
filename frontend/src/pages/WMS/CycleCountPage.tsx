@@ -65,6 +65,7 @@ const CycleCountPage: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
+        <div className="fn-label mb-1.5">WMS · HITUNG SIKLUS</div>
         <h1 className="text-[28px] font-semibold text-gray-900 flex items-center gap-2 dark:text-white tracking-tight leading-tight">
           <ChartBarIcon className="h-7 w-7 text-teal-600 dark:text-teal-400" />
           Cycle Count
@@ -84,7 +85,7 @@ const CycleCountPage: React.FC = () => {
             <option value="">Semua Status</option>
             <option value="active">Active</option>
             <option value="paused">Paused</option>
-            <option value="completed">Completed</option>
+            <option value="completed">Selesai</option>
           </select>
         </div>
       </div>

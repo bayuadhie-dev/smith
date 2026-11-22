@@ -111,6 +111,7 @@ const WMSDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex items-center flex-wrap justify-between gap-3">
         <div>
+          <div className="fn-label mb-1.5">WMS · RINGKASAN</div>
           <h1 className="text-[28px] md:text-[28px] font-semibold text-gray-900 dark:text-white leading-snug flex items-center gap-2 tracking-tight">
             <BuildingStorefrontIcon className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
             Dashboard WMS

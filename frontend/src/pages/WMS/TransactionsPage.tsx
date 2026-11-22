@@ -524,7 +524,7 @@ const TransactionsPage: React.FC = () => {
             </span>
           </div>
         ) : (
-          <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600 font-sans dark:bg-amber-900/20 dark:text-amber-400">Belum resolve</span>
+          <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600 font-sans dark:bg-amber-900/20 dark:text-amber-400">Belum diselesaikan</span>
         );
       case 'accounting_entry_number':
         return txn.accounting_entry_number ? <span className="text-green-700 dark:text-green-300">{txn.accounting_entry_number}</span> : <span className="text-gray-300">-</span>;
@@ -565,6 +565,7 @@ const TransactionsPage: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
+        <div className="fn-label mb-1.5">WMS · MUTASI</div>
         <h1 className="text-[28px] font-semibold text-gray-900 flex items-center gap-2 dark:text-white tracking-tight leading-tight">
           <ArrowsRightLeftIcon className="h-7 w-7 text-green-600 dark:text-green-400" />
           Transaksi Stok
@@ -956,7 +957,7 @@ const TransactionsPage: React.FC = () => {
                                 </span>
                               </div>
                             ) : (
-                              <div className="text-amber-600 text-sm mt-1 dark:text-amber-400">Belum resolve</div>
+                              <div className="text-amber-600 text-sm mt-1 dark:text-amber-400">Belum diselesaikan</div>
                             )}
                           </div>
                           <p className="text-xs text-gray-400">

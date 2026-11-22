@@ -161,6 +161,7 @@ export default function MRPRun() {
   return (
     <div className="space-y-6">
       <div>
+        <div className="fn-label mb-1.5">MRP · PERHITUNGAN</div>
         <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight leading-tight">
           <CalculatorIcon className="h-6 w-6" />
           MRP Run (Time-Phased)
@@ -215,7 +216,7 @@ export default function MRPRun() {
                   <th>Qty</th>
                   <th>Tanggal Butuh</th>
                   <th>Tanggal Harus Pesan</th>
-                  <th>Lead Time</th>
+                  <th>Waktu tunggu</th>
                   <th>Catatan</th>
                   <th></th>
                 </tr>

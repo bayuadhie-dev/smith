@@ -102,6 +102,7 @@ const TransferOrderPage: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
+        <div className="fn-label mb-1.5">WMS · TRANSFER STOK</div>
         <h1 className="text-[28px] font-semibold text-gray-900 flex items-center gap-2 dark:text-white tracking-tight leading-tight">
           <TruckIcon className="h-7 w-7 text-orange-600 dark:text-orange-400" />
           Transfer Stok
@@ -122,7 +123,7 @@ const TransferOrderPage: React.FC = () => {
             <option value="draft">Draft</option>
             <option value="pending_approval">Menunggu Persetujuan</option>
             <option value="approved">Approved</option>
-            <option value="completed">Completed</option>
+            <option value="completed">Selesai</option>
           </select>
         </div>
       </div>

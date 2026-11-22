@@ -130,6 +130,7 @@ const StockByWODetail: React.FC = () => {
           <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </button>
         <div className="flex-1">
+          <div className="fn-label mb-1.5">WMS · STOK PER SPK</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">{wo.wo_number}</h1>
           <p className="text-gray-500 dark:text-gray-400">{wo.product_name} ({wo.product_code})</p>
         </div>
@@ -208,9 +209,9 @@ const StockByWODetail: React.FC = () => {
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Material</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Planned</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Actual</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Variance</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Rencana</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Realisasi</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Selisih</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Status</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Batch</th>
                 </tr>

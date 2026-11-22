@@ -55,6 +55,7 @@ const BatchTraceability: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
+        <div className="fn-label mb-1.5">WMS · TELUSUR BATCH</div>
         <h1 className="text-[28px] font-semibold text-gray-900 flex items-center gap-2 dark:text-white tracking-tight leading-tight">
           <DocumentMagnifyingGlassIcon className="h-7 w-7 text-cyan-600 dark:text-cyan-400" />
           Batch Traceability
@@ -181,9 +182,9 @@ const BatchTraceability: React.FC = () => {
                   <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Material</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Planned</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Actual</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Variance</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Rencana</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Realisasi</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Selisih</th>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-400">Status</th>
                     </tr>
                   </thead>

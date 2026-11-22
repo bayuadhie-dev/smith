@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Panel } from '../../components/ui/PageKit';
+import RunChart from '../../components/charts/RunChart';
 import axiosInstance from '../../utils/axiosConfig';
 import {
   ArrowLeftIcon,
@@ -98,7 +99,7 @@ const CapacityPlanning: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3">Loading capacity planning data...</span>
+        <span className="ml-3">Memuat data kapasitas...</span>
       </div>
     );
   }
@@ -113,50 +114,53 @@ const CapacityPlanning: React.FC = () => {
             className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
-            Back to MRP Dashboard
+            Kembali ke Dashboard MRP
           </Link>
           <div>
-            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Capacity Planning</h1>
-            <p className="text-gray-600 mt-1 dark:text-gray-300">Manage production capacity and resource utilization</p>
+            <div className="fn-label mb-1.5">MRP · KAPASITAS</div>
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Perencanaan Kapasitas</h1>
+            <p className="text-gray-600 mt-1 dark:text-gray-300">Kapasitas mesin dibanding beban yang sudah dijadwalkan</p>
           </div>
         </div>
       </div>
 
-      {/* Capacity Timeline Chart */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Capacity Utilization Timeline</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={timeline}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip formatter={(value, name) => [
-              formatNumber(value as number),
-              name === 'available_capacity' ? 'Available' :
-              name === 'planned_load' ? 'Planned Load' : 'Actual Load'
-            ]} />
-            <Area type="monotone" dataKey="available_capacity" stackId="1" stroke="#94A3B8" fill="#94A3B8" fillOpacity={0.3} />
-            <Area type="monotone" dataKey="planned_load" stackId="2" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} />
-            <Area type="monotone" dataKey="actual_load" stackId="3" stroke="#10B981" fill="#10B981" fillOpacity={0.8} />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+      <Panel title="Pemakaian kapasitas sepanjang waktu">
+        <div className="px-4 pb-3 pt-1">
+          {timeline.length === 0 ? (
+            <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data kapasitas.</p>
+          ) : (
+            <RunChart
+              values={timeline.map((t: any) => Number(t.planned_load || 0))}
+              axis={Array.from(new Set([0, Math.floor(timeline.length / 2), timeline.length - 1]))
+                .map((i: number) => String((timeline[i] as any)?.date || '').slice(5))
+                .filter(Boolean)}
+              rows={[
+                { label: 'Kapasitas tersedia', values: timeline.map((t: any) => Number(t.available_capacity || 0)) },
+                { label: 'Beban rencana', values: timeline.map((t: any) => Number(t.planned_load || 0)) },
+                { label: 'Beban nyata', values: timeline.map((t: any) => Number(t.actual_load || 0)) },
+              ]}
+              height={210}
+              unit="jam"
+            />
+          )}
+        </div>
+      </Panel>
 
       {/* Resource Capacity Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Resource Capacity Overview</h3>
+      <div className="fn-card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Kapasitas per sumber daya</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Resource</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Available</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Planned</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Utilization</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Efficiency</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Sumber daya</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jenis</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tersedia</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Rencana</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pemakaian</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Efisiensi</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.status')}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Bottleneck</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Hambatan</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">

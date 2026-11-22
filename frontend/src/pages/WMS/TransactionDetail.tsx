@@ -83,6 +83,7 @@ const TransactionDetail: React.FC = () => {
           <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
         </button>
         <div className="flex-1">
+          <div className="fn-label mb-1.5">WMS · MUTASI</div>
           <h1 className="text-[28px] font-semibold text-gray-900 flex items-center gap-2 dark:text-white tracking-tight leading-tight">
             <DocumentTextIcon className="h-7 w-7 text-purple-600 dark:text-purple-400" />
             Detail Transaksi
@@ -143,7 +144,7 @@ const TransactionDetail: React.FC = () => {
                 <InfoRow label="Akun COA (hasil resolve)" value={
                   txn.resolved_account?.code
                     ? `${txn.resolved_account.code} - ${txn.resolved_account.name}`
-                    : <span className="text-amber-600 dark:text-amber-400">Belum resolve</span>
+                    : <span className="text-amber-600 dark:text-amber-400">Belum diselesaikan</span>
                 } />
                 {txn.resolved_account?.source && (
                   <InfoRow label="Sumber Resolusi" value={

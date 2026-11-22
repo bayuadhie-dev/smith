@@ -10,10 +10,8 @@ import {
   FunnelIcon
 } from '@heroicons/react/24/outline';
 import axiosInstance from '../../utils/axiosConfig';
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  AreaChart, Area
-} from 'recharts';
+import { Panel } from '../../components/ui/PageKit';
+import RunChart from '../../components/charts/RunChart';
 interface DemandForecast {
   product_id: number;
   product_name: string;
@@ -176,7 +174,7 @@ const DemandPlanning: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3">Loading demand planning data...</span>
+        <span className="ml-3">Memuat data perencanaan kebutuhan...</span>
       </div>
     );
   }
@@ -191,10 +189,11 @@ const DemandPlanning: React.FC = () => {
             className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
-            Back to MRP Dashboard
+            Kembali ke Dashboard MRP
           </Link>
           <div>
-            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Demand Planning</h1>
+            <div className="fn-label mb-1.5">MRP · KEBUTUHAN</div>
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Perencanaan Kebutuhan</h1>
             <p className="text-gray-600 mt-1 dark:text-gray-300">Forecast demand and plan production requirements</p>
           </div>
         </div>
@@ -217,7 +216,7 @@ const DemandPlanning: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="fn-card p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Forecast Period</label>
@@ -244,7 +243,7 @@ const DemandPlanning: React.FC = () => {
               <option value="medical">Medical Products</option>
               <option value="filter">FunnelIcon Media</option>
               <option value="geotextile">Geotextiles</option>
-              <option value="raw">Raw Materials</option>
+              <option value="raw">Bahan baku</option>
             </select>
           </div>
           <div>
@@ -279,52 +278,52 @@ const DemandPlanning: React.FC = () => {
         </div>
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Historical vs Forecast */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Historical vs Forecasted Demand</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={historicalData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip formatter={(value, name) => [
-                formatNumber(value as number),
-                name === 'actual_demand' ? 'Actual' : 'Forecasted'
-              ]} />
-              <Line type="monotone" dataKey="actual_demand" stroke="#3B82F6" strokeWidth={2} name="Actual" />
-              <Line type="monotone" dataKey="forecasted_demand" stroke="#10B981" strokeWidth={2} strokeDasharray="5 5" name="Forecasted" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Panel title="Permintaan nyata dibanding perkiraan">
+          <div className="px-4 pb-3 pt-1">
+            {historicalData.length === 0 ? (
+              <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada riwayat permintaan.</p>
+            ) : (
+              <RunChart
+                values={historicalData.map((h: any) => Number(h.actual_demand || 0))}
+                axis={Array.from(new Set([0, Math.floor(historicalData.length / 2), historicalData.length - 1]))
+                  .map((i: number) => String((historicalData[i] as any)?.date || '').slice(5))
+                  .filter(Boolean)}
+                rows={[
+                  { label: 'Nyata', values: historicalData.map((h: any) => Number(h.actual_demand || 0)) },
+                  { label: 'Perkiraan', values: historicalData.map((h: any) => Number(h.forecasted_demand || 0)) },
+                ]}
+                height={200}
+              />
+            )}
+          </div>
+        </Panel>
 
-        {/* Seasonality Pattern */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Seasonality Pattern</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={seasonalityData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip formatter={(value, name) => [
-                name === 'seasonal_index' ? (value as number).toFixed(2) : formatNumber(value as number),
-                name === 'seasonal_index' ? 'Seasonal Index' :
-                name === 'avg_demand' ? 'Average Demand' :
-                name === 'peak_demand' ? 'Peak Demand' : 'Low Demand'
-              ]} />
-              <Area type="monotone" dataKey="peak_demand" stackId="1" stroke="#EF4444" fill="#EF4444" fillOpacity={0.3} />
-              <Area type="monotone" dataKey="avg_demand" stackId="2" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} />
-              <Area type="monotone" dataKey="low_demand" stackId="3" stroke="#10B981" fill="#10B981" fillOpacity={0.8} />
-              <Line type="monotone" dataKey="seasonal_index" stroke="#F59E0B" strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+        <Panel title="Pola musiman">
+          <div className="px-4 pb-3 pt-1">
+            {seasonalityData.length === 0 ? (
+              <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada pola musiman.</p>
+            ) : (
+              <RunChart
+                values={seasonalityData.map((d: any) => Number(d.avg_demand || 0))}
+                axis={Array.from(new Set([0, Math.floor(seasonalityData.length / 2), seasonalityData.length - 1]))
+                  .map((i: number) => String((seasonalityData[i] as any)?.month || ''))
+                  .filter(Boolean)}
+                rows={[
+                  { label: 'Puncak', values: seasonalityData.map((d: any) => Number(d.peak_demand || 0)) },
+                  { label: 'Rata-rata', values: seasonalityData.map((d: any) => Number(d.avg_demand || 0)) },
+                  { label: 'Terendah', values: seasonalityData.map((d: any) => Number(d.low_demand || 0)) },
+                ]}
+                height={200}
+              />
+            )}
+          </div>
+        </Panel>
       </div>
 
       {/* Demand Forecast Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Product Demand Forecasts</h3>
+      <div className="fn-card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Perkiraan permintaan per produk</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-900">
@@ -332,9 +331,9 @@ const DemandPlanning: React.FC = () => {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('production.product')}</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Current Demand</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Forecasted</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Variance</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Selisih</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Confidence</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Trend</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tren</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Seasonality</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Last Updated</th>
               </tr>
@@ -395,7 +394,7 @@ const DemandPlanning: React.FC = () => {
       </div>
 
       {/* Forecast Accuracy */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="fn-card p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Forecast Accuracy Metrics</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {forecastAccuracy.map((accuracy, index) => (

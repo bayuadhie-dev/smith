@@ -43,7 +43,8 @@ const MRP: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Material Requirements Planning (MRP)</h1>
+          <div className="fn-label mb-1.5">MRP</div>
+          <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Perencanaan Kebutuhan Material (MRP)</h1>
           <p className="text-gray-600 dark:text-gray-300">Integrated planning based on Sales Orders & Forecasts</p>
         </div>
         <div className="flex gap-3">
@@ -111,7 +112,7 @@ const MRP: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-red-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Critical Shortages</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Kekurangan kritis</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {requirementsData?.requirements?.filter((r: any) => r.net_requirement > 0).length || 0}
               </p>
@@ -122,7 +123,7 @@ const MRP: React.FC = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+      <div className="fn-card">
         <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="-mb-px flex space-x-8 px-6">
             {[
@@ -325,7 +326,7 @@ const MRP: React.FC = () => {
                   onChange={(e) => setSelectedMaterialType(e.target.value)}
                 >
                   <option value="">All Types</option>
-                  <option value="raw_material">Raw Materials</option>
+                  <option value="raw_material">Bahan baku</option>
                   <option value="semi_finished">Semi-Finished</option>
                   <option value="finished_goods">Finished Goods</option>
                 </select>

@@ -1231,12 +1231,27 @@ def get_capacity_resources():
     computation rather than leaving the Capacity Planning page always blank."""
     try:
         from models.batch_scheduling import ProductionBatch
-        from routes.batch_scheduling import resolve_effective_calendar
+        from routes.batch_scheduling import cari_kalender, muat_kalender
 
         today = get_local_today()
         window_end = today + timedelta(days=13)
 
         machines = Machine.query.filter_by(is_active=True).all()
+        # Kalender dimuat sekali untuk semua mesin x 14 hari. Sebelumnya tiap
+        # pasangan (mesin, tanggal) menembak database sendiri - ratusan query
+        # berurutan, dan halamannya selalu kehabisan waktu tunggu.
+        kalender = muat_kalender([m.id for m in machines], today, window_end)
+
+        # Beban terencana per mesin juga sekali, bukan satu query per mesin.
+        beban = dict(db.session.query(
+            ProductionBatch.machine_id,
+            func.coalesce(func.sum(ProductionBatch.planned_qty), 0),
+        ).filter(
+            ProductionBatch.scheduled_date >= today,
+            ProductionBatch.scheduled_date <= window_end,
+            ProductionBatch.status.in_(['draft', 'approved', 'in_progress']),
+        ).group_by(ProductionBatch.machine_id).all())
+
         resources = []
 
         for m in machines:
@@ -1247,21 +1262,13 @@ def get_capacity_resources():
             available_capacity = 0.0
             d = today
             while d <= window_end:
-                cal = resolve_effective_calendar(m.id, d)
+                cal = cari_kalender(kalender, m.id, d)
                 if cal['is_working_day'] and cal['shift_count'] and cal['shift_duration_hours']:
                     hours = cal['shift_count'] * cal['shift_duration_hours']
                     available_capacity += hours * capacity_per_hour * (availability_pct / 100)
                 d += timedelta(days=1)
 
-            planned_capacity = db.session.query(
-                func.coalesce(func.sum(ProductionBatch.planned_qty), 0)
-            ).filter(
-                ProductionBatch.machine_id == m.id,
-                ProductionBatch.scheduled_date >= today,
-                ProductionBatch.scheduled_date <= window_end,
-                ProductionBatch.status.in_(['draft', 'approved', 'in_progress']),
-            ).scalar()
-            planned_capacity = float(planned_capacity or 0)
+            planned_capacity = float(beban.get(m.id) or 0)
 
             utilization_percent = (planned_capacity / available_capacity * 100) if available_capacity > 0 else 0
 
@@ -1299,28 +1306,36 @@ def get_capacity_timeline():
     batch-scheduling module) for days that have already happened."""
     try:
         from models.batch_scheduling import ProductionBatch
-        from routes.batch_scheduling import resolve_effective_calendar
+        from routes.batch_scheduling import cari_kalender, muat_kalender
 
         today = get_local_today()
         window_end = today + timedelta(days=13)
 
         machines = Machine.query.filter_by(is_active=True).all()
+        kalender = muat_kalender([m.id for m in machines], today, window_end)
+
+        # Semua batch dalam rentang diambil sekali, lalu dikelompokkan per hari.
+        per_hari = {}
+        for b in ProductionBatch.query.filter(
+            ProductionBatch.scheduled_date >= today,
+            ProductionBatch.scheduled_date <= window_end,
+            ProductionBatch.status.in_(['draft', 'approved', 'in_progress', 'completed']),
+        ).all():
+            per_hari.setdefault(b.scheduled_date, []).append(b)
+
         timeline = []
 
         d = today
         while d <= window_end:
             available_capacity = 0.0
             for m in machines:
-                cal = resolve_effective_calendar(m.id, d)
+                cal = cari_kalender(kalender, m.id, d)
                 if cal['is_working_day'] and cal['shift_count'] and cal['shift_duration_hours']:
                     hours = cal['shift_count'] * cal['shift_duration_hours']
                     availability_pct = float(m.availability if m.availability is not None else 100)
                     available_capacity += hours * float(m.capacity_per_hour or 0) * (availability_pct / 100)
 
-            day_batches = ProductionBatch.query.filter(
-                ProductionBatch.scheduled_date == d,
-                ProductionBatch.status.in_(['draft', 'approved', 'in_progress', 'completed']),
-            ).all()
+            day_batches = per_hari.get(d, [])
             planned_load = sum(float(b.planned_qty or 0) for b in day_batches)
             actual_load = sum(float(b.realized_qty or 0) for b in day_batches)
 

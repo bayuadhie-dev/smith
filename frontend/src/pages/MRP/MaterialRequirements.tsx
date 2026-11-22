@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { CategoryBars, Panel } from '../../components/ui/PageKit';
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import {
@@ -140,7 +140,7 @@ const MaterialRequirements: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3">Loading material requirements...</span>
+        <span className="ml-3">Memuat kebutuhan material...</span>
       </div>
     );
   }
@@ -155,62 +155,63 @@ const MaterialRequirements: React.FC = () => {
             className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
-            Back to MRP Dashboard
+            Kembali ke Dashboard MRP
           </Link>
           <div>
-            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Material Requirements</h1>
-            <p className="text-gray-600 mt-1 dark:text-gray-300">Track material needs and shortages</p>
+            <div className="fn-label mb-1.5">MRP · KEBUTUHAN MATERIAL</div>
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Kebutuhan Material</h1>
+            <p className="text-gray-600 mt-1 dark:text-gray-300">Pantau kebutuhan material dan kekurangannya</p>
           </div>
         </div>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="fn-card p-6">
           <div className="flex items-center">
             <CubeIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Materials</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total material</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(summary.total_materials)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="fn-card p-6">
           <div className="flex items-center">
             <ExclamationTriangleIcon className="h-8 w-8 text-red-600 dark:text-red-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Shortage Items</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Material kurang</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(summary.total_shortage_items)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="fn-card p-6">
           <div className="flex items-center">
             <TruckIcon className="h-8 w-8 text-orange-600 dark:text-orange-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Critical Shortages</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Kekurangan kritis</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(summary.critical_shortages)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="fn-card p-6">
           <div className="flex items-center">
             <ClockIcon className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Avg Lead Time</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Rata-rata waktu tunggu</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{summary.avg_lead_time} days</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="fn-card p-6">
           <div className="flex items-center">
             <CalendarIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Shortage Value</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Nilai kekurangan</p>
               <p className="text-lg font-bold text-gray-900 dark:text-white">{formatRupiah(summary.total_shortage_value)}</p>
             </div>
           </div>
@@ -218,16 +219,16 @@ const MaterialRequirements: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="fn-card p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Priority</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Prioritas</label>
             <select
               value={selectedPriority}
               onChange={(e) => setSelectedPriority(e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
-              <option value="all">All Priorities</option>
+              <option value="all">Semua prioritas</option>
               <option value="critical">Critical</option>
               <option value="high">High</option>
               <option value="medium">Medium</option>
@@ -241,52 +242,58 @@ const MaterialRequirements: React.FC = () => {
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
-              <option value="all">All Status</option>
-              <option value="planned">Planned</option>
+              <option value="all">Semua status</option>
+              <option value="planned">Rencana</option>
               <option value="ordered">Ordered</option>
               <option value="received">Received</option>
-              <option value="shortage">Shortage</option>
+              <option value="shortage">Kekurangan</option>
             </select>
           </div>
         </div>
       </div>
 
-      {/* Requirements Chart */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Material Requirements vs Availability</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip formatter={(value, name) => [
-              formatNumber(value as number),
-              name === 'required' ? 'Required' :
-              name === 'available' ? 'Available' : 'Shortage'
-            ]} />
-            <Bar dataKey="required" fill="#3B82F6" name="Required" />
-            <Bar dataKey="available" fill="#10B981" name="Available" />
-            <Bar dataKey="shortage" fill="#EF4444" name="Shortage" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      <Panel title="Kebutuhan dibanding ketersediaan">
+        <div className="p-4">
+          {chartData.length === 0 ? (
+            <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada kebutuhan material.</p>
+          ) : (
+            <div className="space-y-5">
+              <div>
+                <p className="fn-label mb-2">Dibutuhkan</p>
+                <CategoryBars items={chartData.map((c: any) => ({ label: c.name, value: c.required }))} format={formatNumber} />
+              </div>
+              <div>
+                <p className="fn-label mb-2">Tersedia</p>
+                <CategoryBars items={chartData.map((c: any) => ({ label: c.name, value: c.available }))} format={formatNumber} />
+              </div>
+              <div>
+                <p className="fn-label mb-2">Kurang</p>
+                <CategoryBars
+                  items={chartData.map((c: any) => ({ label: c.name, value: c.shortage, tone: c.shortage > 0 ? 'bad' : undefined }))}
+                  format={formatNumber}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </Panel>
 
       {/* Requirements Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Material Requirements Details</h3>
+      <div className="fn-card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Rincian kebutuhan material</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('products.bom.material')}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Required</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Available</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Shortage</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dibutuhkan</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tersedia</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kekurangan</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Required Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Lead Time</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Supplier</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Waktu tunggu</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pemasok</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('products.bom.total_cost')}</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Priority</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Prioritas</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.status')}</th>
               </tr>
             </thead>

@@ -37,6 +37,76 @@ def _parse_date(value):
     return datetime.strptime(value, '%Y-%m-%d').date()
 
 
+def muat_kalender(machine_ids, tanggal_awal, tanggal_akhir):
+    """Ambil ketiga lapis kalender sekali saja untuk satu rentang tanggal.
+
+    `resolve_effective_calendar` menembak database 1-3 kali per pasangan
+    (mesin, tanggal). Untuk 12 mesin x 14 hari itu ratusan query berurutan -
+    halaman Perencanaan Kapasitas sampai kehabisan waktu tunggu (timeout 10
+    detik) dan selalu tampil kosong. Fungsi ini memuat semuanya dalam tiga
+    query, lalu `cari_kalender` memakai hasilnya tanpa menyentuh database.
+    """
+    overrides = {}
+    for o in MachineCalendarOverride.query.filter(
+        MachineCalendarOverride.machine_id.in_(list(machine_ids) or [0]),
+        MachineCalendarOverride.override_date >= tanggal_awal,
+        MachineCalendarOverride.override_date <= tanggal_akhir,
+    ).all():
+        overrides[(o.machine_id, o.override_date)] = o
+
+    exceptions = {
+        e.exception_date: e
+        for e in ExceptionCalendar.query.filter(
+            ExceptionCalendar.exception_date >= tanggal_awal,
+            ExceptionCalendar.exception_date <= tanggal_akhir,
+        ).all()
+    }
+    globals_ = {g.day_of_week: g for g in GlobalCalendar.query.all()}
+    return {'override': overrides, 'exception': exceptions, 'global': globals_}
+
+
+def cari_kalender(cache, machine_id, target_date):
+    """Sama hasilnya dengan resolve_effective_calendar, tapi dari cache."""
+    override = cache['override'].get((machine_id, target_date))
+    if override:
+        return {
+            'source': 'override',
+            'is_working_day': override.is_working_day,
+            'shift_count': override.shift_count,
+            'shift_duration_hours': float(override.shift_duration_hours) if override.shift_duration_hours else None,
+            'reason': override.reason,
+        }
+
+    exception = cache['exception'].get(target_date)
+    if exception:
+        shift_count = exception.shift_count
+        shift_duration_hours = float(exception.shift_duration_hours) if exception.shift_duration_hours else None
+        if exception.is_working_day and (shift_count is None or shift_duration_hours is None):
+            g = cache['global'].get(target_date.weekday())
+            if shift_count is None:
+                shift_count = g.shift_count if g else 0
+            if shift_duration_hours is None:
+                shift_duration_hours = float(g.shift_duration_hours) if g and g.shift_duration_hours else None
+        return {
+            'source': 'exception',
+            'is_working_day': exception.is_working_day,
+            'shift_count': shift_count,
+            'shift_duration_hours': shift_duration_hours,
+            'reason': exception.reason,
+        }
+
+    g = cache['global'].get(target_date.weekday())
+    if not g:
+        return {'source': 'global', 'is_working_day': False, 'shift_count': 0, 'shift_duration_hours': None, 'reason': None}
+    return {
+        'source': 'global',
+        'is_working_day': g.is_working_day,
+        'shift_count': g.shift_count,
+        'shift_duration_hours': float(g.shift_duration_hours) if g.shift_duration_hours else None,
+        'reason': None,
+    }
+
+
 def resolve_effective_calendar(machine_id, target_date):
     """3-layer resolution per §4 of the plan: MachineCalendarOverride > ExceptionCalendar > GlobalCalendar."""
     override = MachineCalendarOverride.query.filter_by(machine_id=machine_id, override_date=target_date).first()

@@ -382,7 +382,7 @@ const MRPDashboard: React.FC = () => {
                       <th className="py-2 pr-4 text-right">Total Kebutuhan (2 bulan)</th>
                       <th className="py-2 pr-4 text-right">Stok Tersedia</th>
                       <th className="py-2 pr-4 text-right">PO Masuk</th>
-                      <th className="py-2 pr-4 text-right">Shortage</th>
+                      <th className="py-2 pr-4 text-right">Kekurangan</th>
                       <th className="py-2 pr-4"></th>
                     </tr>
                   </thead>
@@ -495,6 +495,7 @@ const MRPDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div className="mb-6">
+          <div className="fn-label mb-1.5">MRP · RINGKASAN</div>
           <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">MRP</h1>
           <p className="text-gray-600 dark:text-gray-300">Integrated production planning and material requirements analysis</p>
           <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
@@ -682,8 +683,8 @@ const MRPDashboard: React.FC = () => {
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('production.product')}</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Current Demand</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Forecasted</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Variance</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Trend</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Selisih</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tren</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -723,7 +724,7 @@ const MRPDashboard: React.FC = () => {
           >
             <div className="text-center">
               <ChartBarIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Demand Planning</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Perencanaan Kebutuhan</span>
             </div>
           </Link>
           
@@ -733,7 +734,7 @@ const MRPDashboard: React.FC = () => {
           >
             <div className="text-center">
               <CogIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Capacity Planning</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Perencanaan Kapasitas</span>
             </div>
           </Link>
           
@@ -743,7 +744,7 @@ const MRPDashboard: React.FC = () => {
           >
             <div className="text-center">
               <CubeIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Material Requirements</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Kebutuhan Material</span>
             </div>
           </Link>
           
@@ -753,7 +754,7 @@ const MRPDashboard: React.FC = () => {
           >
             <div className="text-center">
               <TruckIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Supplier Integration</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Integrasi Pemasok</span>
             </div>
           </Link>
         </div>

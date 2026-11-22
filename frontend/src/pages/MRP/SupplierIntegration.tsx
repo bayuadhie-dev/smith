@@ -7,7 +7,7 @@ import {
   PhoneIcon
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { CategoryBars, Panel } from '../../components/ui/PageKit';
 import axiosInstance from '../../utils/axiosConfig';
 import { formatRupiah } from '../../utils/currencyUtils';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -146,17 +146,18 @@ const SupplierIntegration: React.FC = () => {
             className="flex items-center text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
-            Back to MRP Dashboard
+            Kembali ke Dashboard MRP
           </Link>
           <div>
-            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Supplier Integration</h1>
+            <div className="fn-label mb-1.5">MRP · PEMASOK</div>
+            <h1 className="text-[28px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight">Integrasi Pemasok</h1>
             <p className="text-gray-600 mt-1 dark:text-gray-300">Manage supplier relationships and capacity planning</p>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="fn-card p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Material Category</label>
@@ -166,7 +167,7 @@ const SupplierIntegration: React.FC = () => {
               className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2"
             >
               <option value="all">All Categories</option>
-              <option value="raw_materials">Raw Materials</option>
+              <option value="raw_materials">Bahan baku</option>
               <option value="additives">Additives</option>
               <option value="packaging">Packaging</option>
               <option value="chemicals">Chemicals</option>
@@ -176,62 +177,62 @@ const SupplierIntegration: React.FC = () => {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Supplier Capacity Utilization */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Supplier Capacity Utilization</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={capacityData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="supplier_name" angle={-45} textAnchor="end" height={80} />
-              <YAxis />
-              <Tooltip formatter={(value, name) => [
-                formatNumber(value as number),
-                name === 'available_capacity' ? 'Available' : 'Committed'
-              ]} />
-              <Bar dataKey="available_capacity" fill="#94A3B8" name="Available" />
-              <Bar dataKey="committed_capacity" fill="#3B82F6" name="Committed" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Panel title="Pemakaian kapasitas pemasok">
+          <div className="p-4">
+            {capacityData.length === 0 ? (
+              <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data kapasitas.</p>
+            ) : (
+              <div className="space-y-5">
+                <div>
+                  <p className="fn-label mb-2">Terpakai</p>
+                  <CategoryBars
+                    items={capacityData.map((c: any) => ({ label: c.supplier_name, value: c.committed_capacity }))}
+                    format={formatNumber}
+                  />
+                </div>
+                <div>
+                  <p className="fn-label mb-2">Tersedia</p>
+                  <CategoryBars
+                    items={capacityData.map((c: any) => ({ label: c.supplier_name, value: c.available_capacity }))}
+                    format={formatNumber}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </Panel>
 
-        {/* On-Time Delivery Performance */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">On-Time Delivery Performance</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={suppliers.map(s => ({ name: s.supplier_name, value: s.on_time_percentage }))}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {suppliers.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => [`${(value as number).toFixed(1)}%`, 'On-Time %']} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        <Panel title="Ketepatan waktu kirim">
+          <div className="p-4">
+            {suppliers.length === 0 ? (
+              <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data pengiriman.</p>
+            ) : (
+              <CategoryBars
+                items={suppliers.map((sp: any) => ({
+                  label: sp.supplier_name,
+                  value: Number(sp.on_time_percentage || 0),
+                  tone: Number(sp.on_time_percentage || 0) < 80 ? 'bad' : undefined,
+                }))}
+                format={(n: number) => `${n.toFixed(1)}%`}
+              />
+            )}
+          </div>
+        </Panel>
       </div>
 
       {/* Supplier Performance Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Supplier Performance Overview</h3>
+      <div className="fn-card p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Ringkasan kinerja pemasok</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Supplier</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pemasok</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Contact</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Orders</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">On-Time %</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Avg Lead Time</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Rata-rata waktu tunggu</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Quality Rating</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Value</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Contracts</th>
@@ -300,7 +301,7 @@ const SupplierIntegration: React.FC = () => {
       </div>
 
       {/* Supplier Capacity Details */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="fn-card p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Supplier Capacity Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {capacityData.map((capacity, index) => (

@@ -73,6 +73,7 @@ const StockByWorkOrder: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
+        <div className="fn-label mb-1.5">WMS · STOK PER SPK</div>
         <h1 className="text-[28px] font-semibold text-gray-900 flex items-center gap-2 dark:text-white tracking-tight leading-tight">
           <DocumentTextIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
           Stok per SPK
@@ -106,7 +107,7 @@ const StockByWorkOrder: React.FC = () => {
               <option value="draft">Draft</option>
               <option value="confirmed">Confirmed</option>
               <option value="in_progress">In Progress</option>
-              <option value="completed">Completed</option>
+              <option value="completed">Selesai</option>
             </select>
           </div>
         </div>
